@@ -1,0 +1,83 @@
+From Immersive Horses ihoconfigmenuscript
+
+;I think these functions need to be inside the MCM script for the list menu to function correctly, so just call them from Edit Mode but have them in MCM
+
+import Game
+import Utility
+import Debug
+import IHOUtil ; don't know if this is needed to then import UILIB_1?
+UILIB_1 SkyUILib
+
+String[] Property HorseListMenu Auto
+int Property HorseListIndex = 0 Auto
+int Property HorseListMenuOffset = 2 AutoReadOnly
+
+event OnKeyDown(int keyCode)
+	; Quit if a menu is open or if text input is enabled.
+	if keyCode == -1 || IsInMenuMode() || UI.IsTextInputEnabled()
+		return
+	endIf
+	if keyCode == HorseListMenuKeyCode
+		UpdateHorseListMenu()
+		ShowHorseListMenu()
+	endIf
+endEvent
+
+Function UpdateHorseListMenu()
+	HorseListMenu = CreateStringArray(PlayerHorseList.Length + HorseListMenuOffset)
+	HorseListMenu[0] = "$IHO_MenuTextCancel"
+	HorseListMenu[1] = "$IHO_MenuTextMyHerd"
+	int i = 0
+	; Populate the horse names and statuses from the horse list.
+	while i < PlayerHorseList.Length
+		Actor horseRef = PlayerHorseList[i]
+		; Abandon the horse if it was lost or player ownership was lost somehow.
+		if horseRef == None || !horseRef.IsInFaction(PlayerHorseFaction)
+			AbandonHorse(horseRef)
+			i -= 1 ; Retry this slot.
+		else ; Mark the horse's current status.
+			String status = ""
+			if horseRef.IsBeingRidden()
+				status = "$IHO_HorseStatusMounted"
+			elseIf horseRef.IsInFaction(CurrentFollowerFaction)
+				if IsFollowingPlayer(horseRef)
+					status = "$IHO_HorseStatusFollowing"
+				else
+					status = "$IHO_HorseStatusWaiting"
+				endIf
+			elseIf horseRef.IsInFaction(DismissedFollowerFaction)
+				status = "$IHO_HorseStatusDismissed"
+			endIf
+			HorseListMenu[i + HorseListMenuOffset] = status + "{" + horseRef.GetDisplayName() +"}"
+		endIf
+		i += 1
+	endWhile
+EndFunction
+
+ Shows the horse list menu.
+Function ShowHorseListMenu()
+	if PlayerHorseList.Length == 0
+		DisplayGeneralMessage("$IHO_PlayerNoHorse", forceDisplay = true)
+		return
+	endIf
+	if PlayerHorseList.Length == 1
+		HorseListIndex = HorseListMenuOffset
+	else ; Many Horses
+		String title = "$IHO_MenuTextClaimedHorses{" + PlayerHorseList.Length + "}"
+		HorseListIndex = SkyUILib.ShowList(title, HorseListMenu, aiStartIndex = 0, aiDefaultIndex = 0)
+	endIf
+	if HorseListIndex == 1 ; Entire Herd
+		ShowHerdOptionsMenu(showHorseListOnCancel = true)
+	elseIf HorseListIndex >= HorseListMenuOffset ; Single Horse
+		ShowHorseOptionsSubMenu()
+	endIf
+EndFunction
+
+; Opens a dialogue box which allows the player to rename the horse.
+Function RenameHorse(Actor horseRef, String placeholder = "")
+	String title = "$IHO_MenuTextRename{" + horseRef.GetDisplayName() + "}"
+	String newName = SkyUILib.ShowTextInput(title, placeholder)
+	if newName != ""
+		horseRef.SetDisplayName(newName, force = true)
+	endIf
+EndFunction

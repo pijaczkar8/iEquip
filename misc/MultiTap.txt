@@ -1,0 +1,50 @@
+GlobalVariable Property iEquip_MultiTapDelay auto ;Default value 0.4 sec?
+GlobalVariable Property iEquip_LongPressDelay auto ;Default value 0.6 sec?
+
+Int WaitingKeyCode = 0
+Int iMultiTap = 0
+
+Function OnKeyUp(Int KeyCode, Float HoldTime)
+	If HoldTime < iEquip_LongPressDelay.GetValueInt() 	;If not longpress.
+		If WaitingKeyCode != 0 && KeyCode != WaitingKeyCode	  ;The player pressed a different key, so force the current one to process if there is one
+			;Stop the previous registration.
+			UnregisterForUpdate()
+			;Fully process the last key pressed.
+			OnUpdate()
+		endIf	
+		If iMultiTap == 0		;This is the first time the key has been pressed.
+			WaitingKeyCode = KeyCode
+			iMultiTap = 1
+			self.RegisterForSingleUpdate(iEquip_MultiTapDelay.GetValueInt()) ;Tell the update function a key has been pressed.
+		ElseIf iMultiTap == 1		;This is the second time the key has been pressed
+			iMultiTap = 2
+			self.RegisterForSingleUpdate(iEquip_MultiTapDelay.GetValueInt()) ;Reset the update function so we can wait and make sure it's not a triple tap.
+		ElseIf iMultiTap == 2		;This is the third time the key has been pressed
+			iMultiTap = 3
+			RegisterForSingleUpdate(0.01)	;Basically, force update to immediately. No need to wait for more multi-taps.
+		EndIf
+	Else
+		WaitingKeyCode = KeyCode
+		iMultiTap = -1	;Use -1 for long-press.
+		RegisterForSingleUpdate(0.01)		;Basically, update immediately for long-press. No need to wait for multi-tap.
+	EndIf
+EndFunction
+
+Event OnUpdate()
+	If iMultiTap == 0	;There's nothing to process. Check this first to get out as fast as possible.
+		Return
+	If iMultiTap == -1	;Long press
+		DoLongPressActions(WaitingKeyCode)
+	ElseIf iMultiTap == 1  ;Single tap
+		DoSingleTapActions(WaitingKeyCode)
+	ElseIf iMultiTap == 2  ; Double tap
+		DoDoubleTapActions(WaitingKeyCode)
+	ElseIf iMultiTap == 3  ;Triple tap
+		DoTripleTapActions(WaitingKeyCode)
+	Else
+		;Somehow, we're updating without any of the above being true, so throw an error.
+		Debug.Trace("[modName] ([ScriptName]): OnUpdate called without a registered keypress type (" + iMultiTap + ") for key '" + GetKeyName(WaitingKeyCode) + "' (" + WaitingKeyCode + ").")
+	EndIf
+	WaitingKeyCode = 0
+	iMultiTap = 0
+EndEvent

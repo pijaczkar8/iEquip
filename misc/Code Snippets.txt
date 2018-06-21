@@ -1,0 +1,49 @@
+From WidgetBase.as
+
+// @Papyrus
+	public function tweenTo(a_newX: Number, a_newY: Number, a_duration: Number): Void
+	{
+		var newX: Number = GlobalFunc.Lerp(-_hudMetrics.hMin, _hudMetrics.hMax, 0, 1280, a_newX);
+		var newY: Number = GlobalFunc.Lerp(-_hudMetrics.vMin, _hudMetrics.vMax, 0, 720, a_newY);
+		var duration: Number = Math.max(0, a_duration || 0);
+
+		Tween.LinearTween(this, "_x", this._x, newX, duration, null);
+		Tween.LinearTween(this, "_y", this._y, newY, duration, null);
+	}
+
+	// @Papyrus
+	public function fadeTo(a_alpha: Number, a_duration: Number): Void
+	{
+		var duration: Number = Math.max(0, a_duration || 0);
+
+		Tween.LinearTween(this, "_alpha", this._alpha, a_alpha, duration, null);
+	}
+
+From SKI_FavoritesManager.psc
+
+int function FindFreeIndex(int[] a_itemIds, bool[] a_itemInvalidFlags, int offset)
+	int i = a_itemIds.Find(0,offset)
+	
+	; First try to find an entry that is 0
+	if (i >= offset && i < offset + 32)
+		return i
+	endIf
+
+	; Failed. Now try to claim an entry flagged as invalid.
+	i = offset
+	int n = offset + 32
+	while (i < n)
+		if (a_itemInvalidFlags[i])
+			return i
+		endIf
+
+		i += 1
+	endWhile
+	
+	return -1
+endFunction
+
+From hudmenu.as
+
+EnemyHealth_mc.BracketsInstance.RolloverNameInstance.textAutoSize = "shrink";
+
