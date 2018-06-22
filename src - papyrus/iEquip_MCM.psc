@@ -991,6 +991,12 @@ event OnPageReset(string page)
     debug.trace("iEquip MCM OnPageReset called")
     SetCursorFillMode(TOP_TO_BOTTOM)
     String nameStr = ""
+    if (page == "")
+        LoadCustomContent("iEquip/iEquip_splash.dds")
+        return
+    else
+        UnloadCustomContent()
+    endIf
     ;first page
     If (page == "General")
         enabledOID = AddToggleOption("iEquip On/Off", bEnabled)

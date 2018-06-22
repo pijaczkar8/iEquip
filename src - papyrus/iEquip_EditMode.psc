@@ -37,7 +37,6 @@ int[] Property EMCustomColors Auto
 
 int iItemToMoveToFront
 int iItemToSendToBack
-;int CurrentlyUpdating
 bool SettingDepth = false
 int WaitingForFlash
 int DepthA
@@ -110,6 +109,8 @@ function ToggleEditMode()
 		MoveStep = 10.0000
 		RotateStep = 15.0000
 		AlphaStep = 10.0000
+		UI.InvokeInt(WC.HUD_MENU, WC.WidgetRoot + ".setEditModeHighlightColor", EMHighlightColor)
+		UI.InvokeInt(WC.HUD_MENU, WC.WidgetRoot + ".setEditModeCurrentValueColor", EMCurrentValueColor)
 		Utility.SetINIFloat("fAutoVanityModeDelay:Camera", 9999999) ;Effectively disables Vanity Camera whilst in Edit Mode
 		if MCM.ShowMessages
 			debug.Notification("Enter Edit Mode")
@@ -141,15 +142,15 @@ endFunction
 
 Function StoreOpeningValues()
 	Int iIndex = 0
-	afWidget_CurX = new Float[13]
-	afWidget_CurY = new Float[13]
-	afWidget_CurS = new Float[13]
-	afWidget_CurR = new Float[13]
-	afWidget_CurA = new Float[13]
-	aiWidget_CurD = new Int[13]
-	asWidget_CurTA = new string[13]
-	aiWidget_CurTC = new int[13]
-	abWidget_CurV = new bool[13]
+	afWidget_CurX = new Float[17]
+	afWidget_CurY = new Float[17]
+	afWidget_CurS = new Float[17]
+	afWidget_CurR = new Float[17]
+	afWidget_CurA = new Float[17]
+	aiWidget_CurD = new Int[17]
+	asWidget_CurTA = new string[17]
+	aiWidget_CurTC = new int[17]
+	abWidget_CurV = new bool[17]
 	While iIndex < WC.asWidgetDescriptions.Length
 		afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
 		afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
@@ -193,6 +194,7 @@ function UpdateWidgets()
 	Int iIndex = 0
 	int[] args = new int[2]
 	SettingDepth = false
+	Utility.Wait(2)
 	self.RegisterForModEvent("iEquip_GotDepth", "onGotDepth")
 	While iIndex < WC.asWidgetDescriptions.Length
 		UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._x", WC.afWidget_X[iIndex])
@@ -201,13 +203,6 @@ function UpdateWidgets()
 		UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._yscale", WC.afWidget_S[iIndex])
 		UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._rotation", WC.afWidget_R[iIndex])
 		UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._alpha", WC.afWidget_A[iIndex])
-		if !bLeavingEditMode && !WC.isFirstLoad
-			debug.trace("iEquip EditMode UpdateWidgets - SettingDepth before entering while loop = " + SettingDepth as String)
-			while SettingDepth == true
-				Utility.Wait(0.01)
-			endWhile
-			SetDepthOrder(iIndex, 0)
-		endIf
 		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._visible", WC.abWidget_V[iIndex])
 		if isTextElement(iIndex)
 			int alignment = 0
@@ -223,6 +218,12 @@ function UpdateWidgets()
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", args)
 			args[1] = WC.aiWidget_TC[iIndex]
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
+		endIf
+		if !bLeavingEditMode && !WC.isFirstLoad && !WC.Loading
+			while SettingDepth == true
+				Utility.Wait(0.01)
+			endWhile
+			SetDepthOrder(iIndex, 0)
 		endIf
 		iIndex += 1
 	EndWhile
@@ -245,7 +246,6 @@ Function SetDepthOrder(int iIndex, int SetReset)
 	endIf
 	debug.trace("iEquip EM SendBehind = " + SendBehind as String)
 	if SendBehind != -1
-		;Utility.Wait(0.5)
 		WaitingForFlash = 2
 		debug.trace("iEquip EM WaitingForFlash = " + WaitingForFlash as String)
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".getCurrentItemDepth", iIndex)
@@ -378,13 +378,13 @@ function cycleEditModeElements(int nextPrev)
 	handleEditModeHighlights(0)
 	if nextPrev == 1
 		SelectedItem = SelectedItem + 1
-		if SelectedItem == 14
+		if SelectedItem == 18
 			SelectedItem = 1
 		endIf
 	else
 		SelectedItem = SelectedItem - 1
 		if SelectedItem == 0
-			SelectedItem = 13
+			SelectedItem = 17
 		endIf
 	endIf
 	int iIndex = SelectedItem - 1
@@ -489,10 +489,9 @@ Function MoveLeft()
 	debug.trace("iEquip EditMode MoveLeft called")
 	Int iIndex = SelectedItem - 1
 	If iIndex >= 0
-		Float fCurrentValue = WC.afWidget_X[iIndex]
 		WC.afWidget_X[iIndex] = WC.afWidget_X[iIndex] - MoveStep
-		Float fDuration = 1.5/360*MoveStep
-		TweenElement(0, fCurrentValue, WC.afWidget_X[iIndex], fDuration)
+		Float fDuration = 0.005*MoveStep
+		TweenElement(0, WC.afWidget_X[iIndex], fDuration)
 	EndIf
 EndFunction
 
@@ -500,10 +499,9 @@ Function MoveRight()
 	debug.trace("iEquip EditMode MoveRight called")
 	Int iIndex = SelectedItem - 1
 	If iIndex >= 0
-		Float fCurrentValue = WC.afWidget_X[iIndex]
 		WC.afWidget_X[iIndex] = WC.afWidget_X[iIndex] + MoveStep
-		Float fDuration = 1.5/360*MoveStep
-		TweenElement(0, fCurrentValue, WC.afWidget_X[iIndex], fDuration)
+		Float fDuration = 0.005*MoveStep
+		TweenElement(0, WC.afWidget_X[iIndex], fDuration)
 	EndIf
 EndFunction
 
@@ -511,10 +509,9 @@ Function MoveUp()
 	debug.trace("iEquip EditMode MoveUp called")
 	Int iIndex = SelectedItem - 1
 	If iIndex >= 0
-		Float fCurrentValue = WC.afWidget_Y[iIndex]
 		WC.afWidget_Y[iIndex] = WC.afWidget_Y[iIndex] - MoveStep
-		Float fDuration = 1.5/360*MoveStep
-		TweenElement(1, fCurrentValue, WC.afWidget_Y[iIndex], fDuration)
+		Float fDuration = 0.005*MoveStep
+		TweenElement(1, WC.afWidget_Y[iIndex], fDuration)
 	EndIf
 EndFunction
 
@@ -522,10 +519,9 @@ Function MoveDown()
 	debug.trace("iEquip EditMode MoveDown called")
 	Int iIndex = SelectedItem - 1
 	If iIndex >= 0
-		Float fCurrentValue = WC.afWidget_Y[iIndex]
 		WC.afWidget_Y[iIndex] = WC.afWidget_Y[iIndex] + MoveStep
-		Float fDuration = 1.5/360*MoveStep
-		TweenElement(1, fCurrentValue, WC.afWidget_Y[iIndex], fDuration)
+		Float fDuration = 0.005*MoveStep
+		TweenElement(1, WC.afWidget_Y[iIndex], fDuration)
 	EndIf
 EndFunction
 
@@ -533,10 +529,9 @@ Function ScaleUp()
 	debug.trace("iEquip EditMode ScaleUp called")
 	Int iIndex = SelectedItem - 1
 	If iIndex >= 0
-		Float fCurrentValue = WC.afWidget_S[iIndex]
 		WC.afWidget_S[iIndex] = WC.afWidget_S[iIndex] + MoveStep
 		Float fDuration = 0.01*MoveStep
-		TweenElement(2, fCurrentValue, WC.afWidget_S[iIndex], fDuration)
+		TweenElement(2, WC.afWidget_S[iIndex], fDuration)
 	EndIf
 	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[iIndex] as int) as String + "%")
 EndFunction
@@ -545,45 +540,78 @@ Function ScaleDown()
 	debug.trace("iEquip EditMode ScaleDown called")
 	Int iIndex = SelectedItem - 1
 	If iIndex >= 0
-		Float fCurrentValue = WC.afWidget_S[iIndex]
 		WC.afWidget_S[iIndex] = WC.afWidget_S[iIndex] - MoveStep
 		if WC.afWidget_S[iIndex] <= 30
 			WC.afWidget_S[iIndex] = 30
 		endIf
 		Float fDuration = 0.01*MoveStep
-		TweenElement(2, fCurrentValue, WC.afWidget_S[iIndex], fDuration)
+		TweenElement(2, WC.afWidget_S[iIndex], fDuration)
 	EndIf
 	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[iIndex] as int) as String + "%")
 EndFunction
 
-;/Function BringToFront()
-	debug.trace("iEquip EditMode BringToFront called")
+Function Rotate()
+	debug.trace("iEquip EditMode Rotate called")
 	Int iIndex = SelectedItem - 1
-	if !startBringToFront
-		iItemToMoveToFront = iIndex
-		debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[iIndex] + " in front of and press the Bring To Front key a second time")
-	else
-		self.RegisterForModEvent("iEquip_GotDepth", "onGotDepth")
-		WaitingForFlash = 2
-		iItemToSendToBack = iIndex
-		int[] args = new int[2]
-		args[0] = iItemToMoveToFront
-		args[1] = iItemToSendToBack
-		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".swapItemDepths", args)
-		CurrentlyUpdating = iItemToMoveToFront
-		UI.InvokeInt(HUD_MENU, WidgetRoot + ".getCurrentItemDepth", iItemToMoveToFront)
-		While WaitingForFlash > 1
-			Utility.Wait(0.1)
-		endWhile
-		CurrentlyUpdating = iItemToSendToBack
-		UI.InvokeInt(HUD_MENU, WidgetRoot + ".getCurrentItemDepth", iItemToSendToBack)
-		While WaitingForFlash > 0
-			Utility.Wait(0.1)
-		endWhile
-		self.UnRegisterForModEvent("iEquip_GotDepth")
-	endIf
-	startBringToFront = !startBringToFront
-endFunction/;
+	If iIndex >= 0
+		if RotateDirection == 1
+			WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] + RotateStep
+			if WC.afWidget_R[iIndex] >= 360
+				WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] - 360
+			endIf
+		else
+			WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] - RotateStep
+			if WC.afWidget_R[iIndex] < 0
+				WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] + 360
+			endIf
+		endIf
+		if WC.afWidget_R[iIndex] == 360
+			WC.afWidget_R[iIndex] = 0
+		endIf
+		Rotation = WC.afWidget_R[iIndex] as int
+		if Rotation > 180
+			Rotation = Rotation - 360
+		endIf
+		Float fDuration = 0.005*RotateStep
+		if fDuration < 0.125
+			fDuration = 0.125
+		endIf
+		TweenElement(3, Rotation, fDuration)
+	EndIf
+	;Rotation = WC.afWidget_R[iIndex] as int
+	;if Rotation > 180
+	;	Rotation = Rotation - 360
+	;endIf
+	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", Rotation as String + " degrees")
+EndFunction
+
+Function SetAlpha()
+	debug.trace("iEquip EditMode SetAlpha called")
+	Int iIndex = SelectedItem - 1
+	If iIndex >= 0
+		WC.afWidget_A[iIndex] = WC.afWidget_A[iIndex] - AlphaStep
+		if WC.afWidget_A[iIndex] <= 0
+			WC.afWidget_A[iIndex] = 100
+		endIf
+		Float fDuration = 0.01*AlphaStep
+		TweenElement(4, WC.afWidget_A[iIndex], fDuration)
+	EndIf
+	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iIndex] as int) as String + "%")
+EndFunction
+
+Function TweenElement(float Attribute, float targetValue, float duration)
+	;Calls tweenIt in iEquipWidget.as to animate changes in position, scale, rotation and alpha
+	;tweenIt now utilises Greensock.TweenLite rather than mx.tween
+	debug.trace("iEquip EditMode TweenElement called on " + Element)
+	float[] args = new float[3]
+	;0 = Attribute to change - 0 = _x, 1 = _y, 2 = _xscale/_yscale, 3 = _rotation, 4 = _alpha
+	;1 = Target value - sent from calling function as value after increment applied
+	;2 = Duration in seconds for tween to take
+	args[0] = Attribute
+	args[1] = targetValue
+	args[2] = duration
+	UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenIt", args)
+EndFunction
 
 Function BringToFront()
 	debug.trace("iEquip EditMode BringToFront called")
@@ -605,73 +633,6 @@ Function BringToFront()
 	startBringToFront = !startBringToFront
 endFunction
 
-;/Event onGotDepth(String asEventName, String asStringArg, Float afNumArg, Form akSender)
-	If(asEventName == "iEquip_GotDepth")
-		WC.afWidget_D[CurrentlyUpdating] = afNumArg
-		WaitingForFlash -= 1
-	endIf
-endEvent/;
-
-Function Rotate()
-	debug.trace("iEquip EditMode Rotate called")
-	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
-		Float fCurrentValue = WC.afWidget_R[iIndex]
-		if RotateDirection == 1
-			WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] + RotateStep
-			if WC.afWidget_R[iIndex] >= 360
-				WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] - 360
-			endIf
-		else
-			WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] - RotateStep
-			if WC.afWidget_R[iIndex] < 0
-				WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] + 360
-			endIf
-		endIf
-		if WC.afWidget_R[iIndex] == 360
-			WC.afWidget_R[iIndex] = 0
-		endIf
-		;UI.SetFloat(HUD_MENU, Element + "._rotation", WC.afWidget_R[iIndex])
-		Float fDuration = 1/360*RotateStep
-		TweenElement(4, fCurrentValue, WC.afWidget_R[iIndex], fDuration)
-	EndIf
-	Rotation = WC.afWidget_R[iIndex] as int
-	if Rotation > 180
-		Rotation = Rotation - 360
-	endIf
-	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", Rotation as String + " degrees")
-EndFunction
-
-Function SetAlpha()
-	debug.trace("iEquip EditMode SetAlpha called")
-	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
-		Float fCurrentValue = WC.afWidget_A[iIndex]
-		WC.afWidget_A[iIndex] = WC.afWidget_A[iIndex] - AlphaStep
-		if WC.afWidget_A[iIndex] <= 0
-			WC.afWidget_A[iIndex] = 100
-		endIf
-		Float fDuration = 0.01*AlphaStep
-		TweenElement(5, fCurrentValue, WC.afWidget_A[iIndex], fDuration)
-	EndIf
-	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iIndex] as int) as String + "%")
-EndFunction
-
-Function TweenElement(float Attribute, float startValue, float targetValue, float duration)
-	;Calls tweenIt in iEquipWidget.as to animate changes in position, scale, rotation and alpha
-	debug.trace("iEquip EditMode TweenElement called on " + Element)
-	float[] args = new float[3]
-	;0 = Attribute to change - 0 = _x, 1 = _y, 2 = _xscale, 3 = _yscale but use 2 as tweenIt will do both, 4 = _rotation, 5 = _alpha
-	;1 = Starting value - sent from calling function, taken as value before increment applied
-	;2 = Target value - sent from calling function as value after increment applied
-	;3 = Duration in seconds for tween to take
-	args[0] = Attribute
-	;args[1] = startValue
-	args[1] = targetValue
-	args[2] = duration
-	UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenIt", args)
-EndFunction
-
 Function SetTextAlignment()
 	debug.trace("iEquip EditMode SetTextAlignment called")
 	Int iIndex = SelectedItem - 1
@@ -690,9 +651,9 @@ Function SetTextAlignment()
 		int[] args = new int[2]
 		args[0] = iIndex
 		args[1] = alignment
-		tweenElement(5, WC.afWidget_A[iIndex], 0, 0.15) ;Fade out before changing alignment
+		tweenElement(5, 0, 0.15) ;Fade out before changing alignment
 		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", args)
-		tweenElement(5, 0, WC.afWidget_A[iIndex], 0.15) ;Fade back in
+		tweenElement(5, WC.afWidget_A[iIndex], 0.15) ;Fade back in
 	EndIf
 	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", WC.asWidget_TA[iIndex] + " aligned")
 EndFunction
@@ -746,8 +707,15 @@ function showEMPresetListMenu()
             WC.LoadWidgetPreset(SelectedPreset + FileExtWP)
         elseIf iLoadDelete == 1
             DeleteWidgetPreset(SelectedPreset + FileExtWP)
+        elseIf iLoadDelete == 2 ;Delete preset cancelled, recall preset list
+        	RecallPresetMenu()
         endIf
     endIf
+endFunction
+
+function RecallPresetMenu()
+	Utility.Wait(0.05)
+	showEMPresetListMenu()
 endFunction
 
 function updateEMPresetList()
@@ -962,7 +930,7 @@ Function ResetItem()
 					return
 				endIf
 			endIf
-			tweenElement(5, WC.afWidget_A[iIndex], 0, 0.15)
+			tweenElement(5, 0, 0.15)
 			Utility.Wait(0.15)
 		endIf
 		WC.afWidget_X[iIndex] = WC.afWidget_DefX[iIndex]
@@ -1005,7 +973,7 @@ Function ResetItem()
 			ResetChildren(iIndex)
 		endIf
 		if !ResettingChildren
-			tweenElement(5, 0, WC.afWidget_A[iIndex], 0.2)
+			tweenElement(5, WC.afWidget_A[iIndex], 0.2)
 		endIf
 		If MCM.ShowMessages && !isParent(iIndex) && !ResettingChildren
 			debug.Notification("The " + WC.asWidgetDescriptions[iIndex] + " has been reset")

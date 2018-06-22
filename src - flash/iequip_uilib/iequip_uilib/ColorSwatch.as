@@ -6,14 +6,10 @@ import gfx.ui.NavigationCode
 import skyui.util.GlobalFunctions;
 import skyui.components.colorswatch.ColorSquare;
 
-import iEquip_uilib.iEquipColorDialog;
-
-import gfx.events.EventDispatcher;
+//import gfx.events.EventDispatcher;
 
 class iEquip_uilib.ColorSwatch extends MovieClip
 {
-	public var colorDialog: iEquipColorDialog;
-
   /* STAGE ELEMENTS */
   
 	public var background: MovieClip;
@@ -33,13 +29,14 @@ class iEquip_uilib.ColorSwatch extends MovieClip
 	public var colorSize: Number = 25;
 	public var colorList: Array;
 	public var customColorList: Array;
+	public var newIndex: Number
   
   /* INITIALIZATION */
 
 	public function ColorSwatch()
 	{
 		super();
-		EventDispatcher.initialize(this);
+		//EventDispatcher.initialize(this);
 
 		if (customColorList == null) {
 			customColorList = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
@@ -118,7 +115,7 @@ class iEquip_uilib.ColorSwatch extends MovieClip
 			var currentButtonIdx: Number  = _buttonGroup.indexOf(_buttonGroup.selectedButton);
 
 			var maxIndex: Number = _buttonGroup.length - 1;
-			var newIndex: Number = currentButtonIdx;
+			newIndex = currentButtonIdx;
 
 			var row: Number = Math.floor(currentButtonIdx/_colorCols);
 			var col: Number = currentButtonIdx % _colorCols;
@@ -172,7 +169,6 @@ class iEquip_uilib.ColorSwatch extends MovieClip
 
 			if (newIndex != currentButtonIdx){
 				_buttonGroup.setSelectedButton(_buttonGroup.getButtonAt(newIndex));
-				colorDialog.updateDefaultButtonLabel(newIndex);
 			}
 		}
 		return handledInput;
