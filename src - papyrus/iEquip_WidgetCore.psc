@@ -46,7 +46,6 @@ Bool[] Property abWidget_DefV Auto
 Bool[] Property abWidget_isParent Auto
 Bool[] Property abWidget_isText Auto
 Bool[] Property abWidget_isBg Auto
-;Bool Property visible = false Auto
 
 Int fadeWaitsQueued = 0
 Int potionCount
@@ -60,6 +59,7 @@ Bool dataSet = false
 Bool Property isFirstLoad = true Auto
 Bool isFirstEnabled = true
 Bool WaitingForFlash = false
+Bool Property Loading = false Auto
 
 String[] itemNames
 
@@ -86,6 +86,7 @@ Event OnWidgetLoad()
 	MCM.iEquip_Reset = false
 	EM.SelectedItem = 0
 	EM.isEditMode = false
+	Loading = true
 	; Don't call the parent event since it will display the widget regardless of the "Shown" property.
     ;parent.OnWidgetLoad()
     repushDataToFlash()
@@ -115,6 +116,7 @@ Event OnWidgetLoad()
 		showWidget()
 		UI.invokeBool(HUD_MENU, WidgetRoot + ".setVisible", iEquip_Enabled)
 	endIf
+	Loading = False
 	debug.trace("iEquip WidgetCore OnWidgetLoad finished")
 endEvent
 
@@ -135,7 +137,7 @@ EndEvent
 ; clears any keys registered in previous save and then reregisters the gameplay hotkeys.
 function updateConfig()
 	; Cleanup
-	EM.updateWidgets()
+	EM.UpdateWidgets()
 	UnregisterForAllKeys()
 	
 	;/if(_controlMode == "always" && _shown)
@@ -239,39 +241,48 @@ endFunction
 
 Function PopulateWidgetArrays()
 	debug.trace("iEquip WidgetCore PopulateWidgetArrays called")
-	asWidgetDescriptions = new String[13]
-	asWidgetElements = new String[13]
-	asWidget_TA = new String[13]
-	asWidgetGroup = new String[13]
+	asWidgetDescriptions = new String[17]
+	asWidgetElements = new String[17]
+	asWidget_TA = new String[17]
+	asWidgetGroup = new String[17]
 	
-	afWidget_X = new Float[13]
-	afWidget_Y = new Float[13]
-	afWidget_S = new Float[13]
-	afWidget_R = new Float[13]
-	afWidget_A = new Float[13]
+	afWidget_X = new Float[17]
+	afWidget_Y = new Float[17]
+	afWidget_S = new Float[17]
+	afWidget_R = new Float[17]
+	afWidget_A = new Float[17]
 	
-	aiWidget_D = new Int[13] ;Stored the index value of any Bring To Front target element ie the element to be sent behind
-	aiWidget_TC = new Int[13]
+	aiWidget_D = new Int[17] ;Stored the index value of any Bring To Front target element ie the element to be sent behind
+	aiWidget_TC = new Int[17]
 	
-	abWidget_V = new bool[13]
-	abWidget_isParent = new bool[13]
-	abWidget_isText = new bool[13]
-	abWidget_isBg = new bool[13]
+	abWidget_V = new bool[17]
+	abWidget_isParent = new bool[17]
+	abWidget_isText = new bool[17]
+	abWidget_isBg = new bool[17]
 
-	
+	;Main sub-widgets
 	AddWidget("Shout Widget", ".ShoutWidget", 0, 0, 0, 0, 0, -1, 0, None, true, true, false, false, "Shout")
 	AddWidget("Left Hand Widget", ".LeftHandWidget", 0, 0, 0, 0, 0, 0, 0, None, true, true, false, false, "Left")
 	AddWidget("Right Hand Widget", ".RightHandWidget", 0, 0, 0, 0, 0, 1, 0, None, true, true, false, false, "Right")
 	AddWidget("Potion Widget", ".PotionWidget", 0, 0, 0, 0, 0, 2, 0, None, true, true, false, false, "Potion")
-	AddWidget("Shout Icon", ".ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, false, "Shout")
-	AddWidget("Shout Name", ".ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 4, 0xFFFFFF, "Center", true, false, true, false, "Shout")
-	AddWidget("Left Hand Icon", ".LeftHandWidget.leftIcon_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, false, "Left")
-	AddWidget("Left Hand Item Name", ".LeftHandWidget.leftName_mc", 0, 0, 0, 0, 0, 6, 0xFFFFFF, "Left", true, false, true, false, "Left")
-	AddWidget("Right Hand Icon", ".RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, false, "Right")
-	AddWidget("Right Hand Item Name", ".RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 8, 0xFFFFFF, "Right", true, false, true, false, "Right")
-	AddWidget("Potion Icon", ".PotionWidget.potionIcon_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, false, "Potion")
-	AddWidget("Potion Name", ".PotionWidget.potionName_mc", 0, 0, 0, 0, 0, 10, 0xFFFFFF, "Center", true, false, true, false, "Potion")
-	AddWidget("Potion Count", ".PotionWidget.potionCount_mc", 0, 0, 0, 0, 0, 11, 0xFFFFFF, "Center", true, false, true, false, "Potion")
+	;Shout widget components
+	AddWidget("Shout Background", ".ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Shout")
+	AddWidget("Shout Icon", ".ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 4, 0, None, true, false, false, false, "Shout")
+	AddWidget("Shout Name", ".ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 5, 0xFFFFFF, "Center", true, false, true, false, "Shout")
+	;Left Hand widget components
+	AddWidget("Left Hand Background", ".LeftHandWidget.leftBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Left")
+	AddWidget("Left Hand Icon", ".LeftHandWidget.leftIcon_mc", 0, 0, 0, 0, 0, 7, 0, None, true, false, false, false, "Left")
+	AddWidget("Left Hand Item Name", ".LeftHandWidget.leftName_mc", 0, 0, 0, 0, 0, 8, 0xFFFFFF, "Left", true, false, true, false, "Left")
+	;Right Hand widget components
+	AddWidget("Right Hand Background", ".RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Right")
+	AddWidget("Right Hand Icon", ".RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 10, 0, None, true, false, false, false, "Right")
+	AddWidget("Right Hand Item Name", ".RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 11, 0xFFFFFF, "Right", true, false, true, false, "Right")
+	;Potion widget components
+	AddWidget("Potion Background", ".PotionWidget.potionBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Potion")
+	AddWidget("Potion Icon", ".PotionWidget.potionIcon_mc", 0, 0, 0, 0, 0, 13, 0, None, true, false, false, false, "Potion")
+	AddWidget("Potion Name", ".PotionWidget.potionName_mc", 0, 0, 0, 0, 0, 14, 0xFFFFFF, "Center", true, false, true, false, "Potion")
+	AddWidget("Potion Count", ".PotionWidget.potionCount_mc", 0, 0, 0, 0, 0, 15, 0xFFFFFF, "Center", true, false, true, false, "Potion")
+	
 	debug.trace("iEquip WidgetCore PopulateWidgetArrays finished")
 EndFunction
 
@@ -305,14 +316,14 @@ EndFunction
 
 function getAndStoreDefaultWidgetValues()
 	debug.trace("iEquip WidgetCore getAndStoreDefaultWidgetValues called")
-	afWidget_DefX = new Float[13]
-	afWidget_DefY = new Float[13]
-	afWidget_DefS = new Float[13]
-	afWidget_DefR = new Float[13]
-	afWidget_DefA = new Float[13]
-	aiWidget_DefD = new Int[13]
-	asWidget_DefTA = new String[13]
-	abWidget_DefV = new bool[13]
+	afWidget_DefX = new Float[17]
+	afWidget_DefY = new Float[17]
+	afWidget_DefS = new Float[17]
+	afWidget_DefR = new Float[17]
+	afWidget_DefA = new Float[17]
+	aiWidget_DefD = new Int[17]
+	asWidget_DefTA = new String[17]
+	abWidget_DefV = new bool[17]
 	Int iIndex = 0
 	String Element = ""
 	While iIndex < asWidgetDescriptions.Length
@@ -365,7 +376,7 @@ function LoadWidgetPreset(string SelectedPreset)
 	Int jasWidget_TA = JMap.getObj (jLoadPreset, "_TA")
 	Int jabWidget_V = JMap.getObj (jLoadPreset, "_V")
 	
-	Int[] abWidget_V_temp = new Int[13]
+	Int[] abWidget_V_temp = new Int[17]
 
 	JArray.writeToFloatPArray (jafWidget_X, afWidget_X, 0, -1, 0, 0)
 	JArray.writeToFloatPArray (jafWidget_Y, afWidget_Y, 0, -1, 0, 0)

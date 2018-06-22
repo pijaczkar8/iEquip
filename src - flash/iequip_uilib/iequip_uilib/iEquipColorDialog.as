@@ -17,7 +17,7 @@ class iEquip_uilib.iEquipColorDialog extends MovieClip
   /* PRIVATE VARIABLES */
 
   	private var requestDataId_: Number;
-	
+	private var startColor: Number;
 	private var cancelControls_: Object;
 	private var defaultControls_: Object;
 	private var customControls_: Object;
@@ -92,8 +92,7 @@ class iEquip_uilib.iEquipColorDialog extends MovieClip
 		cancelButtonPanel.updateButtons();
 		
 		defaultButtonPanel.clearButtons();
-		var currentIndex: Number = colorSwatch.colorList.indexOf(currentColor_);
-		if (currentIndex > 27){
+		if (startColor > 27){
 			var defaultButton = defaultButtonPanel.addButton({text: "Delete", controls: defaultControls_});
 			defaultButton.addEventListener("press", this, "onDeletePress");
 		} else {
@@ -113,10 +112,10 @@ class iEquip_uilib.iEquipColorDialog extends MovieClip
 		acceptButtonPanel.updateButtons();
 	}
 
-	public function updateDefaultButtonLabel(currentIndex: Number): Void
+	public function updateDefaultButtonLabel(): Void
 	{
 		defaultButtonPanel.clearButtons();
-		if (currentIndex > 27){
+		if (colorSwatch.newIndex > 27){
 			var defaultButton = defaultButtonPanel.addButton({text: "Delete", controls: defaultControls_});
 			defaultButton.addEventListener("press", this, "onDeletePress");
 		} else {
@@ -151,6 +150,7 @@ class iEquip_uilib.iEquipColorDialog extends MovieClip
 		
 		// Select initial color
 		colorSwatch.selectedColor = currentColor;
+		startColor = colorSwatch.colorList.indexOf(currentColor);
 
 		// Focus
 		FocusHandler.instance.setFocus(colorSwatch, 0);
@@ -162,6 +162,8 @@ class iEquip_uilib.iEquipColorDialog extends MovieClip
 	// @GFx
 	public function handleInput(details, pathToFocus): Boolean
 	{
+		updateDefaultButtonLabel()
+
 		var nextClip = pathToFocus.shift();
 		if (nextClip.handleInput(details, pathToFocus))
 			return true;
@@ -181,7 +183,11 @@ class iEquip_uilib.iEquipColorDialog extends MovieClip
 				return true;
 			} else if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_X || details.skseKeycode == 19) {
 				GameDelegate.call("PlaySound", ["UIMenuBladeCloseSD"]);
-				onDefaultPress();
+				if (colorSwatch.newIndex > 27){
+					onDeletePress();
+				} else {
+					onDefaultPress();
+				}
 				return true;
 			}
 		}
@@ -207,7 +213,7 @@ class iEquip_uilib.iEquipColorDialog extends MovieClip
 	{
 		var currentColor: Number = colorSwatch.selectedColor;
 		var currentIndex: Number = colorSwatch.colorList.indexOf(currentColor);
-		skse.SendModEvent("iEquip_colorMenuDefault", null, currentIndex - 28);
+		skse.SendModEvent("iEquip_colorMenuDelete", null, currentIndex - 28);
 		skse.CloseMenu("CustomMenu");
 	}
 

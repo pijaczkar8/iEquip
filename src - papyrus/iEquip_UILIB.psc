@@ -171,9 +171,11 @@ Event OnListMenuDeletePreset(String asEventName, String asStringArg, Float afInp
 	If(asEventName == "iEquip_listMenuDeletePreset")
 		int iButton = iEquip_ConfirmDeletePreset.Show() ;Add messagebox to check if user wants to reset parent and all child elements or not, return out if not
         if iButton != 1
+        	iInput = 0
+        	iLoadDelete = 2
+        	bMenuOpen = False
            return
         endIf
-        ;UI.Invoke("CustomMenu", "_root.iEquipListDialog.confirmDelete")
 		iInput = afInput as Int
 		debug.trace("iEquip_UILIB OnListMenuDeletePreset: iInput = " + iInput as String)
 		debug.notification("iEquip_UILIB OnListMenuDeletePreset: iInput = " + iInput as String)
@@ -234,7 +236,7 @@ Function ColorMenu_Open(Form akClient) Global
 	akClient.RegisterForModEvent("iEquip_colorMenuOpen", "OnColorMenuOpen")
 	akClient.RegisterForModEvent("iEquip_colorMenuCancel", "OnColorMenuCancel")
 	akClient.RegisterForModEvent("iEquip_colorMenuAccept", "OnColorMenuAccept")
-	akClient.RegisterForModEvent("iEquip_colorMenuDefault", "OnColorMenuDefault")
+	akClient.RegisterForModEvent("iEquip_colorMenuDelete", "OnColorMenuDelete")
 	akClient.RegisterForModEvent("iEquip_colorMenuCustom", "OnColorMenuCustom")
 	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_ColorMenu")
 	debug.trace("iEquip UILIB ColorMenu_Open finish")
@@ -249,8 +251,6 @@ EndEvent
 
 Function ColorMenu_SetData(String asTitle, Int aiStartColor, Int aiDefaultColor, Int[] aaCustomColors) Global
 	debug.trace("iEquip UILIB ColorMenu_SetData start")
-	
-	UI.InvokeNumber("CustomMenu", "_root.iEquipColorDialog.setPlatform", (Game.UsingGamepad() as Int))
 	Int iIndex = 0
 	Int iIndex2 = 0
 	Int[] args = new Int[2]
@@ -270,6 +270,7 @@ Function ColorMenu_SetData(String asTitle, Int aiStartColor, Int aiDefaultColor,
 		UICallback.PushInt(iHandle, aiDefaultColor)
 		UICallback.Send(iHandle)
 	EndIf
+	UI.InvokeNumber("CustomMenu", "_root.iEquipColorDialog.setPlatform", (Game.UsingGamepad() as Int))
 	debug.trace("iEquip UILIB ColorMenu_SetData finished")
 EndFunction
 
@@ -289,10 +290,10 @@ Event OnColorMenuCustom(String asEventName, String asStringArg, Float afNumArg, 
 	EndIf
 EndEvent
 
-Event OnColorMenuDefault(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+Event OnColorMenuDelete(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;Event only called if Default has been pressed to reset a custom colour slot
-	debug.trace("iEquip UILIB OnColorMenuDefault start")
-	If(asEventName == "iEquip_colorMenuDefault")
+	debug.trace("iEquip UILIB OnColorMenuDelete start")
+	If(asEventName == "iEquip_colorMenuDelete")
 		Int ArrayIndexToDelete = afNumArg as Int
 		bMenuOpen = False
 		EM.updateCustomColors(1, 0, ArrayIndexToDelete)
@@ -312,6 +313,6 @@ Function ColorMenu_Release(Form akClient) Global
 	akClient.UnregisterForModEvent("iEquip_colorMenuCancel")
 	akClient.UnregisterForModEvent("iEquip_colorMenuAccept")
 	akClient.UnregisterForModEvent("iEquip_colorMenuCustom")
-	akClient.UnregisterForModEvent("iEquip_colorMenuDefault")
+	akClient.UnregisterForModEvent("iEquip_colorMenuDelete")
 EndFunction
 

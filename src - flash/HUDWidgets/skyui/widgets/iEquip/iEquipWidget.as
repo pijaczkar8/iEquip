@@ -22,6 +22,12 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var ShoutWidget: MovieClip;
 	public var PotionWidget: MovieClip;
 	public var EditModeGuide: MovieClip;
+
+	//Widget background MovieClips
+	public var leftBg_mc: MovieClip;
+	public var rightBg_mc: MovieClip;
+	public var shoutBg_mc: MovieClip;
+	public var potionBg_mc: MovieClip;
 	
 	//Widget icon holder MovieClips
 	public var leftIcon_mc: MovieClip;
@@ -138,6 +144,17 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		MAX_QUEUE_SIZE = 7;
 		queueIndex = new Array(0,0,0,0);
 		
+		//Set up the background MovieClips
+		leftBg_mc = LeftHandWidget.leftBg_mc;
+		rightBg_mc = RightHandWidget.rightBg_mc;
+		shoutBg_mc = ShoutWidget.shoutBg_mc;
+		potionBg_mc = PotionWidget.potionBg_mc;
+		//Backgrounds are hidden by default
+		leftBg_mc._visible = false;
+		rightBg_mc._visible = false;
+		shoutBg_mc._visible = false;
+		potionBg_mc._visible = false;
+
 		//Set up the icon and text field holder MovieClips
 		leftIcon_mc = LeftHandWidget.leftIcon_mc;
 		rightIcon_mc = RightHandWidget.rightIcon_mc;
@@ -227,8 +244,8 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		potionCount.textAutoSize = "shrink";
 		
 		//Set up arrays of MovieClips and attributes and two tweens for use in tweenIt()
-		clipArray = new Array(ShoutWidget, LeftHandWidget, RightHandWidget, PotionWidget, shoutIcon_mc, shoutName_mc, leftIcon_mc, leftName_mc, rightIcon_mc, rightName_mc, potionIcon_mc, potionName_mc, potionCount_mc);
-		textElementArray = new Array(null, null,null, null, null, shoutName, null, leftName, null, rightName, null, potionName, potionCount);
+		clipArray = new Array(ShoutWidget, LeftHandWidget, RightHandWidget, PotionWidget, shoutBg_mc, shoutIcon_mc, shoutName_mc, leftBg_mc, leftIcon_mc, leftName_mc, rightBg_mc, rightIcon_mc, rightName_mc, potionBg_mc, potionIcon_mc, potionName_mc, potionCount_mc);
+		textElementArray = new Array(null, null, null, null, null, null, shoutName, null, null, leftName, null, null, rightName, null, null, potionName, potionCount);
 		//attributeArray = new Array("_x", "_y", "_xscale", "_yscale", "_rotation", "_alpha");
 		//currTween = new Tween();
 		//currTween2 = new Tween();
@@ -653,10 +670,10 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			case 2:
 				TweenLite.to(clip, secs, {_xscale:endValue, _yscale:endValue, ease:Quad.easeOut});
 				break
-			case 4:
-				TweenLite.to(clip, secs, {_rotation:endValue});
+			case 3:
+				TweenLite.to(clip, secs, {_rotation:endValue, ease:Quad.easeOut});
 				break
-			case 5:
+			case 4:
 				TweenLite.to(clip, secs, {_alpha:endValue, ease:Quad.easeOut});
 				break
 			}
