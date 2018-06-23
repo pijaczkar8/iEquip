@@ -78,7 +78,7 @@ Bool Property BackgroundsShown
 	EndFunction
 	
 	Function Set(Bool b)
-		If (Ready)
+		If (WC.Ready)
 			enableBackgrounds = b
             Int iIndex = 0
             While iIndex < WC.asWidgetDescriptions.Length

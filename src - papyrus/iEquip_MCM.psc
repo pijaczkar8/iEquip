@@ -1147,7 +1147,7 @@ event OnOptionSelect(int option)
     elseIf(option == enableBackgroundsOID)
         bEnableBackgrounds = !bEnableBackgrounds
         SetToggleOptionValue(enableBackgroundsOID, bEnableBackgrounds)
-        EM.ToggleBackgrounds = bEnableBackgrounds
+        EM.BackgroundsShown = bEnableBackgrounds
     elseIf(option == widgetVisTogglesHotkeyOID)
         bWidgetVisTogglesHotkey = !bWidgetVisTogglesHotkey
         SetToggleOptionValue(widgetVisTogglesHotkeyOID, bWidgetVisTogglesHotkey)
