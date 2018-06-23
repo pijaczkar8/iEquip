@@ -51,6 +51,7 @@ int fadeInDurationOID
 int fadeWaitOID
 ;Widget Options
 int enableBackgroundsOID
+int widgetVisTogglesHotkeyOID
 ;mcm keymap option id's
 int keyOID_SHOUT
 int keyOID_POTION
@@ -109,6 +110,8 @@ bool ASSIGNMENT_MODE = false
 bool mustBeFavorited = false
 ;Master switch for widget backgrounds. If enabled backgrounds can be shown/hidden/manipulated in Edit Mode, if disabled they are ignored entirely
 bool bEnableBackgrounds = false
+;MCM switch to disable certain elements of hotkey handling if widget is hidden
+bool bWidgetVisTogglesHotkey = true
 ;MCM switch to enable/disable the Bring To Front feature in Edit Mode.  NB - Turning this on results in longer preset load times and delay entering and leaving Edit Mode
 bool bEnableBringToFront = false
 ;Holds the value for the amount which time will be slowed in Edit Mode
@@ -1016,6 +1019,7 @@ event OnPageReset(string page)
         AddHeaderOption("General settings")
         mustBeFavoritedOID = AddToggleOption("Only Favorite Items", mustBeFavorited)
         enableBackgroundsOID = AddToggleOption("Enable widget backgrounds", bEnableBackgrounds)
+        widgetVisTogglesHotkeyOID = AddToggleOption("Disable hotkey when widget hidden", bWidgetVisTogglesHotkey)
         ;move cursor to top right position
         SetCursorPosition(1)
         ;widget fade variable sliders
@@ -1144,6 +1148,10 @@ event OnOptionSelect(int option)
         bEnableBackgrounds = !bEnableBackgrounds
         SetToggleOptionValue(enableBackgroundsOID, bEnableBackgrounds)
         EM.ToggleBackgrounds = bEnableBackgrounds
+    elseIf(option == widgetVisTogglesHotkeyOID)
+        bWidgetVisTogglesHotkey = !bWidgetVisTogglesHotkey
+        SetToggleOptionValue(widgetVisTogglesHotkeyOID, bWidgetVisTogglesHotkey)
+        KH.WidgetVisTogglesHotkey = bWidgetVisTogglesHotkey
     elseIf(option == resetOID)
         ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
         ShowMessage("Please fully exit the MCM so we can clean up your mess...", false, "OK")
@@ -1201,9 +1209,12 @@ event OnOptionDefault(int option)
     elseIf (option == enableBringToFrontOID)
         bEnableBringToFront = false ; default value
         SetToggleOptionValue(enableBringToFrontOID, bEnableBringToFront)
-     elseIf (option == enableBackgroundsOID)
+    elseIf (option == enableBackgroundsOID)
         bEnableBackgrounds = false ; default value
         SetToggleOptionValue(enableBackgroundsOID, bEnableBackgrounds)
+    elseIf (option == widgetVisTogglesHotkeyOID)
+        bWidgetVisTogglesHotkey = true ; default value
+        SetToggleOptionValue(widgetVisTogglesHotkeyOID, bWidgetVisTogglesHotkey)
     elseIf (option == keyOID_SHOUT)
         KH.iEquip_shoutKey = 45 ; default value
         SetKeyMapOptionValue(keyOID_SHOUT, KH.iEquip_shoutKey)
@@ -1341,6 +1352,9 @@ event OnOptionHighlight(int option)
     ;Show widget backgrounds
     elseIf (option == enableBackgroundsOID)
         SetInfoText("Enables backgrounds for each of the widgets.  Once enabled backgrounds are available in Edit Mode and can be shown, hidden and manipulated like all other elements\nDefault is Disabled")
+    ;Set individual hotkeys to be blocked for certain actions when sub widget hidden
+    elseIf (option == widgetVisTogglesHotkeyOID)
+        SetInfoText("When this setting is enabled certain individual hotkey actions are blocked when each of the widgets are hidden\nDefault is Enabled")
     ;reset/;
     elseIf (option == resetOID)
         SetInfoText("Selecting this will nuke any changes you have made to iEquip and fully restore the default layout")

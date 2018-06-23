@@ -8,6 +8,8 @@ iEquip_MCM Property MCM Auto
 Int WaitingKeyCode = 0
 Int iMultiTap = 0
 
+Bool Property WidgetVisTogglesHotkey = True Auto
+
 Float Property iEquip_LongPressDelay = 0.5 Auto
 Float Property iEquip_ExtraLongPressDelay = 1.0 Auto
 Float Property iEquip_MultiTapDelay = 0.3 Auto
@@ -152,36 +154,43 @@ Function DoSingleTapActions(Int KeyCode)
 		elseIf KeyCode == iEquip_EditDiscardKey
 			EM.DiscardChanges()
 		endIf
+
+	elseIf KeyCode == iEquip_shoutKey
+		if (WidgetVisTogglesHotkey && WC.abWidget_V[1]) || !WidgetVisTogglesHotkey
+    		MCM.cyclePower()
+	        args = MCM.GetItemIconArgs(2)
+	        WC.setItemData(MCM.getCurrQItemName(2), args)
+	        WC.shoutIndex = MCM._currQIndices[2]
+	    endIf
 		
 	elseIf KeyCode == iEquip_leftKey
-        MCM.cycleHand(0)
-        args = MCM.GetItemIconArgs(0)
-        WC.setItemData(MCM.getCurrQItemName(0), args)
-        WC.leftIndex = MCM._currQIndices[0]
+		if (WidgetVisTogglesHotkey && WC.abWidget_V[2]) || !WidgetVisTogglesHotkey
+	        MCM.cycleHand(0)
+	        args = MCM.GetItemIconArgs(0)
+	        WC.setItemData(MCM.getCurrQItemName(0), args)
+	        WC.leftIndex = MCM._currQIndices[0]
+	    endIf
 
 	elseIf KeyCode == iEquip_rightKey
-        MCM.cycleHand(1)
-        args = MCM.GetItemIconArgs(1)
-        WC.setItemData(MCM.getCurrQItemName(1), args)
-        WC.rightIndex = MCM._currQIndices[1]
-	
-	elseIf KeyCode == iEquip_shoutKey
-        MCM.cyclePower()
-        args = MCM.GetItemIconArgs(2)
-        WC.setItemData(MCM.getCurrQItemName(2), args)
-        WC.shoutIndex = MCM._currQIndices[2]
+		if (WidgetVisTogglesHotkey && WC.abWidget_V[3]) || !WidgetVisTogglesHotkey
+	        MCM.cycleHand(1)
+	        args = MCM.GetItemIconArgs(1)
+	        WC.setItemData(MCM.getCurrQItemName(1), args)
+	        WC.rightIndex = MCM._currQIndices[1]
+		endIf
 
 	elseIf KeyCode == iEquip_potionKey
-		MCM.cyclePotion()
-        args = MCM.GetItemIconArgs(3)
-        WC.setItemData(MCM.getCurrQItemName(3), args)
-        WC.potionIndex = MCM._currQIndices[3]
+		if (WidgetVisTogglesHotkey && WC.abWidget_V[4]) || !WidgetVisTogglesHotkey
+			MCM.cyclePotion()
+	        args = MCM.GetItemIconArgs(3)
+	        WC.setItemData(MCM.getCurrQItemName(3), args)
+	        WC.potionIndex = MCM._currQIndices[3]
+    	endIf
 
 	EndIf
     if(args[0])
         MCM.itemDataUpToDate[args[0]*MCM.MAX_QUEUE_SIZE + args[1]] = true
     endIf
-    ;WC.fadeInAndOut(MCM.fadeInDuration/100.0, MCM.fadeOutDuration/100.0, MCM.fadeWait/100.0, MCM.fadeAlpha, MCM.fadeOut)
 	GotoState("")
 EndFunction
 
@@ -300,9 +309,9 @@ endFunction
 function RegisterForGameplayKeys()
 	Debug.Trace("iEquip KeyHandler RegisterForGameplayKeys called")
 	RegisterForKey(iEquip_shoutKey)
-	RegisterForKey(iEquip_potionKey)
 	RegisterForKey(iEquip_leftKey)
 	RegisterForKey(iEquip_rightKey)
+	RegisterForKey(iEquip_potionKey)
 	RegisterForKey(iEquip_editmodeKey)
 EndFunction
 

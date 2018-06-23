@@ -16,6 +16,7 @@ int property SelectedItem = 0 Auto
 bool Property enableBackgrounds = false Auto
 ;MCM toggle for Bring To Front function in Edit Mode.  Disabled by default as likely to be little used and causes delay when switching presets and entering/leaving Edit Mode
 bool Property BringToFrontEnabled = false Auto
+bool BringToFrontFirstTime = True
 
 String HUD_MENU
 String WidgetRoot
@@ -662,7 +663,13 @@ EndFunction
 Function BringToFront()
 	debug.trace("iEquip EditMode BringToFront called")
 	Int iIndex = SelectedItem - 1
-	if iIndex > 0
+	
+	if BringToFrontFirstTime
+		debug.MessageBox("This feature allows you to adjust the layer order of the elements within each widget, and the layer order of the widgets themselves\n\nYou cannot bring an element of one widget in front of one from another widget, only elements within the same widget\n\nIt is disabled for backgrounds and when the complete widget is selected for obvious reasons")
+		BringToFrontFirstTime = False
+	endIf
+
+	if iIndex > 0 && !isBackground(iIndex)
 		if !startBringToFront
 			iItemToMoveToFront = iIndex
 			debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[iIndex] + " in front of and press the Bring To Front key a second time")
