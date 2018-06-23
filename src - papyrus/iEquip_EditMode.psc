@@ -12,6 +12,10 @@ iEquip_SlowTime Property ST Auto
 
 bool property isEditMode = False Auto
 int property SelectedItem = 0 Auto
+;MCM master switch for widget backgrounds. If enabled backgrounds can be shown/hidden/manipulated in Edit Mode, if disabled they are ignored entirely
+bool Property enableBackgrounds = false Auto
+;MCM toggle for Bring To Front function in Edit Mode.  Disabled by default as likely to be little used and causes delay when switching presets and entering/leaving Edit Mode
+bool Property BringToFrontEnabled = false Auto
 
 String HUD_MENU
 String WidgetRoot
@@ -66,6 +70,26 @@ EndFunction
 Bool Function isBackground(Int iIndex)
     Return WC.abWidget_isBg[iIndex]
 EndFunction
+
+Bool Property BackgroundsShown
+	Bool Function Get()
+		Return enableBackgrounds
+	EndFunction
+	
+	Function Set(Bool b)
+		If (Ready)
+			enableBackgrounds = b
+            Int iIndex = 0
+            While iIndex < WC.asWidgetDescriptions.Length
+            	if isBackground(iIndex)
+            		WC.abWidget_V[iIndex] = b
+            		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._visible", WC.abWidget_V[iIndex])
+            	endIf
+            	iIndex += 1
+            endWhile
+		EndIf
+	EndFunction
+EndProperty
 
 Message property iEquip_ConfirmReset auto
 Message property iEquip_ConfirmResetParent auto
@@ -220,7 +244,7 @@ function UpdateWidgets()
 			args[1] = WC.aiWidget_TC[iIndex]
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
 		endIf
-		if !bLeavingEditMode && !WC.isFirstLoad && !WC.Loading
+		if BringToFrontEnabled && !bLeavingEditMode && !WC.isFirstLoad && !WC.Loading
 			while SettingDepth == true
 				Utility.Wait(0.01)
 			endWhile
@@ -381,11 +405,17 @@ function cycleEditModeElements(int nextPrev)
 	handleEditModeHighlights(0)
 	if nextPrev == 1
 		SelectedItem = SelectedItem + 1
+		if isBackground(SelectedItem - 1) && !BackgroundsShown ;Skip over backgrounds if not enabled in MCM
+			SelectedItem = SelectedItem + 1
+		endIf
 		if SelectedItem == 19
 			SelectedItem = 1
 		endIf
 	else
 		SelectedItem = SelectedItem - 1
+		if isBackground(SelectedItem - 1) && !BackgroundsShown ;Skip over backgrounds if not enabled in MCM
+			SelectedItem = SelectedItem - 1
+		endIf
 		if SelectedItem == 0
 			SelectedItem = 18
 		endIf
@@ -986,7 +1016,9 @@ Function ResetItem()
 		else
 			UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._visible", true)
 		endIf
-		SetDepthOrder(iIndex, 1)
+		if BringToFrontEnabled
+			SetDepthOrder(iIndex, 1)
+		endIf
 		if isParent(iIndex) ;Check if selected element is one of the widget parents and reset all children accordingly
 			ResetChildren(iIndex)
 		endIf

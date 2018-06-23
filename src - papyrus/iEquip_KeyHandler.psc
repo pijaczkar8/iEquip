@@ -127,7 +127,11 @@ Function DoSingleTapActions(Int KeyCode)
 		elseIf KeyCode == iEquip_EditAlphaKey
 			EM.SetAlpha()
 		elseIf KeyCode == iEquip_EditDepthKey
-			EM.BringToFront()
+			if EM.BringToFrontEnabled
+				EM.BringToFront()
+			else
+				debug.messagebox("Bring To Front is currently disabled in the MCM\n\nIf you want to be able to change layer order for overlapping widget elements turn Bring To Front on first")
+			endIf
 		elseIf KeyCode == iEquip_EditTextKey
 			int iIndex = EM.SelectedItem - 1
 			if EM.isTextElement(iIndex)

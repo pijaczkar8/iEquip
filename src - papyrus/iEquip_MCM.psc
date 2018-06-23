@@ -42,12 +42,15 @@ int enabledOID
 int resetOID
 ;Edit Mode OIDs
 int slowTimeOID
+int enableBringToFrontOID
 ;variables controlling the widget's fadeout property
 int fadeOID
 int fadeAlphaOID
 int fadeOutDurationOID
 int fadeInDurationOID
 int fadeWaitOID
+;Widget Options
+int enableBackgroundsOID
 ;mcm keymap option id's
 int keyOID_SHOUT
 int keyOID_POTION
@@ -104,6 +107,10 @@ bool ASSIGNMENT_MODE = false
 
 ;If this is toggled, only favorited items will show up in the MCM menu
 bool mustBeFavorited = false
+;Master switch for widget backgrounds. If enabled backgrounds can be shown/hidden/manipulated in Edit Mode, if disabled they are ignored entirely
+bool bEnableBackgrounds = false
+;MCM switch to enable/disable the Bring To Front feature in Edit Mode.  NB - Turning this on results in longer preset load times and delay entering and leaving Edit Mode
+bool bEnableBringToFront = false
 ;Holds the value for the amount which time will be slowed in Edit Mode
 int iSlowValue
 ;Holds whether custom edit mode hotkey options are available in the MCM hotkeys page
@@ -1003,10 +1010,12 @@ event OnPageReset(string page)
         AddEmptyOption()
         AddHeaderOption("Edit Mode settings")
         slowTimeOID = AddSliderOption("Slow Time effect strength ", iEquip_EditModeSlowTimeStrength.GetValueint())
+        enableBringToFrontOID = AddToggleOption("Enable Bring To Front", bEnableBringToFront)
         resetOID = AddTextOption("Reset default iEquip layout", "")
         AddEmptyOption()
         AddHeaderOption("General settings")
         mustBeFavoritedOID = AddToggleOption("Only Favorite Items", mustBeFavorited)
+        enableBackgroundsOID = AddToggleOption("Enable widget backgrounds", bEnableBackgrounds)
         ;move cursor to top right position
         SetCursorPosition(1)
         ;widget fade variable sliders
@@ -1127,6 +1136,14 @@ event OnOptionSelect(int option)
     elseIf(option == mustBeFavoritedOID)
         mustBeFavorited = !mustBeFavorited
         SetToggleOptionValue(mustBeFavoritedOID, mustBeFavorited)
+    elseIf(option == enableBringToFrontOID)
+        bEnableBringToFront = !bEnableBringToFront
+        SetToggleOptionValue(enableBringToFrontOID, bEnableBringToFront)
+        EM.BringToFrontEnabled = bEnableBringToFront
+    elseIf(option == enableBackgroundsOID)
+        bEnableBackgrounds = !bEnableBackgrounds
+        SetToggleOptionValue(enableBackgroundsOID, bEnableBackgrounds)
+        EM.ToggleBackgrounds = bEnableBackgrounds
     elseIf(option == resetOID)
         ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
         ShowMessage("Please fully exit the MCM so we can clean up your mess...", false, "OK")
@@ -1181,6 +1198,12 @@ event OnOptionDefault(int option)
     If (option == enabledOID)
         bEnabled = false ; default value
         SetToggleOptionValue(enabledOID, bEnabled)
+    elseIf (option == enableBringToFrontOID)
+        bEnableBringToFront = false ; default value
+        SetToggleOptionValue(enableBringToFrontOID, bEnableBringToFront)
+     elseIf (option == enableBackgroundsOID)
+        bEnableBackgrounds = false ; default value
+        SetToggleOptionValue(enableBackgroundsOID, bEnableBackgrounds)
     elseIf (option == keyOID_SHOUT)
         KH.iEquip_shoutKey = 45 ; default value
         SetKeyMapOptionValue(keyOID_SHOUT, KH.iEquip_shoutKey)
@@ -1312,6 +1335,12 @@ event OnOptionHighlight(int option)
     ;Edit Mode slow time effect
     elseIf (option == slowTimeOID)
         SetInfoText("iEquip Edit Mode runs with the game unpaused so to avoid unneccessary death or injury while you set things up we apply a slow time effect. This slider lets you set how much time slows by in Edit Mode\nDefault is 100% or fully paused, at 0 time passes normally in Edit Mode")
+    ;Edit Mode Bring To Front functionality
+    elseIf (option == enableBringToFrontOID)
+        SetInfoText("Bring To Front feature in Edit Mode allows you to rearrange the layer order of overlapping widget elements\nDisabled by default as adds a short delay when switching presets and toggling Edit Mode")
+    ;Show widget backgrounds
+    elseIf (option == enableBackgroundsOID)
+        SetInfoText("Enables backgrounds for each of the widgets.  Once enabled backgrounds are available in Edit Mode and can be shown, hidden and manipulated like all other elements\nDefault is Disabled")
     ;reset/;
     elseIf (option == resetOID)
         SetInfoText("Selecting this will nuke any changes you have made to iEquip and fully restore the default layout")
