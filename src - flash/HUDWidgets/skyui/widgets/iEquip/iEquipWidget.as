@@ -16,7 +16,8 @@ import flash.geom.Transform;
 class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 {	
   /* STAGE ELEMENTS */
-	//Main MovieClips
+	//Widget MovieClips
+	public var widgetMaster: MovieClip;
 	public var LeftHandWidget: MovieClip;
 	public var RightHandWidget: MovieClip;
 	public var ShoutWidget: MovieClip;
@@ -144,11 +145,17 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		MAX_QUEUE_SIZE = 7;
 		queueIndex = new Array(0,0,0,0);
 		
+		//Set up the sub widget MovieClips
+		LeftHandWidget = widgetMaster.LeftHandWidget
+		RightHandWidget = widgetMaster.RightHandWidget
+		ShoutWidget = widgetMaster.ShoutWidget
+		PotionWidget = widgetMaster.PotionWidget
+
 		//Set up the background MovieClips
-		leftBg_mc = LeftHandWidget.leftBg_mc;
-		rightBg_mc = RightHandWidget.rightBg_mc;
-		shoutBg_mc = ShoutWidget.shoutBg_mc;
-		potionBg_mc = PotionWidget.potionBg_mc;
+		leftBg_mc = widgetMaster.LeftHandWidget.leftBg_mc;
+		rightBg_mc = widgetMaster.RightHandWidget.rightBg_mc;
+		shoutBg_mc = widgetMaster.ShoutWidget.shoutBg_mc;
+		potionBg_mc = widgetMaster.PotionWidget.potionBg_mc;
 		//Backgrounds are hidden by default
 		leftBg_mc._visible = false;
 		rightBg_mc._visible = false;
@@ -156,21 +163,21 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		potionBg_mc._visible = false;
 
 		//Set up the icon and text field holder MovieClips
-		leftIcon_mc = LeftHandWidget.leftIcon_mc;
-		rightIcon_mc = RightHandWidget.rightIcon_mc;
-		shoutIcon_mc = ShoutWidget.shoutIcon_mc;
-		potionIcon_mc = PotionWidget.potionIcon_mc;
-		leftName_mc = LeftHandWidget.leftName_mc;
-		rightName_mc = RightHandWidget.rightName_mc;
-		shoutName_mc = ShoutWidget.shoutName_mc;
-		potionName_mc = PotionWidget.potionName_mc;
-		potionCount_mc = PotionWidget.potionCount_mc;
+		leftIcon_mc = widgetMaster.LeftHandWidget.leftIcon_mc;
+		rightIcon_mc = widgetMaster.RightHandWidget.rightIcon_mc;
+		shoutIcon_mc = widgetMaster.ShoutWidget.shoutIcon_mc;
+		potionIcon_mc = widgetMaster.PotionWidget.potionIcon_mc;
+		leftName_mc = widgetMaster.LeftHandWidget.leftName_mc;
+		rightName_mc = widgetMaster.RightHandWidget.rightName_mc;
+		shoutName_mc = widgetMaster.ShoutWidget.shoutName_mc;
+		potionName_mc = widgetMaster.PotionWidget.potionName_mc;
+		potionCount_mc = widgetMaster.PotionWidget.potionCount_mc;
 		
 		//Set up the icon object paths
-		leftIcon = LeftHandWidget.leftIcon_mc.leftIcon;
-		rightIcon = RightHandWidget.rightIcon_mc.rightIcon;
-		shoutIcon = ShoutWidget.shoutIcon_mc.shoutIcon;
-		potionIcon = PotionWidget.potionIcon_mc.potionIcon;
+		leftIcon = widgetMaster.LeftHandWidget.leftIcon_mc.leftIcon;
+		rightIcon = widgetMaster.RightHandWidget.rightIcon_mc.rightIcon;
+		shoutIcon = widgetMaster.ShoutWidget.shoutIcon_mc.shoutIcon;
+		potionIcon = widgetMaster.PotionWidget.potionIcon_mc.potionIcon;
 		
 		//Set up the button icon paths
 		NextButton = EditModeGuide.NextButton;
@@ -227,11 +234,11 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		RulersText = EditModeGuide.RulersText;
 		
 		//Set up text fields, initial empty string and auto resize attributes
-		shoutName = ShoutWidget.shoutName_mc.shoutName;
-		leftName = LeftHandWidget.leftName_mc.leftName;
-		rightName = RightHandWidget.rightName_mc.rightName;
-		potionName = PotionWidget.potionName_mc.potionName;
-		potionCount = PotionWidget.potionCount_mc.potionCount;
+		shoutName = widgetMaster.ShoutWidget.shoutName_mc.shoutName;
+		leftName = widgetMaster.LeftHandWidget.leftName_mc.leftName;
+		rightName = widgetMaster.RightHandWidget.rightName_mc.rightName;
+		potionName = widgetMaster.PotionWidget.potionName_mc.potionName;
+		potionCount = widgetMaster.PotionWidget.potionCount_mc.potionCount;
 		shoutName.text = "";
 		leftName.text = "";
 		rightName.text = "";
@@ -244,8 +251,8 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		potionCount.textAutoSize = "shrink";
 		
 		//Set up arrays of MovieClips and attributes and two tweens for use in tweenIt()
-		clipArray = new Array(ShoutWidget, LeftHandWidget, RightHandWidget, PotionWidget, shoutBg_mc, shoutIcon_mc, shoutName_mc, leftBg_mc, leftIcon_mc, leftName_mc, rightBg_mc, rightIcon_mc, rightName_mc, potionBg_mc, potionIcon_mc, potionName_mc, potionCount_mc);
-		textElementArray = new Array(null, null, null, null, null, null, shoutName, null, null, leftName, null, null, rightName, null, null, potionName, potionCount);
+		clipArray = new Array(widgetMaster, ShoutWidget, LeftHandWidget, RightHandWidget, PotionWidget, shoutBg_mc, shoutIcon_mc, shoutName_mc, leftBg_mc, leftIcon_mc, leftName_mc, rightBg_mc, rightIcon_mc, rightName_mc, potionBg_mc, potionIcon_mc, potionName_mc, potionCount_mc);
+		textElementArray = new Array(null, null, null, null, null, null, null, shoutName, null, null, leftName, null, null, rightName, null, null, potionName, potionCount);
 		//attributeArray = new Array("_x", "_y", "_xscale", "_yscale", "_rotation", "_alpha");
 		//currTween = new Tween();
 		//currTween2 = new Tween();

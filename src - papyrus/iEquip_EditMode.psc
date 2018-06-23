@@ -16,6 +16,7 @@ int property SelectedItem = 0 Auto
 String HUD_MENU
 String WidgetRoot
 
+bool isWidgetMaster = False
 bool ResettingChildren = False
 bool property Disabling = false Auto
 bool bLeavingEditMode = False
@@ -142,15 +143,15 @@ endFunction
 
 Function StoreOpeningValues()
 	Int iIndex = 0
-	afWidget_CurX = new Float[17]
-	afWidget_CurY = new Float[17]
-	afWidget_CurS = new Float[17]
-	afWidget_CurR = new Float[17]
-	afWidget_CurA = new Float[17]
-	aiWidget_CurD = new Int[17]
-	asWidget_CurTA = new string[17]
-	aiWidget_CurTC = new int[17]
-	abWidget_CurV = new bool[17]
+	afWidget_CurX = new Float[18]
+	afWidget_CurY = new Float[18]
+	afWidget_CurS = new Float[18]
+	afWidget_CurR = new Float[18]
+	afWidget_CurA = new Float[18]
+	aiWidget_CurD = new Int[18]
+	asWidget_CurTA = new string[18]
+	aiWidget_CurTC = new int[18]
+	abWidget_CurV = new bool[18]
 	While iIndex < WC.asWidgetDescriptions.Length
 		afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
 		afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
@@ -223,7 +224,9 @@ function UpdateWidgets()
 			while SettingDepth == true
 				Utility.Wait(0.01)
 			endWhile
-			SetDepthOrder(iIndex, 0)
+			if iIndex != 0
+				SetDepthOrder(iIndex, 0)
+			endIf
 		endIf
 		iIndex += 1
 	EndWhile
@@ -378,13 +381,13 @@ function cycleEditModeElements(int nextPrev)
 	handleEditModeHighlights(0)
 	if nextPrev == 1
 		SelectedItem = SelectedItem + 1
-		if SelectedItem == 18
+		if SelectedItem == 19
 			SelectedItem = 1
 		endIf
 	else
 		SelectedItem = SelectedItem - 1
 		if SelectedItem == 0
-			SelectedItem = 17
+			SelectedItem = 18
 		endIf
 	endIf
 	int iIndex = SelectedItem - 1
@@ -398,7 +401,15 @@ function handleEditModeHighlights(int mode)
 	;mode: 1 = Add highlight, 0 = Remove highlight
 	debug.trace("iEquip EditMode handleEditModeHighlights called")
 	int iIndex = SelectedItem - 1
-	if isParent(iIndex)
+	if iIndex == 0 ;The widgetMaster mc
+		isWidgetMaster = true
+		int i = 1 ;1-4 are the sub widget mcs, so to highlight everything we need to call handleChildHighlights on each of them
+		while i < 5
+			handleChildHighlights(i, mode)
+			i += 1
+		endWhile
+		isWidgetMaster = false
+	elseIf isParent(iIndex)
 		handleChildHighlights(iIndex, mode)
 	else
 		int isText = isTextElement(iIndex) as int
@@ -415,7 +426,7 @@ function handleEditModeHighlights(int mode)
 endFunction
 
 function handleChildHighlights(int iIndex, int mode)
-	Int iIndex2 = 4 ;First four elements in the descriptions array are the parent movieclips for the four slots so this is the first of the child elements
+	Int iIndex2 = 5 ;First five elements in the descriptions array are the parent movieclips for the four slots and the master so this is the first of the child elements
 	Int iIndex3 = iIndex ;Store the original iIndex value so we can reset Selected Item back to the parent once we're done
 	String Group = WC.asWidgetGroup[iIndex] ;Stores the group name from the parent this function was called on
 	While iIndex2 < WC.asWidgetDescriptions.Length
@@ -426,8 +437,13 @@ function handleChildHighlights(int iIndex, int mode)
 		endIf
 		iIndex2 += 1
 	EndWhile
-	SelectedItem = iIndex3 + 1 ;Sets iEquip_Selected back to the original parent element before exiting the function back into ResetItem()
-	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iIndex3) ;Set actionscript setCurrentClip back to parent before exiting
+	if !isWidgetMaster
+		SelectedItem = iIndex3 + 1 ;Sets iEquip_Selected back to the original parent element before exiting the function back into ResetItem()
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iIndex3) ;Set actionscript setCurrentClip back to parent before exiting
+	elseIf isWidgetMaster && iIndex == 4
+		SelectedItem = 1
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0) ;Set actionscript setCurrentClip back to master before exiting
+	endIf
 endFunction
 
 function ToggleStep(int a)
@@ -553,7 +569,7 @@ EndFunction
 Function Rotate()
 	debug.trace("iEquip EditMode Rotate called")
 	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
+	If iIndex > 0
 		if RotateDirection == 1
 			WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] + RotateStep
 			if WC.afWidget_R[iIndex] >= 360
@@ -616,18 +632,20 @@ EndFunction
 Function BringToFront()
 	debug.trace("iEquip EditMode BringToFront called")
 	Int iIndex = SelectedItem - 1
-	if !startBringToFront
-		iItemToMoveToFront = iIndex
-		debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[iIndex] + " in front of and press the Bring To Front key a second time")
-	else
-		iItemToSendToBack = iIndex
-		int[] args = new int[2]
-		args[0] = iItemToMoveToFront
-		args[1] = iItemToSendToBack
-		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".swapItemDepths", args)
-		WC.aiWidget_D[iItemToMoveToFront] = iItemToSendToBack
-		if WC.aiWidget_D[iItemToSendToBack] == iItemToMoveToFront
-			WC.aiWidget_D[iItemToSendToBack] = -1
+	if iIndex > 0
+		if !startBringToFront
+			iItemToMoveToFront = iIndex
+			debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[iIndex] + " in front of and press the Bring To Front key a second time")
+		else
+			iItemToSendToBack = iIndex
+			int[] args = new int[2]
+			args[0] = iItemToMoveToFront
+			args[1] = iItemToSendToBack
+			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".swapItemDepths", args)
+			WC.aiWidget_D[iItemToMoveToFront] = iItemToSendToBack
+			if WC.aiWidget_D[iItemToSendToBack] == iItemToMoveToFront
+				WC.aiWidget_D[iItemToSendToBack] = -1
+			endIf
 		endIf
 	endIf
 	startBringToFront = !startBringToFront
@@ -637,7 +655,7 @@ Function SetTextAlignment()
 	debug.trace("iEquip EditMode SetTextAlignment called")
 	Int iIndex = SelectedItem - 1
 	int alignment = 0
-	If iIndex >= 0
+	If iIndex > 0
 		If WC.asWidget_TA[iIndex] == "left"
 			WC.asWidget_TA[iIndex] = "center"
 			alignment = 1
@@ -898,7 +916,7 @@ endFunction
 
 Function setVisibility()
 	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
+	If iIndex > 0
 		if WC.abWidget_V[iIndex] == true
 			WC.abWidget_V[iIndex] = false
 		else
@@ -916,7 +934,7 @@ endFunction
 Function ResetItem()
 	debug.trace("iEquip EditMode ResetItem called")
 	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
+	If iIndex > 0
 		self.RegisterForModEvent("iEquip_GotDepth", "onGotDepth")
 		If !ResettingChildren ;Skip showing confirmation messagebox if already resetting all or resetting children
 			If isParent(iIndex)

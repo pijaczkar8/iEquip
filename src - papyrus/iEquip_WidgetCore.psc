@@ -241,47 +241,49 @@ endFunction
 
 Function PopulateWidgetArrays()
 	debug.trace("iEquip WidgetCore PopulateWidgetArrays called")
-	asWidgetDescriptions = new String[17]
-	asWidgetElements = new String[17]
-	asWidget_TA = new String[17]
-	asWidgetGroup = new String[17]
+	asWidgetDescriptions = new String[18]
+	asWidgetElements = new String[18]
+	asWidget_TA = new String[18]
+	asWidgetGroup = new String[18]
 	
-	afWidget_X = new Float[17]
-	afWidget_Y = new Float[17]
-	afWidget_S = new Float[17]
-	afWidget_R = new Float[17]
-	afWidget_A = new Float[17]
+	afWidget_X = new Float[18]
+	afWidget_Y = new Float[18]
+	afWidget_S = new Float[18]
+	afWidget_R = new Float[18]
+	afWidget_A = new Float[18]
 	
-	aiWidget_D = new Int[17] ;Stored the index value of any Bring To Front target element ie the element to be sent behind
-	aiWidget_TC = new Int[17]
+	aiWidget_D = new Int[18] ;Stored the index value of any Bring To Front target element ie the element to be sent behind
+	aiWidget_TC = new Int[18]
 	
-	abWidget_V = new bool[17]
-	abWidget_isParent = new bool[17]
-	abWidget_isText = new bool[17]
-	abWidget_isBg = new bool[17]
+	abWidget_V = new bool[18]
+	abWidget_isParent = new bool[18]
+	abWidget_isText = new bool[18]
+	abWidget_isBg = new bool[18]
 
+	;Master widget
+	AddWidget("Complete widget", ".widgetMaster", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, false, "")
 	;Main sub-widgets
-	AddWidget("Shout Widget", ".ShoutWidget", 0, 0, 0, 0, 0, -1, 0, None, true, true, false, false, "Shout")
-	AddWidget("Left Hand Widget", ".LeftHandWidget", 0, 0, 0, 0, 0, 0, 0, None, true, true, false, false, "Left")
-	AddWidget("Right Hand Widget", ".RightHandWidget", 0, 0, 0, 0, 0, 1, 0, None, true, true, false, false, "Right")
-	AddWidget("Potion Widget", ".PotionWidget", 0, 0, 0, 0, 0, 2, 0, None, true, true, false, false, "Potion")
+	AddWidget("Shout Widget", ".widgetMaster.ShoutWidget", 0, 0, 0, 0, 0, -1, 0, None, true, true, false, false, "Shout")
+	AddWidget("Left Hand Widget", ".widgetMaster.LeftHandWidget", 0, 0, 0, 0, 0, 1, 0, None, true, true, false, false, "Left")
+	AddWidget("Right Hand Widget", ".widgetMaster.RightHandWidget", 0, 0, 0, 0, 0, 2, 0, None, true, true, false, false, "Right")
+	AddWidget("Potion Widget", ".widgetMaster.PotionWidget", 0, 0, 0, 0, 0, 3, 0, None, true, true, false, false, "Potion")
 	;Shout widget components
-	AddWidget("Shout Background", ".ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Shout")
-	AddWidget("Shout Icon", ".ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 4, 0, None, true, false, false, false, "Shout")
-	AddWidget("Shout Name", ".ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 5, 0xFFFFFF, "Center", true, false, true, false, "Shout")
+	AddWidget("Shout Background", ".widgetMaster.ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Shout")
+	AddWidget("Shout Icon", ".widgetMaster.ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 5, 0, None, true, false, false, false, "Shout")
+	AddWidget("Shout Name", ".widgetMaster.ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 6, 0xFFFFFF, "Center", true, false, true, false, "Shout")
 	;Left Hand widget components
-	AddWidget("Left Hand Background", ".LeftHandWidget.leftBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Left")
-	AddWidget("Left Hand Icon", ".LeftHandWidget.leftIcon_mc", 0, 0, 0, 0, 0, 7, 0, None, true, false, false, false, "Left")
-	AddWidget("Left Hand Item Name", ".LeftHandWidget.leftName_mc", 0, 0, 0, 0, 0, 8, 0xFFFFFF, "Left", true, false, true, false, "Left")
+	AddWidget("Left Hand Background", ".widgetMaster.LeftHandWidget.leftBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Left")
+	AddWidget("Left Hand Icon", ".widgetMaster.LeftHandWidget.leftIcon_mc", 0, 0, 0, 0, 0, 8, 0, None, true, false, false, false, "Left")
+	AddWidget("Left Hand Item Name", ".widgetMaster.LeftHandWidget.leftName_mc", 0, 0, 0, 0, 0, 9, 0xFFFFFF, "Left", true, false, true, false, "Left")
 	;Right Hand widget components
-	AddWidget("Right Hand Background", ".RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Right")
-	AddWidget("Right Hand Icon", ".RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 10, 0, None, true, false, false, false, "Right")
-	AddWidget("Right Hand Item Name", ".RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 11, 0xFFFFFF, "Right", true, false, true, false, "Right")
+	AddWidget("Right Hand Background", ".widgetMaster.RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Right")
+	AddWidget("Right Hand Icon", ".widgetMaster.RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 11, 0, None, true, false, false, false, "Right")
+	AddWidget("Right Hand Item Name", ".widgetMaster.RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 12, 0xFFFFFF, "Right", true, false, true, false, "Right")
 	;Potion widget components
-	AddWidget("Potion Background", ".PotionWidget.potionBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Potion")
-	AddWidget("Potion Icon", ".PotionWidget.potionIcon_mc", 0, 0, 0, 0, 0, 13, 0, None, true, false, false, false, "Potion")
-	AddWidget("Potion Name", ".PotionWidget.potionName_mc", 0, 0, 0, 0, 0, 14, 0xFFFFFF, "Center", true, false, true, false, "Potion")
-	AddWidget("Potion Count", ".PotionWidget.potionCount_mc", 0, 0, 0, 0, 0, 15, 0xFFFFFF, "Center", true, false, true, false, "Potion")
+	AddWidget("Potion Background", ".widgetMaster.PotionWidget.potionBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Potion")
+	AddWidget("Potion Icon", ".widgetMaster.PotionWidget.potionIcon_mc", 0, 0, 0, 0, 0, 14, 0, None, true, false, false, false, "Potion")
+	AddWidget("Potion Name", ".widgetMaster.PotionWidget.potionName_mc", 0, 0, 0, 0, 0, 15, 0xFFFFFF, "Center", true, false, true, false, "Potion")
+	AddWidget("Potion Count", ".widgetMaster.PotionWidget.potionCount_mc", 0, 0, 0, 0, 0, 16, 0xFFFFFF, "Center", true, false, true, false, "Potion")
 	
 	debug.trace("iEquip WidgetCore PopulateWidgetArrays finished")
 EndFunction
@@ -316,14 +318,14 @@ EndFunction
 
 function getAndStoreDefaultWidgetValues()
 	debug.trace("iEquip WidgetCore getAndStoreDefaultWidgetValues called")
-	afWidget_DefX = new Float[17]
-	afWidget_DefY = new Float[17]
-	afWidget_DefS = new Float[17]
-	afWidget_DefR = new Float[17]
-	afWidget_DefA = new Float[17]
-	aiWidget_DefD = new Int[17]
-	asWidget_DefTA = new String[17]
-	abWidget_DefV = new bool[17]
+	afWidget_DefX = new Float[18]
+	afWidget_DefY = new Float[18]
+	afWidget_DefS = new Float[18]
+	afWidget_DefR = new Float[18]
+	afWidget_DefA = new Float[18]
+	aiWidget_DefD = new Int[18]
+	asWidget_DefTA = new String[18]
+	abWidget_DefV = new bool[18]
 	Int iIndex = 0
 	String Element = ""
 	While iIndex < asWidgetDescriptions.Length
@@ -376,7 +378,7 @@ function LoadWidgetPreset(string SelectedPreset)
 	Int jasWidget_TA = JMap.getObj (jLoadPreset, "_TA")
 	Int jabWidget_V = JMap.getObj (jLoadPreset, "_V")
 	
-	Int[] abWidget_V_temp = new Int[17]
+	Int[] abWidget_V_temp = new Int[18]
 
 	JArray.writeToFloatPArray (jafWidget_X, afWidget_X, 0, -1, 0, 0)
 	JArray.writeToFloatPArray (jafWidget_Y, afWidget_Y, 0, -1, 0, 0)
