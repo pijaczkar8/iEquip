@@ -82,8 +82,10 @@ int assignEquippedOID
 int mustBeFavoritedOID
 int customEMKeys_OID
 
+;Strings used by save/load settings functions
 string MCMSettingsPath = "Data/iEquip/MCM Settings/"
 string FileExtMCM = ".IEQS"
+
 ;array of object id's for each item queue (MCM menu)
 int[] shoutArrayOID
 int[] potionArrayOID
@@ -91,7 +93,6 @@ int[] leftArrayOID
 int[] rightArrayOID
 
 ;keys
-
 int assignLeftKey = -1  ;f1
 int assignRightKey = -1 ;f2
 int assignShoutKey = -1 ;f3 /;
@@ -128,12 +129,6 @@ string[]     _shoutListName
 string[]     _rightHandListName
 string[]     _leftHandListName 
 
-;these contain the objects for the final queues the user decides upon
-Form[]       _potionQueue
-Form[]       _shoutQueue
-Form[]       _rightHandQueue 
-Form[]       _leftHandQueue 
-
 ;These contain the full list of items the player can choose from in the MCM menu
 Form[]       _potionList
 Form[]       _shoutsKnown
@@ -154,13 +149,6 @@ int[]       rightIndex
 bool[] Property itemDataUpToDate Auto
 
 int Property MAX_QUEUE_SIZE = 7 Auto
-
-;_currQIndices contains indices of currently active slots
-;0 - LH
-;1 - RH
-;2 - Shout
-;3 - Potion
-int[] Property _currQIndices Auto
 
 ;If players have dragonborn and/or dawnguard, load their dragonshouts
 Function CheckForDLC()
@@ -507,351 +495,6 @@ Function populateShoutList()
     debug.trace("iEquip MCM populateShoutList finished")
 endFunction
 
-;-----------------------------------------------------------------------------------------------------------------------
-;QUEUE FUNCTIONALITY CODE
-;-----------------------------------------------------------------------------------------------------------------------
-Int[] Function GetItemIconArgs(int queueID)
-    debug.trace("iEquip MCM GetItemIconArgs called")
-    Form[] Q
-    if(queueID == 1)
-        Q = _rightHandQueue
-    elseif(queueID == 2)
-        Q = _shoutQueue
-    elseif(queueID == 3)
-        Q = _potionQueue
-    else
-        Q = _leftHandQueue
-    endIf
-    Form item = Q[_currQIndices[queueID]]
-    int[] args = new Int[4]
-    args[0] = queueID 
-    args[1] = _currQIndices[queueID] 
-    if(item)
-        args[2] = item.GetType() 
-    else
-        args[2] = 0
-    endIf
-    args[3] = -1 
-    ;if it is a weapon, we want its weapon type
-    if(args[2] == 41)
-        Weapon W = item as Weapon
-        int weaponType = W.GetWeaponType()
-            ;2H axes and maces have the same ID for some reason, so we have to differentiate them
-            if(weaponType == 7)
-                weaponType = 8
-            elseif(weaponType == 8)
-                weaponType = 10
-            endIf
-            if(weaponType == 6)
-                if(W.IsWarhammer())
-                weaponType = 7
-                endIf
-            endIf
-        args[3] = weaponType
-    ;Is a spell
-    elseIf(args[2] == 22) 
-        Spell S = item as Spell
-        int sIndex = S.GetCostliestEffectIndex()
-        MagicEffect sEffect = S.GetNthEffectMagicEffect(sIndex)
-        String school = sEffect.GetAssociatedSkill()
-        if(school == "Alteration")
-            args[3] = 18 
-        elseIf(school == "Conjuration")
-            args[3] = 19
-        elseIf(school == "Destruction")
-            args[3] = 20 
-        elseIf(school == "Illusion")
-            args[3] = 21 
-        elseIf(school == "Restoration")
-            args[3] = 22 
-        endIf
-    ;Is a potion
-    elseIf(args[2] == 46)
-        Potion P = item as Potion
-        if(P.IsPoison())
-            args[3] = 15
-            return args
-        elseIf(P.IsFood())
-            args[3] = 13
-            return args 
-        endIf
-        int pIndex = P.GetCostliestEffectIndex()
-        MagicEffect pEffect = P.GetNthEffectMagicEffect(pIndex)
-        String pStr = pEffect.GetName() 
-        if(pStr == "Restore Health" || pStr == "Regenerate Health")
-            args[3] = 0
-        elseif(pStr == "Restore Magicka" || pStr == "Regenerate Magicka")
-            args[3] = 3 
-        elseif(pStr == "Restore Stamina" || pStr == "Regenerate Stamina")
-            args[3] = 6 
-        elseif(pStr == "Resist Fire")
-            args[3] = 9 
-        elseif(pStr == "Resist Shock")
-            args[3] = 10 
-        elseif(pStr == "Resist Frost")
-            args[3] = 11 
-        endIf
-    endIf       
-    return args
-endFunction
-
-
-function cyclePotion()
-    debug.trace("iEquip MCM cyclePotion called")
-    advanceQueue(3, 0)
-    int currIndex = _currQIndices[3]
-    Form item = _potionQueue[currIndex]
-    if(item)
-        WC.setPotionCount(PlayerRef.GetItemCount(item))
-    endIf
-endFunction
-
-;uses the equipped item / potion in the bottom slot
-function useEquippedItem()
-    debug.trace("iEquip MCM useEquippedItem called")
-    int currIndex = _currQIndices[3]    
-    Form item = _potionQueue[currIndex]
-    if( item != None)
-        if(ValidateItem(item))
-            PlayerRef.EquipItem(item, false, false)
-        else
-            removeInvalidItem(3, currIndex)
-            Debug.Notification("You no longer have " + item.getName())
-        endIf
-    endIf
-    WC.setPotionCount(PlayerRef.GetItemCount(item))
-endFunction
-
-;cycle the upper slot (shouts, powers)
-function cyclePower()
-    debug.trace("iEquip MCM cyclePower called")
-    ;if no power is equipped OR a power is equipped that is not the same as the current power in the Queue, equip current queue power
-    ;else, go to next power in the queue
-    int currIndex = _currQIndices[2]
-    shout currShout = PlayerRef.GetEquippedShout()
-    int type = 0
-    ;If the currently equipped power is not a shout but a spell (power), there isn't a way to tell it is equipped,
-    ;so we have to advance the queue no matter what
-    if(currShout != _shoutQueue[currIndex] && _shoutQueue[currIndex] != None && _shoutQueue[currIndex].GetType() != 22) 
-        type = _shoutQueue[currIndex].GetType()
-        ;If it is a spell (power)
-        if( type == 22)
-            PlayerRef.EquipSpell(_shoutQueue[currIndex] as Spell, 2 )
-        elseIf(type == 119)
-            PlayerRef.EquipShout(_shoutQueue[currIndex] as Shout )
-        endIf
-
-    else
-        int newIndex = advanceQueue(2, 0);
-        ;PlayerRef.EquipShout(_shoutQueue[newIndex] as shout)
-        if(_shoutQueue[newIndex])
-            type = _shoutQueue[newIndex].GetType()
-        endIf
-        if( type == 22)
-            PlayerRef.EquipSpell(_shoutQueue[newIndex] as Spell, 2 )
-        elseIf(type == 119)
-            PlayerRef.EquipShout(_shoutQueue[newIndex] as Shout )
-        endIf
-    endif
-endFunction
-
-;Unequips item in hand
-function UnequipHand(int a_hand)
-    debug.trace("iEquip MCM UnequipHand called")
-    int a_handEx = 1
-    if (a_hand == 0)
-        a_handEx = 2 ; unequipspell and *ItemEx need different hand args
-    endIf
-
-    Form handItem = PlayerRef.GetEquippedObject(a_hand)
-    if (handItem)
-        int itemType = handItem.GetType()
-        if (itemType == 22)
-            PlayerRef.UnequipSpell(handItem as Spell, a_hand)
-        else
-            PlayerRef.UnequipItemEx(handItem, a_handEx)
-        endIf
-    endIf
-endFunction
-
-bool function cycleHand(int slotID)
-    debug.trace("iEquip MCM cycleHand called")
-    Form[] queue
-    int equipSlotId
-    int currIndex = _currQIndices[slotID]
-
-    ;for some reason, when using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand,
-    ;so we have to change the value for the left hand here  
-    if(slotID == 0)
-        queue = _leftHandQueue
-        equipSlotId = 2 
-    elseif (slotID == 1)
-        queue = _rightHandQueue
-        equipSlotId = 1
-    endif
-
-    ;First, we check to see if the currently equipped item is the same as the current item in the queue.  
-    ;If it is, advance the queue. Else, equip the current item in the queue 
-    Form currEquippedItem = PlayerRef.GetEquippedObject(slotID)
-    Form currQItem = queue[currIndex]
-    if(currEquippedItem != currQItem && currQItem != None)
-        if(ValidateItem(currQItem))
-            UnequipHand(slotID)
-            if(currQItem.getType() == 22)                   
-                PlayerRef.EquipSpell(currQItem as Spell, slotID)
-            else
-                PlayerRef.EquipItemEx(currQItem, equipSlotId, false, false)
-            endIf
-            return true
-        else
-            removeInvalidItem(slotID, currIndex)
-        endIf
-        ;if item fails validation or curr equipped item check, move to next item in queue
-    endIf   
-        
-    int newIndex = advanceQueue(slotID, 0)
-    Form nextQItem = queue[newIndex]
-    if(ValidateItem(nextQItem))
-        UnequipHand(slotID)
-        if(nextQItem.getType() == 22)
-            PlayerRef.EquipSpell(nextQItem as Spell, slotID)
-        else
-            PlayerRef.EquipItemEx(nextQItem, equipSlotId, false, false)
-        endif
-        return true
-    else
-        removeInvalidItem(slotID, newIndex)
-    endIf
-    return false
-endFunction
-
-;moves the queue to the next slot
-int function advanceQueue_ASSIGNMENT_MODE(int queueID)
-    debug.trace("iEquip MCM advanceQueue_ASSIGNMENT_MODE called")
-    int currIndex = _currQIndices[queueID]
-    int newIndex
-    if (currIndex == MAX_QUEUE_SIZE - 1)
-        newIndex = 0    
-    else
-        newIndex = currIndex + 1    
-    endIf
-    _currQIndices[queueID] = newIndex
-    return newIndex
-endFunction
-
-int function advanceQueue(int queueID, int depth)
-    debug.trace("iEquip MCM advanceQueue called")
-    int newIndex = advanceQueue_ASSIGNMENT_MODE(queueID)
-    ;Recursively advance until there is an item in the queue or the entire length of the queue has been traversed
-    if(!ValidateSlot(queueID) && depth < MAX_QUEUE_SIZE)
-        newIndex = advanceQueue(queueID, depth + 1)
-    endIf
-    return newIndex
-endFunction
-
-;makes sure whatever is in the current slot is equippable.
-bool function ValidateSlot(int queueID)
-    debug.trace("iEquip MCM ValidateSlot called")
-    int currIndex = _currQIndices[queueID]
-    if queueID == 0
-        if _leftHandQueue[currIndex] == None || !ValidateItem(_leftHandQueue[currIndex])
-            return false
-        endIf
-    elseif queueID == 1 
-        if _rightHandQueue[currIndex] == None || !ValidateItem(_rightHandQueue[currIndex])
-            return false
-        endIf
-    elseif queueId == 2
-        if _shoutQueue[currIndex] == None || !ValidateItem(_shoutQueue[currIndex])
-            return false
-        endIf
-    elseif queueId == 3 
-        if _potionQueue[currIndex] == None || !ValidateItem(_potionQueue[currIndex])
-            return false    
-        endIf
-    endIf
-    return true
-endFunction
-
-;make sure the player has the item or spell and it is favorited
-bool function ValidateItem(Form a_item)
-    debug.trace("iEquip MCM ValidateItem called")
-    if (a_item == None)
-        return false
-    endif
-    int a_itemType = a_item.GetType()
-    int itemCount 
-
-    ; This is a Spell or Shout and can't be counted like an item
-    if (a_itemType == 22 || a_itemType == 119)
-        return PlayerRef.HasSpell(a_item)
-    ; This is an inventory item
-    else 
-        itemCount = PlayerRef.GetItemCount(a_item)
-        if (itemCount < 1)
-            Debug.Notification("You no longer have " + a_item.getName())
-            return false
-        endIf
-    endIf
-    ;This item is already equipped, possibly in the other hand, and there is only 1 of it
-    if ((a_item == PlayerRef.GetEquippedObject(0) || a_item == PlayerRef.GetEquippedObject(1)) && itemCount < 2)
-        return false
-    endif
-    return true
-endFunction
-
-;if an item fails validation, remove it from the queue
-function removeInvalidItem(int queueID, int index)
-    debug.trace("iEquip MCM removeInvalidItem called")
-    if(queueID == 0)
-        _leftHandQueue[index] = None
-    elseif(queueID == 1)
-        _rightHandQueue[index] = None
-    elseif(queueID == 2)
-        _shoutQueue[index] = None
-    elseif(queueID == 3)
-        _potionQueue[index] = None
-    endIf
-endFunction
-
-;Getters for the widget script
-String function getCurrQItemName(int queueID)
-    debug.trace("iEquip MCM getCurrQItemName called")
-    int currIndex = _currQIndices[queueID]
-
-    if(queueID == 0)
-        if(_leftHandQueue[currIndex])
-            return  _leftHandQueue[currIndex].getName()
-        endIf
-    elseif(queueID == 1)
-        if(_rightHandQueue[currIndex])
-            return _rightHandQueue[currIndex].getName()
-        endIf
-    elseif(queueID == 2)
-        if(_shoutQueue[currIndex])
-            return _shoutQueue[currIndex].getName()
-        endIf
-    elseif(queueID == 3)
-        if(_potionQueue[currIndex])
-            return _potionQueue[currIndex].getName()
-        endIf
-    endIf
-    return ""
-endFunction 
-
-function AssignCurrEquippedItem(Int aiSlot)
-    debug.trace("iEquip MCM AssignCurrEquippedItem called")
-    Form obj = PlayerRef.GetEquippedObject(aiSlot)
-    int ndx = _currQIndices[aiSlot]
-    if(aiSlot == 0)
-        _leftHandQueue[ndx] = obj 
-    elseif(aiSlot == 1)
-        _rightHandQueue[ndx] = obj 
-    elseif(aiSlot == 2)
-        _shoutQueue[ndx] = obj 
-    endIf
-endFunction
-
 ;MCM events 
 int function GetVersion()
     debug.trace("iEquip MCM GetVersion called")
@@ -931,12 +574,6 @@ Event OnConfigInit()
     if(!playerRef.getItemCount(iEquip_Unarmed2H))
         PlayerRef.AddItem(iEquip_Unarmed2H)
     endIf
-    _currQIndices = new int[4]
-    int i = 0
-    while i < 4
-        _currQIndices[i] = 0
-        i +=1
-    endWhile
     
     EMKeysChoice = new String[2]
     EMKeysChoice[0] = "Default"
@@ -952,11 +589,6 @@ Event OnConfigInit()
     _shoutsKnown = new Form[128]
     _rightHandList = new Form[128]
     _leftHandList = new Form[128]
-
-    _potionQueue = new Form[7]
-    _shoutQueue = new Form[7]
-    _rightHandQueue = new Form[7]
-    _leftHandQueue = new Form[7]
  
     ;initialize inventory lists for the combo boxes
     populateLists(PlayerRef)
@@ -1082,8 +714,8 @@ event OnPageReset(string page)
         int ndx = 0
         ;Add an option for each of the 7 slots
         while ndx < MAX_QUEUE_SIZE
-            if(_shoutQueue[ndx])
-                nameStr = _shoutQueue[ndx].getName()
+            if(WC._shoutQueue[ndx])
+                nameStr = WC._shoutQueue[ndx].getName()
             else
                 nameStr = ""
             endIf
@@ -1095,8 +727,8 @@ event OnPageReset(string page)
         AddHeaderOption(pages[3])
         int ndx = 0
         while ndx < MAX_QUEUE_SIZE
-            if(_potionQueue[ndx])
-                nameStr = _potionQueue[ndx].getName()
+            if(WC._potionQueue[ndx])
+                nameStr = WC._potionQueue[ndx].getName()
             else
                 nameStr = ""
             endIf
@@ -1108,8 +740,8 @@ event OnPageReset(string page)
         AddHeaderOption(pages[4])
         int ndx = 0
         while ndx < MAX_QUEUE_SIZE
-            if(_leftHandQueue[ndx])
-                nameStr = _leftHandQueue[ndx].getName()
+            if(WC._leftHandQueue[ndx])
+                nameStr = WC._leftHandQueue[ndx].getName()
             else
                 nameStr = ""
             endIf
@@ -1121,8 +753,8 @@ event OnPageReset(string page)
         AddHeaderOption(pages[5])
         int ndx = 0
         while ndx < MAX_QUEUE_SIZE
-            if(_rightHandQueue[ndx])
-                nameStr = _rightHandQueue[ndx].getName()
+            if(WC._rightHandQueue[ndx])
+                nameStr = WC._rightHandQueue[ndx].getName()
             else
                 nameStr = ""
             endIf
@@ -1644,10 +1276,10 @@ event OnOptionMenuAccept(int option, int index)
     Int iElement = 0
     While iElement < shoutArrayOID.Length
         If (option == shoutArrayOID[iElement])
-            _shoutQueue[iElement] = _shoutsKnown[index]
+            WC._shoutQueue[iElement] = _shoutsKnown[index]
             shoutIndex[iElement] = index
             ItemDataUpToDate[2*MAX_QUEUE_SIZE + iElement] = false
-            SetMenuOptionValue(shoutArrayOID[iElement], _shoutQueue[iElement].getName())
+            SetMenuOptionValue(shoutArrayOID[iElement], WC._shoutQueue[iElement].getName())
         endIf
         iElement += 1
     endWhile
@@ -1655,10 +1287,10 @@ event OnOptionMenuAccept(int option, int index)
     iElement = 0
     While iElement < potionArrayOID.Length
         If (option == potionArrayOID[iElement])
-            _potionQueue[iElement] = _potionList[index]
+            WC._potionQueue[iElement] = _potionList[index]
             ItemDataUpToDate[3*MAX_QUEUE_SIZE + iElement] = false
             potionIndex[iElement] = index
-            SetMenuOptionValue(potionArrayOID[iElement], _potionQueue[iElement].getName())
+            SetMenuOptionValue(potionArrayOID[iElement], WC._potionQueue[iElement].getName())
         endIf
         iElement += 1
     endWhile
@@ -1666,10 +1298,10 @@ event OnOptionMenuAccept(int option, int index)
     iElement = 0
     While iElement < leftArrayOID.Length
         If (option == leftArrayOID[iElement])
-            _leftHandQueue[iElement] = _leftHandList[index]
+            WC._leftHandQueue[iElement] = _leftHandList[index]
             ItemDataUpToDate[iElement] = false
             leftIndex[iElement] = index
-            SetMenuOptionValue(leftArrayOID[iElement], _leftHandQueue[iElement].getName())
+            SetMenuOptionValue(leftArrayOID[iElement], WC._leftHandQueue[iElement].getName())
         endIf
         iElement += 1
     endWhile
@@ -1677,10 +1309,10 @@ event OnOptionMenuAccept(int option, int index)
     iElement = 0
     While iElement < rightArrayOID.Length
         If (option == rightArrayOID[iElement])
-            _rightHandQueue[iElement] = _rightHandList[index]
+            WC._rightHandQueue[iElement] = _rightHandList[index]
             ItemDataUpToDate[MAX_QUEUE_SIZE + iElement] = false
             rightIndex[iElement] = index
-            SetMenuOptionValue(rightArrayOID[iElement], _rightHandQueue[iElement].getName())
+            SetMenuOptionValue(rightArrayOID[iElement], WC._rightHandQueue[iElement].getName())
         endIf
         iElement += 1
     endWhile
@@ -1699,6 +1331,3 @@ Event OnConfigClose()
     EM.ApplyMCMSettings()
     debug.trace("iEquip MCM OnConfigClose finished")
 endEvent
-
-
-;END MENU WIDGET CODE

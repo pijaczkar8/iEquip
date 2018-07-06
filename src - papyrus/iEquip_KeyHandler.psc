@@ -104,8 +104,6 @@ Function DoSingleTapActions(Int KeyCode)
 	Debug.Trace("iEquip KeyHandler DoSingleTapActions called on " + KeyCode as String)
 	GotoState("PROCESSING")
 	
-	int[] args
-	
 	if KeyCode == iEquip_editmodeKey
 		int mode = 1 ;Edit Mode
 		ToggleMode(mode)
@@ -154,43 +152,28 @@ Function DoSingleTapActions(Int KeyCode)
 		elseIf KeyCode == iEquip_EditDiscardKey
 			EM.DiscardChanges()
 		endIf
-
-	elseIf KeyCode == iEquip_shoutKey
-		if (WidgetVisTogglesHotkey && WC.abWidget_V[1]) || !WidgetVisTogglesHotkey
-    		MCM.cyclePower()
-	        args = MCM.GetItemIconArgs(2)
-	        WC.setItemData(MCM.getCurrQItemName(2), args)
-	        WC.shoutIndex = MCM._currQIndices[2]
-	    endIf
 		
 	elseIf KeyCode == iEquip_leftKey
 		if (WidgetVisTogglesHotkey && WC.abWidget_V[2]) || !WidgetVisTogglesHotkey
-	        MCM.cycleHand(0)
-	        args = MCM.GetItemIconArgs(0)
-	        WC.setItemData(MCM.getCurrQItemName(0), args)
-	        WC.leftIndex = MCM._currQIndices[0]
+			WC.cycleSlot(0)	        
 	    endIf
 
 	elseIf KeyCode == iEquip_rightKey
 		if (WidgetVisTogglesHotkey && WC.abWidget_V[3]) || !WidgetVisTogglesHotkey
-	        MCM.cycleHand(1)
-	        args = MCM.GetItemIconArgs(1)
-	        WC.setItemData(MCM.getCurrQItemName(1), args)
-	        WC.rightIndex = MCM._currQIndices[1]
-		endIf
+			WC.cycleSlot(1)
+	    endIf
+
+	elseIf KeyCode == iEquip_shoutKey
+		if (WidgetVisTogglesHotkey && WC.abWidget_V[1]) || !WidgetVisTogglesHotkey
+			WC.cycleSlot(2)
+	    endIf
 
 	elseIf KeyCode == iEquip_potionKey
 		if (WidgetVisTogglesHotkey && WC.abWidget_V[4]) || !WidgetVisTogglesHotkey
-			MCM.cyclePotion()
-	        args = MCM.GetItemIconArgs(3)
-	        WC.setItemData(MCM.getCurrQItemName(3), args)
-	        WC.potionIndex = MCM._currQIndices[3]
+			WC.cycleSlot(3)
     	endIf
-
 	EndIf
-    if(args[0])
-        MCM.itemDataUpToDate[args[0]*MCM.MAX_QUEUE_SIZE + args[1]] = true
-    endIf
+
 	GotoState("")
 EndFunction
 
@@ -226,10 +209,11 @@ EndFunction
 Function DoLongPressActions(Int KeyCode)
 	Debug.Trace("iEquip KeyHandler DoLongPressActions called on " + KeyCode as String)
 	GotoState("PROCESSING")
-	;/if KeyCode == iEquip_potionKey
-		useEquippedItem()
+	if KeyCode == iEquip_potionKey
+		WC.useEquippedItem()
+	endIf
 		
-	if KeyCode == iEquip_editmodeKey
+	;/if KeyCode == iEquip_editmodeKey
 		int mode = 2 ;Preselect Mode
 		ToggleMode(mode)
 	endIf/;
