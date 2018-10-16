@@ -4,6 +4,7 @@ import UI
 import Utility
 import iEquip_Utility
 import StringUtil
+Import iEquip_UILIB
 
 iEquip_WidgetCore Property WC Auto
 iEquip_MCM Property MCM Auto
@@ -17,6 +18,10 @@ bool Property enableBackgrounds = false Auto
 ;MCM toggle for Bring To Front function in Edit Mode.  Disabled by default as likely to be little used and causes delay when switching presets and entering/leaving Edit Mode
 bool Property BringToFrontEnabled = false Auto
 bool BringToFrontFirstTime = True
+bool wasLeftCounterShown = false
+bool wasRightCounterShown = false
+int previousLeftCount
+int previousRightCount
 
 String HUD_MENU
 String WidgetRoot
@@ -40,6 +45,8 @@ string[] PresetList
 string Property WidgetPresetPath = "Data/iEquip/Widget Presets/" autoReadonly
 string Property FileExtWP = ".IEQP" autoReadonly
 int[] Property EMCustomColors Auto
+
+bool preselectEnabledOnEnter = false
 
 int iItemToMoveToFront
 int iItemToSendToBack
@@ -111,19 +118,36 @@ endFunction
 
 function ToggleEditMode()
 	debug.trace("iEquip EditMode ToggleEditMode called")
+	isEditMode = !isEditMode
 	CurrentVanityModeDelay = Utility.GetINIFloat("fAutoVanityModeDelay:Camera")
 	WC.hideWidget()
 	Utility.Wait(0.2)
 	HUD_MENU = WC.HUD_MENU
 	WidgetRoot = WC.WidgetRoot
-	if isEditMode
+	if !isEditMode
 		bLeavingEditMode = True
 		handleEditModeHighlights(0)
 		SelectedItem = 0
 		if MCM.ShowMessages
 			debug.Notification("Exit Edit Mode")
 		endIf
-		UpdateWidgets()
+		if preselectEnabledOnEnter && WC.isPreselectMode
+			WC.togglePreselectMode()
+			preselectEnabledOnEnter = false
+		endIf
+		;UpdateWidgets()
+		if !wasLeftCounterShown
+			WC.setCounterVisibility(0, false)
+		else
+			WC.setSlotCount(0, previousLeftCount)
+			WC.checkAndUpdatePoisonInfo(0)
+		endIf
+		if !wasRightCounterShown
+			WC.setCounterVisibility(1, false)
+		else
+			WC.setSlotCount(1, previousRightCount)
+			WC.checkAndUpdatePoisonInfo(1)
+		endIf
 		UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 		Utility.SetINIFloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay) ;Resets Vanity Camera delay back to previous value on leaving Edit Mode
 		bLeavingEditMode = False
@@ -142,6 +166,10 @@ function ToggleEditMode()
 			debug.Notification("Enter Edit Mode")
 		endIf
 		updateEditModeButtons()
+		if !WC.isPreselectMode
+			preselectEnabledOnEnter = true
+			WC.togglePreselectMode()
+		endIf
 		LoadEditModeWidgets()
 		UpdateEditModeInfoText()
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0)
@@ -162,21 +190,20 @@ function ToggleEditMode()
 	if !Disabling
 		WC.showWidget() ;Reshow widget only if ToggleEditMode not called as a result of turning iEquip off in the MCM
 	endIf
-	isEditMode = !isEditMode
 	debug.trace("iEquip EditMode ToggleEditMode finished")
 endFunction
 
 Function StoreOpeningValues()
 	Int iIndex = 0
-	afWidget_CurX = new Float[18]
-	afWidget_CurY = new Float[18]
-	afWidget_CurS = new Float[18]
-	afWidget_CurR = new Float[18]
-	afWidget_CurA = new Float[18]
-	aiWidget_CurD = new Int[18]
-	asWidget_CurTA = new string[18]
-	aiWidget_CurTC = new int[18]
-	abWidget_CurV = new bool[18]
+	afWidget_CurX = new Float[46]
+	afWidget_CurY = new Float[46]
+	afWidget_CurS = new Float[46]
+	afWidget_CurR = new Float[46]
+	afWidget_CurA = new Float[46]
+	aiWidget_CurD = new Int[46]
+	asWidget_CurTA = new string[46]
+	aiWidget_CurTC = new int[46]
+	abWidget_CurV = new bool[46]
 	While iIndex < WC.asWidgetDescriptions.Length
 		afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
 		afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
@@ -333,13 +360,28 @@ function LoadEditModeWidgets()
 		iIndex += 1
 	EndWhile
 	;Also need to now set the various icons and text elements to specifics optimised for edit mode for example bow in right hand, axe in left hand, long names, etc
-	
+	if !WC.leftCounterShown
+		wasLeftCounterShown = false
+		WC.setCounterVisibility(0, true)
+	else
+		wasLeftCounterShown = true
+		previousLeftCount = UI.getString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftCount_mc.leftCount.text") as int
+	endIf
+	WC.setSlotCount(0,99)
+	if !WC.rightCounterShown
+		wasRightCounterShown = false
+		WC.setCounterVisibility(1, true)
+	else
+		wasRightCounterShown = true
+		previousRightCount = UI.getString(HUD_MENU, WidgetRoot + ".widgetMaster.RightHandWidget.rightCount_mc.rightCount.text") as int
+	endIf
+	WC.setSlotCount(1,99)
 	debug.trace("iEquip EditMode LoadEditModeWidgets finished")
 endFunction
 
 function updateEditModeButtons()
 	int[] args = new int[18]
-	args[0] = KH.iEquip_editmodeKey
+	args[0] = KH.iEquip_UtilityKey
 	args[1] = KH.iEquip_EditPrevKey
 	args[2] = KH.iEquip_EditNextKey
 	args[3] = KH.iEquip_EditUpKey
@@ -409,7 +451,7 @@ function cycleEditModeElements(int nextPrev)
 		if isBackground(SelectedItem - 1) && !BackgroundsShown ;Skip over backgrounds if not enabled in MCM
 			SelectedItem = SelectedItem + 1
 		endIf
-		if SelectedItem == 19
+		if SelectedItem >= 47
 			SelectedItem = 1
 		endIf
 	else
@@ -417,8 +459,8 @@ function cycleEditModeElements(int nextPrev)
 		if isBackground(SelectedItem - 1) && !BackgroundsShown ;Skip over backgrounds if not enabled in MCM
 			SelectedItem = SelectedItem - 1
 		endIf
-		if SelectedItem == 0
-			SelectedItem = 18
+		if SelectedItem <= 0
+			SelectedItem = 46
 		endIf
 	endIf
 	int iIndex = SelectedItem - 1
@@ -434,8 +476,8 @@ function handleEditModeHighlights(int mode)
 	int iIndex = SelectedItem - 1
 	if iIndex == 0 ;The widgetMaster mc
 		isWidgetMaster = true
-		int i = 1 ;1-4 are the sub widget mcs, so to highlight everything we need to call handleChildHighlights on each of them
-		while i < 5
+		int i = 1 ;1-5 are the sub widget mcs, so to highlight everything we need to call handleChildHighlights on each of them
+		while i < 6
 			handleChildHighlights(i, mode)
 			i += 1
 		endWhile
@@ -457,7 +499,7 @@ function handleEditModeHighlights(int mode)
 endFunction
 
 function handleChildHighlights(int iIndex, int mode)
-	Int iIndex2 = 5 ;First five elements in the descriptions array are the parent movieclips for the four slots and the master so this is the first of the child elements
+	Int iIndex2 = 6 ;First six elements in the descriptions array are the parent movieclips for the four slots and the master so this is the first of the child elements
 	Int iIndex3 = iIndex ;Store the original iIndex value so we can reset Selected Item back to the parent once we're done
 	String Group = WC.asWidgetGroup[iIndex] ;Stores the group name from the parent this function was called on
 	While iIndex2 < WC.asWidgetDescriptions.Length
@@ -471,7 +513,7 @@ function handleChildHighlights(int iIndex, int mode)
 	if !isWidgetMaster
 		SelectedItem = iIndex3 + 1 ;Sets iEquip_Selected back to the original parent element before exiting the function back into ResetItem()
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iIndex3) ;Set actionscript setCurrentClip back to parent before exiting
-	elseIf isWidgetMaster && iIndex == 4
+	elseIf isWidgetMaster && iIndex == 5
 		SelectedItem = 1
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0) ;Set actionscript setCurrentClip back to master before exiting
 	endIf
@@ -625,10 +667,6 @@ Function Rotate()
 		endIf
 		TweenElement(3, Rotation, fDuration)
 	EndIf
-	;Rotation = WC.afWidget_R[iIndex] as int
-	;if Rotation > 180
-	;	Rotation = Rotation - 360
-	;endIf
 	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", Rotation as String + " degrees")
 EndFunction
 
@@ -931,6 +969,7 @@ function updateCustomColors(int action_, int newColor, int aIndex)
 			args[1] = newColor
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
 		endIf
+		initColorPicker(initColorPicker_STATE)
 	elseIf action_ == 1 ;Delete currently highlighted custom color
 		EMCustomColors[aIndex] = -1 ;Do delete action first if required
 		;Then iterate through the array sorting all of the colour values to the start leaving all the empty (-1) slots at the end
@@ -947,13 +986,22 @@ function updateCustomColors(int action_, int newColor, int aIndex)
 			EndWhile
 			Index2 -= 1
 		EndWhile
+		initColorPicker(initColorPicker_STATE)
 	endIf
-	initColorPicker(initColorPicker_STATE)
 endFunction
 
 Function setVisibility()
 	Int iIndex = SelectedItem - 1
-	If iIndex > 0
+	if iIndex == 1 || iIndex == 2
+		debug.MessageBox("You cannot hide or disable the main left and right hand widgets")
+		return
+	elseIf iIndex > 2 && iIndex < 6
+		debug.MessageBox("Use the toggles on the UI Options page in the MCM to disable the shouts, consumables and poisons widgets")
+		return
+	elseIf iIndex == 10 || iIndex == 11 || iIndex == 16 || iIndex == 17 || iIndex == 22 || iIndex == 23 ;The preselect icon and text elements, backgrounds can be hidden individually or by turning all backgrounds off in the MCM
+		debug.MessageBox("Preselect elements are automatically hidden when not in Preselect Mode or if you have disabled shout preselect in the MCM")
+		return
+	elseIf iIndex > 0
 		if WC.abWidget_V[iIndex] == true
 			WC.abWidget_V[iIndex] = false
 		else
@@ -995,7 +1043,7 @@ Function ResetItem()
 		WC.afWidget_A[iIndex] = WC.afWidget_DefA[iIndex]
 		if isTextElement(iIndex) ;Checks if the element is text and applies the default text size and alignment
 			WC.asWidget_TA[iIndex] = WC.asWidget_DefTA[iIndex]
-			int alignment = 0
+			int alignment
 			If WC.asWidget_TA[iIndex] == "left"
 				alignment = 0
 			elseIf WC.asWidget_TA[iIndex] == "center"
@@ -1046,7 +1094,6 @@ EndFunction
 Function ResetChildren(int iIndex)
 	debug.trace("iEquip EditMode ResetChildren called")
 	Int iIndex2 = 4
-	Int iIndex3 = iIndex
 	String Group = WC.asWidgetGroup[iIndex]
 	ResettingChildren = True
 
@@ -1058,7 +1105,7 @@ Function ResetChildren(int iIndex)
 		iIndex2 += 1
 	EndWhile
 	ResettingChildren = False
-	SelectedItem = iIndex3 + 1 ;Sets iEquip_Selected back to the original parent element before exiting the function back into ResetItem()
+	SelectedItem = iIndex + 1 ;Sets iEquip_Selected back to the original parent element before exiting the function back into ResetItem()
 	debug.trace("iEquip EditMode ResetChildren finished")
 EndFunction
 
@@ -1108,39 +1155,6 @@ Function DiscardChanges()
 	WC.showWidget()
 endFunction
 
-function ApplyMCMSettings()
-	debug.trace("iEquip EditMode ApplyMCMSettings called")
-	
-	if WC.isEnabled
-		if MCM.iEquip_Reset
-			ResetDefaults()
-		else
-			if MCM.ShowMessages
-				debug.Notification("Applying iEquip settings...")
-			endIf
-			ApplyChanges()
-			if isEditMode
-				updateEditModeButtons()
-				LoadEditModeWidgets()
-			;else
-				;UpdateWidgets()
-			endIf
-		endIf
-	endIf
-	
-	if !WC.isEnabled
-		debug.Notification("iEquip disabled...")
-	endIf
-	
-	debug.trace("iEquip EditMode ApplyMCMSettings finished")
-endFunction
-
-function ApplyChanges()
-	debug.trace("iEquip EditMode ApplyChanges called")
-		
-	debug.trace("iEquip EditMode ApplyChanges finished")
-endFunction
-
 ;Preset load/save functions, called from the MCM show menu functions
 ;Load function is in WidgetCore
 
@@ -1173,4 +1187,7 @@ endFunction
 
 function DeleteWidgetPreset(string SelectedPreset)
 	JContainers.removeFileAtPath(WidgetPresetPath + SelectedPreset)
+	if PresetList[0] != ""
+		RecallPresetMenu()
+	endIf
 endFunction

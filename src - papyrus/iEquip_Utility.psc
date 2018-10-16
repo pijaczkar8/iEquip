@@ -5,32 +5,6 @@ import StringUtil
 int function CountEmpty(string[] Array) global native
 function StringCopyTo(string[] Array, string[] Output, int StartIndex = 0, int EndIndex = -1, bool AllowEmpty = true) global native
 
-;/Int Function HexStringToInt(String sHex)
-    Int iLength = GetLength(sHex)
-    If (iLength != 8 && iLength != 10)
-        Return -1
-    EndIf
-    If (iLength == 10)
-        sHex = SubString(sHex, 2)
-    EndIf
-    Int iDec = 0
-    Int iPlace = 1
-    Int iIndex = 8
-    While (iIndex > 0)
-        iIndex -= 1
-        String sChar = SubString(sHex, iIndex, 1)
-        Int iSubNumber = 0
-        If (IsDigit(sChar))
-            iSubNumber = sChar as Int
-        Else
-            iSubNumber = AsOrd(sChar) - 55
-        EndIf
-        iDec += iSubNumber * iPlace
-        iPlace *= 16
-    EndWhile
-    Return iDec
-EndFunction/;
-
 string[] function IncreaseString(int by, string[] Array) global
 	int len = Array.Length
 	if by < 1 || (len+by > 128)
@@ -384,3 +358,17 @@ string[] function StringArray(int size) global
 		endIf
 	endIf
 endFunction
+
+Bool function isSKSEActive(Float minimumVersion) global
+
+	return skse.GetVersionRelease() as Float >= minimumVersion
+endFunction
+
+Bool function contains(String name, String stringToFind) global
+
+	if stringutil.Find(name, stringToFind, 0) > -1
+		return true
+	endIf
+	return false
+endFunction
+

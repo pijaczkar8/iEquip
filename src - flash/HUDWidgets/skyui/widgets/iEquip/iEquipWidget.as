@@ -1,8 +1,13 @@
 import skyui.widgets.WidgetBase;
 
-//import mx.transitions.Tween;
-//import mx.transitions.easing.*;
+import gfx.io.GameDelegate;
+import skyui.util.Debug;
+import skyui.util.Hash;
+import skyui.util.GlobalFunctions;
+import skyui.util.Translator;
+import Shared.GlobalFunc;
 
+import com.greensock.TimelineLite;
 import com.greensock.TweenLite;
 import com.greensock.easing.*;
 
@@ -13,6 +18,15 @@ import skyui.defines.Weapon
 import flash.geom.ColorTransform;
 import flash.geom.Transform;
 
+// Makes the filter available to use in the Movie. 
+//import flash.filters.GlowFilter;
+
+// Creates a variable with info about the Filter settings 
+//var myGlowFilter = new GlowFilter (0x6699FF,0.6,4,20,3,3,false,true);
+
+// Applies the filter to the object named myObject
+//myObject.filters = [myGlowFilter];
+
 class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 {	
   /* STAGE ELEMENTS */
@@ -21,34 +35,74 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var LeftHandWidget: MovieClip;
 	public var RightHandWidget: MovieClip;
 	public var ShoutWidget: MovieClip;
-	public var PotionWidget: MovieClip;
+	public var ConsumableWidget: MovieClip;
+	public var PoisonWidget: MovieClip;
 	public var EditModeGuide: MovieClip;
 
 	//Widget background MovieClips
 	public var leftBg_mc: MovieClip;
 	public var rightBg_mc: MovieClip;
 	public var shoutBg_mc: MovieClip;
-	public var potionBg_mc: MovieClip;
+	public var leftPreselectBg_mc: MovieClip;
+	public var rightPreselectBg_mc: MovieClip;
+	public var shoutPreselectBg_mc: MovieClip;
+	public var leftPreselectBg: MovieClip;
+	public var rightPreselectBg: MovieClip;
+	public var shoutPreselectBg: MovieClip;
+	public var consumableBg_mc: MovieClip;
+	public var poisonBg_mc: MovieClip;
 	
 	//Widget icon holder MovieClips
 	public var leftIcon_mc: MovieClip;
+	public var leftPoisonIcon_mc: MovieClip;
+	public var leftAttributeIcons_mc: MovieClip;
+	public var leftEnchantmentMeter_mc: MovieClip;
+	public var leftSoulgem_mc: MovieClip;
+	public var leftPreselectIcon_mc: MovieClip;
+	public var leftPreselectAttributeIcons_mc: MovieClip;
 	public var rightIcon_mc: MovieClip;
+	public var rightPoisonIcon_mc: MovieClip;
+	public var rightAttributeIcons_mc: MovieClip;
+	public var rightEnchantmentMeter_mc: MovieClip;
+	public var rightSoulgem_mc: MovieClip;
+	public var rightPreselectIcon_mc: MovieClip;
+	public var rightPreselectAttributeIcons_mc: MovieClip;
 	public var shoutIcon_mc: MovieClip;
-	public var potionIcon_mc: MovieClip;
+	public var shoutPreselectIcon_mc: MovieClip;
+	public var consumableIcon_mc: MovieClip;
+	public var poisonIcon_mc: MovieClip;
 	
 	//Widget text field holder MovieClips
 	public var leftName_mc: MovieClip;
+	public var leftPoisonName_mc: MovieClip;
+	public var leftCount_mc: MovieClip;
+	public var leftPreselectName_mc: MovieClip;
 	public var rightName_mc: MovieClip;
+	public var rightPoisonName_mc: MovieClip;
+	public var rightCount_mc: MovieClip;
+	public var rightPreselectName_mc: MovieClip;
 	public var shoutName_mc: MovieClip;
-	public var potionName_mc: MovieClip;
-	public var potionCount_mc: MovieClip;
+	public var shoutPreselectName_mc: MovieClip;
+	public var consumableName_mc: MovieClip;
+	public var consumableCount_mc: MovieClip;
+	public var poisonName_mc: MovieClip;
+	public var poisonCount_mc: MovieClip;
 	
 	//Widget Text Fields
 	public var leftName: TextField;
-	public var shoutName: TextField;
+	public var leftPoisonName: TextField;
+	public var leftCount: TextField;
+	public var leftPreselectName: TextField;
 	public var rightName: TextField;
-	public var potionName: TextField;
-	public var potionCount: TextField;
+	public var rightPoisonName: TextField;
+	public var rightCount: TextField;
+	public var rightPreselectName: TextField;
+	public var shoutName: TextField;
+	public var shoutPreselectName: TextField;
+	public var consumableName: TextField;
+	public var consumableCount: TextField;
+	public var poisonName: TextField;
+	public var poisonCount: TextField;
 	
 	//Edit Mode Guide Text Fields
 	public var NextPrevInstructionText: TextField;
@@ -102,24 +156,27 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var SaveButton: MovieClip;
 	public var DiscardButton: MovieClip;
 	public var ExitButton: MovieClip;
-	
-	public var MAX_QUEUE_SIZE: Number;
-	
-	public var queueIndex: Array;
-  
-  	public var leftIcon: Object;
-	public var shoutIcon: Object;
-	public var rightIcon: Object;
-	public var potionIcon: Object;
-	
-	public var ERR:String;
-	//public var currTween: Tween;
-	//public var currTween2: Tween;
 
-	//This contains the data for every item in the queue
-	public var itemData:Array;
-	public var lastUsedIndex: Number;
-	public var currentPotionSlot: Number;
+	public var leftIcon: MovieClip;
+	public var leftPoisonIcon: MovieClip;
+	public var leftAttributeIcons: MovieClip;
+	public var leftSoulgem: MovieClip;
+	public var leftEnchantmentMeter: MovieClip;
+	public var rightIcon: MovieClip;
+	public var rightPoisonIcon: MovieClip;
+	public var rightAttributeIcons: MovieClip;
+	public var rightSoulgem: MovieClip;
+	public var rightEnchantmentMeter: MovieClip;
+	public var shoutIcon: MovieClip;
+	public var leftPreselectIcon: MovieClip;
+	public var leftPreselectAttributeIcons: MovieClip;
+	public var rightPreselectIcon: MovieClip;
+	public var rightPreselectAttributeIcons: MovieClip;
+	public var shoutPreselectIcon: MovieClip;
+	public var consumableIcon: MovieClip;
+	public var potionFlashAnim: MovieClip;
+	public var poisonIcon: MovieClip;
+
 	public var highlightColor: Number;
 	
 	public var clip: MovieClip;
@@ -128,56 +185,150 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var textElementArray: Array;
 	public var attributeArray: Array;
 
+	public var currQ: Number;
+	public var iconToColor: String;
+
+	public var leftTargetX: Number;
+	public var leftTargetY: Number;
+	public var rightTargetX: Number;
+	public var shoutTargetX: Number;
+	public var leftPTargetX: Number;
+	public var leftPTargetY: Number;
+	public var leftPTargetRotation: Number;
+	public var rightPTargetX: Number;
+	public var rightPTargetY: Number;
+	public var rightPTargetRotation: Number;
+	public var shoutPTargetX: Number;
+	public var shoutPTargetY: Number;
+	public var shoutPTargetRotation: Number;
+	public var leftIconAlpha: Number;
+	public var leftIconScale: Number;	
+	public var leftPIconAlpha: Number;
+	public var leftPIconScale: Number;
+	public var rightIconAlpha: Number;	
+	public var rightIconScale: Number;
+	public var rightPIconAlpha: Number;
+	public var rightPIconScale: Number;
+	public var shoutIconAlpha: Number;
+	public var shoutIconScale: Number;	
+	public var shoutPIconAlpha: Number;
+	public var shoutPIconScale: Number;
+
+	public var leftNameAlpha: Number;
+	public var leftPNameAlpha: Number;
+	public var rightNameAlpha: Number;
+	public var rightPNameAlpha: Number;
+	public var shoutNameAlpha: Number;
+	public var shoutPNameAlpha: Number;
+
+	public var leftTargetScale: Number;
+	public var rightTargetScale: Number;
+	public var shoutTargetScale: Number;
+
+	public var tempIcon = null;
+	public var tempPIcon = null;
+	public var tempHighlightedClip = null;
+	public static var EquipAllCounter: Number;
 	
   /* INITIALIZATION */
 
 	public function iEquipWidget()
 	{
 		super();
-		itemData = new Array(28);
-		for(var i = 0; i < 28; i++){
-			itemData[i] = new Array("", 0, 0, 0, 0, 0);
-		}
+
 		_visible = false;
 
 		Mouse.addListener(this);
-
-		MAX_QUEUE_SIZE = 7;
-		queueIndex = new Array(0,0,0,0);
+		GameDelegate.addCallBack("InvalidateListData", this, "InvalidateListData");
 		
 		//Set up the sub widget MovieClips
 		LeftHandWidget = widgetMaster.LeftHandWidget
 		RightHandWidget = widgetMaster.RightHandWidget
 		ShoutWidget = widgetMaster.ShoutWidget
-		PotionWidget = widgetMaster.PotionWidget
+		ConsumableWidget = widgetMaster.ConsumableWidget
+		PoisonWidget = widgetMaster.PoisonWidget
 
 		//Set up the background MovieClips
 		leftBg_mc = widgetMaster.LeftHandWidget.leftBg_mc;
 		rightBg_mc = widgetMaster.RightHandWidget.rightBg_mc;
 		shoutBg_mc = widgetMaster.ShoutWidget.shoutBg_mc;
-		potionBg_mc = widgetMaster.PotionWidget.potionBg_mc;
+		leftPreselectBg_mc = widgetMaster.LeftHandWidget.leftPreselectBg_mc;
+		rightPreselectBg_mc = widgetMaster.RightHandWidget.rightPreselectBg_mc;
+		shoutPreselectBg_mc = widgetMaster.ShoutWidget.shoutPreselectBg_mc;
+		leftPreselectBg = widgetMaster.LeftHandWidget.leftPreselectBg_mc.leftPreselectBg;
+		rightPreselectBg = widgetMaster.RightHandWidget.rightPreselectBg_mc.rightPreselectBg;
+		shoutPreselectBg = widgetMaster.ShoutWidget.shoutPreselectBg_mc.shoutPreselectBg;
+		consumableBg_mc = widgetMaster.ConsumableWidget.consumableBg_mc;
+		poisonBg_mc = widgetMaster.PoisonWidget.poisonBg_mc;
+		
 		//Backgrounds are hidden by default
 		leftBg_mc._visible = false;
 		rightBg_mc._visible = false;
 		shoutBg_mc._visible = false;
-		potionBg_mc._visible = false;
+		leftPreselectBg_mc._visible = false;
+		rightPreselectBg_mc._visible = false;
+		shoutPreselectBg_mc._visible = false;
+		consumableBg_mc._visible = false;
+		poisonBg_mc._visible = false;
 
 		//Set up the icon and text field holder MovieClips
 		leftIcon_mc = widgetMaster.LeftHandWidget.leftIcon_mc;
+		leftPoisonIcon_mc = widgetMaster.LeftHandWidget.leftPoisonIcon_mc;
+		leftAttributeIcons_mc = widgetMaster.LeftHandWidget.leftAttributeIcons_mc;
+		leftEnchantmentMeter_mc = widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc;
+		leftSoulgem_mc = widgetMaster.LeftHandWidget.leftSoulgem_mc;
 		rightIcon_mc = widgetMaster.RightHandWidget.rightIcon_mc;
+		rightPoisonIcon_mc = widgetMaster.RightHandWidget.rightPoisonIcon_mc;
+		rightAttributeIcons_mc = widgetMaster.RightHandWidget.rightAttributeIcons_mc;
+		rightEnchantmentMeter_mc = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc;
+		rightSoulgem_mc = widgetMaster.RightHandWidget.rightSoulgem_mc;
 		shoutIcon_mc = widgetMaster.ShoutWidget.shoutIcon_mc;
-		potionIcon_mc = widgetMaster.PotionWidget.potionIcon_mc;
+		consumableIcon_mc = widgetMaster.ConsumableWidget.consumableIcon_mc;
+		poisonIcon_mc = widgetMaster.PoisonWidget.poisonIcon_mc;
 		leftName_mc = widgetMaster.LeftHandWidget.leftName_mc;
+		leftPoisonName_mc = widgetMaster.LeftHandWidget.leftPoisonName_mc;
+		leftCount_mc = widgetMaster.LeftHandWidget.leftCount_mc;
 		rightName_mc = widgetMaster.RightHandWidget.rightName_mc;
+		rightPoisonName_mc = widgetMaster.RightHandWidget.rightPoisonName_mc;
+		rightCount_mc = widgetMaster.RightHandWidget.rightCount_mc;
 		shoutName_mc = widgetMaster.ShoutWidget.shoutName_mc;
-		potionName_mc = widgetMaster.PotionWidget.potionName_mc;
-		potionCount_mc = widgetMaster.PotionWidget.potionCount_mc;
+		consumableName_mc = widgetMaster.ConsumableWidget.consumableName_mc;
+		consumableCount_mc = widgetMaster.ConsumableWidget.consumableCount_mc;
+		poisonName_mc = widgetMaster.PoisonWidget.poisonName_mc;
+		poisonCount_mc = widgetMaster.PoisonWidget.poisonCount_mc;
+
+		//Set up the preselect icon and text field holder MovieClips
+		leftPreselectIcon_mc = widgetMaster.LeftHandWidget.leftPreselectIcon_mc;
+		leftPreselectAttributeIcons_mc = widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc;
+		rightPreselectIcon_mc = widgetMaster.RightHandWidget.rightPreselectIcon_mc;
+		rightPreselectAttributeIcons_mc = widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc;
+		shoutPreselectIcon_mc = widgetMaster.ShoutWidget.shoutPreselectIcon_mc;
+		leftPreselectName_mc = widgetMaster.LeftHandWidget.leftPreselectName_mc;
+		rightPreselectName_mc = widgetMaster.RightHandWidget.rightPreselectName_mc;
+		shoutPreselectName_mc = widgetMaster.ShoutWidget.shoutPreselectName_mc;
 		
 		//Set up the icon object paths
 		leftIcon = widgetMaster.LeftHandWidget.leftIcon_mc.leftIcon;
+		leftPoisonIcon = widgetMaster.LeftHandWidget.leftPoisonIcon_mc.leftPoisonIcon;
+		leftAttributeIcons = widgetMaster.LeftHandWidget.leftAttributeIcons_mc.leftAttributeIcons;
+		leftSoulgem = widgetMaster.LeftHandWidget.leftSoulgem_mc.leftSoulgem;
+		leftEnchantmentMeter = widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc.leftEnchantmentMeter;
 		rightIcon = widgetMaster.RightHandWidget.rightIcon_mc.rightIcon;
+		rightPoisonIcon = widgetMaster.RightHandWidget.rightPoisonIcon_mc.rightPoisonIcon;
+		rightAttributeIcons = widgetMaster.RightHandWidget.rightAttributeIcons_mc.rightAttributeIcons;
+		rightSoulgem = widgetMaster.RightHandWidget.rightSoulgem_mc.rightSoulgem;
+		rightEnchantmentMeter = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc.rightEnchantmentMeter;
 		shoutIcon = widgetMaster.ShoutWidget.shoutIcon_mc.shoutIcon;
-		potionIcon = widgetMaster.PotionWidget.potionIcon_mc.potionIcon;
+		consumableIcon = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIcon;
+		potionFlashAnim = widgetMaster.ConsumableWidget.consumableIcon_mc.potionFlashAnim;
+		poisonIcon = widgetMaster.PoisonWidget.poisonIcon_mc.poisonIcon;
+
+		//Set up the preselect icon object paths
+		leftPreselectIcon = widgetMaster.LeftHandWidget.leftPreselectIcon_mc.leftPreselectIcon;
+		leftPreselectAttributeIcons = widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc.leftPreselectAttributeIcons;
+		rightPreselectIcon = widgetMaster.RightHandWidget.rightPreselectIcon_mc.rightPreselectIcon;
+		rightPreselectAttributeIcons = widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc.rightPreselectAttributeIcons;
+		shoutPreselectIcon = widgetMaster.ShoutWidget.shoutPreselectIcon_mc.shoutPreselectIcon;
 		
 		//Set up the button icon paths
 		NextButton = EditModeGuide.NextButton;
@@ -234,33 +385,90 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		RulersText = EditModeGuide.RulersText;
 		
 		//Set up text fields, initial empty string and auto resize attributes
-		shoutName = widgetMaster.ShoutWidget.shoutName_mc.shoutName;
 		leftName = widgetMaster.LeftHandWidget.leftName_mc.leftName;
+		leftPoisonName = widgetMaster.LeftHandWidget.leftPoisonName_mc.leftPoisonName;
+		leftCount = widgetMaster.LeftHandWidget.leftCount_mc.leftCount;
+		leftPreselectName = widgetMaster.LeftHandWidget.leftPreselectName_mc.leftPreselectName;
 		rightName = widgetMaster.RightHandWidget.rightName_mc.rightName;
-		potionName = widgetMaster.PotionWidget.potionName_mc.potionName;
-		potionCount = widgetMaster.PotionWidget.potionCount_mc.potionCount;
-		shoutName.text = "";
+		rightPoisonName = widgetMaster.RightHandWidget.rightPoisonName_mc.rightPoisonName;
+		rightCount = widgetMaster.RightHandWidget.rightCount_mc.rightCount;
+		rightPreselectName = widgetMaster.RightHandWidget.rightPreselectName_mc.rightPreselectName;
+		shoutName = widgetMaster.ShoutWidget.shoutName_mc.shoutName;
+		shoutPreselectName = widgetMaster.ShoutWidget.shoutPreselectName_mc.shoutPreselectName;
+		consumableName = widgetMaster.ConsumableWidget.consumableName_mc.consumableName;
+		consumableCount = widgetMaster.ConsumableWidget.consumableCount_mc.consumableCount;
+		poisonName = widgetMaster.PoisonWidget.poisonName_mc.poisonName;
+		poisonCount = widgetMaster.PoisonWidget.poisonCount_mc.poisonCount;
 		leftName.text = "";
+		leftPoisonName.text = "";
+		leftCount.text = "";
+		leftPreselectName.text = "";
 		rightName.text = "";
-		potionName.text = "";
-		potionCount.text = "";
-		shoutName.textAutoSize = "shrink";
+		rightPoisonName.text = "";
+		rightCount.text = "";
+		rightPreselectName.text = "";
+		shoutName.text = "";
+		shoutPreselectName.text = "";
+		consumableName.text = "";
+		consumableCount.text = "";
+		poisonName.text = "";
+		poisonCount.text = "";
 		leftName.textAutoSize = "shrink";
+		leftPoisonName.textAutoSize = "shrink";
+		leftCount.textAutoSize = "shrink";
+		leftPreselectName.textAutoSize = "shrink";
 		rightName.textAutoSize = "shrink";
-		potionName.textAutoSize = "shrink";
-		potionCount.textAutoSize = "shrink";
+		rightPoisonName.textAutoSize = "shrink";
+		rightCount.textAutoSize = "shrink";
+		rightPreselectName.textAutoSize = "shrink";
+		shoutName.textAutoSize = "shrink";
+		shoutPreselectName.textAutoSize = "shrink";
+		consumableName.textAutoSize = "shrink";
+		consumableCount.textAutoSize = "shrink";
+		poisonName.textAutoSize = "shrink";
+		poisonCount.textAutoSize = "shrink";
+		leftIcon.gotoAndStop("Empty")
+		leftPoisonIcon.gotoAndStop("Hidden")
+		leftAttributeIcons.gotoAndStop("Hidden")
+		leftEnchantmentMeter_mc._visible = false
+		leftSoulgem_mc._visible = false
+		rightIcon.gotoAndStop("Empty")
+		rightPoisonIcon.gotoAndStop("Hidden")
+		rightAttributeIcons.gotoAndStop("Hidden")
+		rightEnchantmentMeter_mc._visible = false
+		rightSoulgem_mc._visible = false
+		shoutIcon.gotoAndStop("Empty")
+		consumableIcon.gotoAndStop("Empty")
+		potionFlashAnim.gotoAndStop("Hidden")
+		potionFlashAnim._alpha = 0.0
+		poisonIcon.gotoAndStop("Empty")
+		leftPreselectIcon.gotoAndStop("Empty")
+		leftPreselectAttributeIcons.gotoAndStop("Hidden")
+		rightPreselectIcon.gotoAndStop("Empty")
+		rightPreselectAttributeIcons.gotoAndStop("Hidden")
+		shoutPreselectIcon.gotoAndStop("Empty")
 		
-		//Set up arrays of MovieClips and attributes and two tweens for use in tweenIt()
-		clipArray = new Array(widgetMaster, ShoutWidget, LeftHandWidget, RightHandWidget, PotionWidget, shoutBg_mc, shoutIcon_mc, shoutName_mc, leftBg_mc, leftIcon_mc, leftName_mc, rightBg_mc, rightIcon_mc, rightName_mc, potionBg_mc, potionIcon_mc, potionName_mc, potionCount_mc);
-		textElementArray = new Array(null, null, null, null, null, null, null, shoutName, null, null, leftName, null, null, rightName, null, null, potionName, potionCount);
-		//attributeArray = new Array("_x", "_y", "_xscale", "_yscale", "_rotation", "_alpha");
-		//currTween = new Tween();
-		//currTween2 = new Tween();
+		//Set up arrays of MovieClips and text elements ready for use in Edit Mode
+		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
+		textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, leftPreselectName, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, rightPreselectName, null, null, null, shoutName, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, poisonName, poisonCount);
+
 		highlightColor = 0x00A1FF;
-		
-		ERR = new String("HI");
 	}
 	
+	public function setWidgetToEmpty(): Void
+	{
+		leftIcon.gotoAndStop("Add")
+		rightIcon.gotoAndStop("Add")
+		shoutIcon.gotoAndStop("Add")
+		consumableIcon.gotoAndStop("Add")
+		poisonIcon.gotoAndStop("Add")
+		shoutName.text = "--Empty--";
+		leftName.text = "--Empty--";
+		rightName.text = "--Empty--";
+		consumableName.text = "--Empty--";
+		poisonName.text = "--Empty--";
+	}
+
 	function setEditModeButtons(Exit: Number, Nxt: Number, Prv: Number, Up: Number, Down: Number, Left: Number, Right: Number, ScaleUp: Number, ScaleDown: Number, Rot: Number, Alpha: Number, Align: Number, Dep: Number, Rul: Number, Res: Number, Load: Number, Save: Number, Disc: Number): Void
 	{
 		NextButton.gotoAndStop(Nxt);
@@ -329,276 +537,841 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		RulersText.textColor = _color;
 	}
 
-  /* PUBLIC FUNCTIONS */
-  	public function setItemName(nameStr: String): Void{
-		itemData[lastUsedIndex][0] = nameStr;
+  	//PUBLIC FUNCTIONS
+	//@Papyrus
+	//Main widget update function
+	//sSlot: 0 = Left Hand, 1 = Right Hand, 2 = Shout, 3 = Consumable, 4 = Poison, 5 = Left Preselect, 6 = Right Preselect, 7 = Shout Preselect
+	public function updateWidget(iSlot: Number, sIcon: String, sName: String, iNameAlpha: Number): Void
+	{
+		var iconClip: MovieClip;
+		var itemIcon: MovieClip;
+		var nameClip: MovieClip;
+		var itemName: TextField;
+
+		switch(iSlot) {
+			case 0:
+				iconClip = leftIcon_mc
+				itemIcon = leftIcon
+				nameClip = leftName_mc
+				itemName = leftName
+				break
+			case 1:
+				iconClip = rightIcon_mc
+				itemIcon = rightIcon
+				nameClip = rightName_mc
+				itemName = rightName
+				break
+			case 2:
+				iconClip = shoutIcon_mc
+				itemIcon = shoutIcon
+				nameClip = shoutName_mc
+				itemName = shoutName		
+				break
+			case 3:
+				iconClip = consumableIcon_mc
+				itemIcon = consumableIcon
+				nameClip = consumableName_mc
+				itemName = consumableName
+				break
+			case 4:
+				iconClip = poisonIcon_mc
+				itemIcon = poisonIcon
+				nameClip = poisonName_mc
+				itemName = poisonName				
+				break
+			case 5:
+				iconClip = leftPreselectIcon_mc
+				itemIcon = leftPreselectIcon
+				nameClip = leftPreselectName_mc
+				itemName = leftPreselectName
+				break
+			case 6:
+				iconClip = rightPreselectIcon_mc
+				itemIcon = rightPreselectIcon
+				nameClip = rightPreselectName_mc
+				itemName = rightPreselectName
+				break
+			case 7:
+				iconClip = shoutPreselectIcon_mc
+				itemIcon = shoutPreselectIcon
+				nameClip = shoutPreselectName_mc
+				itemName = shoutPreselectName
+				break
+			};
+		//Store current alpha and scale values so we fade back in to the same settings
+		var currAlpha = iconClip._alpha
+		var currScale = iconClip._xscale
+		//Create the animation timeline
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+		//Fade out and shrink the icon
+		tl.to(iconClip, 0.08, {_alpha:0, _xscale:0.25, _yscale:0.25, ease:Quad.easeOut}, 0)
+		//Fade out the name
+		.to(nameClip, 0.08, {_alpha:0, ease:Quad.easeOut}, 0)
+		//Set the new icon and name and update the icon colour if potion/poison whilst not visible
+		.call(updateIconAndName, [iSlot, itemIcon, iconClip, itemName, sIcon, sName])
+		//Fade and scale the new icon back in
+		.to(iconClip, 0.15, {_alpha:currAlpha, _xscale:currScale, _yscale:currScale, ease:Quad.easeOut}, 0.15)
+		//Finally fade the new name back in
+		.to(nameClip, 0.15, {_alpha:iNameAlpha, ease:Quad.easeOut}, 0.15);
+		//And ACTION!
+		tl.play();
 	}
- 	public function setItemData(/*arguments*/): Void{
-		//arguments:
-		//[0] Queue ID
-		//[1] Slot ID
-		//[2] Form Type
-		//[3] Weapon or Spell Type
-		
-		//itemData:
-		//[0] Name (string)
-		//[1] Icon (int, frame #)
-		//[2] Color ?
-		//[3] Active or not (int)
-		var queueID = arguments[0];
-		var arrayIndex:Number = queueID*MAX_QUEUE_SIZE + arguments[1];
-		lastUsedIndex = arrayIndex;
-		if(queueID == 2){
-			itemData[arrayIndex][1] = getShoutIcon(arguments[2]);
-		}
-		else if(queueID == 0 || queueID == 1){
-			itemData[arrayIndex][1] = getHandIcon(arguments[2], arguments[3]);
-		}
-		else if(queueID == 3){
-			var iconData:Array = processPotionIcon(arguments[3]);
-			itemData[arrayIndex][1] = iconData[0];
-			itemData[arrayIndex][2] = iconData[1];
-		}
-		if(arguments[2]){
-			itemData[arrayIndex][3] = 1;
-		}
-		else{
-			itemData[arrayIndex][3] = 0;
-		}
+
+	public function updateAttributeIcons(iSlot: Number, sAttributes: String): Void
+	{
+		var attributesClip: MovieClip;
+		var attributeIcons: MovieClip;
+
+		switch(iSlot) {
+			case 0:
+				attributesClip = leftAttributeIcons_mc
+				attributeIcons = leftAttributeIcons
+				break
+			case 1:
+				attributesClip = rightAttributeIcons_mc
+				attributeIcons = rightAttributeIcons
+				break
+			case 5:
+				attributesClip = leftPreselectAttributeIcons_mc
+				attributeIcons = leftPreselectAttributeIcons		
+				break
+			case 6:
+				attributesClip = rightPreselectAttributeIcons_mc
+				attributeIcons = rightPreselectAttributeIcons
+				break
+			};
+		//Store current alpha and scale values so we fade back in to the same settings
+		var currAttributesAlpha = attributesClip._alpha
+		//Fade out
+		TweenLite.to(attributesClip, 0.08, {_alpha:0, ease:Quad.easeOut});
+		//Set new attribute icons
+		attributeIcons.gotoAndStop(sAttributes);
+		//Fade in
+		TweenLite.to(attributesClip, 0.15, {_alpha:currAttributesAlpha, ease:Quad.easeOut});
 	}
-	
-	public function cycleLeftHand(slot: Number, assignmentMode: Number): Void{
-		//Set the name
-		var textFormat:TextFormat = leftName.getTextFormat();
-		leftName.text = itemData[slot][0];
-		leftName.setTextFormat(textFormat);
+
+	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, iconClip: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
+	{
+		//Save the current text formatting to preserve any Edit Mode changes
+		var textFormat:TextFormat = itemName.getTextFormat();
+		//Set the Name
+		itemName.text = sName;
+		//Restore the text formatting
+		itemName.setTextFormat(textFormat);
 		//Set the Icon
-		leftIcon.gotoAndStop(itemData[slot][1]);
-		//Color the gem
-//		updateQueue(slot, 0, assignmentMode);
-	}
-	public function cycleRightHand(slot: Number, assignmentMode: Number): Void{
-		var i:Number = MAX_QUEUE_SIZE + slot;
-		var textFormat:TextFormat = rightName.getTextFormat();
-		rightName.text = itemData[i][0];
-		rightName.setTextFormat(textFormat);
-		rightIcon.gotoAndStop(itemData[i][1]);
-//		updateQueue(slot, 1, assignmentMode);
-	}
-	public function cycleShout(slot: Number, assignmentMode: Number): Void{
-		var i:Number = MAX_QUEUE_SIZE*2 + slot;
-		var textFormat:TextFormat = shoutName.getTextFormat();
-		shoutName.text = itemData[i][0];
-		shoutName.setTextFormat(textFormat);
-		shoutIcon.gotoAndStop(itemData[i][1]);
-//		updateQueue(slot, 2, assignmentMode);
-	}
-	public function cyclePotion(slot: Number, assignmentMode: Number): Void{
-		currentPotionSlot = slot
-		var i:Number = MAX_QUEUE_SIZE*3 + slot;
-		var textFormat:TextFormat = potionName.getTextFormat();
-		potionName.text = itemData[i][0];
-		potionName.setTextFormat(textFormat);
-		potionIcon.gotoAndStop(itemData[i][1]);
-		var pIconColor = new Color(potionIcon_mc);
-		pIconColor.setRGB(itemData[i][2]);
-//		updateQueue(slot, 3, assignmentMode);
-	}
-  	/*public function updateQueue(index: Number, queueID: Number, assignmentMode: Number): Void{
-		var Queue: Array;
-		if(arguments[1] == 0){
-			Queue = LH_slotArray;
-		}
-		else if(arguments[1] == 1){
-			Queue = RH_slotArray;
-		}
-		else if(arguments[1] == 2){
-			Queue = S_slotArray;
-		}
-		else{
-			Queue = P_slotArray;
-		}
-		var oldIndex:Number = queueIndex[queueID];
-		queueIndex[queueID] = index;
-	
-		outermost to innermost
-		var color1:Color = new Color(Queue[index*3]);
-		var color2:Color = new Color(Queue[index*3 + 1]);
-		var color3:Color = new Color(Queue[index*3 + 2]);
-		var oldColor1:Color = new Color(Queue[oldIndex*3]);
-		var oldColor2:Color = new Color(Queue[oldIndex*3 + 1]);
-		var oldColor3:Color = new Color(Queue[oldIndex*3 + 2]);
-		//If the old index has an item in it, it is to be colored slightly more brightly
-		//var arrayIndex: Number = queueID*MAX_QUEUE_SIZE + index;
-		//if(itemData[arrayIndex][3]){
-		//	oldColor1.setRGB(0xFFFFFF);
-		//	oldColor2.setRGB(0x2288BB);
-		//	oldColor3.setRGB(0x222277);
-		//}
-		//else{
+		itemIcon.gotoAndStop(sIcon);
 
-			oldColor1.setRGB(0x888888);
-			oldColor2.setRGB(0x444444);
-			oldColor3.setRGB(0x222222);
-		//}
-		//Set new gem color
-		if(assignmentMode){
-			color1.setRGB(0xFF0000);
-			color2.setRGB(0x990000);
-			color3.setRGB(0x220000);
-		}
-		else{
-			color1.setRGB(0xFFFFFF);
-			color2.setRGB(0x33AAFF);
-			color3.setRGB(0x2244FF);
-
-		}
-	}*/
-	
-	/*public function setRHIcon(): Void
-	{
-		var frame:Number = getHandIcon(arguments);
-		rightIcon.gotoAndStop(frame);
-	}
-	public function setLHIcon(): Void
-	{
-		var frame:Number = getHandIcon(arguments);
-		leftIcon.gotoAndStop(frame);
-	}*/
-	public function getShoutIcon(formType: Number): Number
-	{
-		//args[0] = formType.  22 for spells, 119 for shouts
-		if(formType == Form.TYPE_SPELL){
-			return 20;
-		}
-		else if(formType == Form.TYPE_SHOUT){
-			return 19;
-		}
-		else{
-			return 0;
-		}
-	}
-	
-	private function getHandIcon(formType: Number, subType: Object): Number {
-		switch(formType) {
-			case Form.TYPE_SPELL:
-				return processSpellIcon(subType);
-			
-			case Form.TYPE_WEAPON:
-				return processWeaponIcon(subType);
-			
-			case Form.TYPE_ARMOR: //The only armor piece that can be in the queue is the shield
-				return 45;
-				
-			case Form.TYPE_LIGHT://Torch
-				return 114;
-			case 0:
-				return 0;
+		switch (iSlot){
+			case 3:
+			//Colour the potion icons
+				switch(sIcon){
+					case "HealthPotion":
+						var pIconColor = new Color(iconClip);
+						pIconColor.setRGB(0xDB2E73);
+						break;
+					case "StaminaPotion":
+						var pIconColor = new Color(iconClip);
+						pIconColor.setRGB(0x51DB2E);
+						break;
+					case "MagickaPotion":
+						var pIconColor = new Color(iconClip);
+						pIconColor.setRGB(0x2E9FDB);
+						break;
+					case "FrostResistPotion":
+						var pIconColor = new Color(iconClip);
+						pIconColor.setRGB(0x1FFBFF);
+						break;
+					case "FireResistPotion":
+						var pIconColor = new Color(iconClip);
+						pIconColor.setRGB(0xC73636);
+						break;
+					case "ShockResistPotion":
+						var pIconColor = new Color(iconClip);
+						pIconColor.setRGB(0xEAAB00);
+						break;
+					default:
+						var pIconColor = new Color(iconClip);
+						pIconColor.setRGB(0xFFFFFF);
+						break
+					};
+				break
+			case 4:
+				//Colour the poison icon
+				var pIconColor = new Color(iconClip);
+				pIconColor.setRGB(0xAD00B3);
+				break
 			default:
-				//Returns a hand icon
-				return 49;
+				break
+			};
+	}
+
+	//Used when a bound weapon is equipped to switch from the spell school icon to the bound weapon icon
+	public function updateIconOnly(iSlot: Number, sIcon: String): Void
+	{
+		var iconClip: MovieClip;
+		//var itemIcon: MovieClip;
+		//var currAlpha: Number;
+		
+		switch(iSlot) {
+			case 0:
+				iconClip = leftIcon_mc
+				//itemIcon = leftIcon
+				//currAlpha = leftIcon_mc._alpha
+				break
+			case 1:
+				iconClip = rightIcon_mc
+				//itemIcon = rightIcon
+				//currAlpha = rightIcon_mc._alpha
+				break
+			};
+		
+		//TweenLite.to(iconClip, 0.15, {_alpha:0, ease:Quad.easeOut});
+		//itemIcon.gotoAndStop(sIcon); 
+		//TweenLite.to(iconClip, 0.2, {_alpha:currAlpha, ease:Quad.easeOut});
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+		tl.to(iconClip, 1.2, {_rotation:"+=1080", ease:Strong.easeInOut}, 0)
+		.call(switchToBoundItemIcon, [iSlot, sIcon], this, 0.7);
+		tl.play();
+	}
+
+	public function switchToBoundItemIcon(iSlot: Number, sIcon: String): Void
+	{
+		var itemIcon: MovieClip;
+
+		switch(iSlot) {
+			case 0:
+				itemIcon = leftIcon
+				break
+			case 1:
+				itemIcon = rightIcon
+				break
+			};
+
+		itemIcon.gotoAndStop(sIcon);
+	}
+
+	public function togglePreselect(leftEnabled: Boolean, rightEnabled: Boolean, shoutEnabled: Boolean, backgroundsShown: Boolean, ammoMode: Boolean): Void
+	{
+		if(!ammoMode){
+			leftPreselectIcon._alpha = 0
+			leftPreselectName_mc._alpha = 0
+			leftPreselectBg._alpha = 0
+		}
+		shoutPreselectIcon._alpha = 0
+		shoutPreselectName_mc._alpha = 0
+		rightPreselectIcon._alpha = 0
+		rightPreselectName_mc._alpha = 0
+		shoutPreselectBg._alpha = 0
+		rightPreselectBg._alpha = 0
+
+		if (!backgroundsShown){
+			leftPreselectBg_mc._visible = backgroundsShown
+			shoutPreselectBg_mc._visible = backgroundsShown
+			rightPreselectBg_mc._visible = backgroundsShown
+		} else {
+			leftPreselectBg_mc._visible = leftEnabled
+			shoutPreselectBg_mc._visible = shoutEnabled
+			rightPreselectBg_mc._visible = rightEnabled
+		}
+		leftPreselectIcon_mc._visible = leftEnabled
+		leftPreselectName_mc._visible = leftEnabled
+		shoutPreselectIcon_mc._visible = shoutEnabled
+		shoutPreselectName_mc._visible = shoutEnabled
+		rightPreselectIcon_mc._visible = rightEnabled
+		rightPreselectName_mc._visible = rightEnabled
+	}
+
+	public function ProModeAnimateIn(leftEnabled: Boolean, shoutEnabled: Boolean, rightEnabled: Boolean): Void
+	{
+		//Create the preselect element arrays then add elements to the arrays depending on whether they are shown or not. Sequence for animation is left to right
+		var preselectIcons: Array = new Array();
+		var preselectBackgrounds: Array = new Array();
+		var preselectNames: Array = new Array();
+
+		if (leftEnabled == true){
+			preselectIcons.push(leftPreselectIcon)
+			preselectBackgrounds.push(leftPreselectBg)
+			preselectNames.push(leftPreselectName_mc)
+		}
+		if (shoutEnabled == true){
+			preselectIcons.push(shoutPreselectIcon)
+			preselectBackgrounds.push(shoutPreselectBg)
+			preselectNames.push(shoutPreselectName_mc)
+		}
+		if (rightEnabled == true){
+			preselectIcons.push(rightPreselectIcon)
+			preselectBackgrounds.push(rightPreselectBg)
+			preselectNames.push(rightPreselectName_mc)
+		}
+		//Set up the animation timeline
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+		tl.staggerTo(preselectIcons, 0.8, {_rotation:"+=360", _alpha:100, _xscale:100, _yscale:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0)
+		tl.staggerTo(preselectBackgrounds, 0.8, {_rotation:180, _alpha:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
+		tl.staggerTo(preselectNames, 0.3, {_alpha:100, immediateRender:false}, 0.2, 0.6);
+		//And action!
+		tl.play();
+	}
+
+	public function ProModeAnimateOut(rightEnabled: Boolean, shoutEnabled: Boolean, leftEnabled: Boolean): Void
+	{
+		var preselectIcons: Array = new Array();
+		var preselectBackgrounds: Array = new Array();
+		var preselectNames: Array = new Array();
+		// This time animation sequence is right to left, the opposite of animate in
+		if (rightEnabled == true){
+			preselectIcons.push(rightPreselectIcon)
+			preselectBackgrounds.push(rightPreselectBg)
+			preselectNames.push(rightPreselectName_mc)
+		}
+		if (shoutEnabled == true){
+			preselectIcons.push(shoutPreselectIcon)
+			preselectBackgrounds.push(shoutPreselectBg)
+			preselectNames.push(shoutPreselectName_mc)
+		}
+		if (leftEnabled == true){
+			preselectIcons.push(leftPreselectIcon)
+			preselectBackgrounds.push(leftPreselectBg)
+			preselectNames.push(leftPreselectName_mc)
+		}
+
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+		tl.staggerTo(preselectIcons, 1.0, {_rotation:"-=360", _alpha:0, _xscale:20, _yscale:20, immediateRender:false, ease:Quad.easeOut}, 0.3, 0)
+		tl.staggerTo(preselectBackgrounds, 1.0, {_rotation:"-=120", _alpha:0, immediateRender:false, ease:Quad.easeOut}, 0.3, 0.2)
+		tl.staggerTo(preselectNames, 0.4, {_alpha:0, immediateRender:false}, 0.3, 0);
+
+		tl.play();
+	}
+
+	public function prepareForPreselectAnimation(): Void
+	{
+		//This function checks if the preselect icons are to the left or right of their main icon and sets the animate out direction to the opposite side. It also stores current main icon x/y as the target values for the preselect icons to animate to. Finally it gets and stores all necessary current scale and alpha values to ensure everything returns to the exact state it was in prior to starting the animation
+		
+		var leftIconLTG:Object = {x:0, y:0};
+		var leftPreselectIconLTG:Object = {x:0, y:0};
+		var rightIconLTG:Object = {x:0, y:0};
+		var rightPreselectIconLTG:Object = {x:0, y:0};
+		var shoutIconLTG:Object = {x:0, y:0};
+		var shoutPreselectIconLTG:Object = {x:0, y:0};
+
+		leftIcon.localToGlobal(leftIconLTG);
+		leftPreselectIcon.localToGlobal(leftPreselectIconLTG);
+		rightIcon.localToGlobal(rightIconLTG);
+		rightPreselectIcon.localToGlobal(rightPreselectIconLTG);
+		shoutIcon.localToGlobal(shoutIconLTG);
+		shoutPreselectIcon.localToGlobal(shoutPreselectIconLTG);
+
+		var leftPIconTarget:Object = {x:0, y:0};
+		var rightPIconTarget:Object = {x:0, y:0};
+		var shoutPIconTarget:Object = {x:0, y:0};
+
+		leftIcon.localToGlobal(leftPIconTarget);
+		leftPreselectIcon.globalToLocal(leftPIconTarget);
+		rightIcon.localToGlobal(rightPIconTarget);
+		rightPreselectIcon.globalToLocal(rightPIconTarget);
+		shoutIcon.localToGlobal(shoutPIconTarget);
+		shoutPreselectIcon.globalToLocal(shoutPIconTarget);
+
+
+		if (leftIconLTG.x > leftPreselectIconLTG.x){
+			leftTargetX = (leftIcon_mc._width) //If preselect icon is to the left of the main widget animate main widget out to right
+		} else {
+			leftTargetX = -(leftIcon_mc._width) //If preselect icon is to the right of the main widget animate main widget out to left
+		}
+		if (rightIconLTG.x > rightPreselectIconLTG.x){
+			rightTargetX = (rightIcon_mc._width)
+		} else {
+			rightTargetX = -(rightIcon_mc._width)
+		}
+		if (shoutIconLTG.x > shoutPreselectIconLTG.x){
+			shoutTargetX = (shoutIcon_mc._width)
+		} else {
+			shoutTargetX = -(shoutIcon_mc._width)
 		}
 		
+		leftPTargetX = leftPIconTarget.x;
+		leftPTargetY = leftPIconTarget.y;
+		rightPTargetX = -rightPIconTarget.x;
+		rightPTargetY = rightPIconTarget.y;
+		shoutPTargetX = shoutPIconTarget.x;
+		shoutPTargetY = shoutPIconTarget.y;
+
+		//Store current alpha and scale values ready to reapply
+		leftIconAlpha = leftIcon_mc._alpha;
+		leftTargetScale = ((leftIcon_mc._xscale / leftPreselectIcon_mc._xscale) * 100);
+		leftPTargetRotation = leftIcon_mc._rotation;
+		leftPIconAlpha = leftPreselectIcon_mc._alpha;
+		leftPIconScale = leftPreselectIcon._xscale;
+		rightIconAlpha = rightIcon_mc._alpha;
+		rightTargetScale = ((rightIcon_mc._xscale / rightPreselectIcon_mc._xscale) * 100);
+		rightPTargetRotation = rightIcon_mc._rotation + 180;
+		rightPIconAlpha = rightPreselectIcon_mc._alpha;
+		rightPIconScale = rightPreselectIcon._xscale;
+		shoutIconAlpha = shoutIcon_mc._alpha;
+		shoutTargetScale = ((shoutIcon_mc._xscale / shoutPreselectIcon_mc._xscale) * 100);
+		shoutPTargetRotation = shoutIcon_mc._rotation;
+		shoutPIconAlpha = shoutPreselectIcon_mc._alpha;
+		shoutPIconScale = shoutPreselectIcon._xscale;
+		leftNameAlpha = leftName_mc._alpha;
+		leftPNameAlpha = leftPreselectName_mc._alpha;
+		rightNameAlpha = rightName_mc._alpha;
+		rightPNameAlpha = rightPreselectName_mc._alpha;
+		shoutNameAlpha = shoutName_mc._alpha;
+		shoutPNameAlpha = shoutPreselectName_mc._alpha;
+
+		skse.SendModEvent("iEquip_ReadyForPreselectAnimation", null);
+
 	}
-	private function processPotionIcon(potionType: Object): Array {
-		var args:Array = new Array(2);
-		switch(potionType){
-			case Item.POTION_FOOD:
-				args[0] = 79;
-				args[1] = 0xFFFFFF
-				break;
-			case Item.POTION_POISON:
-				args[0] = 89;
-				args[1] = 0xAD00B3;
-				break;
-			case Item.POTION_HEALTH:
-				args[0] = 86;
-				args[1] = 0xDB2E73
-				break;
-			case Item.POTION_STAMINA:
-				args[0] = 87;
-				args[1] = 0x51DB2E;
-				break;
-			case Item.POTION_MAGICKA:
-				args[0] = 88;
-				args[1] = 0x2E9FDB;
-				break;
-			case Item.POTION_FROSTRESIST:
-				args[0] = 90;
-				args[1] = 0x1FFBFF;
-				break;
-			case Item.POTION_FIRERESIST:
-				args[0] = 91;
-				args[1] = 0xC73636;
-				break;
-			case Item.POTION_ELECTRICRESIST:
-				args[0] = 92;
-				args[1] = 0xEAAB00;
-				break;
-			default:
-				args[0] = 85;
-				args[1] = 0xFFFFFF;
-		}
-		return args;
-	}
-	private function processSpellIcon(spellType: Object): Number {
-		switch(spellType){
-			case Actor.AV_ALTERATION:
-				return 14;
-			case Actor.AV_ILLUSION:
-				return 15;
-			case Actor.AV_DESTRUCTION:
-				return 16
-			case Actor.AV_CONJURATION:
-				return 17;
-			case Actor.AV_RESTORATION:
-				return 18
-			default:
-				return 16;
-		}
-	}
-	private function processWeaponIcon(weaponType: Object): Number
+
+	public function equipPreselectedItem(iSlot: Number, currIcon: String, newIcon: String, newName: String, currPIcon: String, newPIcon: String, newPName: String): Void
 	{
-		switch(weaponType) {
-			case Weapon.TYPE_SWORD:
-				return 22;
-
-			case Weapon.TYPE_DAGGER:
-				return 26;
-
-			case Weapon.TYPE_WARAXE:
-				return 27;
-				break;
-
-			case Weapon.TYPE_MACE:
-				return 29;
-				break;
-
-			case Weapon.TYPE_GREATSWORD:
-				return 24;
-
-			case Weapon.TYPE_BATTLEAXE:
-				return 28;
-
-			case Weapon.TYPE_WARHAMMER:
-				return 30;
-
-			case Weapon.TYPE_BOW:
-				return 32;
-
-			case Weapon.TYPE_STAFF:
-				return 31;
-
-			case Weapon.TYPE_CROSSBOW:
-				return 36;
+		
+		var iconClip: MovieClip;
+		var iconClip_mc: MovieClip;
+		var pIconClip: MovieClip;
+		var pIconClip_mc: MovieClip;
+		var itemName_mc: MovieClip;
+		var preselectName_mc: MovieClip;
+		var itemName: TextField;
+		var pItemName: TextField;
+		var targetX: Number;
+		var pTargetX: Number;
+		var pTargetY: Number;
+		var pTargetRotation: Number;
+		var pIconAlpha: Number;
+		var pIconScale: Number;
+		var pIconTargetScale: Number
+		var iconAlpha: Number;
+		var itemNameAlpha: Number;
+		var preselectNameAlpha: Number;
+		
+		switch(iSlot) {
 			case 0:
-				return 41;
-			default:
-				return 22;
+				iconClip = leftIcon;
+				iconClip_mc = leftIcon_mc;
+				pIconClip = leftPreselectIcon;
+				pIconClip_mc = leftPreselectIcon_mc;
+				itemName_mc = leftName_mc;
+				preselectName_mc = leftPreselectName_mc;
+				itemName = leftName;
+				pItemName = leftPreselectName;
+				targetX = leftTargetX;
+				pTargetX = leftPTargetX;
+				pTargetY = leftPTargetY;
+				pTargetRotation = leftPTargetRotation;
+				pIconAlpha = leftPIconAlpha;
+				pIconScale = leftPIconScale;
+				iconAlpha = leftIconAlpha;
+				pIconTargetScale = leftTargetScale;
+				itemNameAlpha = leftNameAlpha;
+				preselectNameAlpha = leftPNameAlpha;
+				break
+			case 1:
+				iconClip = rightIcon;
+				iconClip_mc = rightIcon_mc;
+				pIconClip = rightPreselectIcon;
+				pIconClip_mc = rightPreselectIcon_mc;
+				itemName_mc = rightName_mc;
+				preselectName_mc = rightPreselectName_mc;
+				itemName = rightName;
+				pItemName = rightPreselectName;
+				targetX = rightTargetX;
+				pTargetX = rightPTargetX;
+				pTargetY = rightPTargetY;
+				pTargetRotation = rightPTargetRotation;
+				pIconAlpha = rightPIconAlpha;
+				pIconScale = rightPIconScale;
+				iconAlpha = rightIconAlpha;
+				pIconTargetScale = rightTargetScale;
+				itemNameAlpha = rightNameAlpha;
+				preselectNameAlpha = rightPNameAlpha;
+				break
+			case 2:
+				iconClip = shoutIcon;
+				iconClip_mc = shoutIcon_mc;
+				pIconClip = shoutPreselectIcon;
+				pIconClip_mc = shoutPreselectIcon_mc;
+				itemName_mc = shoutName_mc;
+				preselectName_mc = shoutPreselectName_mc;
+				itemName = shoutName;
+				pItemName = shoutPreselectName;
+				targetX = shoutTargetX;
+				pTargetX = shoutPTargetX;
+				pTargetY = shoutPTargetY;
+				pTargetRotation = shoutPTargetRotation;
+				pIconAlpha = shoutPIconAlpha;
+				pIconScale = shoutPIconScale;
+				iconAlpha = shoutIconAlpha;
+				pIconTargetScale = shoutTargetScale;
+				itemNameAlpha = shoutNameAlpha;
+				preselectNameAlpha = shoutPNameAlpha;
+				break
+			}
+
+		if (itemNameAlpha < 1.0){
+			itemNameAlpha = 100
+		}
+		if (preselectNameAlpha < 1.0){
+			preselectNameAlpha = 100
+		}
+
+		tempIcon = iconClip.duplicateMovieClip("tempIcon", this.getNextHighestDepth());
+		tempIcon.gotoAndStop(currIcon);
+		iconClip._alpha = 0;
+		iconClip.gotoAndStop(newIcon);
+		tempPIcon = pIconClip.duplicateMovieClip("tempPIcon", this.getNextHighestDepth());
+		tempPIcon._xscale = pIconClip_mc._xscale;
+		tempPIcon._yscale = pIconClip_mc._yscale;
+		tempPIcon.gotoAndStop(currPIcon);
+		pIconClip._alpha = 0;
+		pIconClip._xscale = 25;
+		pIconClip._yscale = 25;
+		pIconClip.gotoAndStop(newPIcon);
+		skyui.util.Debug.log("iEquip .equipPreselectedItem - newName: " + newName + ", newPName: " + newPName);
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:equipPreselectedItemComplete, onCompleteParams:[iconClip_mc, tempIcon, pIconClip_mc, tempPIcon]});
+		tl.to(itemName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		.to(preselectName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		.call(updateNamesForEquipPreselect, [itemName, pItemName, newName, newPName])
+		.to(tempIcon, 0.6, {_x:targetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
+		.to(tempPIcon, 0.6, {_x:pTargetX, _y:pTargetY, _rotation: pTargetRotation, _alpha:iconAlpha, _xscale:pIconTargetScale, _yscale:pIconTargetScale, ease:Quad.easeOut}, 0)
+		.to(iconClip, 0, {_alpha:iconAlpha, ease:Linear.easeNone})
+		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})
+		.to(pIconClip, 0.4, {_alpha:pIconAlpha, _xscale:pIconScale, _yscale:pIconScale, ease:Elastic.easeOut}, 0.5)
+		.to(itemName_mc, 0.3, {_alpha:itemNameAlpha, ease:Quad.easeOut}, 0.6)
+		.to(preselectName_mc, 0.3, {_alpha:preselectNameAlpha, ease:Quad.easeOut}, 0.6);
+
+		tl.play();
+	}
+
+	public function updateNamesForEquipPreselect(itemName: TextField, pItemName: TextField, newName: String, newPName: String): Void
+	{
+		skyui.util.Debug.log("iEquip .updateNamesForEquipPreselect - newName: " + newName + ", newPName: " + newPName);
+		//Save the current text formatting to preserve any Edit Mode changes
+		var textFormat:TextFormat = itemName.getTextFormat();
+		var pTextFormat:TextFormat = pItemName.getTextFormat();
+		//Set the new names
+		itemName.text = newName;
+		pItemName.text = newPName;
+		//Restore the text formatting
+		itemName.setTextFormat(textFormat);
+		pItemName.setTextFormat(pTextFormat);
+	}
+
+	public function equipAllPreselectedItems(swapLeft: Boolean, swapRight: Boolean, swapShout: Boolean, leftCurrIcon: String, leftPCurrIcon: String, leftNewName: String, leftPNewIcon: String, leftPNewName: String, rightCurrIcon: String, rightPCurrIcon: String, rightNewName: String, rightPNewIcon: String, rightPNewName: String, shoutCurrIcon: String, shoutPCurrIcon: String, shoutNewName: String, shoutPNewIcon: String, shoutPNewName: String): Void
+	{
+		//Set the counter at +1 per slot being animated
+		EquipAllCounter = 0
+		if (swapRight){
+			EquipAllCounter += 1
+		}
+		if (swapLeft){
+			EquipAllCounter += 1
+		}
+		if (swapShout){
+			EquipAllCounter += 1
+		}
+		skyui.util.Debug.log("iEquip .equipAllPreselectedItems - EquipAllCounter: " + EquipAllCounter);
+		//Play the animations
+		if (swapRight){
+			equipPreselectedItem(1, rightCurrIcon, rightPCurrIcon, rightNewName, rightPCurrIcon, rightPNewIcon, rightPNewName)
+		}
+		if (swapLeft){
+			equipPreselectedItem(0, leftCurrIcon, leftPCurrIcon, leftNewName, leftPCurrIcon, leftPNewIcon, leftPNewName)
+		}
+		if (swapShout){
+			equipPreselectedItem(2, shoutCurrIcon, shoutPCurrIcon, shoutNewName, shoutPCurrIcon, shoutPNewIcon, shoutPNewName)
 		}
 	}
-	
-	// @Papyrus
+
+	public function equipPreselectedItemWithoutNewPreselect(iSlot: Number, currIcon: String, newIcon: String, newName: String, currPIcon: String): Void
+	{
+		
+		var iconClip: MovieClip;
+		var iconClip_mc: MovieClip;
+		var pIconClip: MovieClip;
+		var pIconClip_mc: MovieClip;
+		var itemName_mc: MovieClip;
+		var preselectName_mc: MovieClip;
+		var itemName: TextField;
+		var pItemName: TextField;
+		var targetX: Number;
+		var pTargetX: Number;
+		var pTargetY: Number;
+		var pTargetRotation: Number;
+		var pIconAlpha: Number;
+		var pIconScale: Number;
+		var pIconTargetScale: Number
+		var iconAlpha: Number;
+		var itemNameAlpha: Number;
+		
+		switch(iSlot) {
+			case 0:
+				iconClip = leftIcon;
+				iconClip_mc = leftIcon_mc;
+				pIconClip = leftPreselectIcon;
+				pIconClip_mc = leftPreselectIcon_mc;
+				itemName_mc = leftName_mc;
+				preselectName_mc = leftPreselectName_mc;
+				itemName = leftName;
+				pItemName = leftPreselectName;
+				targetX = leftTargetX;
+				pTargetX = leftPTargetX;
+				pTargetY = leftPTargetY;
+				pTargetRotation = leftPTargetRotation;
+				pIconAlpha = leftPIconAlpha;
+				pIconScale = leftPIconScale;
+				iconAlpha = leftIconAlpha;
+				pIconTargetScale = leftTargetScale;
+				itemNameAlpha = leftNameAlpha;
+				break
+			case 1:
+				iconClip = rightIcon;
+				iconClip_mc = rightIcon_mc;
+				pIconClip = rightPreselectIcon;
+				pIconClip_mc = rightPreselectIcon_mc;
+				itemName_mc = rightName_mc;
+				preselectName_mc = rightPreselectName_mc;
+				itemName = rightName;
+				pItemName = rightPreselectName;
+				targetX = rightTargetX;
+				pTargetX = rightPTargetX;
+				pTargetY = rightPTargetY;
+				pTargetRotation = rightPTargetRotation;
+				pIconAlpha = rightPIconAlpha;
+				pIconScale = rightPIconScale;
+				iconAlpha = rightIconAlpha;
+				pIconTargetScale = rightTargetScale;
+				itemNameAlpha = rightNameAlpha;
+				break
+			case 2:
+				iconClip = shoutIcon;
+				iconClip_mc = shoutIcon_mc;
+				pIconClip = shoutPreselectIcon;
+				pIconClip_mc = shoutPreselectIcon_mc;
+				itemName_mc = shoutName_mc;
+				preselectName_mc = shoutPreselectName_mc;
+				itemName = shoutName;
+				pItemName = shoutPreselectName;
+				targetX = shoutTargetX;
+				pTargetX = shoutPTargetX;
+				pTargetY = shoutPTargetY;
+				pTargetRotation = shoutPTargetRotation;
+				pIconAlpha = shoutPIconAlpha;
+				pIconScale = shoutPIconScale;
+				iconAlpha = shoutIconAlpha;
+				pIconTargetScale = shoutTargetScale;
+				itemNameAlpha = shoutNameAlpha;
+				break
+			}
+
+		if (itemNameAlpha < 1.0){
+			itemNameAlpha = 100
+		}
+
+		tempIcon = iconClip.duplicateMovieClip("tempIcon", this.getNextHighestDepth());
+		tempIcon.gotoAndStop(currIcon);
+		iconClip._alpha = 0;
+		iconClip.gotoAndStop(newIcon);
+		tempPIcon = pIconClip.duplicateMovieClip("tempPIcon", this.getNextHighestDepth());
+		tempPIcon._xscale = pIconClip_mc._xscale;
+		tempPIcon._yscale = pIconClip_mc._yscale;
+		tempPIcon.gotoAndStop(currPIcon);
+		pIconClip._alpha = 0;
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:equipPreselectedItemComplete, onCompleteParams:[iconClip_mc, tempIcon, pIconClip_mc, tempPIcon]});
+		tl.to(itemName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		.to(preselectName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		.call(updateNamesForEquipPreselectWithoutNewPreselect, [itemName, newName])
+		.to(tempIcon, 0.6, {_x:targetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
+		.to(tempPIcon, 0.6, {_x:pTargetX, _y:pTargetY, _rotation: pTargetRotation, _alpha:iconAlpha, _xscale:pIconTargetScale, _yscale:pIconTargetScale, ease:Quad.easeOut}, 0)
+		.to(iconClip, 0, {_alpha:iconAlpha, ease:Linear.easeNone})
+		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})
+		.to(itemName_mc, 0.3, {_alpha:itemNameAlpha, ease:Quad.easeOut}, 0.6)
+
+		tl.play();
+	}
+
+	public function updateNamesForEquipPreselectWithoutNewPreselect(itemName: TextField, newName: String): Void
+	{
+		skyui.util.Debug.log("iEquip .updateNamesForEquipPreselectWithoutNewPreselect - newName: " + newName);
+		//Save the current text formatting to preserve any Edit Mode changes
+		var textFormat:TextFormat = itemName.getTextFormat();
+		//Set the new names
+		itemName.text = newName;
+		//Restore the text formatting
+		itemName.setTextFormat(textFormat);
+	}
+
+	public function equipAllPreselectedItemsAndTogglePreselect(swapLeft: Boolean, swapRight: Boolean, swapShout: Boolean, leftCurrIcon: String, leftPCurrIcon: String, leftNewName: String, rightCurrIcon: String, rightPCurrIcon: String, rightNewName: String, shoutCurrIcon: String, shoutPCurrIcon: String, shoutNewName: String): Void
+	{
+		//Set the counter at +1 per slot being animated
+		EquipAllCounter = 0
+		if (swapRight){
+			EquipAllCounter += 1
+		}
+		if (swapLeft){
+			EquipAllCounter += 1
+		}
+		if (swapShout){
+			EquipAllCounter += 1
+		}
+		skyui.util.Debug.log("iEquip .equipAllPreselectedItems - EquipAllCounter: " + EquipAllCounter);
+		//Play the animations
+		if (swapRight){
+			equipPreselectedItemWithoutNewPreselect(1, rightCurrIcon, rightPCurrIcon, rightNewName, rightPCurrIcon)
+		}
+		if (swapLeft){
+			equipPreselectedItemWithoutNewPreselect(0, leftCurrIcon, leftPCurrIcon, leftNewName, leftPCurrIcon)
+		}
+		if (swapShout){
+			equipPreselectedItemWithoutNewPreselect(2, shoutCurrIcon, shoutPCurrIcon, shoutNewName, shoutPCurrIcon)
+		}
+	}
+
+	public function equipPreselectedItemComplete(iconClip_mc: MovieClip, tempIcon: MovieClip, pIconClip_mc: MovieClip, tempPIcon: MovieClip): Void
+	{		
+		skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - EquipAllCounter: " + EquipAllCounter);
+		//Delete the temporary movieclips
+		iconClip_mc.tempIcon.removeMovieClip();
+		pIconClip_mc.tempPIcon.removeMovieClip();
+		//Check the counter to see if we're equipping all preselected
+		if (EquipAllCounter > 0){
+			//Count down until all calls are made
+			EquipAllCounter -= 1
+			skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - EquipAllCounter: " + EquipAllCounter);
+			if (EquipAllCounter == 0){
+				skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - About to send iEquip_EquipAllComplete mod event");
+				//And let Papyrus know so the function can complete
+				skse.SendModEvent("iEquip_EquipAllComplete")
+			}
+		}
+	}
+
+	public function prepareForAmmoModeAnimation(animateIn: Boolean, backgroundsShown: Boolean): Void
+	{		
+		var leftIconLTG:Object = {x:0, y:0};
+		var leftPreselectIconLTG:Object = {x:0, y:0};
+
+		leftIcon.localToGlobal(leftIconLTG);
+		leftPreselectIcon.localToGlobal(leftPreselectIconLTG);
+
+		var leftPIconTarget:Object = {x:0, y:0};
+		var leftIconTarget:Object = {x:0, y:0};
+
+		leftIcon.localToGlobal(leftPIconTarget);
+		leftPreselectIcon.globalToLocal(leftPIconTarget);
+
+		leftPreselectIcon.localToGlobal(leftIconTarget);
+		leftIcon.globalToLocal(leftIconTarget);
+
+		if (!animateIn){
+			if (leftIconLTG.x > leftPreselectIconLTG.x){
+				leftTargetX = (leftIcon_mc._width) //If preselect icon is to the left of the main widget animate main widget out to right
+			} else {
+				leftTargetX = -(leftIcon_mc._width) //If preselect icon is to the right of the main widget animate main widget out to left
+			}
+		} else {
+			leftTargetX = leftIconTarget.x;
+			leftTargetY = leftIconTarget.y;
+		}
+				
+		leftPTargetX = leftPIconTarget.x;
+		leftPTargetY = leftPIconTarget.y;
+
+		//Reset the preselect icon scale
+		leftPreselectIcon._xscale = 100;
+		leftPreselectIcon._yscale = 100;
+
+		//Store current alpha and scale values ready to reapply
+		leftIconAlpha = leftIcon_mc._alpha;
+		if (!animateIn){
+			leftTargetScale = ((leftIcon_mc._xscale / leftPreselectIcon_mc._xscale) * 100);
+		} else {
+			leftTargetScale = ((leftPreselectIcon_mc._xscale / leftIcon_mc._xscale) * 100);
+		}
+		leftPIconAlpha = 100;
+		leftPIconScale = 100;
+		leftNameAlpha = leftName_mc._alpha;
+		leftPNameAlpha = leftPreselectName_mc._alpha;
+
+		leftPreselectBg_mc._visible = backgroundsShown
+
+		skse.SendModEvent("iEquip_ReadyForAmmoModeAnimation", null);
+	}
+
+	public function ammoModeAnimateIn(currIcon: String, currName: String, newIcon: String, newName: String): Void
+	{		
+		if (leftNameAlpha < 1.0){
+			leftNameAlpha = 100
+		}
+		if (leftPNameAlpha < 1.0){
+			leftPNameAlpha = 100
+		}
+		skyui.util.Debug.log("iEquip .ammoModeAnimateIn - currIcon: " + currIcon + ", currName: " + currName + ", newIcon: " + newIcon + ", newName: " + newName + ", leftNameAlpha: " + leftNameAlpha + ", leftPNameAlpha: " + leftPNameAlpha);
+		tempIcon = leftIcon.duplicateMovieClip("tempIcon", this.getNextHighestDepth());
+		tempIcon.gotoAndStop(currIcon);
+		leftIcon._alpha = 0;
+		leftIcon._xscale = 25;
+		leftIcon._yscale = 25;
+		leftIcon.gotoAndStop(newIcon);
+		leftPreselectIcon._alpha = 0;
+		leftPreselectIcon.gotoAndStop(currIcon);
+		leftPreselectIcon_mc._visible = true
+		leftPreselectName_mc._visible = true
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:AmmoModeAnimateInComplete, onCompleteParams:[leftIcon_mc, tempIcon]});
+		tl.to(leftName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		.call(updateNamesForEquipPreselect, [leftName, leftPreselectName, newName, currName])
+		.to(tempIcon, 0.6, {_x:leftTargetX, _y:leftTargetY, _rotation:0, _alpha:leftPIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
+		.to(leftPreselectIcon, 0, {_alpha:leftPIconAlpha, ease:Linear.easeNone})
+		.to(leftIcon, 0.4, {_alpha:leftIconAlpha, _xscale:100, _yscale:100, ease:Elastic.easeOut}, 0.3)
+		.to(leftPreselectBg, 0.4, {_rotation:180, _alpha:100, ease:Back.easeOut}, 0.4)
+		.to(leftName_mc, 0.3, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.6)
+		.to(leftPreselectName_mc, 0.3, {_alpha:leftPNameAlpha, ease:Quad.easeOut}, 0.6);
+
+		tl.play();
+	}
+
+	public function ammoModeAnimateOut(currIcon: String, currPIcon: String, newName: String): Void
+	{
+		if (leftNameAlpha < 1.0){
+			leftNameAlpha = 100
+		}
+		var targetRotation: Number = leftIcon_mc._rotation
+		tempIcon = leftIcon.duplicateMovieClip("tempIcon", this.getNextHighestDepth());
+		tempIcon.gotoAndStop(currIcon);
+		leftIcon._alpha = 0;
+		leftIcon.gotoAndStop(currPIcon);
+		tempPIcon = leftPreselectIcon.duplicateMovieClip("tempPIcon", this.getNextHighestDepth());
+		tempPIcon._xscale = leftPreselectIcon_mc._xscale;
+		tempPIcon._yscale = leftPreselectIcon_mc._yscale;
+		tempPIcon.gotoAndStop(currPIcon);
+		leftPreselectIcon._alpha = 0;
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:AmmoModeAnimateOutComplete, onCompleteParams:[leftIcon_mc, tempIcon, leftPreselectIcon_mc, tempPIcon]});
+		tl.to(leftName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		.to(leftPreselectName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		.call(updateNamesForEquipPreselect, [leftName, leftPreselectName, newName, ""])
+		.to(tempIcon, 0.6, {_x:leftTargetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
+		.to(tempPIcon, 0.6, {_x:leftPTargetX, _y:leftPTargetY, _rotation:targetRotation, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
+		.to(leftPreselectBg, 0.4, {_rotation:"-=120", _alpha:0, ease:Back.easeOut}, 0)
+		.to(leftIcon, 0, {_alpha:leftIconAlpha, ease:Linear.easeNone})
+		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})
+		.to(leftName_mc, 0.3, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.6);
+
+		tl.play();
+	}
+
+	public function AmmoModeAnimateInComplete(iconClip_mc: MovieClip, tempIcon: MovieClip): Void
+	{		
+		//Delete the temporary movieclip
+		iconClip_mc.tempIcon.removeMovieClip();
+		skse.SendModEvent("iEquip_AmmoModeAnimationComplete", null);
+	}
+
+	public function AmmoModeAnimateOutComplete(iconClip_mc: MovieClip, tempIcon: MovieClip, pIconClip_mc: MovieClip, tempPIcon: MovieClip): Void
+	{		
+		//Delete the temporary movieclip
+		iconClip_mc.tempIcon.removeMovieClip();
+		pIconClip_mc.tempPIcon.removeMovieClip();
+		skse.SendModEvent("iEquip_AmmoModeAnimationComplete", null);
+	}
 	
 	public function fadeOut(a_alpha: Number, duration: Number): Void
 	{
@@ -622,6 +1395,19 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			myColor.setRGB(highlightColor);
 		}
 	}
+
+	/*public function highlightSelectedElement(isText:Number, arrayIndex:Number, currentColor:Number): Void
+	{
+		if (isText == 1){
+			selectedText = textElementArray[arrayIndex];
+			selectedText.textColor = highlightColor;
+		}
+		else {
+			tempHighlightedClip = clip.duplicateMovieClip("tempClip", this.getNextHighestDepth());
+			var myColor:Color = new Color(tempHighlightedClip);
+			myColor.setRGB(highlightColor);
+		}
+	}*/
 	
 	public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
 	{
@@ -629,32 +1415,71 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			selectedText = textElementArray[textElement];
 			selectedText.textColor = currentColor;
 		}
-		else if (clip == potionIcon_mc){
-			var i:Number = MAX_QUEUE_SIZE*3 + currentPotionSlot;
-			var pIconColor = new Color(potionIcon_mc);
-			pIconColor.setRGB(itemData[i][2]);
+		else if (clip == consumableIcon_mc){
+			switch(_global.potionType){
+				case "HealthPotion":
+					var pIconColor = new Color(consumableIcon_mc);
+					pIconColor.setRGB(0xDB2E73);
+					break;
+				case "StaminaPotion":
+					var pIconColor = new Color(consumableIcon_mc);
+					pIconColor.setRGB(0x51DB2E);
+					break;
+				case "MagickaPotion":
+					var pIconColor = new Color(consumableIcon_mc);
+					pIconColor.setRGB(0x2E9FDB);
+					break;
+				case "FrostResistPotion":
+					var pIconColor = new Color(consumableIcon_mc);
+					pIconColor.setRGB(0x1FFBFF);
+					break;
+				case "FireResistPotion":
+					var pIconColor = new Color(consumableIcon_mc);
+					pIconColor.setRGB(0xC73636);
+					break;
+				case "ShockResistPotion":
+					var pIconColor = new Color(consumableIcon_mc);
+					pIconColor.setRGB(0xEAAB00);
+					break;
+				default:
+					var pIconColor = new Color(consumableIcon_mc);
+					pIconColor.setRGB(0xFFFFFF);
+					break
+				}
+		}
+		else if (clip == poisonIcon_mc){
+			var pIconColor = new Color(poisonIcon_mc);
+			pIconColor.setRGB(0xAD00B3);
 		}
 		else {
 			var myColor:Color = new Color(clip);
 			myColor.setRGB(0xFFFFFF);
 		}
 	}
+
+	/*public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
+	{
+		if (isText == 1){
+			selectedText = textElementArray[textElement];
+			selectedText.textColor = currentColor;
+		} else {
+			clip.tempHighlightedClip.removeMovieClip();
+		}
+	}*/
 	
 	public function setTextAlignment(textElement: Number, a_align: Number): Void
 	{
-		var alignment:String = "";
+		var format:TextFormat = new TextFormat();
 		if (a_align == 0){
-			alignment = "left"
+			format.align = "left";
 		}
 		else if (a_align == 1){
-			alignment = "center"
+			format.align = "center";
 		}
 		else {
-			alignment = "right"
+			format.align = "right";
 		}
 		selectedText = textElementArray[textElement];
-		var format:TextFormat = new TextFormat();
-		format.align = alignment;
 		selectedText.setTextFormat(format);
 	}
 
@@ -686,6 +1511,90 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			}
 	}
 
+	public function tweenWidgetNameAlpha(clipIndex: Number, endValue: Number, secs: Number): Void
+	{
+		var nameClip: MovieClip = clipArray[clipIndex];
+		TweenLite.to(nameClip, secs, {_alpha:endValue, ease:Quad.easeOut});
+	}
+
+	public function tweenLeftIconAlpha(bgAlpha: Number, iconAlpha: Number, nameAlpha: Number, countAlpha: Number, poisonIconAlpha: Number, poisonNameAlpha: Number): Void
+	{
+		var bgClip: MovieClip = leftBg_mc
+		var iconClip: MovieClip = leftIcon_mc
+		var nameClip: MovieClip = leftName_mc
+		var countClip: MovieClip = leftCount_mc
+		var poisonIconClip: MovieClip = leftPoisonIcon_mc
+		var poisonNameClip: MovieClip = leftPoisonName_mc
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+		tl.to(bgClip, 0.3, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
+		.to(iconClip, 0.3, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
+		.to(nameClip, 0.3, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
+		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0)
+		.to(poisonIconClip, 0.3, {_alpha:poisonIconAlpha, ease:Quad.easeOut}, 0)
+		.to(poisonNameClip, 0.3, {_alpha:poisonNameAlpha, ease:Quad.easeOut}, 0);
+		tl.play();
+	}
+
+	public function tweenConsumableIconAlpha(bgAlpha: Number, iconAlpha: Number, nameAlpha: Number, countAlpha: Number): Void
+	{
+		var bgClip: MovieClip = consumableBg_mc
+		var iconClip: MovieClip = consumableIcon_mc
+		var nameClip: MovieClip = consumableName_mc
+		var countClip: MovieClip = consumableCount_mc
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+		tl.to(bgClip, 0.3, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
+		.to(iconClip, 0.3, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
+		.to(nameClip, 0.3, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
+		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0)
+		tl.play();
+	}
+
+	public function runPotionFlashAnimation(potionType: Number): Void
+	{
+		switch(potionType) {
+			case 0:
+				potionFlashAnim.gotoAndStop("Health");
+				break
+			case 1:
+				potionFlashAnim.gotoAndStop("Stamina");
+				break
+			case 2:
+				potionFlashAnim.gotoAndStop("Magicka");
+				break
+			}
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:onPotionFlashComplete});
+		tl.to(potionFlashAnim, 0.3, {_alpha:100, ease:Quad.easeOut}, 0)
+		.to(potionFlashAnim, 0.3, {_alpha:0, ease:Quad.easeOut})
+		.to(potionFlashAnim, 0.3, {_alpha:100, ease:Quad.easeOut})
+		.to(potionFlashAnim, 0.3, {_alpha:0, ease:Quad.easeOut})
+		tl.play();
+	}
+
+	public function onPotionFlashComplete(): Void
+	{
+		potionFlashAnim.gotoAndStop("Hide");
+	}
+ 
+	public function tweenWidgetCounterAlpha(clipIndex: Number, endValue: Number, secs: Number): Void
+	{
+		var counterClip: MovieClip;
+		switch(clipIndex) {
+			case 0:
+				counterClip = leftCount_mc;
+				break
+			case 1:
+				counterClip = rightCount_mc;
+				break
+			case 3:
+				counterClip = consumableCount_mc;
+				break
+			case 4:
+				counterClip = poisonCount_mc;
+				break
+			}
+		TweenLite.to(counterClip, secs, {_alpha:endValue, ease:Quad.easeOut});
+	}
+
 	public function swapItemDepths(iItemToMoveToFront: Number, iItemToSendToBack: Number): Void
 	{
 		var clip1: MovieClip = clipArray[iItemToMoveToFront];
@@ -699,42 +1608,50 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		var clipDepth: Number = clip1.getDepth();
 		skse.SendModEvent("iEquip_GotDepth", null, clipDepth);
 	}
-	
-// @Papyrus
-	public function setPotionCounter(a_count: Number): Void
+
+	public function updateCounter(target: Number, a_count: Number): Void
 	{
-		var textFormat:TextFormat = potionCount.getTextFormat();
-		potionCount.text = String(a_count);
-		potionCount.setTextFormat(textFormat);
+		var targetCount: TextField;
+		switch(target) {
+			case 0:
+				targetCount = leftCount;
+				break
+			case 1:
+				targetCount = rightCount;
+				break
+			case 3:
+				targetCount = consumableCount;
+				break
+			case 4:
+				targetCount = poisonCount;
+				break
+			}
+		var textFormat:TextFormat = targetCount.getTextFormat();
+		targetCount.text = String(a_count);
+		targetCount.setTextFormat(textFormat);
+	}
+
+	public function updatePoisonIcon(target: Number, sIcon: String): Void
+	{
+		var poisonIcon: MovieClip;
+		var poisonIcon_mc: MovieClip;
+
+		switch(target) {
+			case 0:
+				poisonIcon = leftPoisonIcon;
+				poisonIcon_mc = leftPoisonIcon_mc;
+				break
+			case 1:
+				poisonIcon = rightPoisonIcon;
+				poisonIcon_mc = rightPoisonIcon_mc;
+				break
+			}
+		var currAlpha = poisonIcon_mc._alpha; 
+		TweenLite.to(poisonIcon_mc, 0.15, {_alpha:0, ease:Quad.easeOut});
+		poisonIcon.gotoAndStop(sIcon);
+		TweenLite.to(poisonIcon_mc, 0.2, {_alpha:currAlpha, ease:Quad.easeOut});
 	}
 	
-	public function setUpName(a_name: String): Void
-	{
-		var textFormat:TextFormat = shoutName.getTextFormat();
-		shoutName.text = a_name;
-		shoutName.setTextFormat(textFormat);		
-	}
-	
-	public function setDownName(a_name: String): Void
-	{
-		var textFormat:TextFormat = potionName.getTextFormat();
-		potionName.text = a_name;
-		potionName.setTextFormat(textFormat);
-	}
-	
-	public function setLeftName(a_name: String): Void
-	{
-		var textFormat:TextFormat = leftName.getTextFormat();
-		leftName.text = a_name;
-		leftName.setTextFormat(textFormat);
-	}
-	
-	public function setRightName(a_name: String): Void
-	{
-		var textFormat:TextFormat = rightName.getTextFormat();
-		rightName.text = a_name;
-		rightName.setTextFormat(textFormat);
-	}
 	// @overrides WidgetBase
 	public function getWidth(): Number
 	{
@@ -751,53 +1668,12 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		_xscale = scale;
 		_yscale = scale;
 	}
-	// @Papyrus
-	public function setVisible(a_visible: Boolean): Void
+
+	public function generateItemID(displayName: String, formID: Number): Void
 	{
-		_visible = a_visible;
-		leftIcon.visible = false;
-		shoutIcon.visible = false;
-		rightIcon.visible = false;
-		potionIcon.visible = false;
-		
-	}
-	public function colorIcon(ndx: Number): Void
-	{
-		if (ndx == 0) {
-			var myColor:Color = new Color(leftIcon);
-			myColor.setRGB(0x33AAFF);
-		}
-		else if (ndx == 1) {
-			var myColor:Color = new Color(rightIcon);
-			myColor.setRGB(0x33AAFF);
-		}
-		else if (ndx == 2) {
-			var myColor:Color = new Color(shoutIcon);
-			myColor.setRGB(0x33AAFF);
-		}
-		else if (ndx == 3) {
-			var myColor:Color = new Color(potionIcon);
-			myColor.setRGB(0x33AAFF);
-		}
-	}
-	
-		public function resetIcon(ndx: Number): Void
-	{
-		if (ndx == 0) {
-			var myColor:Color = new Color(leftIcon);
-			myColor.setRGB(0xFFFFFF);
-		}
-		else if (ndx == 1) {
-			var myColor:Color = new Color(rightIcon);
-			myColor.setRGB(0xFFFFFF);
-		}
-		else if (ndx == 2) {
-			var myColor:Color = new Color(shoutIcon);
-			myColor.setRGB(0xFFFFFF);
-		}
-		else if (ndx == 3) {
-			var myColor:Color = new Color(potionIcon);
-			myColor.setRGB(0xFFFFFF);
-		}
+		var itemID: Number = skyui.util.Hash.crc32(displayName, formID & 0x00FFFFFF);
+		var IDString: String = itemID.toString()
+		skyui.util.Debug.log("iEquipWidget generateItemID - displayName: " + displayName + ", formID: " + formID + ", generated itemID: " + itemID + ", IDString: " + IDString)
+		skse.SendModEvent("iEquip_GotItemID", IDString, itemID);
 	}
 }

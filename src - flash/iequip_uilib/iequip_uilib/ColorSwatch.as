@@ -6,7 +6,7 @@ import gfx.ui.NavigationCode
 import skyui.util.GlobalFunctions;
 import skyui.components.colorswatch.ColorSquare;
 
-//import gfx.events.EventDispatcher;
+import gfx.events.EventDispatcher;
 
 class iEquip_uilib.ColorSwatch extends MovieClip
 {
@@ -36,11 +36,11 @@ class iEquip_uilib.ColorSwatch extends MovieClip
 	public function ColorSwatch()
 	{
 		super();
-		//EventDispatcher.initialize(this);
+		EventDispatcher.initialize(this);
 
-		if (customColorList == null) {
-			customColorList = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
-		}
+		//if (customColorList == null) {
+		//	customColorList = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		//}
 
 		GlobalFunctions.addArrayFunctions();
 	}
@@ -184,6 +184,15 @@ class iEquip_uilib.ColorSwatch extends MovieClip
 	{
 		return _selectedColor;
 	}
+
+	/*blic function removeDeletedColor(): Void
+	{
+		var colorClip: ColorSquare;
+		colorClip = ColorSquare(_buttonGroup.selectedButton);
+		_buttonGroup.removeButton(_buttonGroup.selectedButton);
+		colorClip.removeMovieClip()
+		backgroundCustom._width -= (colorSize - 0.7)
+	}*/
 
   /* PRIVATE FUNCTIONS */
   

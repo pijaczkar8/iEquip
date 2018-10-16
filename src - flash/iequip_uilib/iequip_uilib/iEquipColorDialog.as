@@ -125,12 +125,17 @@ class iEquip_uilib.iEquipColorDialog extends MovieClip
 		defaultButtonPanel.updateButtons();
 	}
 
-	public function setCustomColorListValues(iValue: Number, iIndex: Number): Void
+	public function setCustomColorListValues(iValue: Number): Void
 	{
-		colorSwatch.customColorList[iIndex] = iValue;
+		if (colorSwatch.customColorList == null || colorSwatch.customColorList.length == 0){
+				colorSwatch.customColorList = [-1]
+				colorSwatch.customColorList[0] = iValue
+				return;
+			}
+			colorSwatch.customColorList.push(iValue);
 	}
 
-	public function initColorDialogParams(titleText: String, currentColor: Number, defaultColor: Number, CustomColors: Array): Void
+	public function initColorDialogParams(titleText: String, currentColor: Number, defaultColor: Number): Void
 	{
 		colorSwatch.createColorSwatch();		
 

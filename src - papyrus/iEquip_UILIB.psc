@@ -8,6 +8,10 @@ String sTitle
 String sInitialText
 String sInput
 String[] sOptions
+String[] sIconNameList
+String[] sList
+Bool[] bEnchFlags
+Bool[] bPoisonFlags
 Int iStartIndex
 Int iDefaultIndex
 Int iStartColor
@@ -17,8 +21,10 @@ Int iInput
 Int iLoadDelete
 
 Message Property iEquip_ConfirmDeletePreset Auto
+Message Property iEquip_ConfirmClearQueue Auto
 
 iEquip_EditMode Property EM Auto
+iEquip_WidgetCore Property WC Auto
 
 function onInit()
 	aCustomColors = new int[14]
@@ -29,16 +35,18 @@ function onInit()
 	endWhile
 endFunction
 
+Bool function IsMenuOpen()
+	return bMenuOpen
+endFunction
+
 ;Text input
 Function TextInputMenu_Open(Form akClient) Global
-	debug.trace("iEquip UILIB TextInputMenu_Open start")
 	akClient.RegisterForModEvent("iEquip_textInputOpen", "OnTextInputOpen")
 	akClient.RegisterForModEvent("iEquip_textInputClose", "OnTextInputClose")
 	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_textinputmenu")
 EndFunction
 
 Function TextInputMenu_SetData(String asTitle, String asInitialText) Global
-	debug.trace("iEquip UILIB TextInputMenu_SetData start")
 	UI.InvokeNumber("CustomMenu", "_root.iEquipTextInputDialog.setPlatform", (Game.UsingGamepad() as Int))
 	String[] sData = new String[2]
 	sData[0] = asTitle
@@ -47,15 +55,12 @@ Function TextInputMenu_SetData(String asTitle, String asInitialText) Global
 EndFunction
 
 Function TextInputMenu_Release(Form akClient) Global
-	debug.trace("iEquip UILIB TextInputMenu_Release start")
 	akClient.UnregisterForModEvent("iEquip_textInputOpen")
 	akClient.UnregisterForModEvent("iEquip_textInputClose")
 EndFunction
 
 String Function ShowTextInput(String asTitle, String asInitialText)
-	debug.trace("iEquip UILIB ShowTextInput start")
 	If(bMenuOpen)
-		debug.trace("iEquip UILIB ShowTextInput returning empty as bMenuOpen = true")
 		Return ""
 	EndIf
 	bMenuOpen = True
@@ -67,19 +72,16 @@ String Function ShowTextInput(String asTitle, String asInitialText)
 		Utility.WaitMenuMode(0.1)
 	EndWhile
 	TextInputMenu_Release(Self)
-	debug.trace("iEquip UILIB ShowTextInput returning string before ending")
 	Return sInput
 EndFunction
 
 Event OnTextInputOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
-	debug.trace("iEquip UILIB OnTextInputOpen start")
 	If(asEventName == "iEquip_textInputOpen")
 		TextInputMenu_SetData(sTitle, sInitialText)
 	EndIf
 EndEvent
 
 Event OnTextInputClose(String asEventName, String asInput, Float afCancelled, Form akSender)
-	debug.trace("iEquip UILIB OnTextInputClose start")
 	If(asEventName == "iEquip_textInputClose")
 		If(afCancelled as Bool)
 			sInput = ""
@@ -92,30 +94,23 @@ EndEvent
 
 ;List
 Function ListMenu_Open(Form akClient) Global
-	debug.trace("iEquip UILIB ListMenu_Open start")
 	akClient.RegisterForModEvent("iEquip_listMenuOpen", "OnListMenuOpen")
 	akClient.RegisterForModEvent("iEquip_listMenuCancel", "OnListMenuCancel")
 	akClient.RegisterForModEvent("iEquip_listMenuDeletePreset", "OnListMenuDeletePreset")
 	akClient.RegisterForModEvent("iEquip_listMenuLoad", "OnListMenuLoad")
 	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_listmenu")
-	debug.trace("iEquip UILIB ListMenu_Open finish")
 EndFunction
 
 Function ListMenu_SetData(String asTitle, String[] asOptions, Int aiStartIndex, Int aiDefaultIndex) Global
-	debug.trace("iEquip UILIB ListMenu_SetData start")
 	UI.InvokeNumber("CustomMenu", "_root.iEquipListDialog.setPlatform", (Game.UsingGamepad() as Int))
-	debug.trace("iEquip UILIB ListMenu_SetData .setPlatform called")
 	UI.InvokeStringA("CustomMenu", "_root.iEquipListDialog.initListData", asOptions)
-	debug.trace("iEquip UILIB ListMenu_SetData .initListData called")
 	Int iHandle = UICallback.Create("CustomMenu", "_root.iEquipListDialog.initListParams")
-	debug.trace("iEquip UILIB ListMenu_SetData .initListParams called")
 	If(iHandle)
 		UICallback.PushString(iHandle, asTitle)
 		UICallback.PushInt(iHandle, aiStartIndex)
 		UICallback.PushInt(iHandle, aiDefaultIndex)
 		UICallback.Send(iHandle)
 	EndIf
-	debug.trace("iEquip UILIB ListMenu_SetData finished")
 EndFunction
 
 Function ListMenu_Release(Form akClient) Global
@@ -126,12 +121,10 @@ Function ListMenu_Release(Form akClient) Global
 EndFunction
 
 Int[] Function ShowList(String asTitle, String[] asOptions, Int aiStartIndex, Int aiDefaultIndex)
-	debug.trace("iEquip UILIB ShowList started")
 	int[] args = new int[2]
 	args[0] = -1
 	args[1] = 0
 	If(bMenuOpen)
-		debug.trace("iEquip UILIB ShowList returning -1,0 as bMenuOpen = true")
 		Return args
 	EndIf
 	bMenuOpen = True
@@ -148,28 +141,24 @@ Int[] Function ShowList(String asTitle, String[] asOptions, Int aiStartIndex, In
 	ListMenu_Release(Self)
 	args[0] = iInput
 	args[1] = iLoadDelete
-	debug.trace("iEquip UILIB ShowList returning values before ending")
 	Return args
 EndFunction
 
 Event OnListMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
-	debug.trace("iEquip UILIB OnListMenuOpen start")
 	If(asEventName == "iEquip_listMenuOpen")
 		ListMenu_SetData(sTitle, sOptions, iStartIndex, iDefaultIndex)
 	EndIf
 EndEvent
 
 Event OnListMenuCancel(String asEventName, String asStringArg, Float afNumArg, Form akSender)
-	debug.trace("iEquip UILIB OnListMenuCancel start")
 	If(asEventName == "iEquip_listMenuCancel")
 		bMenuOpen = False
 	EndIf
 EndEvent
 
 Event OnListMenuDeletePreset(String asEventName, String asStringArg, Float afInput, Form akSender)
-	debug.trace("iEquip UILIB OnListMenuDeletePreset start")
 	If(asEventName == "iEquip_listMenuDeletePreset")
-		int iButton = iEquip_ConfirmDeletePreset.Show() ;Add messagebox to check if user wants to reset parent and all child elements or not, return out if not
+		int iButton = iEquip_ConfirmDeletePreset.Show()
         if iButton != 1
         	iInput = 0
         	iLoadDelete = 2
@@ -177,20 +166,14 @@ Event OnListMenuDeletePreset(String asEventName, String asStringArg, Float afInp
            return
         endIf
 		iInput = afInput as Int
-		debug.trace("iEquip_UILIB OnListMenuDeletePreset: iInput = " + iInput as String)
-		debug.notification("iEquip_UILIB OnListMenuDeletePreset: iInput = " + iInput as String)
 		iLoadDelete = 1
 		bMenuOpen = False
 	EndIf
 EndEvent
 
 Event OnListMenuLoad(String asEventName, String asStringArg, Float afInput, Form akSender)
-	debug.trace("iEquip UILIB OnListMenuLoad start")
 	If(asEventName == "iEquip_listMenuLoad")
-		debug.notification("iEquip_UILIB OnListMenuLoad: afInput = " + afInput as String)
 		iInput = afInput as Int
-		debug.trace("iEquip_UILIB OnListMenuLoad: iInput = " + iInput as String)
-		debug.notification("iEquip_UILIB OnListMenuLoad: iInput = " + iInput as String)
 		iLoadDelete = 0
 		bMenuOpen = False
 	EndIf
@@ -199,12 +182,10 @@ EndEvent
 ;Color
 
 Int[] Function ShowColorMenu(String asTitle, Int aiStartColor, Int aiDefaultColor, Int[] CustomColors)
-	debug.trace("iEquip UILIB ShowColorMenu started")
 	int[] args = new int[2]
 	args[0] = -1
 	args[1] = 0
 	If(bMenuOpen)
-		debug.trace("iEquip UILIB ShowColorMenu returning -1,0 as bMenuOpen = true")
 		Return args
 	EndIf
 	bMenuOpen = True
@@ -215,7 +196,6 @@ Int[] Function ShowColorMenu(String asTitle, Int aiStartColor, Int aiDefaultColo
 	iDefaultColor = aiDefaultColor
 	aCustomColors = new int[14]
 	aCustomColors = CustomColors
-	debug.notification("aCustomColors length: " + aCustomColors.length as String + ", index 0 contains " + aCustomColors[0] as String)
 	Int NewCustom = 0
 	ColorMenu_Open(Self)
 	While(bMenuOpen)
@@ -232,25 +212,21 @@ Int[] Function ShowColorMenu(String asTitle, Int aiStartColor, Int aiDefaultColo
 EndFunction
 
 Function ColorMenu_Open(Form akClient) Global
-	debug.trace("iEquip UILIB ColorMenu_Open start")
 	akClient.RegisterForModEvent("iEquip_colorMenuOpen", "OnColorMenuOpen")
 	akClient.RegisterForModEvent("iEquip_colorMenuCancel", "OnColorMenuCancel")
 	akClient.RegisterForModEvent("iEquip_colorMenuAccept", "OnColorMenuAccept")
 	akClient.RegisterForModEvent("iEquip_colorMenuDelete", "OnColorMenuDelete")
 	akClient.RegisterForModEvent("iEquip_colorMenuCustom", "OnColorMenuCustom")
 	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_ColorMenu")
-	debug.trace("iEquip UILIB ColorMenu_Open finish")
 EndFunction
 
 Event OnColorMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
-	debug.trace("iEquip UILIB OnColorMenuOpen start")
 	If(asEventName == "iEquip_colorMenuOpen")
 		ColorMenu_SetData(sTitle, iStartColor, iDefaultColor, aCustomColors)
 	EndIf
 EndEvent
 
 Function ColorMenu_SetData(String asTitle, Int aiStartColor, Int aiDefaultColor, Int[] aaCustomColors) Global
-	debug.trace("iEquip UILIB ColorMenu_SetData start")
 	Int iIndex = 0
 	Int iIndex2 = 0
 	Int[] args = new Int[2]
@@ -271,11 +247,9 @@ Function ColorMenu_SetData(String asTitle, Int aiStartColor, Int aiDefaultColor,
 		UICallback.Send(iHandle)
 	EndIf
 	UI.InvokeNumber("CustomMenu", "_root.iEquipColorDialog.setPlatform", (Game.UsingGamepad() as Int))
-	debug.trace("iEquip UILIB ColorMenu_SetData finished")
 EndFunction
 
 Event OnColorMenuCancel(String asEventName, String asStringArg, Float afNumArg, Form akSender)
-	debug.trace("iEquip UILIB OnColorMenuCancel start")
 	If(asEventName == "iEquip_colorMenuCancel")
 		bMenuOpen = False
 	EndIf
@@ -283,7 +257,6 @@ EndEvent
 
 Event OnColorMenuCustom(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;Event only called if Custom has been pressed to add a custom colour
-	debug.trace("iEquip UILIB OnColorMenuCustom start")
 	If(asEventName == "iEquip_colorMenuCustom")
 		bCallTextInput = True
 		bMenuOpen = False
@@ -292,7 +265,6 @@ EndEvent
 
 Event OnColorMenuDelete(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;Event only called if Default has been pressed to reset a custom colour slot
-	debug.trace("iEquip UILIB OnColorMenuDelete start")
 	If(asEventName == "iEquip_colorMenuDelete")
 		Int ArrayIndexToDelete = afNumArg as Int
 		bMenuOpen = False
@@ -301,7 +273,6 @@ Event OnColorMenuDelete(String asEventName, String asStringArg, Float afNumArg, 
 EndEvent
 
 Event OnColorMenuAccept(String asEventName, String asStringArg, Float afInput, Form akSender)
-	debug.trace("iEquip UILIB OnColorMenuLoad start")
 	If(asEventName == "iEquip_colorMenuAccept")
 		iInput = afInput as Int
 		bMenuOpen = False
@@ -316,3 +287,142 @@ Function ColorMenu_Release(Form akClient) Global
 	akClient.UnregisterForModEvent("iEquip_colorMenuDelete")
 EndFunction
 
+;Queue
+Function QueueMenu_Open(Form akClient) Global
+	akClient.RegisterForModEvent("iEquip_queueMenuOpen", "OnQueueMenuOpen")
+	akClient.RegisterForModEvent("iEquip_queueMenuMoveUp", "OnQueueMenuMoveUp")
+	akClient.RegisterForModEvent("iEquip_queueMenuMoveDown", "OnQueueMenuMoveDown")
+	akClient.RegisterForModEvent("iEquip_queueMenuRemove", "OnQueueMenuRemove")
+	akClient.RegisterForModEvent("iEquip_queueMenuClear", "OnQueueMenuClear")
+	akClient.RegisterForModEvent("iEquip_queueMenuExit", "OnQueueMenuExit")
+	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_queuemenu")
+EndFunction
+
+Function QueueMenu_SetData(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex) Global
+	UI.InvokeNumber("CustomMenu", "_root.iEquipQueueDialog.setPlatform", (Game.UsingGamepad() as Int))
+	Int iIndex = 0
+	String iconName
+	bool isEnchanted
+	bool isPoisoned
+	While iIndex < asIconNameList.length
+		iconName = asIconNameList[iIndex]
+		isEnchanted = abEnchFlags[iIndex]
+		isPoisoned = abPoisonFlags[iIndex]
+		UI.InvokeString("CustomMenu", "_root.iEquipQueueDialog.initIconNameList", iconName)
+		UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.initIsEnchantedList", isEnchanted)
+		UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.initIsPoisonedList", isPoisoned)
+		iIndex += 1
+	endWhile
+	UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.initListData", asList)
+	Int iHandle2 = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.initListParams")
+	If(iHandle2)
+		UICallback.PushString(iHandle2, asTitle)
+		UICallback.PushInt(iHandle2, aiStartIndex)
+		UICallback.PushInt(iHandle2, aiDefaultIndex)
+		UICallback.Send(iHandle2)
+	EndIf
+EndFunction
+
+Function QueueMenu_RefreshTitle(String asTitle) Global
+	UI.SetString("CustomMenu", "_root.iEquipQueueDialog.titleTextField.text", asTitle)
+endFunction
+
+Function QueueMenu_RefreshList(String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, int iIndex) Global
+	UI.Invoke("CustomMenu", "_root.iEquipQueueDialog.clearIconLists")
+	Int iIndex2 = 0
+	String iconName
+	bool isEnchanted
+	bool isPoisoned
+	While iIndex2 < asIconNameList.length
+		iconName = asIconNameList[iIndex2]
+		isEnchanted = abEnchFlags[iIndex2]
+		isPoisoned = abPoisonFlags[iIndex2]
+		UI.InvokeString("CustomMenu", "_root.iEquipQueueDialog.initIconNameList", iconName)
+		UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.initIsEnchantedList", isEnchanted)
+		UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.initIsPoisonedList", isPoisoned)
+		iIndex2 += 1
+	endWhile
+	UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.refreshList", asList)
+	UI.InvokeInt("CustomMenu", "_root.iEquipQueueDialog.redrawList", iIndex)
+endFunction
+
+Function QueueMenu_Release(Form akClient) Global
+	akClient.UnregisterForModEvent("iEquip_queueMenuOpen")
+	akClient.UnregisterForModEvent("iEquip_queueMenuMoveUp")
+	akClient.UnregisterForModEvent("iEquip_queueMenuMoveDown")
+	akClient.UnregisterForModEvent("iEquip_queueMenuRemove")
+	akClient.UnregisterForModEvent("iEquip_queueMenuClear")
+	akClient.UnregisterForModEvent("iEquip_queueMenuExit")
+EndFunction
+
+Function ShowQueueMenu(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex)
+	
+	If(bMenuOpen)
+		Return
+	EndIf
+	bMenuOpen = True
+	sTitle = asTitle
+	sIconNameList = asIconNameList
+	sList = asList
+	bEnchFlags = abEnchFlags
+	bPoisonFlags = abPoisonFlags
+	iStartIndex = aiStartIndex
+	iDefaultIndex = aiDefaultIndex
+	QueueMenu_Open(Self)
+	While(bMenuOpen)
+		Utility.WaitMenuMode(0.1)
+	EndWhile
+	QueueMenu_Release(Self)
+EndFunction
+
+Event OnQueueMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	If(asEventName == "iEquip_queueMenuOpen")
+		QueueMenu_SetData(sTitle, sIconNameList, sList, bEnchFlags, bPoisonFlags, iStartIndex, iDefaultIndex)
+	EndIf
+EndEvent
+
+Event OnQueueMenuMoveUp(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	If(asEventName == "iEquip_queueMenuMoveUp")
+		int iIndex = afNumArg as int
+		WC.QueueMenuSwap(0, iIndex)
+	EndIf
+EndEvent
+
+Event OnQueueMenuMoveDown(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	If(asEventName == "iEquip_queueMenuMoveDown")
+		int iIndex = afNumArg as int
+		WC.QueueMenuSwap(1, iIndex)
+	EndIf
+EndEvent
+
+Event OnQueueMenuRemove(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	If(asEventName == "iEquip_queueMenuRemove")
+		int iIndex = afNumArg as int
+		WC.QueueMenuRemoveFromQueue(iIndex)
+	EndIf
+EndEvent
+
+Event OnQueueMenuClear(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	If(asEventName == "iEquip_queueMenuClear")
+		bMenuOpen = False
+		int i = iEquip_ConfirmClearQueue.Show()
+		if i == 0 ;Cancel
+			WC.recallPreviousQueueMenu()
+		else
+			WC.QueueMenuClearQueue()
+		endIf
+	EndIf
+EndEvent
+
+Event OnQueueMenuExit(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	If(asEventName == "iEquip_queueMenuExit")
+		bMenuOpen = False
+		WC.recallQueueMenu()
+	EndIf
+EndEvent
+
+function closeQueueMenu()
+	UI.Invoke("CustomMenu", "_root.iEquipQueueDialog.closeQueueMenu")
+	Utility.Wait(0.1)
+	bMenuOpen = False
+endFunction

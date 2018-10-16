@@ -98,7 +98,7 @@ class iEquip_uilib.ScrollingList extends BasicList
 		if (scrollbar != undefined) {
 			scrollbar.position = 0;
 			scrollbar.addEventListener("scroll", this, "onScroll");
-			scrollbar._y = background._x + topBorder;
+			scrollbar._y = background._x + 10;
 			scrollbar.height = _listHeight;
 		}
 	}
