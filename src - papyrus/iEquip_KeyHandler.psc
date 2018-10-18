@@ -39,16 +39,13 @@ Int Property iEquip_EditLoadPresetKey = 76 Auto ;Num 5
 Int Property iEquip_EditSavePresetKey = 77 Auto ;Num 6
 Int Property iEquip_EditDiscardKey = 83 Auto ;Num .
 
-Int Property KEY_J = 36 Auto ;J
-Int Property KEY_ESCAPE = 1 Auto ;Esc
-Int Property KEY_NUM5 = 76 Auto ;Num 5
-Int Property KEY_ENTER = 28 Auto ;Enter
-Int Property KEY_DOWN_ARROW = 208 Auto ;Down Arrow
+; Delays
+float Property multiTapDelay = 0.3 Auto Hidden
+float Property longPressDelay = 0.5 Auto Hidden
+float Property pressAndHoldDelay = 1.0 Auto Hidden
 
-bool extraLongKeyPress = false
 bool isUtilityKeyHeld = false
-
-string previousState = ""
+string previousState
 
 function GameLoaded()
 	GotoState("")
@@ -62,13 +59,14 @@ function GameLoaded()
 endFunction
 
 event OnMenuOpen(string currentMenu)
-	if (currentMenu == "InventoryMenu" || currentMenu == "MagicMenu" || currentMenu == "FavoritesMenu"|| currentMenu == "Journal Menu") ;If in inventory or magic menu switch states so cycle hotkeys now assign selected item to the relevant queue array
+	if (currentMenu == "InventoryMenu" || currentMenu == "MagicMenu" ||\
+        currentMenu == "FavoritesMenu"|| currentMenu == "Journal Menu") ;If in inventory or magic menu switch states so cycle hotkeys now assign selected item to the relevant queue array
+        
 		RegisterForMenuKeys()
 		debug.trace("iEquip KeyHandler OnMenuOpen called, currentMenu: " + currentMenu)
-		previousState = GetState()
 		GotoState("ININVENTORYMENU")
 	elseIf currentMenu == "LootMenu"
-		
+		; TO BE FILLED?
 	endIf
 endEvent
 
@@ -78,107 +76,90 @@ endEvent
 
 function blockControls()
 	debug.trace("iEquip KeyHandler blockControls called - current state: " + GetState())
-	previousState = GetState()
+    previousState = GetState()
 	GotoState("PROCESSING")
 endFunction
 
 function releaseControls()
 	debug.trace("iEquip KeyHandler releaseControls called - previous state: " + previousState)
-	previousState = GetState()
 	GotoState(previousState)
 endFunction
 
 event OnKeyDown(int KeyCode)
 	;Handle extra long keypress actions and combo key held actions here so functions are called as soon as delay it met rather than waiting for onKeyUp
 	debug.trace("iEquip KeyHandler OnKeyDown called, KeyCode = " + KeyCode + ", WC.isPreselectMode: " + WC.isPreselectMode)
-	extraLongKeyPress = false
-	float i = 0
 	
 	if KeyCode == iEquip_utilityKey ;Combo key for cycling backwards through the queues
 		isUtilityKeyHeld = true
+	elseIf (KeyCode == iEquip_shoutKey || KeyCode == iEquip_consumableKey ||\
+            KeyCode == iEquip_leftKey || KeyCode == iEquip_rightKey)
+         
+        Utility.Wait(pressAndHoldDelay)
+        
+        if IsKeyPressed(KeyCode)
+            if KeyCode == iEquip_consumableKey && WC.isPreselectMode
+                WC.togglePreselectMode()
+            elseIf KeyCode == iEquip_leftKey || KeyCode == iEquip_rightKey
+                if WC.isPreselectMode
+                    WC.equipAllPreselectedItems()
+                else
+                    WC.togglePreselectMode()
+                endIf
+            endIf
 
-	elseIf KeyCode == iEquip_shoutKey || KeyCode == iEquip_consumableKey || KeyCode == iEquip_leftKey || KeyCode == iEquip_rightKey
-		While i < MCM.pressAndHoldDelay
-			debug.trace("iEquip_KeyHandler OnKeyDown counter = " + i)
-			Utility.Wait(0.1)
-			if Input.IsKeyPressed(KeyCode)
-				debug.trace("iEquip KeyHandler OnKeyDown, isKeyPressed KeyCode = " + KeyCode)
-				i += 0.1
-			else
-				return
-			endIf
-		endWhile
-		if KeyCode == iEquip_consumableKey && WC.isPreselectMode
-			WC.togglePreselectMode()
-		elseIf KeyCode == iEquip_leftKey || KeyCode == iEquip_rightKey
-			if WC.isPreselectMode
-				WC.equipAllPreselectedItems()
-			else
-				WC.togglePreselectMode()
-			endIf
-		endIf
-		extraLongKeyPress = true
-		debug.trace("iEquip_KeyHandler OnKeyDown extraLongKeyPress: " + extraLongKeyPress)
+            debug.trace("iEquip_KeyHandler OnKeyDown extraLongKeyPress: " + extraLongKeyPress)
+        endif
 	endIf
 endEvent
 
 Event OnKeyUp(Int KeyCode, Float HoldTime)
 	debug.trace("iEquip KeyHandler OnKeyUp called, KeyCode: " + KeyCode + ", HoldTime: " + HoldTime)
 	if KeyCode == iEquip_utilityKey
-			isUtilityKeyHeld = false
-		endIf
-
-	if utility.IsInMenuMode() || extraLongKeyPress || HoldTime > (MCM.pressAndHoldDelay) ;Extra long keypress actions handled by OnKeyDown so OnKeyUp blocked if extra long press already registered
-		debug.trace("iEquip_KeyHandler OnKeyUp extraLongKeyPress: " + extraLongKeyPress)
-		return 
-	endIf
-
-	If HoldTime < MCM.longPressDelay	;If not longpress.
-		If EM.isEditMode && KeyCode != iEquip_EditRotateKey && KeyCode != iEquip_EditAlphaKey && KeyCode != iEquip_EditRulersKey;If in Edit Mode bypass the multitap listener except for the three keys which require it
-			DoSingleTapActions(KeyCode)
-			return ;Return out here as we don't need anything else and avoids Edit Mode loop on exiting Edit Mode
-		elseIf WaitingKeyCode != 0 && KeyCode != WaitingKeyCode	  ;The player pressed a different key, so force the current one to process if there is one
-			;Stop the previous registration.
-			UnregisterForUpdate()
-			;Fully process the last key pressed.
-			OnUpdate()
-		endIf
-		If iMultiTap == 0		;This is the first time the key has been pressed.
-			WaitingKeyCode = KeyCode
-			iMultiTap = 1
-			self.RegisterForSingleUpdate(MCM.multiTapDelay) ;Tell the update function a key has been pressed.
-		ElseIf iMultiTap == 1		;This is the second time the key has been pressed
-			iMultiTap = 2
-			self.RegisterForSingleUpdate(MCM.multiTapDelay) ;Reset the update function so we can wait and make sure it's not a triple tap.
-		ElseIf iMultiTap == 2		;This is the third time the key has been pressed
-			iMultiTap = 3
-			RegisterForSingleUpdate(0.01)	;Basically, force update to immediately. No need to wait for more multi-taps.
-		EndIf
-	Else
-		WaitingKeyCode = KeyCode
-		iMultiTap = -1	;Use -1 for long-press.
-		RegisterForSingleUpdate(0.01)		;Basically, update immediately for long-press. No need to wait for multi-tap.
-	EndIf
+        isUtilityKeyHeld = false
+    elseif HoldTime <= pressAndHoldDelay
+        If HoldTime < longPressDelay	;If not longpress.
+            If EM.isEditMode && KeyCode != iEquip_EditRotateKey && KeyCode != iEquip_EditAlphaKey && KeyCode != iEquip_EditRulersKey ;If in Edit Mode bypass the multitap listener except for the three keys which require it
+                DoSingleTapActions(KeyCode)
+            else
+                If WaitingKeyCode != 0 && KeyCode != WaitingKeyCode	  ;The player pressed a different key, so force the current one to process if there is one
+                    OnUpdate()
+                endIf
+                If iMultiTap == 0		;This is the first time the key has been pressed.
+                    WaitingKeyCode = KeyCode
+                    iMultiTap = 1
+                    RegisterForSingleUpdate(multiTapDelay) ;Tell the update function a key has been pressed.
+                ElseIf iMultiTap == 1		;This is the second time the key has been pressed
+                    iMultiTap = 2
+                    RegisterForSingleUpdate(multiTapDelay) ;Reset the update function so we can wait and make sure it's not a triple tap.
+                ElseIf iMultiTap == 2		;This is the third time the key has been pressed
+                    iMultiTap = 3
+                    RegisterForSingleUpdate(0.0)	;Basically, force update to immediately. No need to wait for more multi-taps.
+                EndIf
+            endIf
+        Else
+            WaitingKeyCode = KeyCode
+            iMultiTap = -1	;Use -1 for long-press.
+            RegisterForSingleUpdate(0.0)		;Basically, update immediately for long-press. No need to wait for multi-tap.
+        EndIf
+    endIf
 EndEvent
 
 Event OnUpdate()
 	debug.trace("iEquip KeyHandler OnUpdate called")
-	If iMultiTap == 0	;There's nothing to process. Check this first to get out as fast as possible.
-		Return
-	ElseIf iMultiTap == -1	;Long press
-		DoLongPressActions(WaitingKeyCode)
-	ElseIf iMultiTap == 1  ;Single tap
-		DoSingleTapActions(WaitingKeyCode)
-	ElseIf iMultiTap == 2  ; Double tap
-		DoDoubleTapActions(WaitingKeyCode)
-	ElseIf iMultiTap == 3  ;Triple tap
-		DoTripleTapActions(WaitingKeyCode)
-	Else
-		;Somehow, we're updating without any of the above being true, so throw an error.
-		;
-	EndIf
-	WaitingKeyCode = 0
-	iMultiTap = 0
+	If iMultiTap != 0	;There's nothing to process. Check this first to get out as fast as possible.
+        If iMultiTap == -1	;Long press
+            DoLongPressActions(WaitingKeyCode)
+        elseIf iMultiTap == 1  ;Single tap
+            DoSingleTapActions(WaitingKeyCode)
+        elseIf iMultiTap == 2  ; Double tap
+            DoDoubleTapActions(WaitingKeyCode)
+        elseIf iMultiTap == 3  ;Triple tap
+            DoTripleTapActions(WaitingKeyCode)
+        endIf
+        
+        WaitingKeyCode = 0
+        iMultiTap = 0
+    endIf
 EndEvent
 
 Function DoSingleTapActions(Int KeyCode)
@@ -449,6 +430,7 @@ state ININVENTORYMENU
 	event OnKeyDown(int KeyCode)
 		Debug.Trace("iEquip KeyHandler ININVENTORYMENU OnKeyDown called on " + KeyCode)
 		GotoState("PROCESSING")
+        
 		If KeyCode == iEquip_leftKey
 			WC.AddToQueue(0)
 
@@ -462,6 +444,7 @@ state ININVENTORYMENU
 			WC.AddToQueue(3)
 		
 		EndIf
+        
 		GotoState("ININVENTORYMENU")
 	endEvent
 	
@@ -469,82 +452,56 @@ state ININVENTORYMENU
 	endEvent
 endState
 
-;/Function UnbindSkyrimHotkeys()
-    Int i = 0
-    While (i < 8)
-        Game.UnbindObjectHotkey(i)
-        i += 1
-    EndWhile
-EndFunction/;
-
 function openiEquipMCM()
-	if !Game.IsMenuControlsEnabled() || Utility.IsInMenuMode() || UI.IsTextInputEnabled() || UI.IsMenuOpen("Dialogue Menu") || (UI.IsMenuOpen("Crafting Menu")) ; || UI.IsMenuOpen("Console"))
-		return
+	if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() && !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
+        int key_j = GetMappedKey("Journal")
+        int key_enter = GetMappedKey("Activate")
+        int key_down = GetMappedKey("Back")
+    
+        self.RegisterForMenu("Journal Menu")
+        
+        float startTime = Utility.GetCurrentRealTime()
+        float elapsedTime
+        
+        while elapsedTime <= 2.5
+            if !IsMenuOpen("Journal Menu")
+                TapKey(key_j)
+                Utility.WaitMenuMode(0.1)
+                elapsedTime = Utility.GetCurrentRealTime() - startTime
+            else
+                int i = 0
+        
+                TapKey(GetMappedKey("Hotkey5")) ;Should take us to the Settings Tab
+                Utility.WaitMenuMode(0.005)
+                
+                while i < 2 ;Should take us to Mod Configelay Menu entry in the Settings List
+                    TapKey(key_down)
+                    Utility.WaitMenuMode(0.005)
+                    i += 1
+                EndWhile
+                
+                TapKey(key_enter)
+                Utility.WaitMenuMode(0.005)
+                
+                i = 0
+                
+                while i < 128
+                    TapKey(key_down)
+                    Utility.WaitMenuMode(0.005)
+                    
+                    if GetString("Journal Menu", "_root.ConfigPanelFader.configPanel._modList.selectedEntry.text") == "iEquip"
+                        TapKey(key_enter)
+                        i = 128
+                    else
+                        i += 1
+                    endIf
+                endWhile
+            
+                elapsedTime = 2.6
+            endIf
+        endWhile
+        
+        self.UnregisterForMenu("Journal Menu")
 	endif
-	self.RegisterForMenu("Journal Menu")
-	float actionDelay = 0.005
-	Input.TapKey(KEY_J) ;Should open the Journal Menu
-	Utility.WaitMenuMode(actionDelay)
-	float elapsedTime
-	float startTime = Utility.GetCurrentRealTime()
-	bool continueWait = true
-	while continueWait
-		if !UI.IsMenuOpen("Journal Menu")
-			Utility.WaitMenuMode(0.1)
-			if !UI.IsMenuOpen("Journal Menu")
-				Input.TapKey(KEY_ESCAPE)
-				Utility.WaitMenuMode(actionDelay)
-			else
-				continueWait = false
-			endIf
-		else
-			continueWait = false
-		endIf
-		elapsedTime = Utility.GetCurrentRealTime() - startTime
-		if (elapsedTime >= 2.5)
-			continueWait = false
-		endIf
-	EndWhile
-	if !UI.IsMenuOpen("Journal Menu")
-		return
-	endIf
-	Utility.WaitMenuMode(actionDelay)
-	Input.TapKey(KEY_NUM5) ;Should take us to the Settings Tab
-	Utility.WaitMenuMode(actionDelay)
-	i = 0
-	n = 3 ;Should take us to Mod Configelay Menu entry in the Settings List
-	while i < n
-		Input.TapKey(KEY_DOWN_ARROW)
-		Utility.WaitMenuMode(actionDelay)
-		i += 1
-	EndWhile
-	Input.TapKey(KEY_ENTER)
-	Utility.WaitMenuMode(actionDelay)
-	int i = 0
-	int n = 128
-	string modName = ""
-	bool iEquipFound = false
-	while i < n && !iEquipFound
-		Input.TapKey(KEY_DOWN_ARROW)
-		Utility.WaitMenuMode(0.05)
-		modName = UI.GetString("Journal Menu", "_root.ConfigPanelFader.configPanel._modList.selectedEntry.text")
-		if modName == "iEquip"
-			iEquipFound = true
-		endIf
-		i += 1
-	EndWhile
-	if !iEquipFound
-		return
-	else
-		Input.TapKey(KEY_ENTER)
-	endIf
-endFunction
-
-function CloseAndReopeniEquipMCM()
-	if UI.IsMenuOpen("Journal Menu")
-		Input.TapKey(KEY_ESCAPE)
-		Utility.WaitMenuMode(0.5)
-		Input.TapKey(KEY_ENTER)
-	endIf
 endFunction
 

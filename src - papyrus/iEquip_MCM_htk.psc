@@ -154,10 +154,10 @@ State htk_sld_multiTapDelay
             MCM.SetInfoText("This defines the maximum delay there can be between key presses for them to register as a multi-tap (double/triple press)\n"+\
                             "Set this to the minimum time in which you can comfortably execute a multi-tap\nDefault: 0.3 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.multiTapDelay, 0.2, 1.0, 0.1, 0.3)
+            fillSlider(MCM.KH.multiTapDelay, 0.2, 1.0, 0.1, 0.3)
         elseIf currentEvent == "Accept"
-            MCM.multiTapDelay = currentVar
-            MCM.SetSliderOptionValueST(MCM.multiTapDelay, "{1} seconds")
+            MCM.KH.multiTapDelay = currentVar
+            MCM.SetSliderOptionValueST(MCM.KH.multiTapDelay, "{1} seconds")
         endIf
     endEvent
 endState
@@ -169,10 +169,10 @@ State htk_sld_longPrsDelay
                             "This does not conflict with the multi-tap setting so set it to whatever you are comfortable with, "+\
                             "but not so short that every key press is classed as a Long Press!\nDefault: 0.5 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.longPressDelay, 0.3, 1.5, 0.1, 0.5)
+            fillSlider(MCM.KH.longPressDelay, 0.3, 1.5, 0.1, 0.5)
         elseIf currentEvent == "Accept"
-            MCM.longPressDelay = currentVar
-            MCM.SetSliderOptionValueST(MCM.longPressDelay, "{1} seconds")
+            MCM.KH.longPressDelay = currentVar
+            MCM.SetSliderOptionValueST(MCM.KH.longPressDelay, "{1} seconds")
         endIf
     endEvent
 endState
@@ -183,10 +183,10 @@ State htk_sld_prsHoldDelay
             MCM.SetInfoText("This defines the length of time you need to hold a key down for for it to register as Press & Hold for actions like toggling Preselect and Equip All Preselected Items\n"+\
                             "Make sure there is enough difference between this and the Long Press Delay setting to avoid key presses being misinterpreted.\nDefault: 1.0 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.pressAndHoldDelay, 0.6, 2.0, 0.1, 1.0)
+            fillSlider(MCM.KH.pressAndHoldDelay, 0.6, 2.0, 0.1, 1.0)
         elseIf currentEvent == "Accept"
-            MCM.pressAndHoldDelay = currentVar
-            MCM.SetSliderOptionValueST(MCM.pressAndHoldDelay, "{1} seconds")
+            MCM.KH.pressAndHoldDelay = currentVar
+            MCM.SetSliderOptionValueST(MCM.KH.pressAndHoldDelay, "{1} seconds")
         endIf
     endEvent
 endState
