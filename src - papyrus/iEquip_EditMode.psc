@@ -763,8 +763,9 @@ function initColorPicker(int target)
 
 	int iIndex = SelectedItem - 1
 	string titleText = ""
-	int currentColor = 0xFFFFFF
-    int defaultColor = 0xFFFFFF
+	int currentColor
+    int defaultColor
+    
 	if target == 0
 		titleText = "Select a color for selected item highlights"
 		currentColor = EMHighlightColor
