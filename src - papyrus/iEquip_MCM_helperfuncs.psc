@@ -104,8 +104,8 @@ endFunction
 
 function closeAndReopeniEquipMCM()
 	if IsMenuOpen("Journal Menu")
-		Input.TapKey(GetMappedKey("Journal"))
+		Input.TapKey(Input.GetMappedKey("Journal"))
 		WaitMenuMode(0.5)
-		Input.TapKey(GetMappedKey("Activate"))
+		Input.TapKey(Input.GetMappedKey("Activate"))
 	endIf
 endFunction

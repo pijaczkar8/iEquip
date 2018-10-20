@@ -471,7 +471,6 @@ event OnPageReset(string page)
             endIf
             
         elseIf page == "Potions" 
-            AddEmptyOption()
             AddHeaderOption("Health Potion Options")
             AddToggleOptionST("pot_tgl_enblHealthGroup", "Enable Health Potion Grouping", bHealthPotionGrouping)
                     
@@ -500,7 +499,6 @@ event OnPageReset(string page)
 
             SetCursorPosition(1)
 
-            AddEmptyOption()
             AddHeaderOption("Magicka Potion Options")
             AddToggleOptionST("pot_tgl_enblMagickaGroup", "Enable Magicka Potion Grouping", bMagickaPotionGrouping)
                     
@@ -542,9 +540,8 @@ event OnPageReset(string page)
             endIf
 
             SetCursorPosition(1)
-                    
+            
             if !WC.poisonsEnabled
-                AddEmptyOption()
                 AddTextOption("Poisoning features are currently disabled.", "")
                 AddTextOption("If you wish to use the poisoning features", "")
                 AddTextOption("please re-enable the Poison Widget in the", "")
@@ -552,6 +549,7 @@ event OnPageReset(string page)
              else
                 AddTextOptionST("rep_txt_showPoisonHelp", "Show Poisoning Help", "")
                        
+                AddEmptyOption()
                 AddEmptyOption()
                 AddHeaderOption("Poison Use Options")
                 AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[showPoisonMessages])
