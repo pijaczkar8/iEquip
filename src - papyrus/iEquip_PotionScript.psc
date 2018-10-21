@@ -3,6 +3,7 @@ scriptName iEquip_PotionScript extends Quest
 
 import _Q2C_Functions
 import stringUtil
+import iEquip_Utility
 import UI
 
 iEquip_WidgetCore Property WC Auto
@@ -25,6 +26,11 @@ MagicEffect Property AlchRestoreMagicka Auto ;0003eb17
 MagicEffect Property AlchFortifyMagicka Auto ;0003eaf8
 MagicEffect Property AlchFortifyMagickaRate Auto ;0003eb07
 
+MagicEffect[] consummateEffects
+MagicEffect Property AlchRestoreHealthAll Auto ;000ffa03
+MagicEffect Property AlchRestoreStaminaAll Auto ;000ffa05
+MagicEffect Property AlchRestoreMagickaAll Auto ;000ffa04
+
 bool isCACOLoaded = false
 MagicEffect[] CACO_RestoreEffects
 
@@ -33,6 +39,7 @@ int queueToSort = -1 ;Only used if potion added by onPotionAdded
 
 event OnInit()
     debug.trace("iEquip_PotionScript OnInit called")
+    GotoState("")
     HUD_MENU = WC.HUD_MENU
 	WidgetRoot = WC.WidgetRoot
 	potionQ = new int[9]
@@ -66,6 +73,18 @@ endEvent
 ;Called from OnPlayerLoadGame on the PlayerEventHandler script
 function onGameLoaded()
     debug.trace("iEquip_PotionScript GameLoaded called")
+    HUD_MENU = WC.HUD_MENU
+    WidgetRoot = WC.WidgetRoot
+    
+    WC.potionGroupEmpty[0] = true
+    WC.potionGroupEmpty[1] = true
+    WC.potionGroupEmpty[2] = true
+
+    consummateEffects = new MagicEffect[3]
+    consummateEffects[0] = AlchRestoreHealthAll
+    consummateEffects[1] = AlchRestoreStaminaAll
+    consummateEffects[2] = AlchRestoreMagickaAll
+
     CACO_RestoreEffects = new MagicEffect[9]
     if Game.GetModByName("Complete Alchemy & Cooking Overhaul.esp") != 255
         isCACOLoaded = true
@@ -209,7 +228,7 @@ endProperty
 function findAndSortPotions()
     debug.trace("iEquip_PotionScript findAndSortPotions called")
     ;Count the number of potion items currently in the players inventory
-    int numFound = getNumItemsOfType(PlayerRef, 46)
+    int numFound = GetNumItemsOfType(PlayerRef, 46)
     ;If any potions found
     if numFound > 0
         int i = 0
@@ -234,7 +253,7 @@ function findAndSortPotions()
         potion foundPotion
         ;Add each potion to the relevant queue
         while i < numFound
-            foundPotion = getNthFormOfType(PlayerRef, 46, i) as potion
+            foundPotion = GetNthFormOfType(PlayerRef, 46, i) as potion
             checkAndAddToPotionQueue(foundPotion)
             i += 1
         endWhile
@@ -243,6 +262,16 @@ function findAndSortPotions()
         while i < 9
             if jArray.count(potionQ[i]) > openingQSizes[i]
                 sortPotionQueue(i)
+            endIf
+            i += 1
+        endWhile
+        ;Finally get the group counts and update the potionGroupEmpty bool array
+        i = 0
+        while i < 3
+            numFound = getPotionGroupCount(i)
+            if numFound > 0
+                WC.potionGroupEmpty[i] = false
+                debug.trace("iEquip_PotionScript findAndSortPotions - potionGroup: " + i + ", numFound: " + numFound + ", potionGroupEmpty[" + i + "]: " + WC.potionGroupEmpty[i])
             endIf
             i += 1
         endWhile
@@ -261,19 +290,39 @@ endFunction
 
 function onPotionRemoved(form removedPotion)
     debug.trace("iEquip_PotionScript onPotionRemoved called - removedPotion: " + removedPotion.GetName())
+    GotoState("PROCESSING")
     potion thePotion = removedPotion as potion
-    if !(thePotion.isPoison() || thePotion.isFood()) && PlayerRef.GetItemCount(removedPotion) < 1
+    if !(thePotion.isPoison() || thePotion.isFood())
         int Q = getPotionQueue(thePotion)
-        int foundPotion = findInPotionQueue(Q, removedPotion)
-        
-        if Q >= 0 && foundPotion != -1
-            removePotionFromQueue(Q, foundPotion)
-        endIf
+        if Q >= 0
+	        int group
+	        string potionGroup
+	        if Q < 3
+		        group = 0
+		        potionGroup = "Health Potions"
+		    elseIf Q < 6
+		        group = 1
+		        potionGroup = "Stamina Potions"
+		    else
+		        group = 2
+		        potionGroup = "Magicka Potions"
+		    endIf
+		    if WC.isCurrentlyEquipped(3, potionGroup)
+            	WC.setSlotCount(3, getPotionGroupCount(group))
+            endIf
+		    if PlayerRef.GetItemCount(removedPotion) < 1
+		        int foundPotion = findInPotionQueue(Q, removedPotion)
+		        if foundPotion != -1
+		            removePotionFromQueue(Q, foundPotion)
+		        endIf
+		    endIf
+		endIf
     endIf
+    GotoState("")
 endFunction
 
 function removePotionFromQueue(int Q, int targetPotion)
-    debug.trace("iEquip_PotionScript removePotionFromQueue called")
+    debug.trace("iEquip_PotionScript removePotionFromQueue called - Q: " + Q + ", targetPotion: " + targetPotion)
     ;First we need to remove the potion from the relevant queue
     jArray.eraseIndex(potionQ[Q], targetPotion)
     ;Now we need to check to see if any potions remain in the three potion queues within the potion group we've just removed from
@@ -288,21 +337,25 @@ function removePotionFromQueue(int Q, int targetPotion)
         Q = 2
         potionGroup = "Magicka Potions"
     endIf
-    ;If all three arrays are empty then we need to update the widget accordingly
+    ;If all three arrays in the group are empty then we need to update the widget accordingly
     if getPotionGroupCount(Q) < 1
         ;Flag the group as empty in WidgetCore for cycling
-        WC.potionGroupEmpty[Q] = false
+        WC.potionGroupEmpty[Q] = true
         ;Check if it's the currently shown item in the consumable slot
         if WC.isCurrentlyEquipped(3, potionGroup)
+            debug.trace("iEquip_PotionScript removePotionFromQueue - potion group is currently shown")
             ;Check and flash empty warning if enabled
             if MCM.bFlashPotionWarning
+                debug.trace("iEquip_PotionScript removePotionFromQueue - should be flashing empty warning now - Q: " + Q)
                 UI.InvokeInt(HUD_MENU, WidgetRoot + ".runPotionFlashAnimation", Q)
-                Utility.Wait(1.0)
+                Utility.Wait(1.4)
             endIf
             ;Finally check if we're fading icon or cycling to next slot
             if MCM.emptyPotionQueueChoice == 0 ;Fade icon
+                debug.trace("iEquip_PotionScript removePotionFromQueue - should be fading now")
                 WC.checkAndFadeConsumableIcon(true)
             else
+                debug.trace("iEquip_PotionScript removePotionFromQueue - should be cycling forward now")
                 WC.cycleSlot(3)
             endIf
         endIf
@@ -310,22 +363,28 @@ function removePotionFromQueue(int Q, int targetPotion)
 endFunction
 
 int function getPotionGroupCount(int potionGroup)
+    debug.trace("iEquip_PotionScript getPotionGroupCount called - potionGroup: " + potionGroup)
     int count
     int Q = potionGroup * 3
     int maxQ = Q + 3
     int i = 0
     int queueLength
     int targetArray
+    int currentCount
     while Q < maxQ
         targetArray = potionQ[Q]
         queueLength = jArray.count(targetArray)
+        ;debug.trace("iEquip_PotionScript getPotionGroupCount - currently checking Q: " + Q + ", queueLength: " + queueLength)
         while i < queueLength
+            currentCount = count
             count += PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(targetArray, i), "Form"))
+            ;debug.trace("iEquip_PotionScript getPotionGroupCount - " + (count - currentCount) + " potions found in index " + i + " in potion queue " + Q)
             i += 1
         endWhile
+        i = 0
         Q += 1
     endWhile
-    debug.trace("iEquip_PotionScript getPotionGroupCount called - count: " + count)
+    debug.trace("iEquip_PotionScript getPotionGroupCount returning count: " + count)
     return count
 endFunction
 
@@ -336,6 +395,10 @@ int function getPotionQueue(potion potionToCheck)
     debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " CostliestEffectIndex: " + index + ", strongest magic effect: " + strongestEffect as string)
     ;Decide which potion queue it should be added to
     int Q = strongestEffects.find(strongestEffect) ;Returns -1 if not found
+    ;If it's not a regular effect check for a consummate effect
+    if Q < 0
+    	Q = consummateEffects.find(strongestEffect) * 3 ;Puts consummate potions into the Restore queues (0,3,6)
+    endIf
     ;If we've not found a vanilla effect check if CACO is loaded and if so check for a CACO restore effect
     if Q < 0 && isCACOLoaded
         Q = CACO_RestoreEffects.find(strongestEffect) ;Returns -1 if not found
@@ -363,13 +426,30 @@ function checkAndAddToPotionQueue(potion foundPotion)
     addedToQueue = false
     if !(foundPotion.isPoison() || foundPotion.isFood())
         int Q = getPotionQueue(foundPotion)
+        int group
+        string potionGroup
+        if Q < 3
+	        group = 0
+	        potionGroup = "Health Potions"
+	    elseIf Q < 6
+	        group = 1
+	        potionGroup = "Stamina Potions"
+	    else
+	        group = 2
+	        potionGroup = "Magicka Potions"
+	    endIf
         if Q != -1
             ;Check it isn't already in the chosen queue and add it if not
             if findInPotionQueue(Q, foundPotion as form) != -1
                 debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + foundPotion.GetName() + " is already in the " + strongestEffects[Q] as String + " queue")
             else
                 int index = foundPotion.GetCostliestEffectIndex()
-                float effectMagnitude = foundPotion.GetNthEffectMagnitude(index)
+                float effectMagnitude
+                if contains(foundPotion.GetName(), "onsummate")
+                	effectMagnitude = 9999.0 ;Ensures consummate potions are always the strongest in the Restore queues
+                else
+                	effectMagnitude = foundPotion.GetNthEffectMagnitude(index)
+                endIf
                 int potionObj = jMap.object()
                 jMap.setForm(potionObj, "Form", foundPotion as form)
                 jMap.setFlt(potionObj, "Strength", effectMagnitude)
@@ -377,6 +457,13 @@ function checkAndAddToPotionQueue(potion foundPotion)
                 debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + foundPotion.GetName() + " added to the " + strongestEffects[Q] as String + " queue")
                 addedToQueue = true
                 queueToSort = Q
+                WC.potionGroupEmpty[group] = false
+            endIf
+            if WC.isCurrentlyEquipped(3, potionGroup)
+            	WC.setSlotCount(3, getPotionGroupCount(group))
+            	if WC.consumableIconFaded
+            		WC.checkAndFadeConsumableIcon(false)
+            	endIf
             endIf
         endIf
     endIf
@@ -481,10 +568,6 @@ function selectAndConsumePotion(int potionGroup)
         ;Consume the potion
         PlayerRef.EquipItemEx(potionToConsume)
         debug.notification(potionToConsume.GetName() + " consumed")
-        ;Check if it was the last one and remove from the queue if so
-        if PlayerRef.GetItemCount(potionToConsume) < 1
-            removePotionFromQueue(Q, targetPotion)
-        endIf
     endIf
 endFunction
 
@@ -493,28 +576,21 @@ bool function quickHealFindAndConsumePotion()
     ;Check we've actually still got entries in the first and second choice health potion queues
     int Q = 0 + MCM.iHealthPotionsFirstChoice
     int count = jArray.count(potionQ[Q])
-    bool found = false
-    
-    if count < 1
-        if MCM.bQuickHealUseSecondChoice
-            Q = 0 + MCM.iHealthPotionsSecondChoice
-            count = jArray.count(potionQ[Q])
-        endIf
-    else
-        form potionToConsume
-        ;Check we've still got at least one of the potion currently in the strongest potion slot in the chosen queue, if not remove it and recheck
-        while count > 0 && !found
-            potionToConsume = jMap.getForm(jArray.getObj(potionQ[Q], 0), "Form")
-            
-            if PlayerRef.GetItemCount(potionToConsume) < 1
-                removePotionFromQueue(Q, 0)
-                count -= 1
-            else
-                found = true
-                PlayerRef.EquipItemEx(potionToConsume)
-            endIf
-        endWhile
+    bool found = false 
+    if count < 1 && MCM.bQuickHealUseSecondChoice
+        Q = 0 + MCM.iHealthPotionsSecondChoice
+        count = jArray.count(potionQ[Q])
     endIf
-    
+    if count > 0
+        form potionToConsume = jMap.getForm(jArray.getObj(potionQ[Q], 0), "Form")
+        PlayerRef.EquipItemEx(potionToConsume)
+        debug.notification(potionToConsume.GetName() + " consumed")
+    endIf
     return found
 endFunction
+
+state PROCESSING
+    function onPotionRemoved(form removedPotion)
+        ;Blocking in case of OnItemRemoved firing twice
+    endFunction
+endState

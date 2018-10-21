@@ -108,6 +108,7 @@ bool Property bUseStrongestMagickaPotion = true Auto Hidden
 int Property emptyPotionQueueChoice = 0 Auto Hidden
 bool Property bEmptyPotionQueueChoiceChanged = false Auto Hidden
 bool Property bFlashPotionWarning = true Auto Hidden
+bool Property bPotionGroupingOptionsChanged = false Auto Hidden
 
 bool Property bQuickShieldEnabled = false Auto Hidden
 bool Property bQuickShield2HSwitchAllowed = true Auto Hidden

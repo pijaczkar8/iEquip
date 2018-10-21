@@ -70,6 +70,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var shoutIcon_mc: MovieClip;
 	public var shoutPreselectIcon_mc: MovieClip;
 	public var consumableIcon_mc: MovieClip;
+	public var consumableIconColorOverlay_mc: MovieClip;
 	public var poisonIcon_mc: MovieClip;
 	
 	//Widget text field holder MovieClips
@@ -284,6 +285,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		rightSoulgem_mc = widgetMaster.RightHandWidget.rightSoulgem_mc;
 		shoutIcon_mc = widgetMaster.ShoutWidget.shoutIcon_mc;
 		consumableIcon_mc = widgetMaster.ConsumableWidget.consumableIcon_mc;
+		consumableIconColorOverlay_mc = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIconColorOverlay_mc;
 		poisonIcon_mc = widgetMaster.PoisonWidget.poisonIcon_mc;
 		leftName_mc = widgetMaster.LeftHandWidget.leftName_mc;
 		leftPoisonName_mc = widgetMaster.LeftHandWidget.leftPoisonName_mc;
@@ -319,7 +321,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		rightSoulgem = widgetMaster.RightHandWidget.rightSoulgem_mc.rightSoulgem;
 		rightEnchantmentMeter = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc.rightEnchantmentMeter;
 		shoutIcon = widgetMaster.ShoutWidget.shoutIcon_mc.shoutIcon;
-		consumableIcon = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIcon;
+		consumableIcon = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIconColorOverlay_mc.consumableIcon;
 		potionFlashAnim = widgetMaster.ConsumableWidget.consumableIcon_mc.potionFlashAnim;
 		poisonIcon = widgetMaster.PoisonWidget.poisonIcon_mc.poisonIcon;
 
@@ -547,6 +549,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		var itemIcon: MovieClip;
 		var nameClip: MovieClip;
 		var itemName: TextField;
+		var colorClip: MovieClip;
 
 		switch(iSlot) {
 			case 0:
@@ -569,6 +572,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				break
 			case 3:
 				iconClip = consumableIcon_mc
+				colorClip = consumableIconColorOverlay_mc
 				itemIcon = consumableIcon
 				nameClip = consumableName_mc
 				itemName = consumableName
@@ -608,7 +612,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		//Fade out the name
 		.to(nameClip, 0.08, {_alpha:0, ease:Quad.easeOut}, 0)
 		//Set the new icon and name and update the icon colour if potion/poison whilst not visible
-		.call(updateIconAndName, [iSlot, itemIcon, iconClip, itemName, sIcon, sName])
+		.call(updateIconAndName, [iSlot, itemIcon, iconClip, itemName, sIcon, sName, colorClip])
 		//Fade and scale the new icon back in
 		.to(iconClip, 0.15, {_alpha:currAlpha, _xscale:currScale, _yscale:currScale, ease:Quad.easeOut}, 0.15)
 		//Finally fade the new name back in
@@ -650,7 +654,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		TweenLite.to(attributesClip, 0.15, {_alpha:currAttributesAlpha, ease:Quad.easeOut});
 	}
 
-	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, iconClip: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
+	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, iconClip: MovieClip, itemName: TextField, sIcon: String, sName: String, colorClip: MovieClip): Void
 	{
 		//Save the current text formatting to preserve any Edit Mode changes
 		var textFormat:TextFormat = itemName.getTextFormat();
@@ -661,36 +665,37 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		//Set the Icon
 		itemIcon.gotoAndStop(sIcon);
 
+		//skyui.util.Debug.log("iEquip updateIconAndName - iSlot: " + iSlot + ", sIcon: " + sIcon)
 		switch (iSlot){
 			case 3:
 			//Colour the potion icons
 				switch(sIcon){
 					case "HealthPotion":
-						var pIconColor = new Color(iconClip);
+						var pIconColor = new Color(colorClip);
 						pIconColor.setRGB(0xDB2E73);
-						break;
+						break
 					case "StaminaPotion":
-						var pIconColor = new Color(iconClip);
+						var pIconColor = new Color(colorClip);
 						pIconColor.setRGB(0x51DB2E);
-						break;
+						break
 					case "MagickaPotion":
-						var pIconColor = new Color(iconClip);
+						var pIconColor = new Color(colorClip);
 						pIconColor.setRGB(0x2E9FDB);
-						break;
+						break
 					case "FrostResistPotion":
-						var pIconColor = new Color(iconClip);
+						var pIconColor = new Color(colorClip);
 						pIconColor.setRGB(0x1FFBFF);
-						break;
+						break
 					case "FireResistPotion":
-						var pIconColor = new Color(iconClip);
+						var pIconColor = new Color(colorClip);
 						pIconColor.setRGB(0xC73636);
-						break;
+						break
 					case "ShockResistPotion":
-						var pIconColor = new Color(iconClip);
+						var pIconColor = new Color(colorClip);
 						pIconColor.setRGB(0xEAAB00);
-						break;
+						break
 					default:
-						var pIconColor = new Color(iconClip);
+						var pIconColor = new Color(colorClip);
 						pIconColor.setRGB(0xFFFFFF);
 						break
 					};
@@ -1026,7 +1031,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		pIconClip._xscale = 25;
 		pIconClip._yscale = 25;
 		pIconClip.gotoAndStop(newPIcon);
-		skyui.util.Debug.log("iEquip .equipPreselectedItem - newName: " + newName + ", newPName: " + newPName);
+		//skyui.util.Debug.log("iEquip .equipPreselectedItem - newName: " + newName + ", newPName: " + newPName);
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:equipPreselectedItemComplete, onCompleteParams:[iconClip_mc, tempIcon, pIconClip_mc, tempPIcon]});
 		tl.to(itemName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
 		.to(preselectName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
@@ -1044,7 +1049,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 
 	public function updateNamesForEquipPreselect(itemName: TextField, pItemName: TextField, newName: String, newPName: String): Void
 	{
-		skyui.util.Debug.log("iEquip .updateNamesForEquipPreselect - newName: " + newName + ", newPName: " + newPName);
+		//skyui.util.Debug.log("iEquip .updateNamesForEquipPreselect - newName: " + newName + ", newPName: " + newPName);
 		//Save the current text formatting to preserve any Edit Mode changes
 		var textFormat:TextFormat = itemName.getTextFormat();
 		var pTextFormat:TextFormat = pItemName.getTextFormat();
@@ -1069,7 +1074,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		if (swapShout){
 			EquipAllCounter += 1
 		}
-		skyui.util.Debug.log("iEquip .equipAllPreselectedItems - EquipAllCounter: " + EquipAllCounter);
+		//skyui.util.Debug.log("iEquip .equipAllPreselectedItems - EquipAllCounter: " + EquipAllCounter);
 		//Play the animations
 		if (swapRight){
 			equipPreselectedItem(1, rightCurrIcon, rightPCurrIcon, rightNewName, rightPCurrIcon, rightPNewIcon, rightPNewName)
@@ -1191,7 +1196,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 
 	public function updateNamesForEquipPreselectWithoutNewPreselect(itemName: TextField, newName: String): Void
 	{
-		skyui.util.Debug.log("iEquip .updateNamesForEquipPreselectWithoutNewPreselect - newName: " + newName);
+		//skyui.util.Debug.log("iEquip .updateNamesForEquipPreselectWithoutNewPreselect - newName: " + newName);
 		//Save the current text formatting to preserve any Edit Mode changes
 		var textFormat:TextFormat = itemName.getTextFormat();
 		//Set the new names
@@ -1213,7 +1218,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		if (swapShout){
 			EquipAllCounter += 1
 		}
-		skyui.util.Debug.log("iEquip .equipAllPreselectedItems - EquipAllCounter: " + EquipAllCounter);
+		//skyui.util.Debug.log("iEquip .equipAllPreselectedItems - EquipAllCounter: " + EquipAllCounter);
 		//Play the animations
 		if (swapRight){
 			equipPreselectedItemWithoutNewPreselect(1, rightCurrIcon, rightPCurrIcon, rightNewName, rightPCurrIcon)
@@ -1228,7 +1233,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 
 	public function equipPreselectedItemComplete(iconClip_mc: MovieClip, tempIcon: MovieClip, pIconClip_mc: MovieClip, tempPIcon: MovieClip): Void
 	{		
-		skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - EquipAllCounter: " + EquipAllCounter);
+		//skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - EquipAllCounter: " + EquipAllCounter);
 		//Delete the temporary movieclips
 		iconClip_mc.tempIcon.removeMovieClip();
 		pIconClip_mc.tempPIcon.removeMovieClip();
@@ -1236,9 +1241,9 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		if (EquipAllCounter > 0){
 			//Count down until all calls are made
 			EquipAllCounter -= 1
-			skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - EquipAllCounter: " + EquipAllCounter);
+			//skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - EquipAllCounter: " + EquipAllCounter);
 			if (EquipAllCounter == 0){
-				skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - About to send iEquip_EquipAllComplete mod event");
+				//skyui.util.Debug.log("iEquip .equipPreselectedItemComplete - About to send iEquip_EquipAllComplete mod event");
 				//And let Papyrus know so the function can complete
 				skse.SendModEvent("iEquip_EquipAllComplete")
 			}
@@ -1305,7 +1310,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		if (leftPNameAlpha < 1.0){
 			leftPNameAlpha = 100
 		}
-		skyui.util.Debug.log("iEquip .ammoModeAnimateIn - currIcon: " + currIcon + ", currName: " + currName + ", newIcon: " + newIcon + ", newName: " + newName + ", leftNameAlpha: " + leftNameAlpha + ", leftPNameAlpha: " + leftPNameAlpha);
+		//skyui.util.Debug.log("iEquip .ammoModeAnimateIn - currIcon: " + currIcon + ", currName: " + currName + ", newIcon: " + newIcon + ", newName: " + newName + ", leftNameAlpha: " + leftNameAlpha + ", leftPNameAlpha: " + leftPNameAlpha);
 		tempIcon = leftIcon.duplicateMovieClip("tempIcon", this.getNextHighestDepth());
 		tempIcon.gotoAndStop(currIcon);
 		leftIcon._alpha = 0;
@@ -1389,9 +1394,14 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		if (isText == 1){
 			selectedText = textElementArray[arrayIndex];
 			selectedText.textColor = highlightColor;
-		}
-		else {
-			var myColor:Color = new Color(clip);
+		} else {
+			var clipToHighlight: MovieClip;
+			if (clip == consumableIcon_mc){
+				clipToHighlight = consumableIconColorOverlay_mc
+			} else {
+				clipToHighlight = clip
+			}
+			var myColor:Color = new Color(clipToHighlight);
 			myColor.setRGB(highlightColor);
 		}
 	}
@@ -1411,6 +1421,9 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	
 	public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
 	{
+		//var potionColorOverlay: MovieClip;
+		//potionColorOverlay = consumableIconColorOverlay_mc;
+
 		if (isText == 1){
 			selectedText = textElementArray[textElement];
 			selectedText.textColor = currentColor;
@@ -1418,31 +1431,31 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		else if (clip == consumableIcon_mc){
 			switch(_global.potionType){
 				case "HealthPotion":
-					var pIconColor = new Color(consumableIcon_mc);
+					var pIconColor = new Color(consumableIconColorOverlay_mc);
 					pIconColor.setRGB(0xDB2E73);
 					break;
 				case "StaminaPotion":
-					var pIconColor = new Color(consumableIcon_mc);
+					var pIconColor = new Color(consumableIconColorOverlay_mc);
 					pIconColor.setRGB(0x51DB2E);
 					break;
 				case "MagickaPotion":
-					var pIconColor = new Color(consumableIcon_mc);
+					var pIconColor = new Color(consumableIconColorOverlay_mc);
 					pIconColor.setRGB(0x2E9FDB);
 					break;
 				case "FrostResistPotion":
-					var pIconColor = new Color(consumableIcon_mc);
+					var pIconColor = new Color(consumableIconColorOverlay_mc);
 					pIconColor.setRGB(0x1FFBFF);
 					break;
 				case "FireResistPotion":
-					var pIconColor = new Color(consumableIcon_mc);
+					var pIconColor = new Color(consumableIconColorOverlay_mc);
 					pIconColor.setRGB(0xC73636);
 					break;
 				case "ShockResistPotion":
-					var pIconColor = new Color(consumableIcon_mc);
+					var pIconColor = new Color(consumableIconColorOverlay_mc);
 					pIconColor.setRGB(0xEAAB00);
 					break;
 				default:
-					var pIconColor = new Color(consumableIcon_mc);
+					var pIconColor = new Color(consumableIconColorOverlay_mc);
 					pIconColor.setRGB(0xFFFFFF);
 					break
 				}
@@ -1545,28 +1558,33 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		tl.to(bgClip, 0.3, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
 		.to(iconClip, 0.3, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
 		.to(nameClip, 0.3, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
-		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0)
+		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0);
 		tl.play();
 	}
 
 	public function runPotionFlashAnimation(potionType: Number): Void
 	{
+		skyui.util.Debug.log("iEquipWidget runPotionFlashAnimation - potionType: " + potionType)
+		var potionFlash: MovieClip = potionFlashAnim;
+		
 		switch(potionType) {
 			case 0:
-				potionFlashAnim.gotoAndStop("Health");
+				potionFlash.gotoAndStop("Health");
 				break
 			case 1:
-				potionFlashAnim.gotoAndStop("Stamina");
+				potionFlash.gotoAndStop("Stamina");
 				break
 			case 2:
-				potionFlashAnim.gotoAndStop("Magicka");
+				potionFlash.gotoAndStop("Magicka");
 				break
 			}
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:onPotionFlashComplete});
-		tl.to(potionFlashAnim, 0.3, {_alpha:100, ease:Quad.easeOut}, 0)
-		.to(potionFlashAnim, 0.3, {_alpha:0, ease:Quad.easeOut})
-		.to(potionFlashAnim, 0.3, {_alpha:100, ease:Quad.easeOut})
-		.to(potionFlashAnim, 0.3, {_alpha:0, ease:Quad.easeOut})
+		tl.to(potionFlash, 0.3, {_alpha:100, ease:Quad.easeOut}, 0)
+		.to(potionFlash, 0.3, {_alpha:0, ease:Quad.easeOut})
+		.to(potionFlash, 0.3, {_alpha:100, ease:Quad.easeOut})
+		.to(potionFlash, 0.3, {_alpha:0, ease:Quad.easeOut})
+		.to(potionFlash, 0.3, {_alpha:100, ease:Quad.easeOut})
+		.to(potionFlash, 0.3, {_alpha:0, ease:Quad.easeOut});
 		tl.play();
 	}
 
@@ -1673,7 +1691,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	{
 		var itemID: Number = skyui.util.Hash.crc32(displayName, formID & 0x00FFFFFF);
 		var IDString: String = itemID.toString()
-		skyui.util.Debug.log("iEquipWidget generateItemID - displayName: " + displayName + ", formID: " + formID + ", generated itemID: " + itemID + ", IDString: " + IDString)
+		//skyui.util.Debug.log("iEquipWidget generateItemID - displayName: " + displayName + ", formID: " + formID + ", generated itemID: " + itemID + ", IDString: " + IDString)
 		skse.SendModEvent("iEquip_GotItemID", IDString, itemID);
 	}
 }

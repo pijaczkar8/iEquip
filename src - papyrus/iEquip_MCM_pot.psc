@@ -14,9 +14,11 @@ State pot_tgl_enblHealthGroup
             MCM.SetInfoText("Rather than having individual health potions in your consumables queue this adds a single Health Potions item to the queue. iEquip then curates a list of all health potions currently in your inventory and consumption is based on the settings below.")
         elseIf currentEvent == "Select"
             MCM.bHealthPotionGrouping = !MCM.bHealthPotionGrouping
+            MCM.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.bHealthPotionGrouping = true 
+            MCM.bHealthPotionGrouping = true
+            MCM.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent
@@ -87,9 +89,11 @@ State pot_tgl_enblStaminaGroup
             MCM.SetInfoText("Rather than having individual stamina potions in your consumables queue this adds a single Stamina Potions item to the queue. iEquip then curates a list of all stamina potions currently in your inventory and consumption is based on the settings below.")
         elseIf currentEvent == "Select"
             MCM.bStaminaPotionGrouping = !MCM.bStaminaPotionGrouping
+            MCM.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.bStaminaPotionGrouping = true 
+            MCM.bStaminaPotionGrouping = true
+            MCM.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent
@@ -160,9 +164,11 @@ State pot_tgl_enblMagickaGroup
             MCM.SetInfoText("Rather than having individual magicka potions in your consumables queue this adds a single Magicka Potions item to the queue. iEquip then curates a list of all magicka potions currently in your inventory and consumption is based on the settings below.")
         elseIf currentEvent == "Select"
             MCM.bMagickaPotionGrouping = !MCM.bMagickaPotionGrouping
+            MCM.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.bMagickaPotionGrouping = true 
+            MCM.bMagickaPotionGrouping = true
+            MCM.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent

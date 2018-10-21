@@ -89,7 +89,7 @@ bool Property boundSpellEquipped
 endProperty
 
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
-	debug.trace("iEquip_PlayerEventHandler OnActorAction called")
+	debug.trace("iEquip_PlayerEventHandler OnActorAction called - actionType: " + actionType + ", slot: " + slot)
 	if akActor == PlayerRef
 		if actionType == 6
 			WC.updateAmmoCounterOnCrossbowShot()
@@ -139,7 +139,7 @@ Event OnUpdate()
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-  debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called")
+  debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called - akBaseObject: " + akBaseObject + " - " + akBaseObject.GetName())
 
 endEvent
 
@@ -149,7 +149,7 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 		PO.onPotionAdded(akBaseItem)
 	elseIf akBaseItem as ammo && isBoundSpellEquipped
 		string ammoName = akBaseItem.GetName()
-		if contains(ammoName, "Bound") || contains(ammoName, "bound")
+		if contains(ammoName, "ound")
 			WC.addBoundAmmoToQueue(akBaseItem, ammoName)
 		endIf
 	endIf
@@ -159,6 +159,8 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
+	elseIf akBaseItem as weapon && contains(akBaseItem.GetName(), "ound")
+		WC.onBoundWeaponUnequipped(akBaseItem.GetName())
 	endIf
 endEvent
 
