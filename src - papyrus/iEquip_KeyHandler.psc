@@ -72,9 +72,6 @@ endFunction
 
 ; Inventory menu state
 state ININVENTORYMENU
-    event OnUpdate()
-    endEvent
-    
 	event OnKeyDown(int KeyCode)
 		Debug.Trace("iEquip KeyHandler ININVENTORYMENU OnKeyDown called on " + KeyCode)
         checkKeysDown(KeyCode)
