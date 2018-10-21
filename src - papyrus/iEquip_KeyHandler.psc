@@ -41,15 +41,15 @@ float Property multiTapDelay = 0.3 Auto Hidden
 float Property longPressDelay = 0.5 Auto Hidden
 float Property pressAndHoldDelay = 1.0 Auto Hidden
 
-Int keyToCheck
-Int keyPressHeld
-Int ignoreCounter
-Int WaitingKeyCode = 0
-Int iMultiTap = 0
-
+; Bools
+bool Property bAllowKeyPress = true Auto Hidden
 bool bNotInLootMenu = true
 bool isUtilityKeyHeld = false
-string previousState
+
+; Ints
+Int WaitingKeyCode = 0
+Int iMultiTap = 0
+int keySum = 0
 
 ; - ON LOAD
 function GameLoaded()
@@ -63,11 +63,9 @@ function GameLoaded()
     
 	UnregisterForAllKeys() ;Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
     
+    keySum = 0
     bNotInLootMenu = true
 	isUtilityKeyHeld = false
-    keyToCheck = 0
-    keyPressHeld = 0
-    ignoreCounter = 0
 endFunction
 
 ; - STATES
@@ -76,7 +74,7 @@ endFunction
 state ININVENTORYMENU	
 	event OnKeyDown(int KeyCode)
 		Debug.Trace("iEquip KeyHandler ININVENTORYMENU OnKeyDown called on " + KeyCode)
-		GotoState("PROCESSING")
+        GotoState("PROCESSING")
         
 		If KeyCode == iEquip_leftKey
 			WC.AddToQueue(0)
@@ -88,7 +86,7 @@ state ININVENTORYMENU
 			WC.AddToQueue(3)		
 		endIf
         
-		GotoState("ININVENTORYMENU")
+        GotoState("ININVENTORYMENU")
 	endEvent
 	
 	event OnKeyUp(int KeyCode, float HoldTime)
@@ -104,7 +102,6 @@ state PROCESSING
 	endEvent
 	
 	event OnKeyUp(int KeyCode, float HoldTime)
-        checkKeys(KeyCode)
 	endEvent
 endState
 
@@ -134,75 +131,62 @@ endEvent
 event OnKeyDown(int KeyCode)
 	;Handle extra long keypress actions and combo key held actions here so functions are called as soon as delay it met rather than waiting for onKeyUp
 	debug.trace("iEquip KeyHandler OnKeyDown called, KeyCode = " + KeyCode + ", WC.isPreselectMode: " + WC.isPreselectMode)
-	
-	if KeyCode == iEquip_utilityKey ;Combo key for cycling backwards through the queues
-		isUtilityKeyHeld = true
-	elseif keyPressHeld == 0
-        if KeyCode == iEquip_leftKey
-            keyToCheck = iEquip_rightKey
-        elseIf KeyCode == iEquip_rightKey
-            keyToCheck = iEquip_leftKey
-        else
-            keyToCheck = 0
-        endIf
-        
-        if keyToCheck != 0 && iMultiTap == 0
-            keyPressHeld = KeyCode
-            
-            if WaitingKeyCode != 0
+    if checkKeysDown(KeyCode)
+        if bAllowKeyPress
+            if keySum == iEquip_leftKey + iEquip_rightKey
+                keySum = -2
                 UnregisterForUpdate()
-                OnUpdate()
-            endif
+                WC.togglePreselectMode()
+            else
+                if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
+                    UnregisterForUpdate()
+                    OnUpdate()
+                endIf
+                WaitingKeyCode = KeyCode
             
-            RegisterForSingleUpdate(pressAndHoldDelay)
+                if iMultiTap == 0 ; This is fhte first time the key has been pressed
+                    RegisterForSingleUpdate(pressAndHoldDelay)
+                elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
+                    iMultiTap = 2
+                    RegisterForSingleUpdate(multiTapDelay)
+                elseIf iMultiTap == 2 ; This is the third time the key has been pressed
+                    iMultiTap = 3
+                    RegisterForSingleUpdate(0.0)
+                endIf
+            endIf
         endIf
-    elseif KeyCode == keyToCheck
-        ignoreCounter = 2
-        UnregisterForUpdate()
-        WC.togglePreselectMode()
-	endIf
+    endif
 endEvent
 
 Event OnKeyUp(Int KeyCode, Float HoldTime)
 	debug.trace("iEquip KeyHandler OnKeyUp called, KeyCode: " + KeyCode + ", HoldTime: " + HoldTime)
-    checkKeys(KeyCode)
     
-    if ignoreCounter <= 0
-        if HoldTime < pressAndHoldDelay ; If not a press & hold
-            if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
-                UnregisterForUpdate()
-                OnUpdate()
-            endIf
-            WaitingKeyCode = KeyCode
-
-            if HoldTime >= longPressDelay  ;If longpress.
-                iMultiTap = -1
-                RegisterForSingleUpdate(0.0)
-            else
-                If EM.isEditMode && KeyCode != iEquip_EditRotateKey && KeyCode != iEquip_EditAlphaKey && KeyCode != iEquip_EditRulersKey ;If in Edit Mode bypass the multitap listener except for the three keys which require it
-                    iMultiTap = 1
-                    RegisterForSingleUpdate(0.0)
-                else
-                    iMultiTap += 1
-                    
-                    if iMultiTap == 1
-                        RegisterForSingleUpdate(multiTapDelay)
-                    elseIf iMultiTap == 2 ;This is the first or second time the key has been pressed.
-                        RegisterForSingleUpdate(multiTapDelay)
-                    elseIf iMultiTap == 3 ; This is the third time the key has been pressed
-                        RegisterForSingleUpdate(0.0)
+    if checkKeysUp(KeyCode) 
+        if bAllowKeyPress
+            if KeyCode == WaitingKeyCode && iMultiTap == 0 
+                if HoldTime < pressAndHoldDelay ; If not a press & hold
+                    float updateTime = 0.0
+                
+                    if HoldTime >= longPressDelay ;If longpress.
+                        iMultiTap = -1
+                    else ; Turns out the key is a multiTap
+                        iMultiTap = 1
+                        
+                        If !EM.isEditMode || KeyCode == iEquip_EditRotateKey || KeyCode == iEquip_EditAlphaKey || KeyCode == iEquip_EditRulersKey
+                            updateTime = multiTapDelay
+                        endIf
                     endIf
+                    
+                    RegisterForSingleUpdate(updateTime)
                 endIf
             endIf
         endIf
-    elseIf KeyCode == iEquip_leftKey || KeyCode == iEquip_rightKey
-        ignoreCounter -= 1
     endIf
-EndEvent
+endEvent
 
 Event OnUpdate()
 	debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
-    GotoState("PROCESSING")
+    bAllowKeyPress = false
     
     if iMultiTap == -1   ; Longpress
         if WaitingKeyCode == iEquip_consumableKey
@@ -241,7 +225,7 @@ Event OnUpdate()
             WC.toggleAmmoMode(false, false)
         endIf
     elseIf iMultiTap == 0  ; LongpressHold
-        if WC.isPreselectMode && keyPressHeld != 0
+        if WC.isPreselectMode && WaitingKeyCode == keySum 
             WC.equipAllPreselectedItems()
         endIf
     elseIf iMultiTap == 1  ;Single tap
@@ -364,18 +348,39 @@ Event OnUpdate()
     
     iMultiTap = 0
     WaitingKeyCode = 0
-    
-    GotoState("")
-EndEvent
+    bAllowKeyPress = true
+endEvent
 
 ; - MISCELLANEOUS
 
-function checkKeys(int KeyCode)
+bool function checkKeysDown(int KeyCode)
+    if KeyCode == iEquip_utilityKey
+        isUtilityKeyHeld = true
+    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
+        if keySum >= 0
+            keySum += KeyCode
+        else
+            keySum -= 1
+            return false
+        endif
+    endIf
+    
+    return true
+endFunction
+
+bool function checkKeysUp(int KeyCode)
     if KeyCode == iEquip_utilityKey
         isUtilityKeyHeld = false
-    elseif KeyCode == keyPressHeld
-        keyPressHeld = 0
+    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
+        if keySum >= 0
+            keySum -= KeyCode
+        else
+            keySum += 1
+            return false
+        endif
     endIf
+    
+    return true
 endFunction
 
 function ToggleEditMode()
@@ -390,17 +395,6 @@ function ToggleEditMode()
 	EM.ToggleEditMode()
 endFunction
 
-function blockControls()
-	debug.trace("iEquip KeyHandler blockControls called - current state: " + GetState())
-    previousState = GetState()
-	GotoState("PROCESSING")
-endFunction
-
-function releaseControls()
-	debug.trace("iEquip KeyHandler releaseControls called - previous state: " + previousState)
-	GotoState(previousState)
-endFunction
-
 function RegisterForGameplayKeys()
 	debug.trace("iEquip KeyHandler RegisterForGameplayKeys called")
 	RegisterForKey(iEquip_shoutKey)
@@ -408,7 +402,7 @@ function RegisterForGameplayKeys()
 	RegisterForKey(iEquip_rightKey)
 	RegisterForKey(iEquip_consumableKey)
 	RegisterForKey(iEquip_utilityKey)
-EndFunction
+endFunction
 
 function UnregisterForGameplayKeys()
 	debug.trace("iEquip KeyHandler UnregisterForGameplayKeys called")
@@ -417,7 +411,7 @@ function UnregisterForGameplayKeys()
 	UnregisterForKey(iEquip_leftKey)
 	UnregisterForKey(iEquip_rightKey)
 	UnregisterForKey(iEquip_utilityKey)
-EndFunction
+endFunction
 
 function RegisterForEditModeKeys()
 	debug.trace("iEquip KeyHandler RegisterForEditModeKeys called")

@@ -390,7 +390,7 @@ endFunction
 function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget called")
 	;Hide the widget first
-	KH.blockControls()
+	KH.bAllowKeyPress = false
 	hideWidget()
 	debug.notification("Refreshing iEquip widget...")
 	;Reset alpha values on every element
@@ -471,7 +471,7 @@ function refreshWidget()
 			PNUpdate.registerForNameFadeoutUpdate()
 		endIf
 	endIf
-	KH.releaseControls()
+	KH.bAllowKeyPress = true
 	debug.Notification("iEquip widget refresh complete")
 	debug.trace("iEquip_WidgetCore refreshWidget finished")
 endFunction
@@ -4207,8 +4207,6 @@ function addToQueue(int Q)
 	bool isEnchanted = false
 	bool isPoisoned = false
 	string itemName = ""
-	
-	;KH.blockControls()
 
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
 		itemFormID = UI.GetInt(currentMenu, entryPath + "formId")
