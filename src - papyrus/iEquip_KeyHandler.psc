@@ -71,37 +71,33 @@ endFunction
 ; - STATES
 
 ; Inventory menu state
-state ININVENTORYMENU	
-	event OnKeyDown(int KeyCode)
-		Debug.Trace("iEquip KeyHandler ININVENTORYMENU OnKeyDown called on " + KeyCode)
-        GotoState("PROCESSING")
-        
-		If KeyCode == iEquip_leftKey
-			WC.AddToQueue(0)
-		elseIf KeyCode == iEquip_rightKey
-			WC.AddToQueue(1)
-		elseIf KeyCode == iEquip_shoutKey
-			WC.AddToQueue(2)
-		elseIf KeyCode == iEquip_consumableKey
-			WC.AddToQueue(3)		
-		endIf
-        
-        GotoState("ININVENTORYMENU")
-	endEvent
-	
-	event OnKeyUp(int KeyCode, float HoldTime)
-	endEvent
-endState
-
-; Processing state
-state PROCESSING
+state ININVENTORYMENU
     event OnUpdate()
     endEvent
-
+    
 	event OnKeyDown(int KeyCode)
+		Debug.Trace("iEquip KeyHandler ININVENTORYMENU OnKeyDown called on " + KeyCode)
+        checkKeysDown(KeyCode)
+        
+        if bAllowKeyPress
+            bAllowKeyPress = false
+        
+            If KeyCode == iEquip_leftKey
+                WC.AddToQueue(0)
+            elseIf KeyCode == iEquip_rightKey
+                WC.AddToQueue(1)
+            elseIf KeyCode == iEquip_shoutKey
+                WC.AddToQueue(2)
+            elseIf KeyCode == iEquip_consumableKey
+                WC.AddToQueue(3)		
+            endIf
+            
+            bAllowKeyPress = true
+        endIf
 	endEvent
 	
 	event OnKeyUp(int KeyCode, float HoldTime)
+        checkKeysUp(KeyCode)
 	endEvent
 endState
 
@@ -356,6 +352,9 @@ endEvent
 bool function checkKeysDown(int KeyCode)
     if KeyCode == iEquip_utilityKey
         isUtilityKeyHeld = true
+        if keySum < 0
+            return false
+        endIf
     elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
         if keySum >= 0
             keySum += KeyCode
@@ -371,6 +370,9 @@ endFunction
 bool function checkKeysUp(int KeyCode)
     if KeyCode == iEquip_utilityKey
         isUtilityKeyHeld = false
+        if keySum < 0
+            return false
+        endIf
     elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
         if keySum >= 0
             keySum -= KeyCode
