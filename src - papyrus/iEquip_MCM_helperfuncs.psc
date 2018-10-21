@@ -101,3 +101,11 @@ function resetEditModeKeys()
     MCM.KH.iEquip_EditSavePresetKey = 76
     MCM.KH.iEquip_EditDiscardKey = 83
 endFunction
+
+function closeAndReopeniEquipMCM()
+	if IsMenuOpen("Journal Menu")
+		Input.TapKey(Input.GetMappedKey("Journal"))
+		WaitMenuMode(0.5)
+		Input.TapKey(Input.GetMappedKey("Activate"))
+	endIf
+endFunction

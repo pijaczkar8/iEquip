@@ -19,7 +19,7 @@ State gen_tgl_onOff
                 MCM.justEnabled = true
                 MCM.isFirstEnabled = false
                 MCM.restartingMCM = true
-                MCM.KH.CloseAndReopeniEquipMCM()
+                closeAndReopeniEquipMCM()
             else
                 MCM.forcePageReset()
             endIf
@@ -77,7 +77,7 @@ State gen_txt_dragEastr
                 MCM.stillToEnableProMode = false
                 MCM.bProModeEnabled = true
                 MCM.restartingMCM = true
-                MCM.KH.CloseAndReopeniEquipMCM()
+                closeAndReopeniEquipMCM()
             endIf
         endIf
     endEvent
@@ -98,7 +98,7 @@ State gen_tgl_enblProMode
             MCM.bQuickShieldEnabled = false
             MCM.bQuickDualCastEnabled = false
             MCM.restartingMCM = true
-            MCM.KH.CloseAndReopeniEquipMCM()
+            closeAndReopeniEquipMCM()
         endIf
     endEvent
 endState

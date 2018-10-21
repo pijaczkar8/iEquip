@@ -60,10 +60,6 @@ bool Property bAutoAddNewItems = false Auto Hidden
 bool Property bEnableRemovedItemCaching = true Auto Hidden
 int Property maxCachedItems = 30 Auto Hidden
 
-float Property multiTapDelay = 0.3 Auto Hidden
-float Property longPressDelay = 0.5 Auto Hidden
-float Property pressAndHoldDelay = 1.0 Auto Hidden
-
 float Property equipOnPauseDelay = 2.0 Auto Hidden
 
 float Property mainNameFadeoutDelay = 5.0 Auto Hidden
@@ -156,7 +152,6 @@ int Property showPoisonMessages = 0 Auto Hidden
 int Property poisonIndicatorStyle = 1 Auto Hidden
 bool Property poisonIndicatorStyleChanged = false Auto Hidden
 
-bool Property bQuickMCMSetKeys = false Auto Hidden
 bool Property bShowAttributeIcons = true Auto Hidden
 bool Property bAttributeIconsOptionChanged = false Auto Hidden
 
@@ -449,9 +444,9 @@ event OnPageReset(string page)
             AddEmptyOption()
             
             AddHeaderOption("Key Press Options")
-            AddSliderOptionST("htk_sld_multiTapDelay", "Multi-Tap Delay", multiTapDelay, "{1} seconds")
-            AddSliderOptionST("htk_sld_longPrsDelay", "Long Press Delay", longPressDelay, "{1} seconds")
-            AddSliderOptionST("htk_sld_prsHoldDelay", "Press & Hold Delay", pressAndHoldDelay, "{1} seconds")
+            AddSliderOptionST("htk_sld_multiTapDelay", "Multi-Tap Delay", KH.multiTapDelay, "{1} seconds")
+            AddSliderOptionST("htk_sld_longPrsDelay", "Long Press Delay", KH.longPressDelay, "{1} seconds")
+            AddSliderOptionST("htk_sld_prsHoldDelay", "Press & Hold Delay", KH.pressAndHoldDelay, "{1} seconds")
             
         elseIf page == "Queue Options" 
             AddHeaderOption("Queue Length Options")
@@ -477,7 +472,6 @@ event OnPageReset(string page)
             endIf
             
         elseIf page == "Potions" 
-            AddEmptyOption()
             AddHeaderOption("Health Potion Options")
             AddToggleOptionST("pot_tgl_enblHealthGroup", "Enable Health Potion Grouping", bHealthPotionGrouping)
                     
@@ -506,7 +500,6 @@ event OnPageReset(string page)
 
             SetCursorPosition(1)
 
-            AddEmptyOption()
             AddHeaderOption("Magicka Potion Options")
             AddToggleOptionST("pot_tgl_enblMagickaGroup", "Enable Magicka Potion Grouping", bMagickaPotionGrouping)
                     
@@ -548,9 +541,8 @@ event OnPageReset(string page)
             endIf
 
             SetCursorPosition(1)
-                    
+            
             if !WC.poisonsEnabled
-                AddEmptyOption()
                 AddTextOption("Poisoning features are currently disabled.", "")
                 AddTextOption("If you wish to use the poisoning features", "")
                 AddTextOption("please re-enable the Poison Widget in the", "")
@@ -558,6 +550,7 @@ event OnPageReset(string page)
              else
                 AddTextOptionST("rep_txt_showPoisonHelp", "Show Poisoning Help", "")
                        
+                AddEmptyOption()
                 AddEmptyOption()
                 AddHeaderOption("Poison Use Options")
                 AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[showPoisonMessages])
@@ -741,17 +734,6 @@ event OnPageReset(string page)
             SetCursorPosition(1)
                     
             AddHeaderOption("Maintenance")
-            AddToggleOptionST("inf_tgl_setAccess", "Set MCM access keys", bQuickMCMSetKeys)
-               
-            if bQuickMCMSetKeys
-                AddKeyMapOptionST("inf_key_openJour", "Open Journal", KH.KEY_J, OPTION_FLAG_WITH_UNMAP)
-                AddKeyMapOptionST("inf_key_exitMenu", "Exit Menu", KH.KEY_ESCAPE, OPTION_FLAG_WITH_UNMAP)
-                AddKeyMapOptionST("inf_key_tabLeft", "Tab left", KH.KEY_NUM5, OPTION_FLAG_WITH_UNMAP)
-                AddKeyMapOptionST("inf_key_enter", "Enter", KH.KEY_ENTER, OPTION_FLAG_WITH_UNMAP)
-                AddKeyMapOptionST("inf_key_down", "Down", KH.KEY_DOWN_ARROW, OPTION_FLAG_WITH_UNMAP)
-            endIf
-                    
-            AddEmptyOption()
             AddTextOptionST("inf_txt_rstLayout", "Reset default iEquip layout", "")
         endIf
     endif
