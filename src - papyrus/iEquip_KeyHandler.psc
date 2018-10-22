@@ -92,10 +92,6 @@ state ININVENTORYMENU
             bAllowKeyPress = true
         endIf
 	endEvent
-	
-	event OnKeyUp(int KeyCode, float HoldTime)
-        checkKeysUp(KeyCode)
-	endEvent
 endState
 
 ; Default states
@@ -104,12 +100,13 @@ event OnMenuOpen(string MenuName)
 	if MenuName == "LootMenu"
         bNotInLootMenu = false
     else
-        RegisterForKey(iEquip_shoutKey)
-        RegisterForKey(iEquip_leftKey)
-        RegisterForKey(iEquip_rightKey)
-        RegisterForKey(iEquip_consumableKey)
+        GotoState("ININVENTORYMENU")
         
-		GotoState("ININVENTORYMENU")
+        UnregisterForUpdate()
+        WaitingKeyCode = 0
+        iMultiTap = 0
+        
+        RegisterForGameplayKeys()
 	endIf
 endEvent
 
@@ -123,7 +120,7 @@ endEvent
 
 event OnKeyDown(int KeyCode)
 	;Handle extra long keypress actions and combo key held actions here so functions are called as soon as delay it met rather than waiting for onKeyUp
-	debug.trace("iEquip KeyHandler OnKeyDown called, KeyCode = " + KeyCode + ", WC.isPreselectMode: " + WC.isPreselectMode)
+	debug.notification("iEquip KeyHandler OnKeyDown called, KeyCode = " + KeyCode + ", WC.isPreselectMode: " + WC.isPreselectMode)
     if checkKeysDown(KeyCode)
         if bAllowKeyPress
             if keySum == iEquip_leftKey + iEquip_rightKey
@@ -152,7 +149,7 @@ event OnKeyDown(int KeyCode)
 endEvent
 
 Event OnKeyUp(Int KeyCode, Float HoldTime)
-	debug.trace("iEquip KeyHandler OnKeyUp called, KeyCode: " + KeyCode + ", HoldTime: " + HoldTime)
+	debug.notification("iEquip KeyHandler OnKeyUp called, KeyCode: " + KeyCode + ", HoldTime: " + HoldTime)
     
     if checkKeysUp(KeyCode) 
         if bAllowKeyPress
@@ -165,7 +162,9 @@ Event OnKeyUp(Int KeyCode, Float HoldTime)
                     else ; Turns out the key is a multiTap
                         iMultiTap = 1
                         
-                        If !EM.isEditMode || KeyCode == iEquip_EditRotateKey || KeyCode == iEquip_EditAlphaKey || KeyCode == iEquip_EditRulersKey
+                        If (!EM.isEditMode || KeyCode == iEquip_EditRotateKey ||\
+                            KeyCode == iEquip_EditAlphaKey || KeyCode == iEquip_EditRulersKey)
+                            
                             updateTime = multiTapDelay
                         endIf
                     endIf
@@ -341,6 +340,7 @@ Event OnUpdate()
     
     iMultiTap = 0
     WaitingKeyCode = 0
+    
     bAllowKeyPress = true
 endEvent
 
@@ -349,37 +349,41 @@ endEvent
 bool function checkKeysDown(int KeyCode)
     if KeyCode == iEquip_utilityKey
         isUtilityKeyHeld = true
-        if keySum < 0
-            return false
-        endIf
-    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
-        if keySum >= 0
-            keySum += KeyCode
-        else
-            keySum -= 1
-            return false
-        endif
     endIf
     
-    return true
+    If keySum < 0
+        if KeyCode == iEquip_leftKey || iEquip_rightKey
+            keySum -= 1
+        endIf
+        
+        return false
+    else
+        if KeyCode == iEquip_leftKey || iEquip_rightKey
+            keySum += KeyCode
+        endIf
+        
+        return true
+    endIf
 endFunction
 
 bool function checkKeysUp(int KeyCode)
     if KeyCode == iEquip_utilityKey
         isUtilityKeyHeld = false
-        if keySum < 0
-            return false
-        endIf
-    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
-        if keySum >= 0
-            keySum -= KeyCode
-        else
-            keySum += 1
-            return false
-        endif
     endIf
     
-    return true
+    If keySum < 0
+        if KeyCode == iEquip_leftKey || iEquip_rightKey
+            keySum += 1
+        endIf
+        
+        return false
+    else
+        if KeyCode == iEquip_leftKey || iEquip_rightKey
+            keySum -= KeyCode
+        endIf
+        
+        return true
+    endIf
 endFunction
 
 function ToggleEditMode()
