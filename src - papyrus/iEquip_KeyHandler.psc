@@ -43,7 +43,6 @@ float Property pressAndHoldDelay = 1.0 Auto Hidden
 
 ; Bools
 bool Property bAllowKeyPress = true Auto Hidden
-bool bNotInLootMenu = true
 bool isUtilityKeyHeld = false
 
 ; Ints
@@ -64,7 +63,6 @@ function GameLoaded()
 	UnregisterForAllKeys() ;Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
     
     keySum = 0
-    bNotInLootMenu = true
 	isUtilityKeyHeld = false
 endFunction
 
@@ -74,8 +72,7 @@ endFunction
 state ININVENTORYMENU
 	event OnKeyDown(int KeyCode)
 		Debug.Trace("iEquip KeyHandler ININVENTORYMENU OnKeyDown called on " + KeyCode)
-        checkKeysDown(KeyCode)
-        
+        checkKeysDown(KeyCode)       
         if bAllowKeyPress
             bAllowKeyPress = false
         
@@ -98,7 +95,8 @@ endState
 
 event OnMenuOpen(string MenuName)
 	if MenuName == "LootMenu"
-        bNotInLootMenu = false
+        UnregisterForKey(iEquip_shoutKey)
+        UnregisterForKey(iEquip_consumableKey)
     else
         GotoState("ININVENTORYMENU")
         
@@ -112,7 +110,8 @@ endEvent
 
 event OnMenuClose(string MenuName)
     if MenuName == "LootMenu"
-        bNotInLootMenu = true
+        RegisterForKey(iEquip_shoutKey)
+        RegisterForKey(iEquip_consumableKey)
     else
         GotoState("")
     endIf
@@ -120,38 +119,37 @@ endEvent
 
 event OnKeyDown(int KeyCode)
 	;Handle extra long keypress actions and combo key held actions here so functions are called as soon as delay it met rather than waiting for onKeyUp
-	debug.notification("iEquip KeyHandler OnKeyDown called, KeyCode = " + KeyCode + ", WC.isPreselectMode: " + WC.isPreselectMode)
-    if checkKeysDown(KeyCode)
-        if bAllowKeyPress
-            if keySum == iEquip_leftKey + iEquip_rightKey
-                keySum = -2
+	debug.trace("iEquip KeyHandler OnKeyDown called, KeyCode = " + KeyCode + ", WC.isPreselectMode: " + WC.isPreselectMode)
+    checkKeysDown(KeyCode)
+    if bAllowKeyPress
+        if keySum == iEquip_leftKey + iEquip_rightKey
+            keySum -= 1
+            bAllowKeyPress = false
+            UnregisterForUpdate()
+            WC.togglePreselectMode()
+        else
+            if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
                 UnregisterForUpdate()
-                WC.togglePreselectMode()
-            else
-                if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
-                    UnregisterForUpdate()
-                    OnUpdate()
-                endIf
-                WaitingKeyCode = KeyCode
-            
-                if iMultiTap == 0 ; This is fhte first time the key has been pressed
-                    RegisterForSingleUpdate(pressAndHoldDelay)
-                elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
-                    iMultiTap = 2
-                    RegisterForSingleUpdate(multiTapDelay)
-                elseIf iMultiTap == 2 ; This is the third time the key has been pressed
-                    iMultiTap = 3
-                    RegisterForSingleUpdate(0.0)
-                endIf
+                OnUpdate()
+            endIf
+            WaitingKeyCode = KeyCode
+        
+            if iMultiTap == 0 ; This is fhte first time the key has been pressed
+                RegisterForSingleUpdate(pressAndHoldDelay)
+            elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
+                iMultiTap = 2
+                RegisterForSingleUpdate(multiTapDelay)
+            elseIf iMultiTap == 2 ; This is the third time the key has been pressed
+                iMultiTap = 3
+                RegisterForSingleUpdate(0.0)
             endIf
         endIf
     endif
 endEvent
 
 Event OnKeyUp(Int KeyCode, Float HoldTime)
-	debug.notification("iEquip KeyHandler OnKeyUp called, KeyCode: " + KeyCode + ", HoldTime: " + HoldTime)
-    
-    if checkKeysUp(KeyCode) 
+	debug.trace("iEquip KeyHandler OnKeyUp called, KeyCode: " + KeyCode + ", HoldTime: " + HoldTime)
+    if checkKeysUp(KeyCode)
         if bAllowKeyPress
             if KeyCode == WaitingKeyCode && iMultiTap == 0 
                 if HoldTime < pressAndHoldDelay ; If not a press & hold
@@ -178,6 +176,7 @@ endEvent
 
 Event OnUpdate()
 	debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
+    bool bBefore = bAllowKeyPress
     bAllowKeyPress = false
     
     if iMultiTap == -1   ; Longpress
@@ -341,49 +340,34 @@ Event OnUpdate()
     iMultiTap = 0
     WaitingKeyCode = 0
     
-    bAllowKeyPress = true
+    bAllowKeyPress = bBefore
 endEvent
 
 ; - MISCELLANEOUS
 
-bool function checkKeysDown(int KeyCode)
+function checkKeysDown(int KeyCode)
     if KeyCode == iEquip_utilityKey
         isUtilityKeyHeld = true
-    endIf
-    
-    If keySum < 0
-        if KeyCode == iEquip_leftKey || iEquip_rightKey
-            keySum -= 1
-        endIf
-        
-        return false
-    else
-        if KeyCode == iEquip_leftKey || iEquip_rightKey
-            keySum += KeyCode
-        endIf
-        
-        return true
+    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
+        keySum += KeyCode
     endIf
 endFunction
 
 bool function checkKeysUp(int KeyCode)
     if KeyCode == iEquip_utilityKey
         isUtilityKeyHeld = false
+    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
+        keySum -= KeyCode
+        
+        if keySum == -1
+            keySum += 1
+            bAllowKeyPress = true
+            
+            return false
+        endIf
     endIf
     
-    If keySum < 0
-        if KeyCode == iEquip_leftKey || iEquip_rightKey
-            keySum += 1
-        endIf
-        
-        return false
-    else
-        if KeyCode == iEquip_leftKey || iEquip_rightKey
-            keySum -= KeyCode
-        endIf
-        
-        return true
-    endIf
+    return true
 endFunction
 
 function ToggleEditMode()
@@ -473,10 +457,10 @@ function openiEquipMCM()
             if IsMenuOpen("Journal Menu")
                 int i = 0
         
-                TapKey(GetMappedKey("Hotkey5", 0x02)) ;Should take us to the Settings Tab <--- THIS DOESN'T WORK, NEED TO FIND AN ALTERNATIVE MAPPED KEY
+                TapKey(76) ;Should take us to the Settings Tab
                 Utility.WaitMenuMode(0.005)
                 
-                while i < 2 ;Should take us to Mod Configelay Menu entry in the Settings List
+                while i < 3 ;Should take us to MCM Menu entry in the Settings List
                     TapKey(key_down)
                     Utility.WaitMenuMode(0.005)
                     i += 1
