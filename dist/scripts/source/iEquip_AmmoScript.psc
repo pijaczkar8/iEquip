@@ -45,8 +45,8 @@ function updateAmmoList(int ammoQ, bool isBolt, bool forceSort = false)
 	while i < count && count > 0
 		FoundAmmo = GetNthFormOfType(PlayerRef, 42, i)
 		AmmoName = FoundAmmo.GetName()
-		;stringUtil.Find() is case sensitive, the Javelin check is to get the Spears by Soolie javelins which are classed as arrows/bolts and all of which have more descriptive names than simply Javelin, which is from Throwing Weapons and is an equippable throwing weapon
-		if (!isBolt && contains(AmmoName, "rrow")) || (isBolt && contains(AmmoName, "olt")) || (contains(AmmoName, "Javelin") && AmmoName != "Javelin")
+		;The Javelin check is to get the Spears by Soolie javelins which are classed as arrows/bolts and all of which have more descriptive names than simply Javelin, which is from Throwing Weapons and is an equippable throwing weapon
+		if (!isBolt && stringutil.Find(AmmoName, "arrow", 0) > -1) || (isBolt && stringutil.Find(AmmoName, "bolt", 0) > -1) || (stringutil.Find(AmmoName, "Javelin", 0) > -1 && AmmoName != "Javelin")
 			;Make sure we're only adding arrows to the arrow queue or bolts to the bolt queue
 			if (!isBolt && !(FoundAmmo as Ammo).isBolt()) || (isBolt && (FoundAmmo as Ammo).isBolt())
 				if !isAlreadyInAmmoQueue(ammoQ, FoundAmmo)
@@ -112,18 +112,18 @@ String function getAmmoIcon(bool isBolt, string AmmoName)
 		iconName = "Bolt"
 	endIf
 	;If this all looks a little strange it is because StringUtil find() is case sensitive so where possible I've ommitted the first letter to catch for example Spear and spear with pear
-	if contains(AmmoName, "pear") || contains(AmmoName, "avelin")
+	if stringutil.Find(AmmoName, "spear", 0) > -1 || stringutil.Find(AmmoName, "javelin", 0) > -1
 		iconName = "Spear"
 	endIf
 	;Check if it is likely to have an additional effect - bit hacky checking the name but I've no idea how to check for attached magic effects!
 	if iconName != "Spear"
-		if contains(AmmoName, "ire") || contains(AmmoName, "orch") || contains(AmmoName, "urn") || contains(AmmoName, "ncendiary")
+		if stringutil.Find(AmmoName, "fire", 0) > -1 || stringutil.Find(AmmoName, "torch", 0) > -1 || stringutil.Find(AmmoName, "burn", 0) > -1 || stringutil.Find(AmmoName, "incendiary", 0) > -1
 			iconName += "Fire"
-		elseIf contains(AmmoName, "rost") || contains(AmmoName, "Ice") || contains(AmmoName, "ice") || contains(AmmoName, "reez") || contains(AmmoName, "Cold" || contains(AmmoName, "cold"))
+		elseIf stringutil.Find(AmmoName, "frost", 0) > -1 || stringutil.Find(AmmoName, "ice", 0) > -1 || stringutil.Find(AmmoName, "freez", 0) > -1 || stringutil.Find(AmmoName, "cold", 0) > -1
 			iconName += "Ice"
-		elseIf contains(AmmoName, "hock") || contains(AmmoName, "park") || contains(AmmoName, "lectr")
+		elseIf stringutil.Find(AmmoName, "shock", 0) > -1 || stringutil.Find(AmmoName, "spark", 0) > -1 || stringutil.Find(AmmoName, "electr", 0) > -1
 			iconName += "Shock"
-		elseIf contains(AmmoName, "oison")
+		elseIf stringutil.Find(AmmoName, "poison", 0) > -1
 			iconName += "Poison"
 		endIf
 	endIf
@@ -134,11 +134,11 @@ endFunction
 function sortAmmoList(int ammoQ)
 	debug.trace("iEquip_AmmoScript sortAmmoList() called - Sort: " + MCM.AmmoListSorting)
 	if MCM.AmmoListSorting == 1 ;By damage, highest first
-		sortAmmoQueueByDamage(ammoQ)
+		sortAmmoQueue(ammoQ, "Damage")
 	elseIf MCM.AmmoListSorting == 2 ;By name alphabetically
 		sortAmmoQueueByName(ammoQ)
 	elseIf MCM.AmmoListSorting == 3 ;By quantity, most first
-		sortAmmoQueueByQuantity(ammoQ)
+		sortAmmoQueue(ammoQ, "Count")
 	endIf
 endFunction
 
@@ -176,135 +176,30 @@ function sortAmmoQueueByName(int ammoQ)
 	WC.selectLastUsedAmmo()
 endFunction
 
-function sortAmmoQueueByDamage(int ammoQ)
-	;Should bubble sort highest to lowest
-	debug.trace("iEquip_AmmoScript sortAmmoQueueByDamage() called")
-    bool swap = true
-    int queueLength = jArray.count(ammoQ)
-    int passes = queueLength ;- 1
-    int i = 0
-    while passes > 0 && swap
-       	swap = false
-       	while i < passes
-       		if jMap.getFlt(jArray.getObj(ammoQ, i), "Damage") < jMap.getFlt(jArray.getObj(ammoQ, i + 1), "Damage")
-               	swap = true
-               	jArray.swapItems(ammoQ, i, i + 1)
-           	endIf
-           	i += 1
-        endWhile
-       	passes -= 1
+function sortAmmoQueue(int ammoQ, string theKey)
+    debug.trace("iEquip_AmmoScript sortAmmoQueue called - Sort by: " + theKey)
+    int n = jArray.count(ammoQ)
+    int i
+    While (n > 1)
+        i = 1
+        n -= 1
+        While (i <= n)
+            Int j = i 
+            int k = (j - 1) / 2
+            While (jMap.getFlt(jArray.getObj(ammoQ, j), theKey) < jMap.getFlt(jArray.getObj(ammoQ, k), theKey))
+                jArray.swapItems(ammoQ, j, k)
+                j = k
+                k = (j - 1) / 2
+            EndWhile
+            i += 1
+        EndWhile
+        jArray.swapItems(ammoQ, 0, n)
+    EndWhile
+    i = 0
+   	n = jArray.count(ammoQ)
+    while i < n
+        debug.trace("iEquip_AmmoScript - sortAmmoQueue, sorted order: " + i + ", " + jMap.getForm(jArray.getObj(ammoQ, i), "Form").GetName() + ", " + theKey + ": " + jMap.getFlt(jArray.getObj(ammoQ, i), theKey))
+        i += 1
     endWhile
     WC.selectBestAmmo()
-    i = 0
-    while i < queueLength
-    	debug.trace("iEquip_AmmoScript - sortAmmoQueueByDamage(), sorted ammo array - i: " + i + ", " + jMap.getStr(jArray.getObj(ammoQ, i), "Name") + ", Damage: " + jMap.getFlt(jArray.getObj(ammoQ, i), "Damage"))
-    	i += 1
-    endWhile
-endFunction
-
-;/function sortAmmoQueueByDamage(int ammoQ)
-	debug.trace("iEquip_AmmoScript sortAmmoQueueByName() called")
-	int queueLength = jArray.count(ammoQ)
-	int tempAmmoQ = jArray.objectWithSize(queueLength)
-	int i = 0
-	float damage
-	while i < queueLength
-		damage = jMap.getFlt(jArray.getObj(ammoQ, i), "Damage")
-		jArray.setFlt(tempAmmoQ, i, damage)
-		i += 1
-	endWhile
-	jArray.sort(tempAmmoQ)
-	i = 0
-	int iIndex
-	bool found
-	while i < queueLength
-		damage = jArray.getFlt(tempAmmoQ, i)
-		iIndex = 0
-		found = false
-		while iIndex < queueLength && !found
-			if damage != jMap.getFlt(jArray.getObj(ammoQ, iIndex), "Damage")
-				iIndex += 1
-			else
-				found = true
-			endIf
-		endWhile
-		if i != iIndex
-			jArray.swapItems(ammoQ, i, iIndex)
-		endIf
-		i += 1
-	endWhile
-	WC.selectBestAmmo()
-endFunction/;
-
-;/function sortAmmoQueueByQuantity(int ammoQ)
-	;Should bubble sort highest to lowest
-	debug.trace("iEquip_AmmoScript sortAmmoQueueByQuantity() called")
-    bool swap = true
-    int queueLength = jArray.count(ammoQ)
-    int passes = queueLength ;- 1
-    int i = 0
-    while passes > 0 && swap
-       	swap = false
-       	while i < passes
-       		;debug.trace("iEquip_AmmoScript - sortAmmoQueueByQuantity(), i: " + i + ", " + jMap.getStr(jArray.getObj(ammoQ, i), "Name") + ", Count: " + jMap.getInt(jArray.getObj(ammoQ, i), "Count"))
-       		if jMap.getInt(jArray.getObj(ammoQ, i), "Count") < jMap.getInt(jArray.getObj(ammoQ, i + 1), "Count")
-               	swap = true
-               	jArray.swapItems(ammoQ, i, i + 1)
-           	endIf
-           	i += 1
-        endWhile
-       	passes -= 1
-    endWhile
-    WC.selectBestAmmo()
-    i = 0
-    while i < queueLength
-    	debug.trace("iEquip_AmmoScript - sortAmmoQueueByQuantity(), sorted ammo array - i: " + i + ", " + jMap.getStr(jArray.getObj(ammoQ, i), "Name") + ", Count: " + jMap.getInt(jArray.getObj(ammoQ, i), "Count"))
-    	i += 1
-    endWhile
-endFunction/;
-
-function sortAmmoQueueByQuantity(int ammoQ)
-	debug.trace("iEquip_AmmoScript sortAmmoQueueByName() called")
-	int queueLength = jArray.count(ammoQ)
-	int tempAmmoQ = jArray.objectWithSize(queueLength)
-	int tempAmmoQReversed = jArray.objectWithSize(queueLength)
-	int i = 0
-	int ammoCount
-	while i < queueLength
-		ammoCount = jMap.getInt(jArray.getObj(ammoQ, i), "Count")
-		jArray.setInt(tempAmmoQ, i, ammoCount)
-		i += 1
-	endWhile
-	jArray.sort(tempAmmoQ)
-	i = 0
-	int iIndex = queueLength - 1
-	while i < queueLength
-		jArray.setInt(tempAmmoQReversed, i, jArray.getInt(tempAmmoQ, iIndex))
-		i += 1
-		iIndex -= 1
-	endWhile
-	i = 0
-	bool found
-	while i < queueLength
-		ammoCount = jArray.getInt(tempAmmoQReversed, i)
-		iIndex = 0
-		found = false
-		while iIndex < queueLength && !found
-			if ammoCount != jMap.getInt(jArray.getObj(ammoQ, iIndex), "Count")
-				iIndex += 1
-			else
-				found = true
-			endIf
-		endWhile
-		if i != iIndex
-			jArray.swapItems(ammoQ, i, iIndex)
-		endIf
-		i += 1
-	endWhile
-	WC.selectBestAmmo()
-	i = 0
-    while i < queueLength
-    	debug.trace("iEquip_AmmoScript - sortAmmoQueueByQuantity(), sorted ammo array - i: " + i + ", " + jMap.getStr(jArray.getObj(ammoQ, i), "Name") + ", Count: " + jMap.getInt(jArray.getObj(ammoQ, i), "Count"))
-    	i += 1
-    endWhile
-endFunction
+EndFunction

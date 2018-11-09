@@ -6,6 +6,7 @@ Import UI
 
 iEquip_EditMode Property EM Auto
 iEquip_WidgetCore Property WC Auto
+iEquip_RechargeScript Property RC Auto
 iEquip_MCM Property MCM Auto
 
 Actor Property PlayerRef  Auto
@@ -347,8 +348,16 @@ Function DoLongPressActions(Int KeyCode)
 	   		endIf
 	   	endIf
 
-	elseIf WC.isAmmoMode && KeyCode == iEquip_leftKey
-		WC.toggleAmmoMode(false, false)
+	elseIf KeyCode == iEquip_leftKey
+		if WC.isAmmoMode
+			WC.toggleAmmoMode(false, false)
+		else
+			RC.rechargeWeapon(0)
+		endIf
+
+	elseIf KeyCode == iEquip_rightKey
+		RC.rechargeWeapon(1)
+
 	endIf
 
 	GotoState("")
@@ -511,8 +520,8 @@ function openiEquipMCM()
 	Utility.WaitMenuMode(actionDelay)
 	Input.TapKey(KEY_NUM5) ;Should take us to the Settings Tab
 	Utility.WaitMenuMode(actionDelay)
-	i = 0
-	n = 3 ;Should take us to Mod Configelay Menu entry in the Settings List
+	int i = 0
+	int n = 3 ;Should take us to Mod Configelay Menu entry in the Settings List
 	while i < n
 		Input.TapKey(KEY_DOWN_ARROW)
 		Utility.WaitMenuMode(actionDelay)
@@ -520,8 +529,8 @@ function openiEquipMCM()
 	EndWhile
 	Input.TapKey(KEY_ENTER)
 	Utility.WaitMenuMode(actionDelay)
-	int i = 0
-	int n = 128
+	i = 0
+	n = 128
 	string modName = ""
 	bool iEquipFound = false
 	while i < n && !iEquipFound

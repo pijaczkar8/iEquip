@@ -1,4 +1,6 @@
 import skyui.widgets.WidgetBase;
+import skyui.components.Meter;
+import skyui.widgets.iEquip.iEquipSoulGem;
 
 import gfx.io.GameDelegate;
 import skyui.util.Debug;
@@ -18,14 +20,7 @@ import skyui.defines.Weapon
 import flash.geom.ColorTransform;
 import flash.geom.Transform;
 
-// Makes the filter available to use in the Movie. 
-//import flash.filters.GlowFilter;
-
-// Creates a variable with info about the Filter settings 
-//var myGlowFilter = new GlowFilter (0x6699FF,0.6,4,20,3,3,false,true);
-
-// Applies the filter to the object named myObject
-//myObject.filters = [myGlowFilter];
+import flash.filters.*;
 
 class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 {	
@@ -161,13 +156,10 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var leftIcon: MovieClip;
 	public var leftPoisonIcon: MovieClip;
 	public var leftAttributeIcons: MovieClip;
-	public var leftSoulgem: MovieClip;
-	public var leftEnchantmentMeter: MovieClip;
 	public var rightIcon: MovieClip;
 	public var rightPoisonIcon: MovieClip;
 	public var rightAttributeIcons: MovieClip;
-	public var rightSoulgem: MovieClip;
-	public var rightEnchantmentMeter: MovieClip;
+
 	public var shoutIcon: MovieClip;
 	public var leftPreselectIcon: MovieClip;
 	public var leftPreselectAttributeIcons: MovieClip;
@@ -178,10 +170,17 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var potionFlashAnim: MovieClip;
 	public var poisonIcon: MovieClip;
 
+	public var leftMeter: Meter;
+	public var rightMeter: Meter;
+	public var leftSoulGem: iEquipSoulGem;
+	public var rightSoulGem: iEquipSoulGem;
+
+
 	public var highlightColor: Number;
 	
 	public var clip: MovieClip;
 	public var clipArray: Array;
+	public var clipHighlightArray: Array;
 	public var selectedText: TextField;
 	public var textElementArray: Array;
 	public var attributeArray: Array;
@@ -230,6 +229,10 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var tempPIcon = null;
 	public var tempHighlightedClip = null;
 	public static var EquipAllCounter: Number;
+
+	public var filter_glow: GlowFilter;
+	public var filter_shadow: DropShadowFilter;
+	public var filter_color: ColorMatrixFilter;
 	
   /* INITIALIZATION */
 
@@ -313,13 +316,13 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		leftIcon = widgetMaster.LeftHandWidget.leftIcon_mc.leftIcon;
 		leftPoisonIcon = widgetMaster.LeftHandWidget.leftPoisonIcon_mc.leftPoisonIcon;
 		leftAttributeIcons = widgetMaster.LeftHandWidget.leftAttributeIcons_mc.leftAttributeIcons;
-		leftSoulgem = widgetMaster.LeftHandWidget.leftSoulgem_mc.leftSoulgem;
-		leftEnchantmentMeter = widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc.leftEnchantmentMeter;
+		leftSoulGem = widgetMaster.LeftHandWidget.leftSoulgem_mc.leftSoulGem;
+		leftMeter = widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc.leftMeter;
 		rightIcon = widgetMaster.RightHandWidget.rightIcon_mc.rightIcon;
 		rightPoisonIcon = widgetMaster.RightHandWidget.rightPoisonIcon_mc.rightPoisonIcon;
 		rightAttributeIcons = widgetMaster.RightHandWidget.rightAttributeIcons_mc.rightAttributeIcons;
-		rightSoulgem = widgetMaster.RightHandWidget.rightSoulgem_mc.rightSoulgem;
-		rightEnchantmentMeter = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc.rightEnchantmentMeter;
+		rightSoulGem = widgetMaster.RightHandWidget.rightSoulgem_mc.rightSoulGem;
+		rightMeter = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc.rightMeter;
 		shoutIcon = widgetMaster.ShoutWidget.shoutIcon_mc.shoutIcon;
 		consumableIcon = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIconColorOverlay_mc.consumableIcon;
 		potionFlashAnim = widgetMaster.ConsumableWidget.consumableIcon_mc.potionFlashAnim;
@@ -432,13 +435,9 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		leftIcon.gotoAndStop("Empty")
 		leftPoisonIcon.gotoAndStop("Hidden")
 		leftAttributeIcons.gotoAndStop("Hidden")
-		leftEnchantmentMeter_mc._visible = false
-		leftSoulgem_mc._visible = false
 		rightIcon.gotoAndStop("Empty")
 		rightPoisonIcon.gotoAndStop("Hidden")
 		rightAttributeIcons.gotoAndStop("Hidden")
-		rightEnchantmentMeter_mc._visible = false
-		rightSoulgem_mc._visible = false
 		shoutIcon.gotoAndStop("Empty")
 		consumableIcon.gotoAndStop("Empty")
 		potionFlashAnim.gotoAndStop("Hidden")
@@ -449,12 +448,54 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		rightPreselectIcon.gotoAndStop("Empty")
 		rightPreselectAttributeIcons.gotoAndStop("Hidden")
 		shoutPreselectIcon.gotoAndStop("Empty")
+
+		leftEnchantmentMeter_mc._visible = false
+		leftSoulgem_mc._visible = false
+		rightEnchantmentMeter_mc._visible = false
+		rightSoulgem_mc._visible = false
 		
-		//Set up arrays of MovieClips and text elements ready for use in Edit Mode
+		//Set up arrays of MovieClips and text elements ready for use in Edit Mode etc
 		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
+		clipHighlightArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon, leftName, leftCount, leftPoisonIcon, leftPoisonName, leftAttributeIcons, leftMeter, leftSoulGem, leftPreselectBg_mc, leftPreselectIcon, leftPreselectName, leftPreselectAttributeIcons, rightBg_mc, rightIcon, rightName, rightCount, rightPoisonIcon, rightPoisonName, rightAttributeIcons, rightMeter, rightSoulGem, rightPreselectBg_mc, rightPreselectIcon, rightPreselectName, rightPreselectAttributeIcons, shoutBg_mc, shoutIcon, shoutName, shoutPreselectBg, shoutPreselectIcon, shoutPreselectName, consumableBg_mc, consumableIcon, consumableName, consumableCount, poisonBg_mc, poisonIcon, poisonName, poisonCount);
 		textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, leftPreselectName, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, rightPreselectName, null, null, null, shoutName, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, poisonName, poisonCount);
 
 		highlightColor = 0x00A1FF;
+
+		//Setup Glow Filter parameters
+		var glow_color:Number = highlightColor;
+		var glow_alpha:Number = 1.0;
+		var glow_blurX:Number = 5;
+		var glow_blurY:Number = 5;
+		var glow_strength:Number = 1.5;
+		var glow_quality:Number = 3;
+		var glow_inner:Boolean = false;
+		var glow_knockout:Boolean = false;
+
+		filter_glow = new GlowFilter(glow_color, glow_alpha, glow_blurX, glow_blurY, glow_strength, glow_quality, glow_inner, glow_knockout);
+
+
+		//Setup Shadow Filter parameters
+		var shadow_distance:Number = 2;
+		var shadow_angleInDegrees:Number = 105;
+		var shadow_color:Number = 0x000000;
+		var shadow_alpha:Number = 0.8;
+		var shadow_blurX:Number = 2;
+		var shadow_blurY:Number = 2;
+		var shadow_strength:Number = 1;
+		var shadow_quality:Number = 3;
+		var shadow_inner:Boolean = false;
+		var shadow_knockout:Boolean = false;
+		var shadow_hideObject:Boolean = false;
+
+		filter_shadow = new DropShadowFilter(shadow_distance, shadow_angleInDegrees, shadow_color, shadow_alpha, shadow_blurX, shadow_blurY, shadow_strength, shadow_quality, shadow_inner, shadow_knockout, shadow_hideObject);
+
+		//Setup the colour matrix for the ColorMatrixFilter
+		var colMatrix:Array = [0,0,0,0,0,   /* Red */
+                      		   0,0,0,0,161,   /* Green */
+                      		   0,0,0,0,255,   /* Blue */
+                      		   0,0,0,1,0 ]; /* Alpha Transparency */
+
+		filter_color = new ColorMatrixFilter(colMatrix)
 	}
 	
 	public function setWidgetToEmpty(): Void
@@ -522,6 +563,8 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	function setEditModeHighlightColor(_color: Number): Void
 	{
 		highlightColor = _color;
+		filter_glow.color = highlightColor;
+		clip.filters = [filter_glow]
 		SelectedElementText.textColor = highlightColor;
 	}
 	
@@ -579,6 +622,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				break
 			case 4:
 				iconClip = poisonIcon_mc
+				colorClip = poisonIcon_mc
 				itemIcon = poisonIcon
 				nameClip = poisonName_mc
 				itemName = poisonName				
@@ -700,11 +744,69 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 						break
 					};
 				break
-			case 4:
-				//Colour the poison icon
-				var pIconColor = new Color(iconClip);
-				pIconColor.setRGB(0xAD00B3);
-				break
+			/*case 4:
+			//Colour the poison icon
+				switch(sIcon){
+					case "Poison":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0xAD00B3);
+						break
+					case "PoisonHealth":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0x952000);
+						break
+					case "PoisonMagicka":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0x420044);
+						break
+					case "PoisonStamina":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0x83BA00);
+						break
+					case "PoisonFrenzy":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0xFF9703);
+						break
+					case "PoisonFear":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0x163450);
+						break
+					case "PoisonParalysis":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0x5700B1);
+						break
+					case "PoisonWeaknessFire":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0xC73636);
+						break
+					case "PoisonWeaknessFrost":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0x1FFBFF);
+						break
+					case "PoisonWeaknessMagic":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0x1FFBFF);
+						break
+					case "PoisonWeaknessPoison":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0xB4FF00);
+						break
+					case "PoisonWeaknessShock":
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0xEAAB00);
+						break
+					case "PoisonWax":
+						
+						break
+					case "PoisonOil":
+						
+						break
+					default:
+						var pIconColor = new Color(colorClip);
+						pIconColor.setRGB(0xAD00B3);
+						break
+					};
+				break*/
 			default:
 				break
 			};
@@ -1386,10 +1488,10 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public function setCurrentClip(a_clip: Number): Void
 	{
 		clip = clipArray[a_clip];
+		//clip = clipHighlightArray[a_clip];
 	}
 	
-	//GlowFilter - Distance, Angle, Color, Alpha, Blur X, Blur Y, Strength, Quality, Inner Shadow, Knockout & Hide Object
-	public function highlightSelectedElement(isText:Number, arrayIndex:Number, currentColor:Number): Void
+	/*public function highlightSelectedElement(isText:Number, arrayIndex:Number, currentColor:Number): Void
 	{
 		if (isText == 1){
 			selectedText = textElementArray[arrayIndex];
@@ -1404,22 +1506,26 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			var myColor:Color = new Color(clipToHighlight);
 			myColor.setRGB(highlightColor);
 		}
-	}
+	}*/
 
-	/*public function highlightSelectedElement(isText:Number, arrayIndex:Number, currentColor:Number): Void
+	public function highlightSelectedElement(isText:Number, arrayIndex:Number, currentColor:Number): Void
 	{
 		if (isText == 1){
 			selectedText = textElementArray[arrayIndex];
-			selectedText.textColor = highlightColor;
+			//selectedText.textColor = highlightColor;
+			selectedText.filters = [filter_glow];
 		}
 		else {
-			tempHighlightedClip = clip.duplicateMovieClip("tempClip", this.getNextHighestDepth());
-			var myColor:Color = new Color(tempHighlightedClip);
-			myColor.setRGB(highlightColor);
+			/*var i: MovieClip;
+			for (i in clip) {
+				clip.i.filters = [filter_glow];
+			}*/
+			//clip.cacheAsBitmap = true;
+			clip.filters = [filter_glow];
 		}
-	}*/
+	}
 	
-	public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
+	/*public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
 	{
 		//var potionColorOverlay: MovieClip;
 		//potionColorOverlay = consumableIconColorOverlay_mc;
@@ -1468,17 +1574,22 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			var myColor:Color = new Color(clip);
 			myColor.setRGB(0xFFFFFF);
 		}
-	}
+	}*/
 
-	/*public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
+	public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
 	{
 		if (isText == 1){
 			selectedText = textElementArray[textElement];
-			selectedText.textColor = currentColor;
+			//selectedText.textColor = currentColor;
+			selectedText.filters = [filter_shadow];
 		} else {
-			clip.tempHighlightedClip.removeMovieClip();
+			/*var i: MovieClip;
+			for (i in clip) {
+				clip.i.filters = [filter_shadow];
+			}*/
+			clip.filters = [filter_shadow];
 		}
-	}*/
+	}
 	
 	public function setTextAlignment(textElement: Number, a_align: Number): Void
 	{
@@ -1687,6 +1798,104 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		_yscale = scale;
 	}
 
+	//Enchantment display functions
+
+	//Charge Meter functions
+
+	public function initChargeMeter(i_meter: Number, nWidth: Number, nHeight: Number, primaryColor: Number, secondaryColor: Number, flashColor: Number, newPercent: Number, sFillDirection: String, forceUpdate: Boolean, bVisible: Boolean): Void
+	{
+		// Set the meter being targeted for this update
+		var targetMeter: Meter = i_meter == 0 ? leftMeter : rightMeter;
+		// Hide
+		targetMeter._visible = false;
+		// Update size
+		targetMeter.setSize(nWidth, nHeight)
+		// Update fill colours
+		targetMeter.setColors(primaryColor, secondaryColor);
+		// Update the flash colour
+		targetMeter.flashColor = flashColor;
+		// Update fill percent
+		targetMeter.setPercent(newPercent, forceUpdate);
+		// Update fill direction
+		targetMeter.setFillDirection(sFillDirection, forceUpdate); //Reset fill Direction and force percentage back
+		// Show
+		targetMeter._visible = true
+	}
+
+	public function setChargeMeterFillDirection(i_meter: Number, sFillDirection: String): Void
+	{
+		skyui.util.Debug.log("iEquipWidget setChargeMeterFillDirection called - i_meter: " + i_meter + ", sFillDirection: " + sFillDirection)
+		var targetMeter: Meter = i_meter == 0 ? leftMeter : rightMeter;
+		//targetMeter.fillDirection = sFillDirection;
+		targetMeter.setFillDirection(sFillDirection, true); //Reset fill Direction and force percentage back
+	}
+
+	public function setChargeMeterPercent(i_meter: Number, newPercent: Number, primaryColor: Number, gradientEnabled: Boolean, secondaryColor: Number, forceUpdate: Boolean): Void
+	{
+		skyui.util.Debug.log("iEquipWidget setChargeMeterPercent called - i_meter: " + i_meter + ", newPercent: " + newPercent + ", primaryColor: " + primaryColor + ", secondaryColor: " + secondaryColor + ", forceUpdate: " + forceUpdate)
+		var targetMeter: Meter = i_meter == 0 ? leftMeter : rightMeter;
+		if (gradientEnabled) {
+			targetMeter.setColors(primaryColor, secondaryColor);
+		} else {
+			targetMeter.color = primaryColor;
+		}
+		targetMeter.setPercent(newPercent, forceUpdate);
+	}
+
+	public function startChargeMeterFlash(i_meter: Number, flashColor: Number, forceUpdate: Boolean): Void
+	{	
+		var targetMeter: Meter = i_meter == 0 ? leftMeter : rightMeter;
+		targetMeter.flashColor = flashColor;
+		targetMeter.startFlash(forceUpdate);
+	}
+
+	public function tweenChargeMeterAlpha(i_meter: Number, targetAlpha: Number): Void
+	{
+		var meterClip: MovieClip = i_meter == 0 ? leftEnchantmentMeter_mc : rightEnchantmentMeter_mc;
+		TweenLite.to(meterClip, 1.0, {_alpha:targetAlpha, ease:Quad.easeOut});
+	}
+
+	//Dynamic Soulgem functions
+
+	public function initSoulGem(i_gem: Number, primaryColor: Number, flashColor: Number, newPercent: Number, forceUpdate: Boolean, bVisible: Boolean): Void
+	{
+		// Set the meter being targeted for this update
+		var targetGem: iEquipSoulGem = i_gem == 0 ? leftSoulGem : rightSoulGem;
+		// Hide
+		targetGem._visible = false;
+		// Update fill colours
+		targetGem.color = primaryColor;
+		// Update the flash colour
+		targetGem.flashColor = flashColor;
+		// Update fill percent
+		targetGem.setPercent(newPercent, forceUpdate);
+		// Show
+		targetGem._visible = true
+	}
+
+	public function setSoulGemPercent(i_gem: Number, newPercent: Number, primaryColor: Number, forceUpdate: Boolean): Void
+	{
+		skyui.util.Debug.log("iEquipWidget setSoulGemPercent called - i_gem: " + i_gem + ", newPercent: " + newPercent + ", primaryColor: " + primaryColor + ", forceUpdate: " + forceUpdate)
+		var targetGem: iEquipSoulGem = i_gem == 0 ? leftSoulGem : rightSoulGem;
+		targetGem.color = primaryColor;
+		targetGem.setPercent(newPercent, forceUpdate);
+	}
+
+	public function startSoulGemFlash(i_gem: Number, flashColor: Number, forceUpdate: Boolean): Void
+	{	
+		var targetGem: iEquipSoulGem = i_gem == 0 ? leftSoulGem : rightSoulGem;
+		targetGem.flashColor = flashColor;
+		targetGem.startFlash(forceUpdate);
+	}
+
+	public function tweenSoulGemAlpha(i_gem: Number, targetAlpha: Number): Void
+	{
+		var soulGemClip: MovieClip = i_gem == 0 ? leftSoulgem_mc : rightSoulgem_mc;
+		TweenLite.to(soulGemClip, 1.0, {_alpha:targetAlpha, ease:Quad.easeOut});
+	}
+
+	//Function utilising the SkyUI scaleform hash function to generate itemIDs for WidgetCore addToQueue
+	
 	public function generateItemID(displayName: String, formID: Number): Void
 	{
 		var itemID: Number = skyui.util.Hash.crc32(displayName, formID & 0x00FFFFFF);

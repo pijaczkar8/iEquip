@@ -3,6 +3,9 @@ Scriptname iEquip_MCM extends SKI_ConfigBase
 import stringUtil
 
 iEquip_WidgetCore Property WC Auto
+iEquip_RechargeScript Property RC Auto
+iEquip_PotionScript Property PO Auto
+iEquip_ChargeMeters Property CM Auto
 iEquip_EditMode Property EM Auto
 iEquip_KeyHandler Property KH Auto
 
@@ -59,6 +62,10 @@ bool Property bAllowSingleItemsInBothQueues = true Auto Hidden
 bool Property bAutoAddNewItems = false Auto Hidden
 bool Property bEnableRemovedItemCaching = true Auto Hidden
 int Property maxCachedItems = 30 Auto Hidden
+
+float Property multiTapDelay = 0.3 Auto Hidden
+float Property longPressDelay = 0.5 Auto Hidden
+float Property pressAndHoldDelay = 1.0 Auto Hidden
 
 float Property equipOnPauseDelay = 2.0 Auto Hidden
 
@@ -132,17 +139,9 @@ int Property quickHealEquipChoice = 3 Auto Hidden
 bool Property bQuickHealUseSecondChoice = true Auto Hidden
 bool Property bQuickHealSwitchBackEnabled = true Auto Hidden
 
-bool Property bRechargingEnabled = true Auto Hidden
-bool Property bUseLargestSoul = true Auto Hidden
-bool Property bAllowOversizedSouls = false Auto Hidden
-bool Property bUsePartFilledGems = false Auto Hidden
-bool Property bShowChargeMeters = true Auto Hidden
-bool Property bShowDynamicSoulgem = true Auto Hidden
-int Property meterFillColor = 0x8c9ec2 Auto Hidden
-bool Property bEnableLowCharge = false Auto Hidden
-float Property lowChargeThreshold = 20.0 Auto Hidden
-int Property lowChargeFillColor = 0xFF0000 Auto Hidden
-bool Property enchantmentDisplayOptionChanged = false Auto Hidden
+string[] Property chargeDisplayOptions Auto Hidden
+string[] Property meterFillDirectionOptions Auto Hidden
+int[] Property meterFillDirection Auto Hidden
 
 bool Property bAllowPoisonSwitching = true Auto Hidden
 bool Property bAllowPoisonTopUp = true Auto Hidden
@@ -152,6 +151,7 @@ int Property showPoisonMessages = 0 Auto Hidden
 int Property poisonIndicatorStyle = 1 Auto Hidden
 bool Property poisonIndicatorStyleChanged = false Auto Hidden
 
+bool Property bQuickMCMSetKeys = false Auto Hidden
 bool Property bShowAttributeIcons = true Auto Hidden
 bool Property bAttributeIconsOptionChanged = false Auto Hidden
 
@@ -179,6 +179,18 @@ string[] Property QHEquipOptions Auto Hidden
 string[] Property QRPreferredWeaponType Auto Hidden
 string[] Property QRSwitchOutOptions Auto Hidden
 string[] Property EMKeysChoice Auto Hidden
+
+; ###########################
+; ####       FLAGS       ####
+
+int property flag_rep_rechargingEnabled = 0x00 auto hidden
+int property flag_rep_chargeDisplayEnabled = 0x00 auto hidden
+int property flag_rep_chargeFadeoutEnabled = 0x01 auto hidden
+int property flag_rep_customFlashColorEnabled = 0x01 auto hidden
+int property flag_rep_lowChargeEnabled = 0x00 auto hidden
+int property flag_rep_chargeMetersEnabled = 0x00 auto hidden
+int property flag_rep_gradientFillEnabled = 0x01 auto hidden
+
 
 ; ###########################
 ; ### START OF UPDATE MCM ###
@@ -245,6 +257,20 @@ Event OnConfigInit()
     emptyPotionQueueOptions[1] = "Hide Icon"
     
     ; REP
+    chargeDisplayOptions = new String[3]
+    chargeDisplayOptions[0] = "Hidden"
+    chargeDisplayOptions[1] = "Charge Meters"
+    chargeDisplayOptions[2] = "Dynamic Soulgem"
+
+    meterFillDirectionOptions = new String[3]
+    meterFillDirectionOptions[0] = "left"
+    meterFillDirectionOptions[1] = "right"
+    meterFillDirectionOptions[2] = "both"
+
+    meterFillDirection = new int[2]
+    meterFillDirection[0] = 1
+    meterFillDirection[1] = 0
+
     poisonMessageOptions = new String[3]
     poisonMessageOptions[0] = "Show All"
     poisonMessageOptions[1] = "Top-up & Switch"
@@ -357,6 +383,20 @@ event OnConfigOpen()
         Pages[1] = "Hotkey Options"
         Pages[0] = "General Settings"
     endIf
+
+    chargeDisplayOptions = new String[3]
+    chargeDisplayOptions[0] = "Hidden"
+    chargeDisplayOptions[1] = "Charge Meters"
+    chargeDisplayOptions[2] = "Dynamic Soulgem"
+
+    ;/meterFillDirectionOptions = new string[3]
+    meterFillDirectionOptions[0] = "left"
+    meterFillDirectionOptions[1] = "right"
+    meterFillDirectionOptions[2] = "both"
+
+    meterFillDirection = new int[2]
+    meterFillDirection[0] = 1
+    meterFillDirection[1] = 0/;
 endEvent
 
 Event OnConfigClose()
@@ -386,7 +426,7 @@ event OnPageReset(string page)
         UnloadCustomContent()
     
         if page == "General Settings"
-            debug.notification("VAR IS: "+bEnabled)
+            ;debug.notification("VAR IS: "+bEnabled)
             AddToggleOptionST("gen_tgl_onOff", "iEquip On/Off", bEnabled)
            
             if !isFirstEnabled && bEnabled
@@ -444,9 +484,9 @@ event OnPageReset(string page)
             AddEmptyOption()
             
             AddHeaderOption("Key Press Options")
-            AddSliderOptionST("htk_sld_multiTapDelay", "Multi-Tap Delay", KH.multiTapDelay, "{1} seconds")
-            AddSliderOptionST("htk_sld_longPrsDelay", "Long Press Delay", KH.longPressDelay, "{1} seconds")
-            AddSliderOptionST("htk_sld_prsHoldDelay", "Press & Hold Delay", KH.pressAndHoldDelay, "{1} seconds")
+            AddSliderOptionST("htk_sld_multiTapDelay", "Multi-Tap Delay", multiTapDelay, "{1} seconds")
+            AddSliderOptionST("htk_sld_longPrsDelay", "Long Press Delay", longPressDelay, "{1} seconds")
+            AddSliderOptionST("htk_sld_prsHoldDelay", "Press & Hold Delay", pressAndHoldDelay, "{1} seconds")
             
         elseIf page == "Queue Options" 
             AddHeaderOption("Queue Length Options")
@@ -464,7 +504,9 @@ event OnPageReset(string page)
             SetCursorPosition(1)
                     
             AddHeaderOption("Auto Add Options")
-            AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add new items to queue", bAutoAddNewItems)
+            AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add on equipping", bAutoAddNewItems)
+            AddToggleOptionST("que_tgl_autoAddPoisons", "Auto-add poisons", PO.autoAddPoisons)
+            AddToggleOptionST("que_tgl_autoAddConsumables", "Auto-add food and drink", PO.autoAddConsumables)
             AddToggleOptionST("que_tgl_allowCacheRmvItm", "Allow caching of removed items", bEnableRemovedItemCaching)
                     
             if bEnableRemovedItemCaching
@@ -472,6 +514,7 @@ event OnPageReset(string page)
             endIf
             
         elseIf page == "Potions" 
+            AddEmptyOption()
             AddHeaderOption("Health Potion Options")
             AddToggleOptionST("pot_tgl_enblHealthGroup", "Enable Health Potion Grouping", bHealthPotionGrouping)
                     
@@ -500,6 +543,7 @@ event OnPageReset(string page)
 
             SetCursorPosition(1)
 
+            AddEmptyOption()
             AddHeaderOption("Magicka Potion Options")
             AddToggleOptionST("pot_tgl_enblMagickaGroup", "Enable Magicka Potion Grouping", bMagickaPotionGrouping)
                     
@@ -522,27 +566,47 @@ event OnPageReset(string page)
         
         elseIf page == "Recharging and Poisoning"
             AddTextOptionST("rep_txt_showEnchRechHelp", "Show Enchantment Recharging Help", "")
-            AddToggleOptionST("rep_tgl_enblEnchRech", "Enable enchanted weapon recharging", bRechargingEnabled)
+            AddToggleOptionST("rep_tgl_enblEnchRech", "Enable enchanted weapon recharging", RC.bRechargingEnabled)
             AddEmptyOption()
                     
-            if bRechargingEnabled
+            ;if RC.bRechargingEnabled
                 AddHeaderOption("Soulgem Use Options")
-                AddToggleOptionST("rep_tgl_useLargSoul", "Use largest available soul", bUseLargestSoul)
-                AddToggleOptionST("rep_tgl_useOvrsizSoul", "Use oversized souls", bAllowOversizedSouls)
-                AddToggleOptionST("rep_tgl_usePartGem", "Use partially filled gems", bUsePartFilledGems)
+                AddToggleOptionST("rep_tgl_useLargSoul", "Use largest available soul", RC.bUseLargestSoul, flag_rep_rechargingEnabled)
+                AddToggleOptionST("rep_tgl_useOvrsizSoul", "Use oversized souls", RC.bAllowOversizedSouls, flag_rep_rechargingEnabled)
+                AddToggleOptionST("rep_tgl_usePartGem", "Use partially filled gems", RC.bUsePartFilledGems, flag_rep_rechargingEnabled)
                         
                 AddHeaderOption("Widget Options")
-                AddToggleOptionST("rep_tgl_showEnchCharge", "Show enchantment charge meters", bShowChargeMeters)
-                AddToggleOptionST("rep_tgl_showDynGemIco", "Show dynamic soulgem icon", bShowDynamicSoulgem)
-                AddColorOptionST("rep_col_normFillCol", "Normal meter fill colour", meterFillColor)
-                AddToggleOptionST("rep_tgl_changeColLowCharge", "Change colour on low charge", bEnableLowCharge)
-                AddSliderOptionST("rep_sld_setLowChargeTresh", "Set low charge threshold", lowChargeThreshold, "{0}%")
-                AddColorOptionST("rep_col_lowFillCol", "Low charge fill colour", lowChargeFillColor)
-            endIf
+                AddMenuOptionST("rep_men_showEnchCharge", "Charge displayed as", chargeDisplayOptions[CM.chargeDisplayType], flag_rep_rechargingEnabled)
+                ;if CM.chargeDisplayType > 0
+                    AddToggleOptionST("rep_tgl_enableChargeFadeout", "Enable enchantment charge fadeout", CM.chargeFadeoutEnabled, flag_rep_chargeDisplayEnabled)
+                    ;if CM.chargeFadeoutEnabled
+                        AddSliderOptionST("rep_sld_chargeFadeDelay", "Fadeout delay", CM.chargeFadeoutDelay, "Fade after {1} secs", flag_rep_chargeFadeoutEnabled)
+                    ;endIf
+                    AddColorOptionST("rep_col_normFillCol", "Normal charge fill colour", CM.primaryFillColor, flag_rep_chargeDisplayEnabled)
+                    AddToggleOptionST("rep_tgl_enableCustomFlashCol", "Enable custom flash colour", CM.customFlashColor, flag_rep_chargeDisplayEnabled)
+                   ; if CM.customFlashColor
+                        AddColorOptionST("rep_col_meterFlashCol", "Empty warning flash colour", CM.flashColor, flag_rep_customFlashColorEnabled)
+                   ; endIf
+                    AddToggleOptionST("rep_tgl_changeColLowCharge", "Change colour on low charge", CM.enableLowCharge, flag_rep_chargeDisplayEnabled)
+                    ;if CM.enableLowCharge
+                        AddSliderOptionST("rep_sld_setLowChargeTresh", "Set low charge threshold", CM.lowChargeThreshold*100, "{0}%", flag_rep_lowChargeEnabled)
+                        AddColorOptionST("rep_col_lowFillCol", "Low charge fill colour", CM.lowChargeFillColor, flag_rep_lowChargeEnabled)
+                    ;endIf
+                    ;if CM.chargeDisplayType == 1
+                        AddToggleOptionST("rep_tgl_enableGradientFill", "Enable gradient fill", CM.enableGradientFill, flag_rep_chargeDisplayEnabled)
+                        ;if CM.enableGradientFill
+                            AddColorOptionST("rep_col_gradFillCol", "Gradient (low) fill colour", CM.secondaryFillColor, flag_rep_gradientFillEnabled)
+                        ;endIf
+                        AddMenuOptionST("rep_men_leftFillDir", "Left meter fill direction", meterFillDirectionOptions[meterFillDirection[0]], flag_rep_chargeDisplayEnabled)
+                        AddMenuOptionST("rep_men_rightFillDir", "Right meter fill direction", meterFillDirectionOptions[meterFillDirection[1]], flag_rep_chargeDisplayEnabled)
+                    ;endIf
+                ;endIf
+            ;endIf
 
             SetCursorPosition(1)
-            
+                    
             if !WC.poisonsEnabled
+                AddEmptyOption()
                 AddTextOption("Poisoning features are currently disabled.", "")
                 AddTextOption("If you wish to use the poisoning features", "")
                 AddTextOption("please re-enable the Poison Widget in the", "")
@@ -550,7 +614,6 @@ event OnPageReset(string page)
              else
                 AddTextOptionST("rep_txt_showPoisonHelp", "Show Poisoning Help", "")
                        
-                AddEmptyOption()
                 AddEmptyOption()
                 AddHeaderOption("Poison Use Options")
                 AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[showPoisonMessages])
@@ -734,6 +797,17 @@ event OnPageReset(string page)
             SetCursorPosition(1)
                     
             AddHeaderOption("Maintenance")
+            AddToggleOptionST("inf_tgl_setAccess", "Set MCM access keys", bQuickMCMSetKeys)
+               
+            if bQuickMCMSetKeys
+                AddKeyMapOptionST("inf_key_openJour", "Open Journal", KH.KEY_J, OPTION_FLAG_WITH_UNMAP)
+                AddKeyMapOptionST("inf_key_exitMenu", "Exit Menu", KH.KEY_ESCAPE, OPTION_FLAG_WITH_UNMAP)
+                AddKeyMapOptionST("inf_key_tabLeft", "Tab left", KH.KEY_NUM5, OPTION_FLAG_WITH_UNMAP)
+                AddKeyMapOptionST("inf_key_enter", "Enter", KH.KEY_ENTER, OPTION_FLAG_WITH_UNMAP)
+                AddKeyMapOptionST("inf_key_down", "Down", KH.KEY_DOWN_ARROW, OPTION_FLAG_WITH_UNMAP)
+            endIf
+                    
+            AddEmptyOption()
             AddTextOptionST("inf_txt_rstLayout", "Reset default iEquip layout", "")
         endIf
     endif

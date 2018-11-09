@@ -99,7 +99,7 @@ State que_tgl_autoAddItmQue
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Enabling this setting will allow any manually equipped item which isn't already found in your left/right/shout queue to be automatically added to the queue. "+\
-                            "Hand items will only be added if not found in either queue. Items added this way will allow the queue length to grow if you have disable the hard limit above.\nDefault: Off")
+                            "Hand items will only be added if not found in either queue. Items added this way will allow the queue length to grow if you have disabled the hard limit above.\nDefault: Off")
         elseIf currentEvent == "Select"
             MCM.bAutoAddNewItems = !MCM.bAutoAddNewItems
             MCM.SetToggleOptionValueST(MCM.bAutoAddNewItems)
@@ -107,6 +107,44 @@ State que_tgl_autoAddItmQue
             MCM.bAutoAddNewItems = false 
             MCM.SetToggleOptionValueST(MCM.bAutoAddNewItems)
         endIf
+    endEvent
+endState
+
+State que_tgl_autoAddPoisons
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("With this enabled iEquip will manage your poison queue for you, finding and adding all poisons currently in your inventory and adding new ones as you acquire them. "+\
+                            "There will no longer be a restriction on the number of poisons in the queue, and they will be sorted alphabetically.  If you intend to grind alchemy then disable this setting, "+\
+                            "however if you only craft and carry poisons you intend to use then this will save you having to manage the poison queue.\nDefault - Off")
+        else
+            If currentEvent == "Select"
+                MCM.PO.autoAddPoisons = !MCM.PO.autoAddPoisons
+                MCM.SetToggleOptionValueST(MCM.PO.autoAddPoisons)
+            elseIf currentEvent == "Default"
+                MCM.PO.autoAddPoisons = true
+            endIf
+            MCM.SetToggleOptionValueST(MCM.PO.autoAddPoisons)
+            MCM.PO.settingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State que_tgl_autoAddConsumables
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("With this enabled iEquip will add food and drink to your consumables queue for you, finding and adding all food and drink currently in your inventory and adding new ones as you acquire them. "+\
+                            "There will no longer be a restriction on the number of items in the queue.  If you regularly carry lots of different food and drink items then disable this setting, "+\
+                            "however if you only carry what you intend to eat and drink then this will save you having to manage those items in the consumables queue.\nDefault - Off")
+        else
+            If currentEvent == "Select"
+                MCM.PO.autoAddConsumables = !MCM.PO.autoAddConsumables
+                MCM.SetToggleOptionValueST(MCM.PO.autoAddConsumables)
+            elseIf currentEvent == "Default"
+                MCM.PO.autoAddConsumables = true
+            endIf
+            MCM.SetToggleOptionValueST(MCM.PO.autoAddConsumables)
+            MCM.PO.settingsChanged = true
+        endIf 
     endEvent
 endState
 

@@ -1,0 +1,2 @@
+Scriptname iEquip_ApplyPoisonLeftFXScript extends iEquip_ApplyPoisonFXScript Hidden
+
