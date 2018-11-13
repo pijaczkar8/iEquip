@@ -30,7 +30,6 @@ Actor Property PlayerRef  Auto
 Form Property iEquip_Unarmed1H  Auto  
 Form Property iEquip_Unarmed2H  Auto  
 
-Bool Property ShowMessages = True Auto Hidden
 Bool Property iEquip_Reset = False Auto Hidden
 Bool Property refreshQueues = False Auto Hidden
 Bool Property fadeOptionsChanged = False Auto Hidden
@@ -86,7 +85,7 @@ bool Property bTogglePreselectOnEquipAll = false Auto Hidden
 string MCMSettingsPath = "Data/iEquip/MCM Settings/"
 string FileExtMCM = ".IEQS"
 
-int Property backgroundStyle = 0 Auto Hidden
+;int Property backgroundStyle = 0 Auto Hidden
 bool Property backgroundStyleChanged = false Auto Hidden
 bool Property bSkipCurrentItemWhenCycling = false Auto Hidden
 int Property utilityKeyDoublePress = 0 Auto Hidden
@@ -288,11 +287,12 @@ Event OnConfigInit()
     ammoIconOptions[1] = "Triple"
     ammoIconOptions[2] = "Quiver"
     
-    backgroundStyleOptions = new String[4]
-    backgroundStyleOptions[0] = "Square with border"
-    backgroundStyleOptions[1] = "Square without border"
-    backgroundStyleOptions[2] = "Round with border"
-    backgroundStyleOptions[3] = "Round without border"
+    backgroundStyleOptions = new String[5]
+    backgroundStyleOptions[0] = "No background"
+    backgroundStyleOptions[1] = "Square with border"
+    backgroundStyleOptions[2] = "Square without border"
+    backgroundStyleOptions[3] = "Round with border"
+    backgroundStyleOptions[4] = "Round without border"
     
     fadeoutOptions = new String[4]
     fadeoutOptions[0] = "Slow"
@@ -349,6 +349,12 @@ event OnConfigOpen()
     fadeOptionsChanged = false
     ammoIconChanged = false
     ammoSortingChanged = false
+    slotEnabledOptionsChanged = false
+    gearedUpOptionChanged = false
+    bAttributeIconsOptionChanged = false
+    poisonIndicatorStyleChanged = false
+    bPotionGroupingOptionsChanged = false
+    backgroundStyleChanged = false
     
     if isFirstEnabled == false
         if bProModeEnabled
@@ -637,11 +643,11 @@ event OnPageReset(string page)
             endIf
                     
             AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[ammoIconStyle])
-            AddToggleOptionST("ui_tgl_enblWdgetBckground", "Enable widget backgrounds", EM.BackgroundsShown)
+            ;AddToggleOptionST("ui_tgl_enblWdgetBckground", "Enable widget backgrounds", EM.BackgroundsShown)
                     
-            if EM.BackgroundsShown
-                AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[backgroundStyle])
-            endIf
+            ;if EM.BackgroundsShown
+                AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[WC.backgroundStyle])
+            ;endIf
             ;+++Disable spin on in/out animations
                     
             SetCursorPosition(1)

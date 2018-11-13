@@ -60,7 +60,7 @@ State ui_men_ammoIcoStyle
     endEvent
 endState
 
-State ui_tgl_enblWdgetBckground
+;/State ui_tgl_enblWdgetBckground
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Enables backgrounds for each of the widgets.  Once enabled backgrounds are available in Edit Mode and can be shown, hidden and manipulated like all other elements\nDefault is Disabled")
@@ -72,17 +72,17 @@ State ui_tgl_enblWdgetBckground
             MCM.forcePageReset()
         endIf 
     endEvent
-endState
+endState/;
 
 State ui_men_bckgroundStyle
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose the style for your slot backgrounds.\nBackgrounds can be scaled, rotated and faded in Edit Mode")
+            MCM.SetInfoText("Choose the style for your slot backgrounds.\nBackgrounds can be scaled, rotated and faded in Edit Mode\nDefault: Hidden")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.backgroundStyle, MCM.backgroundStyleOptions, 0)
+            fillMenu(MCM.WC.backgroundStyle, MCM.backgroundStyleOptions, 0)
         elseIf currentEvent == "Accept"
-            MCM.backgroundStyle = currentVar as int
-            MCM.SetMenuOptionValueST(MCM.backgroundStyleOptions[MCM.backgroundStyle])
+            MCM.WC.backgroundStyle = currentVar as int
+            MCM.SetMenuOptionValueST(MCM.backgroundStyleOptions[MCM.WC.backgroundStyle])
             MCM.backgroundStyleChanged = true
         endIf 
     endEvent

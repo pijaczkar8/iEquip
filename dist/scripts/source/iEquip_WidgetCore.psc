@@ -119,6 +119,8 @@ bool Property shoutEnabled = true Auto
 bool Property consumablesEnabled = true Auto
 bool Property poisonsEnabled = true Auto
 
+int Property backgroundStyle = 0 Auto Hidden
+
 bool PreselectMode = false
 bool PreselectModeFirstLook = true
 bool leftPreselectShown = true
@@ -160,9 +162,9 @@ bool Property firstPressShowsName = true Auto
 
 bool[] Property isPoisonNameShown Auto
 int[] Property poisonNameElements Auto
-bool[] poisonInfoDisplayed
-string tempLeftPoisonName
-int tempLeftPoisonCharges
+bool[] Property poisonInfoDisplayed Auto
+;string tempLeftPoisonName
+;int tempLeftPoisonCharges
 
 string[] potionGroups
 bool[] Property potionGroupEmpty Auto
@@ -314,14 +316,14 @@ Event OnWidgetLoad()
 	bool[] args = new bool[5]
 	if isAmmoMode
 		args[0] = true
-		args[3] = EM.BackgroundsShown
+		;args[3] = EM.BackgroundsShown
 	else
 		args[0] = false ;Hide left
-		args[3] = true ;Hide backgrounds - set to true but other three then take over and hide them anyway
+		;args[3] = true ;Hide backgrounds - set to true but other three then take over and hide them anyway
 	endIf
 	args[1] = false ;Hide right
 	args[2] = false ;Hide shout
-	args[4] = isAmmoMode
+	args[3] = isAmmoMode
 	UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
     ; Use RunOnce bool here - if first load hide everything and show messagebox
 	if isFirstLoad
@@ -395,6 +397,7 @@ function refreshWidgetOnLoad()
 	form fItem
 	bool inAmmoMode = isAmmoMode
 	int potionGroup = potionGroups.find(jMap.getStr(jArray.getObj(targetQ[3], currentQueuePosition[3]), "Name"))
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", backgroundStyle)
 	while Q < 8
 		isNameShown[Q] = true
 		if Q < 5
@@ -402,8 +405,6 @@ function refreshWidgetOnLoad()
 				checkAndUpdatePoisonInfo(Q)
 				CM.initChargeMeter(Q)
 				CM.initSoulGem(Q)
-				;Utility.Wait(0.1)
-				;CM.checkAndUpdateChargeMeter(Q, true)
 			endIf
 			if Q == 0 && inAmmoMode
 				updateWidget(Q, currentQueuePosition[ammoQ])
@@ -858,7 +859,8 @@ bool Property isEnabled
 			if iEquip_Enabled
 				PO.findAndSortPotions()
 				if isFirstEnabled
-					EM.BackgroundsShown = false
+					;EM.BackgroundsShown = false
+					UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", backgroundStyle)
 					UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
 					; Update consumable and poison slots to show Health Potions and first poison if any present
 					int Q = 3
@@ -1178,8 +1180,8 @@ bool Property isPreselectMode
 			args[0] = leftPreselectShown ;Show left
 			args[1] = rightPreselectShown ;Show right
 			args[2] = shoutPreselectShown ;Show shout if not hidden in edit mode or shoutPreselectEnabled disabled in MCM
-			args[3] = EM.enableBackgrounds ;Show backgrounds if enabled
-			args[4] = isAmmoMode
+			;args[3] = EM.enableBackgrounds ;Show backgrounds if enabled
+			args[3] = isAmmoMode
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			PreselectModeAnimateIn()
 			if PreselectModeFirstLook && !EM.isEditMode
@@ -1196,14 +1198,14 @@ bool Property isPreselectMode
 			PreselectModeAnimateOut()
 			if isAmmoMode || RightHandWeaponIsRanged()
 				args[0] = true
-				args[3] = EM.BackgroundsShown
+				;args[3] = EM.BackgroundsShown
 			else
 				args[0] = false ;Hide left
-				args[3] = true ;Hide backgrounds - set to true but other three then take over and hide them anyway
+				;args[3] = true ;Hide backgrounds - set to true but other three then take over and hide them anyway
 			endIf
 			args[1] = false ;Hide right
 			args[2] = false ;Hide shout
-			args[4] = isAmmoMode
+			args[3] = isAmmoMode
 			Utility.Wait(2.0)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			Self.UnregisterForModEvent("iEquip_ReadyForPreselectAnimation")
@@ -1212,6 +1214,7 @@ bool Property isPreselectMode
 endProperty
 
 function PreselectModeAnimateIn()
+	debug.trace("iEquip_WidgetCore PreselectModeAnimateIn called")
 	bool[] args = new bool[3]
 	if isAmmoMode
 		args[0] = false ;Don't animate the left icon if already shown in ammo mode
@@ -1294,7 +1297,7 @@ bool Property isAmmoMode
 		AmmoMode = enabled
 		ReadyForAmmoModeAnim = false
 		Self.RegisterForModEvent("iEquip_ReadyForAmmoModeAnimation", "ReadyForAmmoModeAnimation")
-		bool[] widgetData = new bool[2]
+		;bool[] widgetData = new bool[2]
 		if AmmoMode
 			;Hide the left hand poison elements if currently shown
 			if poisonInfoDisplayed[0]
@@ -1309,10 +1312,11 @@ bool Property isAmmoMode
 			endIf
 			;Prepare and run the animation
 			if !toggleAmmoModeWithoutAnimation
-				widgetData[0] = true ;Animate In
-				widgetData[1] = EM.BackgroundsShown
+				;widgetData[0] = true ;Animate In
+				;widgetData[1] = EM.BackgroundsShown
 				;debug.trace("iEquip_WidgetCore isAmmoMode Set - about to call .prepareForAmmoModeAnimation, widgetData: " + widgetData)
-				UI.invokeboolA(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", widgetData)
+				;UI.invokeboolA(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", widgetData)
+				UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", true)
 				while !ReadyForAmmoModeAnim
 					Utility.Wait(0.01)
 				endwhile
@@ -1329,9 +1333,10 @@ bool Property isAmmoMode
 		else
 			if !toggleAmmoModeWithoutAnimation
 				;Switch back to left hand weapon
-				widgetData[0] = false ;Animate Out
-				widgetData[1] = EM.BackgroundsShown
-				UI.invokeboolA(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", widgetData)
+				;widgetData[0] = false ;Animate Out
+				;widgetData[1] = EM.BackgroundsShown
+				;UI.invokeboolA(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", widgetData)
+				UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", false)
 				while !ReadyForAmmoModeAnim
 					Utility.Wait(0.01)
 				endwhile
@@ -2454,7 +2459,7 @@ function showName(int Q, bool fadeIn = true, bool targetingPoisonName = false, f
 		UICallback.Send(iHandle)
 	endIf
 
-	if nameFadeoutEnabled
+	if nameFadeoutEnabled && !EM.isEditMode
 		if Q == 0
 			if targetingPoisonName
 				LPoisonNUpdate.registerForNameFadeoutUpdate()
@@ -2523,30 +2528,16 @@ function updateAttributeIcons(int Q, int iIndex, bool overridePreselect = false,
 			if inPreselectMode
 				;debug.trace("iEquip_WidgetCore updateAttributeIcons - 1st option")
 				targetObject = jArray.getObj(targetQ[Q - 5], iIndex)
-				;isPoisoned = jMap.getInt(targetObject, "isPoisoned") as bool
-				;isEnchanted = jMap.getInt(targetObject, "isEnchanted") as bool
-			;else
-				;debug.trace("iEquip_WidgetCore updateAttributeIcons - 2nd option")
-				;isPoisoned = false
-				;isEnchanted = false
 			endIf
 		elseif (inPreselectMode && !overridePreselect && !preselectSwitchingHands && Q <= 2) || cyclingLHPreselectInAmmoMode
-			;debug.trace("iEquip_WidgetCore updateAttributeIcons - 3rd option")
+			;debug.trace("iEquip_WidgetCore updateAttributeIcons - 2nd option")
 			Slot += 5
 			targetObject = jArray.getObj(targetQ[Q], currentlyPreselected[Q])
-			;isPoisoned = jMap.getInt(targetObject, "isPoisoned") as bool
-			;isEnchanted = jMap.getInt(targetObject, "isEnchanted") as bool
 			cyclingLHPreselectInAmmoMode = false
-		;elseif Q == 0 && inAmmoMode
-			;debug.trace("iEquip_WidgetCore updateAttributeIcons - 4th option")
-			;isPoisoned = false
-			;isEnchanted = false
 		else
 			if Q < 2
-				;debug.trace("iEquip_WidgetCore updateAttributeIcons - 5th option")
+				;debug.trace("iEquip_WidgetCore updateAttributeIcons - 3rd option")
 				targetObject = jArray.getObj(targetQ[Q], iIndex)
-				;isPoisoned = jMap.getInt(targetObject, "isPoisoned") as bool
-				;isEnchanted = jMap.getInt(targetObject, "isEnchanted") as bool
 			endIf
 		endIf
 		if targetObject == -1 || (Q == 0 && inAmmoMode)
@@ -3810,12 +3801,12 @@ function applyPoison(int Q)
 endFunction
 
 ;Convenience function
-function hidePoisonInfo(int Q)
+function hidePoisonInfo(int Q, bool forceHide = false)
 	debug.trace("iEquip_WidgetCore hidePoisonInfo called")
-	checkAndUpdatePoisonInfo(Q, true)
+	checkAndUpdatePoisonInfo(Q, true, forceHide)
 endFunction
 
-function checkAndUpdatePoisonInfo(int Q, bool cycling = false)
+function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = false)
 	int targetObject = jArray.getObj(targetQ[Q], currentQueuePosition[Q])
 	int itemType = jMap.getInt(targetObject, "Type")
 	Potion currentPoison = _Q2C_Functions.WornGetPoison(PlayerRef, Q)
@@ -3834,7 +3825,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false)
 	int[] args
 	;if the currently equipped item isn't poisonable, or if it isn't currently poisoned check and remove poison info is showing
 	if cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && isAmmoMode)
-		if poisonInfoDisplayed[Q]
+		if poisonInfoDisplayed[Q] || forceHide
 			;Hide the poison icon
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")
 			if(iHandle)
@@ -4000,11 +3991,10 @@ function equipPreselectedItem(int Q)
 			prepareAmmoQueue(itemType)
 		endIf
 	endIf
-	string newName = jMap.getStr(targetObject, "Name")
-	string newIcon = jMap.getStr(targetObject, "Icon")
-	targetObject = jArray.getObj(targetArray, currentQueuePosition[Q])
-    string currIcon =  jMap.getStr(targetObject, "Icon")
+	string currIcon =  jMap.getStr(jArray.getObj(targetArray, currentQueuePosition[Q]), "Icon")
     string currPIcon = jMap.getStr(targetObject, "Icon")
+	string newName = jMap.getStr(targetObject, "Name")
+	string newIcon = currPIcon
     ;if we've chosen to swap items when equipping preselect then set the new preselect index to the currently equipped item ready to animate into the preselect slot
     if MCM.bPreselectSwapItemsOnEquip
 		currentlyPreselected[Q] = currentQueuePosition[Q]
@@ -4240,11 +4230,11 @@ function equipAllPreselectedItems()
 	endIf
 	;Equip preselected shout first unless !shoutPreselectEnabled
 	if shoutPreselectShown
-		targetArray - targetQ[2]
+		targetArray = targetQ[2]
 		;Store currently equipped item icons and preselected item icons and names for each slot if enabled
-		targetObject = jArray.getObj(targetArray, currentQueuePosition[2])
-		shoutData[0] = jMap.getStr(targetObject, "Icon")
-		shoutData[1] = shoutData[0]
+		targetObject = jArray.getObj(targetArray, currentlyPreselected[2])
+		shoutData[0] = jMap.getStr(jArray.getObj(targetArray, currentQueuePosition[2]), "Icon")
+		shoutData[1] = jMap.getStr(targetObject, "Icon")
 		shoutData[2] = jMap.getStr(targetObject, "Name")
 		equipPreselectedItem(2)
 		if !MCM.bTogglePreselectOnEquipAll
@@ -4267,9 +4257,9 @@ function equipAllPreselectedItems()
 	;Equip right hand first so any 2H/Ranged weapons take priority and equipping left hand can be blocked
 	if rightPreselectShown
 		targetArray = targetQ[1]
-		targetObject = jArray.getObj(targetArray, currentQueuePosition[1])
-		rightData[0] = jMap.getStr(targetObject, "Icon")
-		rightData[1] = rightData[0]
+		targetObject = jArray.getObj(targetArray, currentlyPreselected[1])
+		rightData[0] = jMap.getStr(jArray.getObj(targetArray, currentQueuePosition[1]), "Icon")
+		rightData[1] = jMap.getStr(targetObject, "Icon")
 		rightData[2] = jMap.getStr(targetObject, "Name")
 		equipPreselectedItem(1)
 		if !MCM.bTogglePreselectOnEquipAll
@@ -4291,9 +4281,9 @@ function equipAllPreselectedItems()
 	bool equipLeft = true
 	if leftPreselectShown && !(rightPreselectShown && ((rightHandItemType == 5 || rightHandItemType == 6 || rightHandItemType == 7 || rightHandItemType == 9) || (leftTargetItem == rightTargetItem && itemCount < 2 && rightHandItemType != 22)))
 		targetArray = targetQ[0]
-		targetObject = jArray.getObj(targetArray, currentQueuePosition[0])
-		leftData[0] = jMap.getStr(targetObject, "Icon")
-		leftData[1] = leftData[0]
+		targetObject = jArray.getObj(targetArray, currentlyPreselected[0])
+		leftData[0] = jMap.getStr(jArray.getObj(targetArray, currentQueuePosition[0]), "Icon")
+		leftData[1] = jMap.getStr(targetObject, "Icon")
 		leftData[2] = jMap.getStr(targetObject, "Name")
 		equipPreselectedItem(0)
 		if !MCM.bTogglePreselectOnEquipAll
@@ -4945,9 +4935,6 @@ function ApplyMCMSettings()
 		elseif MCM.iEquip_Reset
 			EM.ResetDefaults()
 		else
-			if MCM.ShowMessages
-				debug.Notification("Applying iEquip settings...")
-			endIf
 			ApplyChanges()
 			if EM.isEditMode
 				EM.updateEditModeButtons()
@@ -4965,19 +4952,20 @@ function ApplyChanges()
 	if MCM.slotEnabledOptionsChanged
 		updateSlotsEnabled()
 	endIf
+	if MCM.backgroundStyleChanged
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", backgroundStyle)
+	endIf
 	if MCM.fadeOptionsChanged
 		i = 0
         while i < 8
             showName(i, true) ;Reshow all the names and either register or unregister for updates
             i += 1
         endwhile
-        MCM.fadeOptionsChanged = false
     endIf
     if MCM.refreshQueues
     	purgeQueue()
     endIf
     if MCM.gearedUpOptionChanged
-    	MCM.gearedUpOptionChanged = false
     	Utility.SetINIbool("bDisableGearedUp:General", True)
 		refreshVisibleItems()
 		if MCM.bEnableGearedUp
@@ -5030,10 +5018,8 @@ function ApplyChanges()
 			endIf
 			i += 1
 		endwhile
-		MCM.bAttributeIconsOptionChanged = false
 	endIf
 	if MCM.poisonIndicatorStyleChanged
-		MCM.poisonIndicatorStyleChanged = false
 		i = 0
 		while i < 2
 			if poisonInfoDisplayed[i]
@@ -5043,6 +5029,7 @@ function ApplyChanges()
 		endwhile
 	endIf
 	if CM.settingsChanged
+		CM.settingsChanged = false
 		CM.updateChargeMeters(true) ;forceUpdate will make sure updateMeterPercent runs in full
 		if CM.chargeDisplayType > 0
 			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
@@ -5055,7 +5042,6 @@ function ApplyChanges()
 		endIf
 	endIf
 	if MCM.bPotionGroupingOptionsChanged
-		MCM.bPotionGroupingOptionsChanged = false
 	    if (currentlyEquipped[3] == "Health Potions" && !MCM.bHealthPotionGrouping) || (currentlyEquipped[3] == "Stamina Potions" && !MCM.bStaminaPotionGrouping) || (currentlyEquipped[3] == "Magicka Potions" && !MCM.bMagickaPotionGrouping)
 	        cycleSlot(3)
 	    endIf

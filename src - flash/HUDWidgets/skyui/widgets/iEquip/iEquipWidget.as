@@ -25,6 +25,7 @@ import flash.filters.*;
 class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 {	
   /* STAGE ELEMENTS */
+
 	//Widget MovieClips
 	public var widgetMaster: MovieClip;
 	public var LeftHandWidget: MovieClip;
@@ -41,9 +42,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var leftPreselectBg_mc: MovieClip;
 	public var rightPreselectBg_mc: MovieClip;
 	public var shoutPreselectBg_mc: MovieClip;
-	public var leftPreselectBg: MovieClip;
-	public var rightPreselectBg: MovieClip;
-	public var shoutPreselectBg: MovieClip;
 	public var consumableBg_mc: MovieClip;
 	public var poisonBg_mc: MovieClip;
 	
@@ -65,7 +63,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var shoutIcon_mc: MovieClip;
 	public var shoutPreselectIcon_mc: MovieClip;
 	public var consumableIcon_mc: MovieClip;
-	public var consumableIconColorOverlay_mc: MovieClip;
 	public var poisonIcon_mc: MovieClip;
 	
 	//Widget text field holder MovieClips
@@ -113,7 +110,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var TextColorInstructionText: TextField;
 	public var AlphaInstructionText: TextField;
 	public var ToggleAlphaInstructionText: TextField;
-	public var VisInstructionText: TextField;
+	//public var VisInstructionText: TextField;
 	public var ToggleGridInstructionText: TextField;
 	public var HighlightColorInstructionText: TextField;
 	public var CurrInfoColorInstructionText: TextField;
@@ -124,7 +121,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var RotationDirectionText: TextField;
 	public var AlignmentText: TextField;
 	public var AlphaText: TextField;
-	public var VisibilityText: TextField;
+	//public var VisibilityText: TextField;
 	public var MoveIncrementText: TextField;
 	public var RotateIncrementText: TextField;
 	public var AlphaIncrementText: TextField;
@@ -183,6 +180,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var clipHighlightArray: Array;
 	public var selectedText: TextField;
 	public var textElementArray: Array;
+	public var textFieldArray: Array;
 	public var attributeArray: Array;
 
 	public var currQ: Number;
@@ -233,12 +231,17 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var filter_glow: GlowFilter;
 	public var filter_shadow: DropShadowFilter;
 	public var filter_color: ColorMatrixFilter;
+	public var filter_gradGlow: GradientGlowFilter;
+
+	public var colorTrans: ColorTransform;
 	
   /* INITIALIZATION */
 
 	public function iEquipWidget()
 	{
 		super();
+
+		//_global.gfxExtensions = true;
 
 		_visible = false;
 
@@ -259,21 +262,18 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		leftPreselectBg_mc = widgetMaster.LeftHandWidget.leftPreselectBg_mc;
 		rightPreselectBg_mc = widgetMaster.RightHandWidget.rightPreselectBg_mc;
 		shoutPreselectBg_mc = widgetMaster.ShoutWidget.shoutPreselectBg_mc;
-		leftPreselectBg = widgetMaster.LeftHandWidget.leftPreselectBg_mc.leftPreselectBg;
-		rightPreselectBg = widgetMaster.RightHandWidget.rightPreselectBg_mc.rightPreselectBg;
-		shoutPreselectBg = widgetMaster.ShoutWidget.shoutPreselectBg_mc.shoutPreselectBg;
 		consumableBg_mc = widgetMaster.ConsumableWidget.consumableBg_mc;
 		poisonBg_mc = widgetMaster.PoisonWidget.poisonBg_mc;
 		
 		//Backgrounds are hidden by default
-		leftBg_mc._visible = false;
-		rightBg_mc._visible = false;
-		shoutBg_mc._visible = false;
-		leftPreselectBg_mc._visible = false;
-		rightPreselectBg_mc._visible = false;
-		shoutPreselectBg_mc._visible = false;
-		consumableBg_mc._visible = false;
-		poisonBg_mc._visible = false;
+		leftBg_mc.gotoAndStop("Hidden");
+		rightBg_mc.gotoAndStop("Hidden");
+		shoutBg_mc.gotoAndStop("Hidden");
+		leftPreselectBg_mc.gotoAndStop("Hidden");
+		rightPreselectBg_mc.gotoAndStop("Hidden");
+		shoutPreselectBg_mc.gotoAndStop("Hidden");
+		consumableBg_mc.gotoAndStop("Hidden");
+		poisonBg_mc.gotoAndStop("Hidden");
 
 		//Set up the icon and text field holder MovieClips
 		leftIcon_mc = widgetMaster.LeftHandWidget.leftIcon_mc;
@@ -288,7 +288,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		rightSoulgem_mc = widgetMaster.RightHandWidget.rightSoulgem_mc;
 		shoutIcon_mc = widgetMaster.ShoutWidget.shoutIcon_mc;
 		consumableIcon_mc = widgetMaster.ConsumableWidget.consumableIcon_mc;
-		consumableIconColorOverlay_mc = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIconColorOverlay_mc;
 		poisonIcon_mc = widgetMaster.PoisonWidget.poisonIcon_mc;
 		leftName_mc = widgetMaster.LeftHandWidget.leftName_mc;
 		leftPoisonName_mc = widgetMaster.LeftHandWidget.leftPoisonName_mc;
@@ -324,7 +323,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		rightSoulGem = widgetMaster.RightHandWidget.rightSoulgem_mc.rightSoulGem;
 		rightMeter = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc.rightMeter;
 		shoutIcon = widgetMaster.ShoutWidget.shoutIcon_mc.shoutIcon;
-		consumableIcon = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIconColorOverlay_mc.consumableIcon;
+		consumableIcon = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIcon;
 		potionFlashAnim = widgetMaster.ConsumableWidget.consumableIcon_mc.potionFlashAnim;
 		poisonIcon = widgetMaster.PoisonWidget.poisonIcon_mc.poisonIcon;
 
@@ -368,7 +367,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		TextColorInstructionText = EditModeGuide.TextColorInstructionText;
 		AlphaInstructionText = EditModeGuide.AlphaInstructionText;
 		ToggleAlphaInstructionText = EditModeGuide.ToggleAlphaInstructionText;
-		VisInstructionText = EditModeGuide.VisInstructionText;
+		//VisInstructionText = EditModeGuide.VisInstructionText;
 		ToggleGridInstructionText = EditModeGuide.ToggleGridInstructionText;
 		HighlightColorInstructionText = EditModeGuide.HighlightColorInstructionText;
 		CurrInfoColorInstructionText = EditModeGuide.CurrInfoColorInstructionText;
@@ -383,7 +382,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		RotationDirectionText = EditModeGuide.RotationDirectionText;
 		AlignmentText = EditModeGuide.AlignmentText;
 		AlphaText = EditModeGuide.AlphaText;
-		VisibilityText = EditModeGuide.VisibilityText;
+		//VisibilityText = EditModeGuide.VisibilityText;
 		MoveIncrementText = EditModeGuide.MoveIncrementText;
 		RotateIncrementText = EditModeGuide.RotateIncrementText;
 		AlphaIncrementText = EditModeGuide.AlphaIncrementText;
@@ -456,23 +455,13 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		
 		//Set up arrays of MovieClips and text elements ready for use in Edit Mode etc
 		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
-		clipHighlightArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon, leftName, leftCount, leftPoisonIcon, leftPoisonName, leftAttributeIcons, leftMeter, leftSoulGem, leftPreselectBg_mc, leftPreselectIcon, leftPreselectName, leftPreselectAttributeIcons, rightBg_mc, rightIcon, rightName, rightCount, rightPoisonIcon, rightPoisonName, rightAttributeIcons, rightMeter, rightSoulGem, rightPreselectBg_mc, rightPreselectIcon, rightPreselectName, rightPreselectAttributeIcons, shoutBg_mc, shoutIcon, shoutName, shoutPreselectBg, shoutPreselectIcon, shoutPreselectName, consumableBg_mc, consumableIcon, consumableName, consumableCount, poisonBg_mc, poisonIcon, poisonName, poisonCount);
 		textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, leftPreselectName, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, rightPreselectName, null, null, null, shoutName, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, poisonName, poisonCount);
+		textFieldArray = new Array(leftName, leftCount, leftPoisonName, leftPreselectName, rightName, rightCount, rightPoisonName, rightPreselectName, shoutName, shoutPreselectName, consumableName, consumableCount, poisonName, poisonCount);
 
 		highlightColor = 0x00A1FF;
 
-		//Setup Glow Filter parameters
-		var glow_color:Number = highlightColor;
-		var glow_alpha:Number = 1.0;
-		var glow_blurX:Number = 5;
-		var glow_blurY:Number = 5;
-		var glow_strength:Number = 1.5;
-		var glow_quality:Number = 3;
-		var glow_inner:Boolean = false;
-		var glow_knockout:Boolean = false;
-
-		filter_glow = new GlowFilter(glow_color, glow_alpha, glow_blurX, glow_blurY, glow_strength, glow_quality, glow_inner, glow_knockout);
-
+		colorTrans = new ColorTransform;
+		colorTrans.rgb = highlightColor;
 
 		//Setup Shadow Filter parameters
 		var shadow_distance:Number = 2;
@@ -489,13 +478,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 
 		filter_shadow = new DropShadowFilter(shadow_distance, shadow_angleInDegrees, shadow_color, shadow_alpha, shadow_blurX, shadow_blurY, shadow_strength, shadow_quality, shadow_inner, shadow_knockout, shadow_hideObject);
 
-		//Setup the colour matrix for the ColorMatrixFilter
-		var colMatrix:Array = [0,0,0,0,0,   /* Red */
-                      		   0,0,0,0,161,   /* Green */
-                      		   0,0,0,0,255,   /* Blue */
-                      		   0,0,0,1,0 ]; /* Alpha Transparency */
-
-		filter_color = new ColorMatrixFilter(colMatrix)
+		handleTextFieldDropShadow(false);
 	}
 	
 	public function setWidgetToEmpty(): Void
@@ -543,7 +526,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		DepthButton.gotoAndStop(Dep);
 		DepthInstructionText._x = RotateInstructionText._x;
 		ToggleAlphaInstructionText._x = RotateInstructionText._x;
-		VisInstructionText._x = RotateInstructionText._x;
+		//VisInstructionText._x = RotateInstructionText._x;
 		ToggleGridButton.gotoAndStop(Rul);
 		ToggleGridInstructionText._x = RotateInstructionText._x;
 		HighlightColorInstructionText._x = RotateInstructionText._x;
@@ -563,8 +546,8 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	function setEditModeHighlightColor(_color: Number): Void
 	{
 		highlightColor = _color;
-		filter_glow.color = highlightColor;
-		clip.filters = [filter_glow]
+		colorTrans.rgb = highlightColor;
+		skyui.util.Debug.log("iEquip .setEditModeHighlightColor - _color: " + _color);		
 		SelectedElementText.textColor = highlightColor;
 	}
 	
@@ -575,7 +558,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		RotationDirectionText.textColor = _color;
 		AlignmentText.textColor = _color;
 		AlphaText.textColor = _color;
-		VisibilityText.textColor = _color;
+		//VisibilityText.textColor = _color;
 		MoveIncrementText.textColor = _color;
 		RotateIncrementText.textColor = _color;
 		AlphaIncrementText.textColor = _color;
@@ -588,11 +571,11 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	//sSlot: 0 = Left Hand, 1 = Right Hand, 2 = Shout, 3 = Consumable, 4 = Poison, 5 = Left Preselect, 6 = Right Preselect, 7 = Shout Preselect
 	public function updateWidget(iSlot: Number, sIcon: String, sName: String, iNameAlpha: Number): Void
 	{
+		skyui.util.Debug.log("iEquip .updateWidget - iSlot: " + iSlot + ", sIcon: " + sIcon + ", sName: " + sName+ ", iNameAlpha: " + iNameAlpha)
 		var iconClip: MovieClip;
 		var itemIcon: MovieClip;
 		var nameClip: MovieClip;
 		var itemName: TextField;
-		var colorClip: MovieClip;
 
 		switch(iSlot) {
 			case 0:
@@ -615,14 +598,12 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				break
 			case 3:
 				iconClip = consumableIcon_mc
-				colorClip = consumableIconColorOverlay_mc
 				itemIcon = consumableIcon
 				nameClip = consumableName_mc
 				itemName = consumableName
 				break
 			case 4:
 				iconClip = poisonIcon_mc
-				colorClip = poisonIcon_mc
 				itemIcon = poisonIcon
 				nameClip = poisonName_mc
 				itemName = poisonName				
@@ -656,7 +637,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		//Fade out the name
 		.to(nameClip, 0.08, {_alpha:0, ease:Quad.easeOut}, 0)
 		//Set the new icon and name and update the icon colour if potion/poison whilst not visible
-		.call(updateIconAndName, [iSlot, itemIcon, iconClip, itemName, sIcon, sName, colorClip])
+		.call(updateIconAndName, [iSlot, itemIcon, iconClip, itemName, sIcon, sName])
 		//Fade and scale the new icon back in
 		.to(iconClip, 0.15, {_alpha:currAlpha, _xscale:currScale, _yscale:currScale, ease:Quad.easeOut}, 0.15)
 		//Finally fade the new name back in
@@ -698,7 +679,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		TweenLite.to(attributesClip, 0.15, {_alpha:currAttributesAlpha, ease:Quad.easeOut});
 	}
 
-	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, iconClip: MovieClip, itemName: TextField, sIcon: String, sName: String, colorClip: MovieClip): Void
+	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, iconClip: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
 	{
 		//Save the current text formatting to preserve any Edit Mode changes
 		var textFormat:TextFormat = itemName.getTextFormat();
@@ -710,7 +691,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		itemIcon.gotoAndStop(sIcon);
 
 		//skyui.util.Debug.log("iEquip updateIconAndName - iSlot: " + iSlot + ", sIcon: " + sIcon)
-		switch (iSlot){
+		/*switch (iSlot){
 			case 3:
 			//Colour the potion icons
 				switch(sIcon){
@@ -744,98 +725,27 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 						break
 					};
 				break
-			/*case 4:
-			//Colour the poison icon
-				switch(sIcon){
-					case "Poison":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xAD00B3);
-						break
-					case "PoisonHealth":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x952000);
-						break
-					case "PoisonMagicka":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x420044);
-						break
-					case "PoisonStamina":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x83BA00);
-						break
-					case "PoisonFrenzy":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xFF9703);
-						break
-					case "PoisonFear":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x163450);
-						break
-					case "PoisonParalysis":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x5700B1);
-						break
-					case "PoisonWeaknessFire":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xC73636);
-						break
-					case "PoisonWeaknessFrost":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x1FFBFF);
-						break
-					case "PoisonWeaknessMagic":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x1FFBFF);
-						break
-					case "PoisonWeaknessPoison":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xB4FF00);
-						break
-					case "PoisonWeaknessShock":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xEAAB00);
-						break
-					case "PoisonWax":
-						
-						break
-					case "PoisonOil":
-						
-						break
-					default:
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xAD00B3);
-						break
-					};
-				break*/
 			default:
 				break
-			};
+			};*/
 	}
 
 	//Used when a bound weapon is equipped to switch from the spell school icon to the bound weapon icon
 	public function updateIconOnly(iSlot: Number, sIcon: String): Void
 	{
 		var iconClip: MovieClip;
-		//var itemIcon: MovieClip;
-		//var currAlpha: Number;
 		
 		switch(iSlot) {
 			case 0:
 				iconClip = leftIcon_mc
-				//itemIcon = leftIcon
-				//currAlpha = leftIcon_mc._alpha
 				break
 			case 1:
 				iconClip = rightIcon_mc
-				//itemIcon = rightIcon
-				//currAlpha = rightIcon_mc._alpha
 				break
 			};
-		
-		//TweenLite.to(iconClip, 0.15, {_alpha:0, ease:Quad.easeOut});
-		//itemIcon.gotoAndStop(sIcon); 
-		//TweenLite.to(iconClip, 0.2, {_alpha:currAlpha, ease:Quad.easeOut});
+
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+
 		tl.to(iconClip, 1.2, {_rotation:"+=1080", ease:Strong.easeInOut}, 0)
 		.call(switchToBoundItemIcon, [iSlot, sIcon], this, 0.7);
 		tl.play();
@@ -857,21 +767,55 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		itemIcon.gotoAndStop(sIcon);
 	}
 
-	public function togglePreselect(leftEnabled: Boolean, rightEnabled: Boolean, shoutEnabled: Boolean, backgroundsShown: Boolean, ammoMode: Boolean): Void
+	public function setBackgrounds(iOption: Number): Void
 	{
+		var backgroundName: String;
+
+		switch(iOption) {
+			case 0:
+				backgroundName = "Hidden";
+				break
+			case 1:
+				backgroundName = "Square";
+				break
+			case 2:
+				backgroundName = "SquareNoBorder";
+				break
+			case 3:
+				backgroundName = "Round";
+				break
+			case 4:
+				backgroundName = "RoundNoBorder";
+				break
+			};
+
+		leftBg_mc.gotoAndStop(backgroundName);
+		rightBg_mc.gotoAndStop(backgroundName);
+		shoutBg_mc.gotoAndStop(backgroundName);
+		leftPreselectBg_mc.gotoAndStop(backgroundName);
+		rightPreselectBg_mc.gotoAndStop(backgroundName);
+		shoutPreselectBg_mc.gotoAndStop(backgroundName);
+		consumableBg_mc.gotoAndStop(backgroundName);
+		poisonBg_mc.gotoAndStop(backgroundName);
+	}
+
+	//public function togglePreselect(leftEnabled: Boolean, rightEnabled: Boolean, shoutEnabled: Boolean, backgroundsShown: Boolean, ammoMode: Boolean): Void
+	public function togglePreselect(leftEnabled: Boolean, rightEnabled: Boolean, shoutEnabled: Boolean, ammoMode: Boolean): Void
+	{
+		//skyui.util.Debug.log("iEquip .togglePreselect - leftEnabled: " + leftEnabled + ", rightEnabled: " + rightEnabled + ", shoutEnabled: " + shoutEnabled + ", backgroundsShown: " + backgroundsShown + ", ammoMode: " + ammoMode);
 		if(!ammoMode){
 			leftPreselectIcon._alpha = 0
 			leftPreselectName_mc._alpha = 0
-			leftPreselectBg._alpha = 0
+			leftPreselectBg_mc._alpha = 0
 		}
 		shoutPreselectIcon._alpha = 0
 		shoutPreselectName_mc._alpha = 0
 		rightPreselectIcon._alpha = 0
 		rightPreselectName_mc._alpha = 0
-		shoutPreselectBg._alpha = 0
-		rightPreselectBg._alpha = 0
+		shoutPreselectBg_mc._alpha = 0
+		rightPreselectBg_mc._alpha = 0
 
-		if (!backgroundsShown){
+		/*if (!backgroundsShown){
 			leftPreselectBg_mc._visible = backgroundsShown
 			shoutPreselectBg_mc._visible = backgroundsShown
 			rightPreselectBg_mc._visible = backgroundsShown
@@ -879,17 +823,21 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			leftPreselectBg_mc._visible = leftEnabled
 			shoutPreselectBg_mc._visible = shoutEnabled
 			rightPreselectBg_mc._visible = rightEnabled
-		}
+		}*/
+		leftPreselectBg_mc._visible = leftEnabled
 		leftPreselectIcon_mc._visible = leftEnabled
 		leftPreselectName_mc._visible = leftEnabled
+		shoutPreselectBg_mc._visible = shoutEnabled
 		shoutPreselectIcon_mc._visible = shoutEnabled
 		shoutPreselectName_mc._visible = shoutEnabled
+		rightPreselectBg_mc._visible = rightEnabled
 		rightPreselectIcon_mc._visible = rightEnabled
 		rightPreselectName_mc._visible = rightEnabled
 	}
 
-	public function ProModeAnimateIn(leftEnabled: Boolean, shoutEnabled: Boolean, rightEnabled: Boolean): Void
+	public function PreselectModeAnimateIn(leftEnabled: Boolean, shoutEnabled: Boolean, rightEnabled: Boolean): Void
 	{
+		skyui.util.Debug.log("iEquip .ProModeAnimateIn - leftEnabled: " + leftEnabled + ", rightEnabled: " + rightEnabled + ", shoutEnabled: " + shoutEnabled)
 		//Create the preselect element arrays then add elements to the arrays depending on whether they are shown or not. Sequence for animation is left to right
 		var preselectIcons: Array = new Array();
 		var preselectBackgrounds: Array = new Array();
@@ -897,17 +845,17 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 
 		if (leftEnabled == true){
 			preselectIcons.push(leftPreselectIcon)
-			preselectBackgrounds.push(leftPreselectBg)
+			preselectBackgrounds.push(leftPreselectBg_mc)
 			preselectNames.push(leftPreselectName_mc)
 		}
 		if (shoutEnabled == true){
 			preselectIcons.push(shoutPreselectIcon)
-			preselectBackgrounds.push(shoutPreselectBg)
+			preselectBackgrounds.push(shoutPreselectBg_mc)
 			preselectNames.push(shoutPreselectName_mc)
 		}
 		if (rightEnabled == true){
 			preselectIcons.push(rightPreselectIcon)
-			preselectBackgrounds.push(rightPreselectBg)
+			preselectBackgrounds.push(rightPreselectBg_mc)
 			preselectNames.push(rightPreselectName_mc)
 		}
 		//Set up the animation timeline
@@ -919,7 +867,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		tl.play();
 	}
 
-	public function ProModeAnimateOut(rightEnabled: Boolean, shoutEnabled: Boolean, leftEnabled: Boolean): Void
+	public function PreselectModeAnimateOut(rightEnabled: Boolean, shoutEnabled: Boolean, leftEnabled: Boolean): Void
 	{
 		var preselectIcons: Array = new Array();
 		var preselectBackgrounds: Array = new Array();
@@ -927,17 +875,17 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		// This time animation sequence is right to left, the opposite of animate in
 		if (rightEnabled == true){
 			preselectIcons.push(rightPreselectIcon)
-			preselectBackgrounds.push(rightPreselectBg)
+			preselectBackgrounds.push(rightPreselectBg_mc)
 			preselectNames.push(rightPreselectName_mc)
 		}
 		if (shoutEnabled == true){
 			preselectIcons.push(shoutPreselectIcon)
-			preselectBackgrounds.push(shoutPreselectBg)
+			preselectBackgrounds.push(shoutPreselectBg_mc)
 			preselectNames.push(shoutPreselectName_mc)
 		}
 		if (leftEnabled == true){
 			preselectIcons.push(leftPreselectIcon)
-			preselectBackgrounds.push(leftPreselectBg)
+			preselectBackgrounds.push(leftPreselectBg_mc)
 			preselectNames.push(leftPreselectName_mc)
 		}
 
@@ -1352,7 +1300,8 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		}
 	}
 
-	public function prepareForAmmoModeAnimation(animateIn: Boolean, backgroundsShown: Boolean): Void
+	//public function prepareForAmmoModeAnimation(animateIn: Boolean, backgroundsShown: Boolean): Void
+	public function prepareForAmmoModeAnimation(animateIn: Boolean): Void
 	{		
 		var leftIconLTG:Object = {x:0, y:0};
 		var leftPreselectIconLTG:Object = {x:0, y:0};
@@ -1399,7 +1348,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		leftNameAlpha = leftName_mc._alpha;
 		leftPNameAlpha = leftPreselectName_mc._alpha;
 
-		leftPreselectBg_mc._visible = backgroundsShown
+		//leftPreselectBg_mc._visible = backgroundsShown
 
 		skse.SendModEvent("iEquip_ReadyForAmmoModeAnimation", null);
 	}
@@ -1429,7 +1378,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		.to(tempIcon, 0.6, {_x:leftTargetX, _y:leftTargetY, _rotation:0, _alpha:leftPIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
 		.to(leftPreselectIcon, 0, {_alpha:leftPIconAlpha, ease:Linear.easeNone})
 		.to(leftIcon, 0.4, {_alpha:leftIconAlpha, _xscale:100, _yscale:100, ease:Elastic.easeOut}, 0.3)
-		.to(leftPreselectBg, 0.4, {_rotation:180, _alpha:100, ease:Back.easeOut}, 0.4)
+		.to(leftPreselectBg_mc, 0.4, {_rotation:180, _alpha:100, ease:Back.easeOut}, 0.4)
 		.to(leftName_mc, 0.3, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.6)
 		.to(leftPreselectName_mc, 0.3, {_alpha:leftPNameAlpha, ease:Quad.easeOut}, 0.6);
 
@@ -1457,7 +1406,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		.call(updateNamesForEquipPreselect, [leftName, leftPreselectName, newName, ""])
 		.to(tempIcon, 0.6, {_x:leftTargetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
 		.to(tempPIcon, 0.6, {_x:leftPTargetX, _y:leftPTargetY, _rotation:targetRotation, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
-		.to(leftPreselectBg, 0.4, {_rotation:"-=120", _alpha:0, ease:Back.easeOut}, 0)
+		.to(leftPreselectBg_mc, 0.4, {_rotation:"-=120", _alpha:0, ease:Back.easeOut}, 0)
 		.to(leftIcon, 0, {_alpha:leftIconAlpha, ease:Linear.easeNone})
 		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})
 		.to(leftName_mc, 0.3, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.6);
@@ -1488,106 +1437,43 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public function setCurrentClip(a_clip: Number): Void
 	{
 		clip = clipArray[a_clip];
-		//clip = clipHighlightArray[a_clip];
 	}
-	
-	/*public function highlightSelectedElement(isText:Number, arrayIndex:Number, currentColor:Number): Void
+
+	public function handleTextFieldDropShadow(removeFilters: Boolean): Void
 	{
-		if (isText == 1){
-			selectedText = textElementArray[arrayIndex];
-			selectedText.textColor = highlightColor;
-		} else {
-			var clipToHighlight: MovieClip;
-			if (clip == consumableIcon_mc){
-				clipToHighlight = consumableIconColorOverlay_mc
+		var tf: TextField;
+		for (var i:Number = 0; i < textFieldArray.length; i++){
+			tf = textFieldArray[i];
+			if (removeFilters){
+				tf.filters = [];
 			} else {
-				clipToHighlight = clip
+				tf.filters = [filter_shadow];
 			}
-			var myColor:Color = new Color(clipToHighlight);
-			myColor.setRGB(highlightColor);
-		}
-	}*/
+		}	
+	}
 
 	public function highlightSelectedElement(isText:Number, arrayIndex:Number, currentColor:Number): Void
 	{
 		if (isText == 1){
 			selectedText = textElementArray[arrayIndex];
-			//selectedText.textColor = highlightColor;
-			selectedText.filters = [filter_glow];
+			selectedText.textColor = highlightColor;
 		}
 		else {
-			/*var i: MovieClip;
-			for (i in clip) {
-				clip.i.filters = [filter_glow];
-			}*/
-			//clip.cacheAsBitmap = true;
-			clip.filters = [filter_glow];
+			colorTrans.rgb = highlightColor;
+			var trans:Transform = new Transform(clip);
+			trans.colorTransform = colorTrans;
 		}
 	}
-	
-	/*public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
-	{
-		//var potionColorOverlay: MovieClip;
-		//potionColorOverlay = consumableIconColorOverlay_mc;
-
-		if (isText == 1){
-			selectedText = textElementArray[textElement];
-			selectedText.textColor = currentColor;
-		}
-		else if (clip == consumableIcon_mc){
-			switch(_global.potionType){
-				case "HealthPotion":
-					var pIconColor = new Color(consumableIconColorOverlay_mc);
-					pIconColor.setRGB(0xDB2E73);
-					break;
-				case "StaminaPotion":
-					var pIconColor = new Color(consumableIconColorOverlay_mc);
-					pIconColor.setRGB(0x51DB2E);
-					break;
-				case "MagickaPotion":
-					var pIconColor = new Color(consumableIconColorOverlay_mc);
-					pIconColor.setRGB(0x2E9FDB);
-					break;
-				case "FrostResistPotion":
-					var pIconColor = new Color(consumableIconColorOverlay_mc);
-					pIconColor.setRGB(0x1FFBFF);
-					break;
-				case "FireResistPotion":
-					var pIconColor = new Color(consumableIconColorOverlay_mc);
-					pIconColor.setRGB(0xC73636);
-					break;
-				case "ShockResistPotion":
-					var pIconColor = new Color(consumableIconColorOverlay_mc);
-					pIconColor.setRGB(0xEAAB00);
-					break;
-				default:
-					var pIconColor = new Color(consumableIconColorOverlay_mc);
-					pIconColor.setRGB(0xFFFFFF);
-					break
-				}
-		}
-		else if (clip == poisonIcon_mc){
-			var pIconColor = new Color(poisonIcon_mc);
-			pIconColor.setRGB(0xAD00B3);
-		}
-		else {
-			var myColor:Color = new Color(clip);
-			myColor.setRGB(0xFFFFFF);
-		}
-	}*/
 
 	public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
 	{
 		if (isText == 1){
 			selectedText = textElementArray[textElement];
-			//selectedText.textColor = currentColor;
-			selectedText.filters = [filter_shadow];
+			selectedText.textColor = currentColor;
 		} else {
-			/*var i: MovieClip;
-			for (i in clip) {
-				clip.i.filters = [filter_shadow];
-			}*/
-			clip.filters = [filter_shadow];
+			colorTrans = new ColorTransform(1,1,1,1,0,0,0,0);
+			var trans:Transform = new Transform(clip);
+			trans.colorTransform = colorTrans;
 		}
 	}
 	

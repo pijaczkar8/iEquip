@@ -268,8 +268,8 @@ Function DoDoubleTapActions(Int KeyCode)
 	if EM.isEditMode
 		if KeyCode == iEquip_EditRotateKey
 			EM.ToggleRotateDirection()
-		elseIf KeyCode == iEquip_EditAlphaKey
-			EM.SetVisibility()
+		;elseIf KeyCode == iEquip_EditAlphaKey
+			;EM.SetVisibility()
 		elseIf KeyCode == iEquip_EditRulersKey
 			EM.initColorPicker(1) ;Current item info color
 		endIf
