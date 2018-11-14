@@ -195,55 +195,59 @@ endFunction
 
 function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter called - Q: " + Q)
-	int isEnchanted = 0
-	bool isLeftHand = false
-	if Q == 0
-		isLeftHand = true
-	endIf
-	weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
-	enchantment currentEnchantment
-	if currentWeapon
-		debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + isLeftHand + ", currentWeapon: " + currentWeapon.GetName())
-		currentEnchantment = currentWeapon.GetEnchantment()
-		if !currentEnchantment
-			currentEnchantment = wornobject.GetEnchantment(PlayerRef, Q, 0)
+	if PlayerRef.IsWeaponDrawn()
+		int isEnchanted = 0
+		bool isLeftHand = false
+		if Q == 0
+			isLeftHand = true
 		endIf
-		if currentEnchantment
-			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", currentEnchantment: " + currentEnchantment.GetName())
-			isEnchanted = 1
-			if chargeDisplayType > 0
-				;Hide first
-				if isChargeMeterShown[Q]
-					updateChargeMeterVisibility(Q, false) ;Hide
-				endIf
-				;Update values
-				updateMeterPercent(Q, forceUpdate, true)
-				if chargeDisplayType == 1
-					int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
-					if(iHandle)
-						debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection")
-						UICallback.PushInt(iHandle, Q)
-						UICallback.PushString(iHandle, meterFillDirection[Q])
-						UICallback.Send(iHandle)
+		weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
+		enchantment currentEnchantment
+		if currentWeapon
+			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + isLeftHand + ", currentWeapon: " + currentWeapon.GetName())
+			currentEnchantment = currentWeapon.GetEnchantment()
+			if !currentEnchantment
+				currentEnchantment = wornobject.GetEnchantment(PlayerRef, Q, 0)
+			endIf
+			if currentEnchantment
+				debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", currentEnchantment: " + currentEnchantment.GetName())
+				isEnchanted = 1
+				if chargeDisplayType > 0
+					;Hide first
+					if isChargeMeterShown[Q]
+						updateChargeMeterVisibility(Q, false) ;Hide
 					endIf
-				endIf
-				;Show meter
-				updateChargeMeterVisibility(Q, true)
-				;Flash if empty
-				if PlayerRef.GetActorValue(itemCharge[Q]) < 1
-					startMeterFlash(Q, true)
+					;Update values
+					updateMeterPercent(Q, forceUpdate, true)
+					if chargeDisplayType == 1
+						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
+						if(iHandle)
+							debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection")
+							UICallback.PushInt(iHandle, Q)
+							UICallback.PushString(iHandle, meterFillDirection[Q])
+							UICallback.Send(iHandle)
+						endIf
+					endIf
+					;Show meter
+					updateChargeMeterVisibility(Q, true)
+					;Flash if empty
+					if PlayerRef.GetActorValue(itemCharge[Q]) < 1
+						startMeterFlash(Q, true)
+					endIf
 				endIf
 			endIf
 		endIf
+		if (!currentWeapon || isEnchanted == 0) ;&& isChargeMeterShown[Q]
+			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - not a weapon or not enchanted, isChargeMeterShown[" + Q + "]: " + isChargeMeterShown[Q])
+			updateChargeMeterVisibility(Q, false) ;Hide
+		endIf
+		;Now update the object keys for the currently equipped item in case anything has changed since we last equipped it
+		;ToDo - do the same in the poison functions
+		jMap.setForm(jArray.getObj(targetQ[Q], WC.getCurrentQueuePosition(Q)), "lastKnownEnchantment", currentEnchantment as Form)
+		jMap.setInt(jArray.getObj(targetQ[Q], WC.getCurrentQueuePosition(Q)), "isEnchanted", isEnchanted)
+	else
+		WC.EH.waitForEnchantedWeaponDrawn = true
 	endIf
-	if (!currentWeapon || isEnchanted == 0) ;&& isChargeMeterShown[Q]
-		debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - not a weapon or not enchanted, isChargeMeterShown[" + Q + "]: " + isChargeMeterShown[Q])
-		updateChargeMeterVisibility(Q, false) ;Hide
-	endIf
-	;Now update the object keys for the currently equipped item in case anything has changed since we last equipped it
-	;ToDo - do the same in the poison functions
-	jMap.setForm(jArray.getObj(targetQ[Q], WC.getCurrentQueuePosition(Q)), "lastKnownEnchantment", currentEnchantment as Form)
-	jMap.setInt(jArray.getObj(targetQ[Q], WC.getCurrentQueuePosition(Q)), "isEnchanted", isEnchanted)
 endFunction
 
 function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false)

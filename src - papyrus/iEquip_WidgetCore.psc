@@ -2743,11 +2743,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1)
 	endIf
 	Utility.Wait(0.2)
 	checkAndUpdatePoisonInfo(Q)
-	if PlayerRef.IsWeaponDrawn()
-		CM.checkAndUpdateChargeMeter(Q)
-	else
-		EH.waitForEnchantedWeaponDrawn = true
-	endIf
+	CM.checkAndUpdateChargeMeter(Q)
 	checkIfBoundSpellEquipped()
 	if (itemType == 7 || itemType == 9) && AmmoModeFirstLook
 		Utility.Wait(0.5)
