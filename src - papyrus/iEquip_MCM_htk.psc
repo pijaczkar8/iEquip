@@ -65,7 +65,8 @@ State htk_key_leftHand
             MCM.SetInfoText("Select a hotkey to control the left hand widget functions\nDefault: V")
         elseIf currentEvent == "Change"
             MCM.KH.iEquip_leftKey = currentVar as int
-            switchKeyMaps(currentVar as int)
+            MCM.KH.updateKeyMaps(currentVar as int)
+            MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_leftKey)
         elseIf currentEvent == "Default"
             MCM.KH.iEquip_leftKey = 47 
             MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_leftKey)
@@ -79,7 +80,8 @@ State htk_key_rightHand
             MCM.SetInfoText("Select a hotkey to control the right hand widget functions\nDefault: B")
         elseIf currentEvent == "Change"
             MCM.KH.iEquip_rightKey = currentVar as int
-            switchKeyMaps(currentVar as int)
+            MCM.KH.updateKeyMaps(currentVar as int)
+            MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_rightKey)
         elseIf currentEvent == "Default"
             MCM.KH.iEquip_rightKey = 48 
             MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_rightKey)
@@ -93,7 +95,8 @@ State htk_key_shout
             MCM.SetInfoText("Select a hotkey to control the shout widget functions\nDefault: Y")
         elseIf currentEvent == "Change"
             MCM.KH.iEquip_shoutKey = currentVar as int
-            switchKeyMaps(currentVar as int)
+            MCM.KH.updateKeyMaps(currentVar as int)
+            MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_shoutKey)
         elseIf currentEvent == "Default"
             MCM.KH.iEquip_shoutKey = 45 
             MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_shoutKey)
@@ -107,7 +110,8 @@ State htk_key_consumPoison
             MCM.SetInfoText("Select a hotkey to control the consumable and poison widgets functions\nDefault: X")
         elseIf currentEvent == "Change"
             MCM.KH.iEquip_consumableKey = currentVar as int
-            switchKeyMaps(currentVar as int)
+            MCM.KH.updateKeyMaps(currentVar as int)
+            MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_consumableKey)
         elseIf currentEvent == "Default"
             MCM.KH.iEquip_consumableKey = 21
             MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_consumableKey)
@@ -125,7 +129,8 @@ State htk_key_util
             MCM.SetInfoText("Select a hotkey for accessing various menus and modes\nDefault: NumLock")
         elseIf currentEvent == "Change"
             MCM.KH.iEquip_utilityKey = currentVar as int
-            switchKeyMaps(currentVar as int)
+            MCM.KH.updateKeyMaps(currentVar as int)
+            MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_utilityKey)
         elseIf currentEvent == "Default"
             MCM.KH.iEquip_utilityKey = 69
             MCM.SetKeyMapOptionValueST(MCM.KH.iEquip_utilityKey)

@@ -21,8 +21,7 @@ State inf_txt_rstLayout
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
                 MCM.iEquip_Reset = !MCM.iEquip_Reset
-                MCM.restartingMCM = true
-                closeAndReopeniEquipMCM()
+                MCM.KH.openiEquipMCM(true)
             endIf
         endIf 
     endEvent

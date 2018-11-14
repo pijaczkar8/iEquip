@@ -27,18 +27,14 @@ Actor Property PlayerRef  Auto
 Form Property iEquip_Unarmed1H  Auto  
 Form Property iEquip_Unarmed2H  Auto  
 
-Bool Property ShowMessages = True Auto Hidden
 Bool Property iEquip_Reset = False Auto Hidden
 Bool Property refreshQueues = False Auto Hidden
 Bool Property fadeOptionsChanged = False Auto Hidden
 Bool Property ammoIconChanged = False Auto Hidden
 Bool Property ammoSortingChanged = False Auto Hidden
 
-;bool isJCValid = JContainers.APIVersion() == 4 && JContainers.featureVersion() >= 1
-
 bool Property isFirstEnabled = true Auto Hidden
 bool Property justEnabled = false Auto Hidden
-bool property restartingMCM = false Auto Hidden
 int Property AmmoListSorting = 1 Auto Hidden
 string Property ammoIconSuffix = "" Auto Hidden
 bool Property bEnableGearedUp = false Auto Hidden
@@ -79,7 +75,6 @@ bool Property bTogglePreselectOnEquipAll = false Auto Hidden
 string MCMSettingsPath = "Data/iEquip/MCM Settings/"
 string FileExtMCM = ".IEQS"
 
-int Property backgroundStyle = 0 Auto Hidden
 bool Property backgroundStyleChanged = false Auto Hidden
 bool Property bSkipCurrentItemWhenCycling = false Auto Hidden
 int Property utilityKeyDoublePress = 0 Auto Hidden
@@ -194,7 +189,7 @@ event OnVersionUpdate(int a_version)
             OnConfigInit()
             EM.ResetDefaults()
         else
-            WC.ApplyMCMSettings()
+            ApplyMCMSettings()
         endIf
     endIf
 endEvent
@@ -203,6 +198,25 @@ endEvent
 ; ### END OF UPDATE MCM ###
 ; #########################
 
+function ApplyMCMSettings()
+	debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
+	
+	if WC.isEnabled
+		if iEquip_Reset
+			EM.ResetDefaults()
+		else
+            debug.Notification("Applying iEquip settings...")
+            
+			WC.ApplyChanges()
+            KH.updateEditModeKeys()           
+            if EM.isEditMode
+                EM.LoadEditModeWidgets()
+            endIf
+		endIf
+	else
+		debug.Notification("iEquip disabled...")
+	endIf
+endFunction
 
 ; ###########################
 ; ### START OF CONFIG MCM ###
@@ -262,11 +276,12 @@ Event OnConfigInit()
     ammoIconOptions[1] = "Triple"
     ammoIconOptions[2] = "Quiver"
     
-    backgroundStyleOptions = new String[4]
-    backgroundStyleOptions[0] = "Square with border"
-    backgroundStyleOptions[1] = "Square without border"
-    backgroundStyleOptions[2] = "Round with border"
-    backgroundStyleOptions[3] = "Round without border"
+    backgroundStyleOptions = new String[5]
+    backgroundStyleOptions[0] = "No background"
+    backgroundStyleOptions[1] = "Square with border"
+    backgroundStyleOptions[2] = "Square without border"
+    backgroundStyleOptions[3] = "Round with border"
+    backgroundStyleOptions[4] = "Round without border"
     
     fadeoutOptions = new String[4]
     fadeoutOptions[0] = "Slow"
@@ -318,11 +333,16 @@ endEvent
 
 event OnConfigOpen()
     iEquip_Reset = false
-    restartingMCM = false
     refreshQueues = false
     fadeOptionsChanged = false
     ammoIconChanged = false
     ammoSortingChanged = false
+    slotEnabledOptionsChanged = false
+    gearedUpOptionChanged = false
+    bAttributeIconsOptionChanged = false
+    poisonIndicatorStyleChanged = false
+    bPotionGroupingOptionsChanged = false
+    backgroundStyleChanged = false
     
     if isFirstEnabled == false
         if bProModeEnabled
@@ -363,12 +383,12 @@ Event OnConfigClose()
     if WC.isEnabled != bEnabled
         if !bEnabled && EM.isEditMode
             EM.Disabling = true
-            EM.ToggleEditMode()
+            EM.toggleEditMode()
             EM.Disabling = false
         endIf
         WC.isEnabled = bEnabled
     endIf
-    WC.ApplyMCMSettings()
+    ApplyMCMSettings()
 endEvent
 
 ; ### END OF CONFIG MCM ###
@@ -574,11 +594,11 @@ event OnPageReset(string page)
             endIf
                     
             AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[ammoIconStyle])
-            AddToggleOptionST("ui_tgl_enblWdgetBckground", "Enable widget backgrounds", EM.BackgroundsShown)
-                    
-            if EM.BackgroundsShown
-                AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[backgroundStyle])
-            endIf
+            ;AddToggleOptionST("ui_tgl_enblWdgetBckground", "Enable widget backgrounds", EM.BackgroundsShown)
+            
+            ;if EM.BackgroundsShown
+            ;    AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[backgroundStyle])
+            ;endIf
             ;+++Disable spin on in/out animations
                     
             SetCursorPosition(1)
@@ -696,7 +716,7 @@ event OnPageReset(string page)
         elseIf page == "Edit Mode"
             AddHeaderOption("Edit Mode Options")
             AddSliderOptionST("edt_sld_slowTimeStr", "Slow Time effect strength ", iEquip_EditModeSlowTimeStrength.GetValueint())
-            AddToggleOptionST("edt_tgl_enblBringFrnt", "Enable Bring To Front", EM.BringToFrontEnabled)
+            AddToggleOptionST("edt_tgl_enblBringFrnt", "Enable Bring To Front", EM.bringToFrontEnabled)
                     
             SetCursorPosition(1)
                     

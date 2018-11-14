@@ -18,8 +18,7 @@ State gen_tgl_onOff
                 MCM.ShowMessage("Welcome to iEquip\n\nThank you for installing iEquip\nMCM wil now close and reopen.", false, "OK")
                 MCM.justEnabled = true
                 MCM.isFirstEnabled = false
-                MCM.restartingMCM = true
-                closeAndReopeniEquipMCM()
+                MCM.KH.openiEquipMCM(true)
             else
                 MCM.forcePageReset()
             endIf
@@ -76,8 +75,7 @@ State gen_txt_dragEastr
                 "You now have access to everything iEquip has to offer.  Now stand back while we restart the iEquip MCM and reveal your rewards...", false, "OK")
                 MCM.stillToEnableProMode = false
                 MCM.bProModeEnabled = true
-                MCM.restartingMCM = true
-                closeAndReopeniEquipMCM()
+                MCM.KH.openiEquipMCM(true)
             endIf
         endIf
     endEvent
@@ -97,8 +95,7 @@ State gen_tgl_enblProMode
             MCM.bProModeEnabled = false 
             MCM.bQuickShieldEnabled = false
             MCM.bQuickDualCastEnabled = false
-            MCM.restartingMCM = true
-            closeAndReopeniEquipMCM()
+            MCM.KH.openiEquipMCM(true)
         endIf
     endEvent
 endState

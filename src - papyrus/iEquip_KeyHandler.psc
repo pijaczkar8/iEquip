@@ -7,8 +7,11 @@ Import UI
 iEquip_EditMode Property EM Auto
 iEquip_WidgetCore Property WC Auto
 iEquip_MCM Property MCM Auto
+iEquip_RechargeScript Property RC Auto
+iEquip_HelpMenu Property HM Auto
 
 Actor Property PlayerRef  Auto
+Message Property iEquip_UtilityMenu Auto
 
 ;Main gameplay keys
 Int Property iEquip_shoutKey = 21 Auto Hidden ;Y
@@ -44,13 +47,20 @@ float Property pressAndHoldDelay = 1.0 Auto Hidden
 ; Bools
 bool Property bAllowKeyPress = true Auto Hidden
 bool isUtilityKeyHeld = false
+bool bNotInLootMenu = true
 
 ; Ints
 Int WaitingKeyCode = 0
 Int iMultiTap = 0
 int keySum = 0
 
-; - ON LOAD
+; Strings
+string previousState = ""
+
+; ------------------
+; - GENERAL EVENTS -
+; ------------------
+
 function GameLoaded()
 	GotoState("")
     
@@ -64,41 +74,15 @@ function GameLoaded()
     
     keySum = 0
 	isUtilityKeyHeld = false
+    bNotInLootMenu = true
 endFunction
-
-; - STATES
-
-; Inventory menu state
-state ININVENTORYMENU
-	event OnKeyDown(int KeyCode)
-		Debug.Trace("iEquip KeyHandler ININVENTORYMENU OnKeyDown called on " + KeyCode)
-        checkKeysDown(KeyCode)       
-        if bAllowKeyPress
-            bAllowKeyPress = false
-        
-            If KeyCode == iEquip_leftKey
-                WC.AddToQueue(0)
-            elseIf KeyCode == iEquip_rightKey
-                WC.AddToQueue(1)
-            elseIf KeyCode == iEquip_shoutKey
-                WC.AddToQueue(2)
-            elseIf KeyCode == iEquip_consumableKey
-                WC.AddToQueue(3)		
-            endIf
-            
-            bAllowKeyPress = true
-        endIf
-	endEvent
-endState
-
-; Default states
 
 event OnMenuOpen(string MenuName)
 	if MenuName == "LootMenu"
-        UnregisterForKey(iEquip_shoutKey)
-        UnregisterForKey(iEquip_consumableKey)
+        bNotInLootMenu = false
     else
-        GotoState("ININVENTORYMENU")
+        previousState = GetState()
+        GotoState("InventoryMenu")
         
         UnregisterForUpdate()
         WaitingKeyCode = 0
@@ -110,23 +94,49 @@ endEvent
 
 event OnMenuClose(string MenuName)
     if MenuName == "LootMenu"
-        RegisterForKey(iEquip_shoutKey)
-        RegisterForKey(iEquip_consumableKey)
+        bNotInLootMenu = true
     else
-        GotoState("")
+        GotoState(previousState)
     endIf
 endEvent
 
+; ---------------------
+; - DEFAULT BEHAVIOUR -
+; ---------------------
+
+function checkKeysDown(int KeyCode)
+    if KeyCode == iEquip_utilityKey
+        isUtilityKeyHeld = true
+    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
+        keySum += KeyCode
+    endIf
+endFunction
+
+bool function checkKeysUp(int KeyCode)
+    if KeyCode == iEquip_utilityKey
+        isUtilityKeyHeld = false
+    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
+        keySum -= KeyCode
+        
+        if keySum == -1
+            bAllowKeyPress = true
+            keySum += 1
+            
+            return false
+        endIf
+    endIf
+    
+    return true
+endFunction
+
 event OnKeyDown(int KeyCode)
-	;Handle extra long keypress actions and combo key held actions here so functions are called as soon as delay it met rather than waiting for onKeyUp
-	debug.trace("iEquip KeyHandler OnKeyDown called, KeyCode = " + KeyCode + ", WC.isPreselectMode: " + WC.isPreselectMode)
     checkKeysDown(KeyCode)
     if bAllowKeyPress
         if keySum == iEquip_leftKey + iEquip_rightKey
-            keySum -= 1
             bAllowKeyPress = false
+            keySum -= 1
+            WC.isPreselectMode = !WC.isPreselectMode
             UnregisterForUpdate()
-            WC.togglePreselectMode()
         else
             if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
                 UnregisterForUpdate()
@@ -147,52 +157,229 @@ event OnKeyDown(int KeyCode)
     endif
 endEvent
 
-Event OnKeyUp(Int KeyCode, Float HoldTime)
-	debug.trace("iEquip KeyHandler OnKeyUp called, KeyCode: " + KeyCode + ", HoldTime: " + HoldTime)
+event OnKeyUp(Int KeyCode, Float HoldTime)
     if checkKeysUp(KeyCode)
         if bAllowKeyPress
-            if KeyCode == WaitingKeyCode && iMultiTap == 0 
-                if HoldTime < pressAndHoldDelay ; If not a press & hold
-                    float updateTime = 0.0
-                
-                    if HoldTime >= longPressDelay ;If longpress.
-                        iMultiTap = -1
-                    else ; Turns out the key is a multiTap
-                        iMultiTap = 1
-                        
-                        If (!EM.isEditMode || KeyCode == iEquip_EditRotateKey ||\
-                            KeyCode == iEquip_EditAlphaKey || KeyCode == iEquip_EditRulersKey)
-                            
-                            updateTime = multiTapDelay
-                        endIf
-                    endIf
-                    
-                    RegisterForSingleUpdate(updateTime)
+            if KeyCode == WaitingKeyCode && iMultiTap == 0
+                float updateTime = 0.0
+            
+                if HoldTime >= longPressDelay ;If longpress.
+                    iMultiTap = -1
+                else ; Turns out the key is a multiTap
+                    iMultiTap = 1
+                    updateTime = multiTapDelay
                 endIf
+                
+                RegisterForSingleUpdate(updateTime)
             endIf
         endIf
     endIf
 endEvent
 
-Event OnUpdate()
+event OnUpdate()
 	debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
-    bool bBefore = bAllowKeyPress
     bAllowKeyPress = false
     
+    runUpdate()
+    
+    iMultiTap = 0
+    WaitingKeyCode = 0
+    bAllowKeyPress = true
+endEvent
+
+function runUpdate()
     if iMultiTap == -1   ; Longpress
         if WaitingKeyCode == iEquip_consumableKey
-            if WC.consumablesEnabled
+            if bNotInLootMenu && WC.consumablesEnabled
                 WC.consumeItem()
             endIf
+            
+        elseIf WC.isPreselectMode
+            if WaitingKeyCode == iEquip_leftKey
+                WC.equipPreselectedItem(0) 
+            elseIf WaitingKeyCode == iEquip_rightKey
+                WC.equipPreselectedItem(1)
+            elseIf WaitingKeyCode == iEquip_shoutKey
+                if bNotInLootMenu && MCM.bShoutPreselectEnabled && WC.shoutEnabled
+                    WC.equipPreselectedItem(2)
+                endIf
+            endIf
+            
+        elseIf WaitingKeyCode == iEquip_leftKey
+            if WC.isAmmoMode 
+                WC.toggleAmmoMode(false, false)
+            else
+                RC.rechargeWeapon(0)
+            endIf
+        elseIf KeyCode == iEquip_rightKey
+            RC.rechargeWeapon(1)
+        endIf
+        
+    elseIf iMultiTap == 0  ; LongpressHold
+        if WC.isPreselectMode && WaitingKeyCode == keySum 
+            WC.equipAllPreselectedItems()
+        endIf
+        
+    elseIf iMultiTap == 1  ;Single tap
+        If WaitingKeyCode == iEquip_leftKey
+            int RHItemType = PlayerRef.GetEquippedItemType(1)
+            if WC.isAmmoMode || (WC.isPreselectMode && (RHItemType == 7 || RHItemType == 12))
+                WC.cycleAmmo(isUtilityKeyHeld)
+            else
+                WC.cycleSlot(0, isUtilityKeyHeld)
+            endIf
 
-        elseIf EM.isEditMode
+        elseIf WaitingKeyCode == iEquip_rightKey
+            WC.cycleSlot(1, isUtilityKeyHeld)
+
+        elseIf WaitingKeyCode == iEquip_shoutKey
+            if bNotInLootMenu && WC.shoutEnabled
+                WC.cycleSlot(2, isUtilityKeyHeld)
+            endIf
+                
+        elseIf WaitingKeyCode == iEquip_consumableKey
+            if bNotInLootMenu
+                if WC.consumablesEnabled
+                    WC.cycleSlot(3, isUtilityKeyHeld)
+                elseIf WC.poisonsEnabled
+                    WC.cycleSlot(4, isUtilityKeyHeld)
+                endIf
+            endIf
+            
+        elseIf WaitingKeyCode == iEquip_utilityKey
+            ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = MCM, 4 = Refresh Widget
+            int iAction = iEquip_UtilityMenu.Show() 
+            
+            if iAction != 0 ;Exit
+                if iAction == 1
+                    WC.openQueueManagerMenu()
+                elseif iAction == 2
+                    toggleEditMode()
+                elseif iAction == 3
+                    openiEquipMCM()
+                elseif iAction == 4
+                    ;HM.openHelpMenu()
+                elseif iAction == 5
+                    WC.refreshWidget()
+                endIf
+            endIf
+        endIf
+        
+    elseIf iMultiTap == 2  ; Double tap
+        If WaitingKeyCode == iEquip_utilityKey
+            int i = MCM.utilityKeyDoublePress
+            
+            if i == 1
+                WC.openQueueManagerMenu()
+            elseIf i == 2
+                toggleEditMode()
+            elseIf i == 3
+                openiEquipMCM()
+            endIf
+        elseIf WaitingKeyCode == iEquip_consumableKey
+            if bNotInLootMenu && WC.consumablesEnabled && WC.poisonsEnabled
+                WC.cycleSlot(4, isUtilityKeyHeld)
+            endIf
+        elseIf WaitingKeyCode == iEquip_leftKey
+            int RHItemType = PlayerRef.GetEquippedItemType(1)
+            
+            if WC.isAmmoMode || (WC.isPreselectMode && (RHItemType == 7 || RHItemType == 12))
+                WC.cycleSlot(0, isUtilityKeyHeld)
+            elseIf WC.poisonsEnabled
+                WC.applyPoison(0)
+            endIf
+        elseIf WaitingKeyCode == iEquip_rightKey && WC.poisonsEnabled
+            WC.applyPoison(1)
+        endIf
+        
+    elseIf MCM.bProModeEnabled && iMultiTap == 3  ;Triple tap
+        if WaitingKeyCode == iEquip_leftKey && MCM.bQuickShieldEnabled
+            WC.quickShield()
+        elseIf WaitingKeyCode == iEquip_rightKey && MCM.bQuickRangedEnabled
+            WC.quickRanged()
+        elseIf WaitingKeyCode == iEquip_consumableKey && MCM.bQuickHealEnabled && bNotInLootMenu
+            WC.quickHeal()
+        endIf
+    endIf
+endFunction
+
+; --------------------
+; - OTHER BEHAVIOURS -
+; --------------------
+
+state InventoryMenu
+	event OnKeyDown(int KeyCode)
+		Debug.Trace("iEquip KeyHandler InventoryMenu OnKeyDown called on " + KeyCode)
+        checkKeysDown(KeyCode)       
+        if bAllowKeyPress
+            WaitingKeyCode = KeyCode
+            RegisterForSingleUpdate(0.0)
+        endIf
+	endEvent
+    
+    function runUpdate()
+        if WaitingKeyCode == iEquip_leftKey
+            WC.AddToQueue(0)
+        elseIf WaitingKeyCode == iEquip_rightKey
+            WC.AddToQueue(1)
+        elseIf WaitingKeyCode == iEquip_shoutKey
+            WC.AddToQueue(2)
+        elseIf WaitingKeyCode == iEquip_consumableKey
+            WC.AddToQueue(3)		
+        endIf
+    endFunction
+endState
+
+state EditMode
+    event OnKeyDown(int KeyCode)
+        if bAllowKeyPress
+            if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
+                UnregisterForUpdate()
+                OnUpdate()
+            endIf
+            WaitingKeyCode = KeyCode
+        
+            if iMultiTap == 0 ; This is fhte first time the key has been pressed
+                RegisterForSingleUpdate(pressAndHoldDelay)
+            elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
+                iMultiTap = 2
+                RegisterForSingleUpdate(multiTapDelay)
+            elseIf iMultiTap == 2 ; This is the third time the key has been pressed
+                iMultiTap = 3
+                RegisterForSingleUpdate(0.0)
+            endIf
+        endif
+    endEvent
+
+    event OnKeyUp(Int KeyCode, Float HoldTime)
+        if bAllowKeyPress
+            if KeyCode == WaitingKeyCode && iMultiTap == 0
+                float updateTime = 0.0
+            
+                if HoldTime >= longPressDelay ;If longpress.
+                    iMultiTap = -1
+                else ; Turns out the key is a multiTap
+                    iMultiTap = 1
+                    
+                    If (KeyCode == iEquip_EditRotateKey || KeyCode == iEquip_EditAlphaKey || KeyCode == iEquip_EditRulersKey)
+                        updateTime = multiTapDelay
+                    endIf
+                endIf
+                
+                RegisterForSingleUpdate(updateTime)
+            endIf
+        endIf
+    endEvent
+
+    function runUpdate()
+        if iMultiTap == -1   ; Longpress
             if WaitingKeyCode == iEquip_EditAlphaKey
-                EM.ToggleStep(2)
+                EM.toggleStep(2)
             elseIf WaitingKeyCode == iEquip_EditRotateKey
-                EM.ToggleStep(1)
+                EM.toggleStep(1)
             elseIf (WaitingKeyCode == iEquip_EditLeftKey || WaitingKeyCode == iEquip_EditRightKey || WaitingKeyCode == iEquip_EditUpKey ||\
                     WaitingKeyCode == iEquip_EditDownKey || WaitingKeyCode == iEquip_EditScaleUpKey || WaitingKeyCode == iEquip_EditScaleDownKey)
-                EM.ToggleStep(0)
+                EM.toggleStep(0)
             elseIf WaitingKeyCode == iEquip_EditTextKey
                 if EM.isTextElement(EM.SelectedItem - 1)
                     EM.initColorPicker(2) ;Text color
@@ -200,27 +387,8 @@ Event OnUpdate()
             elseIf WaitingKeyCode == iEquip_EditRulersKey
                 EM.initColorPicker(0) ;Highlight color
             endIf
-
-        elseIf WC.isPreselectMode
-            If WaitingKeyCode == iEquip_leftKey
-                WC.equipPreselectedItem(0) 
-            elseIf WaitingKeyCode == iEquip_rightKey
-                WC.equipPreselectedItem(1)
-            elseIf WaitingKeyCode == iEquip_shoutKey
-                if WC.shoutEnabled && MCM.bShoutPreselectEnabled
-                    WC.equipPreselectedItem(2)
-                endIf
-            endIf
-
-        elseIf WC.isAmmoMode && WaitingKeyCode == iEquip_leftKey
-            WC.toggleAmmoMode(false, false)
-        endIf
-    elseIf iMultiTap == 0  ; LongpressHold
-        if WC.isPreselectMode && WaitingKeyCode == keySum 
-            WC.equipAllPreselectedItems()
-        endIf
-    elseIf iMultiTap == 1  ;Single tap
-        if EM.isEditMode
+            
+        elseIf iMultiTap == 1  ;Single tap
             if WaitingKeyCode == iEquip_EditLeftKey
                 EM.MoveLeft()
             elseIf WaitingKeyCode == iEquip_EditRightKey
@@ -238,14 +406,14 @@ Event OnUpdate()
             elseIf WaitingKeyCode == iEquip_EditAlphaKey
                 EM.SetAlpha()
             elseIf WaitingKeyCode == iEquip_EditDepthKey
-                if EM.BringToFrontEnabled
-                    EM.BringToFront()
+                if EM.bringToFrontEnabled
+                    EM.bringToFront()
                 else
                     debug.messagebox("Bring To Front is currently disabled in the MCM\n\nIf you want to be able to change layer order for overlapping widget elements turn Bring To Front on first")
                 endIf
             elseIf WaitingKeyCode == iEquip_EditTextKey
                 if EM.isTextElement(EM.SelectedItem - 1)
-                    EM.SetTextAlignment()
+                    EM.setTextAlignment()
                 endIf
             elseIf WaitingKeyCode == iEquip_EditNextKey
                 EM.cycleEditModeElements(1)
@@ -262,124 +430,92 @@ Event OnUpdate()
             elseIf WaitingKeyCode == iEquip_EditDiscardKey
                 EM.DiscardChanges()
             elseIf WaitingKeyCode == iEquip_utilityKey
-                ToggleEditMode()
-            endIf
-        
-        elseIf WaitingKeyCode == iEquip_leftKey
-            int RHItemType = PlayerRef.GetEquippedItemType(1)
-            if WC.isAmmoMode || (WC.isPreselectMode && (RHItemType == 7 || RHItemType == 12))
-                WC.cycleAmmo(isUtilityKeyHeld)
-            else
-                WC.cycleSlot(0, isUtilityKeyHeld)
-            endIf
-
-        elseIf WaitingKeyCode == iEquip_rightKey
-            WC.cycleSlot(1, isUtilityKeyHeld)
-
-        elseIf WaitingKeyCode == iEquip_shoutKey && WC.shoutEnabled
-                WC.cycleSlot(2, isUtilityKeyHeld)
-
-        elseIf WaitingKeyCode == iEquip_consumableKey
-            if WC.consumablesEnabled
-                WC.cycleSlot(3, isUtilityKeyHeld)
-            elseIf WC.poisonsEnabled
-                WC.cycleSlot(4, isUtilityKeyHeld)
+                toggleEditMode()
             endIf
             
-        elseIf WaitingKeyCode == iEquip_utilityKey
-            WC.openUtilityMenu()
-        endIf
-        
-    elseIf iMultiTap == 2  ; Double tap
-        if EM.isEditMode
+        elseIf iMultiTap == 2  ; Double tap
             if WaitingKeyCode == iEquip_EditRotateKey
-                EM.ToggleRotateDirection()
-            elseIf WaitingKeyCode == iEquip_EditAlphaKey
-                EM.SetVisibility()
+                EM.toggleRotateDirection()
             elseIf WaitingKeyCode == iEquip_EditRulersKey
                 EM.initColorPicker(1) ;Current item info color
             endIf
-        elseIf WaitingKeyCode == iEquip_utilityKey
-            int i = MCM.utilityKeyDoublePress
             
-            if i == 1
-                WC.openQueueManagerMenu()
-            elseIf i == 2
-                ToggleEditMode()
-            elseIf i == 3
-                openiEquipMCM()
-            endIf
-        elseIf WaitingKeyCode == iEquip_consumableKey
-            if WC.consumablesEnabled && WC.poisonsEnabled
-                WC.cycleSlot(4, isUtilityKeyHeld)
-            endIf
-        elseIf WaitingKeyCode == iEquip_leftKey
-            int RHItemType = PlayerRef.GetEquippedItemType(1)
-            
-            if WC.isAmmoMode || (WC.isPreselectMode && (RHItemType == 7 || RHItemType == 12))
-                WC.cycleSlot(0, isUtilityKeyHeld)
-            elseIf WC.poisonsEnabled
-                WC.applyPoison(0)
-            endIf
-        elseIf WaitingKeyCode == iEquip_rightKey && WC.poisonsEnabled
-            WC.applyPoison(1)
         endIf
-        
-    elseIf iMultiTap == 3  ;Triple tap
-        if MCM.bProModeEnabled
-            if WaitingKeyCode == iEquip_leftKey && MCM.bQuickShieldEnabled
-                WC.quickShield()
-            elseIf WaitingKeyCode == iEquip_rightKey && MCM.bQuickRangedEnabled
-                WC.quickRanged()
-            elseIf WaitingKeyCode == iEquip_consumableKey && MCM.bQuickHealEnabled
-                WC.quickHeal()
-            endIf
-        endIf
-    endIf
-    
-    iMultiTap = 0
-    WaitingKeyCode = 0
-    
-    bAllowKeyPress = bBefore
-endEvent
+    endFunction
+endState
 
-; - MISCELLANEOUS
+; -----------------
+; - MISCELLANEOUS -
+; -----------------
 
-function checkKeysDown(int KeyCode)
-    if KeyCode == iEquip_utilityKey
-        isUtilityKeyHeld = true
-    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
-        keySum += KeyCode
+function updateKeyMaps(int keycode)
+    UnregisterForAllKeys()
+
+    if EM.isEditMode
+        RegisterForEditModeKeys()
+    else
+        RegisterForGameplayKeys()
     endIf
 endFunction
 
-bool function checkKeysUp(int KeyCode)
-    if KeyCode == iEquip_utilityKey
-        isUtilityKeyHeld = false
-    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
-        keySum -= KeyCode
-        
-        if keySum == -1
-            keySum += 1
-            bAllowKeyPress = true
-            
-            return false
-        endIf
-    endIf
+function toggleEditMode()
+	debug.trace("iEquip KeyHandler toggleEditMode called")
+    UnregisterForAllKeys()
     
-    return true
-endFunction
-
-function ToggleEditMode()
-	debug.trace("iEquip KeyHandler ToggleEditMode called")
-	if !EM.isEditMode
-		UnregisterForGameplayKeys()
-		RegisterForEditModeKeys()
-	else
-		UnregisterForEditModeKeys()
+	if EM.isEditMode
+        GoToState("")
 		RegisterForGameplayKeys()
+	else
+        GoToState("EditMode")
+		RegisterForEditModeKeys()
 	endIf
-	EM.ToggleEditMode()
+    
+	EM.toggleEditMode()
+endFunction
+
+function resetEditModeKeys()
+    iEquip_EditNextKey = 55
+    iEquip_EditPrevKey = 181
+    iEquip_EditUpKey = 200
+    iEquip_EditDownKey = 208
+    iEquip_EditLeftKey = 203
+    iEquip_EditRightKey = 205
+    iEquip_EditScaleUpKey = 78
+    iEquip_EditScaleDownKey = 74
+    iEquip_EditRotateKey = 80
+    iEquip_EditAlphaKey = 81
+    iEquip_EditDepthKey = 72
+    iEquip_EditTextKey = 79
+    iEquip_EditRulersKey = 77
+    iEquip_EditResetKey = 82
+    iEquip_EditLoadPresetKey = 75
+    iEquip_EditSavePresetKey = 76
+    iEquip_EditDiscardKey = 83
+endFunction
+
+function updateEditModeKeys()
+    int[] keys = new int[18]
+
+    keys[0] = iEquip_UtilityKey
+    keys[1] = iEquip_EditPrevKey
+    keys[2] = iEquip_EditNextKey
+    keys[3] = iEquip_EditUpKey
+    keys[4] = iEquip_EditDownKey
+    keys[5] = iEquip_EditLeftKey
+    keys[6] = iEquip_EditRightKey
+    keys[7] = iEquip_EditScaleUpKey
+    keys[8] = iEquip_EditScaleDownKey
+    keys[9] = iEquip_EditRotateKey
+    keys[10] = iEquip_EditAlphaKey
+    keys[11] = iEquip_EditTextKey
+    keys[12] = iEquip_EditDepthKey
+    keys[13] = iEquip_EditRulersKey
+    keys[14] = iEquip_EditResetKey
+    keys[15] = iEquip_EditLoadPresetKey
+    keys[16] = iEquip_EditSavePresetKey
+    keys[17] = iEquip_EditDiscardKey
+    
+    InvokeIntA(WC.HUD_MENU, WC.WidgetRoot + ".setEditModeButtons", keys)
 endFunction
 
 function RegisterForGameplayKeys()
@@ -389,15 +525,6 @@ function RegisterForGameplayKeys()
 	RegisterForKey(iEquip_rightKey)
 	RegisterForKey(iEquip_consumableKey)
 	RegisterForKey(iEquip_utilityKey)
-endFunction
-
-function UnregisterForGameplayKeys()
-	debug.trace("iEquip KeyHandler UnregisterForGameplayKeys called")
-	UnregisterForKey(iEquip_shoutKey)
-	UnregisterForKey(iEquip_consumableKey)
-	UnregisterForKey(iEquip_leftKey)
-	UnregisterForKey(iEquip_rightKey)
-	UnregisterForKey(iEquip_utilityKey)
 endFunction
 
 function RegisterForEditModeKeys()
@@ -422,74 +549,59 @@ function RegisterForEditModeKeys()
 	RegisterForKey(iEquip_utilityKey)
 endFunction
 
-function UnregisterForEditModeKeys()
-	debug.trace("iEquip KeyHandler UnregisterForEditModeKeys called")
-	UnregisterForKey(iEquip_EditLeftKey)
-	UnregisterForKey(iEquip_EditRightKey)
-	UnregisterForKey(iEquip_EditUpKey)
-	UnregisterForKey(iEquip_EditDownKey)
-	UnregisterForKey(iEquip_EditScaleUpKey)
-	UnregisterForKey(iEquip_EditScaleDownKey)
-	UnregisterForKey(iEquip_EditNextKey)
-	UnregisterForKey(iEquip_EditPrevKey)
-	UnregisterForKey(iEquip_EditResetKey)
-	UnregisterForKey(iEquip_EditLoadPresetKey)
-	UnregisterForKey(iEquip_EditSavePresetKey)
-	UnregisterForKey(iEquip_EditRotateKey)
-	UnregisterForKey(iEquip_EditDepthKey)
-	UnregisterForKey(iEquip_EditAlphaKey)
-	UnregisterForKey(iEquip_EditTextKey)
-	UnregisterForKey(iEquip_EditRulersKey)
-	UnregisterForKey(iEquip_EditDiscardKey)
-	UnRegisterForKey(iEquip_utilityKey)
-endFunction
+function openiEquipMCM(bool mcmSelected = false)
+    int key_j = GetMappedKey("Journal")
+    int key_down = GetMappedKey("Back")
+    int i = 0
 
-function openiEquipMCM()
-	if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() && !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
-        int key_j = GetMappedKey("Journal")
-        int key_enter = GetMappedKey("Activate")
-        int key_down = GetMappedKey("Back")
-        
-        float startTime = Utility.GetCurrentRealTime()
-        float elapsedTime
-        
-        while elapsedTime <= 2.5
-            if IsMenuOpen("Journal Menu")
-                int i = 0
-        
-                TapKey(76) ;Should take us to the Settings Tab
-                Utility.WaitMenuMode(0.005)
-                
-                while i < 3 ;Should take us to MCM Menu entry in the Settings List
-                    TapKey(key_down)
-                    Utility.WaitMenuMode(0.005)
-                    i += 1
-                EndWhile
-                
-                TapKey(key_enter)
-                Utility.WaitMenuMode(0.005)
-                
-                i = 0
-                
-                while i < 128
-                    TapKey(key_down)
+    if !mcmSelected
+        if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() && !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
+            float startTime = Utility.GetCurrentRealTime()
+            float elapsedTime
+            
+            while elapsedTime <= 2.5
+                if IsMenuOpen("Journal Menu")
+                    TapKey(76) ;Should take us to the Settings Tab
                     Utility.WaitMenuMode(0.005)
                     
-                    if GetString("Journal Menu", "_root.ConfigPanelFader.configPanel._modList.selectedEntry.text") == "iEquip"
-                        TapKey(key_enter)
-                        i = 128
-                    else
+                    while i < 3 ;Should take us to MCM Menu entry in the Settings List
+                        TapKey(key_down)
+                        Utility.WaitMenuMode(0.005)
                         i += 1
-                    endIf
-                endWhile
+                    EndWhile
+                    
+                    mcmSelected = true
+                    elapsedTime = 2.6
+                else
+                    TapKey(key_j)
+                    Utility.WaitMenuMode(0.1)
+                    elapsedTime = Utility.GetCurrentRealTime() - startTime
+                endIf
+            endWhile
+        endIf
+    elseIf IsMenuOpen("Journal Menu")
+		TapKey(key_j)
+        Utility.WaitMenuMode(0.5)
+    else
+        mcmSelected = false
+    endIf
+    
+    if mcmSelected
+        int key_enter = GetMappedKey("Activate")
+        TapKey(key_enter) 
+        Utility.WaitMenuMode(0.005)
+        
+        i = 0
+        while i < 128
+            TapKey(key_down)
+            Utility.WaitMenuMode(0.005)
             
-                elapsedTime = 2.6
+            if GetString("Journal Menu", "_root.ConfigPanelFader.configPanel._modList.selectedEntry.text") == "iEquip"
+                TapKey(key_enter)
+                i = 128
             else
-                TapKey(key_j)
-                Utility.WaitMenuMode(0.1)
-                elapsedTime = Utility.GetCurrentRealTime() - startTime
+                i += 1
             endIf
         endWhile
-	endif
+    endIf
 endFunction
-

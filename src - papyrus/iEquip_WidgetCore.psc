@@ -22,7 +22,6 @@ iEquip_MCM Property MCM Auto
 iEquip_KeyHandler Property KH Auto
 iEquip_AmmoScript Property AM Auto
 iEquip_PotionScript Property PO Auto
-;iEquip_HelpMenu Property HM Auto
 iEquip_PlayerEventHandler Property EH Auto
 iEquip_LeftHandEquipUpdateScript Property LHUpdate Auto
 iEquip_RightHandEquipUpdateScript Property RHUpdate Auto
@@ -104,7 +103,6 @@ MiscObject Property iEquip_MessageObject Auto ; populated by CK
 ObjectReference Property iEquip_MessageObjectReference Auto ; populated by script
 Message Property iEquip_ConfirmAddToQueue Auto
 Message Property iEquip_OKCancel Auto
-Message Property iEquip_UtilityMenu Auto
 Message Property iEquip_QueueManagerMenu Auto
 int queueMenuCurrentQueue = -1
 
@@ -424,7 +422,7 @@ function refreshWidget()
 	endwhile
 	;if we're in Preselect Mode exit now
 	if isPreselectMode
-		togglePreselectMode()
+		isPreselectMode = !isPreselectMode
 		Utility.Wait(3.0)
 		debug.notification("Exiting Preselect Mode...")
 	endIf
@@ -835,7 +833,7 @@ bool Property isEnabled
 				iEquip_MessageQuest.Stop()
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 100)
 			endIf
-			showWidget() ;Just in case you were in Edit Mode when you disabled because ToggleEditMode won't have done this
+			showWidget() ;Just in case you were in Edit Mode when you disabled because toggleEditMode won't have done this
 			UI.setbool(HUD_MENU, WidgetRoot + "._visible", iEquip_Enabled)
 		endIf
 		if iEquip_Enabled && isFirstEnabled
@@ -1000,49 +998,8 @@ function ResetWidgetArrays()
 	endWhile
 endFunction
 
-function LoadWidgetPreset(string SelectedPreset)
-	int jLoadPreset = jValue.readFromFile(EM.WidgetPresetPath + SelectedPreset)
-	int jafWidget_X = JMap.getObj(jLoadPreset, "_X")
-	int jafWidget_Y = JMap.getObj(jLoadPreset, "_Y")
-	int jafWidget_S = JMap.getObj(jLoadPreset, "_S")
-	int jafWidget_R = JMap.getObj(jLoadPreset, "_R")
-	int jafWidget_A = JMap.getObj(jLoadPreset, "_A")
-	int jaiWidget_D = JMap.getObj(jLoadPreset, "_D")
-	int jaiWidget_TC = JMap.getObj(jLoadPreset, "_TC")
-	int jasWidget_TA = JMap.getObj(jLoadPreset, "_TA")
-	int jabWidget_V = JMap.getObj(jLoadPreset, "_V")
-	
-	int[] abWidget_V_temp = new int[46]
-
-	JArray.writeToFloatPArray(jafWidget_X, afWidget_X, 0, -1, 0, 0)
-	JArray.writeToFloatPArray(jafWidget_Y, afWidget_Y, 0, -1, 0, 0)
-	JArray.writeToFloatPArray(jafWidget_S, afWidget_S, 0, -1, 0, 0)
-	JArray.writeToFloatPArray(jafWidget_R, afWidget_R, 0, -1, 0, 0)
-	JArray.writeToFloatPArray(jafWidget_A, afWidget_A, 0, -1, 0, 0)
-	JArray.writeToIntegerPArray(jaiWidget_D, aiWidget_D, 0, -1, 0, 0)
-	JArray.writeToIntegerPArray(jaiWidget_TC, aiWidget_TC, 0, -1, 0, 0)
-	JArray.writeToStringPArray(jasWidget_TA, asWidget_TA, 0, -1, 0, 0)
-	JArray.writeToIntegerPArray(jabWidget_V, abWidget_V_temp, 0, -1, 0, 0)
-	int iIndex = 0
-	while iIndex < asWidgetDescriptions.Length
-		abWidget_V[iIndex] = abWidget_V_temp[iIndex] as bool
-		iIndex += 1
-	endwhile
-	hideWidget()
-	Utility.Wait(0.2)
-	EM.UpdateWidgets()
-	Utility.Wait(0.1)
-	showWidget()
-	Debug.Notification("Widget layout switched to " + SelectedPreset)
-endFunction
-
 bool function isCurrentlyEquipped(int Q, string itemName)
 	return currentlyEquipped[Q] == itemName
-endFunction
-
-function togglePreselectMode()
-	debug.trace("iEquip_WidgetCore togglePreselectMode called")
-	isPreselectMode = !isPreselectMode
 endFunction
 
 bool Property isPreselectMode
@@ -4627,23 +4584,6 @@ function purgeQueue()
 	endwhile	
 endFunction
 
-function openUtilityMenu()
-	int iAction = iEquip_UtilityMenu.Show() ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = MCM, 4 = Refresh Widget
-	if iAction == 0 ;Exit
-		return
-	elseif iAction == 1
-		openQueueManagerMenu()
-	elseif iAction == 2
-		KH.ToggleEditMode()
-	elseif iAction == 3
-		KH.openiEquipMCM()
-	elseif iAction == 4
-		;HM.openHelpMenu()
-	elseif iAction == 5
-		refreshWidget()
-	endIf
-endFunction
-
 function openQueueManagerMenu()
 	debug.trace("iEquip_WidgetCore openQueueManagerMenu() called")
 	int Q = iEquip_QueueManagerMenu.Show() ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue
@@ -4811,29 +4751,6 @@ function QueueMenuClearQueue()
 	recallQueueMenu()
 endFunction
 
-function ApplyMCMSettings()
-	debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
-	
-	if isEnabled
-		if MCM.restartingMCM
-			;KH.openiEquipMCM()
-		elseif MCM.iEquip_Reset
-			EM.ResetDefaults()
-		else
-			if MCM.ShowMessages
-				debug.Notification("Applying iEquip settings...")
-			endIf
-			ApplyChanges()
-			if EM.isEditMode
-				EM.updateEditModeButtons()
-				EM.LoadEditModeWidgets()
-			endIf
-		endIf
-	else
-		debug.Notification("iEquip disabled...")
-	endIf
-endFunction
-
 function ApplyChanges()
 	debug.trace("iEquip_WidgetCore ApplyChanges called")
 	int i
@@ -4866,7 +4783,7 @@ function ApplyChanges()
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
     if !MCM.bProModeEnabled && isPreselectMode
-    	togglePreselectMode()
+    	isPreselectMode = !isPreselectMode
     endIf
     if isAmmoMode
 	    if MCM.ammoSortingChanged
