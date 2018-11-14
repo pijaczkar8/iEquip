@@ -163,8 +163,6 @@ bool Property firstPressShowsName = true Auto
 bool[] Property isPoisonNameShown Auto
 int[] Property poisonNameElements Auto
 bool[] Property poisonInfoDisplayed Auto
-;string tempLeftPoisonName
-;int tempLeftPoisonCharges
 
 string[] potionGroups
 bool[] Property potionGroupEmpty Auto
@@ -278,11 +276,6 @@ Event OnWidgetInit()
 	Utility.Wait(0.1)
 	PO.InitialisePotionQueueArrays(targetQ[3], targetQ[4])
 	addPotionGroups()
-	;CM.OnWidgetLoad(HUD_MENU, WidgetRoot, targetQ[0], targetQ[1])
-	;CM.initChargeMeter(0)
-	;CM.initChargeMeter(1)
-	;CM.initSoulGem(0)
-	;CM.initSoulGem(1)
 	KH.GameLoaded()
 EndEvent
 
@@ -316,10 +309,8 @@ Event OnWidgetLoad()
 	bool[] args = new bool[5]
 	if isAmmoMode
 		args[0] = true
-		;args[3] = EM.BackgroundsShown
 	else
 		args[0] = false ;Hide left
-		;args[3] = true ;Hide backgrounds - set to true but other three then take over and hide them anyway
 	endIf
 	args[1] = false ;Hide right
 	args[2] = false ;Hide shout
@@ -328,11 +319,6 @@ Event OnWidgetLoad()
     ; Use RunOnce bool here - if first load hide everything and show messagebox
 	if isFirstLoad
 		getAndStoreDefaultWidgetValues()
-		;Set default alpha values for enchantment meters and gems to 100 as they're 0 at load
-		;afWidget_A[13] = 100.0 ;leftEnchantmentMeter_mc
-		;afWidget_A[14] = 100.0 ;leftSoulgem_mc
-		;afWidget_A[26] = 100.0 ;rightEnchantmentMeter_mc
-		;afWidget_A[27] = 100.0 ;rightSoulgem_mc
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", false)
 		isFirstLoad = false
 	else

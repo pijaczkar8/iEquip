@@ -3,6 +3,7 @@ Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 Import iEquip_AmmoExt
 Import iEquip_WeaponExt
 Import iEquip_FormExt
+Import StringUtil
 
 iEquip_WidgetCore Property WC Auto
 iEquip_MCM Property MCM Auto
@@ -36,8 +37,6 @@ function OniEquipEnabled(bool enabled)
 		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
 		BW.OniEquipEnabled()
-		;iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(PlayerRef)
-		;iEquip_FormExt.RegisterForBoundWeaponUnequippedEvent(PlayerRef)
 	else
 		gotoState("DISABLED")
 	endIf
@@ -58,8 +57,6 @@ Event OnPlayerLoadGame()
 		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
 		BW.isBoundSpellEquipped = isBoundSpellEquipped
 		BW.onGameLoaded()
-		;iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(PlayerRef)
-		;iEquip_FormExt.RegisterForBoundWeaponUnequippedEvent(PlayerRef)
 		PO.onGameLoaded()
 	else
 		gotoState("DISABLED")
@@ -93,11 +90,6 @@ bool Property boundSpellEquipped
 		isBoundSpellEquipped = equipped
 		BW.isBoundSpellEquipped = equipped
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - isBoundSpellEquipped: " + equipped)
-		;/if isBoundSpellEquipped
-			RegisterForActorAction(2)
-		else
-			UnregisterForActorAction(2)
-		endIf/;
 	endFunction
 endProperty
 
@@ -127,9 +119,6 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 		elseIf actionType == 8
 			CM.updateChargeMetersOnWeaponsDrawn()
 			waitForEnchantedWeaponDrawn = false
-		;/elseIf actionType == 2
-			Utility.Wait(0.2)
-			WC.checkIfBoundWeaponEquipped(slot)/;
 		endIf
 	endIf
 endEvent
@@ -192,28 +181,33 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 
 endEvent
 
-;/Event OnBoundWeaponEquipped(Int a_weaponType, Int a_equipSlot)
-	debug.trace("iEquip_PlayerEventHandler OnBoundWeaponEquipped event received")
-	if isBoundSpellEquipped
-		WC.onBoundWeaponEquipped(a_weaponType, a_equipSlot)
-	endIf
-EndEvent
-
-Event OnBoundWeaponUnequipped(Weapon a_weap, Int a_unequipSlot)
-	debug.trace("iEquip_PlayerEventHandler OnBoundWeaponUnequipped event received")
-	if isBoundSpellEquipped
-		WC.onBoundWeaponUnequipped(a_weap, a_unequipSlot)
-	endIf
-EndEvent/;
-
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	debug.trace("iEquip_PlayerEventHandler OnItemAdded called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
+	int i
 	if akBaseItem as potion
 		PO.onPotionAdded(akBaseItem)
-	elseIf akBaseItem as ammo && isBoundSpellEquipped
-		if iEquip_AmmoExt.IsAmmoBound(akBaseItem as ammo)
-			WC.addBoundAmmoToQueue(akBaseItem, akBaseItem.GetName())
-		endIf
+	elseIf isBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(akBaseItem as ammo)
+		WC.addBoundAmmoToQueue(akBaseItem, akBaseItem.GetName())
+	elseIf WC.isAmmoMode && akBaseItem as ammo
+		i = 5
+		while i < 7
+			if WC.isCurrentlyEquipped(i, akBaseItem.GetName())
+	    		WC.setSlotCount(0, PlayerRef.GetItemCount(akBaseItem))
+        	endIf
+        	i += 1
+        endWhile
+	else
+		i = 0
+		int itemType = akBaseItem.GetType()
+		while i < 2
+			if WC.isCurrentlyEquipped(i, akBaseItem.GetName())
+				;Ammo, scrolls, torch or other throwing weapons
+				if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
+	    			WC.setSlotCount(i, PlayerRef.GetItemCount(akBaseItem))
+	    		endIf
+        	endIf
+        	i += 1
+        endWhile
 	endIf
 endEvent
 
@@ -221,8 +215,18 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
-	;elseIf iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon)
-		;WC.onBoundWeaponUnequipped(akBaseItem.GetName())
+	else
+		int i = 0
+		int itemType = akBaseItem.GetType()
+		while i < 2
+			if WC.isCurrentlyEquipped(i, akBaseItem.GetName())
+				;Ammo, scrolls, torch or other throwing weapons
+				if (itemType == 42 && !WC.isAmmoMode) || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
+	    			WC.setSlotCount(i, PlayerRef.GetItemCount(akBaseItem))
+	    		endIf
+        	endIf
+        	i += 1
+        endWhile
 	endIf
 endEvent
 
