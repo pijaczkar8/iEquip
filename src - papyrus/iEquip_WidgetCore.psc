@@ -5,7 +5,7 @@ Import Form
 Import UI
 Import UICallback
 Import Utility
-Import iEquip_Utility
+;Import iEquip_Utility
 Import iEquip_UILIB
 import _Q2C_Functions
 Import WornObject
@@ -373,6 +373,10 @@ function updateConfig()
 		endIf
 	endIf/;
 	debug.trace("iEquip_WidgetCore updateConfig finished")
+endFunction
+
+int function getTargetQ(int Q)
+	return targetQ[Q]
 endFunction
 
 function refreshWidgetOnLoad()

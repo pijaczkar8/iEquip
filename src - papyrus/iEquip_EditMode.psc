@@ -2,7 +2,7 @@ ScriptName iEquip_EditMode Extends Quest
 
 import UI
 import Utility
-import iEquip_Utility
+;import iEquip_Utility
 import StringUtil
 import iEquip_UILIB
 import _Q2C_Functions
@@ -846,18 +846,18 @@ function RecallPresetMenu()
 endFunction
 
 function updateEMPresetList()
-    String fileName
+   	String fileName
     PresetList = new string[128]
-    int listIndex = 0
-    int FileList = JValue.readFromDirectory(WidgetPresetPath, FileExtWP)
-    int FileNameArray = JMap.allKeys(FileList)
+    ;int listIndex = 0
+    ;int FileList = JValue.readFromDirectory(WidgetPresetPath, FileExtWP)
+    int FileNameArray = JMap.allKeys(JValue.readFromDirectory(WidgetPresetPath, FileExtWP))
     int arraySize = JArray.count(FileNameArray)
     int i = 0
     while(i < arraySize)
         fileName = JArray.getStr(FileNameArray, i)
-        string[] fileNameChunk = ArgString(fileName, ".")
-        PresetList[listIndex] = fileNameChunk[0]
-        listIndex += 1
+        ;string[] fileNameChunk = ArgString(JArray.getStr(FileNameArray, i), ".")
+        PresetList[i] = SubString(fileName, 0, GetLength(fileName) - 5)
+        ;listIndex += 1
         i += 1
     EndWhile
 endFunction
@@ -926,7 +926,7 @@ function showEMColorMenu(int target, string titleText, int currentColor, int def
 	endIf
 endFunction
 
-string[] function ArgString(string args, string delimiter = ",") global
+;/string[] function ArgString(string args, string delimiter = ",") global
 	string[] Output
 	if args == ""
 		return Output
@@ -954,7 +954,7 @@ string[] function ArgString(string args, string delimiter = ",") global
 		i += 1
 	endWhile
 	return Output
-endFunction
+endFunction/;
 
 function setTextColor(int target, float newColor_)
 	debug.trace("iEquip EditMode setTextColor called")

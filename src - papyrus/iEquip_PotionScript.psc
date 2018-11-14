@@ -395,7 +395,37 @@ function onPotionRemoved(form removedPotion)
     debug.trace("iEquip_PotionScript onPotionRemoved called - removedPotion: " + removedPotion.GetName())
     GotoState("PROCESSING")
     potion thePotion = removedPotion as potion
-    if !(thePotion.isPoison() || thePotion.isFood())
+    int foundPotion
+    int itemCount = PlayerRef.GetItemCount(removedPotion)
+    if thePotion.isPoison()
+        if itemCount < 1
+            foundPotion = findInQueue(WC.getTargetQ(4), removedPotion)
+            if foundPotion != -1
+                jArray.eraseIndex(WC.getTargetQ(4), foundPotion)
+            endIf
+        endIf
+        if WC.isCurrentlyEquipped(4, removedPotion.GetName())
+            if itemCount > 0
+                WC.setSlotCount(4, itemCount)
+            else
+                WC.cycleSlot(4)
+            endIf
+        endIf
+    elseIf thePotion.isFood()
+        if itemCount < 1
+            foundPotion = findInQueue(WC.getTargetQ(3), removedPotion)
+            if foundPotion != -1
+                jArray.eraseIndex(WC.getTargetQ(3), foundPotion)
+            endIf
+        endIf
+        if WC.isCurrentlyEquipped(3, removedPotion.GetName())
+            if itemCount > 0
+                WC.setSlotCount(3, itemCount)
+            else
+                WC.cycleSlot(3)
+            endIf
+        endIf
+    else
         int Q = getPotionQueue(thePotion)
         if Q >= 0
 	        int group
@@ -413,13 +443,13 @@ function onPotionRemoved(form removedPotion)
 		    if WC.isCurrentlyEquipped(3, potionGroup)
             	WC.setSlotCount(3, getPotionGroupCount(group))
             endIf
-		    if PlayerRef.GetItemCount(removedPotion) < 1
-		        int foundPotion = findInQueue(potionQ[Q], removedPotion)
-		        if foundPotion != -1
-		            removePotionFromQueue(Q, foundPotion)
-		        endIf
-		    endIf
 		endIf
+        if itemCount < 1
+            foundPotion = findInQueue(potionQ[Q], removedPotion)
+            if foundPotion != -1
+                removePotionFromQueue(Q, foundPotion)
+            endIf
+        endIf
     endIf
     GotoState("")
 endFunction
@@ -701,60 +731,6 @@ function sortPotionQueue(int Q)
     endWhile
     queueToSort = -1 ;Reset
 EndFunction
-
-;/function sortPoisonQueue()
-	debug.trace("iEquip_PotionScript sortPoisonQueue called")
-	form currentlyShownPoison = jMap.getForm(jArray.getObj(poisonQ, WC.getCurrentQueuePosition(4)), "Form")
-	int queueLength = jArray.count(poisonQ)
-	int tempPoisonQ = jArray.objectWithSize(queueLength)
-	int i = 0
-	string poisonName
-	while i < queueLength
-		poisonName = jMap.getStr(jArray.getObj(poisonQ, i), "Name")
-		jArray.setStr(tempPoisonQ, i, poisonName)
-		i += 1
-	endWhile
-	 i = 0
-    while i < queueLength
-        debug.trace("iEquip_PotionScript sortPoisonQueue - tempPoisonQ queue not sorted, poison in index " + i + ": " + jArray.getStr(tempPoisonQ, i))
-        i += 1
-    endWhile
-	jArray.sort(tempPoisonQ)
-	i = 0
-    while i < queueLength
-        debug.trace("iEquip_PotionScript sortPoisonQueue - tempPoisonQ queue sorted, poison in index " + i + ": " + jArray.getStr(tempPoisonQ, i))
-        i += 1
-    endWhile
-	i = 0
-	int iIndex
-	bool found
-	while i < queueLength
-		poisonName = jArray.getStr(tempPoisonQ, i)
-		iIndex = 0
-		found = false
-		while iIndex < queueLength && !found
-			if poisonName != jMap.getStr(jArray.getObj(poisonQ, iIndex), "Name")
-				iIndex += 1
-			else
-				found = true
-			endIf
-		endWhile
-		if i != iIndex
-			jArray.swapItems(poisonQ, i, iIndex)
-		endIf
-		i += 1
-	endWhile
-    i = 0
-    while i < queueLength
-        debug.trace("iEquip_PotionScript sortPoisonQueue - poison queue sorted, poison in index " + i + ": " + jMap.getStr(jArray.getObj(poisonQ, i), "Name"))
-        i += 1
-    endWhile
-    iIndex = findInQueue(poisonQ, currentlyShownPoison)
-    if !currentlyShownPoison || iIndex == -1
-        iIndex = 0
-    endIf
-	WC.setCurrentQueuePosition(4, iIndex)
-endFunction/;
 
 function sortPoisonQueue()
     debug.trace("iEquip_PotionScript sortPoisonQueue called")

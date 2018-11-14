@@ -156,7 +156,7 @@ Event OnUpdate()
 		If poisonSlotEnabled
 			WC.checkAndUpdatePoisonInfo(slotToUpdate)
 		endIf
-		if RC.bRechargingEnabled
+		if RC.bRechargingEnabled && CM.isChargeMeterShown[slotToUpdate]
 			if CM.chargeDisplayType > 0
 				CM.updateMeterPercent(slotToUpdate)
 			endIf
@@ -168,8 +168,12 @@ Event OnUpdate()
 		endIf
 		if RC.bRechargingEnabled
 			if CM.chargeDisplayType > 0
-				CM.updateMeterPercent(0)
-				CM.updateMeterPercent(1)
+				if CM.isChargeMeterShown[0]
+					CM.updateMeterPercent(0)
+				endIf
+				if CM.isChargeMeterShown[1]
+					CM.updateMeterPercent(1)
+				endIf
 			endIf
 		endIf
 	endIf
@@ -199,8 +203,9 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	else
 		i = 0
 		int itemType = akBaseItem.GetType()
+		string itemName = akBaseItem.GetName()
 		while i < 2
-			if WC.isCurrentlyEquipped(i, akBaseItem.GetName())
+			if WC.isCurrentlyEquipped(i,itemName)
 				;Ammo, scrolls, torch or other throwing weapons
 				if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
 	    			WC.setSlotCount(i, PlayerRef.GetItemCount(akBaseItem))
@@ -213,13 +218,23 @@ endEvent
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
+	int i
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
-	else
-		int i = 0
-		int itemType = akBaseItem.GetType()
-		while i < 2
+	elseIf WC.isAmmoMode && akBaseItem as ammo
+		i = 5
+		while i < 7
 			if WC.isCurrentlyEquipped(i, akBaseItem.GetName())
+	    		WC.setSlotCount(0, PlayerRef.GetItemCount(akBaseItem))
+        	endIf
+        	i += 1
+        endWhile
+	else
+		i = 0
+		int itemType = akBaseItem.GetType()
+		string itemName = akBaseItem.GetName()
+		while i < 2
+			if WC.isCurrentlyEquipped(i,itemName)
 				;Ammo, scrolls, torch or other throwing weapons
 				if (itemType == 42 && !WC.isAmmoMode) || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
 	    			WC.setSlotCount(i, PlayerRef.GetItemCount(akBaseItem))
