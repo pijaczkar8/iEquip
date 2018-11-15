@@ -291,9 +291,8 @@ Event OnWidgetInit()
 EndEvent
 
 function CheckDependencies()
-	bool moreHUDAlreadyActive = moreHUDLoaded
 	moreHUDLoaded = AhzMoreHudIE.GetVersion() > 0
-	if moreHUDLoaded && !moreHUDAlreadyActive && iEquip_Enabled && !isFirstLoad
+	if moreHUDLoaded && iEquip_Enabled && !isFirstLoad
 		initialisemoreHUDArray()
 	endIf
 endFunction
