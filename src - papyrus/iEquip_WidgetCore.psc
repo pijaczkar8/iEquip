@@ -1942,6 +1942,9 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false)
 	;if somehow the item has been removed from the player and we haven't already caught it remove it from queue and advance queue again
 	elseif !playerStillHasItem(targetItem)
 		AddItemToLastRemovedCache(Q, targetIndex)
+		if moreHUDLoaded
+	        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetQ[Q], targetIndex), "itemID"))
+	    endIf
 		jArray.eraseIndex(targetQ[Q], targetIndex)
 		;if you are cycling backwards you have just removed the previous item in the queue so the currentQueuePosition needs to be updated before calling cycleSlot again
 		if Reverse
@@ -2095,6 +2098,9 @@ function checkAndEquipShownShoutOrConsumable(int Q, bool Reverse, int targetInde
 	debug.trace("iEquip_WidgetCore checkAndEquipShownShoutOrConsumable called - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", isPotionGroup: " + isPotionGroup)
 	if (targetItem && targetItem != none && !playerStillHasItem(targetItem)) || (Q == 3 && targetItem == none && !isPotionGroup)
 		AddItemToLastRemovedCache(Q, targetIndex)
+		if moreHUDLoaded
+	        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetQ[Q], targetIndex), "itemID"))
+	    endIf
 		jArray.eraseIndex(targetQ[Q], targetIndex)
 		;if you are cycling backwards you have just removed the previous item in the queue so the currentQueuePosition needs to be updated before calling cycleSlot again
 		if Reverse
@@ -2659,6 +2665,9 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 	if MCM.bEnableRemovedItemCaching && !purging
 		AddItemToLastRemovedCache(Q, iIndex)
 	endIf
+	if moreHUDLoaded
+        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetQ[Q], iIndex), "itemID"))
+    endIf
 	jArray.eraseIndex(targetQ[Q], iIndex)
 	if currentQueuePosition[Q] > iIndex ;if the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
 		currentQueuePosition[Q] = currentQueuePosition[Q] - 1
@@ -4509,6 +4518,22 @@ function addToQueue(int Q)
 					endIf
 					;Add any other info required for each item here - spell school, costliest effect, etc
 					jArray.addObj(targetQ[Q], iEquipItem)
+					if moreHUDLoaded
+						string moreHUDIcon
+						if Q < 2
+							if foundInOtherHandQueue
+								moreHUDIcon = moreHUDIcons[3]
+							else
+		                		moreHUDIcon = moreHUDIcons[Q]
+		                	endIf
+		                else
+		                	moreHUDIcon = moreHUDIcons[2]
+		                endIf
+		                if Q < 2 ;&& AhzMoreHudIE.IsIconItemRegistered(itemID)
+		                	AhzMoreHudIE.RemoveIconItem(itemID) ;Does nothing if the itemID isn't registered so no need for the IsIconItemRegistered check
+		                endIf
+			            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
+			        endIf
 					success = true
 				else
 					debug.notification("The " + queueName[Q] + " is full")
@@ -4563,7 +4588,6 @@ function findAndFillMissingItemIDs()
 		i += 1
 	endwhile
 	itemsWaitingForID = false
-	;jArray.eraseRange(objItemsForIDGeneration, 0, count - 1)
 	jArray.clear(objItemsForIDGeneration)
 	debug.trace("iEquip_WidgetCore findAndFillMissingItemIDs - final check (count should be 0) - count: " + jArray.count(objItemsForIDGeneration))
 endFunction
@@ -4938,6 +4962,9 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	int targetArray = targetQ[queueMenuCurrentQueue]
 	string itemName = JMap.getStr(jArray.getObj(targetArray, iIndex), "Name")
 	if !(stringutil.Find(itemName, "Potions", 0) > -1)
+		if moreHUDLoaded
+	        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetArray, iIndex), "itemID"))
+	    endIf
 		jArray.eraseIndex(targetArray, iIndex)
 		int i = jArray.count(targetArray)
 		if iIndex >= i
