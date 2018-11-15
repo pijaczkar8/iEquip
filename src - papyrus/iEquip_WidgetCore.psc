@@ -8,6 +8,7 @@ Import Utility
 ;Import iEquip_Utility
 Import iEquip_UILIB
 import _Q2C_Functions
+import AhzMoreHudIE
 Import WornObject
 Import iEquip_WeaponExt
 Import iEquip_AmmoExt
@@ -171,6 +172,9 @@ bool firstAttemptToDeletePotionGroup = true
 
 string[] bound2HWeapons
 
+bool property moreHUDLoaded = false Auto Hidden
+string[] property moreHUDIcons Auto Hidden
+
 ;Geared Up properties and variables
 Armor Property Shoes Auto
 Race PlayerRace
@@ -192,6 +196,7 @@ string function GetWidgetSource()
 endFunction
 
 Event OnWidgetInit()
+	CheckDependencies()
 	PopulateWidgetArrays()
 	PlayerRace = PlayerRef.GetRace()
 	bDrawn = PlayerRef.IsWeaponDrawn()
@@ -271,6 +276,12 @@ Event OnWidgetInit()
 	indexOnStartCycle[1] = -1
 	indexOnStartCycle[2] = -1
 
+	moreHUDIcons = new string[4]
+	moreHUDIcons[0] = "iEquipQL.png" ;Left
+	moreHUDIcons[1] = "iEquipQR.png" ;Right
+	moreHUDIcons[2] = "iEquipQ.png" ;Q - for shout/consumable/poison queues
+	moreHUDIcons[3] = "iEquipQB.png" ;Both - for items in both left and right queues
+
 	loadedbyOnWidgetInit = true
 	initDataObjects()
 	Utility.Wait(0.1)
@@ -278,6 +289,14 @@ Event OnWidgetInit()
 	addPotionGroups()
 	KH.GameLoaded()
 EndEvent
+
+function CheckDependencies()
+	bool moreHUDAlreadyActive = moreHUDLoaded
+	moreHUDLoaded = AhzMoreHudIE.GetVersion() > 0
+	if moreHUDLoaded && !moreHUDAlreadyActive && iEquip_Enabled && !isFirstLoad
+		initialisemoreHUDArray()
+	endIf
+endFunction
 
 Event OnWidgetLoad()
 	debug.trace("iEquip_WidgetCore OnWidgetLoad called")
@@ -291,6 +310,7 @@ Event OnWidgetLoad()
 	GotoState("")
 	Loading = true
 	if !loadedbyOnWidgetInit
+		CheckDependencies()
 		initDataObjects()
 	endIf
 	loadedbyOnWidgetInit = false
@@ -594,6 +614,49 @@ function CreateWeaponTypeArray()
 	weaponTypeNames[8] = "Staff"
 	weaponTypeNames[9] = "Crossbow"
 endFunction
+
+function initialisemoreHUDArray()
+    int[] itemIDs = new int[128]
+    string[] iconNames = new string[128]
+    int jItemIDs = jArray.object()
+    int jIconNames = jArray.object()
+    int Q = 0
+    
+    while Q < 6
+        int targetArray = targetQ[Q]
+        int queueLength = JArray.count(targetArray)
+        int i = 0
+        if Q == 3
+        	i = 3 ;Skip the potion groups in the consumables queue
+        endIf
+        
+        while i < queueLength
+            int itemID = jMap.getInt(jArray.getObj(targetArray, i), "itemID")
+            int foundAt = -1
+            if Q < 2
+            	foundAt = jArray.findInt(jItemIDs, itemID)
+            endIf
+            if foundAt != -1
+                jArray.setStr(jIconNames, foundAt, moreHUDIcons[3])
+            else
+                jArray.addInt(jItemIDs, itemID)
+                if Q < 2
+                	jArray.addStr(jIconNames, moreHUDIcons[Q])
+                else
+                	jArray.addStr(jIconNames, moreHUDIcons[2])
+                endIf
+            endIf
+            i += 1
+        endWhile
+
+        Q += 1
+    endWhile
+    
+    jArray.writeToIntegerPArray(jItemIDs, itemIDs)
+    jArray.writeToStringPArray(jIconNames, iconNames)
+    AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
+    PO.initialisemoreHUDArray()
+endIf
 
 int property iEquipDataObj
 	int function get()

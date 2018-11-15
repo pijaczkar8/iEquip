@@ -2,6 +2,7 @@
 scriptName iEquip_PotionScript extends Quest
 
 import _Q2C_Functions
+import AhzMoreHudIE
 import stringUtil
 import UI
 
@@ -61,6 +62,8 @@ String[] poisonIconNames
 
 bool isCACOLoaded = false
 MagicEffect[] CACO_RestoreEffects
+
+bool moreHUDLoaded = false
 
 bool addedToQueue = false
 int queueToSort = -1 ;Only used if potion added by onPotionAdded
@@ -167,6 +170,7 @@ function onGameLoaded()
     endWhile
     HUD_MENU = WC.HUD_MENU
     WidgetRoot = WC.WidgetRoot
+    moreHUDLoaded = WC.moreHUDLoaded
     
     WC.potionGroupEmpty[0] = true
     WC.potionGroupEmpty[1] = true
@@ -319,6 +323,32 @@ int property objMagickaRegenQ
     endFunction
 endProperty
 
+function initialisemoreHUDArray()
+    int[] itemIDs = new int[128]
+    string[] iconNames = new string[128]
+    int jItemIDs = jArray.object()
+    int jIconNames = jArray.object()
+    int Q = 0
+    
+    while Q < 9
+        int targetArray = potionQ[Q]
+        int queueLength = JArray.count(targetArray)
+        int i = 0
+        
+        while i < queueLength
+            jArray.addInt(jItemIDs, jMap.getInt(jArray.getObj(targetArray, i), "itemID"))
+            jArray.addStr(jIconNames, "iEquipQ.png")
+            i += 1
+        endWhile
+
+        Q += 1
+    endWhile
+    
+    jArray.writeToIntegerPArray(jItemIDs, itemIDs)
+    jArray.writeToStringPArray(jIconNames, iconNames)
+    AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
+endIf
+
 function findAndSortPotions()
     debug.trace("iEquip_PotionScript findAndSortPotions called")
     ;Count the number of potion items currently in the players inventory
@@ -395,13 +425,18 @@ function onPotionRemoved(form removedPotion)
     debug.trace("iEquip_PotionScript onPotionRemoved called - removedPotion: " + removedPotion.GetName())
     GotoState("PROCESSING")
     potion thePotion = removedPotion as potion
+    int targetArray
     int foundPotion
     int itemCount = PlayerRef.GetItemCount(removedPotion)
     if thePotion.isPoison()
         if itemCount < 1
-            foundPotion = findInQueue(WC.getTargetQ(4), removedPotion)
+            targetArray = WC.getTargetQ(4)
+            foundPotion = findInQueue(targetArray, removedPotion)
             if foundPotion != -1
-                jArray.eraseIndex(WC.getTargetQ(4), foundPotion)
+                if moreHUDLoaded
+                    AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetArray, foundPotion), "itemID"))
+                endIf
+                jArray.eraseIndex(targetArray, foundPotion)
             endIf
         endIf
         if WC.isCurrentlyEquipped(4, removedPotion.GetName())
@@ -413,9 +448,13 @@ function onPotionRemoved(form removedPotion)
         endIf
     elseIf thePotion.isFood()
         if itemCount < 1
-            foundPotion = findInQueue(WC.getTargetQ(3), removedPotion)
+            targetArray = WC.getTargetQ(3)
+            foundPotion = findInQueue(targetArray, removedPotion)
             if foundPotion != -1
-                jArray.eraseIndex(WC.getTargetQ(3), foundPotion)
+                if moreHUDLoaded
+                    AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetArray, foundPotion), "itemID"))
+                endIf
+                jArray.eraseIndex(targetArray, foundPotion)
             endIf
         endIf
         if WC.isCurrentlyEquipped(3, removedPotion.GetName())
@@ -456,6 +495,9 @@ endFunction
 
 function removePotionFromQueue(int Q, int targetPotion)
     debug.trace("iEquip_PotionScript removePotionFromQueue called - Q: " + Q + ", targetPotion: " + targetPotion)
+    if moreHUDLoaded
+        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(potionQ[Q], targetPotion), "itemID"))
+    endIf
     ;First we need to remove the potion from the relevant queue
     jArray.eraseIndex(potionQ[Q], targetPotion)
     ;Now we need to check to see if any potions remain in the three potion queues within the potion group we've just removed from
@@ -580,8 +622,9 @@ function checkAndAddToPotionQueue(potion foundPotion)
 	        potionGroup = "Magicka Potions"
 	    endIf
         if Q != -1
+            form potionForm = foundPotion as form
             ;Check it isn't already in the chosen queue and add it if not
-            if findInQueue(potionQ[Q], foundPotion as form) != -1
+            if findInQueue(potionQ[Q], potionForm) != -1
                 debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + foundPotion.GetName() + " is already in the " + strongestEffects[Q].GetName() + " queue")
             else
                 int index = foundPotion.GetCostliestEffectIndex()
@@ -591,10 +634,15 @@ function checkAndAddToPotionQueue(potion foundPotion)
                 else
                 	effectMagnitude = foundPotion.GetNthEffectMagnitude(index)
                 endIf
+                int itemID = WC.createItemID(foundPotion.GetName(), potionForm.GetFormID())
                 int potionObj = jMap.object()
-                jMap.setForm(potionObj, "Form", foundPotion as form)
+                jMap.setForm(potionObj, "Form", potionForm)
                 jMap.setFlt(potionObj, "Strength", effectMagnitude)
+                jMap.setInt(potionObj, "itemID", itemID)
                 jArray.addObj(potionQ[Q], potionObj)
+                if moreHUDLoaded
+                    AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
+                endIf
                 debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + foundPotion.GetName() + " added to the " + strongestEffects[Q].GetName() + " queue")
                 addedToQueue = true
                 queueToSort = Q
@@ -611,48 +659,56 @@ function checkAndAddToPotionQueue(potion foundPotion)
 endFunction
 
 function checkAndAddToPoisonQueue(potion foundPoison)
-    debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue called - foundPoison: " + foundPoison.GetName())
     string poisonName = foundPoison.GetName()
+    debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue called - foundPoison: " + poisonName)
     form poisonForm = foundPoison as form
     if findInQueue(poisonQ, poisonForm) != -1
-        debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue -" + foundPoison.GetName() + " is already in the poison queue")
+        debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue -" + poisonName + " is already in the poison queue")
         if WC.isCurrentlyEquipped(4, poisonName)
 	    	WC.setSlotCount(4, PlayerRef.GetItemCount(poisonForm))
         endIf
     elseIf !(jArray.count(poisonQ) == MCM.maxQueueLength && MCM.bHardLimitQueueSize)
     	int poisonFormID = poisonForm.GetFormID()
+        int itemID = WC.createItemID(poisonName, poisonFormID)
 	    int poisonObj = jMap.object()
 	    jMap.setForm(poisonObj, "Form", poisonForm)
 	    jMap.setInt(poisonObj, "formID", poisonFormID)
-	    jMap.setInt(poisonObj, "itemID", WC.createItemID(poisonName, poisonFormID))
+	    jMap.setInt(poisonObj, "itemID", itemID)
 	    jMap.setStr(poisonObj, "Name", poisonName)
 		jMap.setStr(poisonObj, "Icon", getPoisonIcon(foundPoison))
 	    jArray.addObj(poisonQ, poisonObj)
-	    debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue - Form: " + poisonForm + ", " + foundPoison.GetName() + " added to the poison queue")
+        if moreHUDLoaded
+            AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
+        endIf
+	    debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue - Form: " + poisonForm + ", " + poisonName + " added to the poison queue")
 	    addedToQueue = true
         queueToSort = poisonQ
 	endIf
 endFunction
 
 function checkAndAddToConsumableQueue(potion foundConsumable)
-    debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue called - foundConsumable: " + foundConsumable.GetName())
     string consumableName = foundConsumable.GetName()
+    debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue called - foundConsumable: " + consumableName)
     form consumableForm = foundConsumable as form
     if findInQueue(consumableQ, consumableForm) != -1
-        debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue -" + foundConsumable.GetName() + " is already in the consumable queue")
+        debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue -" + consumableName + " is already in the consumable queue")
         if WC.isCurrentlyEquipped(3, consumableName)
 	    	WC.setSlotCount(3, PlayerRef.GetItemCount(consumableForm))
         endIf
     elseIf !(jArray.count(consumableQ) == MCM.maxQueueLength && MCM.bHardLimitQueueSize)
     	int consumableFormID = consumableForm.GetFormID()
+        int itemID = WC.createItemID(consumableName, consumableFormID)
 	    int consumableObj = jMap.object()
 	    jMap.setForm(consumableObj, "Form", consumableForm)
 	    jMap.setInt(consumableObj, "formID", consumableFormID)
-	    jMap.setInt(consumableObj, "itemID", WC.createItemID(consumableName, consumableFormID))
+	    jMap.setInt(consumableObj, "itemID", itemID)
 	    jMap.setStr(consumableObj, "Name", consumableName)
 		jMap.setStr(consumableObj, "Icon", getConsumableIcon(foundConsumable))
 	    jArray.addObj(consumableQ, consumableObj)
-	    debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + foundConsumable.GetName() + " added to the consumable queue")
+        if moreHUDLoaded
+            AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
+        endIf
+	    debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + consumableName + " added to the consumable queue")
 	endIf
 endFunction
 
