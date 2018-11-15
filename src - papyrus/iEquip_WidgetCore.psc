@@ -4960,10 +4960,22 @@ endFunction
 function QueueMenuRemoveFromQueue(int iIndex)
 	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue() called")
 	int targetArray = targetQ[queueMenuCurrentQueue]
-	string itemName = JMap.getStr(jArray.getObj(targetArray, iIndex), "Name")
+	int targetObject = jArray.getObj(targetArray, iIndex)
+	string itemName = JMap.getStr(targetObject, "Name")
 	if !(stringutil.Find(itemName, "Potions", 0) > -1)
 		if moreHUDLoaded
-	        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetArray, iIndex), "itemID"))
+			int itemID = JMap.getInt(targetObject, "itemID")
+			AhzMoreHudIE.RemoveIconItem(itemID)
+			if queueMenuCurrentQueue < 2
+				form itemForm = JMap.getForm(targetObject, "Form")
+				int otherHandQueue = 1
+				if queueMenuCurrentQueue == 1
+					otherHandQueue = 0
+				endIf
+				if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+					AhzMoreHudIE.AddIconItem(itemID, moreHUDIcons[otherHandQueue])
+				endIf
+	        endIf
 	    endIf
 		jArray.eraseIndex(targetArray, iIndex)
 		int i = jArray.count(targetArray)
