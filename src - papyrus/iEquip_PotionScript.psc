@@ -324,6 +324,7 @@ int property objMagickaRegenQ
 endProperty
 
 function initialisemoreHUDArray()
+	debug.trace("iEquip_PotionScript initialisemoreHUDArray called")
     int[] itemIDs = new int[128]
     string[] iconNames = new string[128]
     int jItemIDs = jArray.object()
@@ -347,7 +348,7 @@ function initialisemoreHUDArray()
     jArray.writeToIntegerPArray(jItemIDs, itemIDs)
     jArray.writeToStringPArray(jIconNames, iconNames)
     AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
-endIf
+endFunction
 
 function findAndSortPotions()
     debug.trace("iEquip_PotionScript findAndSortPotions called")

@@ -615,6 +615,7 @@ function CreateWeaponTypeArray()
 endFunction
 
 function initialisemoreHUDArray()
+	debug.trace("iEquip_WidgetCore initialisemoreHUDArray called")
     int[] itemIDs = new int[128]
     string[] iconNames = new string[128]
     int jItemIDs = jArray.object()
@@ -655,7 +656,7 @@ function initialisemoreHUDArray()
     jArray.writeToStringPArray(jIconNames, iconNames)
     AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
     PO.initialisemoreHUDArray()
-endIf
+endFunction
 
 int property iEquipDataObj
 	int function get()
