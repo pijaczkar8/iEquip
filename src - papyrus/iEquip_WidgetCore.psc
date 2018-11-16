@@ -616,24 +616,24 @@ endFunction
 
 function initialisemoreHUDArray()
 	debug.trace("iEquip_WidgetCore initialisemoreHUDArray called")
-    int[] itemIDs = new int[128]
-    string[] iconNames = new string[128]
+
     int jItemIDs = jArray.object()
     int jIconNames = jArray.object()
     int Q = 0
     
     while Q < 6
-        int targetArray = targetQ[Q]
-        int queueLength = JArray.count(targetArray)
+        int queueLength = JArray.count(targetQ[Q])
         int i = 0
         if Q == 3
         	i = 3 ;Skip the potion groups in the consumables queue
         endIf
         
         while i < queueLength
-            int itemID = jMap.getInt(jArray.getObj(targetArray, i), "itemID")
-            int foundAt = jArray.findInt(jItemIDs, itemID)
-
+            int itemID = jMap.getInt(jArray.getObj(targetQ[Q], i), "itemID")
+            int foundAt = -1
+            if i > 0
+            	foundAt = jArray.findInt(jItemIDs, itemID)
+            endIf
             if Q == 1 && foundAt != -1
                 jArray.setStr(jIconNames, foundAt, moreHUDIcons[3])
             else
@@ -650,9 +650,13 @@ function initialisemoreHUDArray()
         Q += 1
     endWhile
     
-    jArray.writeToIntegerPArray(jItemIDs, itemIDs)
-    jArray.writeToStringPArray(jIconNames, iconNames)
-    AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
+    if jArray.count(jItemIDs) > 0
+	    int[] itemIDs
+	    string[] iconNames
+	    jArray.writeToIntegerPArray(jItemIDs, itemIDs)
+	    jArray.writeToStringPArray(jIconNames, iconNames)
+	    AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
+	endIf
     PO.initialisemoreHUDArray()
 endFunction
 
