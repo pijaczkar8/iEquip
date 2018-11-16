@@ -632,11 +632,9 @@ function initialisemoreHUDArray()
         
         while i < queueLength
             int itemID = jMap.getInt(jArray.getObj(targetArray, i), "itemID")
-            int foundAt = -1
-            if Q < 2
-            	foundAt = jArray.findInt(jItemIDs, itemID)
-            endIf
-            if foundAt != -1
+            int foundAt = jArray.findInt(jItemIDs, itemID)
+
+            if Q == 1 && foundAt != -1
                 jArray.setStr(jIconNames, foundAt, moreHUDIcons[3])
             else
                 jArray.addInt(jItemIDs, itemID)
