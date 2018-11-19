@@ -4,6 +4,7 @@ scriptname iEquip_ChargeMeters extends quest
 import UI
 import UICallback
 Import WornObject
+Import StringUtil
 
 iEquip_WidgetCore Property WC Auto
 iEquip_LeftChargeMeterUpdateScript Property LU Auto
@@ -107,7 +108,8 @@ endFunction
 function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = false) ;Sets the meter percent, a_force sets the meter percent without animation
 	debug.trace("iEquip_ChargeMeters updateMeterPercent called - Q: " + Q + ", itemCharge[Q]: " + itemCharge[Q] + ", forceUpdate: " + forceUpdate + ", skipFlash: " + skipFlash)
 	float currentCharge = PlayerRef.GetActorValue(itemCharge[Q])
-	float maxCharge = PlayerRef.GetBaseActorValue(itemCharge[Q])
+	;float maxCharge = PlayerRef.GetBaseActorValue(itemCharge[Q])
+	float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
 	float currPercent = 0.0
 	if maxCharge > 0.0 && currentCharge > 0.0
 		currPercent = currentCharge / maxCharge
@@ -133,7 +135,7 @@ function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = fa
 				UICallback.PushBool(iHandle, enableGradientFill)
 				UICallback.PushInt(iHandle, secondaryFillColor)
 			endIf
-			UICallback.PushBool(iHandle, forceUpdate)
+			UICallback.PushBool(iHandle, true)
 			UICallback.Send(iHandle)
 		endIf
 		if currPercent <= lowChargeThreshold && !isChargeMeterShown[Q]
@@ -166,11 +168,12 @@ function updateChargeMeters(bool forceUpdate = false)
 	int Q = 0
 	if chargeDisplayType > 0
 		while Q < 2
-			if chargeDisplayType == 2
+			;Force both meters and both gems to hide first then call checkAndUpdate to reshow the relevant one if required
+			;if chargeDisplayType == 2
 				updateChargeMeterVisibility(Q, false, true) ;hideMeters
-			elseIf chargeDisplayType == 1
+			;elseIf chargeDisplayType == 1
 				updateChargeMeterVisibility(Q, false, false, true) ;hideGems
-			endIf
+			;endIf
 			checkAndUpdateChargeMeter(Q, forceUpdate)
 			Q += 1
 		endWhile
@@ -186,15 +189,18 @@ function updateChargeMetersOnWeaponsDrawn()
 	debug.trace("iEquip_ChargeMeters updateChargeMetersOnWeaponsDrawn called")
 	int Q = 0
 	while Q < 2
-		if PlayerRef.GetEquippedWeapon(Q)
-			checkAndUpdateChargeMeter(Q, false)
-		endIf
+		;if PlayerRef.GetEquippedWeapon(Q)
+		checkAndUpdateChargeMeter(Q, false)
+		;endIf
 		Q += 1
 	endWhile
 endFunction
 
 function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter called - Q: " + Q)
+	if !PlayerRef.IsWeaponDrawn()
+		Utility.Wait(0.2)
+	endIf
 	if PlayerRef.IsWeaponDrawn()
 		int isEnchanted = 0
 		bool isLeftHand = false
@@ -202,8 +208,13 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 			isLeftHand = true
 		endIf
 		weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
-		enchantment currentEnchantment
+		bool isBound = false 
 		if currentWeapon
+			isBound = stringutil.Find(currentWeapon.GetName(), "bound", 0) > -1
+			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - weapon name: " + currentWeapon.GetName() + ", isBound: " + isBound)
+		endIf
+		enchantment currentEnchantment
+		if currentWeapon && !isBound
 			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + isLeftHand + ", currentWeapon: " + currentWeapon.GetName())
 			currentEnchantment = currentWeapon.GetEnchantment()
 			if !currentEnchantment
@@ -222,7 +233,7 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 					if chargeDisplayType == 1
 						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
 						if(iHandle)
-							debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection")
+							debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection, Q: " + Q + ", fill direction: " + meterFillDirection[Q])
 							UICallback.PushInt(iHandle, Q)
 							UICallback.PushString(iHandle, meterFillDirection[Q])
 							UICallback.Send(iHandle)
@@ -237,8 +248,8 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 				endIf
 			endIf
 		endIf
-		if (!currentWeapon || isEnchanted == 0) ;&& isChargeMeterShown[Q]
-			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - not a weapon or not enchanted, isChargeMeterShown[" + Q + "]: " + isChargeMeterShown[Q])
+		if (!currentWeapon || isEnchanted == 0 || isBound)
+			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - not a weapon or not enchanted. currentWeapon: " + currentWeapon + ", isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", isChargeMeterShown[" + Q + "]: " + isChargeMeterShown[Q])
 			updateChargeMeterVisibility(Q, false) ;Hide
 		endIf
 		;Now update the object keys for the currently equipped item in case anything has changed since we last equipped it
@@ -260,7 +271,6 @@ function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, 
 		if Q == 1
 			element = 26 ;rightEnchantmentMeter_mc
 		endIf
-	;elseIf hideGems || chargeDisplayType == 2
 	else
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenSoulGemAlpha")	
 		element = 14 ;leftSoulgem_mc

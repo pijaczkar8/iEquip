@@ -98,7 +98,7 @@ State gen_tgl_enblProMode
             MCM.bQuickShieldEnabled = false
             MCM.bQuickDualCastEnabled = false
             MCM.restartingMCM = true
-            MCM.KH.CloseAndReopeniEquipMCM()
+            ;MCM.KH.CloseAndReopeniEquipMCM()
         endIf
     endEvent
 endState

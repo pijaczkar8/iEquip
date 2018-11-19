@@ -73,6 +73,7 @@ bool property autoAddPoisons = true auto hidden
 bool property autoAddConsumables = true auto hidden
 
 bool _initialised = false
+bool loadedByOnInit = false
 
 event OnInit()
     debug.trace("iEquip_PotionScript OnInit called")
@@ -160,6 +161,7 @@ event OnInit()
     endIf
     debug.trace("iEquip_PotionScript OnInit finished - isCACOLoaded: " + isCACOLoaded)
     _initialised = true
+    loadedByOnInit = true
 endEvent
 
 ;Called from OnPlayerLoadGame on the PlayerEventHandler script
@@ -171,25 +173,28 @@ function onGameLoaded()
     HUD_MENU = WC.HUD_MENU
     WidgetRoot = WC.WidgetRoot
     moreHUDLoaded = WC.moreHUDLoaded
+    WC.waitingForPotionQueues = true
     
     WC.potionGroupEmpty[0] = true
     WC.potionGroupEmpty[1] = true
     WC.potionGroupEmpty[2] = true
 
-    CACO_RestoreEffects = new MagicEffect[9]
-    if Game.GetModByName("Complete Alchemy & Cooking Overhaul.esp") != 255
-        isCACOLoaded = true
-        CACO_RestoreEffects[0] = Game.GetFormFromFile(0x001AA0B6, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-        CACO_RestoreEffects[1] = Game.GetFormFromFile(0x001AA0B7, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-        CACO_RestoreEffects[2] = Game.GetFormFromFile(0x001AA0B8, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-        CACO_RestoreEffects[3] = Game.GetFormFromFile(0x001B42BB, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-        CACO_RestoreEffects[4] = Game.GetFormFromFile(0x001B42BC, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-        CACO_RestoreEffects[5] = Game.GetFormFromFile(0x001B42BD, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-        CACO_RestoreEffects[6] = Game.GetFormFromFile(0x001B42BE, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-        CACO_RestoreEffects[7] = Game.GetFormFromFile(0x001B42BF, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-        CACO_RestoreEffects[8] = Game.GetFormFromFile(0x001B42C0, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
-    else
-        isCACOLoaded = false
+    if !loadedByOnInit
+        CACO_RestoreEffects = new MagicEffect[9]
+        if Game.GetModByName("Complete Alchemy & Cooking Overhaul.esp") != 255
+            isCACOLoaded = true
+            CACO_RestoreEffects[0] = Game.GetFormFromFile(0x001AA0B6, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+            CACO_RestoreEffects[1] = Game.GetFormFromFile(0x001AA0B7, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+            CACO_RestoreEffects[2] = Game.GetFormFromFile(0x001AA0B8, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+            CACO_RestoreEffects[3] = Game.GetFormFromFile(0x001B42BB, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+            CACO_RestoreEffects[4] = Game.GetFormFromFile(0x001B42BC, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+            CACO_RestoreEffects[5] = Game.GetFormFromFile(0x001B42BD, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+            CACO_RestoreEffects[6] = Game.GetFormFromFile(0x001B42BE, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+            CACO_RestoreEffects[7] = Game.GetFormFromFile(0x001B42BF, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+            CACO_RestoreEffects[8] = Game.GetFormFromFile(0x001B42C0, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+        else
+            isCACOLoaded = false
+        endIf
     endIf
     debug.trace("iEquip_PotionScript GameLoaded - isCACOLoaded: " + isCACOLoaded)
     findAndSortPotions()
@@ -325,29 +330,47 @@ endProperty
 
 function initialisemoreHUDArray()
 	debug.trace("iEquip_PotionScript initialisemoreHUDArray called")
-    int[] itemIDs = new int[128]
-    string[] iconNames = new string[128]
     int jItemIDs = jArray.object()
     int jIconNames = jArray.object()
     int Q = 0
     
     while Q < 9
-        int targetArray = potionQ[Q]
-        int queueLength = JArray.count(targetArray)
+        int queueLength = JArray.count(potionQ[Q])
         int i = 0
+        debug.trace("iEquip_PotionScript initialisemoreHUDArray - Q" + Q + " contains " + queueLength + " potions")
         
         while i < queueLength
-            jArray.addInt(jItemIDs, jMap.getInt(jArray.getObj(targetArray, i), "itemID"))
-            jArray.addStr(jIconNames, "iEquipQ.png")
-            i += 1
+            form itemForm = jMap.getForm(jArray.getObj(potionQ[Q], i), "Form")
+	        if !itemForm
+				jArray.eraseIndex(potionQ[Q], i)
+				queueLength -= 1
+			endIf
+            int itemID = jMap.getInt(jArray.getObj(potionQ[Q], i), "itemID")
+            debug.trace("iEquip_PotionScript initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(potionQ[Q], i), "Name"))
+            if itemID == 0
+            	itemID = WC.createItemID(itemForm.GetName(), itemForm.GetFormID())
+            	jMap.setInt(jArray.getObj(potionQ[Q], i), "itemID", itemID)
+            endIf
+	        if itemID != 0
+	            jArray.addInt(jItemIDs, jMap.getInt(jArray.getObj(potionQ[Q], i), "itemID"))
+	            jArray.addStr(jIconNames, "iEquipQ.png")
+	        endIf
+	        i += 1
         endWhile
 
         Q += 1
     endWhile
-    
-    jArray.writeToIntegerPArray(jItemIDs, itemIDs)
-    jArray.writeToStringPArray(jIconNames, iconNames)
-    AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
+    debug.trace("iEquip_PotionScript initialisemoreHUDArray - jItemIds contains " + jArray.count(jItemIDs) + " entries")
+    debug.trace("iEquip_PotionScript initialisemoreHUDArray - jIconNames contains " + jArray.count(jIconNames) + " entries")
+    if jArray.count(jItemIDs) > 0
+        int[] itemIDs = utility.CreateIntArray(jArray.count(jItemIDs))
+        string[] iconNames = utility.CreateStringArray(jArray.count(jIconNames))
+        jArray.writeToIntegerPArray(jItemIDs, itemIDs)
+        jArray.writeToStringPArray(jIconNames, iconNames)
+        debug.trace("iEquip_PotionScript initialisemoreHUDArray - itemIDs contains " + itemIDs.Length + " entries with " + itemIDs[0] + " in index 0")
+        debug.trace("iEquip_PotionScript initialisemoreHUDArray - iconNames contains " + iconNames.Length + " entries with " + iconNames[0] + " in index 0")
+        AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
+    endIf
 endFunction
 
 function findAndSortPotions()
@@ -408,6 +431,7 @@ function findAndSortPotions()
     else
         debug.trace("iEquip_PotionScript findAndSortPotions - No health, stamina or magicka potions found in players inventory")
     endIf
+    WC.waitingForPotionQueues = false
 endFunction
 
 function onPotionAdded(form newPotion)
@@ -635,9 +659,11 @@ function checkAndAddToPotionQueue(potion foundPotion)
                 else
                 	effectMagnitude = foundPotion.GetNthEffectMagnitude(index)
                 endIf
-                int itemID = WC.createItemID(foundPotion.GetName(), potionForm.GetFormID())
+                string potionName = foundPotion.GetName()
+                int itemID = WC.createItemID(potionName, potionForm.GetFormID())
                 int potionObj = jMap.object()
                 jMap.setForm(potionObj, "Form", potionForm)
+                jMap.setStr(potionObj, "Name", potionName)
                 jMap.setFlt(potionObj, "Strength", effectMagnitude)
                 jMap.setInt(potionObj, "itemID", itemID)
                 jArray.addObj(potionQ[Q], potionObj)
@@ -823,7 +849,7 @@ function sortPoisonQueue()
     endWhile
     
     iIndex = findInQueue(poisonQ, currentlyShownPoison)
-    if !currentlyShownPoison || iIndex == -1
+    if WC.getCurrentQueuePosition(4) == -1 || !currentlyShownPoison || iIndex == -1
         iIndex = 0
     endIf
     
@@ -902,6 +928,7 @@ bool function quickHealFindAndConsumePotion()
         count = jArray.count(potionQ[Q])
     endIf
     if count > 0
+        found = true
         form potionToConsume = jMap.getForm(jArray.getObj(potionQ[Q], 0), "Form")
         PlayerRef.EquipItemEx(potionToConsume)
         debug.notification(potionToConsume.GetName() + " consumed")

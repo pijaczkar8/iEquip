@@ -22,6 +22,7 @@ int slotToUpdate = -1
 
 Event OnInit()
 	gotoState("DISABLED")
+	OnPlayerLoadGame()
 endEvent
 
 function OniEquipEnabled(bool enabled)

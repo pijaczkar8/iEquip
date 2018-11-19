@@ -365,6 +365,7 @@ State rep_men_leftFillDir
             MCM.meterFillDirection[0] = currentVar as int
             MCM.SetMenuOptionValueST(MCM.meterFillDirectionOptions[MCM.meterFillDirection[0]])
             MCM.CM.meterFillDirection[0] = MCM.meterFillDirectionOptions[MCM.meterFillDirection[0]]
+            MCM.CM.settingsChanged = true
         endIf 
     endEvent
 endState
@@ -380,6 +381,7 @@ State rep_men_rightFillDir
             MCM.meterFillDirection[1] = currentVar as int
             MCM.SetMenuOptionValueST(MCM.meterFillDirectionOptions[MCM.meterFillDirection[1]])
             MCM.CM.meterFillDirection[1] = MCM.meterFillDirectionOptions[MCM.meterFillDirection[1]]
+            MCM.CM.settingsChanged = true
         endIf 
     endEvent
 endState

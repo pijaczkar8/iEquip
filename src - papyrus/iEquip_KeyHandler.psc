@@ -40,11 +40,11 @@ Int Property iEquip_EditLoadPresetKey = 76 Auto ;Num 5
 Int Property iEquip_EditSavePresetKey = 77 Auto ;Num 6
 Int Property iEquip_EditDiscardKey = 83 Auto ;Num .
 
-Int Property KEY_J = 36 Auto ;J
-Int Property KEY_ESCAPE = 1 Auto ;Esc
-Int Property KEY_NUM5 = 76 Auto ;Num 5
-Int Property KEY_ENTER = 28 Auto ;Enter
-Int Property KEY_DOWN_ARROW = 208 Auto ;Down Arrow
+;Int Property KEY_J = 36 Auto ;J
+;Int Property KEY_ESCAPE = 1 Auto ;Esc
+;Int Property KEY_NUM5 = 76 Auto ;Num 5
+;Int Property KEY_ENTER = 28 Auto ;Enter
+;Int Property KEY_DOWN_ARROW = 208 Auto ;Down Arrow
 
 bool extraLongKeyPress = false
 bool isUtilityKeyHeld = false
@@ -486,7 +486,7 @@ endState
     EndWhile
 EndFunction/;
 
-function openiEquipMCM()
+;/function openiEquipMCM()
 	if !Game.IsMenuControlsEnabled() || Utility.IsInMenuMode() || UI.IsTextInputEnabled() || UI.IsMenuOpen("Dialogue Menu") || (UI.IsMenuOpen("Crafting Menu")) ; || UI.IsMenuOpen("Console"))
 		return
 	endif
@@ -547,13 +547,72 @@ function openiEquipMCM()
 	else
 		Input.TapKey(KEY_ENTER)
 	endIf
+endFunction/;
+
+function openiEquipMCM(bool inMCMSelect = false)
+	debug.trace("iEquip_KeyHandler openiEquipMCM called")
+    int key_j = GetMappedKey("Journal")
+    int key_down = GetMappedKey("Back")
+    int i = 0
+
+    if !inMCMSelect
+    	debug.trace("iEquip_KeyHandler openiEquipMCM - should be working now...")
+        if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() && !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
+            float startTime = Utility.GetCurrentRealTime()
+            float elapsedTime
+            
+            while elapsedTime <= 2.5
+                if IsMenuOpen("Journal Menu")
+                    TapKey(76) ;Should take us to the Settings Tab
+                    Utility.WaitMenuMode(0.005)
+                    
+                    while i < 3 ;Should take us to MCM Menu entry in the Settings List
+                        TapKey(key_down)
+                        Utility.WaitMenuMode(0.005)
+                        i += 1
+                    EndWhile
+                    
+                    inMCMSelect = true
+                    elapsedTime = 2.6
+                else
+                    TapKey(key_j)
+                    Utility.WaitMenuMode(0.1)
+                    elapsedTime = Utility.GetCurrentRealTime() - startTime
+                endIf
+            endWhile
+        endIf
+    elseIf IsMenuOpen("Journal Menu")
+		TapKey(key_j)
+        Utility.WaitMenuMode(0.5)
+    else
+        inMCMSelect = false
+    endIf
+    
+    if inMCMSelect
+        int key_enter = GetMappedKey("Activate")
+        TapKey(key_enter) 
+        Utility.WaitMenuMode(0.005)
+        
+        i = 0
+        while i < 128
+            TapKey(key_down)
+            Utility.WaitMenuMode(0.005)
+            
+            if GetString("Journal Menu", "_root.ConfigPanelFader.configPanel._modList.selectedEntry.text") == "iEquip"
+                TapKey(key_enter)
+                i = 128
+            else
+                i += 1
+            endIf
+        endWhile
+    endIf
 endFunction
 
-function CloseAndReopeniEquipMCM()
+;/function CloseAndReopeniEquipMCM()
 	if UI.IsMenuOpen("Journal Menu")
 		Input.TapKey(KEY_ESCAPE)
 		Utility.WaitMenuMode(0.5)
 		Input.TapKey(KEY_ENTER)
 	endIf
-endFunction
+endFunction/;
 

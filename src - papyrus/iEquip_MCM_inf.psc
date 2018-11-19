@@ -29,7 +29,7 @@ State inf_tgl_setAccess
     endEvent
 endState
 
-State inf_key_openJour
+;/State inf_key_openJour
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Press the key you would normally use to open the Journal Menu from in game\nDefault is J for keyboards and Start for gamepads")
@@ -97,7 +97,7 @@ State inf_key_down
             MCM.SetKeyMapOptionValueST(MCM.KH.KEY_DOWN_ARROW)
         endIf 
     endEvent
-endState
+endState/;
 
 State inf_txt_rstLayout
     event OnBeginState()
@@ -107,7 +107,7 @@ State inf_txt_rstLayout
             if MCM.ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
                 MCM.iEquip_Reset = !MCM.iEquip_Reset
                 MCM.restartingMCM = true
-                MCM.KH.CloseAndReopeniEquipMCM()
+                ;MCM.KH.CloseAndReopeniEquipMCM()
             endIf
         endIf 
     endEvent

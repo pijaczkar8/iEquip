@@ -805,13 +805,13 @@ event OnPageReset(string page)
             AddHeaderOption("Maintenance")
             AddToggleOptionST("inf_tgl_setAccess", "Set MCM access keys", bQuickMCMSetKeys)
                
-            if bQuickMCMSetKeys
+            ;/if bQuickMCMSetKeys
                 AddKeyMapOptionST("inf_key_openJour", "Open Journal", KH.KEY_J, OPTION_FLAG_WITH_UNMAP)
                 AddKeyMapOptionST("inf_key_exitMenu", "Exit Menu", KH.KEY_ESCAPE, OPTION_FLAG_WITH_UNMAP)
                 AddKeyMapOptionST("inf_key_tabLeft", "Tab left", KH.KEY_NUM5, OPTION_FLAG_WITH_UNMAP)
                 AddKeyMapOptionST("inf_key_enter", "Enter", KH.KEY_ENTER, OPTION_FLAG_WITH_UNMAP)
                 AddKeyMapOptionST("inf_key_down", "Down", KH.KEY_DOWN_ARROW, OPTION_FLAG_WITH_UNMAP)
-            endIf
+            endIf/;
                     
             AddEmptyOption()
             AddTextOptionST("inf_txt_rstLayout", "Reset default iEquip layout", "")
