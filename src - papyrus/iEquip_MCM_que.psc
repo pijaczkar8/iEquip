@@ -1,5 +1,36 @@
 Scriptname iEquip_MCM_que extends iEquip_MCM_helperfuncs
 
+iEquip_PotionScript Property POT Auto
+
+; #############
+; ### SETUP ###
+
+function drawPage()
+    MCM.AddHeaderOption("Queue Length Options")
+    MCM.AddSliderOptionST("que_sld_maxItmQue", "Max items per queue", MCM.maxQueueLength, "Max {0} items")
+    MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "Hard limit queue size", MCM.bHardLimitQueueSize)
+            
+    MCM.AddHeaderOption("Add To Queue Options")
+    MCM.AddToggleOptionST("que_tgl_showConfMsg", "Show confirmation messages", MCM.WC.showQueueConfirmationMessages)
+    MCM.AddToggleOptionST("que_tgl_signlBothQue", "Single items in both hand queues", MCM.bAllowSingleItemsInBothQueues)
+            
+    if MCM.bAllowSingleItemsInBothQueues
+        MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "Allow 1h items to switch hands", MCM.bAllowWeaponSwitchHands)
+    endIf
+
+    MCM.SetCursorPosition(1)
+            
+    MCM.AddHeaderOption("Auto Add Options")
+    MCM.AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add on equipping", MCM.bAutoAddNewItems)
+    MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "Auto-add poisons", POT.autoAddPoisons)
+    MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "Auto-add food and drink", POT.autoAddConsumables)
+    MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "Allow caching of removed items", MCM.bEnableRemovedItemCaching)
+            
+    if MCM.bEnableRemovedItemCaching
+        MCM.AddSliderOptionST("que_sld_MaxItmCache", "Max items to cache", MCM.maxCachedItems, "Max {0} items")
+    endIf
+endFunction
+
 ; #####################
 ; ### Queue Options ###
 ; #####################
@@ -99,7 +130,7 @@ State que_tgl_autoAddItmQue
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Enabling this setting will allow any manually equipped item which isn't already found in your left/right/shout queue to be automatically added to the queue. "+\
-                            "Hand items will only be added if not found in either queue. Items added this way will allow the queue length to grow if you have disable the hard limit above.\nDefault: Off")
+                            "Hand items will only be added if not found in either queue. Items added this way will allow the queue length to grow if you have disabled the hard limit above.\nDefault: Off")
         elseIf currentEvent == "Select"
             MCM.bAutoAddNewItems = !MCM.bAutoAddNewItems
             MCM.SetToggleOptionValueST(MCM.bAutoAddNewItems)
@@ -107,6 +138,44 @@ State que_tgl_autoAddItmQue
             MCM.bAutoAddNewItems = false 
             MCM.SetToggleOptionValueST(MCM.bAutoAddNewItems)
         endIf
+    endEvent
+endState
+
+State que_tgl_autoAddPoisons
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("With this enabled iEquip will manage your poison queue for you, finding and adding all poisons currently in your inventory and adding new ones as you acquire them. "+\
+                            "There will no longer be a restriction on the number of poisons in the queue, and they will be sorted alphabetically.  If you intend to grind alchemy then disable this setting, "+\
+                            "however if you only craft and carry poisons you intend to use then this will save you having to manage the poison queue.\nDefault - Off")
+        else
+            If currentEvent == "Select"
+                POT.autoAddPoisons = !POT.autoAddPoisons
+                MCM.SetToggleOptionValueST(POT.autoAddPoisons)
+            elseIf currentEvent == "Default"
+                POT.autoAddPoisons = true
+            endIf
+            MCM.SetToggleOptionValueST(POT.autoAddPoisons)
+            POT.settingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State que_tgl_autoAddConsumables
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("With this enabled iEquip will add food and drink to your consumables queue for you, finding and adding all food and drink currently in your inventory and adding new ones as you acquire them. "+\
+                            "There will no longer be a restriction on the number of items in the queue.  If you regularly carry lots of different food and drink items then disable this setting, "+\
+                            "however if you only carry what you intend to eat and drink then this will save you having to manage those items in the consumables queue.\nDefault - Off")
+        else
+            If currentEvent == "Select"
+                POT.autoAddConsumables = !POT.autoAddConsumables
+                MCM.SetToggleOptionValueST(POT.autoAddConsumables)
+            elseIf currentEvent == "Default"
+                POT.autoAddConsumables = true
+            endIf
+            MCM.SetToggleOptionValueST(POT.autoAddConsumables)
+            POT.settingsChanged = true
+        endIf 
     endEvent
 endState
 

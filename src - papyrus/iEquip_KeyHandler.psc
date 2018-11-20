@@ -46,10 +46,12 @@ float Property pressAndHoldDelay = 1.0 Auto Hidden
 
 ; Bools
 bool Property bAllowKeyPress = true Auto Hidden
+bool Property bNormalSystemPageBehav = true Auto Hidden
 bool isUtilityKeyHeld = false
 bool bNotInLootMenu = true
 
 ; Ints
+int Property utilityKeyDoublePress = 0 Auto Hidden
 Int WaitingKeyCode = 0
 Int iMultiTap = 0
 int keySum = 0
@@ -82,7 +84,7 @@ event OnMenuOpen(string MenuName)
         bNotInLootMenu = false
     else
         previousState = GetState()
-        GotoState("InventoryMenu")
+        GotoState("INVENTORYMENU")
         
         UnregisterForUpdate()
         WaitingKeyCode = 0
@@ -95,9 +97,20 @@ endEvent
 event OnMenuClose(string MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = true
-    else
+    else     
         GotoState(previousState)
     endIf
+endEvent
+
+event OnUpdate()
+	debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
+    bAllowKeyPress = false
+    
+    runUpdate()
+    
+    iMultiTap = 0
+    WaitingKeyCode = 0
+    bAllowKeyPress = true
 endEvent
 
 ; ---------------------
@@ -176,17 +189,6 @@ event OnKeyUp(Int KeyCode, Float HoldTime)
     endIf
 endEvent
 
-event OnUpdate()
-	debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
-    bAllowKeyPress = false
-    
-    runUpdate()
-    
-    iMultiTap = 0
-    WaitingKeyCode = 0
-    bAllowKeyPress = true
-endEvent
-
 function runUpdate()
     if iMultiTap == -1   ; Longpress
         if WaitingKeyCode == iEquip_consumableKey
@@ -211,7 +213,7 @@ function runUpdate()
             else
                 RC.rechargeWeapon(0)
             endIf
-        elseIf KeyCode == iEquip_rightKey
+        elseIf WaitingKeyCode == iEquip_rightKey
             RC.rechargeWeapon(1)
         endIf
         
@@ -267,13 +269,11 @@ function runUpdate()
         
     elseIf iMultiTap == 2  ; Double tap
         If WaitingKeyCode == iEquip_utilityKey
-            int i = MCM.utilityKeyDoublePress
-            
-            if i == 1
+            if utilityKeyDoublePress == 1
                 WC.openQueueManagerMenu()
-            elseIf i == 2
+            elseIf utilityKeyDoublePress == 2
                 toggleEditMode()
-            elseIf i == 3
+            elseIf utilityKeyDoublePress == 3
                 openiEquipMCM()
             endIf
         elseIf WaitingKeyCode == iEquip_consumableKey
@@ -307,9 +307,9 @@ endFunction
 ; - OTHER BEHAVIOURS -
 ; --------------------
 
-state InventoryMenu
+; - Inventory
+state INVENTORYMENU
 	event OnKeyDown(int KeyCode)
-		Debug.Trace("iEquip KeyHandler InventoryMenu OnKeyDown called on " + KeyCode)
         checkKeysDown(KeyCode)       
         if bAllowKeyPress
             WaitingKeyCode = KeyCode
@@ -318,6 +318,8 @@ state InventoryMenu
 	endEvent
     
     function runUpdate()
+        debug.notification("Running runUpdateInventory")
+    
         if WaitingKeyCode == iEquip_leftKey
             WC.AddToQueue(0)
         elseIf WaitingKeyCode == iEquip_rightKey
@@ -330,7 +332,8 @@ state InventoryMenu
     endFunction
 endState
 
-state EditMode
+; - Editmode
+state EDITMODE
     event OnKeyDown(int KeyCode)
         if bAllowKeyPress
             if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
@@ -372,7 +375,7 @@ state EditMode
     endEvent
 
     function runUpdate()
-        if iMultiTap == -1   ; Longpress
+        if iMultiTap == 0   ; Longpress
             if WaitingKeyCode == iEquip_EditAlphaKey
                 EM.toggleStep(2)
             elseIf WaitingKeyCode == iEquip_EditRotateKey
@@ -381,7 +384,7 @@ state EditMode
                     WaitingKeyCode == iEquip_EditDownKey || WaitingKeyCode == iEquip_EditScaleUpKey || WaitingKeyCode == iEquip_EditScaleDownKey)
                 EM.toggleStep(0)
             elseIf WaitingKeyCode == iEquip_EditTextKey
-                if EM.isTextElement(EM.SelectedItem - 1)
+                if WC.abWidget_isText[EM.SelectedItem - 1]
                     EM.initColorPicker(2) ;Text color
                 endIf
             elseIf WaitingKeyCode == iEquip_EditRulersKey
@@ -412,7 +415,7 @@ state EditMode
                     debug.messagebox("Bring To Front is currently disabled in the MCM\n\nIf you want to be able to change layer order for overlapping widget elements turn Bring To Front on first")
                 endIf
             elseIf WaitingKeyCode == iEquip_EditTextKey
-                if EM.isTextElement(EM.SelectedItem - 1)
+                if WC.abWidget_isText[EM.SelectedItem - 1]
                     EM.setTextAlignment()
                 endIf
             elseIf WaitingKeyCode == iEquip_EditNextKey
@@ -466,7 +469,7 @@ function toggleEditMode()
         GoToState("")
 		RegisterForGameplayKeys()
 	else
-        GoToState("EditMode")
+        GoToState("EDITMODE")
 		RegisterForEditModeKeys()
 	endIf
     
@@ -549,20 +552,30 @@ function RegisterForEditModeKeys()
 	RegisterForKey(iEquip_utilityKey)
 endFunction
 
-function openiEquipMCM(bool mcmSelected = false)
+function openiEquipMCM(bool inMCMSelect = false)
     int key_j = GetMappedKey("Journal")
     int key_down = GetMappedKey("Back")
     int i = 0
 
-    if !mcmSelected
-        if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() && !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
+    if !inMCMSelect
+        if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() &&\
+           !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
             float startTime = Utility.GetCurrentRealTime()
             float elapsedTime
             
             while elapsedTime <= 2.5
                 if IsMenuOpen("Journal Menu")
-                    TapKey(76) ;Should take us to the Settings Tab
-                    Utility.WaitMenuMode(0.005)
+                    if bNormalSystemPageBehav ; Compatibility with open system page mod
+                    
+                        ; Should take us to the Settings Tab
+                        if Game.UsingGamepad()
+                            TapKey(GetMappedKey("Left Attack"))
+                        else
+                            TapKey(76)
+                        endIf
+                        
+                        Utility.WaitMenuMode(0.005)
+                    endIf
                     
                     while i < 3 ;Should take us to MCM Menu entry in the Settings List
                         TapKey(key_down)
@@ -570,7 +583,7 @@ function openiEquipMCM(bool mcmSelected = false)
                         i += 1
                     EndWhile
                     
-                    mcmSelected = true
+                    inMCMSelect = true
                     elapsedTime = 2.6
                 else
                     TapKey(key_j)
@@ -581,12 +594,16 @@ function openiEquipMCM(bool mcmSelected = false)
         endIf
     elseIf IsMenuOpen("Journal Menu")
 		TapKey(key_j)
-        Utility.WaitMenuMode(0.5)
+        Utility.WaitMenuMode(1)
+        TapKey(key_j)
+        Utility.WaitMenuMode(1)
+        TapKey(key_j)
+        Utility.WaitMenuMode(1)
     else
-        mcmSelected = false
+        inMCMSelect = false
     endIf
     
-    if mcmSelected
+    if inMCMSelect
         int key_enter = GetMappedKey("Activate")
         TapKey(key_enter) 
         Utility.WaitMenuMode(0.005)

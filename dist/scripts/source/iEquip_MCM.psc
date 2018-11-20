@@ -3,6 +3,9 @@ Scriptname iEquip_MCM extends SKI_ConfigBase
 import stringUtil
 
 iEquip_WidgetCore Property WC Auto
+iEquip_RechargeScript Property RC Auto
+iEquip_PotionScript Property PO Auto
+iEquip_ChargeMeters Property CM Auto
 iEquip_EditMode Property EM Auto
 iEquip_KeyHandler Property KH Auto
 
@@ -27,7 +30,6 @@ Actor Property PlayerRef  Auto
 Form Property iEquip_Unarmed1H  Auto  
 Form Property iEquip_Unarmed2H  Auto  
 
-Bool Property ShowMessages = True Auto Hidden
 Bool Property iEquip_Reset = False Auto Hidden
 Bool Property refreshQueues = False Auto Hidden
 Bool Property fadeOptionsChanged = False Auto Hidden
@@ -83,7 +85,7 @@ bool Property bTogglePreselectOnEquipAll = false Auto Hidden
 string MCMSettingsPath = "Data/iEquip/MCM Settings/"
 string FileExtMCM = ".IEQS"
 
-int Property backgroundStyle = 0 Auto Hidden
+;int Property backgroundStyle = 0 Auto Hidden
 bool Property backgroundStyleChanged = false Auto Hidden
 bool Property bSkipCurrentItemWhenCycling = false Auto Hidden
 int Property utilityKeyDoublePress = 0 Auto Hidden
@@ -136,17 +138,9 @@ int Property quickHealEquipChoice = 3 Auto Hidden
 bool Property bQuickHealUseSecondChoice = true Auto Hidden
 bool Property bQuickHealSwitchBackEnabled = true Auto Hidden
 
-bool Property bRechargingEnabled = true Auto Hidden
-bool Property bUseLargestSoul = true Auto Hidden
-bool Property bAllowOversizedSouls = false Auto Hidden
-bool Property bUsePartFilledGems = false Auto Hidden
-bool Property bShowChargeMeters = true Auto Hidden
-bool Property bShowDynamicSoulgem = true Auto Hidden
-int Property meterFillColor = 0x8c9ec2 Auto Hidden
-bool Property bEnableLowCharge = false Auto Hidden
-float Property lowChargeThreshold = 20.0 Auto Hidden
-int Property lowChargeFillColor = 0xFF0000 Auto Hidden
-bool Property enchantmentDisplayOptionChanged = false Auto Hidden
+string[] Property chargeDisplayOptions Auto Hidden
+string[] Property meterFillDirectionOptions Auto Hidden
+int[] Property meterFillDirection Auto Hidden
 
 bool Property bAllowPoisonSwitching = true Auto Hidden
 bool Property bAllowPoisonTopUp = true Auto Hidden
@@ -184,6 +178,18 @@ string[] Property QHEquipOptions Auto Hidden
 string[] Property QRPreferredWeaponType Auto Hidden
 string[] Property QRSwitchOutOptions Auto Hidden
 string[] Property EMKeysChoice Auto Hidden
+
+; ###########################
+; ####       FLAGS       ####
+
+int property flag_rep_rechargingEnabled = 0x00 auto hidden
+int property flag_rep_chargeDisplayEnabled = 0x00 auto hidden
+int property flag_rep_chargeFadeoutEnabled = 0x01 auto hidden
+int property flag_rep_customFlashColorEnabled = 0x01 auto hidden
+int property flag_rep_lowChargeEnabled = 0x00 auto hidden
+int property flag_rep_chargeMetersEnabled = 0x00 auto hidden
+int property flag_rep_gradientFillEnabled = 0x01 auto hidden
+
 
 ; ###########################
 ; ### START OF UPDATE MCM ###
@@ -250,6 +256,20 @@ Event OnConfigInit()
     emptyPotionQueueOptions[1] = "Hide Icon"
     
     ; REP
+    chargeDisplayOptions = new String[3]
+    chargeDisplayOptions[0] = "Hidden"
+    chargeDisplayOptions[1] = "Charge Meters"
+    chargeDisplayOptions[2] = "Dynamic Soulgem"
+
+    meterFillDirectionOptions = new String[3]
+    meterFillDirectionOptions[0] = "left"
+    meterFillDirectionOptions[1] = "right"
+    meterFillDirectionOptions[2] = "both"
+
+    meterFillDirection = new int[2]
+    meterFillDirection[0] = 1
+    meterFillDirection[1] = 0
+
     poisonMessageOptions = new String[3]
     poisonMessageOptions[0] = "Show All"
     poisonMessageOptions[1] = "Top-up & Switch"
@@ -267,11 +287,12 @@ Event OnConfigInit()
     ammoIconOptions[1] = "Triple"
     ammoIconOptions[2] = "Quiver"
     
-    backgroundStyleOptions = new String[4]
-    backgroundStyleOptions[0] = "Square with border"
-    backgroundStyleOptions[1] = "Square without border"
-    backgroundStyleOptions[2] = "Round with border"
-    backgroundStyleOptions[3] = "Round without border"
+    backgroundStyleOptions = new String[5]
+    backgroundStyleOptions[0] = "No background"
+    backgroundStyleOptions[1] = "Square with border"
+    backgroundStyleOptions[2] = "Square without border"
+    backgroundStyleOptions[3] = "Round with border"
+    backgroundStyleOptions[4] = "Round without border"
     
     fadeoutOptions = new String[4]
     fadeoutOptions[0] = "Slow"
@@ -328,6 +349,12 @@ event OnConfigOpen()
     fadeOptionsChanged = false
     ammoIconChanged = false
     ammoSortingChanged = false
+    slotEnabledOptionsChanged = false
+    gearedUpOptionChanged = false
+    bAttributeIconsOptionChanged = false
+    poisonIndicatorStyleChanged = false
+    bPotionGroupingOptionsChanged = false
+    backgroundStyleChanged = false
     
     if isFirstEnabled == false
         if bProModeEnabled
@@ -362,6 +389,20 @@ event OnConfigOpen()
         Pages[1] = "Hotkey Options"
         Pages[0] = "General Settings"
     endIf
+
+    chargeDisplayOptions = new String[3]
+    chargeDisplayOptions[0] = "Hidden"
+    chargeDisplayOptions[1] = "Charge Meters"
+    chargeDisplayOptions[2] = "Dynamic Soulgem"
+
+    ;/meterFillDirectionOptions = new string[3]
+    meterFillDirectionOptions[0] = "left"
+    meterFillDirectionOptions[1] = "right"
+    meterFillDirectionOptions[2] = "both"
+
+    meterFillDirection = new int[2]
+    meterFillDirection[0] = 1
+    meterFillDirection[1] = 0/;
 endEvent
 
 Event OnConfigClose()
@@ -391,7 +432,7 @@ event OnPageReset(string page)
         UnloadCustomContent()
     
         if page == "General Settings"
-            debug.notification("VAR IS: "+bEnabled)
+            ;debug.notification("VAR IS: "+bEnabled)
             AddToggleOptionST("gen_tgl_onOff", "iEquip On/Off", bEnabled)
            
             if !isFirstEnabled && bEnabled
@@ -469,7 +510,9 @@ event OnPageReset(string page)
             SetCursorPosition(1)
                     
             AddHeaderOption("Auto Add Options")
-            AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add new items to queue", bAutoAddNewItems)
+            AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add on equipping", bAutoAddNewItems)
+            AddToggleOptionST("que_tgl_autoAddPoisons", "Auto-add poisons", PO.autoAddPoisons)
+            AddToggleOptionST("que_tgl_autoAddConsumables", "Auto-add food and drink", PO.autoAddConsumables)
             AddToggleOptionST("que_tgl_allowCacheRmvItm", "Allow caching of removed items", bEnableRemovedItemCaching)
                     
             if bEnableRemovedItemCaching
@@ -529,23 +572,42 @@ event OnPageReset(string page)
         
         elseIf page == "Recharging and Poisoning"
             AddTextOptionST("rep_txt_showEnchRechHelp", "Show Enchantment Recharging Help", "")
-            AddToggleOptionST("rep_tgl_enblEnchRech", "Enable enchanted weapon recharging", bRechargingEnabled)
+            AddToggleOptionST("rep_tgl_enblEnchRech", "Enable enchanted weapon recharging", RC.bRechargingEnabled)
             AddEmptyOption()
                     
-            if bRechargingEnabled
+            ;if RC.bRechargingEnabled
                 AddHeaderOption("Soulgem Use Options")
-                AddToggleOptionST("rep_tgl_useLargSoul", "Use largest available soul", bUseLargestSoul)
-                AddToggleOptionST("rep_tgl_useOvrsizSoul", "Use oversized souls", bAllowOversizedSouls)
-                AddToggleOptionST("rep_tgl_usePartGem", "Use partially filled gems", bUsePartFilledGems)
+                AddToggleOptionST("rep_tgl_useLargSoul", "Use largest available soul", RC.bUseLargestSoul, flag_rep_rechargingEnabled)
+                AddToggleOptionST("rep_tgl_useOvrsizSoul", "Use oversized souls", RC.bAllowOversizedSouls, flag_rep_rechargingEnabled)
+                AddToggleOptionST("rep_tgl_usePartGem", "Use partially filled gems", RC.bUsePartFilledGems, flag_rep_rechargingEnabled)
                         
                 AddHeaderOption("Widget Options")
-                AddToggleOptionST("rep_tgl_showEnchCharge", "Show enchantment charge meters", bShowChargeMeters)
-                AddToggleOptionST("rep_tgl_showDynGemIco", "Show dynamic soulgem icon", bShowDynamicSoulgem)
-                AddColorOptionST("rep_col_normFillCol", "Normal meter fill colour", meterFillColor)
-                AddToggleOptionST("rep_tgl_changeColLowCharge", "Change colour on low charge", bEnableLowCharge)
-                AddSliderOptionST("rep_sld_setLowChargeTresh", "Set low charge threshold", lowChargeThreshold, "{0}%")
-                AddColorOptionST("rep_col_lowFillCol", "Low charge fill colour", lowChargeFillColor)
-            endIf
+                AddMenuOptionST("rep_men_showEnchCharge", "Charge displayed as", chargeDisplayOptions[CM.chargeDisplayType], flag_rep_rechargingEnabled)
+                ;if CM.chargeDisplayType > 0
+                    AddToggleOptionST("rep_tgl_enableChargeFadeout", "Enable enchantment charge fadeout", CM.chargeFadeoutEnabled, flag_rep_chargeDisplayEnabled)
+                    ;if CM.chargeFadeoutEnabled
+                        AddSliderOptionST("rep_sld_chargeFadeDelay", "Fadeout delay", CM.chargeFadeoutDelay, "Fade after {1} secs", flag_rep_chargeFadeoutEnabled)
+                    ;endIf
+                    AddColorOptionST("rep_col_normFillCol", "Normal charge fill colour", CM.primaryFillColor, flag_rep_chargeDisplayEnabled)
+                    AddToggleOptionST("rep_tgl_enableCustomFlashCol", "Enable custom flash colour", CM.customFlashColor, flag_rep_chargeDisplayEnabled)
+                   ; if CM.customFlashColor
+                        AddColorOptionST("rep_col_meterFlashCol", "Empty warning flash colour", CM.flashColor, flag_rep_customFlashColorEnabled)
+                   ; endIf
+                    AddToggleOptionST("rep_tgl_changeColLowCharge", "Change colour on low charge", CM.enableLowCharge, flag_rep_chargeDisplayEnabled)
+                    ;if CM.enableLowCharge
+                        AddSliderOptionST("rep_sld_setLowChargeTresh", "Set low charge threshold", CM.lowChargeThreshold*100, "{0}%", flag_rep_lowChargeEnabled)
+                        AddColorOptionST("rep_col_lowFillCol", "Low charge fill colour", CM.lowChargeFillColor, flag_rep_lowChargeEnabled)
+                    ;endIf
+                    ;if CM.chargeDisplayType == 1
+                        AddToggleOptionST("rep_tgl_enableGradientFill", "Enable gradient fill", CM.enableGradientFill, flag_rep_chargeDisplayEnabled)
+                        ;if CM.enableGradientFill
+                            AddColorOptionST("rep_col_gradFillCol", "Gradient (low) fill colour", CM.secondaryFillColor, flag_rep_gradientFillEnabled)
+                        ;endIf
+                        AddMenuOptionST("rep_men_leftFillDir", "Left meter fill direction", meterFillDirectionOptions[meterFillDirection[0]], flag_rep_chargeDisplayEnabled)
+                        AddMenuOptionST("rep_men_rightFillDir", "Right meter fill direction", meterFillDirectionOptions[meterFillDirection[1]], flag_rep_chargeDisplayEnabled)
+                    ;endIf
+                ;endIf
+            ;endIf
 
             SetCursorPosition(1)
                     
@@ -581,11 +643,11 @@ event OnPageReset(string page)
             endIf
                     
             AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[ammoIconStyle])
-            AddToggleOptionST("ui_tgl_enblWdgetBckground", "Enable widget backgrounds", EM.BackgroundsShown)
+            ;AddToggleOptionST("ui_tgl_enblWdgetBckground", "Enable widget backgrounds", EM.BackgroundsShown)
                     
-            if EM.BackgroundsShown
-                AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[backgroundStyle])
-            endIf
+            ;if EM.BackgroundsShown
+                AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[WC.backgroundStyle])
+            ;endIf
             ;+++Disable spin on in/out animations
                     
             SetCursorPosition(1)

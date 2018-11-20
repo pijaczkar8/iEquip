@@ -1,5 +1,113 @@
 Scriptname iEquip_MCM_rep extends iEquip_MCM_helperfuncs
 
+iEquip_RechargeScript Property RC Auto
+iEquip_ChargeMeters Property CM Auto
+
+string[] chargeDisplayOptions
+string[] meterFillDirectionOptions
+int[] meterFillDirection
+string[] poisonMessageOptions
+string[] poisonIndicatorOptions
+
+; #############
+; ### SETUP ###
+
+function initData()
+    chargeDisplayOptions = new String[3]
+    chargeDisplayOptions[0] = "Hidden"
+    chargeDisplayOptions[1] = "Charge Meters"
+    chargeDisplayOptions[2] = "Dynamic Soulgem"
+
+    meterFillDirectionOptions = new String[3]
+    meterFillDirectionOptions[0] = "left"
+    meterFillDirectionOptions[1] = "right"
+    meterFillDirectionOptions[2] = "both"
+
+    meterFillDirection = new int[2]
+    meterFillDirection[0] = 1
+    meterFillDirection[1] = 0
+
+    poisonMessageOptions = new String[3]
+    poisonMessageOptions[0] = "Show All"
+    poisonMessageOptions[1] = "Top-up & Switch"
+    poisonMessageOptions[2] = "Don't show"
+    
+    poisonIndicatorOptions = new String[4]
+    poisonIndicatorOptions[0] = "Count Only"
+    poisonIndicatorOptions[1] = "Single Drop & Count"
+    poisonIndicatorOptions[2] = "Single Drop"
+    poisonIndicatorOptions[3] = "Multiple Drops"
+endFunction
+
+function drawPage()
+    MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "Show Enchantment Recharging Help", "")
+    MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "Enable enchanted weapon recharging", RC.bRechargingEnabled)
+    MCM.AddEmptyOption()
+            
+    if RC.bRechargingEnabled
+        MCM.AddHeaderOption("Soulgem Use Options")
+        MCM.AddToggleOptionST("rep_tgl_useLargSoul", "Use largest available soul", RC.bUseLargestSoul)
+        MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "Use oversized souls", RC.bAllowOversizedSouls)
+        MCM.AddToggleOptionST("rep_tgl_usePartGem", "Use partially filled gems", RC.bUsePartFilledGems)
+                
+        MCM.AddHeaderOption("Widget Options")
+        MCM.AddMenuOptionST("rep_men_showEnchCharge", "Charge displayed as", chargeDisplayOptions[CM.chargeDisplayType])
+        if CM.chargeDisplayType > 0
+            MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "Enable enchantment charge fadeout", CM.chargeFadeoutEnabled)
+            if CM.chargeFadeoutEnabled
+                MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "Fadeout delay", CM.chargeFadeoutDelay, "Fade after {1} secs")
+            endIf
+            
+            MCM.AddColorOptionST("rep_col_normFillCol", "Normal charge fill colour", CM.primaryFillColor)
+            MCM.AddToggleOptionST("rep_tgl_enableCustomFlashCol", "Enable custom flash colour", CM.customFlashColor)
+            if CM.customFlashColor
+                MCM.AddColorOptionST("rep_col_meterFlashCol", "Empty warning flash colour", CM.flashColor)
+            endIf
+            
+            MCM.AddToggleOptionST("rep_tgl_changeColLowCharge", "Change colour on low charge", CM.enableLowCharge)
+            if CM.enableLowCharge
+                MCM.AddSliderOptionST("rep_sld_setLowChargeTresh", "Set low charge threshold", CM.lowChargeThreshold*100, "{0}%")
+                MCM.AddColorOptionST("rep_col_lowFillCol", "Low charge fill colour", CM.lowChargeFillColor)
+            endIf
+            
+            if CM.chargeDisplayType == 1
+                MCM.AddToggleOptionST("rep_tgl_enableGradientFill", "Enable gradient fill", CM.enableGradientFill)
+                if CM.enableGradientFill
+                    MCM.AddColorOptionST("rep_col_gradFillCol", "Gradient (low) fill colour", CM.secondaryFillColor)
+                endIf
+                
+                MCM.AddMenuOptionST("rep_men_leftFillDir", "Left meter fill direction", meterFillDirectionOptions[meterFillDirection[0]])
+                MCM.AddMenuOptionST("rep_men_rightFillDir", "Right meter fill direction", meterFillDirectionOptions[meterFillDirection[1]])
+            endIf
+        endIf
+    endIf
+
+    MCM.SetCursorPosition(1)
+            
+    if !MCM.WC.poisonsEnabled
+        MCM.AddEmptyOption()
+        MCM.AddTextOption("Poisoning features are currently disabled.", "")
+        MCM.AddTextOption("If you wish to use the poisoning features", "")
+        MCM.AddTextOption("please re-enable the Poison Widget in the", "")
+        MCM.AddTextOption("General Settings page", "")
+     else
+        MCM.AddTextOptionST("rep_txt_showPoisonHelp", "Show Poisoning Help", "")
+               
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("Poison Use Options")
+        MCM.AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[MCM.showPoisonMessages])
+        MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "Allow poison switching", MCM.bAllowPoisonSwitching)
+        MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "Allow poison top-up", MCM.bAllowPoisonTopUp)
+                
+        MCM.AddHeaderOption("Poison Charge Options")
+        MCM.AddSliderOptionST("rep_sld_chargePerVial", "Charges per vial", MCM.poisonChargesPerVial, "{0} charges")
+        MCM.AddSliderOptionST("rep_sld_chargeMult", "Charge Multiplier", MCM.poisonChargeMultiplier, "{0}x base charges")
+                
+        MCM.AddHeaderOption("Widget Options")
+        MCM.AddMenuOptionST("rep_men_poisonIndStyle", "Poison indicator style", poisonIndicatorOptions[MCM.poisonIndicatorStyle])
+    endIf
+endFunction
+
 ; ##############################
 ; ### Recharging & Poisoning ###
 ; ##############################
@@ -19,12 +127,12 @@ endState
 State rep_tgl_enblEnchRech
     event OnBeginState()
         if currentEvent == "Select"
-            MCM.bRechargingEnabled = !MCM.bRechargingEnabled
-            MCM.forcePageReset()
+            RC.bRechargingEnabled = !RC.bRechargingEnabled
         elseIf currentEvent == "Default"
-            MCM.bRechargingEnabled = true
-            MCM.forcePageReset()
-        endIf 
+            RC.bRechargingEnabled = true
+        endIf
+
+        MCM.forcePageReset()
     endEvent
 endState
 
@@ -36,12 +144,13 @@ State rep_tgl_useLargSoul
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Select whether to use the largest soul that will fit into the weapon, or to use up your smaller souls first.")
-        elseIf currentEvent == "Select"
-            MCM.bUseLargestSoul = !MCM.bUseLargestSoul
-            MCM.SetToggleOptionValueST(MCM.bUseLargestSoul)
-        elseIf currentEvent == "Default"
-            MCM.bUseLargestSoul = true
-            MCM.SetToggleOptionValueST(MCM.bUseLargestSoul)
+        else
+            If currentEvent == "Select"
+                RC.bUseLargestSoul = !RC.bUseLargestSoul
+            elseIf currentEvent == "Default"
+                RC.bUseLargestSoul = true
+            endIf
+            MCM.SetToggleOptionValueST(RC.bUseLargestSoul)
         endIf 
     endEvent
 endState
@@ -50,12 +159,13 @@ State rep_tgl_useOvrsizSoul
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Disabling this will stop you from wasting souls which are larger than the charge required to completely refill the weapon")
-        elseIf currentEvent == "Select"
-            MCM.bAllowOversizedSouls = !MCM.bAllowOversizedSouls
-            MCM.SetToggleOptionValueST(MCM.bAllowOversizedSouls)
-        elseIf currentEvent == "Default"
-            MCM.bAllowOversizedSouls = false
-            MCM.SetToggleOptionValueST(MCM.bAllowOversizedSouls)
+        else
+            If currentEvent == "Select"
+                RC.bAllowOversizedSouls = !RC.bAllowOversizedSouls
+            elseIf currentEvent == "Default"
+                RC.bAllowOversizedSouls = false
+            endIf
+            MCM.SetToggleOptionValueST(RC.bAllowOversizedSouls)
         endIf 
     endEvent
 endState
@@ -64,12 +174,13 @@ State rep_tgl_usePartGem
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("To support GIST - Genuinely Intelligent Soul Trap by opusGlass you can stop iEquip from using partially filled gems allowing GIST to continue filling them")
-        elseIf currentEvent == "Select"
-            MCM.bUsePartFilledGems = !MCM.bUsePartFilledGems
-            MCM.SetToggleOptionValueST(MCM.bUsePartFilledGems)
-        elseIf currentEvent == "Default"
-            MCM.bUsePartFilledGems = false
-            MCM.SetToggleOptionValueST(MCM.bUsePartFilledGems)
+        else
+            If currentEvent == "Select"
+                RC.bUsePartFilledGems = !RC.bUsePartFilledGems
+            elseIf currentEvent == "Default"
+                RC.bUsePartFilledGems = false
+            endIf
+            MCM.SetToggleOptionValueST(RC.bUsePartFilledGems)
         endIf 
     endEvent
 endState
@@ -78,32 +189,54 @@ endState
 ; - Widget Options -
 ; ------------------
 
-State rep_tgl_showEnchCharge
+State rep_men_showEnchCharge
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Show custom enchantment charge level meters in the widget.  Please not that iEquip disables the vanilla HUD enchantment charge meters")
-        elseIf currentEvent == "Select"
-            MCM.bShowChargeMeters = !MCM.bShowChargeMeters
-            MCM.SetToggleOptionValueST(MCM.bShowChargeMeters)
-            MCM.enchantmentDisplayOptionChanged = true
-        elseIf currentEvent == "Default"
-            MCM.bShowChargeMeters = true
-            MCM.SetToggleOptionValueST(MCM.bShowChargeMeters)
+            MCM.SetInfoText("Choose how you would like the enchantment charge for equipped weapons to be displayed in the widget\nCharge Meters - show custom enchantment charge level meters in the widget\n"+\
+                "Dynamic Soulgems - show dynamic soulgem icons in the widget which change fill level to indicate the current level of enchantment charge\nVanilla HUD enchantment charge meters will be hidden")
+        elseIf currentEvent == "Open"
+            fillMenu(CM.chargeDisplayType, chargeDisplayOptions, 1)
+        elseIf currentEvent == "Accept"
+            CM.chargeDisplayType = currentVar as int
+            MCM.SetMenuOptionValueST(chargeDisplayOptions[CM.chargeDisplayType])
+            
+            if CM.chargeDisplayType == 2 && CM.enableGradientFill
+                CM.enableGradientFill = false
+            endIf
+
+            CM.settingsChanged = true
+            MCM.forcePageReset()
         endIf 
     endEvent
 endState
 
-State rep_tgl_showDynGemIco
+State rep_tgl_enableChargeFadeout
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Show dynamic soulgem icons in the widget which change fill level to indicate the current level of enchantment charge")
-        elseIf currentEvent == "Select"
-            MCM.bShowDynamicSoulgem = !MCM.bShowDynamicSoulgem
-            MCM.SetToggleOptionValueST(MCM.bShowDynamicSoulgem)
-            MCM.enchantmentDisplayOptionChanged = true
-        elseIf currentEvent == "Default"
-            MCM.bShowDynamicSoulgem = true
-            MCM.SetToggleOptionValueST(MCM.bShowDynamicSoulgem)
+            MCM.SetInfoText("With this setting enabled the charge meters will show on equipping an enchanted weapon, but will fade out after the delay set below\nAdditionally you can choose whether to re-show on entering combat or when the current charge is below the low charge threshold if set below.\nDefault: Disabled")
+        else
+            If currentEvent == "Select"
+                CM.chargeFadeoutEnabled = !CM.chargeFadeoutEnabled
+            elseIf currentEvent == "Default"
+                CM.chargeFadeoutEnabled = false
+            endIf
+            MCM.SetToggleOptionValueST(CM.chargeFadeoutEnabled)
+
+            CM.settingsChanged = true
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State rep_sld_chargeFadeDelay
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Set the delay in seconds before the enchantment bars fade out")
+        elseIf currentEvent == "Open"
+            fillSlider(CM.chargeFadeoutDelay, 1.0, 20.0, 0.5, 5.0)
+        elseIf currentEvent == "Accept"
+            CM.chargeFadeoutDelay = currentVar
+            MCM.SetSliderOptionValueST(CM.chargeFadeoutDelay, "Fade after {1} secs")
         endIf 
     endEvent
 endState
@@ -113,16 +246,107 @@ State rep_col_normFillCol
         if currentEvent == "Highlight"
             MCM.SetInfoText("Set the regular fill colour for the enchantment charge meters in the widget")
         elseIf currentEvent == "Open"
-            MCM.SetColorDialogStartColor(MCM.meterFillColor)
+            MCM.SetColorDialogStartColor(CM.primaryFillColor)
             MCM.SetColorDialogDefaultColor(0x8c9ec2)
-        elseIf currentEvent == "Accept"
-            MCM.meterFillColor = currentVar as int
-            MCM.SetColorOptionValueST(MCM.meterFillColor)
-            MCM.enchantmentDisplayOptionChanged = true
-        elseIf currentEvent == "Default"
-            MCM.meterFillColor = 0x8c9ec2
-            MCM.SetColorOptionValueST(MCM.meterFillColor)
+        else
+            If currentEvent == "Accept"
+                CM.primaryFillColor = currentVar as int
+            elseIf currentEvent == "Default"
+                CM.primaryFillColor = 0x8c9ec2
+            endIf
+            MCM.SetColorOptionValueST(CM.primaryFillColor)
+            CM.settingsChanged = true
         endIf 
+    endEvent
+endState
+
+State rep_tgl_enableCustomFlashCol
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("When your weapon enchantment charge runs out the meter or soulgem will flash a warning. By default this will match whatever you have set as your fill colour. Enabling this setting allows you to instead set a custom flash color\nDefault: Disabled")
+        else
+            If currentEvent == "Select"
+                CM.customFlashColor = !CM.customFlashColor
+            elseIf currentEvent == "Default"
+                CM.customFlashColor = false
+            endIf
+            MCM.SetToggleOptionValueST(CM.customFlashColor)
+            if !CM.customFlashColor
+                CM.flashColor = -1
+            endIf
+            
+            CM.settingsChanged = true
+            MCM.forcePageReset() 
+        endIf
+    endEvent
+endState
+
+State rep_col_meterFlashCol
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Set a custom colour for the warning flash that displays when the charge on the equipped weapon runs out")
+        elseIf currentEvent == "Open"
+            MCM.SetColorDialogStartColor(CM.flashColor)
+            MCM.SetColorDialogDefaultColor(0xFFFFFF)
+        else
+            If currentEvent == "Accept"
+                CM.flashColor = currentVar as int
+            elseIf currentEvent == "Default"
+                CM.flashColor = 0xFFFFFF
+            endIf
+            
+            MCM.SetColorOptionValueST(CM.flashColor)
+            CM.settingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State rep_tgl_enableGradientFill
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Enables a gradient colour fill in the enchantment bars from regular fill (full) to secondary fill (empty)")
+        else
+            If currentEvent == "Select"
+                CM.enableGradientFill = !CM.enableGradientFill
+            elseIf currentEvent == "Default"
+                CM.enableGradientFill = false
+            endIf
+            MCM.SetToggleOptionValueST(CM.enableGradientFill)
+            if CM.enableLowCharge
+                CM.enableLowCharge = false
+            endIf
+            
+            if !CM.enableGradientFill
+                CM.secondaryFillColor = -1
+            endIf
+            
+            CM.settingsChanged = true
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State rep_col_gradFillCol
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Set the secondary fill colour (only used when gradient fill is enabled)")
+        elseIf currentEvent == "Open"
+            if CM.secondaryFillColor == -1
+                MCM.SetColorDialogStartColor(0xee4242)
+            else
+                MCM.SetColorDialogStartColor(CM.secondaryFillColor)
+            endIf
+            MCM.SetColorDialogDefaultColor(0xee4242)
+        else
+            If currentEvent == "Accept"
+                CM.secondaryFillColor = currentVar as int
+            elseIf currentEvent == "Default"
+                CM.secondaryFillColor = 0xee4242
+            endIf
+            
+            MCM.SetColorOptionValueST(CM.secondaryFillColor)
+            CM.settingsChanged = true
+        endIf
     endEvent
 endState
 
@@ -130,13 +354,19 @@ State rep_tgl_changeColLowCharge
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Allows the enchantment charge bars to change colour when the charge falls below the level specified below")
-        elseIf currentEvent == "Select"
-            MCM.bEnableLowCharge = !MCM.bEnableLowCharge
-            MCM.SetToggleOptionValueST(MCM.bEnableLowCharge)
-            MCM.enchantmentDisplayOptionChanged = true
-        elseIf currentEvent == "Default"
-            MCM.bEnableLowCharge = true
-            MCM.SetToggleOptionValueST(MCM.bAllowPoisonTopUp)
+        else
+            If currentEvent == "Select"
+                CM.enableLowCharge = !CM.enableLowCharge
+            elseIf currentEvent == "Default"
+                CM.enableLowCharge = true
+            endIf
+            MCM.SetToggleOptionValueST(CM.enableLowCharge)
+            if CM.enableGradientFill
+                CM.enableGradientFill = false
+            endIf
+
+            CM.settingsChanged = true
+            MCM.forcePageReset()
         endIf 
     endEvent
 endState
@@ -146,10 +376,11 @@ State rep_sld_setLowChargeTresh
         if currentEvent == "Highlight"
             MCM.SetInfoText("Set the level below which you would like the enchantment bars to change colour")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.lowChargeThreshold, 5.0, 50.0, 5.0, 20.0)
+            fillSlider(CM.lowChargeThreshold*100, 5.0, 50.0, 5.0, 20.0)
         elseIf currentEvent == "Accept"
-            MCM.lowChargeThreshold = currentVar
-            MCM.SetSliderOptionValueST(MCM.lowChargeThreshold, "{0}%")
+            CM.lowChargeThreshold = currentVar/100
+            MCM.SetSliderOptionValueST(CM.lowChargeThreshold*100, "{0}%")
+            CM.settingsChanged = true
         endIf 
     endEvent
 endState
@@ -159,18 +390,54 @@ State rep_col_lowFillCol
         if currentEvent == "Highlight"
             MCM.SetInfoText("Set the low charge fill colour for the enchantment charge meters in the widget")
         elseIf currentEvent == "Open"
-            MCM.SetColorDialogStartColor(MCM.lowChargeFillColor)
+            MCM.SetColorDialogStartColor(CM.lowChargeFillColor)
             MCM.SetColorDialogDefaultColor(0xFF0000)
-        elseIf currentEvent == "Accept"
-            MCM.lowChargeFillColor = currentVar as int
-            MCM.SetColorOptionValueST(MCM.lowChargeFillColor)
-            MCM.enchantmentDisplayOptionChanged = true
-        elseIf currentEvent == "Default"
-            MCM.lowChargeFillColor = 0xFF0000
-            MCM.SetColorOptionValueST(MCM.lowChargeFillColor)
+        else
+            If currentEvent == "Accept"
+                CM.lowChargeFillColor = currentVar as int
+            elseIf currentEvent == "Default"
+                CM.lowChargeFillColor = 0xFF0000
+            endIf
+            
+            MCM.SetColorOptionValueST(CM.lowChargeFillColor)
+            CM.settingsChanged = true
         endIf 
     endEvent
 endState
+
+State rep_men_leftFillDir
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Choose the fill direction for the left enchantment charge meter\nRight Fill means the full is right, empty is left.  And vice versa for Left Fill\n"+\
+                            "Centre Fill means the meter will fill from the centre outwards in both directions\nDefault: Left Fill")
+        elseIf currentEvent == "Open"
+            fillMenu(meterFillDirection[0], meterFillDirectionOptions, 0)
+        elseIf currentEvent == "Accept"
+            meterFillDirection[0] = currentVar as int
+            MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[0]])
+            CM.meterFillDirection[0] = meterFillDirectionOptions[meterFillDirection[0]]
+        endIf 
+    endEvent
+endState
+
+State rep_men_rightFillDir
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Choose the fill direction for the right enchantment charge meter\nRight Fill means the full is right, empty is left.  And vice versa for Left Fill\n"+\
+                            "Centre Fill means the meter will fill from the centre outwards in both directions\nDefault: Right Fill")
+        elseIf currentEvent == "Open"
+            fillMenu(meterFillDirection[1], meterFillDirectionOptions, 1)
+        elseIf currentEvent == "Accept"
+            meterFillDirection[1] = currentVar as int
+            MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[1]])
+            CM.meterFillDirection[1] = meterFillDirectionOptions[meterFillDirection[1]]
+        endIf 
+    endEvent
+endState
+
+; ----------------------
+; -    Poison Help     -
+; ----------------------
 
 State rep_txt_showPoisonHelp
     event OnBeginState()
@@ -198,10 +465,10 @@ State rep_men_confMsg
             MCM.SetInfoText("Choose which poisoning confirmation messages to show.\nTop-up & Switch will only show messages when you apply poison to an already poisoned item.\n"+\
                             "With messages turned off iEquip will automatically top up or clean off existing poisons\nDefault: Show All")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.showPoisonMessages, MCM.poisonMessageOptions, 0)
+            fillMenu(MCM.showPoisonMessages, poisonMessageOptions, 0)
         elseIf currentEvent == "Accept"
             MCM.showPoisonMessages = currentVar as int
-            MCM.SetMenuOptionValueST(MCM.poisonMessageOptions[MCM.showPoisonMessages])
+            MCM.SetMenuOptionValueST(poisonMessageOptions[MCM.showPoisonMessages])
         endIf 
     endEvent
 endState
@@ -278,10 +545,10 @@ State rep_men_poisonIndStyle
                             "The two count options will use the regular counter in either slot but with the count displayed in green.\nThe Multiple Drops option will display one, "+\
                             "two or three drops to match the number of remaining charges, and will display three drops and a green plus sign if more than three charges remain.\nDefault: Single Drop & Count")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.poisonIndicatorStyle, MCM.poisonIndicatorOptions, 1)
+            fillMenu(MCM.poisonIndicatorStyle, poisonIndicatorOptions, 1)
         elseIf currentEvent == "Accept"
             MCM.poisonIndicatorStyle = currentVar as int
-            MCM.SetMenuOptionValueST(MCM.poisonIndicatorOptions[MCM.poisonIndicatorStyle])
+            MCM.SetMenuOptionValueST(poisonIndicatorOptions[MCM.poisonIndicatorStyle])
             MCM.poisonIndicatorStyleChanged = true
         endIf 
     endEvent

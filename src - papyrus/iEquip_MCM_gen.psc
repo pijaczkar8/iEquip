@@ -1,8 +1,62 @@
 Scriptname iEquip_MCM_gen extends iEquip_MCM_helperfuncs
 
+iEquip_KeyHandler Property KH Auto
+
 sound property UILevelUp auto
 
+bool stillToEnableProMode = true
 int proModeEasterEggCounter = 5
+
+string[] ammoSortingOptions
+
+; #############
+; ### SETUP ###
+
+function initData()
+    ammoSortingOptions = new String[4]
+    ammoSortingOptions[0] = "Unsorted"
+    ammoSortingOptions[1] = "By damage"
+    ammoSortingOptions[2] = "Alphabetically"
+    ammoSortingOptions[3] = "By quantity"
+endFunction
+
+function drawPage()
+    MCM.AddToggleOptionST("gen_tgl_onOff", "iEquip On/Off", MCM.bEnabled)
+           
+    if !MCM.isFirstEnabled && MCM.bEnabled
+        MCM.AddToggleOptionST("gen_tgl_enblEditMode", "Enable Edit Mode features", MCM.bEditModeEnabled)
+                
+        if stillToEnableProMode
+            MCM.AddTextOptionST("gen_txt_dragEastr", "", "Here be dragons...")
+        else
+            MCM.AddToggleOptionST("gen_tgl_enblProMode", "Enable Pro Mode features", MCM.bProModeEnabled)
+        endIf
+                
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("Widget Options")
+        MCM.AddToggleOptionST("gen_tgl_enblShoutSlt", "Enable shout slot", MCM.WC.shoutEnabled)
+        MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "Enable consumables slot", MCM.WC.consumablesEnabled)
+        MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "Enable poisons slot", MCM.WC.poisonsEnabled)
+                
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("Visible Gear Options")
+        MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "Enable All Geared Up", MCM.bEnableGearedUp)
+        MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "Auto Unequip Ammo", MCM.bUnequipAmmo)
+
+        MCM.SetCursorPosition(1)
+                
+        MCM.AddHeaderOption("Cycling behaviour")
+        MCM.AddToggleOptionST("gen_tgl_eqpPaus", "Equip on pause", MCM.bEquipOnPause)
+                
+        if MCM.bEquipOnPause
+            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "Equip on pause delay", MCM.equipOnPauseDelay, "{1} seconds")
+        endIf
+                
+        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "Show attribute icons", MCM.bShowAttributeIcons)
+        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "Ammo list sorting", ammoSortingOptions[MCM.AmmoListSorting])
+        MCM.AddToggleOptionST("gen_tgl_skpCurItem", "Skip current item", MCM.bSkipCurrentItemWhenCycling)
+    endIf
+endFunction
 
 ; ########################
 ; ### General Settings ###
@@ -15,10 +69,9 @@ State gen_tgl_onOff
         elseIf currentEvent == "Select"
             MCM.bEnabled = !MCM.bEnabled
             if MCM.isFirstEnabled
-                MCM.ShowMessage("Welcome to iEquip\n\nThank you for installing iEquip\nMCM wil now close and reopen.", false, "OK")
                 MCM.justEnabled = true
                 MCM.isFirstEnabled = false
-                MCM.KH.openiEquipMCM(true)
+                KH.openiEquipMCM(true)
             else
                 MCM.forcePageReset()
             endIf
@@ -73,9 +126,10 @@ State gen_txt_dragEastr
                 UILevelUp.Play(MCM.PlayerRef)
                 MCM.ShowMessage("iEquip Pro Mode unlocked!\n\nYour dogged determination has paid off, friend. "+\
                 "You now have access to everything iEquip has to offer.  Now stand back while we restart the iEquip MCM and reveal your rewards...", false, "OK")
-                MCM.stillToEnableProMode = false
+                stillToEnableProMode = false
                 MCM.bProModeEnabled = true
-                MCM.KH.openiEquipMCM(true)
+
+                KH.openiEquipMCM(true)
             endIf
         endIf
     endEvent
@@ -95,7 +149,8 @@ State gen_tgl_enblProMode
             MCM.bProModeEnabled = false 
             MCM.bQuickShieldEnabled = false
             MCM.bQuickDualCastEnabled = false
-            MCM.KH.openiEquipMCM(true)
+
+            KH.openiEquipMCM(true)
         endIf
     endEvent
 endState
@@ -240,10 +295,10 @@ State gen_men_ammoLstSrt
                             "You can optionally choose to have the resultant list sorted by damage, alphabetically or by current quantity. "+\
                             "If you choose to sort by damage you will always equip your strongest ammo first, and if by quantity you will equip the ammo you have the most of first.\nDefault = Unsorted")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.AmmoListSorting, MCM.ammoSortingOptions, 0)
+            fillMenu(MCM.AmmoListSorting, ammoSortingOptions, 0)
         elseIf currentEvent == "Accept"
             MCM.AmmoListSorting = currentVar as int
-            MCM.SetMenuOptionValueST(MCM.ammoSortingOptions[MCM.AmmoListSorting])
+            MCM.SetMenuOptionValueST(ammoSortingOptions[MCM.AmmoListSorting])
             MCM.ammoSortingChanged = true
         endIf
     endEvent

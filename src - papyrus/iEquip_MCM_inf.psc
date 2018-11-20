@@ -1,5 +1,23 @@
 Scriptname iEquip_MCM_inf extends iEquip_MCM_helperfuncs
 
+iEquip_KeyHandler Property KH Auto
+
+; #############
+; ### SETUP ###
+
+function drawPage()
+    MCM.AddHeaderOption("Information")
+    ;+++Version number
+    ;+++Dependency checks
+    ;+++Supported mods detected
+            
+    MCM.SetCursorPosition(1)
+            
+    MCM.AddHeaderOption("Maintenance")
+    MCM.AddEmptyOption()
+    MCM.AddTextOptionST("inf_txt_rstLayout", "Reset default iEquip layout", "")
+endFunction
+
 ; ########################
 ; ### Information Page ###
 ; ########################
@@ -21,7 +39,7 @@ State inf_txt_rstLayout
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
                 MCM.iEquip_Reset = !MCM.iEquip_Reset
-                MCM.KH.openiEquipMCM(true)
+                KH.openiEquipMCM(true)
             endIf
         endIf 
     endEvent

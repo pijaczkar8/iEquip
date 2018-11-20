@@ -1,11 +1,20 @@
 Scriptname iEquip_MCM_helperfuncs extends quest
 
-import stringUtil
-
 iEquip_MCM Property MCM Auto
 
 string Property currentEvent Auto Hidden
 float Property currentVar Auto Hidden
+
+; #########################
+; ### DEFAULT BEHAVIOUR ###
+
+function initData()
+    debug.trace("ERR: An iEquip MCM Page has no defined init data")
+endFunction
+
+function drawPage()
+    debug.trace("ERR: An iEquip MCM Page has no defined draw page")
+endFunction
 
 ; ########################
 ; ### HELPER FUNCTIONS ###
@@ -48,7 +57,7 @@ endFunction
 ; -------------------
 
 string[] function cutStrArray(string[] stringArray, int cutIndex)
-    string[] newStringArray = CreateStringArray(stringArray.length - 1)
+    string[] newStringArray = Utility.CreateStringArray(stringArray.length - 1)
     int oldAIndex
     int newAIndex
         
