@@ -312,24 +312,21 @@ state INVENTORYMENU
 	event OnKeyDown(int KeyCode)
         checkKeysDown(KeyCode)       
         if bAllowKeyPress
-            WaitingKeyCode = KeyCode
-            RegisterForSingleUpdate(0.0)
+            bAllowKeyPress = false
+        
+            if KeyCode == iEquip_leftKey
+                WC.AddToQueue(0)
+            elseIf KeyCode == iEquip_rightKey
+                WC.AddToQueue(1)
+            elseIf KeyCode == iEquip_shoutKey
+                WC.AddToQueue(2)
+            elseIf KeyCode == iEquip_consumableKey
+                WC.AddToQueue(3)		
+            endIf
+            
+            bAllowKeyPress = true
         endIf
 	endEvent
-    
-    function runUpdate()
-        debug.notification("Running runUpdateInventory")
-    
-        if WaitingKeyCode == iEquip_leftKey
-            WC.AddToQueue(0)
-        elseIf WaitingKeyCode == iEquip_rightKey
-            WC.AddToQueue(1)
-        elseIf WaitingKeyCode == iEquip_shoutKey
-            WC.AddToQueue(2)
-        elseIf WaitingKeyCode == iEquip_consumableKey
-            WC.AddToQueue(3)		
-        endIf
-    endFunction
 endState
 
 ; - Editmode
@@ -554,71 +551,70 @@ endFunction
 
 function openiEquipMCM(bool inMCMSelect = false)
     int key_j = GetMappedKey("Journal")
-    int key_down = GetMappedKey("Back")
-    int i = 0
-
-    if !inMCMSelect
-        if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() &&\
-           !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
-            float startTime = Utility.GetCurrentRealTime()
-            float elapsedTime
-            
-            while elapsedTime <= 2.5
-                if IsMenuOpen("Journal Menu")
-                    if bNormalSystemPageBehav ; Compatibility with open system page mod
-                    
-                        ; Should take us to the Settings Tab
-                        if Game.UsingGamepad()
-                            TapKey(GetMappedKey("Left Attack"))
-                        else
-                            TapKey(76)
-                        endIf
-                        
-                        Utility.WaitMenuMode(0.005)
+    
+    if inMCMSelect
+        TapKey(key_j)
+        Utility.WaitMenuMode(0.3)
+        TapKey(key_j)
+        Utility.WaitMenuMode(0.3)
+        TapKey(key_j)
+        Utility.WaitMenuMode(0.005)
+        TapKey(key_j)
+        Utility.Wait(0.5)
+    endIf
+    
+    if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() &&\
+       !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
+        float startTime = Utility.GetCurrentRealTime()
+        float elapsedTime
+        int key_down = GetMappedKey("Back")
+        int i = 0
+        
+        while elapsedTime <= 2.5
+            if IsMenuOpen("Journal Menu")
+                if bNormalSystemPageBehav ; Compatibility with open system page mod
+                
+                    ; Should take us to the Settings Tab
+                    if Game.UsingGamepad()
+                        TapKey(GetMappedKey("Left Attack"))
+                    else
+                        TapKey(76)
                     endIf
                     
-                    while i < 3 ;Should take us to MCM Menu entry in the Settings List
-                        TapKey(key_down)
-                        Utility.WaitMenuMode(0.005)
-                        i += 1
-                    EndWhile
-                    
-                    inMCMSelect = true
-                    elapsedTime = 2.6
+                    Utility.WaitMenuMode(0.005)
+                endIf
+                
+                while i < 3 ;Should take us to MCM Menu entry in the Settings List
+                    TapKey(key_down)
+                    Utility.WaitMenuMode(0.005)
+                    i += 1
+                EndWhile
+                
+                elapsedTime = 3.0
+            else
+                TapKey(key_j)
+                Utility.WaitMenuMode(0.1)
+                elapsedTime = Utility.GetCurrentRealTime() - startTime
+            endIf
+        endWhile
+        
+        if elapsedTime == 3.0
+            int key_enter = GetMappedKey("Activate")
+            TapKey(key_enter) 
+            Utility.WaitMenuMode(0.005)
+            
+            i = 0
+            while i < 128
+                TapKey(key_down)
+                Utility.WaitMenuMode(0.005)
+                
+                if GetString("Journal Menu", "_root.ConfigPanelFader.configPanel._modList.selectedEntry.text") == "iEquip"
+                    TapKey(key_enter)
+                    i = 128
                 else
-                    TapKey(key_j)
-                    Utility.WaitMenuMode(0.1)
-                    elapsedTime = Utility.GetCurrentRealTime() - startTime
+                    i += 1
                 endIf
             endWhile
         endIf
-    elseIf IsMenuOpen("Journal Menu")
-		TapKey(key_j)
-        Utility.WaitMenuMode(1)
-        TapKey(key_j)
-        Utility.WaitMenuMode(1)
-        TapKey(key_j)
-        Utility.WaitMenuMode(1)
-    else
-        inMCMSelect = false
-    endIf
-    
-    if inMCMSelect
-        int key_enter = GetMappedKey("Activate")
-        TapKey(key_enter) 
-        Utility.WaitMenuMode(0.005)
-        
-        i = 0
-        while i < 128
-            TapKey(key_down)
-            Utility.WaitMenuMode(0.005)
-            
-            if GetString("Journal Menu", "_root.ConfigPanelFader.configPanel._modList.selectedEntry.text") == "iEquip"
-                TapKey(key_enter)
-                i = 128
-            else
-                i += 1
-            endIf
-        endWhile
     endIf
 endFunction

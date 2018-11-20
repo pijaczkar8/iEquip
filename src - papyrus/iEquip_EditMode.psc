@@ -621,7 +621,7 @@ function showEMPresetListMenu()
             int i = 0
             
             while(i < PresetList.length)
-                PresetList[i] = Substring(PresetList[i], 0, Find(PresetList[i], ".") + 1)
+                PresetList[i] = Substring(PresetList[i], 0, Find(PresetList[i], "."))
                 i += 1
             EndWhile
         

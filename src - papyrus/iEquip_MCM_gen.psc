@@ -149,7 +149,6 @@ State gen_tgl_enblProMode
             MCM.bProModeEnabled = false 
             MCM.bQuickShieldEnabled = false
             MCM.bQuickDualCastEnabled = false
-
             KH.openiEquipMCM(true)
         endIf
     endEvent

@@ -4,6 +4,7 @@ scriptname iEquip_ChargeMeters extends quest
 import UI
 import UICallback
 Import WornObject
+Import StringUtil
 
 iEquip_WidgetCore Property WC Auto
 iEquip_LeftChargeMeterUpdateScript Property LU Auto
@@ -77,8 +78,8 @@ function initChargeMeter(int Q)
 	If(iHandle)
 		debug.trace("iEquip_ChargeMeters initChargeMeter - got iHandle for .initChargeMeter")
 		UICallback.PushInt(iHandle, Q)
-		UICallback.PushFloat(iHandle, 76.0)
-		UICallback.PushFloat(iHandle, 7.8)
+		UICallback.PushFloat(iHandle, 250.0)
+		UICallback.PushFloat(iHandle, 30.6)
 		UICallback.PushInt(iHandle, primaryFillColor)
 		UICallback.PushInt(iHandle, -1)
 		UICallback.PushInt(iHandle, -1)
@@ -107,7 +108,8 @@ endFunction
 function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = false) ;Sets the meter percent, a_force sets the meter percent without animation
 	debug.trace("iEquip_ChargeMeters updateMeterPercent called - Q: " + Q + ", itemCharge[Q]: " + itemCharge[Q] + ", forceUpdate: " + forceUpdate + ", skipFlash: " + skipFlash)
 	float currentCharge = PlayerRef.GetActorValue(itemCharge[Q])
-	float maxCharge = PlayerRef.GetBaseActorValue(itemCharge[Q])
+	;float maxCharge = PlayerRef.GetBaseActorValue(itemCharge[Q])
+	float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
 	float currPercent = 0.0
 	if maxCharge > 0.0 && currentCharge > 0.0
 		currPercent = currentCharge / maxCharge
@@ -133,7 +135,7 @@ function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = fa
 				UICallback.PushBool(iHandle, enableGradientFill)
 				UICallback.PushInt(iHandle, secondaryFillColor)
 			endIf
-			UICallback.PushBool(iHandle, forceUpdate)
+			UICallback.PushBool(iHandle, true)
 			UICallback.Send(iHandle)
 		endIf
 		if currPercent <= lowChargeThreshold && !isChargeMeterShown[Q]
@@ -166,11 +168,12 @@ function updateChargeMeters(bool forceUpdate = false)
 	int Q = 0
 	if chargeDisplayType > 0
 		while Q < 2
-			if chargeDisplayType == 2
+			;Force both meters and both gems to hide first then call checkAndUpdate to reshow the relevant one if required
+			;if chargeDisplayType == 2
 				updateChargeMeterVisibility(Q, false, true) ;hideMeters
-			elseIf chargeDisplayType == 1
+			;elseIf chargeDisplayType == 1
 				updateChargeMeterVisibility(Q, false, false, true) ;hideGems
-			endIf
+			;endIf
 			checkAndUpdateChargeMeter(Q, forceUpdate)
 			Q += 1
 		endWhile
@@ -186,64 +189,76 @@ function updateChargeMetersOnWeaponsDrawn()
 	debug.trace("iEquip_ChargeMeters updateChargeMetersOnWeaponsDrawn called")
 	int Q = 0
 	while Q < 2
-		if PlayerRef.GetEquippedWeapon(Q)
-			checkAndUpdateChargeMeter(Q, false)
-		endIf
+		;if PlayerRef.GetEquippedWeapon(Q)
+		checkAndUpdateChargeMeter(Q, false)
+		;endIf
 		Q += 1
 	endWhile
 endFunction
 
 function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter called - Q: " + Q)
-	int isEnchanted = 0
-	bool isLeftHand = false
-	if Q == 0
-		isLeftHand = true
+	if !PlayerRef.IsWeaponDrawn()
+		Utility.Wait(0.2)
 	endIf
-	weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
-	enchantment currentEnchantment
-	if currentWeapon
-		debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + isLeftHand + ", currentWeapon: " + currentWeapon.GetName())
-		currentEnchantment = currentWeapon.GetEnchantment()
-		if !currentEnchantment
-			currentEnchantment = wornobject.GetEnchantment(PlayerRef, Q, 0)
+	if PlayerRef.IsWeaponDrawn()
+		int isEnchanted = 0
+		bool isLeftHand = false
+		if Q == 0
+			isLeftHand = true
 		endIf
-		if currentEnchantment
-			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", currentEnchantment: " + currentEnchantment.GetName())
-			isEnchanted = 1
-			if chargeDisplayType > 0
-				;Hide first
-				if isChargeMeterShown[Q]
-					updateChargeMeterVisibility(Q, false) ;Hide
-				endIf
-				;Update values
-				updateMeterPercent(Q, forceUpdate, true)
-				if chargeDisplayType == 1
-					int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
-					if(iHandle)
-						debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection")
-						UICallback.PushInt(iHandle, Q)
-						UICallback.PushString(iHandle, meterFillDirection[Q])
-						UICallback.Send(iHandle)
+		weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
+		bool isBound = false 
+		if currentWeapon
+			isBound = stringutil.Find(currentWeapon.GetName(), "bound", 0) > -1
+			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - weapon name: " + currentWeapon.GetName() + ", isBound: " + isBound)
+		endIf
+		enchantment currentEnchantment
+		if currentWeapon && !isBound
+			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + isLeftHand + ", currentWeapon: " + currentWeapon.GetName())
+			currentEnchantment = currentWeapon.GetEnchantment()
+			if !currentEnchantment
+				currentEnchantment = wornobject.GetEnchantment(PlayerRef, Q, 0)
+			endIf
+			if currentEnchantment
+				debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", currentEnchantment: " + currentEnchantment.GetName())
+				isEnchanted = 1
+				if chargeDisplayType > 0
+					;Hide first
+					if isChargeMeterShown[Q]
+						updateChargeMeterVisibility(Q, false) ;Hide
 					endIf
-				endIf
-				;Show meter
-				updateChargeMeterVisibility(Q, true)
-				;Flash if empty
-				if PlayerRef.GetActorValue(itemCharge[Q]) < 1
-					startMeterFlash(Q, true)
+					;Update values
+					updateMeterPercent(Q, forceUpdate, true)
+					if chargeDisplayType == 1
+						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
+						if(iHandle)
+							debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection, Q: " + Q + ", fill direction: " + meterFillDirection[Q])
+							UICallback.PushInt(iHandle, Q)
+							UICallback.PushString(iHandle, meterFillDirection[Q])
+							UICallback.Send(iHandle)
+						endIf
+					endIf
+					;Show meter
+					updateChargeMeterVisibility(Q, true)
+					;Flash if empty
+					if PlayerRef.GetActorValue(itemCharge[Q]) < 1
+						startMeterFlash(Q, true)
+					endIf
 				endIf
 			endIf
 		endIf
+		if (!currentWeapon || isEnchanted == 0 || isBound)
+			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - not a weapon or not enchanted. currentWeapon: " + currentWeapon + ", isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", isChargeMeterShown[" + Q + "]: " + isChargeMeterShown[Q])
+			updateChargeMeterVisibility(Q, false) ;Hide
+		endIf
+		;Now update the object keys for the currently equipped item in case anything has changed since we last equipped it
+		;ToDo - do the same in the poison functions
+		jMap.setForm(jArray.getObj(targetQ[Q], WC.getCurrentQueuePosition(Q)), "lastKnownEnchantment", currentEnchantment as Form)
+		jMap.setInt(jArray.getObj(targetQ[Q], WC.getCurrentQueuePosition(Q)), "isEnchanted", isEnchanted)
+	else
+		WC.EH.waitForEnchantedWeaponDrawn = true
 	endIf
-	if (!currentWeapon || isEnchanted == 0) ;&& isChargeMeterShown[Q]
-		debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - not a weapon or not enchanted, isChargeMeterShown[" + Q + "]: " + isChargeMeterShown[Q])
-		updateChargeMeterVisibility(Q, false) ;Hide
-	endIf
-	;Now update the object keys for the currently equipped item in case anything has changed since we last equipped it
-	;ToDo - do the same in the poison functions
-	jMap.setForm(jArray.getObj(targetQ[Q], WC.getCurrentQueuePosition(Q)), "lastKnownEnchantment", currentEnchantment as Form)
-	jMap.setInt(jArray.getObj(targetQ[Q], WC.getCurrentQueuePosition(Q)), "isEnchanted", isEnchanted)
 endFunction
 
 function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false)
@@ -256,7 +271,6 @@ function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, 
 		if Q == 1
 			element = 26 ;rightEnchantmentMeter_mc
 		endIf
-	;elseIf hideGems || chargeDisplayType == 2
 	else
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenSoulGemAlpha")	
 		element = 14 ;leftSoulgem_mc

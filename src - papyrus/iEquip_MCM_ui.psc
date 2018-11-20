@@ -155,7 +155,6 @@ endState
             MCM.forcePageReset()
         endIf 
     endEvent
-<<<<<<< HEAD
 endState
 /;
 

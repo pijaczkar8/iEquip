@@ -5,9 +5,10 @@ Import Form
 Import UI
 Import UICallback
 Import Utility
-Import iEquip_Utility
+;Import iEquip_Utility
 Import iEquip_UILIB
 import _Q2C_Functions
+import AhzMoreHudIE
 Import WornObject
 Import iEquip_WeaponExt
 Import iEquip_AmmoExt
@@ -25,7 +26,6 @@ iEquip_MCM Property MCM Auto
 iEquip_KeyHandler Property KH Auto
 iEquip_AmmoScript Property AM Auto
 iEquip_PotionScript Property PO Auto
-;iEquip_HelpMenu Property HM Auto
 iEquip_PlayerEventHandler Property EH Auto
 iEquip_LeftHandEquipUpdateScript Property LHUpdate Auto
 iEquip_RightHandEquipUpdateScript Property RHUpdate Auto
@@ -108,7 +108,6 @@ MiscObject Property iEquip_MessageObject Auto ; populated by CK
 ObjectReference Property iEquip_MessageObjectReference Auto ; populated by script
 Message Property iEquip_ConfirmAddToQueue Auto
 Message Property iEquip_OKCancel Auto
-Message Property iEquip_UtilityMenu Auto
 Message Property iEquip_QueueManagerMenu Auto
 int queueMenuCurrentQueue = -1
 
@@ -163,8 +162,6 @@ bool Property firstPressShowsName = true Auto
 bool[] Property isPoisonNameShown Auto
 int[] Property poisonNameElements Auto
 bool[] Property poisonInfoDisplayed Auto
-;string tempLeftPoisonName
-;int tempLeftPoisonCharges
 
 string[] potionGroups
 bool[] Property potionGroupEmpty Auto
@@ -172,6 +169,10 @@ bool Property consumableIconFaded = false Auto
 bool firstAttemptToDeletePotionGroup = true
 
 string[] bound2HWeapons
+
+bool property moreHUDLoaded = false Auto Hidden
+string[] property moreHUDIcons Auto Hidden
+bool property waitingForPotionQueues = false Auto Hidden
 
 ;Geared Up properties and variables
 Armor Property Shoes Auto
@@ -273,25 +274,31 @@ Event OnWidgetInit()
 	indexOnStartCycle[1] = -1
 	indexOnStartCycle[2] = -1
 
+	moreHUDIcons = new string[4]
+	moreHUDIcons[0] = "iEquipQL.png" ;Left
+	moreHUDIcons[1] = "iEquipQR.png" ;Right
+	moreHUDIcons[2] = "iEquipQ.png" ;Q - for shout/consumable/poison queues
+	moreHUDIcons[3] = "iEquipQB.png" ;Both - for items in both left and right queues
+
 	loadedbyOnWidgetInit = true
 	initDataObjects()
 	Utility.Wait(0.1)
 	PO.InitialisePotionQueueArrays(targetQ[3], targetQ[4])
 	addPotionGroups()
-	;CM.OnWidgetLoad(HUD_MENU, WidgetRoot, targetQ[0], targetQ[1])
-	;CM.initChargeMeter(0)
-	;CM.initChargeMeter(1)
-	;CM.initSoulGem(0)
-	;CM.initSoulGem(1)
 	KH.GameLoaded()
 EndEvent
 
+function CheckDependencies()
+	moreHUDLoaded = AhzMoreHudIE.GetVersion() > 0
+	if moreHUDLoaded && iEquip_Enabled
+		initialisemoreHUDArray()
+	endIf
+endFunction
+
 Event OnWidgetLoad()
 	debug.trace("iEquip_WidgetCore OnWidgetLoad called")
-	MCM.iEquip_Reset = false
 	EM.SelectedItem = 0
 	EM.isEditMode = false
-	KH.GameLoaded()
 	PreselectMode = false
 	cyclingLHPreselectInAmmoMode = false
 	blockQuickDualCast = false
@@ -299,6 +306,7 @@ Event OnWidgetLoad()
 	Loading = true
 	if !loadedbyOnWidgetInit
 		initDataObjects()
+		KH.GameLoaded()
 	endIf
 	loadedbyOnWidgetInit = false
 	CM.OnWidgetLoad(HUD_MENU, WidgetRoot, targetQ[0], targetQ[1])
@@ -306,6 +314,8 @@ Event OnWidgetLoad()
 	CM.initChargeMeter(1)
 	CM.initSoulGem(0)
 	CM.initSoulGem(1)
+
+	CheckDependencies()
 	; Don't call the parent event since it will display the widget regardless of the "Shown" property.
     ;parent.OnWidgetLoad()
     OnWidgetReset()
@@ -316,10 +326,8 @@ Event OnWidgetLoad()
 	bool[] args = new bool[5]
 	if isAmmoMode
 		args[0] = true
-		;args[3] = EM.BackgroundsShown
 	else
 		args[0] = false ;Hide left
-		;args[3] = true ;Hide backgrounds - set to true but other three then take over and hide them anyway
 	endIf
 	args[1] = false ;Hide right
 	args[2] = false ;Hide shout
@@ -328,11 +336,6 @@ Event OnWidgetLoad()
     ; Use RunOnce bool here - if first load hide everything and show messagebox
 	if isFirstLoad
 		getAndStoreDefaultWidgetValues()
-		;Set default alpha values for enchantment meters and gems to 100 as they're 0 at load
-		;afWidget_A[13] = 100.0 ;leftEnchantmentMeter_mc
-		;afWidget_A[14] = 100.0 ;leftSoulgem_mc
-		;afWidget_A[26] = 100.0 ;rightEnchantmentMeter_mc
-		;afWidget_A[27] = 100.0 ;rightSoulgem_mc
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", false)
 		isFirstLoad = false
 	else
@@ -387,6 +390,10 @@ function updateConfig()
 		endIf
 	endIf/;
 	debug.trace("iEquip_WidgetCore updateConfig finished")
+endFunction
+
+int function getTargetQ(int Q)
+	return targetQ[Q]
 endFunction
 
 function refreshWidgetOnLoad()
@@ -447,7 +454,7 @@ endFunction
 function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget called")
 	;Hide the widget first
-	KH.blockControls()
+	KH.bAllowKeyPress = false
 	hideWidget()
 	debug.notification("Refreshing iEquip widget...")
 	;Reset alpha values on every element
@@ -471,7 +478,7 @@ function refreshWidget()
 	endwhile
 	;if we're in Preselect Mode exit now
 	if isPreselectMode
-		togglePreselectMode()
+		isPreselectMode = !isPreselectMode
 		Utility.Wait(3.0)
 		debug.notification("Exiting Preselect Mode...")
 	endIf
@@ -528,7 +535,7 @@ function refreshWidget()
 			PNUpdate.registerForNameFadeoutUpdate()
 		endIf
 	endIf
-	KH.releaseControls()
+	KH.bAllowKeyPress = true
 	debug.Notification("iEquip widget refresh complete")
 	debug.trace("iEquip_WidgetCore refreshWidget finished")
 endFunction
@@ -603,6 +610,72 @@ function CreateWeaponTypeArray()
 	weaponTypeNames[7] = "Bow"
 	weaponTypeNames[8] = "Staff"
 	weaponTypeNames[9] = "Crossbow"
+endFunction
+
+function initialisemoreHUDArray()
+	debug.trace("iEquip_WidgetCore initialisemoreHUDArray called")
+
+    int jItemIDs = jArray.object()
+    int jIconNames = jArray.object()
+    int Q = 0
+    
+    while Q < 5
+        int queueLength = JArray.count(targetQ[Q])
+        debug.trace("iEquip_WidgetCore initialisemoreHUDArray processing Q: " + Q + ", queueLength: " + queueLength)
+        int i = 0
+        if Q == 3
+        	i = 3 ;Skip the potion groups in the consumables queue
+        endIf
+        
+        while i < queueLength
+        	;Clear out any empty indices for good measure
+        	if !jMap.getStr(jArray.getObj(targetQ[Q], i), "Name")
+        		jArray.eraseIndex(targetQ[Q], i)
+        		queueLength -= 1
+        	endIf
+            int itemID = jMap.getInt(jArray.getObj(targetQ[Q], i), "itemID")
+            debug.trace("iEquip_WidgetCore initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(targetQ[Q], i), "Name"))
+            if itemID == 0
+            	itemID = createItemID(jMap.getStr(jArray.getObj(targetQ[Q], i), "Name"), (jMap.getForm(jArray.getObj(targetQ[Q], i), "Form")).GetFormID())
+            	jMap.setInt(jArray.getObj(targetQ[Q], i), "itemID", itemID)
+            endIf
+            if itemID != 0
+	            int foundAt = -1
+	            if !(i == 0 && Q == 0)
+	            	foundAt = jArray.findInt(jItemIDs, itemID)
+	            endIf
+	            if Q == 1 && foundAt != -1
+	            	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - itemID " + itemID + " already found at index " + foundAt + ", updating icon name to " + moreHUDIcons[3])
+	                jArray.setStr(jIconNames, foundAt, moreHUDIcons[3])
+	            else
+	            	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding itemID " + itemID + " to jItemIDs")
+	                jArray.addInt(jItemIDs, itemID)
+	                if Q < 2
+	                	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + moreHUDIcons[Q] + " to jIconNames")
+	                	jArray.addStr(jIconNames, moreHUDIcons[Q])
+	                else
+	                	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + moreHUDIcons[2] + " to jIconNames")
+	                	jArray.addStr(jIconNames, moreHUDIcons[2])
+	                endIf
+	            endIf
+	        endIf
+            i += 1
+        endWhile
+
+        Q += 1
+    endWhile
+    debug.trace("iEquip_WidgetCore initialisemoreHUDArray - jItemIds contains " + jArray.count(jItemIDs) + " entries")
+    debug.trace("iEquip_WidgetCore initialisemoreHUDArray - jIconNames contains " + jArray.count(jIconNames) + " entries")
+    if jArray.count(jItemIDs) > 0
+	    int[] itemIDs = utility.CreateIntArray(jArray.count(jItemIDs))
+        string[] iconNames = utility.CreateStringArray(jArray.count(jIconNames))
+	    jArray.writeToIntegerPArray(jItemIDs, itemIDs)
+	    jArray.writeToStringPArray(jIconNames, iconNames)
+	    debug.trace("iEquip_WidgetCore initialisemoreHUDArray - itemIDs contains " + itemIDs.Length + " entries with " + itemIDs[0] + " in index 0")
+    	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - iconNames contains " + iconNames.Length + " entries with " + iconNames[0] + " in index 0")
+	    AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
+	endIf
+    PO.initialisemoreHUDArray()
 endFunction
 
 int property iEquipDataObj
@@ -857,9 +930,13 @@ bool Property isEnabled
 		EH.OniEquipEnabled(enabled)
 		if (Ready)
 			if iEquip_Enabled
+				waitingForPotionQueues = true
 				PO.findAndSortPotions()
+				while waitingForPotionQueues
+					Utility.Wait(0.01)
+				EndWhile
+				CheckDependencies()
 				if isFirstEnabled
-					;EM.BackgroundsShown = false
 					UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", backgroundStyle)
 					UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
 					; Update consumable and poison slots to show Health Potions and first poison if any present
@@ -885,10 +962,15 @@ bool Property isEnabled
 				args[0] = false ;Hide left
 				args[1] = false ;Hide right
 				args[2] = false ;Hide shout
-				args[3] = false ;Hide backgrounds
+				args[3] = false ;Ammo Mode
 				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 				UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
+				if CM.chargeDisplayType > 0
+					UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
+					UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
+					UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD alt charge meter
+				endIf
 				self.RegisterForMenu("InventoryMenu")
 				self.RegisterForMenu("MagicMenu")
 				self.RegisterForMenu("FavoritesMenu")
@@ -902,8 +984,11 @@ bool Property isEnabled
 				KH.UnregisterForAllKeys()
 				iEquip_MessageQuest.Stop()
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 100)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 100)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100) ;SkyHUD alt charge meter
 			endIf
-			showWidget() ;Just in case you were in Edit Mode when you disabled because ToggleEditMode won't have done this
+			showWidget() ;Just in case you were in Edit Mode when you disabled because toggleEditMode won't have done this
 			UI.setbool(HUD_MENU, WidgetRoot + "._visible", iEquip_Enabled)
 		endIf
 		if iEquip_Enabled && isFirstEnabled
@@ -1068,45 +1153,9 @@ function ResetWidgetArrays()
 	endWhile
 endFunction
 
-function LoadWidgetPreset(string SelectedPreset)
-	int jLoadPreset = jValue.readFromFile(EM.WidgetPresetPath + SelectedPreset)
-	int jafWidget_X = JMap.getObj(jLoadPreset, "_X")
-	int jafWidget_Y = JMap.getObj(jLoadPreset, "_Y")
-	int jafWidget_S = JMap.getObj(jLoadPreset, "_S")
-	int jafWidget_R = JMap.getObj(jLoadPreset, "_R")
-	int jafWidget_A = JMap.getObj(jLoadPreset, "_A")
-	int jaiWidget_D = JMap.getObj(jLoadPreset, "_D")
-	int jaiWidget_TC = JMap.getObj(jLoadPreset, "_TC")
-	int jasWidget_TA = JMap.getObj(jLoadPreset, "_TA")
-	int jabWidget_V = JMap.getObj(jLoadPreset, "_V")
-	
-	int[] abWidget_V_temp = new int[46]
-
-	JArray.writeToFloatPArray(jafWidget_X, afWidget_X, 0, -1, 0, 0)
-	JArray.writeToFloatPArray(jafWidget_Y, afWidget_Y, 0, -1, 0, 0)
-	JArray.writeToFloatPArray(jafWidget_S, afWidget_S, 0, -1, 0, 0)
-	JArray.writeToFloatPArray(jafWidget_R, afWidget_R, 0, -1, 0, 0)
-	JArray.writeToFloatPArray(jafWidget_A, afWidget_A, 0, -1, 0, 0)
-	JArray.writeToIntegerPArray(jaiWidget_D, aiWidget_D, 0, -1, 0, 0)
-	JArray.writeToIntegerPArray(jaiWidget_TC, aiWidget_TC, 0, -1, 0, 0)
-	JArray.writeToStringPArray(jasWidget_TA, asWidget_TA, 0, -1, 0, 0)
-	JArray.writeToIntegerPArray(jabWidget_V, abWidget_V_temp, 0, -1, 0, 0)
-	int iIndex = 0
-	while iIndex < asWidgetDescriptions.Length
-		abWidget_V[iIndex] = abWidget_V_temp[iIndex] as bool
-		iIndex += 1
-	endwhile
-	hideWidget()
-	Utility.Wait(0.2)
-	EM.UpdateWidgets()
-	Utility.Wait(0.1)
-	showWidget()
-	Debug.Notification("Widget layout switched to " + SelectedPreset)
-endFunction
-
-bool function isCurrentlyEquipped(int Q, string itemName)
+;/bool function isCurrentlyEquipped(int Q, string itemName)
 	return currentlyEquipped[Q] == itemName
-endFunction
+endFunction/;
 
 int function getCurrentQueuePosition(int Q)
 	return currentQueuePosition[Q]
@@ -1122,11 +1171,7 @@ function setCurrentQueuePosition(int Q, int iIndex)
 	;updateWidget(Q, iIndex, false, true)
 	debug.trace("iEquip_WidgetCore setCurrentQueuePosition finished - currentQueuePosition["+Q+"]: " + currentQueuePosition[Q] + ", currentlyEquipped["+Q+"]: " + currentlyEquipped[Q])
 endFunction
-
-function togglePreselectMode()
-	debug.trace("iEquip_WidgetCore togglePreselectMode called")
-	isPreselectMode = !isPreselectMode
-endFunction
+;----------
 
 bool Property isPreselectMode
 	bool function Get()
@@ -1620,9 +1665,10 @@ bool function itemRequiresCounter(int Q, int itemType = -1, string itemName = ""
 	if itemName == ""
 		itemName = jMap.getStr(itemObject, "Name")
 	endIf
+	debug.trace("iEquip_WidgetCore itemRequiresCounter itemType: " + itemType + ", itemName: " + itemName)
 	if itemType == 42 || itemType == 23 || itemType == 31 ;Ammo (which takes in Throwing Weapons), scroll, torch
 		requiresCounter = true
-    elseif itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")) ;Looking for CACO grenades here which are classed as maces
+    elseif itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb", 0) > -1) ;Looking for CACO grenades here which are classed as maces
     	requiresCounter = true
     else
     	requiresCounter = false
@@ -1889,6 +1935,9 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false)
 	;if somehow the item has been removed from the player and we haven't already caught it remove it from queue and advance queue again
 	elseif !playerStillHasItem(targetItem)
 		AddItemToLastRemovedCache(Q, targetIndex)
+		if moreHUDLoaded
+	        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetQ[Q], targetIndex), "itemID"))
+	    endIf
 		jArray.eraseIndex(targetQ[Q], targetIndex)
 		;if you are cycling backwards you have just removed the previous item in the queue so the currentQueuePosition needs to be updated before calling cycleSlot again
 		if Reverse
@@ -2042,6 +2091,9 @@ function checkAndEquipShownShoutOrConsumable(int Q, bool Reverse, int targetInde
 	debug.trace("iEquip_WidgetCore checkAndEquipShownShoutOrConsumable called - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", isPotionGroup: " + isPotionGroup)
 	if (targetItem && targetItem != none && !playerStillHasItem(targetItem)) || (Q == 3 && targetItem == none && !isPotionGroup)
 		AddItemToLastRemovedCache(Q, targetIndex)
+		if moreHUDLoaded
+	        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetQ[Q], targetIndex), "itemID"))
+	    endIf
 		jArray.eraseIndex(targetQ[Q], targetIndex)
 		;if you are cycling backwards you have just removed the previous item in the queue so the currentQueuePosition needs to be updated before calling cycleSlot again
 		if Reverse
@@ -2606,6 +2658,9 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 	if MCM.bEnableRemovedItemCaching && !purging
 		AddItemToLastRemovedCache(Q, iIndex)
 	endIf
+	if moreHUDLoaded
+        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(targetQ[Q], iIndex), "itemID"))
+    endIf
 	jArray.eraseIndex(targetQ[Q], iIndex)
 	if currentQueuePosition[Q] > iIndex ;if the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
 		currentQueuePosition[Q] = currentQueuePosition[Q] - 1
@@ -2743,11 +2798,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1)
 	endIf
 	Utility.Wait(0.2)
 	checkAndUpdatePoisonInfo(Q)
-	if PlayerRef.IsWeaponDrawn()
-		CM.checkAndUpdateChargeMeter(Q)
-	else
-		EH.waitForEnchantedWeaponDrawn = true
-	endIf
+	CM.checkAndUpdateChargeMeter(Q)
 	checkIfBoundSpellEquipped()
 	if (itemType == 7 || itemType == 9) && AmmoModeFirstLook
 		Utility.Wait(0.5)
@@ -3816,8 +3867,12 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	endIf
 	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo called - Q: " + Q + ", cycling: " + cycling + ", itemType: " + itemType + ", currentPoison: " + currentPoison)
 	;if item isn't poisoned remove the poisoned flag
-	if equippedItem && (equippedItem == jMap.getForm(targetObject, "Form")) && !currentPoison
-		jMap.setInt(targetObject, "isPoisoned", 0)
+	if equippedItem && (equippedItem == jMap.getForm(targetObject, "Form"))
+		if currentPoison
+			jMap.setInt(targetObject, "isPoisoned", 1)
+		else
+			jMap.setInt(targetObject, "isPoisoned", 0)
+		endIf
 	endIf
 	float targetAlpha
 	string iconName
@@ -4363,7 +4418,7 @@ event EquipAllComplete(string sEventName, string sStringArg, Float fNumArg, Form
 	endIf
 	if MCM.bTogglePreselectOnEquipAll
 		togglingPreselectOnEquipAll = true
-		togglePreselectMode()
+		isPreselectMode = !isPreselectMode
 	endIf
 endEvent
 
@@ -4386,8 +4441,8 @@ function addToQueue(int Q)
 		itemFormID = UI.GetInt(currentMenu, entryPath + "formId")
 		itemForm = game.GetFormEx(itemFormID)
 	endIf
-	debug.trace("iEquip_WidgetCore addToQueue - itemForm: " + itemForm + ", " + itemForm.GetName() + ", itemFormID: " + itemFormID)
 	if itemForm && itemForm != None
+		debug.trace("iEquip_WidgetCore addToQueue - itemForm: " + itemForm + ", " + itemForm.GetName() + ", itemFormID: " + itemFormID)
 		itemType = itemForm.GetType()
 		if itemType == 41 || itemType == 26 ;Weapons and shields only
 			isEnchanted = UI.Getbool(currentMenu, entryPath + "isEnchanted")
@@ -4505,29 +4560,48 @@ function findAndFillMissingItemIDs()
 	while i < count
 		targetObject = jArray.getObj(objItemsForIDGeneration, i)
 		itemID = createItemID(jMap.getStr(targetObject, "Name"), jMap.getInt(targetObject, "formID"))
-		if itemID && itemID > 0
+		if itemID != 0
 			Q = jMap.getInt(targetObject, "Q")
 			iIndex = jMap.getInt(targetObject, "Index")
 			jMap.setInt(jArray.getObj(targetQ[Q], iIndex), "itemID", itemID)
+			if moreHUDLoaded
+				string moreHUDIcon
+				if Q < 2
+					int otherHand = 1
+					if Q == 1
+						otherHand =0
+					endIf
+					if isAlreadyInQueue(otherHand, jMap.getForm(jArray.getObj(targetQ[Q], iIndex), "Form"), itemID)
+						moreHUDIcon = moreHUDIcons[3]
+					else
+	            		moreHUDIcon = moreHUDIcons[Q]
+	            	endIf
+	            else
+	            	moreHUDIcon = moreHUDIcons[2]
+	            endIf
+	            if Q < 2 ;&& AhzMoreHudIE.IsIconItemRegistered(itemID)
+	            	AhzMoreHudIE.RemoveIconItem(itemID) ;Does nothing if the itemID isn't registered so no need for the IsIconItemRegistered check
+	            endIf
+	            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
+	        endIf
 		endIf
 		Utility.Wait(0.05)
 		i += 1
 	endwhile
 	itemsWaitingForID = false
-	;jArray.eraseRange(objItemsForIDGeneration, 0, count - 1)
 	jArray.clear(objItemsForIDGeneration)
 	debug.trace("iEquip_WidgetCore findAndFillMissingItemIDs - final check (count should be 0) - count: " + jArray.count(objItemsForIDGeneration))
 endFunction
 
 bool gotID = false
-int receivedID = -1
+int receivedID = 0
 
 int function createItemID(string itemName, int itemFormID)
 	debug.trace("iEquip_WidgetCore createItemID called - itemFormID: " + itemFormID + ", itemName: " + itemName)
 	RegisterForModEvent("iEquip_GotItemID", "itemIDReceivedFromFlash")
 	;Reset
 	gotID = false
-	receivedID = -1
+	receivedID = 0
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".generateItemID")
 	If(iHandle)
 		UICallback.PushString(iHandle, itemName) ;Display name
@@ -4742,23 +4816,6 @@ function purgeQueue()
 	endwhile	
 endFunction
 
-function openUtilityMenu()
-	int iAction = iEquip_UtilityMenu.Show() ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = MCM, 4 = Refresh Widget
-	if iAction == 0 ;Exit
-		return
-	elseif iAction == 1
-		openQueueManagerMenu()
-	elseif iAction == 2
-		KH.ToggleEditMode()
-	elseif iAction == 3
-		KH.openiEquipMCM()
-	elseif iAction == 4
-		;HM.openHelpMenu()
-	elseif iAction == 5
-		refreshWidget()
-	endIf
-endFunction
-
 function openQueueManagerMenu()
 	debug.trace("iEquip_WidgetCore openQueueManagerMenu() called")
 	int Q = iEquip_QueueManagerMenu.Show() ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue
@@ -4766,14 +4823,22 @@ function openQueueManagerMenu()
 		return
 	else
 		Q -= 1
-		int i = jArray.count(targetQ[Q])
-		if i <= 0
+		int queueLength = jArray.count(targetQ[Q])
+		if queueLength < 1
 			debug.MessageBox("Your " + queueName[Q] + " is currently empty")
 			recallQueueMenu()
-			return
 		else
+			int i = 0
+			;Remove any empty indices before creating the menu arrays
+			while i < queueLength
+				if !JMap.getStr(jArray.getObj(targetQ[Q], i), "Name")
+					jArray.eraseIndex(targetQ[Q], i)
+					queueLength -= 1
+				endIf
+				i += 1
+			endWhile
 			queueMenuCurrentQueue = Q
-			string title = "You currently have " + i + " items in your " + queueName[Q]
+			string title = "You currently have " + queueLength + " items in your " + queueName[Q]
 			String[] iconNameList = createIconNameListArray()
 			String[] list = createQueueListArray()
 			bool[] enchFlags = createEnchFlagsArray()
@@ -4887,8 +4952,23 @@ endFunction
 function QueueMenuRemoveFromQueue(int iIndex)
 	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue() called")
 	int targetArray = targetQ[queueMenuCurrentQueue]
-	string itemName = JMap.getStr(jArray.getObj(targetArray, iIndex), "Name")
+	int targetObject = jArray.getObj(targetArray, iIndex)
+	string itemName = JMap.getStr(targetObject, "Name")
 	if !(stringutil.Find(itemName, "Potions", 0) > -1)
+		if moreHUDLoaded
+			int itemID = JMap.getInt(targetObject, "itemID")
+			AhzMoreHudIE.RemoveIconItem(itemID)
+			if queueMenuCurrentQueue < 2
+				form itemForm = JMap.getForm(targetObject, "Form")
+				int otherHandQueue = 1
+				if queueMenuCurrentQueue == 1
+					otherHandQueue = 0
+				endIf
+				if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+					AhzMoreHudIE.AddIconItem(itemID, moreHUDIcons[otherHandQueue])
+				endIf
+	        endIf
+	    endIf
 		jArray.eraseIndex(targetArray, iIndex)
 		int i = jArray.count(targetArray)
 		if iIndex >= i
@@ -4926,26 +5006,6 @@ function QueueMenuClearQueue()
 	recallQueueMenu()
 endFunction
 
-function ApplyMCMSettings()
-	debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
-	
-	if isEnabled
-		if MCM.restartingMCM
-			;KH.openiEquipMCM()
-		elseif MCM.iEquip_Reset
-			EM.ResetDefaults()
-		else
-			ApplyChanges()
-			if EM.isEditMode
-				EM.updateEditModeButtons()
-				EM.LoadEditModeWidgets()
-			endIf
-		endIf
-	else
-		debug.Notification("iEquip disabled...")
-	endIf
-endFunction
-
 function ApplyChanges()
 	debug.trace("iEquip_WidgetCore ApplyChanges called")
 	int i
@@ -4979,7 +5039,7 @@ function ApplyChanges()
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
     if !MCM.bProModeEnabled && isPreselectMode
-    	togglePreselectMode()
+    	isPreselectMode = !isPreselectMode
     endIf
     if isAmmoMode
 	    if MCM.ammoSortingChanged

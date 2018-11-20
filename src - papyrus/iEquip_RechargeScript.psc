@@ -49,7 +49,8 @@ function rechargeWeapon(int Q)
 	debug.trace("iEquip_RechargeScript rechargeWeapon called - Q: " + Q)
     string weaponToRecharge = CM.itemCharge[Q]
     float currentCharge = PlayerRef.GetActorValue(weaponToRecharge)
-    float maxCharge = PlayerRef.GetBaseActorValue(weaponToRecharge)
+    ;float maxCharge = PlayerRef.GetBaseActorValue(weaponToRecharge)
+    float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
     float requiredCharge = maxCharge - currentCharge
     debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
     if requiredCharge < 1.0
