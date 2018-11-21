@@ -532,6 +532,7 @@ function toggleEditMode()
 	Wait(0.2)
     
 	if isEditMode
+		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true) ;Remove DropShadowFilter from all text elements before entering Edit Mode
         ; StoreOpeningValues
         Int iIndex = 0
         afWidget_CurX = new Float[46]

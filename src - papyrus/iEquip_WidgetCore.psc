@@ -26,6 +26,7 @@ iEquip_MCM Property MCM Auto
 iEquip_KeyHandler Property KH Auto
 iEquip_AmmoScript Property AM Auto
 iEquip_PotionScript Property PO Auto
+;iEquip_HelpMenu Property HM Auto
 iEquip_PlayerEventHandler Property EH Auto
 iEquip_LeftHandEquipUpdateScript Property LHUpdate Auto
 iEquip_RightHandEquipUpdateScript Property RHUpdate Auto
@@ -297,6 +298,8 @@ endFunction
 
 Event OnWidgetLoad()
 	debug.trace("iEquip_WidgetCore OnWidgetLoad called")
+
+	MCM.iEquip_Reset = false
 	EM.SelectedItem = 0
 	EM.isEditMode = false
 	PreselectMode = false
@@ -988,7 +991,7 @@ bool Property isEnabled
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100) ;SkyHUD alt charge meter
 			endIf
-			showWidget() ;Just in case you were in Edit Mode when you disabled because toggleEditMode won't have done this
+			showWidget() ;Just in case you were in Edit Mode when you disabled because ToggleEditMode won't have done this
 			UI.setbool(HUD_MENU, WidgetRoot + "._visible", iEquip_Enabled)
 		endIf
 		if iEquip_Enabled && isFirstEnabled
@@ -2959,7 +2962,12 @@ function quickShield()
 			if isCounterShown(0)
 				setCounterVisibility(0, false)
 			endIf
-			hidePoisonInfo(0)
+			if poisonInfoDisplayed[0]
+				hidePoisonInfo(0)
+			endIf
+			if CM.isChargeMeterShown[0]
+				CM.updateChargeMeterVisibility(0, false)
+			endIf
 			if switchRightHand
 				quickShieldSwitchRightHand(inPreselectMode, foundType, preferMagic, rightHandHasSpell)
 			endIf
@@ -3527,6 +3535,9 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting
 	if poisonInfoDisplayed[iEquipSlot]
 		hidePoisonInfo(iEquipSlot)
 	endIf
+	if CM.isChargeMeterShown[iEquipSlot]
+		CM.updateChargeMeterVisibility(iEquipSlot, false)
+	endIf
 	if isCounterShown(iEquipSlot)
 		setCounterVisibility(iEquipSlot, false)
 	endIf
@@ -3642,6 +3653,9 @@ function goUnarmed()
 		endIf
 		if poisonInfoDisplayed[i]
 			hidePoisonInfo(i)
+		endIf
+		if CM.isChargeMeterShown[i]
+			CM.updateChargeMeterVisibility(i, false)
 		endIf
 		i += 1
 	endwhile
