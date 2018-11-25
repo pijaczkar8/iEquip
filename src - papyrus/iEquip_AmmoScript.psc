@@ -1,7 +1,6 @@
 scriptName iEquip_AmmoScript extends Quest
 
 import _Q2C_Functions
-;import iEquip_Utility
 import stringUtil
 
 iEquip_WidgetCore Property WC Auto
