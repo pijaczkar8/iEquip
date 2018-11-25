@@ -54,7 +54,6 @@ bool bNotInLootMenu = true
 int Property utilityKeyDoublePress = 0 Auto Hidden
 Int WaitingKeyCode = 0
 Int iMultiTap = 0
-int keySum = 0
 
 ; Strings
 string previousState = ""
@@ -74,7 +73,6 @@ function GameLoaded()
     
 	UnregisterForAllKeys() ;Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
     
-    keySum = 0
 	isUtilityKeyHeld = false
     bNotInLootMenu = true
 endFunction
@@ -117,74 +115,47 @@ endEvent
 ; - DEFAULT BEHAVIOUR -
 ; ---------------------
 
-function checkKeysDown(int KeyCode)
+event OnKeyDown(int KeyCode)
     if KeyCode == iEquip_utilityKey
         isUtilityKeyHeld = true
-    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
-        keySum += KeyCode
     endIf
-endFunction
 
-bool function checkKeysUp(int KeyCode)
-    if KeyCode == iEquip_utilityKey
-        isUtilityKeyHeld = false
-    elseIf KeyCode == iEquip_leftKey || iEquip_rightKey
-        keySum -= KeyCode
-        
-        if keySum == -1
-            bAllowKeyPress = true
-            keySum += 1
-            
-            return false
-        endIf
-    endIf
-    
-    return true
-endFunction
-
-event OnKeyDown(int KeyCode)
-    checkKeysDown(KeyCode)
     if bAllowKeyPress
-        if keySum == iEquip_leftKey + iEquip_rightKey
-            bAllowKeyPress = false
-            keySum -= 1
-            WC.isPreselectMode = !WC.isPreselectMode
+        if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
             UnregisterForUpdate()
-        else
-            if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
-                UnregisterForUpdate()
-                OnUpdate()
-            endIf
-            WaitingKeyCode = KeyCode
-        
-            if iMultiTap == 0 ; This is fhte first time the key has been pressed
-                RegisterForSingleUpdate(pressAndHoldDelay)
-            elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
-                iMultiTap = 2
-                RegisterForSingleUpdate(multiTapDelay)
-            elseIf iMultiTap == 2 ; This is the third time the key has been pressed
-                iMultiTap = 3
-                RegisterForSingleUpdate(0.0)
-            endIf
+            OnUpdate()
+        endIf
+        WaitingKeyCode = KeyCode
+    
+        if iMultiTap == 0 ; This is fhte first time the key has been pressed
+            RegisterForSingleUpdate(pressAndHoldDelay)
+        elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
+            iMultiTap = 2
+            RegisterForSingleUpdate(multiTapDelay)
+        elseIf iMultiTap == 2 ; This is the third time the key has been pressed
+            iMultiTap = 3
+            RegisterForSingleUpdate(0.0)
         endIf
     endif
 endEvent
 
 event OnKeyUp(Int KeyCode, Float HoldTime)
-    if checkKeysUp(KeyCode)
-        if bAllowKeyPress
-            if KeyCode == WaitingKeyCode && iMultiTap == 0
-                float updateTime = 0.0
-            
-                if HoldTime >= longPressDelay ;If longpress.
-                    iMultiTap = -1
-                else ; Turns out the key is a multiTap
-                    iMultiTap = 1
-                    updateTime = multiTapDelay
-                endIf
-                
-                RegisterForSingleUpdate(updateTime)
+    if KeyCode == iEquip_utilityKey
+        isUtilityKeyHeld = false
+    endIf
+
+    if bAllowKeyPress
+        if KeyCode == WaitingKeyCode && iMultiTap == 0
+            float updateTime = 0.0
+        
+            if HoldTime >= longPressDelay ;If longpress.
+                iMultiTap = -1
+            else ; Turns out the key is a multiTap
+                iMultiTap = 1
+                updateTime = multiTapDelay
             endIf
+            
+            RegisterForSingleUpdate(updateTime)
         endIf
     endIf
 endEvent
@@ -218,7 +189,7 @@ function runUpdate()
         endIf
         
     elseIf iMultiTap == 0  ; LongpressHold
-        if WC.isPreselectMode && WaitingKeyCode == keySum 
+        if WC.isPreselectMode && (WaitingKeyCode == iEquip_leftKey ||  iEquip_rightKey)
             WC.equipAllPreselectedItems()
         endIf
         
@@ -293,7 +264,9 @@ function runUpdate()
         endIf
         
     elseIf MCM.bProModeEnabled && iMultiTap == 3  ;Triple tap
-        if WaitingKeyCode == iEquip_leftKey && MCM.bQuickShieldEnabled
+        if WaitingKeyCode == iEquip_shoutKey
+            WC.isPreselectMode = !WC.isPreselectMode
+        elseIf WaitingKeyCode == iEquip_leftKey && MCM.bQuickShieldEnabled
             WC.quickShield()
         elseIf WaitingKeyCode == iEquip_rightKey && MCM.bQuickRangedEnabled
             WC.quickRanged()
@@ -310,7 +283,10 @@ endFunction
 ; - Inventory
 state INVENTORYMENU
 	event OnKeyDown(int KeyCode)
-        checkKeysDown(KeyCode)       
+        if KeyCode == iEquip_utilityKey
+            isUtilityKeyHeld = true
+        endIf
+     
         if bAllowKeyPress
             bAllowKeyPress = false
         
@@ -331,26 +307,6 @@ endState
 
 ; - Editmode
 state EDITMODE
-    event OnKeyDown(int KeyCode)
-        if bAllowKeyPress
-            if KeyCode != WaitingKeyCode && WaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
-                UnregisterForUpdate()
-                OnUpdate()
-            endIf
-            WaitingKeyCode = KeyCode
-        
-            if iMultiTap == 0 ; This is fhte first time the key has been pressed
-                RegisterForSingleUpdate(pressAndHoldDelay)
-            elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
-                iMultiTap = 2
-                RegisterForSingleUpdate(multiTapDelay)
-            elseIf iMultiTap == 2 ; This is the third time the key has been pressed
-                iMultiTap = 3
-                RegisterForSingleUpdate(0.0)
-            endIf
-        endif
-    endEvent
-
     event OnKeyUp(Int KeyCode, Float HoldTime)
         if bAllowKeyPress
             if KeyCode == WaitingKeyCode && iMultiTap == 0
