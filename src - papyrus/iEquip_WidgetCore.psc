@@ -5,6 +5,7 @@ Import Form
 Import UI
 Import UICallback
 Import Utility
+;Import iEquip_Utility
 Import iEquip_UILIB
 import _Q2C_Functions
 import AhzMoreHudIE
@@ -318,7 +319,8 @@ Event OnWidgetLoad()
 	CM.initSoulGem(1)
 
 	CheckDependencies()
-
+	; Don't call the parent event since it will display the widget regardless of the "Shown" property.
+    ;parent.OnWidgetLoad()
     OnWidgetReset()
     ; Determine if the widget should be displayed
     UpdateWidgetModes()
@@ -370,18 +372,17 @@ Event OnWidgetReset()
 	debug.trace("iEquip_WidgetCore OnWidgetReset called")
     RequireExtend = false
 	parent.OnWidgetReset()
-	EM.UpdateWidgets()
-	;Add Widget fadeout here
+	updateConfig()
 	debug.trace("iEquip_WidgetCore OnWidgetReset finished")
 EndEvent
 
-;/ Shows the widget if the control mode is set to always,
+; Shows the widget if the control mode is set to always,
 function updateConfig()
 	debug.trace("iEquip_WidgetCore updateConfig called")
 	; Cleanup
 	EM.UpdateWidgets()
 	
-	if(_controlMode == "always" && _shown)
+	;/if(_controlMode == "always" && _shown)
 		showWidget()
 	else
 		hideWidget()
@@ -390,9 +391,9 @@ function updateConfig()
 		if(_controlMode != "periodically")
 			_period = "none"
 		endIf
-	endIf
+	endIf/;
 	debug.trace("iEquip_WidgetCore updateConfig finished")
-endFunction/;
+endFunction
 
 int function getTargetQ(int Q)
 	return targetQ[Q]
@@ -832,10 +833,7 @@ endEvent
 
 event OnMenuClose(string sCurrentMenu)
 	debug.trace("iEquip_WidgetCore OnMenuClose called - current menu: " + sCurrentMenu + ", MCM.justEnabled: " + MCM.justEnabled + ", itemsWaitingForID: " + itemsWaitingForID)
-	if sCurrentMenu == "Journal Menu" && MCM.justEnabled
-        debug.MessageBox("Adding items to iEquip\n\nBefore you can use iEquip for the first time you need to choose your gear for each slot.  Simply open your Inventory, Magic or Favorites menu and follow the instructions there.\n\nEnjoy using iEquip!")
-        MCM.justEnabled = false		
-	elseif (sCurrentMenu == "InventoryMenu" || CurrentMenu == "MagicMenu" || CurrentMenu == "FavoritesMenu") && itemsWaitingForID ;&& !utility.IsInMenuMode()
+	if (sCurrentMenu == "InventoryMenu" || CurrentMenu == "MagicMenu" || CurrentMenu == "FavoritesMenu") && itemsWaitingForID ;&& !utility.IsInMenuMode()
 		findAndFillMissingItemIDs()
 		itemsWaitingForID = false
 	endIf
@@ -996,6 +994,11 @@ bool Property isEnabled
 		if iEquip_Enabled && isFirstEnabled
 			ResetWidgetArrays()
 			isFirstEnabled = false
+			if MCM.justEnabled
+				Utility.Wait(2.0)
+		        debug.MessageBox("Adding items to iEquip\n\nBefore you can use iEquip for the first time you need to choose your gear for each slot.  Simply open your Inventory, Magic or Favorites menu and follow the instructions there.\n\nEnjoy using iEquip!")
+		        MCM.justEnabled = false	
+		    endIf
 		endIf
 	endFunction
 EndProperty
@@ -2321,52 +2324,55 @@ endFunction
 ;Called from iEquip_PlayerEventHandler when OnActorAction receives actionType 2 (should only ever happen when the player has a 'Bound' spell equipped in either hand)
 function onBoundWeaponEquipped(Int weaponType, Int hand)
 	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped called")
-	;weapon equippedWeapon = PlayerRef.GetEquippedObject(hand) as Weapon	
-	string iconName = "Bound"
-	if weaponType == 6 && (PlayerRef.GetEquippedObject(hand) as Weapon).IsWarhammer()
-        iconName += "Warhammer"
-    else
-		iconName += weaponTypeNames[weaponType]
-    endIf
-    debug.trace("iEquip_WidgetCore onBoundWeaponEquipped - iconName: " + iconName + ", weaponType: " + weaponType)
-    int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIconOnly")
-	;Replace the spell icon with the correct bound weapon icon without updating the name as it should be the same anyway
-	if(iHandle)
-		UICallback.PushInt(iHandle, hand) ;Target icon to update: left = 0, right  = 1
-		UICallback.PushString(iHandle, iconName) ;New icon label name
-		UICallback.Send(iHandle)
-	endIf
-	;Now if we've equipped a bound ranged weapon we need to toggle Ammo Mode and show bound ammo in the left slot
-    if weaponType == 7 || weaponType == 9 ;Bound Bow or Bound Crossbow
-    	ammoQ = 5
-    	string ammoName = "Bound Arrow"
-    	string ammoIcon = "BoundArrow"
-    	if weaponType == 9
-    		ammoQ = 6
-    		ammoName = "Bound Bolt"
-    		ammoIcon = "BoundBolt"
-    	endIf
-    	int breakout = 100 ;Max wait while is 1 sec
-    	while !boundAmmoAdded && breakout > 0
-    		Utility.Wait(0.01)
-    		breakout -= 1
-    	endWhile
-    	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped - boundAmmoAdded: " + boundAmmoAdded + ", breakout count: " + (100 - breakout)) 
-    	;If the bound ammo has not been detected and added to the queue we just need to assume it's there and add a dummy to the queue so it can be displayed in the widget
-    	if !boundAmmoAdded
-    		int boundAmmoObj = jMap.object()
-			jMap.setStr(boundAmmoObj, "Icon", ammoIcon)
-			jMap.setStr(boundAmmoObj, "Name", ammoName)
-			jArray.addObj(targetQ[ammoQ], boundAmmoObj)
-			;Set the current queue position and name to the last index (ie the newly added bound ammo)
-			currentQueuePosition[ammoQ] = jArray.count(targetQ[ammoQ]) - 1
-			currentlyEquipped[ammoQ] = ammoName
-			boundAmmoAdded = true
-    	endIf
-    	toggleAmmoMode()
-    elseIf weaponType == 5 || weaponType == 6 ;Bound 2H weapon
-    	checkAndFadeLeftIcon(hand, weaponType)
-	endIf
+	weapon equippedWeapon = PlayerRef.GetEquippedObject(hand) as Weapon	
+	;/if iEquip_WeaponExt.IsWeaponBound(equippedWeapon)
+		string iconName = "Bound"
+		int weaponType = equippedWeapon.GetWeaponType()/;
+		string iconName = "Bound"
+		if weaponType == 6 && equippedWeapon.IsWarhammer()
+	        iconName += "Warhammer"
+	    else
+			iconName += weaponTypeNames[weaponType]
+	    endIf
+	    debug.trace("iEquip_WidgetCore onBoundWeaponEquipped - iconName: " + iconName + ", weaponType: " + weaponType)
+	    int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIconOnly")
+		;Replace the spell icon with the correct bound weapon icon without updating the name as it should be the same anyway
+		if(iHandle)
+			UICallback.PushInt(iHandle, hand) ;Target icon to update: left = 0, right  = 1
+			UICallback.PushString(iHandle, iconName) ;New icon label name
+			UICallback.Send(iHandle)
+		endIf
+		;Now if we've equipped a bound ranged weapon we need to toggle Ammo Mode and show bound ammo in the left slot
+	    if weaponType == 7 || weaponType == 9 ;Bound Bow or Bound Crossbow
+	    	ammoQ = 5
+	    	string ammoName = "Bound Arrow"
+	    	string ammoIcon = "BoundArrow"
+	    	if weaponType == 9
+	    		ammoQ = 6
+	    		ammoName = "Bound Bolt"
+	    		ammoIcon = "BoundBolt"
+	    	endIf
+	    	int breakout = 100 ;Max wait while is 1 sec
+	    	while !boundAmmoAdded && breakout > 0
+	    		Utility.Wait(0.01)
+	    		breakout -= 1
+	    	endWhile
+	    	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped - boundAmmoAdded: " + boundAmmoAdded + ", breakout count: " + (100 - breakout)) 
+	    	;If the bound ammo has not been detected and added to the queue we just need to assume it's there and add a dummy to the queue so it can be displayed in the widget
+	    	if !boundAmmoAdded
+	    		int boundAmmoObj = jMap.object()
+				jMap.setStr(boundAmmoObj, "Icon", ammoIcon)
+				jMap.setStr(boundAmmoObj, "Name", ammoName)
+				;Set the current queue position and name to the last index (ie the newly added bound ammo)
+				jArray.addObj(targetQ[ammoQ], boundAmmoObj)
+				currentQueuePosition[ammoQ] = jArray.count(targetQ[ammoQ]) - 1
+				currentlyEquipped[ammoQ] = ammoName
+				boundAmmoAdded = true
+	    	endIf
+	    	toggleAmmoMode()
+	    elseIf weaponType == 5 || weaponType == 6 ;Bound 2H weapon
+	    	checkAndFadeLeftIcon(hand, weaponType)
+		endIf
 endFunction
 
 function onBoundWeaponUnequipped(weapon a_weap, int hand)
@@ -2374,6 +2380,14 @@ function onBoundWeaponUnequipped(weapon a_weap, int hand)
 	if blockSwitchBackToBoundSpell
 		blockSwitchBackToBoundSpell = false
 	else
+		;Check if we've got a bound spell equipped in either hand matching the bound weapon which has just been removed
+		;/if PlayerRef.GetEquippedItemType(1) == 9 && (PlayerRef.GetEquippedObject(1)).GetName() == weaponName
+			hand = 1
+		elseIf PlayerRef.GetEquippedItemType(0) == 9 && (PlayerRef.GetEquippedObject(0)).GetName() == weaponName
+			hand = 0
+		endIf/;
+		debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped called - PlayerRef.GetEquippedItemType("+hand+"): " + PlayerRef.GetEquippedItemType(hand))
+		debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped called - (PlayerRef.GetEquippedObject("+hand+")).GetName(): " + (PlayerRef.GetEquippedObject(hand)).GetName() + ", a_weap.GetName(): " + a_weap.GetName())
 		if PlayerRef.GetEquippedItemType(hand) == 9 && (PlayerRef.GetEquippedObject(hand)).GetName() == a_weap.GetName()
 			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIconOnly")
 			;Switch back to the spell icon from the bound weapon icon without updating the name as it should be the same anyway
@@ -5034,8 +5048,7 @@ function ApplyChanges()
 			refreshVisibleItems()
 		endIf
     endIf
-    int targetArray = targetQ[ammoQ]
-    ammo targetAmmo = jMap.getForm(jArray.getObj(targetArray, currentQueuePosition[ammoQ]), "Form") as ammo
+    ammo targetAmmo = jMap.getForm(jArray.getObj(targetQ[ammoQ], currentQueuePosition[ammoQ]), "Form") as ammo
     if !isAmmoMode && MCM.bUnequipAmmo && targetAmmo && PlayerRef.isEquipped(targetAmmo)
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
@@ -5047,20 +5060,20 @@ function ApplyChanges()
 	    	;First we need to check if we currently have Bound Ammo in the queue - if we do store it and remove it from the queue
 	    	bool boundAmmoRemoved = false
 	    	int tempBoundAmmoObj
-	    	int queueLength = jArray.count(targetArray)
-	    	int targetObject = jArray.getObj(targetArray, queueLength - 1)
+	    	int queueLength = jArray.count(targetQ[ammoQ])
+	    	int targetObject = jArray.getObj(targetQ[ammoQ], queueLength - 1)
 	    	string lastAmmoInQueue = jMap.getStr(targetObject, "Name")
 	    	if stringutil.Find(lastAmmoInQueue, "bound", 0) > -1
 	    		tempBoundAmmoObj = targetObject
-	    		jArray.eraseIndex(targetArray, queueLength - 1)
+	    		jArray.eraseIndex(targetQ[ammoQ], queueLength - 1)
 	    		boundAmmoRemoved = true
 	    	endIf
 	    	;Now prepare the ammo queue with the new sorting option
 	    	prepareAmmoQueue(jMap.getInt(jArray.getObj(targetQ[1], currentQueuePosition[1]), "Type"))
 	    	;And if we previously set aside bound ammo we can now re-add it to the end of the queue and reselect it
 	    	if boundAmmoRemoved
-	    		jArray.addObj(targetArray, tempBoundAmmoObj)
-	    		currentQueuePosition[ammoQ] = jArray.count(targetArray) - 1
+	    		jArray.addObj(targetQ[ammoQ], tempBoundAmmoObj)
+	    		currentQueuePosition[ammoQ] = jArray.count(targetQ[ammoQ]) - 1
 				currentlyEquipped[ammoQ] = jMap.getStr(tempBoundAmmoObj, "Name")
 			endIf
 	    	checkAndEquipAmmo(false, false)

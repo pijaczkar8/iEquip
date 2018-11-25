@@ -264,7 +264,7 @@ function runUpdate()
         endIf
         
     elseIf MCM.bProModeEnabled && iMultiTap == 3  ;Triple tap
-        if WaitingKeyCode == iEquip_shoutKey
+        if WaitingKeyCode == iEquip_shoutKey && MCM.bPreselectEnabled
             WC.isPreselectMode = !WC.isPreselectMode
         elseIf WaitingKeyCode == iEquip_leftKey && MCM.bQuickShieldEnabled
             WC.quickShield()
@@ -531,8 +531,9 @@ function openiEquipMCM(bool inMCMSelect = false)
                 if bNormalSystemPageBehav ; Compatibility with open system page mod
                 
                     ; Should take us to the Settings Tab
-                    if Game.UsingGamepad()
-                        TapKey(GetMappedKey("Left Attack"))
+                     if Game.UsingGamepad()
+                        TapKey(GetMappedKey("Left Attack/Block"))
+                        key_down = 267
                     else
                         TapKey(76)
                     endIf
@@ -553,6 +554,12 @@ function openiEquipMCM(bool inMCMSelect = false)
                 elapsedTime = Utility.GetCurrentRealTime() - startTime
             endIf
         endWhile
+ 
+        if MCM.isFirstEnabled
+            MCM.bEnabled = !MCM.bEnabled
+            MCM.justEnabled = true
+            MCM.isFirstEnabled = false
+        endIf
         
         if elapsedTime == 3.0
             int key_enter = GetMappedKey("Activate")

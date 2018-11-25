@@ -169,7 +169,7 @@ function ApplyMCMSettings()
                 EM.LoadEditModeWidgets()
             endIf
 		endIf
-	else
+	elseIf !isFirstEnabled
 		debug.Notification("iEquip disabled...")
 	endIf
 endFunction
@@ -256,7 +256,9 @@ Event OnConfigClose()
             EM.toggleEditMode()
             EM.Disabling = false
         endIf
-        WC.isEnabled = bEnabled
+        if !isFirstEnabled
+            WC.isEnabled = bEnabled
+        endIf
     endIf
     ApplyMCMSettings()
 endEvent

@@ -67,12 +67,10 @@ State gen_tgl_onOff
         if currentEvent == "Highlight"
             MCM.SetInfoText("Turn iEquip ON or OFF here\nDefault: OFF")
         elseIf currentEvent == "Select"
-            MCM.bEnabled = !MCM.bEnabled
             if MCM.isFirstEnabled
-                MCM.justEnabled = true
-                MCM.isFirstEnabled = false
                 KH.openiEquipMCM(true)
             else
+                MCM.bEnabled = !MCM.bEnabled
                 MCM.forcePageReset()
             endIf
         elseIf currentEvent == "Default"
