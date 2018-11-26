@@ -11,7 +11,8 @@ iEquip_MCM Property MCM Auto
 iEquip_ChargeMeters Property CM Auto
 
 bool property isEditMode = False Auto
-int property SelectedItem = 0 Auto
+int property SelectedItem = -1 Auto
+bool firstTimeInEditMode = true
 ;MCM toggle for Bring To Front function in Edit Mode.  Disabled by default as likely to be little used and causes delay when switching presets and entering/leaving Edit Mode
 bool Property bringToFrontEnabled = false Auto
 bool bringToFrontFirstTime = True
@@ -49,6 +50,10 @@ int DepthB
 String Element = ""
 String HUD_MENU
 String WidgetRoot
+
+String[] WidgetGroups
+int[] firstElementInGroup
+bool cyclingGroups = true
 
 float[] afWidget_CurX
 float[] afWidget_CurY
@@ -280,7 +285,7 @@ endFunction
 function UpdateEditModeInfoText()
 	debug.trace("iEquip EditMode UpdateEditModeInfoText called")
     
-	Int iIndex = SelectedItem - 1
+	Int iIndex = SelectedItem
 	if iIndex >= 0
 		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.SelectedElementText.text", WC.asWidgetDescriptions[iIndex])
 		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", (MoveStep as int) as String + " pixels")
@@ -324,7 +329,7 @@ endFunction
 function handleEditModeHighlights(int mode)
 	;mode: 1 = Add highlight, 0 = Remove highlight
 	debug.trace("iEquip EditMode handleEditModeHighlights called")
-	int iIndex = SelectedItem - 1
+	int iIndex = SelectedItem
 	int isText = WC.abWidget_isText[iIndex] as int
 	int[] args = new int[3]
 	args[0] = isText
@@ -376,7 +381,7 @@ function initColorPicker(int target)
 		defaultColor = 0xEAAB00
 	else
 		titleText = "Select a text color for selected text element"
-    	currentColor = WC.aiWidget_TC[SelectedItem - 1]
+    	currentColor = WC.aiWidget_TC[SelectedItem]
     	defaultColor = 0xFFFFFF
     endIf
     
@@ -399,7 +404,7 @@ function initColorPicker(int target)
                     EMCurrentValueColor = newColor
                     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeCurrentValueColor", newColor)
                 else
-                    int iIndex = SelectedItem - 1
+                    int iIndex = SelectedItem
                     WC.aiWidget_TC[iIndex] = newColor
                     int[] args = new int[2]
                     args[0] = iIndex
@@ -486,7 +491,7 @@ function updateCustomColors(int action_, int newColor, int aIndex)
                 EMCurrentValueColor = newColor
                 UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeCurrentValueColor", newColor)
             else
-                iIndex = SelectedItem - 1
+                iIndex = SelectedItem
                 WC.aiWidget_TC[iIndex] = newColor
                 int[] args = new int[2]
                 args[0] = iIndex
@@ -532,6 +537,22 @@ function toggleEditMode()
 	Wait(0.2)
     
 	if isEditMode
+		WidgetGroups = new String[6]
+		WidgetGroups[0] = ""
+		WidgetGroups[1] = "Left"
+		WidgetGroups[2] = "Right"
+		WidgetGroups[3] = "Shout"
+		WidgetGroups[4] = "Consumable"
+		WidgetGroups[5] = "Poison"
+
+		firstElementInGroup = new int[6]
+		firstElementInGroup[0] = 6 ;leftBg_mc
+		firstElementInGroup[1] = 6 ;leftBg_mc
+		firstElementInGroup[2] = 19 ;rightBg_mc
+		firstElementInGroup[3] = 32 ;shoutBg_mc
+		firstElementInGroup[4] = 38 ;consumableBg_mc
+		firstElementInGroup[5] = 42 ;poisonBg_mc
+
 		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true) ;Remove DropShadowFilter from all text elements before entering Edit Mode
         ; StoreOpeningValues
         Int iIndex = 0
@@ -558,9 +579,9 @@ function toggleEditMode()
             
             iIndex += 1
         EndWhile
-        
-		SelectedItem = 1
-		Element = WidgetRoot + WC.asWidgetElements[SelectedItem - 1]
+        cyclingGroups = true
+		SelectedItem = 0
+		Element = WidgetRoot + WC.asWidgetElements[SelectedItem]
 		bClockwise = true
 		MoveStep = 10.0000
 		RotateStep = 15.0000
@@ -592,9 +613,14 @@ function toggleEditMode()
 		endIf
         
         Game.GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
+
+        if firstTimeInEditMode
+        	firstTimeInEditMode = False
+        	debug.MessageBox("iEquip Edit Mode\n\nWelcome to Edit Mode\n\nUse the keys shown at the top of the instructions panel to cycle through the widget elements, press and hold either key to switch between cycling the widget groups or cycling the individual elements.\n\nThe instructions panel also contains information on all the changes you can make in Edit Mode, and how to save and load layout presets.")
+        endIf
 	else
 		handleEditModeHighlights(0)
-		SelectedItem = 0
+		SelectedItem = -1
 
 		resetWidgetsToPreviousState()
         UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false) ;Restore DropShadowFilter to all text elements when leaving Edit Mode
@@ -673,7 +699,6 @@ endFunction
 
 function bringToFront()
 	debug.trace("iEquip EditMode bringToFront called")
-	Int iIndex = SelectedItem - 1
 	
 	if bringToFrontFirstTime
 		debug.MessageBox("This feature allows you to adjust the layer order of the elements within each widget, and the layer order of the widgets themselves\n\n"+\
@@ -681,19 +706,19 @@ function bringToFront()
 		bringToFrontFirstTime = False
 	endIf
 
-	if iIndex > 0 && !WC.abWidget_isBg[iIndex]
+	if SelectedItem != -1 && !WC.abWidget_isBg[SelectedItem]
 		if !startbringToFront
-			iItemToMoveToFront = iIndex
-			debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[iIndex] + " in front of and press the Bring To Front key a second time")
+			iItemToMoveToFront = SelectedItem
+			debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[SelectedItem] + " in front of and press the Bring To Front key a second time")
 		else
 			int[] args = new int[2]
 			args[0] = iItemToMoveToFront
-			args[1] = iIndex
+			args[1] = SelectedItem
             
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".swapItemDepths", args)
-			WC.aiWidget_D[iItemToMoveToFront] = iIndex
-			if WC.aiWidget_D[iIndex] == iItemToMoveToFront
-				WC.aiWidget_D[iIndex] = -1
+			WC.aiWidget_D[iItemToMoveToFront] = SelectedItem
+			if WC.aiWidget_D[SelectedItem] == iItemToMoveToFront
+				WC.aiWidget_D[SelectedItem] = -1
 			endIf
 		endIf
 	endIf
@@ -780,93 +805,83 @@ endFunction
 ; CHECK IF MOVE FUNCTIONS CAN BE COMBINED
 function MoveLeft()
 	debug.trace("iEquip EditMode MoveLeft called")
-	Int iIndex = SelectedItem - 1
-	if iIndex >= 0
-		WC.afWidget_X[iIndex] = WC.afWidget_X[iIndex] - MoveStep
+	if SelectedItem >= 0
+		WC.afWidget_X[SelectedItem] = WC.afWidget_X[SelectedItem] - MoveStep
 		Float fDuration = 0.005*MoveStep
-		TweenElement(0, WC.afWidget_X[iIndex], fDuration)
+		TweenElement(0, WC.afWidget_X[SelectedItem], fDuration)
 	endIf
 endFunction
 
 function MoveRight()
 	debug.trace("iEquip EditMode MoveRight called")
-	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
-		WC.afWidget_X[iIndex] = WC.afWidget_X[iIndex] + MoveStep
+	If SelectedItem >= 0
+		WC.afWidget_X[SelectedItem] = WC.afWidget_X[SelectedItem] + MoveStep
 		Float fDuration = 0.005*MoveStep
-		TweenElement(0, WC.afWidget_X[iIndex], fDuration)
+		TweenElement(0, WC.afWidget_X[SelectedItem], fDuration)
 	EndIf
 endFunction
 
 function MoveUp()
 	debug.trace("iEquip EditMode MoveUp called")
-	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
-		WC.afWidget_Y[iIndex] = WC.afWidget_Y[iIndex] - MoveStep
+	If SelectedItem >= 0
+		WC.afWidget_Y[SelectedItem] = WC.afWidget_Y[SelectedItem] - MoveStep
 		Float fDuration = 0.005*MoveStep
-		TweenElement(1, WC.afWidget_Y[iIndex], fDuration)
+		TweenElement(1, WC.afWidget_Y[SelectedItem], fDuration)
 	EndIf
 endFunction
 
 function MoveDown()
 	debug.trace("iEquip EditMode MoveDown called")
-	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
-		WC.afWidget_Y[iIndex] = WC.afWidget_Y[iIndex] + MoveStep
+	If SelectedItem >= 0
+		WC.afWidget_Y[SelectedItem] = WC.afWidget_Y[SelectedItem] + MoveStep
 		Float fDuration = 0.005*MoveStep
-		TweenElement(1, WC.afWidget_Y[iIndex], fDuration)
+		TweenElement(1, WC.afWidget_Y[SelectedItem], fDuration)
 	EndIf
 endFunction
 
 function ScaleUp()
 	debug.trace("iEquip EditMode ScaleUp called")
-	Int iIndex = SelectedItem - 1
-	If iIndex >= 0
-		WC.afWidget_S[iIndex] = WC.afWidget_S[iIndex] + MoveStep
+	If SelectedItem >= 0
+		WC.afWidget_S[SelectedItem] = WC.afWidget_S[SelectedItem] + MoveStep
 		Float fDuration = 0.01*MoveStep
-		TweenElement(2, WC.afWidget_S[iIndex], fDuration)
+		TweenElement(2, WC.afWidget_S[SelectedItem], fDuration)
 	EndIf
-	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[iIndex] as int) as String + "%")
+	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[SelectedItem] as int) as String + "%")
 endFunction
 
 function ScaleDown()
-	debug.trace("iEquip EditMode ScaleDown called")
-	Int iIndex = SelectedItem - 1
-    
-	If iIndex >= 0
-		WC.afWidget_S[iIndex] = WC.afWidget_S[iIndex] - MoveStep
-		if WC.afWidget_S[iIndex] <= 30
-			WC.afWidget_S[iIndex] = 30
+	debug.trace("iEquip EditMode ScaleDown called") 
+	If SelectedItem >= 0
+		WC.afWidget_S[SelectedItem] = WC.afWidget_S[SelectedItem] - MoveStep
+		if WC.afWidget_S[SelectedItem] <= 30
+			WC.afWidget_S[SelectedItem] = 30
 		endIf
 		Float fDuration = 0.01*MoveStep
-		TweenElement(2, WC.afWidget_S[iIndex], fDuration)
-	EndIf
-    
-	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[iIndex] as int) as String + "%")
+		TweenElement(2, WC.afWidget_S[SelectedItem], fDuration)
+	EndIf 
+	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[SelectedItem] as int) as String + "%")
 endFunction
 
 function Rotate()
 	debug.trace("iEquip EditMode Rotate called")
-	Int iIndex = SelectedItem - 1
-    
-	If iIndex > 0
+	If SelectedItem > 0
 		if bClockwise
-			WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] + RotateStep
-			if WC.afWidget_R[iIndex] >= 360
-				WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] - 360
+			WC.afWidget_R[SelectedItem] = WC.afWidget_R[SelectedItem] + RotateStep
+			if WC.afWidget_R[SelectedItem] >= 360
+				WC.afWidget_R[SelectedItem] = WC.afWidget_R[SelectedItem] - 360
 			endIf
 		else
-			WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] - RotateStep
-			if WC.afWidget_R[iIndex] < 0
-				WC.afWidget_R[iIndex] = WC.afWidget_R[iIndex] + 360
+			WC.afWidget_R[SelectedItem] = WC.afWidget_R[SelectedItem] - RotateStep
+			if WC.afWidget_R[SelectedItem] < 0
+				WC.afWidget_R[SelectedItem] = WC.afWidget_R[SelectedItem] + 360
 			endIf
 		endIf
         
-		if WC.afWidget_R[iIndex] == 360
-			WC.afWidget_R[iIndex] = 0
+		if WC.afWidget_R[SelectedItem] == 360
+			WC.afWidget_R[SelectedItem] = 0
 		endIf
         
-		Rotation = WC.afWidget_R[iIndex] as int
+		Rotation = WC.afWidget_R[SelectedItem] as int
 		if Rotation > 180
 			Rotation = Rotation - 360
 		endIf
@@ -877,74 +892,89 @@ function Rotate()
 			fDuration = 0.125
 		endIf
 		TweenElement(3, Rotation, fDuration)
-	EndIf
-    
+	EndIf 
 	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", Rotation as String + " degrees")
 endFunction
 
 function setTextAlignment()
-	debug.trace("iEquip EditMode setTextAlignment called")
-	Int iIndex = SelectedItem - 1
-    
-	if iIndex > 0
+	debug.trace("iEquip EditMode setTextAlignment called")    
+	if SelectedItem > 0
         int[] args = new int[2]
-		args[0] = iIndex
+		args[0] = SelectedItem
     
-		If WC.asWidget_TA[iIndex] == "left"
-			WC.asWidget_TA[iIndex] = "Center"
+		If WC.asWidget_TA[SelectedItem] == "left"
+			WC.asWidget_TA[SelectedItem] = "Center"
 			args[1] = 1
-		elseIf WC.asWidget_TA[iIndex] == "center"
-			WC.asWidget_TA[iIndex] = "Right"
+		elseIf WC.asWidget_TA[SelectedItem] == "center"
+			WC.asWidget_TA[SelectedItem] = "Right"
 			args[1] = 2
 		else
-			WC.asWidget_TA[iIndex] = "Left"
+			WC.asWidget_TA[SelectedItem] = "Left"
 			args[1] = 0
 		endIf
 
 		tweenElement(5, 0, 0.15) ;Fade out before changing alignment
 		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", args)
-		tweenElement(5, WC.afWidget_A[iIndex], 0.15) ;Fade back in
+		tweenElement(5, WC.afWidget_A[SelectedItem], 0.15) ;Fade back in
 	endIf
-    
-	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", WC.asWidget_TA[iIndex] + " aligned")
+	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", WC.asWidget_TA[SelectedItem] + " aligned")
 endFunction
 
 function SetAlpha()
 	debug.trace("iEquip EditMode SetAlpha called")
-	Int iIndex = SelectedItem - 1
-    
-	If iIndex >= 0
-		WC.afWidget_A[iIndex] = WC.afWidget_A[iIndex] - AlphaStep
+	If SelectedItem >= 0
+		WC.afWidget_A[SelectedItem] = WC.afWidget_A[SelectedItem] - AlphaStep
         
-		if WC.afWidget_A[iIndex] <= 0
-			WC.afWidget_A[iIndex] = 100
+		if WC.afWidget_A[SelectedItem] <= 0
+			WC.afWidget_A[SelectedItem] = 100
 		endIf
         
-		TweenElement(4, WC.afWidget_A[iIndex], 0.01 * AlphaStep)
+		TweenElement(4, WC.afWidget_A[SelectedItem], 0.01 * AlphaStep)
 	EndIf
-    
-	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iIndex] as int) as String + "%")
+	UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[SelectedItem] as int) as String + "%")
 endFunction
 
-function cycleEditModeElements(int nextPrev)
+function cycleEditModeElements(bool next)
 	debug.trace("iEquip EditMode cycleEditModeElements called")
 	handleEditModeHighlights(0)
-    
-	if nextPrev == 1
-		SelectedItem = SelectedItem + 1
-		if SelectedItem >= 47
-			SelectedItem = 1
+    int firstElement = 0
+    int lastElement = 5
+	if !cyclingGroups
+		firstElement = 6
+		lastElement = 45
+	endIf
+	if next
+		SelectedItem += 1
+		if SelectedItem > lastElement
+			SelectedItem = firstElement
 		endIf
 	else
-		SelectedItem = SelectedItem - 1
-		if SelectedItem <= 0
-			SelectedItem = 46
+		SelectedItem -= 1
+		if SelectedItem < firstElement
+			SelectedItem = lastElement
 		endIf
 	endIf
-    
-	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", SelectedItem - 1)
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", SelectedItem)
 	handleEditModeHighlights(1)
-    Element = WidgetRoot + WC.asWidgetElements[SelectedItem - 1]
+    Element = WidgetRoot + WC.asWidgetElements[SelectedItem]
+	UpdateEditModeInfoText()
+endFunction
+
+;This function is called on longpress EditNext/Prev and switches between cycling through the complete widget and widget groups or individual elements
+function toggleSelectionRange()
+	debug.trace("iEquip EditMode selectCurrentGroup called")
+	handleEditModeHighlights(0)
+	cyclingGroups = !cyclingGroups
+	; If you have a widget group selected then select the first individual element in that group
+	if SelectedItem < 6
+		SelectedItem = firstElementInGroup[SelectedItem]
+	; Otherwise select the widget group containing the currently selected item
+	else			
+		SelectedItem = WidgetGroups.Find(WC.asWidgetGroup[SelectedItem])
+	endIf
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", SelectedItem)
+	handleEditModeHighlights(1)
+    Element = WidgetRoot + WC.asWidgetElements[SelectedItem]
 	UpdateEditModeInfoText()
 endFunction
 
@@ -979,10 +1009,9 @@ endFunction
 
 function ResetItem() ; NEEDS TO BE REWRITTEN/OPTIMIZED
     debug.trace("iEquip EditMode ResetItem called")
-    Int iIndex = SelectedItem - 1
-    If iIndex > 0
+    If SelectedItem > 0
         self.RegisterForModEvent("iEquip_GotDepth", "onGotDepth")
-        If WC.abWidget_isParent[iIndex]
+        If WC.abWidget_isParent[SelectedItem]
             int iButton = iEquip_ConfirmResetParent.Show() ;Add messagebox to check if user wants to reset parent and all child elements or not, return out if not
             if iButton != 1
                 return
@@ -996,20 +1025,20 @@ function ResetItem() ; NEEDS TO BE REWRITTEN/OPTIMIZED
         tweenElement(5, 0, 0.15)
         Utility.Wait(0.15)
         ;Reset single element - if it is a parent element reset the parent clip first then check below and reset the children
-        resetSingleElement(iIndex, WC.abWidget_isParent[iIndex])
+        resetSingleElement(SelectedItem, WC.abWidget_isParent[SelectedItem])
         ;Check if selected element is one of the widget parents and reset all children accordingly
-        if WC.abWidget_isParent[iIndex]
+        if WC.abWidget_isParent[SelectedItem]
             debug.trace("iEquip EditMode ResetChildren called")
-            String Group = WC.asWidgetGroup[iIndex]
-            int i = 4
+            String Group = WC.asWidgetGroup[SelectedItem]
+            int i = 6
             While i < WC.asWidgetDescriptions.Length
                 if WC.asWidgetGroup[i] == Group
                     resetSingleElement(i, false, true)
                 endIf
                 i += 1
             EndWhile
-            tweenElement(5, WC.afWidget_A[iIndex], 0.2)
-            debug.Notification("All elements of the " + WC.asWidgetDescriptions[iIndex] + " have been reset")
+            tweenElement(5, WC.afWidget_A[SelectedItem], 0.2)
+            debug.Notification("All elements of the " + WC.asWidgetDescriptions[SelectedItem] + " have been reset")
             debug.trace("iEquip EditMode ResetChildren finished")
         endIf
         self.UnRegisterForModEvent("iEquip_GotDepth")
@@ -1113,7 +1142,7 @@ function ResetDefaults()
 	updateWidgets()
     
 	if isEditMode
-		SelectedItem = 1
+		SelectedItem = 0
 		LoadEditModeWidgets()
 		UpdateEditModeInfoText()
 		UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
