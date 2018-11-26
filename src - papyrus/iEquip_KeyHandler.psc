@@ -506,7 +506,22 @@ function RegisterForEditModeKeys()
 endFunction
 
 function openiEquipMCM(bool inMCMSelect = false)
-    int key_j = GetMappedKey("Journal")
+    int key_j
+    int key_down
+    int key_scroll
+    int key_enter
+    
+    if Game.UsingGamepad()
+        key_j = 270
+        key_down = 267
+        key_scroll = 274
+        key_enter = 276
+    else
+        key_j = GetMappedKey("Journal")
+        key_down = GetMappedKey("Back")
+        key_scroll = 76
+        key_enter = GetMappedKey("Activate")
+    endIf
     
     if inMCMSelect
         TapKey(key_j)
@@ -523,21 +538,12 @@ function openiEquipMCM(bool inMCMSelect = false)
        !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
         float startTime = Utility.GetCurrentRealTime()
         float elapsedTime
-        int key_down = GetMappedKey("Back")
         int i = 0
         
         while elapsedTime <= 2.5
             if IsMenuOpen("Journal Menu")
-                if bNormalSystemPageBehav ; Compatibility with open system page mod
-                
-                    ; Should take us to the Settings Tab
-                     if Game.UsingGamepad()
-                        TapKey(GetMappedKey("Left Attack/Block"))
-                        key_down = 267
-                    else
-                        TapKey(76)
-                    endIf
-                    
+                if bNormalSystemPageBehav ; Compatibility with open system page mod 
+                    TapKey(key_scroll)
                     Utility.WaitMenuMode(0.005)
                 endIf
                 
@@ -562,7 +568,6 @@ function openiEquipMCM(bool inMCMSelect = false)
         endIf
         
         if elapsedTime == 3.0
-            int key_enter = GetMappedKey("Activate")
             TapKey(key_enter) 
             Utility.WaitMenuMode(0.005)
             
