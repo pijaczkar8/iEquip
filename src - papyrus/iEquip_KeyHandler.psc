@@ -317,7 +317,7 @@ state EDITMODE
                 else ; Turns out the key is a multiTap
                     iMultiTap = 1
                     
-                    If (KeyCode == iEquip_EditRotateKey || KeyCode == iEquip_EditAlphaKey || KeyCode == iEquip_EditRulersKey)
+                    If (KeyCode == iEquip_EditRotateKey || KeyCode == iEquip_EditRulersKey)
                         updateTime = multiTapDelay
                     endIf
                 endIf
@@ -328,8 +328,10 @@ state EDITMODE
     endEvent
 
     function runUpdate()
-        if iMultiTap == 0   ; Longpress
-            if WaitingKeyCode == iEquip_EditAlphaKey
+        if iMultiTap == 0   ; Press and hold
+            if WaitingKeyCode == iEquip_EditNextKey || WaitingKeyCode == iEquip_EditPrevKey
+                EM.toggleSelectionRange()
+            elseIf WaitingKeyCode == iEquip_EditAlphaKey
                 EM.toggleStep(2)
             elseIf WaitingKeyCode == iEquip_EditRotateKey
                 EM.toggleStep(1)
@@ -372,9 +374,9 @@ state EDITMODE
                     EM.setTextAlignment()
                 endIf
             elseIf WaitingKeyCode == iEquip_EditNextKey
-                EM.cycleEditModeElements(1)
+                EM.cycleEditModeElements(true)
             elseIf WaitingKeyCode == iEquip_EditPrevKey
-                EM.cycleEditModeElements(0)
+                EM.cycleEditModeElements(false)
             elseIf WaitingKeyCode == iEquip_EditResetKey
                 EM.ResetItem()
             elseIf WaitingKeyCode == iEquip_EditLoadPresetKey
@@ -424,6 +426,7 @@ function toggleEditMode()
 	else
         GoToState("EDITMODE")
 		RegisterForEditModeKeys()
+        updateEditModeKeys()
 	endIf
     
 	EM.toggleEditMode()
