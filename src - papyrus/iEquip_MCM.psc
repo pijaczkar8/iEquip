@@ -5,6 +5,9 @@ import stringUtil
 iEquip_WidgetCore Property WC Auto
 iEquip_EditMode Property EM Auto
 iEquip_KeyHandler Property KH Auto
+iEquip_AmmoMode Property AM Auto
+iEquip_ProMode Property PM Auto
+iEquip_PotionScript Property PO Auto
 
 iEquip_MCM_gen Property gen Auto
 iEquip_MCM_htk Property htk Auto
@@ -18,118 +21,24 @@ iEquip_MCM_inf Property inf Auto
 
 Float Property iEquip_CurrentVersion Auto
 
-Bool iEquip_RequiresResetOnUpdate = False ;Set to true for version updates which require a full reset
+actor property PlayerRef auto
 
-Actor Property PlayerRef  Auto  
-Form Property iEquip_Unarmed1H  Auto  
-Form Property iEquip_Unarmed2H  Auto  
+Bool bRequiresResetOnUpdate = False ;Set to true for version updates which require a full reset
 
-Bool Property iEquip_Reset = False Auto Hidden
-Bool Property refreshQueues = False Auto Hidden
-Bool Property fadeOptionsChanged = False Auto Hidden
-Bool Property ammoIconChanged = False Auto Hidden
-Bool Property ammoSortingChanged = False Auto Hidden
-
-bool Property isFirstEnabled = true Auto Hidden
-bool Property justEnabled = false Auto Hidden
-int Property AmmoListSorting = 1 Auto Hidden
-string Property ammoIconSuffix = "" Auto Hidden
-bool Property bEnableGearedUp = false Auto Hidden
-bool Property gearedUpOptionChanged = false Auto Hidden
-bool Property bUnequipAmmo = true Auto Hidden
-bool Property slotEnabledOptionsChanged = false Auto Hidden
-
-;Main On/Off switch
+Bool Property bReset = False Auto Hidden
+bool Property bIsFirstEnabled = true Auto Hidden
 bool Property bEnabled = false Auto Hidden
-bool Property bEditModeEnabled = true Auto Hidden
-bool Property bProModeEnabled = false Auto Hidden
-bool Property bEquipOnPause = true Auto Hidden
-
-int Property maxQueueLength = 7 Auto Hidden
-bool Property bHardLimitQueueSize = true Auto Hidden
-bool Property bAllowWeaponSwitchHands = true Auto Hidden
-bool Property bAllowSingleItemsInBothQueues = true Auto Hidden
-bool Property bAutoAddNewItems = false Auto Hidden
-bool Property bEnableRemovedItemCaching = true Auto Hidden
-int Property maxCachedItems = 30 Auto Hidden
-
-float Property equipOnPauseDelay = 2.0 Auto Hidden
-
-float Property mainNameFadeoutDelay = 5.0 Auto Hidden
-float Property poisonNameFadeoutDelay = 5.0 Auto Hidden
-float Property preselectNameFadeoutDelay = 5.0 Auto Hidden
-float Property nameFadeoutDuration = 1.5 Auto Hidden
-float Property widgetFadeoutDelay = 30.0 Auto Hidden
-float Property widgetFadeoutDuration = 1.5 Auto Hidden
-
-bool Property bPreselectEnabled = true Auto Hidden
-bool Property bShoutPreselectEnabled = true Auto Hidden
-bool Property bPreselectSwapItemsOnEquip = false Auto Hidden
-bool Property bTogglePreselectOnEquipAll = false Auto Hidden
 
 ;Strings used by save/load settings functions
 string MCMSettingsPath = "Data/iEquip/MCM Settings/"
 string FileExtMCM = ".IEQS"
 
-bool Property backgroundStyleChanged = false Auto Hidden
-bool Property bSkipCurrentItemWhenCycling = false Auto Hidden
-bool Property bFadeLeftIconWhen2HEquipped = true Auto Hidden
-float Property leftIconFadeAmount = 70.0 Auto Hidden
-
-bool Property bHealthPotionGrouping = true Auto Hidden
-bool Property bUseStrongestHealthPotion = true Auto Hidden
-bool Property bStaminaPotionGrouping = true Auto Hidden
-bool Property bUseStrongestStaminaPotion = true Auto Hidden
-bool Property bMagickaPotionGrouping = true Auto Hidden
-bool Property bUseStrongestMagickaPotion = true Auto Hidden
-int Property emptyPotionQueueChoice = 0 Auto Hidden
-bool Property bEmptyPotionQueueChoiceChanged = false Auto Hidden
-bool Property bFlashPotionWarning = true Auto Hidden
-bool Property bPotionGroupingOptionsChanged = false Auto Hidden
-
-bool Property bQuickShieldEnabled = false Auto Hidden
-bool Property bQuickShield2HSwitchAllowed = true Auto Hidden
-bool Property bQuickShieldPreferMagic = false Auto Hidden
-int Property preselectQuickShield = 1 Auto Hidden
-string Property quickShieldPreferredMagicSchool = "Destruction" Auto Hidden
-
-bool Property bQuickRangedEnabled = false Auto Hidden
-int Property preselectQuickRanged = 1 Auto Hidden
-int Property quickRangedPreferredWeaponType = 0 Auto Hidden
-int Property quickRangedSwitchOutAction = 1 Auto Hidden
-string Property quickRangedPreferredMagicSchool = "Destruction" Auto Hidden
-
-bool Property bQuickDualCastEnabled = false Auto Hidden
-bool Property bQuickDualCastMustBeInBothQueues = false Auto Hidden
-bool Property bQuickDualCastDestruction = false Auto Hidden
-bool Property bQuickDualCastIllusion = false Auto Hidden
-bool Property bQuickDualCastAlteration = false Auto Hidden
-bool Property bQuickDualCastConjuration = false Auto Hidden
-bool Property bQuickDualCastRestoration = false Auto Hidden
-
-bool Property bQuickHealEnabled = false Auto Hidden
-bool Property bQuickHealPreferMagic = false Auto Hidden
-int Property quickHealEquipChoice = 3 Auto Hidden
-bool Property bQuickHealUseSecondChoice = true Auto Hidden
-bool Property bQuickHealSwitchBackEnabled = true Auto Hidden
-
-bool Property bAllowPoisonSwitching = true Auto Hidden
-bool Property bAllowPoisonTopUp = true Auto Hidden
-int Property poisonChargeMultiplier = 1 Auto Hidden
-int Property poisonChargesPerVial = 1 Auto Hidden
-int Property showPoisonMessages = 0 Auto Hidden
-int Property poisonIndicatorStyle = 1 Auto Hidden
-bool Property poisonIndicatorStyleChanged = false Auto Hidden
-
-bool Property bShowAttributeIcons = true Auto Hidden
-bool Property bAttributeIconsOptionChanged = false Auto Hidden
-
-int Property currentWidgetFadeoutChoice = 1 Auto Hidden
-int Property currentNameFadeoutChoice = 1 Auto Hidden
-int Property ammoIconStyle = 0 Auto Hidden
-int Property currentQSPreferredMagicSchoolChoice = 2 Auto Hidden
-int Property currentQRPreferredMagicSchoolChoice = 2 Auto Hidden
-int Property currentEMKeysChoice = 0 Auto Hidden
+int Property iCurrentWidgetFadeoutChoice = 1 Auto Hidden
+int Property iCurrentNameFadeoutChoice = 1 Auto Hidden
+int Property iAmmoIconStyle = 0 Auto Hidden
+int Property iCurrentQSPreferredMagicSchoolChoice = 2 Auto Hidden
+int Property iCurrentQRPreferredMagicSchoolChoice = 2 Auto Hidden
+int Property iCurrentEMKeysChoice = 0 Auto Hidden
 
 ; ###########################
 ; ### START OF UPDATE MCM ###
@@ -141,7 +50,7 @@ endFunction
 event OnVersionUpdate(int a_version)
     if (a_version > CurrentVersion && CurrentVersion > 0)
         Debug.Notification("Updating iEquip to Version " + a_version as string)
-        if iEquip_RequiresResetOnUpdate ;For major version updates - fully resets mod, use only if absolutely neccessary
+        if bRequiresResetOnUpdate ;For major version updates - fully resets mod, use only if absolutely neccessary
             OnConfigInit()
             EM.ResetDefaults()
         else
@@ -158,7 +67,7 @@ function ApplyMCMSettings()
 	debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
 	
 	if WC.isEnabled
-		if iEquip_Reset
+		if bReset
 			EM.ResetDefaults()
 		else
             debug.Notification("Applying iEquip settings...")
@@ -169,7 +78,7 @@ function ApplyMCMSettings()
                 EM.LoadEditModeWidgets()
             endIf
 		endIf
-	elseIf !isFirstEnabled
+	elseIf !bIsFirstEnabled
 		debug.Notification("iEquip disabled...")
 	endIf
 endFunction
@@ -178,14 +87,6 @@ endFunction
 ; ### START OF CONFIG MCM ###
 
 Event OnConfigInit()
-    iEquip_Reset = false
-
-    if(!playerRef.getItemCount(iEquip_Unarmed1H))
-        PlayerRef.AddItem(iEquip_Unarmed1H)
-    endIf
-    if(!playerRef.getItemCount(iEquip_Unarmed2H))
-        PlayerRef.AddItem(iEquip_Unarmed2H)
-    endIf
     
     gen.initData()
     htk.initData()
@@ -202,21 +103,21 @@ Event OnConfigInit()
 endEvent
 
 event OnConfigOpen()
-    iEquip_Reset = false
-    refreshQueues = false
-    fadeOptionsChanged = false
-    ammoIconChanged = false
-    ammoSortingChanged = false
-    slotEnabledOptionsChanged = false
-    gearedUpOptionChanged = false
-    bAttributeIconsOptionChanged = false
-    poisonIndicatorStyleChanged = false
-    bPotionGroupingOptionsChanged = false
-    backgroundStyleChanged = false
+    bReset = false
+    WC.bRefreshQueues = false
+    WC.bFadeOptionsChanged = false
+    WC.bAmmoIconChanged = false
+    WC.bAmmoSortingChanged = false
+    WC.bSlotEnabledOptionsChanged = false
+    WC.bGearedUpOptionChanged = false
+    WC.bAttributeIconsOptionChanged = false
+    WC.bPoisonIndicatorStyleChanged = false
+    WC.bPotionGroupingOptionsChanged = false
+    WC.bBackgroundStyleChanged = false
     
-    if isFirstEnabled == false
-        if bProModeEnabled
-            if bEditModeEnabled
+    if bIsFirstEnabled == false
+        if WC.bProModeEnabled
+            if WC.bEditModeEnabled
                 Pages = new String[9]
                 Pages[8] = "Information"
                 Pages[7] = "Edit Mode"
@@ -229,7 +130,7 @@ event OnConfigOpen()
                 Pages[5] = "Pro Mode"
             endIf
         else
-            if bEditModeEnabled
+            if WC.bEditModeEnabled
                 Pages = new String[8]
                 Pages[7] = "Information"
                 Pages[6] = "Edit Mode"
@@ -252,11 +153,11 @@ endEvent
 Event OnConfigClose()
     if WC.isEnabled != bEnabled
         if !bEnabled && EM.isEditMode
-            EM.Disabling = true
+            EM.bDisabling = true
             EM.toggleEditMode()
-            EM.Disabling = false
+            EM.bDisabling = false
         endIf
-        if !isFirstEnabled
+        if !bIsFirstEnabled
             WC.isEnabled = bEnabled
         endIf
     endIf

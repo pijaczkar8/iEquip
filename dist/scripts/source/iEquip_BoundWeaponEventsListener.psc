@@ -4,7 +4,7 @@ Import iEquip_FormExt
 
 iEquip_WidgetCore Property WC Auto
 
-bool property isBoundSpellEquipped = false auto
+bool property bIsBoundSpellEquipped = false auto
 
 event OnInit()
 	iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(Self)
@@ -23,7 +23,7 @@ endFunction
 
 Event OnBoundWeaponEquipped(Int a_weaponType, Int a_equipSlot)
 	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped event received - weapon type: " + a_weaponType + ", slot: " + a_equipSlot)
-	if isBoundSpellEquipped && a_equipSlot != 0
+	if bIsBoundSpellEquipped && a_equipSlot != 0
 		int otherHand = 1
 		bool equipBoth = a_equipSlot == 3 && (a_weaponType < 5 || a_weaponType == 8)
 		if a_equipSlot == 2
@@ -41,7 +41,7 @@ EndEvent
 
 Event OnBoundWeaponUnequipped(Weapon a_weap, Int a_unequipSlot)
 	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponUnequipped event received - weapon: " + a_weap.GetName() + ", slot: " + a_unequipSlot)
-	if isBoundSpellEquipped && a_unequipSlot != 0
+	if bIsBoundSpellEquipped && a_unequipSlot != 0
 		if a_unequipSlot == 2
 			a_unequipSlot = 0
 		else

@@ -2,9 +2,7 @@
 scriptName iEquip_RechargeScript extends Quest
 
 import iEquip_SoulSeeker
-import UI
 
-iEquip_WidgetCore Property WC Auto
 iEquip_ChargeMeters Property CM Auto
 iEquip_RechargeLeftFXScript Property LFX Auto
 iEquip_RechargeRightFXScript Property RFX Auto
@@ -12,42 +10,37 @@ iEquip_RechargeRightFXScript Property RFX Auto
 actor Property PlayerRef Auto
 sound Property iEquip_Recharge_SFX Auto
 
-string HUD_MENU
-string WidgetRoot
-
 bool Property bRechargingEnabled = true Auto Hidden
 bool Property bUseLargestSoul = true Auto Hidden
 bool Property bUsePartFilledGems = false Auto Hidden
 bool Property bAllowOversizedSouls = false Auto Hidden
 
-float[] amountToRecharge
-float[] skillPointsToAdd
+float[] afAmountToRecharge
+float[] afSkillPointsToAdd
 
 event OnInit()
 	debug.trace("iEquip_RechargeScript OnInit called")
-	HUD_MENU = WC.HUD_MENU
-	WidgetRoot = WC.WidgetRoot
 
-	amountToRecharge = new float[6]
-	amountToRecharge[0] = 0.0 ;Empty
-	amountToRecharge[1] = 250.0 ;Petty
-	amountToRecharge[2] = 500.0 ;Lesser
-	amountToRecharge[3] = 1000.0 ;Common
-	amountToRecharge[4] = 2000.0 ;Greater
-	amountToRecharge[5] = 3000.0 ;Grand
+	afAmountToRecharge = new float[6]
+	afAmountToRecharge[0] = 0.0 ;Empty
+	afAmountToRecharge[1] = 250.0 ;Petty
+	afAmountToRecharge[2] = 500.0 ;Lesser
+	afAmountToRecharge[3] = 1000.0 ;Common
+	afAmountToRecharge[4] = 2000.0 ;Greater
+	afAmountToRecharge[5] = 3000.0 ;Grand
 
-	skillPointsToAdd = new float[6]
-	skillPointsToAdd[0] = 0.0
-	skillPointsToAdd[1] = 0.05
-	skillPointsToAdd[2] = 0.1
-	skillPointsToAdd[3] = 0.2
-	skillPointsToAdd[4] = 0.4
-	skillPointsToAdd[5] = 0.6
+	afSkillPointsToAdd = new float[6]
+	afSkillPointsToAdd[0] = 0.0
+	afSkillPointsToAdd[1] = 0.05
+	afSkillPointsToAdd[2] = 0.1
+	afSkillPointsToAdd[3] = 0.2
+	afSkillPointsToAdd[4] = 0.4
+	afSkillPointsToAdd[5] = 0.6
 endEvent
 
 function rechargeWeapon(int Q)
 	debug.trace("iEquip_RechargeScript rechargeWeapon called - Q: " + Q)
-    string weaponToRecharge = CM.itemCharge[Q]
+    string weaponToRecharge = CM.asItemCharge[Q]
     float currentCharge = PlayerRef.GetActorValue(weaponToRecharge)
     ;float maxCharge = PlayerRef.GetBaseActorValue(weaponToRecharge)
     float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
@@ -68,12 +61,12 @@ function rechargeWeapon(int Q)
                     RFX.ShowRechargeFX()
                 endIf
                 ;Just in case it's possible to overcharge a weapon ensure we never recharge more than requiredCharge
-                if amountToRecharge[soulSize] < requiredCharge
-        	       PlayerRef.ModActorValue(weaponToRecharge, amountToRecharge[soulSize])
+                if afAmountToRecharge[soulSize] < requiredCharge
+        	       PlayerRef.ModActorValue(weaponToRecharge, afAmountToRecharge[soulSize])
                 else
                     PlayerRef.ModActorValue(weaponToRecharge, requiredCharge)
                 endIf
-        	    game.AdvanceSkill("Enchanting", skillPointsToAdd[soulSize])
+        	    game.AdvanceSkill("Enchanting", afSkillPointsToAdd[soulSize])
         	    CM.checkAndUpdateChargeMeter(Q, true)
             else
             	debug.Notification("No soul found")

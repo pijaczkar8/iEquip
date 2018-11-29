@@ -27,27 +27,27 @@ function drawPage()
             
     MCM.AddHeaderOption("Edit Mode Keys")
     MCM.AddEmptyOption()
-    MCM.AddMenuOptionST("edt_men_chooseHtKey", "Choose your hotkeys", EMKeysChoice[MCM.currentEMKeysChoice])
+    MCM.AddMenuOptionST("edt_men_chooseHtKey", "Choose your hotkeys", EMKeysChoice[MCM.iCurrentEMKeysChoice])
             
-    if(MCM.currentEMKeysChoice == 1)
+    if(MCM.iCurrentEMKeysChoice == 1)
         MCM.AddEmptyOption()
-        MCM.AddKeyMapOptionST("edt_key_nextElem", "Next element", KH.iEquip_EditNextKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_prevElem", "Previous element", KH.iEquip_EditPrevKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_moveUp", "Move up", KH.iEquip_EditUpKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_moveDown", "Move down", KH.iEquip_EditDownKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_moveLeft", "Move left", KH.iEquip_EditLeftKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_moveRight", "Move right", KH.iEquip_EditRightKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_sclUp", "Scale up", KH.iEquip_EditScaleUpKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_sclDown", "Scale down", KH.iEquip_EditScaleDownKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_rotate", "Rotate", KH.iEquip_EditRotateKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_adjTransp", "Adjust transparency", KH.iEquip_EditAlphaKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_bringFrnt", "Bring to front", KH.iEquip_EditDepthKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_setTxtAlCo", "Set text alignment and colour", KH.iEquip_EditTextKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_tglRulers", "Toggle rulers", KH.iEquip_EditRulersKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_rstSelElem", "Reset selected element", KH.iEquip_EditResetKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_loadPrst", "Load preset", KH.iEquip_EditLoadPresetKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_savePrst", "Save preset", KH.iEquip_EditSavePresetKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_discChangs", "Discard changes", KH.iEquip_EditDiscardKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_nextElem", "Next element", KH.iEditNextKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_prevElem", "Previous element", KH.iEditPrevKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_moveUp", "Move up", KH.iEditUpKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_moveDown", "Move down", KH.iEditDownKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_moveLeft", "Move left", KH.iEditLeftKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_moveRight", "Move right", KH.iEditRightKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_sclUp", "Scale up", KH.iEditScaleUpKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_sclDown", "Scale down", KH.iEditScaleDownKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_rotate", "Rotate", KH.iEditRotateKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_adjTransp", "Adjust transparency", KH.iEditAlphaKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_bringFrnt", "Bring to front", KH.iEditDepthKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_setTxtAlCo", "Set text alignment and colour", KH.iEditTextKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_tglRulers", "Toggle rulers", KH.iEditRulersKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_rstSelElem", "Reset selected element", KH.iEditResetKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_loadPrst", "Load preset", KH.iEditLoadPresetKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_savePrst", "Save preset", KH.iEditSavePresetKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_discChangs", "Discard changes", KH.iEditDiscardKey, mcmUnmapFLAG)
     endIf
 endFunction
 
@@ -93,15 +93,15 @@ State edt_men_chooseHtKey
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose to use the recommended Edit Mode hotkeys or set your own")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.currentEMKeysChoice, EMKeysChoice, 0)
+            fillMenu(MCM.iCurrentEMKeysChoice, EMKeysChoice, 0)
         elseIf currentEvent == "Accept"
-            MCM.currentEMKeysChoice = currentVar as int
+            MCM.iCurrentEMKeysChoice = currentVar as int
             
-            if MCM.currentEMKeysChoice == 0
+            if MCM.iCurrentEMKeysChoice == 0
                 KH.resetEditModeKeys()
             endIf
             
-            MCM.SetMenuOptionValueST(EMKeysChoice[MCM.currentEMKeysChoice])
+            MCM.SetMenuOptionValueST(EMKeysChoice[MCM.iCurrentEMKeysChoice])
         endIf 
     endEvent
 endState
@@ -113,220 +113,220 @@ endState
 State edt_key_nextElem
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditNextKey = currentVar as int
+            KH.iEditNextKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditNextKey = 55
+            KH.iEditNextKey = 55
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditNextKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditNextKey)
     endEvent
 endState
 
 State edt_key_prevElem
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditPrevKey = currentVar as int
+            KH.iEditPrevKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditPrevKey = 181
+            KH.iEditPrevKey = 181
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditPrevKey)        
+        MCM.SetKeyMapOptionValueST(KH.iEditPrevKey)        
     endEvent
 endState
 
 State edt_key_moveUp
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditUpKey = currentVar as int
+            KH.iEditUpKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditUpKey = 200
+            KH.iEditUpKey = 200
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditUpKey)        
+        MCM.SetKeyMapOptionValueST(KH.iEditUpKey)        
     endEvent
 endState
 
 State edt_key_moveDown
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditDownKey = currentVar as int
+            KH.iEditDownKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditDownKey = 208
+            KH.iEditDownKey = 208
         endIf
 
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditDownKey)        
+        MCM.SetKeyMapOptionValueST(KH.iEditDownKey)        
     endEvent
 endState
 
 State edt_key_moveLeft
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditLeftKey = currentVar as int
+            KH.iEditLeftKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditLeftKey = 203
+            KH.iEditLeftKey = 203
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditLeftKey)        
+        MCM.SetKeyMapOptionValueST(KH.iEditLeftKey)        
     endEvent
 endState
 
 State edt_key_moveRight
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditRightKey = currentVar as int
+            KH.iEditRightKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditRightKey = 205
+            KH.iEditRightKey = 205
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditRightKey)        
+        MCM.SetKeyMapOptionValueST(KH.iEditRightKey)        
     endEvent
 endState
 
 State edt_key_sclUp
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditScaleUpKey = currentVar as int
+            KH.iEditScaleUpKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditScaleUpKey = 78
+            KH.iEditScaleUpKey = 78
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditScaleUpKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditScaleUpKey)
     endEvent
 endState
 
 State edt_key_sclDown
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditScaleDownKey = currentVar as int
+            KH.iEditScaleDownKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditScaleDownKey = 74
+            KH.iEditScaleDownKey = 74
         endIf
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditScaleDownKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditScaleDownKey)
     endEvent
 endState
 
 State edt_key_rotate
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditRotateKey = currentVar as int
+            KH.iEditRotateKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditRotateKey = 80
+            KH.iEditRotateKey = 80
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditRotateKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditRotateKey)
     endEvent
 endState
 
 State edt_key_adjTransp
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditAlphaKey = currentVar as int
+            KH.iEditAlphaKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditAlphaKey = 81
+            KH.iEditAlphaKey = 81
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditAlphaKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditAlphaKey)
     endEvent
 endState
 
 State edt_key_bringFrnt
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditDepthKey = currentVar as int
+            KH.iEditDepthKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditDepthKey = 72
+            KH.iEditDepthKey = 72
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditDepthKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditDepthKey)
     endEvent
 endState
 
 State edt_key_setTxtAlCo
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditTextKey = currentVar as int
+            KH.iEditTextKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditTextKey = 79
+            KH.iEditTextKey = 79
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditTextKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditTextKey)
     endEvent
 endState
 
 State edt_key_tglRulers
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditRulersKey = currentVar as int
+            KH.iEditRulersKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditRulersKey = 77
+            KH.iEditRulersKey = 77
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditRulersKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditRulersKey)
     endEvent
 endState
 
 State edt_key_rstSelElem
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditResetKey = currentVar as int
+            KH.iEditResetKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditResetKey = 82
+            KH.iEditResetKey = 82
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditResetKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditResetKey)
     endEvent
 endState
 
 State edt_key_loadPrst
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditLoadPresetKey = currentVar as int
+            KH.iEditLoadPresetKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditLoadPresetKey = 75
+            KH.iEditLoadPresetKey = 75
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditLoadPresetKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditLoadPresetKey)
     endEvent
 endState
 
 State edt_key_savePrst
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditSavePresetKey = currentVar as int
+            KH.iEditSavePresetKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditSavePresetKey = 76
+            KH.iEditSavePresetKey = 76
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditSavePresetKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditSavePresetKey)
     endEvent
 endState
 
 State edt_key_discChangs
     event OnBeginState()
         if currentEvent == "Change"
-            KH.iEquip_EditDiscardKey = currentVar as int
+            KH.iEditDiscardKey = currentVar as int
             KH.updateKeyMaps(currentVar as int)
         elseIf currentEvent == "Default"
-            KH.iEquip_EditDiscardKey = 83
+            KH.iEditDiscardKey = 83
         endIf 
         
-        MCM.SetKeyMapOptionValueST(KH.iEquip_EditDiscardKey)
+        MCM.SetKeyMapOptionValueST(KH.iEditDiscardKey)
     endEvent
 endState

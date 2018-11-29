@@ -1,22 +1,21 @@
 ScriptName iEquip_RightHandEquipUpdateScript Extends Quest
 
 iEquip_WidgetCore Property WC Auto
-iEquip_MCM Property MCM Auto
 
-bool Reverse = false
-bool WaitingForEquipOnPauseUpdate = false
+bool bReverse = false
+bool bWaitingForEquipOnPauseUpdate = false
 
-function registerForEquipOnPauseUpdate(bool bReverse)
+function registerForEquipOnPauseUpdate(bool Reverse)
 	debug.trace("iEquip_RightHandEquipUpdateScript registerForEquipOnPauseUpdate called")
-	Reverse = bReverse
-	RegisterForSingleUpdate(MCM.equipOnPauseDelay)
-	WaitingForEquipOnPauseUpdate = true
+	bReverse = Reverse
+	RegisterForSingleUpdate(WC.fEquipOnPauseDelay)
+	bWaitingForEquipOnPauseUpdate = true
 endFunction
 
 event OnUpdate()
 	debug.trace("iEquip_RightHandEquipUpdateScript OnUpdate called")
-	if WaitingForEquipOnPauseUpdate ;Failsafe bool to block OnUpdate if triggered from another script on the quest
-		WaitingForEquipOnPauseUpdate = false
-		WC.checkAndEquipShownHandItem(1, Reverse)
+	if bWaitingForEquipOnPauseUpdate ;Failsafe bool to block OnUpdate if triggered from another script on the quest
+		bWaitingForEquipOnPauseUpdate = false
+		WC.checkAndEquipShownHandItem(1, bReverse)
 	endIf
 endEvent

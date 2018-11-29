@@ -22,7 +22,7 @@ int previousLeftCount
 int previousRightCount
 
 bool isWidgetMaster = False
-bool property Disabling = false Auto
+bool property bDisabling = false Auto
 bool startbringToFront = False
 
 Float MoveStep
@@ -137,7 +137,7 @@ function updateWidgets()
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
 		endIf
         
-		if bringToFrontEnabled && isEditMode && !WC.isFirstLoad && !WC.Loading
+		if bringToFrontEnabled && isEditMode && !WC.bIsFirstLoad && !WC.bLoading
 			while SettingDepth == true
 				Utility.Wait(0.01)
 			endWhile
@@ -219,7 +219,7 @@ function LoadEditModeWidgets()
 		iIndex += 1
 	EndWhile
 	;Show left and right counters if not currently shown
-	if !WC.leftCounterShown
+	if !WC.bLeftCounterShown
 		wasLeftCounterShown = false
 		WC.setCounterVisibility(0, true)
 	else
@@ -227,7 +227,7 @@ function LoadEditModeWidgets()
 		previousLeftCount = UI.getString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftCount_mc.leftCount.text") as int
 	endIf
 	WC.setSlotCount(0,99)
-	if !WC.rightCounterShown
+	if !WC.bRightCounterShown
 		wasRightCounterShown = false
 		WC.setCounterVisibility(1, true)
 	else
@@ -238,7 +238,7 @@ function LoadEditModeWidgets()
 	;Show any currently hidden names
 	int Q = 0
 	while Q < 8
-		if !WC.isNameShown[Q]
+		if !WC.abIsNameShown[Q]
 			WC.showName(Q, true, false, 0.0)
 		endIf
 		Q += 1
@@ -247,7 +247,7 @@ function LoadEditModeWidgets()
 	int iHandle
 	while Q < 2
 		;Check and show left and right poison elements if not already displayed
-		if !WC.poisonInfoDisplayed[Q]
+		if !WC.abPoisonInfoDisplayed[Q]
 			string poisonNamePath = ".widgetMaster.LeftHandWidget.leftPoisonName_mc.leftPoisonName.text"
 			if Q == 1
 				poisonNamePath = ".widgetMaster.RightHandWidget.rightPoisonName_mc.rightPoisonName.text"
@@ -260,7 +260,7 @@ function LoadEditModeWidgets()
 				UICallback.Send(iHandle)
 			endIf
 		endIf
-		if !WC.isPoisonNameShown[Q]
+		if !WC.abIsPoisonNameShown[Q]
 			WC.showName(Q, true, true, 0.0)
 		endIf
 		;Check and show left and right attribute icons including those for the preselect slots
@@ -590,9 +590,9 @@ function toggleEditMode()
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeCurrentValueColor", EMCurrentValueColor)
 		SetINIFloat("fAutoVanityModeDelay:Camera", 9999999) ;Effectively disables Vanity Camera whilst in Edit Mode    
       
-		if !WC.isPreselectMode
+		if !WC.bPreselectMode
 			preselectEnabledOnEnter = true
-			WC.isPreselectMode = !WC.isPreselectMode
+			WC.PM.togglePreselectMode()
 		endIf
         
 		LoadEditModeWidgets()
@@ -630,7 +630,7 @@ function toggleEditMode()
         Game.GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
 	endIf
     
-	if !Disabling
+	if !bDisabling
 		WC.showWidget() ;Reshow widget only if toggleEditMode not called as a result of turning iEquip off in the MCM
 	endIf
     
@@ -1112,21 +1112,21 @@ function resetWidgetsToPreviousState()
 	int iHandle
 	while Q < 2
 		;Reset poison elements
-		if !WC.poisonInfoDisplayed[Q]
+		if !WC.abPoisonInfoDisplayed[Q]
 			WC.hidePoisonInfo(Q, true)
 		else
 			WC.checkAndUpdatePoisonInfo(Q)
 		endIf
 		;Reset attribute icons
 		WC.hideAttributeIcons(Q)
-		if WC.isPreselectMode && preselectEnabledOnEnter
+		if WC.bPreselectMode && preselectEnabledOnEnter
 			WC.updateAttributeIcons(Q, 0)
 		endIf
 		Q += 1
 	endWhile
 	;Reset Preselect Mode
-	if preselectEnabledOnEnter && WC.isPreselectMode
-        WC.isPreselectMode = !WC.isPreselectMode
+	if preselectEnabledOnEnter && WC.bPreselectMode
+        WC.PM.togglePreselectMode()
 		preselectEnabledOnEnter = false
 	endIf
 	;Reset enchantment meters and soulgems
@@ -1149,7 +1149,7 @@ function ResetDefaults()
 	endIf
     
 	WC.showWidget()
-	MCM.iEquip_Reset = false
+	MCM.bReset = false
 
 	debug.Notification("All iEquip widgets reset")
 	debug.trace("iEquip EditMode ResetDefaults finished")

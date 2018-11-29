@@ -1,3 +1,4 @@
+
 Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 
 Import iEquip_AmmoExt
@@ -6,6 +7,7 @@ Import iEquip_FormExt
 Import StringUtil
 
 iEquip_WidgetCore Property WC Auto
+iEquip_AmmoMode Property AM Auto
 iEquip_MCM Property MCM Auto
 iEquip_PotionScript Property PO Auto
 iEquip_RechargeScript Property RC Auto
@@ -13,12 +15,12 @@ iEquip_ChargeMeters Property CM Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 
 Actor Property PlayerRef Auto
-bool Property poisonSlotEnabled = true Auto
-bool isCrossbowEquipped = false
-bool isBoundSpellEquipped = false
-bool waitingForPlayerToDrawEnchantedWeapon = false
-bool updateThrottle
-int slotToUpdate = -1
+bool Property bPoisonSlotEnabled = true Auto
+bool bIsCrossbowEquipped = false
+bool bIsBoundSpellEquipped = false
+bool bWaitingForPlayerToDrawEnchantedWeapon = false
+bool bUpdateThrottle
+int iSlotToUpdate = -1
 
 Event OnInit()
 	gotoState("DISABLED")
@@ -30,7 +32,7 @@ function OniEquipEnabled(bool enabled)
 		gotoState("")
 		Utility.SetINIBool("bDisableGearedUp:General", True)
 		WC.refreshVisibleItems()
-		If MCM.bEnableGearedUp
+		If WC.bEnableGearedUp
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
@@ -49,14 +51,14 @@ Event OnPlayerLoadGame()
 		gotoState("")
 		Utility.SetINIBool("bDisableGearedUp:General", True)
 		WC.refreshVisibleItems()
-		If MCM.bEnableGearedUp
+		If WC.bEnableGearedUp
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
 		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
-		BW.isBoundSpellEquipped = isBoundSpellEquipped
+		BW.bIsBoundSpellEquipped = bIsBoundSpellEquipped
 		BW.onGameLoaded()
 		PO.onGameLoaded()
 	else
@@ -67,13 +69,13 @@ endEvent
 bool Property crossbowEquipped
 	bool function Get()
 		debug.trace("iEquip_PlayerEventHandler crossbowEquipped Get called")
-		return isCrossbowEquipped
+		return bIsCrossbowEquipped
 	endFunction
 
 	function Set(Bool equipped)
-		isCrossbowEquipped = equipped
-		debug.trace("iEquip_PlayerEventHandler crossbowEquipped Set called - isCrossbowEquipped: " + equipped)
-		if isCrossbowEquipped
+		bIsCrossbowEquipped = equipped
+		debug.trace("iEquip_PlayerEventHandler crossbowEquipped Set called - bIsCrossbowEquipped: " + equipped)
+		if bIsCrossbowEquipped
 			RegisterForActorAction(6)
 		else
 			UnregisterForActorAction(6)
@@ -84,26 +86,26 @@ endProperty
 bool Property boundSpellEquipped
 	bool function Get()
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get called")
-		return isBoundSpellEquipped
+		return bIsBoundSpellEquipped
 	endFunction
 
 	function Set(Bool equipped)
-		isBoundSpellEquipped = equipped
-		BW.isBoundSpellEquipped = equipped
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - isBoundSpellEquipped: " + equipped)
+		bIsBoundSpellEquipped = equipped
+		BW.bIsBoundSpellEquipped = equipped
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - bIsBoundSpellEquipped: " + equipped)
 	endFunction
 endProperty
 
 bool Property waitForEnchantedWeaponDrawn
 	bool function Get()
 		debug.trace("iEquip_PlayerEventHandler waitForEnchantedWeaponDrawn Get called")
-		return waitingForPlayerToDrawEnchantedWeapon
+		return bWaitingForPlayerToDrawEnchantedWeapon
 	endFunction
 
 	function Set(Bool waiting)
-		waitingForPlayerToDrawEnchantedWeapon = waiting
-		debug.trace("iEquip_PlayerEventHandler waitForEnchantedWeaponDrawn Set called - waitingForPlayerToDrawEnchantedWeapon: " + waiting)
-		if waitingForPlayerToDrawEnchantedWeapon
+		bWaitingForPlayerToDrawEnchantedWeapon = waiting
+		debug.trace("iEquip_PlayerEventHandler waitForEnchantedWeaponDrawn Set called - bWaitingForPlayerToDrawEnchantedWeapon: " + waiting)
+		if bWaitingForPlayerToDrawEnchantedWeapon
 			RegisterForActorAction(8) ;Draw End
 		else
 			UnregisterForActorAction(8)
@@ -116,7 +118,7 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	debug.trace("iEquip_PlayerEventHandler OnActorAction called - actionType: " + actionType + ", slot: " + slot)
 	if akActor == PlayerRef
 		if actionType == 6
-			WC.updateAmmoCounterOnCrossbowShot()
+			AM.updateAmmoCounterOnCrossbowShot()
 		elseIf actionType == 8
 			CM.updateChargeMetersOnWeaponsDrawn()
 			waitForEnchantedWeaponDrawn = false
@@ -126,59 +128,59 @@ endEvent
 
 Event OnPlayerBowShot(Weapon akWeapon, Ammo akAmmo, float afPower, bool abSunGazing)
 	debug.trace("iEquip_PlayerEventHandler OnPlayerBowShot called")
-	WC.updateAmmoCounterOnBowShot(akAmmo)
+	AM.updateAmmoCounterOnBowShot(akAmmo)
 endEvent
 
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
 	if EventName == "weaponSwing" || EventName == "arrowRelease"
-		if slotToUpdate == -1
-			slotToUpdate = 1
-		elseIf slotToUpdate == 0
-			slotToUpdate = 2
+		if iSlotToUpdate == -1
+			iSlotToUpdate = 1
+		elseIf iSlotToUpdate == 0
+			iSlotToUpdate = 2
 		endIf
 	elseIf EventName == "weaponLeftSwing"
-		if slotToUpdate == -1
-			slotToUpdate = 0
-		elseIf slotToUpdate == 1
-			slotToUpdate = 2
+		if iSlotToUpdate == -1
+			iSlotToUpdate = 0
+		elseIf iSlotToUpdate == 1
+			iSlotToUpdate = 2
 		endIf
 	endIf
-	If !updateThrottle
-		updateThrottle = true
+	If !bUpdateThrottle
+		bUpdateThrottle = true
 		RegisterForSingleUpdate(0.8)
 	EndIf
 EndEvent
 
 Event OnUpdate()
 	debug.trace("iEquip_PlayerEventHandler OnUpdate called")
-	updateThrottle = false
-	if slotToUpdate == 0 || slotToUpdate == 1
-		If poisonSlotEnabled
-			WC.checkAndUpdatePoisonInfo(slotToUpdate)
+	bUpdateThrottle = false
+	if iSlotToUpdate == 0 || iSlotToUpdate == 1
+		If bPoisonSlotEnabled
+			WC.checkAndUpdatePoisonInfo(iSlotToUpdate)
 		endIf
-		if RC.bRechargingEnabled && CM.isChargeMeterShown[slotToUpdate]
-			if CM.chargeDisplayType > 0
-				CM.updateMeterPercent(slotToUpdate)
+		if RC.bRechargingEnabled && CM.abIsChargeMeterShown[iSlotToUpdate]
+			if CM.iChargeDisplayType > 0
+				CM.updateMeterPercent(iSlotToUpdate)
 			endIf
 		endIf
 	else
-		If poisonSlotEnabled
+		If bPoisonSlotEnabled
 			WC.checkAndUpdatePoisonInfo(0)
 			WC.checkAndUpdatePoisonInfo(1)
 		endIf
 		if RC.bRechargingEnabled
-			if CM.chargeDisplayType > 0
-				if CM.isChargeMeterShown[0]
+			if CM.iChargeDisplayType > 0
+				if CM.abIsChargeMeterShown[0]
 					CM.updateMeterPercent(0)
 				endIf
-				if CM.isChargeMeterShown[1]
+				if CM.abIsChargeMeterShown[1]
 					CM.updateMeterPercent(1)
 				endIf
 			endIf
 		endIf
 	endIf
-	slotToUpdate = -1
+	iSlotToUpdate = -1
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
@@ -191,22 +193,18 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	int i
 	if akBaseItem as potion
 		PO.onPotionAdded(akBaseItem)
-	elseIf isBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(akBaseItem as ammo)
-		WC.addBoundAmmoToQueue(akBaseItem, akBaseItem.GetName())
-	elseIf WC.isAmmoMode && akBaseItem as ammo
-		i = 5
-		while i < 7
-			if WC.isCurrentlyEquipped(i, akBaseItem.GetName())
-	    		WC.setSlotCount(0, PlayerRef.GetItemCount(akBaseItem))
-        	endIf
-        	i += 1
-        endWhile
+	elseIf bIsBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(akBaseItem as ammo)
+		AM.addBoundAmmoToQueue(akBaseItem, akBaseItem.GetName())
+	elseIf AM.bAmmoMode && akBaseItem as ammo
+		if AM.currentAmmoForm.GetName() == akBaseItem.GetName()
+	    	AM.setSlotCount(PlayerRef.GetItemCount(akBaseItem))
+        endIf
 	else
 		i = 0
 		int itemType = akBaseItem.GetType()
 		string itemName = akBaseItem.GetName()
 		while i < 2
-			if WC.isCurrentlyEquipped(i,itemName)
+			if WC.asCurrentlyEquipped[i] == itemName
 				;Ammo, scrolls, torch or other throwing weapons
 				if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
 	    			WC.setSlotCount(i, PlayerRef.GetItemCount(akBaseItem))
@@ -222,22 +220,18 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	int i
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
-	elseIf WC.isAmmoMode && akBaseItem as ammo
-		i = 5
-		while i < 7
-			if WC.isCurrentlyEquipped(i, akBaseItem.GetName())
-	    		WC.setSlotCount(0, PlayerRef.GetItemCount(akBaseItem))
-        	endIf
-        	i += 1
-        endWhile
+	elseIf AM.bAmmoMode && akBaseItem as ammo
+		if AM.currentAmmoForm.GetName() == akBaseItem.GetName()
+	    	AM.setSlotCount(PlayerRef.GetItemCount(akBaseItem))
+        endIf
 	else
 		i = 0
 		int itemType = akBaseItem.GetType()
 		string itemName = akBaseItem.GetName()
 		while i < 2
-			if WC.isCurrentlyEquipped(i,itemName)
+			if WC.asCurrentlyEquipped[i] == itemName
 				;Ammo, scrolls, torch or other throwing weapons
-				if (itemType == 42 && !WC.isAmmoMode) || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
+				if (itemType == 42 && !WC.bAmmoMode) || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
 	    			WC.setSlotCount(i, PlayerRef.GetItemCount(akBaseItem))
 	    		endIf
         	endIf
