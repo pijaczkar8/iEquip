@@ -738,10 +738,7 @@ endEvent
 
 event OnMenuClose(string _sCurrentMenu)
 	debug.trace("iEquip_WidgetCore OnMenuClose called - current menu: " + _sCurrentMenu + ", bJustEnabled: " + bJustEnabled + ", bItemsWaitingForID: " + bItemsWaitingForID)
-	if _sCurrentMenu == "Journal Menu" && bJustEnabled
-        debug.MessageBox("Adding items to iEquip\n\nBefore you can use iEquip for the first time you need to choose your gear for each slot.  Simply open your Inventory, Magic or Favorites menu and follow the instructions there.\n\nEnjoy using iEquip!")
-        bJustEnabled = false		
-	elseif (_sCurrentMenu == "InventoryMenu" || _sCurrentMenu == "MagicMenu" || _sCurrentMenu == "FavoritesMenu") && bItemsWaitingForID ;&& !utility.IsInMenuMode()
+	if (_sCurrentMenu == "InventoryMenu" || _sCurrentMenu == "MagicMenu" || _sCurrentMenu == "FavoritesMenu") && bItemsWaitingForID ;&& !utility.IsInMenuMode()
 		findAndFillMissingItemIDs()
 		bItemsWaitingForID = false
 	endIf
@@ -845,7 +842,6 @@ bool property isEnabled
 						endIf
 						Q += 1
 					endWhile
-					;CM.updateChargeMeters(true)
 				endIf
 				bool[] args = new bool[4]
 				args[0] = false ;Hide left
@@ -883,6 +879,11 @@ bool property isEnabled
 		if bEnabled && bIsFirstEnabled
 			ResetWidgetArrays()
 			bIsFirstEnabled = false
+			if bJustEnabled
+				Utility.Wait(1.5)
+		        debug.MessageBox("Adding items to iEquip\n\nBefore you can use iEquip for the first time you need to choose your gear for each slot.  Simply open your Inventory, Magic or Favorites menu and follow the instructions there.\n\nEnjoy using iEquip!")
+		        bJustEnabled = false	
+		    endIf
 		endIf
 	endFunction
 EndProperty
