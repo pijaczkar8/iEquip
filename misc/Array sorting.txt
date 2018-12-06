@@ -1,4 +1,0 @@
-;ActionScript 2.0
-
-var myArray:Array = [1, 300, -1, 2, 4, -1];
-myArray.sort(Array.NUMERIC | Array.DESCENDING);

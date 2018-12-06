@@ -38,8 +38,8 @@ State inf_txt_rstLayout
             MCM.SetInfoText("Selecting this will nuke any changes you have made to iEquip and fully restore the default layout")
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
-                MCM.iEquip_Reset = !MCM.iEquip_Reset
-                KH.openiEquipMCM(true)
+                EM.ResetDefaults()
+                KH.OpeniEquipMCM(true)
             endIf
         endIf 
     endEvent

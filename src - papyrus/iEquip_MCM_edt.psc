@@ -21,7 +21,6 @@ endFunction
 function drawPage()
     MCM.AddHeaderOption("Edit Mode Options")
     MCM.AddSliderOptionST("edt_sld_slowTimeStr", "Slow Time effect strength ", iEquip_EditModeSlowTimeStrength.GetValueint())
-    MCM.AddToggleOptionST("edt_tgl_enblBringFrnt", "Enable Bring To Front", MCM.EM.bringToFrontEnabled)
             
     MCM.SetCursorPosition(1)
             
@@ -69,21 +68,6 @@ State edt_sld_slowTimeStr
         elseIf currentEvent == "Accept"
             MCM.SetSliderOptionValueST(currentVar)
             iEquip_EditModeSlowTimeStrength.SetValue(currentVar)
-        endIf 
-    endEvent
-endState
-
-State edt_tgl_enblBringFrnt
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("Bring To Front feature in Edit Mode allows you to rearrange the layer order of overlapping widget elements\n"+\
-                            "Disabled by default as adds a short delay when switching presets and toggling Edit Mode")
-        elseIf currentEvent == "Select"
-            MCM.EM.bringToFrontEnabled = !MCM.EM.bringToFrontEnabled
-            MCM.SetToggleOptionValueST(MCM.EM.bringToFrontEnabled)
-        elseIf currentEvent == "Default"
-            MCM.EM.bringToFrontEnabled = false
-            MCM.SetToggleOptionValueST(MCM.EM.bringToFrontEnabled)
         endIf 
     endEvent
 endState

@@ -266,9 +266,8 @@ EndEvent
 Event OnColorMenuDelete(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;Event only called if Default has been pressed to reset a custom colour slot
 	If(asEventName == "iEquip_colorMenuDelete")
-		Int ArrayIndexToDelete = afNumArg as Int
 		bMenuOpen = False
-		EM.updateCustomColors(1, 0, ArrayIndexToDelete)
+		EM.DeleteCustomColor(afNumArg as Int)
 	EndIf
 EndEvent
 

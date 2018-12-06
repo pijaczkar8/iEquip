@@ -1,4 +1,0 @@
-float CurrentVanityModeDelay = Utility.GetINIFloat(fAutoVanityModeDelay)
-Utility.SetINIFloat(fAutoVanityModeDelay, 9999999)
-;do edit mode stuff
-Utility.SetINIFloat(fAutoVanityModeDelay, CurrentVanityModeDelay)

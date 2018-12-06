@@ -193,7 +193,7 @@ function runUpdate()
             WC.equipAllPreselectedItems()
         endIf
         
-    elseIf iMultiTap == 1  ;Single tap
+    elseIf iMultiTap == 1  ; Single tap
         If WaitingKeyCode == iEquip_leftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
             if WC.isAmmoMode || (WC.isPreselectMode && (RHItemType == 7 || RHItemType == 12))
@@ -330,72 +330,66 @@ state EDITMODE
     function runUpdate()
         if iMultiTap == 0   ; Press and hold
             if WaitingKeyCode == iEquip_EditNextKey || WaitingKeyCode == iEquip_EditPrevKey
-                EM.toggleSelectionRange()
+                EM.ToggleCycleRange()
             elseIf WaitingKeyCode == iEquip_EditAlphaKey
-                EM.toggleStep(2)
+                EM.ToggleStep(2)
             elseIf WaitingKeyCode == iEquip_EditRotateKey
-                EM.toggleStep(1)
+                EM.ToggleStep(1)
             elseIf (WaitingKeyCode == iEquip_EditLeftKey || WaitingKeyCode == iEquip_EditRightKey || WaitingKeyCode == iEquip_EditUpKey ||\
                     WaitingKeyCode == iEquip_EditDownKey || WaitingKeyCode == iEquip_EditScaleUpKey || WaitingKeyCode == iEquip_EditScaleDownKey)
-                EM.toggleStep(0)
+                EM.ToggleStep(0)
             elseIf WaitingKeyCode == iEquip_EditTextKey
-                if WC.abWidget_isText[EM.SelectedItem - 1]
-                    EM.initColorPicker(2) ;Text color
+                if WC.abWidget_isText[EM.SelectedItem]
+                    EM.ShowColorSelection(2) ;Text color
                 endIf
             elseIf WaitingKeyCode == iEquip_EditRulersKey
-                EM.initColorPicker(0) ;Highlight color
+                EM.ShowColorSelection(0) ;Highlight color
             endIf
             
         elseIf iMultiTap == 1  ;Single tap
-            if WaitingKeyCode == iEquip_EditLeftKey
-                EM.MoveLeft()
-            elseIf WaitingKeyCode == iEquip_EditRightKey
-                EM.MoveRight()
-            elseIf WaitingKeyCode == iEquip_EditUpKey
-                EM.MoveUp()
+            if WaitingKeyCode == iEquip_EditUpKey
+                EM.MoveElement(0)
             elseIf WaitingKeyCode == iEquip_EditDownKey
-                EM.MoveDown()
+                EM.MoveElement(1)
+            elseIf WaitingKeyCode == iEquip_EditLeftKey
+                EM.MoveElement(2)
+            elseIf WaitingKeyCode == iEquip_EditRightKey
+                EM.MoveElement(3)
             elseIf WaitingKeyCode == iEquip_EditScaleUpKey
-                EM.ScaleUp()
+                EM.ScaleElement(0)
             elseIf WaitingKeyCode == iEquip_EditScaleDownKey
-                EM.ScaleDown()
+                EM.ScaleElement(1)
             elseIf WaitingKeyCode == iEquip_EditRotateKey
-                EM.Rotate()
+                EM.RotateElement()
             elseIf WaitingKeyCode == iEquip_EditAlphaKey
-                EM.SetAlpha()
+                EM.SetElementAlpha()
             elseIf WaitingKeyCode == iEquip_EditDepthKey
-                if EM.bringToFrontEnabled
-                    EM.bringToFront()
-                else
-                    debug.messagebox("Bring To Front is currently disabled in the MCM\n\nIf you want to be able to change layer order for overlapping widget elements turn Bring To Front on first")
-                endIf
+                EM.SwapElementDepth()
             elseIf WaitingKeyCode == iEquip_EditTextKey
-                if WC.abWidget_isText[EM.SelectedItem - 1]
-                    EM.setTextAlignment()
-                endIf
+                EM.ToggleTextAlignment()
             elseIf WaitingKeyCode == iEquip_EditNextKey
-                EM.cycleEditModeElements(true)
+                EM.CycleElements(1)
             elseIf WaitingKeyCode == iEquip_EditPrevKey
-                EM.cycleEditModeElements(false)
+                EM.CycleElements(-1)
             elseIf WaitingKeyCode == iEquip_EditResetKey
-                EM.ResetItem()
+                EM.ResetElement()
             elseIf WaitingKeyCode == iEquip_EditLoadPresetKey
-                EM.showEMPresetListMenu()
+                EM.ShowPresetList()
             elseIf WaitingKeyCode == iEquip_EditSavePresetKey
-                EM.showEMTextInputMenu(0)
+                EM.SavePreset()
             elseIf WaitingKeyCode == iEquip_EditRulersKey
                 EM.ToggleRulers()
             elseIf WaitingKeyCode == iEquip_EditDiscardKey
                 EM.DiscardChanges()
             elseIf WaitingKeyCode == iEquip_utilityKey
-                toggleEditMode()
+                ToggleEditMode()
             endIf
             
         elseIf iMultiTap == 2  ; Double tap
             if WaitingKeyCode == iEquip_EditRotateKey
-                EM.toggleRotateDirection()
+                EM.ToggleRotateDirection()
             elseIf WaitingKeyCode == iEquip_EditRulersKey
-                EM.initColorPicker(1) ;Current item info color
+                EM.ShowColorSelection(1) ;Current item info color
             endIf
             
         endIf
@@ -416,7 +410,7 @@ function updateKeyMaps(int keycode)
     endIf
 endFunction
 
-function toggleEditMode()
+function ToggleEditMode()
 	debug.trace("iEquip KeyHandler toggleEditMode called")
     UnregisterForAllKeys()
     
@@ -429,7 +423,7 @@ function toggleEditMode()
         updateEditModeKeys()
 	endIf
     
-	EM.toggleEditMode()
+	EM.ToggleEditMode()
 endFunction
 
 function resetEditModeKeys()

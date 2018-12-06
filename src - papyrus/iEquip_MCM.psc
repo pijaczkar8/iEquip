@@ -158,17 +158,13 @@ function ApplyMCMSettings()
 	debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
 	
 	if WC.isEnabled
-		if iEquip_Reset
-			EM.ResetDefaults()
-		else
-            debug.Notification("Applying iEquip settings...")
-            
-			WC.ApplyChanges()
-            KH.updateEditModeKeys()           
-            if EM.isEditMode
-                EM.LoadEditModeWidgets()
-            endIf
-		endIf
+        debug.Notification("Applying iEquip settings...")
+        
+        WC.ApplyChanges()
+        KH.updateEditModeKeys()           
+        if EM.isEditMode
+            EM.LoadEditModeWidgets()
+        endIf
 	elseIf !isFirstEnabled
 		debug.Notification("iEquip disabled...")
 	endIf
@@ -178,8 +174,6 @@ endFunction
 ; ### START OF CONFIG MCM ###
 
 Event OnConfigInit()
-    iEquip_Reset = false
-
     if(!playerRef.getItemCount(iEquip_Unarmed1H))
         PlayerRef.AddItem(iEquip_Unarmed1H)
     endIf
@@ -202,7 +196,6 @@ Event OnConfigInit()
 endEvent
 
 event OnConfigOpen()
-    iEquip_Reset = false
     refreshQueues = false
     fadeOptionsChanged = false
     ammoIconChanged = false
