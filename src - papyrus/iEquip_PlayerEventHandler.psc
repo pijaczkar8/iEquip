@@ -14,6 +14,7 @@ iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_CachedItemHandler Property CH Auto
+iEquip_WidgetVisUpdateScript property WVis auto
 
 Actor Property PlayerRef Auto
 
@@ -46,6 +47,9 @@ function OniEquipEnabled(bool enabled)
 		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
+		RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
+		RegisterForActorAction(8) ;Draw End - weapons and spells
+		RegisterForActorAction(10) ;Sheathe End - weapons and spells
 		BW.OniEquipEnabled()
 		updateAllEventFilters()
 	else
@@ -66,6 +70,9 @@ Event OnPlayerLoadGame()
 		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
+		RegisterForActorAction(7)
+		RegisterForActorAction(8)
+		RegisterForActorAction(10)
 		BW.bIsBoundSpellEquipped = bIsBoundSpellEquipped
 		BW.onGameLoaded()
 		PO.onGameLoaded()
@@ -126,22 +133,33 @@ bool Property waitForEnchantedWeaponDrawn
 	function Set(Bool waiting)
 		bWaitingForPlayerToDrawEnchantedWeapon = waiting
 		debug.trace("iEquip_PlayerEventHandler waitForEnchantedWeaponDrawn Set called - bWaitingForPlayerToDrawEnchantedWeapon: " + waiting)
-		if bWaitingForPlayerToDrawEnchantedWeapon
+		;/if bWaitingForPlayerToDrawEnchantedWeapon
 			RegisterForActorAction(8) ;Draw End
 		else
 			UnregisterForActorAction(8)
-		endIf
+		endIf/;
 	endFunction
 endProperty
 
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	debug.trace("iEquip_PlayerEventHandler OnActorAction called - actionType: " + actionType + ", slot: " + slot)
 	if akActor == PlayerRef
-		if actionType == 6
+		if actionType == 6 ;Bow Release
 			AM.updateAmmoCounterOnCrossbowShot()
-		elseIf actionType == 8
-			CM.updateChargeMetersOnWeaponsDrawn()
-			waitForEnchantedWeaponDrawn = false
+		elseIf actionType == 7 ;Draw Begin
+			if !WC.bIsWidgetShown
+				WC.updateWidgetVisibility()
+			endIf
+		elseIf actionType == 8 ;Draw End
+			if !WC.bIsWidgetShown ;In case we're drawing a spell which won't have been caught by Draw Begin
+				WC.updateWidgetVisibility()
+			endIf
+			if waitForEnchantedWeaponDrawn
+				CM.updateChargeMetersOnWeaponsDrawn()
+				waitForEnchantedWeaponDrawn = false
+			endIf
+		elseIf actionType == 10 && WC.bIsWidgetShown && WC.bWidgetFadeoutEnabled ;Sheathe End
+			WVis.registerForWidgetFadeoutUpdate()
 		endIf
 	endIf
 endEvent
