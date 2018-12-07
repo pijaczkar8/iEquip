@@ -796,16 +796,16 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 	debug.trace("iEquip_WidgetCore updateWidgetVisibility called - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
 	if show
 		if !bIsWidgetShown
-			FadeTo(100, 0.2)
 			bIsWidgetShown = true
+			FadeTo(100, 0.2)
 		endif
 		;Register for widget fadeout if enabled
 		if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode
 			WVis.registerForWidgetFadeoutUpdate()
 		endIf
 	elseIf bIsWidgetShown
-		FadeTo(0, fDuration)
 		bIsWidgetShown = false
+		FadeTo(0, fDuration)
 	endIf
 endFunction
 
