@@ -158,7 +158,7 @@ class skyui.widgets.iEquip.iEquipSoulGem extends MovieClip
 		fillGradient = soulGemFillGradientHolder.createEmptyMovieClip("fillGradient", 0);
 		
 		colors = [fillColor, fillColorDark];
-		alphas = [90, 90];
+		alphas = [80, 80];
 		ratios = [127, 63];
 				
 		matrix.createGradientBox(h, w, r);
