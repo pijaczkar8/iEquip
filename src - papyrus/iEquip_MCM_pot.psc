@@ -1,6 +1,6 @@
 Scriptname iEquip_MCM_pot extends iEquip_MCM_helperfuncs
 
-iEquip_PotionScript Property POT Auto
+iEquip_PotionScript Property PO Auto
 
 string[] potionEffects
 string[] emptyPotionQueueOptions
@@ -22,13 +22,13 @@ endFunction
 function drawPage()
     MCM.AddEmptyOption()
     MCM.AddHeaderOption("Health Potion Options")
-    MCM.AddToggleOptionST("pot_tgl_enblHealthGroup", "Enable Health Potion Grouping", MCM.bHealthPotionGrouping)
+    MCM.AddToggleOptionST("pot_tgl_enblHealthGroup", "Enable Health Potion Grouping", MCM.WC.bHealthPotionGrouping)
             
-    if MCM.bHealthPotionGrouping
-        MCM.AddMenuOptionST("pot_men_hPrefEffect", "Preferred Effect", potionEffects[POT.iHealthPotionsFirstChoice])
-        MCM.AddMenuOptionST("pot_men_hPrefEffect2", "2nd Choice", potionEffects[POT.iHealthPotionsSecondChoice])
-        MCM.AddTextOptionST("pot_txt_hPrefEffect3", "3rd Choice", potionEffects[POT.iHealthPotionsThirdChoice])
-        MCM.AddToggleOptionST("pot_tgl_alwaysUseHealth", "Always use strongest potion first", MCM.bUseStrongestHealthPotion)
+    if MCM.WC.bHealthPotionGrouping
+        MCM.AddMenuOptionST("pot_men_hPrefEffect", "Preferred Effect", potionEffects[PO.iHealthPotionsFirstChoice])
+        MCM.AddMenuOptionST("pot_men_hPrefEffect2", "2nd Choice", potionEffects[PO.iHealthPotionsSecondChoice])
+        MCM.AddTextOptionST("pot_txt_hPrefEffect3", "3rd Choice", potionEffects[PO.iHealthPotionsThirdChoice])
+        MCM.AddToggleOptionST("pot_tgl_alwaysUseHealth", "Always use strongest potion first", MCM.PO.bUseStrongestHealthPotion)
     else
         MCM.AddEmptyOption()
         MCM.AddEmptyOption()
@@ -38,26 +38,26 @@ function drawPage()
             
     MCM.AddEmptyOption()
     MCM.AddHeaderOption("Stamina Potion Options")
-    MCM.AddToggleOptionST("pot_tgl_enblStaminaGroup", "Enable Stamina Potion Grouping", MCM.bStaminaPotionGrouping)
+    MCM.AddToggleOptionST("pot_tgl_enblStaminaGroup", "Enable Stamina Potion Grouping", MCM.WC.bStaminaPotionGrouping)
             
-    if MCM.bStaminaPotionGrouping
-        MCM.AddMenuOptionST("pot_men_sPrefEffect", "Preferred Effect", potionEffects[POT.iStaminaPotionsFirstChoice])
-        MCM.AddMenuOptionST("pot_men_sPrefEffect2", "2nd Choice", potionEffects[POT.iStaminaPotionsSecondChoice])
-        MCM.AddTextOptionST("pot_txt_sPrefEffect3", "3rd Choice", potionEffects[POT.iStaminaPotionsThirdChoice])
-        MCM.AddToggleOptionST("pot_tgl_alwaysUseStamina", "Always use strongest potion first", MCM.bUseStrongestStaminaPotion)
+    if MCM.WC.bStaminaPotionGrouping
+        MCM.AddMenuOptionST("pot_men_sPrefEffect", "Preferred Effect", potionEffects[PO.iStaminaPotionsFirstChoice])
+        MCM.AddMenuOptionST("pot_men_sPrefEffect2", "2nd Choice", potionEffects[PO.iStaminaPotionsSecondChoice])
+        MCM.AddTextOptionST("pot_txt_sPrefEffect3", "3rd Choice", potionEffects[PO.iStaminaPotionsThirdChoice])
+        MCM.AddToggleOptionST("pot_tgl_alwaysUseStamina", "Always use strongest potion first", MCM.PO.bUseStrongestStaminaPotion)
     endIf
 
     MCM.SetCursorPosition(1)
 
     MCM.AddEmptyOption()
     MCM.AddHeaderOption("Magicka Potion Options")
-    MCM.AddToggleOptionST("pot_tgl_enblMagickaGroup", "Enable Magicka Potion Grouping", MCM.bMagickaPotionGrouping)
+    MCM.AddToggleOptionST("pot_tgl_enblMagickaGroup", "Enable Magicka Potion Grouping", MCM.WC.bMagickaPotionGrouping)
             
-    if MCM.bMagickaPotionGrouping
-        MCM.AddMenuOptionST("pot_men_mPrefEffect", "Preferred Effect", potionEffects[POT.iMagickaPotionsFirstChoice])
-        MCM.AddMenuOptionST("pot_men_mPrefEffect2", "2nd Choice", potionEffects[POT.iMagickaPotionsSecondChoice])
-        MCM.AddTextOptionST("pot_txt_mPrefEffect3", "3rd Choice", potionEffects[POT.iMagickaPotionsThirdChoice])
-        MCM.AddToggleOptionST("pot_tgl_alwaysUseMagicka", "Always use strongest potion first", MCM.bUseStrongestMagickaPotion)
+    if MCM.WC.bMagickaPotionGrouping
+        MCM.AddMenuOptionST("pot_men_mPrefEffect", "Preferred Effect", potionEffects[PO.iMagickaPotionsFirstChoice])
+        MCM.AddMenuOptionST("pot_men_mPrefEffect2", "2nd Choice", potionEffects[PO.iMagickaPotionsSecondChoice])
+        MCM.AddTextOptionST("pot_txt_mPrefEffect3", "3rd Choice", potionEffects[PO.iMagickaPotionsThirdChoice])
+        MCM.AddToggleOptionST("pot_tgl_alwaysUseMagicka", "Always use strongest potion first", MCM.PO.bUseStrongestMagickaPotion)
     else
         MCM.AddEmptyOption()
         MCM.AddEmptyOption()
@@ -67,8 +67,8 @@ function drawPage()
             
     MCM.AddEmptyOption()
     MCM.AddHeaderOption("Widget Options")
-    MCM.AddMenuOptionST("pot_men_whenNoPotions", "When no potions left...", emptyPotionQueueOptions[MCM.emptyPotionQueueChoice])
-    MCM.AddToggleOptionST("pot_tgl_warningOnLastPotion", "Warning flash when last potion used", MCM.bFlashPotionWarning)
+    MCM.AddMenuOptionST("pot_men_whenNoPotions", "When no potions left...", emptyPotionQueueOptions[MCM.PO.iEmptyPotionQueueChoice])
+    MCM.AddToggleOptionST("pot_tgl_warningOnLastPotion", "Warning flash when last potion used", MCM.PO.bFlashPotionWarning)
 endFunction
 
 ; ###############
@@ -84,12 +84,12 @@ State pot_tgl_enblHealthGroup
         if currentEvent == "Highlight"
             MCM.SetInfoText("Rather than having individual health potions in your consumables queue this adds a single Health Potions item to the queue. iEquip then curates a list of all health potions currently in your inventory and consumption is based on the settings below.")
         elseIf currentEvent == "Select"
-            MCM.bHealthPotionGrouping = !MCM.bHealthPotionGrouping
-            MCM.bPotionGroupingOptionsChanged = true
+            MCM.WC.bHealthPotionGrouping = !MCM.WC.bHealthPotionGrouping
+            MCM.WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.bHealthPotionGrouping = true
-            MCM.bPotionGroupingOptionsChanged = true
+            MCM.WC.bHealthPotionGrouping = true
+            MCM.WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent
@@ -100,16 +100,16 @@ State pot_men_hPrefEffect
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose your preferred health potion effect.  When you long press your consumables key to consume a health potion iEquip will search the potion lists in order of preference set here.")
         elseIf currentEvent == "Open"
-            fillMenu(POT.iHealthPotionsFirstChoice, potionEffects, 0)
+            fillMenu(PO.iHealthPotionsFirstChoice, potionEffects, 0)
         elseIf currentEvent == "Accept"
-            if POT.iHealthPotionsFirstChoice != currentVar as int
-                if POT.iHealthPotionsSecondChoice == currentVar as int
-                    POT.iHealthPotionsSecondChoice = POT.iHealthPotionsFirstChoice
+            if PO.iHealthPotionsFirstChoice != currentVar as int
+                if PO.iHealthPotionsSecondChoice == currentVar as int
+                    PO.iHealthPotionsSecondChoice = PO.iHealthPotionsFirstChoice
                 else
-                    POT.iHealthPotionsThirdChoice = POT.iHealthPotionsFirstChoice
+                    PO.iHealthPotionsThirdChoice = PO.iHealthPotionsFirstChoice
                 endif
                 
-                POT.iHealthPotionsFirstChoice = currentVar as int
+                PO.iHealthPotionsFirstChoice = currentVar as int
                 MCM.forcePageReset()
             endIf
         endIf
@@ -119,14 +119,14 @@ endState
 State pot_men_hPrefEffect2
     event OnBeginState()
         if currentEvent == "Open"
-            string[] potionOptions = cutStrArray(potionEffects, POT.iHealthPotionsFirstChoice)
-            fillMenu(potionOptions.find(potionEffects[POT.iHealthPotionsSecondChoice]), potionOptions, potionOptions.find(potionEffects[1]))
+            string[] potionOptions = cutStrArray(potionEffects, PO.iHealthPotionsFirstChoice)
+            fillMenu(potionOptions.find(potionEffects[PO.iHealthPotionsSecondChoice]), potionOptions, potionOptions.find(potionEffects[1]))
         elseIf currentEvent == "Accept"
-            string[] potionOptions = cutStrArray(potionEffects, POT.iHealthPotionsFirstChoice)
+            string[] potionOptions = cutStrArray(potionEffects, PO.iHealthPotionsFirstChoice)
         
-            POT.iHealthPotionsSecondChoice = potionEffects.find(potionOptions[currentVar as int])
+            PO.iHealthPotionsSecondChoice = potionEffects.find(potionOptions[currentVar as int])
             potionOptions = cutStrArray(potionOptions, currentVar as int)
-            POT.iHealthPotionsThirdChoice = potionEffects.find(potionOptions[0])
+            PO.iHealthPotionsThirdChoice = potionEffects.find(potionOptions[0])
             
             MCM.forcePageReset()
         endIf
@@ -141,11 +141,11 @@ State pot_tgl_alwaysUseHealth
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose to always consume the strongest or weakest Health Potion of whichever effect is found based on your order of preference and whatever you have in your inventory at the time")
         elseIf currentEvent == "Select"
-            MCM.bUseStrongestHealthPotion = !MCM.bUseStrongestHealthPotion
-            MCM.SetToggleOptionValueST(MCM.bUseStrongestHealthPotion)
+            MCM.PO.bUseStrongestHealthPotion = !MCM.PO.bUseStrongestHealthPotion
+            MCM.SetToggleOptionValueST(MCM.PO.bUseStrongestHealthPotion)
         elseIf currentEvent == "Default"
-            MCM.bUseStrongestHealthPotion = true 
-            MCM.SetToggleOptionValueST(MCM.bUseStrongestHealthPotion)
+            MCM.PO.bUseStrongestHealthPotion = true 
+            MCM.SetToggleOptionValueST(MCM.PO.bUseStrongestHealthPotion)
         endIf
     endEvent
 endState
@@ -159,12 +159,12 @@ State pot_tgl_enblStaminaGroup
         if currentEvent == "Highlight"
             MCM.SetInfoText("Rather than having individual stamina potions in your consumables queue this adds a single Stamina Potions item to the queue. iEquip then curates a list of all stamina potions currently in your inventory and consumption is based on the settings below.")
         elseIf currentEvent == "Select"
-            MCM.bStaminaPotionGrouping = !MCM.bStaminaPotionGrouping
-            MCM.bPotionGroupingOptionsChanged = true
+            MCM.WC.bStaminaPotionGrouping = !MCM.WC.bStaminaPotionGrouping
+            MCM.WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.bStaminaPotionGrouping = true
-            MCM.bPotionGroupingOptionsChanged = true
+            MCM.WC.bStaminaPotionGrouping = true
+            MCM.WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent
@@ -175,16 +175,16 @@ State pot_men_sPrefEffect
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose your preferred stamina potion effect.  When you long press your consumables key to consume a stamina potion iEquip will search the potion lists in order of preference set here.")
         elseIf currentEvent == "Open"
-            fillMenu(POT.iStaminaPotionsFirstChoice, potionEffects, 0)
+            fillMenu(PO.iStaminaPotionsFirstChoice, potionEffects, 0)
         elseIf currentEvent == "Accept"
-            if POT.iStaminaPotionsFirstChoice != currentVar as int
-                if POT.iStaminaPotionsSecondChoice == currentVar as int
-                    POT.iStaminaPotionsSecondChoice = POT.iStaminaPotionsFirstChoice
+            if PO.iStaminaPotionsFirstChoice != currentVar as int
+                if PO.iStaminaPotionsSecondChoice == currentVar as int
+                    PO.iStaminaPotionsSecondChoice = PO.iStaminaPotionsFirstChoice
                 else
-                    POT.iStaminaPotionsThirdChoice = POT.iStaminaPotionsFirstChoice
+                    PO.iStaminaPotionsThirdChoice = PO.iStaminaPotionsFirstChoice
                 endif
                 
-                POT.iStaminaPotionsFirstChoice = currentVar as int
+                PO.iStaminaPotionsFirstChoice = currentVar as int
                 MCM.forcePageReset()
             endIf
         endif
@@ -194,14 +194,14 @@ endState
 State pot_men_sPrefEffect2
     event OnBeginState()
         if currentEvent == "Open"
-            string[] potionOptions = cutStrArray(potionEffects, POT.iStaminaPotionsFirstChoice)
-            fillMenu(potionOptions.find(potionEffects[POT.iStaminaPotionsSecondChoice]), potionOptions, potionOptions.find(potionEffects[1]))
+            string[] potionOptions = cutStrArray(potionEffects, PO.iStaminaPotionsFirstChoice)
+            fillMenu(potionOptions.find(potionEffects[PO.iStaminaPotionsSecondChoice]), potionOptions, potionOptions.find(potionEffects[1]))
         elseIf currentEvent == "Accept"
-            string[] potionOptions = cutStrArray(potionEffects, POT.iStaminaPotionsFirstChoice)
+            string[] potionOptions = cutStrArray(potionEffects, PO.iStaminaPotionsFirstChoice)
         
-            POT.iStaminaPotionsSecondChoice = potionEffects.find(potionOptions[currentVar as int])
+            PO.iStaminaPotionsSecondChoice = potionEffects.find(potionOptions[currentVar as int])
             potionOptions = cutStrArray(potionOptions, currentVar as int)
-            POT.iStaminaPotionsThirdChoice = potionEffects.find(potionOptions[0])
+            PO.iStaminaPotionsThirdChoice = potionEffects.find(potionOptions[0])
             
             MCM.forcePageReset()
         endIf
@@ -216,11 +216,11 @@ State pot_tgl_alwaysUseStamina
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose to always consume the strongest or weakest Stamina Potion of whichever effect is found based on your order of preference and whatever you have in your inventory at the time")
         elseIf currentEvent == "Select"
-            MCM.bUseStrongestStaminaPotion = !MCM.bUseStrongestStaminaPotion
-            MCM.SetToggleOptionValueST(MCM.bUseStrongestStaminaPotion)
+            MCM.PO.bUseStrongestStaminaPotion = !MCM.PO.bUseStrongestStaminaPotion
+            MCM.SetToggleOptionValueST(MCM.PO.bUseStrongestStaminaPotion)
         elseIf currentEvent == "Default"
-            MCM.bUseStrongestStaminaPotion = true 
-            MCM.SetToggleOptionValueST(MCM.bUseStrongestStaminaPotion)
+            MCM.PO.bUseStrongestStaminaPotion = true 
+            MCM.SetToggleOptionValueST(MCM.PO.bUseStrongestStaminaPotion)
         endIf
     endEvent
 endState
@@ -234,12 +234,12 @@ State pot_tgl_enblMagickaGroup
         if currentEvent == "Highlight"
             MCM.SetInfoText("Rather than having individual magicka potions in your consumables queue this adds a single Magicka Potions item to the queue. iEquip then curates a list of all magicka potions currently in your inventory and consumption is based on the settings below.")
         elseIf currentEvent == "Select"
-            MCM.bMagickaPotionGrouping = !MCM.bMagickaPotionGrouping
-            MCM.bPotionGroupingOptionsChanged = true
+            MCM.WC.bMagickaPotionGrouping = !MCM.WC.bMagickaPotionGrouping
+            MCM.WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.bMagickaPotionGrouping = true
-            MCM.bPotionGroupingOptionsChanged = true
+            MCM.WC.bMagickaPotionGrouping = true
+            MCM.WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent
@@ -250,16 +250,16 @@ State pot_men_mPrefEffect
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose your preferred magicka potion effect.  When you long press your consumables key to consume a magicka potion iEquip will search the potion lists in order of preference set here.")
         elseIf currentEvent == "Open"
-            fillMenu(POT.iMagickaPotionsFirstChoice, potionEffects, 0)
+            fillMenu(PO.iMagickaPotionsFirstChoice, potionEffects, 0)
         elseIf currentEvent == "Accept"
-            if POT.iMagickaPotionsFirstChoice != currentVar as int
-                if POT.iMagickaPotionsSecondChoice == currentVar as int
-                    POT.iMagickaPotionsSecondChoice = POT.iMagickaPotionsFirstChoice
+            if PO.iMagickaPotionsFirstChoice != currentVar as int
+                if PO.iMagickaPotionsSecondChoice == currentVar as int
+                    PO.iMagickaPotionsSecondChoice = PO.iMagickaPotionsFirstChoice
                 else
-                    POT.iMagickaPotionsThirdChoice = POT.iMagickaPotionsFirstChoice
+                    PO.iMagickaPotionsThirdChoice = PO.iMagickaPotionsFirstChoice
                 endif
                 
-                POT.iMagickaPotionsFirstChoice = currentVar as int
+                PO.iMagickaPotionsFirstChoice = currentVar as int
                 MCM.forcePageReset()
             endIf
         endif
@@ -269,14 +269,14 @@ endState
 State pot_men_mPrefEffect2
     event OnBeginState()
         if currentEvent == "Open"
-            string[] potionOptions = cutStrArray(potionEffects, POT.iMagickaPotionsFirstChoice)
-            fillMenu(potionOptions.find(potionEffects[POT.iMagickaPotionsSecondChoice]), potionOptions, potionOptions.find(potionEffects[1]))
+            string[] potionOptions = cutStrArray(potionEffects, PO.iMagickaPotionsFirstChoice)
+            fillMenu(potionOptions.find(potionEffects[PO.iMagickaPotionsSecondChoice]), potionOptions, potionOptions.find(potionEffects[1]))
         elseIf currentEvent == "Accept"
-            string[] potionOptions = cutStrArray(potionEffects, POT.iMagickaPotionsFirstChoice)
+            string[] potionOptions = cutStrArray(potionEffects, PO.iMagickaPotionsFirstChoice)
         
-            POT.iMagickaPotionsSecondChoice = potionEffects.find(potionOptions[currentVar as int])
+            PO.iMagickaPotionsSecondChoice = potionEffects.find(potionOptions[currentVar as int])
             potionOptions = cutStrArray(potionOptions, currentVar as int)
-            POT.iMagickaPotionsThirdChoice = potionEffects.find(potionOptions[0])
+            PO.iMagickaPotionsThirdChoice = potionEffects.find(potionOptions[0])
         
             MCM.forcePageReset()
         endIf
@@ -291,11 +291,11 @@ State pot_tgl_alwaysUseMagicka
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose to always consume the strongest or weakest Magicka Potion of whichever effect is found based on your order of preference and whatever you have in your inventory at the time")
         elseIf currentEvent == "Select"
-            MCM.bUseStrongestMagickaPotion = !MCM.bUseStrongestMagickaPotion
-            MCM.SetToggleOptionValueST(MCM.bUseStrongestMagickaPotion)
+            MCM.PO.bUseStrongestMagickaPotion = !MCM.PO.bUseStrongestMagickaPotion
+            MCM.SetToggleOptionValueST(MCM.PO.bUseStrongestMagickaPotion)
         elseIf currentEvent == "Default"
-            MCM.bUseStrongestMagickaPotion = true 
-            MCM.SetToggleOptionValueST(MCM.bUseStrongestMagickaPotion)
+            MCM.PO.bUseStrongestMagickaPotion = true 
+            MCM.SetToggleOptionValueST(MCM.PO.bUseStrongestMagickaPotion)
         endIf
     endEvent
 endState
@@ -309,11 +309,11 @@ State pot_men_whenNoPotions
         if currentEvent == "Highlight"
             MCM.SetInfoText("When you run out of health, stamina or magicka potions you can choose to either fade out the icon for the relevant potion group, or hide it in which case it will not appear while cycling until you have more potions back in your inventory")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.emptyPotionQueueChoice, emptyPotionQueueOptions, 0)
+            fillMenu(MCM.PO.iEmptyPotionQueueChoice, emptyPotionQueueOptions, 0)
         elseIf currentEvent == "Accept"
-            MCM.emptyPotionQueueChoice = currentVar as int
-            MCM.SetMenuOptionValueST(emptyPotionQueueOptions[MCM.emptyPotionQueueChoice])
-            MCM.bEmptyPotionQueueChoiceChanged = true
+            MCM.PO.iEmptyPotionQueueChoice = currentVar as int
+            MCM.SetMenuOptionValueST(emptyPotionQueueOptions[MCM.PO.iEmptyPotionQueueChoice])
+            MCM.WC.bEmptyPotionQueueChoiceChanged = true
         endIf
     endEvent
 endState
@@ -323,11 +323,11 @@ State pot_tgl_warningOnLastPotion
         if currentEvent == "Highlight"
             MCM.SetInfoText("The potion icon will flash twice when the final health, stamina or magicka potion in your inventory is used before fading or hiding")
         elseIf currentEvent == "Select"
-            MCM.bFlashPotionWarning = !MCM.bFlashPotionWarning
-            MCM.SetToggleOptionValueST(MCM.bFlashPotionWarning)
+            MCM.PO.bFlashPotionWarning = !MCM.PO.bFlashPotionWarning
+            MCM.SetToggleOptionValueST(MCM.PO.bFlashPotionWarning)
         elseIf currentEvent == "Default"
-            MCM.bFlashPotionWarning = true 
-            MCM.SetToggleOptionValueST(MCM.bFlashPotionWarning)
+            MCM.PO.bFlashPotionWarning = true 
+            MCM.SetToggleOptionValueST(MCM.PO.bFlashPotionWarning)
         endIf
     endEvent
 endState

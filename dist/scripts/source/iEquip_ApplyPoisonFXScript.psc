@@ -3,21 +3,21 @@ Scriptname iEquip_ApplyPoisonFXScript extends ReferenceAlias Hidden
 SPELL Property iEquip_ApplyPoisonFXSpell  Auto
 Actor Property PlayerRef Auto
 
-bool isSpellEquipped = false 
+bool bIsSpellEquipped = false 
  
 function showPoisonFX()
 	debug.trace("iEquip_ApplyPoisonFXScript showPoisonFX called")
-	if !isSpellEquipped	
+	if !bIsSpellEquipped	
 		PlayerRef.AddSpell(iEquip_ApplyPoisonFXSpell, false)
 		Self.RegisterForSingleUpdate(2.0)
-		isSpellEquipped = true
+		bIsSpellEquipped = true
 	endIf
 endFunction
 
 event OnUpdate()
 	debug.trace("iEquip_ApplyPoisonFXScript OnUpdate called")
-	if isSpellEquipped
+	if bIsSpellEquipped
 		PlayerRef.RemoveSpell(iEquip_ApplyPoisonFXSpell)
-		isSpellEquipped = false
+		bIsSpellEquipped = false
 	endIf
 endEvent

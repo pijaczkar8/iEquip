@@ -7,30 +7,28 @@ iEquip_WidgetCore Property WC Auto
 iEquip_ChargeMeters Property CM Auto
 
 int Q
-String HUD_MENU
 String WidgetRoot
-int targetDisplay
+int iTargetDisplay
 
-bool WaitingForMeterFadeoutUpdate = false
+bool bWaitingForMeterFadeoutUpdate = false
 
 function registerForMeterFadeoutUpdate(int slot, int displayType, float delay)
 	Q = slot
-	targetDisplay = displayType
-	HUD_MENU = WC.HUD_MENU
+	iTargetDisplay = displayType
 	WidgetRoot = WC.WidgetRoot
 	RegisterForSingleUpdate(delay)
-	WaitingForMeterFadeoutUpdate = true
+	bWaitingForMeterFadeoutUpdate = true
 endFunction
 
 event OnUpdate()
-	if WaitingForMeterFadeoutUpdate ;Failsafe bool to block OnUpdate if triggered from another script on the quest
-		WaitingForMeterFadeoutUpdate = false
-		CM.isChargeMeterShown[Q] = false
+	if bWaitingForMeterFadeoutUpdate ;Failsafe bool to block OnUpdate if triggered from another script on the quest
+		bWaitingForMeterFadeoutUpdate = false
+		CM.abIsChargeMeterShown[Q] = false
 		Int iHandle
-		if targetDisplay == 1
-			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
-		elseIf targetDisplay == 2
-			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenSoulGemAlpha")
+		if iTargetDisplay == 1
+			iHandle = UICallback.Create("HUD Menu", WidgetRoot + ".tweenChargeMeterAlpha")
+		elseIf iTargetDisplay == 2
+			iHandle = UICallback.Create("HUD Menu", WidgetRoot + ".tweenSoulGemAlpha")
 		endIf
 		If(iHandle)
 			UICallback.PushInt(iHandle, Q)
