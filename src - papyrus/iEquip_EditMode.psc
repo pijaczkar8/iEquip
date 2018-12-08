@@ -9,7 +9,6 @@ import iEquip_UILIB
 ; - SCRIPTS
 
 iEquip_WidgetCore Property WC Auto
-iEquip_ChargeMeters Property CM Auto
 iEquip_ProMode Property PM Auto
 
 ; - REFERENCES -
@@ -37,8 +36,8 @@ bool Property isEditMode = false Auto Hidden
 bool Property bDisabling = false Auto Hidden
 bool bringToFrontFirstTime = true
 bool preselectEnabledOnEnter = false
-bool wasLeftCounterShown = false
-bool wasRightCounterShown = false
+bool property wasLeftCounterShown = false auto hidden
+bool property wasRightCounterShown = false auto hidden
 
 ; - Floats -
 
@@ -192,7 +191,7 @@ function ToggleEditMode()
 		HighlightElement(false)
 		iSelectedElement = -1
 
-		resetWidgetsToPreviousState()
+		WC.resetWidgetsToPreviousState()
         UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false) ;Restore DropShadowFilter to all text elements when leaving Edit Mode
 		UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 		SetINIFloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay) ;Resets Vanity Camera delay back to previous value on leaving Edit Mode
@@ -948,55 +947,6 @@ function ResetElement()
             HighlightElement(true)
         endIf
     EndIf
-endFunction
-
-; MOVE OVER TO WIDGETCORE AT SOME POINT
-function resetWidgetsToPreviousState()
-	int Q = 0
-	;Reset all names and reregister for fades if required
-	while Q < 8
-		WC.showName(Q, true, false, 0.0)
-		Q += 1
-	endWhile
-    
-	;Reset left and right counters
-	if !wasLeftCounterShown
-		WC.setCounterVisibility(0, false)
-	else
-		WC.setSlotCount(0, previousLeftCount)
-	endIf
-    
-	if !wasRightCounterShown
-		WC.setCounterVisibility(1, false)
-	else
-		WC.setSlotCount(1, previousRightCount)
-	endIf
-    
-	Q = 0
-	int iHandle
-	while Q < 2
-		;Reset poison elements
-		if !WC.abPoisonInfoDisplayed[Q]
-			WC.hidePoisonInfo(Q, true)
-		else
-			WC.checkAndUpdatePoisonInfo(Q)
-		endIf
-		;Reset attribute icons
-		WC.hideAttributeIcons(Q)
-		if WC.bPreselectMode && preselectEnabledOnEnter
-			WC.updateAttributeIcons(Q, 0)
-		endIf
-		Q += 1
-	endWhile
-    
-	;Reset Preselect Mode
-	if preselectEnabledOnEnter && WC.bPreselectMode
-        PM.togglePreselectMode()
-		preselectEnabledOnEnter = false
-	endIf
-    
-	;Reset enchantment meters and soulgems
-	CM.updateChargeMeters(true)
 endFunction
 
 function ResetDefaults()

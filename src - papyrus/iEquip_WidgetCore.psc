@@ -588,6 +588,54 @@ function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget finished")
 endFunction
 
+;Called from EditMode when toggling back out
+function resetWidgetsToPreviousState()
+	int Q = 0
+	;Reset all names and reregister for fades if required
+	while Q < 8
+		showName(Q, true, false, 0.0)
+		Q += 1
+	endWhile
+    
+	;Reset left and right counters
+	if !EM.wasLeftCounterShown
+		setCounterVisibility(0, false)
+	else
+		setSlotCount(0, previousLeftCount)
+	endIf
+    
+	if !EM.wasRightCounterShown
+		setCounterVisibility(1, false)
+	else
+		setSlotCount(1, previousRightCount)
+	endIf
+    
+	Q = 0
+	while Q < 2
+		;Reset poison elements
+		if !abPoisonInfoDisplayed[Q]
+			hidePoisonInfo(Q, true)
+		else
+			checkAndUpdatePoisonInfo(Q)
+		endIf
+		;Reset attribute icons
+		hideAttributeIcons(Q)
+		if bPreselectMode && preselectEnabledOnEnter
+			updateAttributeIcons(Q, 0)
+		endIf
+		Q += 1
+	endWhile
+    
+	;Reset Preselect Mode
+	if preselectEnabledOnEnter && bPreselectMode
+        PM.togglePreselectMode()
+		preselectEnabledOnEnter = false
+	endIf
+    
+	;Reset enchantment meters and soulgems
+	CM.updateChargeMeters(true)
+endFunction
+
 function initDataObjects()
     debug.trace("iEquip_WidgetCore initDataObjects called")
     if iEquipQHolderObj == 0
