@@ -102,12 +102,13 @@ endState
 
 function ToggleEditMode()
     WidgetRoot = WC.WidgetRoot
+	WC.updateWidgetVisibility(false)
+    Wait(0.2)
     isEditMode = !isEditMode
     
-	CurrentVanityModeDelay = GetINIFloat("fAutoVanityModeDelay:Camera")
-	WC.updateWidgetVisibility(false)
-    
 	if isEditMode
+        CurrentVanityModeDelay = GetINIFloat("fAutoVanityModeDelay:Camera")
+        
 		WidgetGroups = new String[6]
 		WidgetGroups[0] = ""
 		WidgetGroups[1] = "Left"

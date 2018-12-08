@@ -1,6 +1,7 @@
 import skyui.widgets.WidgetBase;
-import skyui.components.Meter;
+//import skyui.components.Meter;
 import skyui.widgets.iEquip.iEquipSoulGem;
+import skyui.widgets.iEquip.iEquipMeter;
 
 import gfx.io.GameDelegate;
 import skyui.util.Debug;
@@ -12,6 +13,8 @@ import Shared.GlobalFunc;
 import com.greensock.TimelineLite;
 import com.greensock.TweenLite;
 import com.greensock.easing.*;
+import com.greensock.plugins.TweenPlugin;
+import com.greensock.plugins.DirectionalRotationPlugin;
 
 import skyui.defines.Item
 import skyui.defines.Actor
@@ -99,6 +102,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	
 	//Edit Mode Guide Text Fields
 	public var NextPrevInstructionText: TextField;
+	public var NextPrevToggleText: TextField;
 	public var MoveInstructionText: TextField;
 	public var ScaleInstructionText: TextField;
 	public var ToggleMoveInstructionText: TextField;
@@ -167,8 +171,8 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var potionFlashAnim: MovieClip;
 	public var poisonIcon: MovieClip;
 
-	public var leftMeter: Meter;
-	public var rightMeter: Meter;
+	public var leftMeter: iEquipMeter;
+	public var rightMeter: iEquipMeter;
 	public var leftSoulGem: iEquipSoulGem;
 	public var rightSoulGem: iEquipSoulGem;
 
@@ -228,11 +232,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var tempHighlightedClip = null;
 	public static var EquipAllCounter: Number;
 
-	public var filter_glow: GlowFilter;
 	public var filter_shadow: DropShadowFilter;
-	public var filter_color: ColorMatrixFilter;
-	public var filter_gradGlow: GradientGlowFilter;
-
 	public var colorTrans: ColorTransform;
 	
   /* INITIALIZATION */
@@ -242,6 +242,8 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		super();
 
 		//_global.gfxExtensions = true;
+
+		TweenPlugin.activate([DirectionalRotationPlugin]);
 
 		_visible = false;
 
@@ -356,6 +358,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		
 		//Set up the Edit Mode text field paths
 		NextPrevInstructionText = EditModeGuide.NextPrevInstructionText;
+		NextPrevToggleText = EditModeGuide.NextPrevToggleText;
 		MoveInstructionText = EditModeGuide.MoveInstructionText;
 		ScaleInstructionText = EditModeGuide.ScaleInstructionText;
 		ToggleMoveInstructionText = EditModeGuide.ToggleMoveInstructionText;
@@ -367,7 +370,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		TextColorInstructionText = EditModeGuide.TextColorInstructionText;
 		AlphaInstructionText = EditModeGuide.AlphaInstructionText;
 		ToggleAlphaInstructionText = EditModeGuide.ToggleAlphaInstructionText;
-		//VisInstructionText = EditModeGuide.VisInstructionText;
 		ToggleGridInstructionText = EditModeGuide.ToggleGridInstructionText;
 		HighlightColorInstructionText = EditModeGuide.HighlightColorInstructionText;
 		CurrInfoColorInstructionText = EditModeGuide.CurrInfoColorInstructionText;
@@ -382,7 +384,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		RotationDirectionText = EditModeGuide.RotationDirectionText;
 		AlignmentText = EditModeGuide.AlignmentText;
 		AlphaText = EditModeGuide.AlphaText;
-		//VisibilityText = EditModeGuide.VisibilityText;
 		MoveIncrementText = EditModeGuide.MoveIncrementText;
 		RotateIncrementText = EditModeGuide.RotateIncrementText;
 		AlphaIncrementText = EditModeGuide.AlphaIncrementText;
@@ -501,6 +502,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		PrevButton._x = NextButton._x + NextButton._width + 1;
 		PrevButton.gotoAndStop(Prv);
 		NextPrevInstructionText._x = PrevButton._x + PrevButton._width + 8;
+		NextPrevToggleText._x = NextPrevInstructionText._x;
 		MoveLeftButton.gotoAndStop(Left);
 		MoveUpButton._x = MoveLeftButton._x + MoveLeftButton._width + 1;
 		MoveUpButton.gotoAndStop(Up);
@@ -526,7 +528,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		DepthButton.gotoAndStop(Dep);
 		DepthInstructionText._x = RotateInstructionText._x;
 		ToggleAlphaInstructionText._x = RotateInstructionText._x;
-		//VisInstructionText._x = RotateInstructionText._x;
 		ToggleGridButton.gotoAndStop(Rul);
 		ToggleGridInstructionText._x = RotateInstructionText._x;
 		HighlightColorInstructionText._x = RotateInstructionText._x;
@@ -558,7 +559,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		RotationDirectionText.textColor = _color;
 		AlignmentText.textColor = _color;
 		AlphaText.textColor = _color;
-		//VisibilityText.textColor = _color;
 		MoveIncrementText.textColor = _color;
 		RotateIncrementText.textColor = _color;
 		AlphaIncrementText.textColor = _color;
@@ -1513,7 +1513,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				TweenLite.to(clip, secs, {_xscale:endValue, _yscale:endValue, ease:Quad.easeOut});
 				break
 			case 3:
-				TweenLite.to(clip, secs, {_rotation:endValue, ease:Quad.easeOut});
+				TweenLite.to(clip, secs, {directionalRotation:{_rotation: endValue + "_short"}, ease:Quad.easeOut});
 				break
 			case 4:
 				TweenLite.to(clip, secs, {_alpha:endValue, ease:Quad.easeOut});
@@ -1617,13 +1617,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		clip1.swapDepths(clip2);
 	}
 
-	public function getCurrentItemDepth(iClip: Number): Void
-	{
-		var clip1: MovieClip = clipArray[iClip];
-		var clipDepth: Number = clip1.getDepth();
-		skse.SendModEvent("iEquip_GotDepth", null, clipDepth);
-	}
-
 	public function updateCounter(target: Number, a_count: Number): Void
 	{
 		var targetCount: TextField;
@@ -1691,11 +1684,11 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public function initChargeMeter(i_meter: Number, nWidth: Number, nHeight: Number, primaryColor: Number, secondaryColor: Number, flashColor: Number, newPercent: Number, sFillDirection: String, forceUpdate: Boolean, bVisible: Boolean): Void
 	{
 		// Set the meter being targeted for this update
-		var targetMeter: Meter = i_meter == 0 ? leftMeter : rightMeter;
+		var targetMeter: iEquipMeter = i_meter == 0 ? leftMeter : rightMeter;
 		// Hide
 		targetMeter._visible = false;
 		// Update size
-		targetMeter.setSize(nWidth, nHeight)
+		targetMeter.setSize(nWidth, nHeight);
 		// Update fill colours
 		targetMeter.setColors(primaryColor, secondaryColor);
 		// Update the flash colour
@@ -1705,13 +1698,13 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		// Update fill direction
 		targetMeter.setFillDirection(sFillDirection, forceUpdate); //Reset fill Direction and force percentage back
 		// Show
-		targetMeter._visible = true
+		targetMeter._visible = true;
 	}
 
 	public function setChargeMeterFillDirection(i_meter: Number, sFillDirection: String): Void
 	{
 		skyui.util.Debug.log("iEquipWidget setChargeMeterFillDirection called - i_meter: " + i_meter + ", sFillDirection: " + sFillDirection)
-		var targetMeter: Meter = i_meter == 0 ? leftMeter : rightMeter;
+		var targetMeter: iEquipMeter = i_meter == 0 ? leftMeter : rightMeter;
 		//targetMeter.fillDirection = sFillDirection;
 		targetMeter.setFillDirection(sFillDirection, true); //Reset fill Direction and force percentage back
 	}
@@ -1719,7 +1712,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public function setChargeMeterPercent(i_meter: Number, newPercent: Number, primaryColor: Number, gradientEnabled: Boolean, secondaryColor: Number, forceUpdate: Boolean): Void
 	{
 		skyui.util.Debug.log("iEquipWidget setChargeMeterPercent called - i_meter: " + i_meter + ", newPercent: " + newPercent + ", primaryColor: " + primaryColor + ", secondaryColor: " + secondaryColor + ", forceUpdate: " + forceUpdate)
-		var targetMeter: Meter = i_meter == 0 ? leftMeter : rightMeter;
+		var targetMeter: iEquipMeter = i_meter == 0 ? leftMeter : rightMeter;
 		if (gradientEnabled) {
 			targetMeter.setColors(primaryColor, secondaryColor);
 		} else {
@@ -1730,7 +1723,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 
 	public function startChargeMeterFlash(i_meter: Number, flashColor: Number, forceUpdate: Boolean): Void
 	{	
-		var targetMeter: Meter = i_meter == 0 ? leftMeter : rightMeter;
+		var targetMeter: iEquipMeter = i_meter == 0 ? leftMeter : rightMeter;
 		targetMeter.flashColor = flashColor;
 		targetMeter.startFlash(forceUpdate);
 	}

@@ -22,6 +22,7 @@ iEquip_ProMode property PM auto
 iEquip_PotionScript property PO auto
 ;iEquip_HelpMenu property HM auto
 iEquip_PlayerEventHandler property EH auto
+iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
 iEquip_LeftNameUpdateScript property LNUpdate auto
@@ -151,12 +152,15 @@ bool property bAutoAddNewItems = false auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
 int property iMaxCachedItems = 30 auto hidden
 
+float property fWidgetFadeoutDelay = 30.0 auto hidden
+float property fWidgetFadeoutDuration = 1.5 auto hidden
+bool property bAlwaysVisibleWhenWeaponsDrawn = true auto hidden
+bool property bIsWidgetShown = false auto hidden
+
 float property fMainNameFadeoutDelay = 5.0 auto hidden
 float property fPoisonNameFadeoutDelay = 5.0 auto hidden
 float property fPreselectNameFadeoutDelay = 5.0 auto hidden
 float property fNameFadeoutDuration = 1.5 auto hidden
-float property fWidgetFadeoutDelay = 30.0 auto hidden
-float property fWidgetFadeoutDuration = 1.5 auto hidden
 
 bool property bBackgroundStyleChanged = false auto hidden
 bool property bSkipCurrentItemWhenCycling = false auto hidden
@@ -408,12 +412,11 @@ Event OnWidgetLoad()
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", false)
 		bIsFirstLoad = false
 	else
-		;updateShown() - switch to updateShown once implemented, still with bIsFirstLoad
 		if !bIsFirstEnabled
 			refreshWidgetOnLoad()
 		endIf
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", bEnabled)
-		showWidget()
+		updateWidgetVisibility() ;Show the widget
 		if bEnabled
 			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
 			if CM.iChargeDisplayType > 0
@@ -439,7 +442,6 @@ Event OnWidgetReset()
     RequireExtend = false
 	parent.OnWidgetReset()
 	EM.UpdateElementsAll()
-	;Add Widget fadeout here
 	debug.trace("iEquip_WidgetCore OnWidgetReset finished")
 EndEvent
 
@@ -501,7 +503,7 @@ function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget called")
 	;Hide the widget first
 	KH.bAllowKeyPress = false
-	hideWidget()
+	updateWidgetVisibility(false)
 	debug.notification("Refreshing iEquip widget...")
 	;Reset alpha values on every element
 	int iIndex = 6 ;Six is the first individual widget element in the array
@@ -566,7 +568,7 @@ function refreshWidget()
 	endIf
 	updateSlotsEnabled()
 	;Show the widget
-	showWidget()
+	updateWidgetVisibility()
 	;And finally re-register for fadeouts if required
 	if bNameFadeoutEnabled
 		LNUpdate.registerForNameFadeoutUpdate()
@@ -792,10 +794,27 @@ function refreshVisibleItems()
 	endIf
 endFunction
 
+function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
+	debug.trace("iEquip_WidgetCore updateWidgetVisibility called - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
+	if show
+		if !bIsWidgetShown
+			bIsWidgetShown = true
+			;UpdateWidgetModes()
+			FadeTo(100, 0.2)
+		endif
+		;Register for widget fadeout if enabled
+		if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode
+			WVis.registerForWidgetFadeoutUpdate()
+		endIf
+	elseIf bIsWidgetShown
+		bIsWidgetShown = false
+		FadeTo(0, fDuration)
+	endIf
+endFunction
+
 ; Shows the widget.
 function showWidget()
 	if(Ready)
-		UpdateWidgetModes()
 		FadeTo(100, 0.2)
 	endIf
 endFunction
@@ -875,7 +894,7 @@ bool property isEnabled
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100) ;SkyHUD alt charge meter
 			endIf
-			showWidget() ;Just in case you were in Edit Mode when you disabled because ToggleEditMode won't have done this
+			updateWidgetVisibility() ;Just in case you were in Edit Mode when you disabled because ToggleEditMode won't have done this
 			UI.setbool(HUD_MENU, WidgetRoot + "._visible", bEnabled)
 		endIf
 		if bEnabled && bIsFirstEnabled

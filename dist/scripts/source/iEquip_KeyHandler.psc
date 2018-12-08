@@ -124,6 +124,9 @@ endEvent
 ; ---------------------
 
 event OnKeyDown(int KeyCode)
+    ;Handle widget visibility update on any registered key press
+    WC.updateWidgetVisibility()
+    
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = true
     endIf

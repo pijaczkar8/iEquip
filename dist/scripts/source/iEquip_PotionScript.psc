@@ -7,9 +7,12 @@ import stringUtil
 import UI
 
 iEquip_WidgetCore Property WC Auto
-iEquip_MCM Property MCM Auto
+iEquip_PlayerEventHandler Property EH Auto
 
 actor property PlayerRef auto
+
+FormList Property iEquip_AllCurrentItemsFLST Auto
+FormList Property iEquip_PotionItemsFLST Auto
 
 String HUD_MENU
 String WidgetRoot
@@ -324,6 +327,8 @@ function findAndSortPotions()
             ;Check and remove any potions which are no longer in the players inventory (fallback as there shouldn't be any!)
             while iIndex < count
                 if PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "Form")) < 1
+                    iEquip_PotionItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "Form"))
+                    EH.updateEventFilter(iEquip_PotionItemsFLST)
                     removePotionFromQueue(i, iIndex)
                 endIf
                 iIndex += 1
@@ -389,6 +394,8 @@ function onPotionRemoved(form removedPotion)
     int itemCount = PlayerRef.GetItemCount(removedPotion)
     if thePotion.isPoison()
         if itemCount < 1
+            iEquip_AllCurrentItemsFLST.RemoveAddedForm(removedPotion)
+            EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
             foundPotion = findInQueue(iPoisonQ, removedPotion)
             if foundPotion != -1
                 if bMoreHUDLoaded
@@ -406,6 +413,8 @@ function onPotionRemoved(form removedPotion)
         endIf
     elseIf thePotion.isFood()
         if itemCount < 1
+            iEquip_AllCurrentItemsFLST.RemoveAddedForm(removedPotion)
+            EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
             foundPotion = findInQueue(iConsumableQ, removedPotion)
             if foundPotion != -1
                 if bMoreHUDLoaded
@@ -441,6 +450,8 @@ function onPotionRemoved(form removedPotion)
             endIf
 		endIf
         if itemCount < 1
+            iEquip_PotionItemsFLST.RemoveAddedForm(removedPotion)
+            EH.updateEventFilter(iEquip_PotionItemsFLST)
             foundPotion = findInQueue(aiPotionQ[Q], removedPotion)
             if foundPotion != -1
                 removePotionFromQueue(Q, foundPotion)
@@ -599,6 +610,8 @@ function checkAndAddToPotionQueue(potion foundPotion)
                 jMap.setFlt(potionObj, "Strength", effectMagnitude)
                 jMap.setInt(potionObj, "itemID", itemID)
                 jArray.addObj(aiPotionQ[Q], potionObj)
+                iEquip_PotionItemsFLST.AddForm(potionForm)
+                EH.updateEventFilter(iEquip_PotionItemsFLST)
                 if bMoreHUDLoaded
                     AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
                 endIf
@@ -636,6 +649,8 @@ function checkAndAddToPoisonQueue(potion foundPoison)
 	    jMap.setStr(poisonObj, "Name", poisonName)
 		jMap.setStr(poisonObj, "Icon", getPoisonIcon(foundPoison))
 	    jArray.addObj(iPoisonQ, poisonObj)
+        iEquip_AllCurrentItemsFLST.AddForm(poisonForm)
+        EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
         if bMoreHUDLoaded
             AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
         endIf
@@ -664,6 +679,8 @@ function checkAndAddToConsumableQueue(potion foundConsumable)
 	    jMap.setStr(consumableObj, "Name", consumableName)
 		jMap.setStr(consumableObj, "Icon", getConsumableIcon(foundConsumable))
 	    jArray.addObj(iConsumableQ, consumableObj)
+        iEquip_AllCurrentItemsFLST.AddForm(consumableForm)
+        EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
         if bMoreHUDLoaded
             AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
         endIf
