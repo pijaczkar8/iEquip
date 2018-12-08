@@ -392,6 +392,8 @@ Event OnWidgetLoad()
 	CheckDependencies()
 
     OnWidgetReset()
+    ; Determine if the widget should be displayed
+    UpdateWidgetModes()
     ;Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
 	UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 	bool[] args = new bool[5]
@@ -797,6 +799,7 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 	if show
 		if !bIsWidgetShown
 			bIsWidgetShown = true
+			UpdateWidgetModes()
 			FadeTo(100, 0.2)
 		endif
 		;Register for widget fadeout if enabled
