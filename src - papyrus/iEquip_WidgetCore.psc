@@ -799,7 +799,7 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 	if show
 		if !bIsWidgetShown
 			bIsWidgetShown = true
-			UpdateWidgetModes()
+			;UpdateWidgetModes()
 			FadeTo(100, 0.2)
 		endif
 		;Register for widget fadeout if enabled
