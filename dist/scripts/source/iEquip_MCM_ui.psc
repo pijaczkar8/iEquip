@@ -41,12 +41,6 @@ function drawPage()
     endIf
             
     MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[MCM.iAmmoIconStyle])
-    ;MCM.AddToggleOptionST("ui_tgl_enblWdgetBckground", "Enable widget backgrounds", EM.BackgroundsShown)
-    
-    ;if EM.BackgroundsShown
-    ;    MCM.AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[WC.backgroundStyle])
-    ;endIf
-    ;+++Disable spin on in/out animations
             
     MCM.SetCursorPosition(1)
     ;widget fade variable sliders
@@ -60,6 +54,8 @@ function drawPage()
         if (MCM.iCurrentWidgetFadeoutChoice == 3)
             MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "Widget fadeout duration", MCM.WC.fWidgetFadeoutDuration, "{1}")
         endIf
+
+        MCM.AddToggleOptionST("ui_tgl_visWhenWeapDrawn", "Always visible when weapons drawn", MCM.WC.bAlwaysVisibleWhenWeaponsDrawn)
     endIf
     
     MCM.AddEmptyOption()
@@ -143,21 +139,6 @@ State ui_men_ammoIcoStyle
     endEvent
 endState
 
-;/State ui_tgl_enblWdgetBckground
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("Enables backgrounds for each of the widgets.  Once enabled backgrounds are available in Edit Mode and can be shown, hidden and manipulated like all other elements\nDefault is Disabled")
-        elseIf currentEvent == "Select"
-            MCM.EM.BackgroundsShown = !MCM.EM.BackgroundsShown
-            MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            MCM.EM.BackgroundsShown = false
-            MCM.forcePageReset()
-        endIf 
-    endEvent
-endState
-/;
-
 State ui_men_bckgroundStyle
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -180,13 +161,14 @@ State ui_tgl_enblWdgetFade
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Enables widget fadeout after a period of inactivity.  Once enabled additional fadeout options will become available to you\nDefault is Disabled")
-        elseIf currentEvent == "Select"
-            MCM.WC.bWidgetFadeoutEnabled = !MCM.WC.bWidgetFadeoutEnabled
+        else
+            if currentEvent == "Select"
+                MCM.WC.bWidgetFadeoutEnabled = !MCM.WC.bWidgetFadeoutEnabled
+            elseIf currentEvent == "Default"
+                MCM.WC.bWidgetFadeoutEnabled = false
+            endIf
+            MCM.forcePageReset()
             MCM.WC.bFadeOptionsChanged = true
-            MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            MCM.WC.bWidgetFadeoutEnabled = false 
-            MCM.forcePageReset()
         endIf 
     endEvent
 endState
@@ -237,16 +219,32 @@ State ui_sld_wdgetFadeDur
     endEvent
 endState
 
+State ui_tgl_visWhenWeapDrawn
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Ensures that the widget will always be visible when you have your weapons drawn.  If the widget is currently faded out when you draw your weapons it will automatically be re-shown\nDefault is Enabled")
+        else
+            if currentEvent == "Select"
+                MCM.WC.bAlwaysVisibleWhenWeaponsDrawn = !MCM.WC.bAlwaysVisibleWhenWeaponsDrawn
+            elseIf currentEvent == "Default"
+                MCM.WC.bAlwaysVisibleWhenWeaponsDrawn = true
+            endIf
+            MCM.WC.bFadeOptionsChanged = true
+        endIf 
+    endEvent
+endState
+
 State ui_tgl_enblNameFade
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Enables fadeout of item names after cycling.  Once enabled additional fadeout options will become available to you\nDefault is Disabled")
-        elseIf currentEvent == "Select"
-            MCM.WC.bNameFadeoutEnabled = !MCM.WC.bNameFadeoutEnabled
+        else
+            if currentEvent == "Select"
+                MCM.WC.bNameFadeoutEnabled = !MCM.WC.bNameFadeoutEnabled
+            elseIf currentEvent == "Default"
+                MCM.WC.bNameFadeoutEnabled = false
+            endIf
             MCM.WC.bFadeOptionsChanged = true
-            MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            MCM.WC.bNameFadeoutEnabled = false 
             MCM.forcePageReset()
         endIf 
     endEvent

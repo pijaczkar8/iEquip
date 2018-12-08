@@ -530,11 +530,12 @@ endFunction
 function toggleEditMode()
 	debug.trace("iEquip EditMode toggleEditMode called")
     WidgetRoot = WC.WidgetRoot
-    isEditMode = !isEditMode
-    
-	CurrentVanityModeDelay = GetINIFloat("fAutoVanityModeDelay:Camera")
+    if !isEditMode
+		CurrentVanityModeDelay = GetINIFloat("fAutoVanityModeDelay:Camera")
+	endIf
 	WC.hideWidget()
 	Wait(0.2)
+	isEditMode = !isEditMode
     
 	if isEditMode
 		WidgetGroups = new String[6]

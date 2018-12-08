@@ -10,11 +10,13 @@ import stringUtil
 
 iEquip_WidgetCore Property WC Auto
 iEquip_ProMode Property PM Auto
+iEquip_PlayerEventHandler Property EH Auto
+
+actor property PlayerRef auto
+FormList Property iEquip_AmmoItemsFLST Auto
 
 string Property sAmmoIconSuffix = "" Auto Hidden
 int Property iAmmoListSorting = 1 Auto Hidden
-
-actor property PlayerRef auto
 
 bool property bAmmoMode = false auto hidden
 bool bReadyForAmmoModeAnim = false
@@ -319,6 +321,8 @@ endFunction
 
 function removeAmmoFromQueue(int iIndex)
 	debug.trace("iEquip_AmmoMode removeItemFromQueue called")
+	iEquip_AmmoItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(iAmmoQ, iIndex), "Form"))
+	EH.updateEventFilter(iEquip_AmmoItemsFLST)
 	jArray.eraseIndex(iAmmoQ, iIndex)
 	if aiCurrentAmmoIndex[Q] > iIndex ;if the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
 		aiCurrentAmmoIndex[Q] = aiCurrentAmmoIndex[Q] - 1
@@ -475,6 +479,8 @@ function updateAmmoList()
 	while i < count && count > 0
 		ammoForm = jMap.getForm(jArray.getObj(iAmmoQ, i), "Form")
 		if !ammoForm || PlayerRef.GetItemCount(ammoForm) < 1
+			iEquip_AmmoItemsFLST.RemoveAddedForm(ammoForm)
+			EH.updateEventFilter(iEquip_AmmoItemsFLST)
 			jArray.eraseIndex(iAmmoQ, i)
 			count -= 1
 			i -= 1
@@ -486,17 +492,18 @@ function updateAmmoList()
 	count = GetNumItemsOfType(PlayerRef, 42)
 	debug.trace("iEquip_AmmoMode updateAmmoList() - Number of ammo types found in inventory: " + count)
 	i = 0
-	Form FoundAmmo
 	String AmmoName
 	while i < count && count > 0
-		FoundAmmo = GetNthFormOfType(PlayerRef, 42, i)
-		AmmoName = FoundAmmo.GetName()
+		ammoForm = GetNthFormOfType(PlayerRef, 42, i)
+		AmmoName = ammoForm.GetName()
 		;The Javelin check is to get the Spears by Soolie javelins which are classed as arrows/bolts and all of which have more descriptive names than simply Javelin, which is from Throwing Weapons and is an equippable throwing weapon
 		if (Q == 0 && stringutil.Find(AmmoName, "arrow", 0) > -1) || (Q == 1 && stringutil.Find(AmmoName, "bolt", 0) > -1) || (stringutil.Find(AmmoName, "Javelin", 0) > -1 && AmmoName != "Javelin")
 			;Make sure we're only adding arrows to the arrow queue or bolts to the bolt queue
-			if (Q == 0 && !(FoundAmmo as Ammo).isBolt()) || (Q == 1 && (FoundAmmo as Ammo).isBolt())
-				if !isAlreadyInAmmoQueue(FoundAmmo)
-					AddToAmmoQueue(FoundAmmo as Ammo, AmmoName)
+			if (Q == 0 && !(ammoForm as Ammo).isBolt()) || (Q == 1 && (ammoForm as Ammo).isBolt())
+				if !isAlreadyInAmmoQueue(ammoForm)
+					iEquip_AmmoItemsFLST.AddForm(ammoForm)
+					EH.updateEventFilter(iEquip_AmmoItemsFLST)
+					AddToAmmoQueue(ammoForm as Ammo, AmmoName)
 					needsSorting = true
 				endIf
 			endIf

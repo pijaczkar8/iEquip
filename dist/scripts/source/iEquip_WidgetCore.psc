@@ -11,7 +11,6 @@ import _Q2C_Functions
 import AhzMoreHudIE
 Import WornObject
 Import iEquip_WeaponExt
-;Import iEquip_AmmoExt
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto
@@ -23,6 +22,7 @@ iEquip_ProMode property PM auto
 iEquip_PotionScript property PO auto
 ;iEquip_HelpMenu property HM auto
 iEquip_PlayerEventHandler property EH auto
+iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
 iEquip_LeftNameUpdateScript property LNUpdate auto
@@ -53,6 +53,9 @@ ObjectReference property iEquip_MessageObjectReference auto ; populated by scrip
 Message property iEquip_ConfirmAddToQueue auto
 Message property iEquip_OKCancel auto
 Message property iEquip_QueueManagerMenu auto
+
+FormList Property iEquip_AllCurrentItemsFLST Auto
+FormList Property iEquip_RemovedItemsFLST Auto
 
 int property voiceEquipSlot = 0x00025BEE AutoReadOnly ; hex code of the FormID for the Voice EquipSlot
 
@@ -149,12 +152,15 @@ bool property bAutoAddNewItems = false auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
 int property iMaxCachedItems = 30 auto hidden
 
+float property fWidgetFadeoutDelay = 30.0 auto hidden
+float property fWidgetFadeoutDuration = 1.5 auto hidden
+bool property bAlwaysVisibleWhenWeaponsDrawn = true auto hidden
+bool property bIsWidgetShown = false auto hidden
+
 float property fMainNameFadeoutDelay = 5.0 auto hidden
 float property fPoisonNameFadeoutDelay = 5.0 auto hidden
 float property fPreselectNameFadeoutDelay = 5.0 auto hidden
 float property fNameFadeoutDuration = 1.5 auto hidden
-float property fWidgetFadeoutDelay = 30.0 auto hidden
-float property fWidgetFadeoutDuration = 1.5 auto hidden
 
 bool property bBackgroundStyleChanged = false auto hidden
 bool property bSkipCurrentItemWhenCycling = false auto hidden
@@ -386,8 +392,6 @@ Event OnWidgetLoad()
 	CheckDependencies()
 
     OnWidgetReset()
-    ; Determine if the widget should be displayed
-    UpdateWidgetModes()
     ;Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
 	UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 	bool[] args = new bool[5]
@@ -406,12 +410,11 @@ Event OnWidgetLoad()
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", false)
 		bIsFirstLoad = false
 	else
-		;updateShown() - switch to updateShown once implemented, still with bIsFirstLoad
 		if !bIsFirstEnabled
 			refreshWidgetOnLoad()
 		endIf
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", bEnabled)
-		showWidget()
+		updateWidgetVisibility() ;Show the widget
 		if bEnabled
 			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
 			if CM.iChargeDisplayType > 0
@@ -437,7 +440,6 @@ Event OnWidgetReset()
     RequireExtend = false
 	parent.OnWidgetReset()
 	EM.UpdateWidgets()
-	;Add Widget fadeout here
 	debug.trace("iEquip_WidgetCore OnWidgetReset finished")
 EndEvent
 
@@ -499,7 +501,7 @@ function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget called")
 	;Hide the widget first
 	KH.bAllowKeyPress = false
-	hideWidget()
+	updateWidgetVisibility(false)
 	debug.notification("Refreshing iEquip widget...")
 	;Reset alpha values on every element
 	int iIndex = 6 ;Six is the first individual widget element in the array
@@ -564,7 +566,7 @@ function refreshWidget()
 	endIf
 	updateSlotsEnabled()
 	;Show the widget
-	showWidget()
+	updateWidgetVisibility()
 	;And finally re-register for fadeouts if required
 	if bNameFadeoutEnabled
 		LNUpdate.registerForNameFadeoutUpdate()
@@ -738,10 +740,7 @@ endEvent
 
 event OnMenuClose(string _sCurrentMenu)
 	debug.trace("iEquip_WidgetCore OnMenuClose called - current menu: " + _sCurrentMenu + ", bJustEnabled: " + bJustEnabled + ", bItemsWaitingForID: " + bItemsWaitingForID)
-	if _sCurrentMenu == "Journal Menu" && bJustEnabled
-        debug.MessageBox("Adding items to iEquip\n\nBefore you can use iEquip for the first time you need to choose your gear for each slot.  Simply open your Inventory, Magic or Favorites menu and follow the instructions there.\n\nEnjoy using iEquip!")
-        bJustEnabled = false		
-	elseif (_sCurrentMenu == "InventoryMenu" || _sCurrentMenu == "MagicMenu" || _sCurrentMenu == "FavoritesMenu") && bItemsWaitingForID ;&& !utility.IsInMenuMode()
+	if (_sCurrentMenu == "InventoryMenu" || _sCurrentMenu == "MagicMenu" || _sCurrentMenu == "FavoritesMenu") && bItemsWaitingForID ;&& !utility.IsInMenuMode()
 		findAndFillMissingItemIDs()
 		bItemsWaitingForID = false
 	endIf
@@ -793,10 +792,30 @@ function refreshVisibleItems()
 	endIf
 endFunction
 
+function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
+	debug.trace("iEquip_WidgetCore updateWidgetVisibility called - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
+	if show
+		;Unregister for any pending update
+		WVis.unregisterForWidgetFadeoutUpdate()
+		;Show the widget if currently hidden
+		if !bIsWidgetShown
+			bIsWidgetShown = true
+			FadeTo(100, 0.2)
+		endif
+		;Register for widget fadeout if enabled
+		if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode
+			WVis.registerForWidgetFadeoutUpdate()
+		endIf
+	;If show == false and hide the widget if it's currently shown
+	elseIf bIsWidgetShown
+		bIsWidgetShown = false
+		FadeTo(0, fDuration)
+	endIf
+endFunction
+
 ; Shows the widget.
 function showWidget()
 	if(Ready)
-		UpdateWidgetModes()
 		FadeTo(100, 0.2)
 	endIf
 endFunction
@@ -845,7 +864,6 @@ bool property isEnabled
 						endIf
 						Q += 1
 					endWhile
-					;CM.updateChargeMeters(true)
 				endIf
 				bool[] args = new bool[4]
 				args[0] = false ;Hide left
@@ -877,12 +895,17 @@ bool property isEnabled
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100) ;SkyHUD alt charge meter
 			endIf
-			showWidget() ;Just in case you were in Edit Mode when you disabled because ToggleEditMode won't have done this
+			updateWidgetVisibility() ;Just in case you were in Edit Mode when you disabled because ToggleEditMode won't have done this
 			UI.setbool(HUD_MENU, WidgetRoot + "._visible", bEnabled)
 		endIf
 		if bEnabled && bIsFirstEnabled
 			ResetWidgetArrays()
 			bIsFirstEnabled = false
+			if bJustEnabled
+				Utility.Wait(1.5)
+		        debug.MessageBox("Adding items to iEquip\n\nBefore you can use iEquip for the first time you need to choose your gear for each slot.  Simply open your Inventory, Magic or Favorites menu and follow the instructions there.\n\nEnjoy using iEquip!")
+		        bJustEnabled = false	
+		    endIf
 		endIf
 	endFunction
 EndProperty
@@ -1296,10 +1319,10 @@ function cycleSlot(int Q, bool Reverse = false)
 	debug.trace("iEquip_WidgetCore cycleSlot ends")
 endFunction
 
-function checkAndEquipShownHandItem(int Q, bool Reverse = false)
+function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false)
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem called")
 	int targetIndex = aiCurrentQueuePosition[Q]
-	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
+	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
     Form targetItem = jMap.getForm(targetObject, "Form")
     int itemType = jMap.getInt(targetObject, "Type")
     if PM.bCurrentlyQuickRanged
@@ -1311,27 +1334,33 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false)
     if itemType == 7 || itemType == 9
     	AM.checkAndRemoveBoundAmmo(itemType)
     endIf
-    aiIndexOnStartCycle[Q] = -1 ;Reset ready for next cycle
-    ;if we're equipping Fists 2H
-    if Q == 1 && targetItem == iEquip_Unarmed2H
-		goUnarmed()
-		return  
-    ;if you already have the item/shout equipped in the slot you are cycling then do nothing
-    elseif (targetItem == PlayerRef.GetEquippedObject(Q)) || targetItem == None
-    	return
-	;if somehow the item has been removed from the player and we haven't already caught it remove it from queue and advance queue again
-	elseif !playerStillHasItem(targetItem)
-		AddItemToLastRemovedCache(Q, targetIndex)
-		if bMoreHUDLoaded
-	        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiTargetQ[Q], targetIndex), "itemID"))
-	    endIf
-		jArray.eraseIndex(aiTargetQ[Q], targetIndex)
-		;if you are cycling backwards you have just removed the previous item in the queue so the aiCurrentQueuePosition needs to be updated before calling cycleSlot again
-		if Reverse
-			aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
+    if !equippingOnAutoAdd
+	    aiIndexOnStartCycle[Q] = -1 ;Reset ready for next cycle
+	    ;if we're equipping Fists 2H
+	    if Q == 1 && targetItem == iEquip_Unarmed2H
+			goUnarmed()
+			return  
+	    ;if you already have the item/shout equipped in the slot you are cycling then do nothing
+	    elseif (targetItem == PlayerRef.GetEquippedObject(Q)) || targetItem == None
+	    	return
+		;if somehow the item has been removed from the player and we haven't already caught it remove it from queue and advance queue again
+		elseif !playerStillHasItem(targetItem)
+			iEquip_AllCurrentItemsFLST.RemoveAddedForm(targetItem)
+			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+			if bEnableRemovedItemCaching
+				AddItemToLastRemovedCache(Q, targetIndex)
+			endIf
+			if bMoreHUDLoaded
+		        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiTargetQ[Q], targetIndex), "itemID"))
+		    endIf
+			jArray.eraseIndex(aiTargetQ[Q], targetIndex)
+			;if you are cycling backwards you have just removed the previous item in the queue so the aiCurrentQueuePosition needs to be updated before calling cycleSlot again
+			if Reverse
+				aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
+			endIf
+			cycleSlot(Q, Reverse)
+			return
 		endIf
-		cycleSlot(Q, Reverse)
-		return
 	endIf
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - player still has item, Q: " + Q + ", aiCurrentQueuePosition: " + aiCurrentQueuePosition[Q] + ", itemName: " + jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Name"))
 	;if we're about to equip a ranged weapon and we're not already in Ammo Mode or we're switching ranged weapon type set the ammo queue to the first ammo in the array and then animate in if needed
@@ -1401,7 +1430,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false)
 		endIf
 	endIf
 	;Now that we've passed all the checks we can carry on and equip
-	cycleHand(Q, targetIndex, targetItem, itemType)
+	cycleHand(Q, targetIndex, targetItem, itemType, equippingOnAutoAdd)
 	Utility.Wait(0.2)
 	if bJustLeftAmmoMode
 		bJustLeftAmmoMode = false
@@ -1474,7 +1503,9 @@ endFunction
 function checkAndEquipShownShoutOrConsumable(int Q, bool Reverse, int targetIndex, form targetItem, bool isPotionGroup)
 	debug.trace("iEquip_WidgetCore checkAndEquipShownShoutOrConsumable called - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", isPotionGroup: " + isPotionGroup)
 	if (targetItem && targetItem != none && !playerStillHasItem(targetItem)) || (Q == 3 && targetItem == none && !isPotionGroup)
-		AddItemToLastRemovedCache(Q, targetIndex)
+		if bEnableRemovedItemCaching
+			AddItemToLastRemovedCache(Q, targetIndex)
+		endIf
 		if bMoreHUDLoaded
 	        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiTargetQ[Q], targetIndex), "itemID"))
 	    endIf
@@ -1911,7 +1942,14 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 		AddItemToLastRemovedCache(Q, iIndex)
 	endIf
 	if bMoreHUDLoaded
-        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "itemID"))
+		int otherHand = 1
+		if Q == 1
+			otherHand = 0
+		endIf
+		AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "itemID"))
+		if Q < 2 && findInQueue(otherHand, jMap.getStr(jArray.getObj(aiTargetQ[Q], iIndex), "Name")) != -1
+			AhzMoreHudIE.AddIconItem(jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "itemID"), asMoreHUDIcons[otherHand])
+        endIf
     endIf
 	jArray.eraseIndex(aiTargetQ[Q], iIndex)
 	if aiCurrentQueuePosition[Q] > iIndex ;if the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
@@ -1924,16 +1962,45 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 			cycleSlot(Q, false)
 		endIf
 	endIf
+	if Q < 3 && bProModeEnabled && aiCurrentlyPreselected[Q] == iIndex
+		PM.cyclePreselectSlot(Q, jArray.count(aiTargetQ[Q]))
+	endIf
 endFunction
 
 function AddItemToLastRemovedCache(int Q, int iIndex)
 	debug.trace("iEquip_WidgetCore AddItemToLastRemovedCache called")
 	if jArray.count(iRemovedItemsCacheObj) == iMaxCachedItems ;Max number of removed items to cache for re-adding
+		iEquip_RemovedItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(iRemovedItemsCacheObj, 0), "Form"))
 		jArray.eraseIndex(iRemovedItemsCacheObj, 0)
 	endIf
 	int objToCache = jArray.getObj(aiTargetQ[Q], iIndex)
 	jMap.setInt(objToCache, "PrevQ", Q)
 	jArray.addObj(iRemovedItemsCacheObj, objToCache)
+	iEquip_RemovedItemsFLST.AddForm(jMap.getForm(objToCache, "Form"))
+endFunction
+
+function addBackCachedItem(form addedForm)
+	debug.trace("iEquip_WidgetCore addBackCachedItem called")
+	int iIndex = 0
+	int targetObject
+	bool found = false
+	while iIndex < jArray.count(iRemovedItemsCacheObj) && !found
+		targetObject = jArray.getObj(iRemovedItemsCacheObj, iIndex)
+		if addedForm == jMap.getForm(targetObject, "Form")
+			;Add the item back into the queue it was previously removed from
+			jArray.addObj(aiTargetQ[jMap.getInt(targetObject, "PrevQ")], targetObject)
+			;Remove the form from the RemovedItems formlist
+			iEquip_RemovedItemsFLST.RemoveAddedForm(jMap.getForm(targetObject, "Form"))
+			;Add it back into the AllCurrentItems formlist
+			iEquip_AllCurrentItemsFLST.AddForm(jMap.getForm(targetObject, "Form"))
+			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+			;Remove the cached object from the cache jArray
+			jArray.eraseIndex(iRemovedItemsCacheObj, iIndex)
+			found = true
+		else
+			iIndex += 1
+		endIf
+	endwhile
 endFunction
 
 bool function playerStillHasItem(form itemForm)
@@ -1956,7 +2023,7 @@ bool function playerStillHasItem(form itemForm)
     return true
 endFunction
 
-function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1)
+function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, bool equippingOnAutoAdd = false)
     ;When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
     debug.trace("iEquip_WidgetCore cycleHand called - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", itemType: " + itemType)
    	int iEquipSlotId = 1
@@ -1998,52 +2065,54 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1)
     if bGoneUnarmed
 		bGoneUnarmed = false
 	endIf
-	;if target item is a spell equip straight away
-	if itemType == 22
-		PlayerRef.EquipSpell(targetItem as Spell, Q)
-		if bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
-			string spellSchool = jMap.getStr(jArray.getObj(aiTargetQ[Q], targetIndex), "Icon")
-			string spellName = targetItem.GetName()
-			if (spellSchool == "Destruction" && bQuickDualCastDestruction) || (spellSchool == "Alteration" && bQuickDualCastAlteration) || (spellSchool == "Illusion" && bQuickDualCastIllusion) || (spellSchool == "Restoration" && bQuickDualCastRestoration) || (spellSchool == "Conjuration" && bQuickDualCastConjuration && (asBound2HWeapons.find(spellName) == -1))
-				debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
-				if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "Name"), spellSchool)
-					bSwitchingHands = false ;Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
+	if !equippingOnAutoAdd
+		;if target item is a spell equip straight away
+		if itemType == 22
+			PlayerRef.EquipSpell(targetItem as Spell, Q)
+			if bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
+				string spellSchool = jMap.getStr(jArray.getObj(aiTargetQ[Q], targetIndex), "Icon")
+				string spellName = targetItem.GetName()
+				if (spellSchool == "Destruction" && bQuickDualCastDestruction) || (spellSchool == "Alteration" && bQuickDualCastAlteration) || (spellSchool == "Illusion" && bQuickDualCastIllusion) || (spellSchool == "Restoration" && bQuickDualCastRestoration) || (spellSchool == "Conjuration" && bQuickDualCastConjuration && (asBound2HWeapons.find(spellName) == -1))
+					debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
+					if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "Name"), spellSchool)
+						bSwitchingHands = false ;Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
+					endIf
 				endIf
 			endIf
+		else
+			;if item is anything other than a spell check if it is already equipped, possibly in the other hand, and there is only 1 of it
+			int itemCount = PlayerRef.GetItemCount(targetItem)
+		    if (targetItem == PlayerRef.GetEquippedObject(otherHand)) && itemCount < 2
+		    	debug.trace("iEquip_WidgetCore cycleHand - targetItem found in other hand and only one of them")
+		    	;if it is already equipped and player has allowed switching hands then unequip the other hand first before equipping the target item in this hand
+		        if bAllowWeaponSwitchHands
+		        	bSwitchingHands = true
+		        	debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands: " + bSwitchingHands)
+		        	UnequipHand(otherHand)
+		        else
+		        	debug.notification(jMap.getStr(targetObject, "Name") + " is already equipped in your other hand")
+		        	return
+		        endIf
+		    endIf
+		    ;Equip target item
+		    debug.trace("iEquip_WidgetCore cycleHand - about to equip " + jMap.getStr(targetObject, "Name") + " into slot " + Q)
+		    Utility.Wait(0.1)
+		    if (Q == 1 && itemType == 42) ;Ammo in the right hand queue, so in this case grenades and other throwing weapons
+		    	PlayerRef.EquipItemEx(targetItem as Ammo)
+		    elseif ((Q == 0 && itemType == 26) || jMap.getStr(targetObject, "Name") == "Rocket Launcher") ;Shield in the left hand queue
+		    	PlayerRef.EquipItemEx(targetItem as Armor)
+		    else
+		    	int itemID = jMap.getInt(targetObject, "itemID")
+		    	if itemID && itemID > 0
+		    		;EquipItemById(Form item, int itemId, int iEquipSlot, bool preventUnequip, bool equipSound)
+		    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)
+		    	else
+		    		PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
+		    	endIf
+		    endIf
 		endIf
-	else
-		;if item is anything other than a spell check if it is already equipped, possibly in the other hand, and there is only 1 of it
-		int itemCount = PlayerRef.GetItemCount(targetItem)
-	    if (targetItem == PlayerRef.GetEquippedObject(otherHand)) && itemCount < 2
-	    	debug.trace("iEquip_WidgetCore cycleHand - targetItem found in other hand and only one of them")
-	    	;if it is already equipped and player has allowed switching hands then unequip the other hand first before equipping the target item in this hand
-	        if bAllowWeaponSwitchHands
-	        	bSwitchingHands = true
-	        	debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands: " + bSwitchingHands)
-	        	UnequipHand(otherHand)
-	        else
-	        	debug.notification(jMap.getStr(targetObject, "Name") + " is already equipped in your other hand")
-	        	return
-	        endIf
-	    endIf
-	    ;Equip target item
-	    debug.trace("iEquip_WidgetCore cycleHand - about to equip " + jMap.getStr(targetObject, "Name") + " into slot " + Q)
-	    Utility.Wait(0.1)
-	    if (Q == 1 && itemType == 42) ;Ammo in the right hand queue, so in this case grenades and other throwing weapons
-	    	PlayerRef.EquipItemEx(targetItem as Ammo)
-	    elseif ((Q == 0 && itemType == 26) || jMap.getStr(targetObject, "Name") == "Rocket Launcher") ;Shield in the left hand queue
-	    	PlayerRef.EquipItemEx(targetItem as Armor)
-	    else
-	    	int itemID = jMap.getInt(targetObject, "itemID")
-	    	if itemID && itemID > 0
-	    		;EquipItemById(Form item, int itemId, int iEquipSlot, bool preventUnequip, bool equipSound)
-	    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)
-	    	else
-	    		PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
-	    	endIf
-	    endIf
+		Utility.Wait(0.2)
 	endIf
-	Utility.Wait(0.2)
 	checkAndUpdatePoisonInfo(Q)
 	CM.checkAndUpdateChargeMeter(Q)
 	checkIfBoundSpellEquipped()
@@ -2599,6 +2668,8 @@ function addToQueue(int Q)
 					endIf
 					;Add any other info required for each item here - spell school, costliest effect, etc
 					jArray.addObj(aiTargetQ[Q], iEquipItem)
+					iEquip_AllCurrentItemsFLST.AddForm(itemForm)
+					EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
 					success = true
 				else
 					debug.notification("The " + asQueueName[Q] + " is full")
@@ -3034,20 +3105,28 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	int targetObject = jArray.getObj(targetArray, iIndex)
 	string itemName = JMap.getStr(targetObject, "Name")
 	if !(stringutil.Find(itemName, "Potions", 0) > -1)
+		bool keepInFLST = false
+		int itemID = JMap.getInt(targetObject, "itemID")
+		form itemForm = JMap.getForm(targetObject, "Form")
 		if bMoreHUDLoaded
-			int itemID = JMap.getInt(targetObject, "itemID")
 			AhzMoreHudIE.RemoveIconItem(itemID)
-			if iQueueMenuCurrentQueue < 2
-				form itemForm = JMap.getForm(targetObject, "Form")
-				int otherHandQueue = 1
-				if iQueueMenuCurrentQueue == 1
-					otherHandQueue = 0
-				endIf
-				if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+		endIf
+		if iQueueMenuCurrentQueue < 2
+			int otherHandQueue = 1
+			if iQueueMenuCurrentQueue == 1
+				otherHandQueue = 0
+			endIf
+			if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+				if bMoreHUDLoaded
 					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
 				endIf
-	        endIf
-	    endIf
+				keepInFLST = true
+			endIf
+        endIf
+        if !keepInFLST
+        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
+        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+        endIf
 		jArray.eraseIndex(targetArray, iIndex)
 		int i = jArray.count(targetArray)
 		if iIndex >= i
@@ -3095,6 +3174,7 @@ function ApplyChanges()
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 	endIf
 	if bFadeOptionsChanged
+		updateWidgetVisibility()
 		i = 0
         while i < 8
             showName(i, true) ;Reshow all the names and either register or unregister for updates

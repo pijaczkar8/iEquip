@@ -196,7 +196,7 @@ function PreselectModeAnimateOut()
 	endIf
 endFunction
 
-function cyclePreselectSlot(int Q, int queueLength, bool Reverse, bool animate = true)
+function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool animate = true)
 	debug.trace("iEquip_ProMode cyclePreselectSlot called")
 	int targetIndex
 	if Reverse
