@@ -5,7 +5,6 @@ ScriptName iEquip_EditMode Extends Quest
 import Utility
 import StringUtil
 import iEquip_UILIB
-import _Q2C_Functions
 
 ; - SCRIPTS
 
@@ -430,6 +429,25 @@ function ApplyElementColor (int iType, int iColor)
     endIf
 endFunction
 
+function ToggleCycleRange()
+    ; Toggle between cycling groups/single enlements
+    HighlightElement(false)
+    
+    if 0 <= iSelectedElement && iSelectedElement  <= 5           ; If group is selected, find first child
+        iSelectedElement = iFirstElementInGroup[iSelectedElement]
+        iFirstElement = 6
+        iLastElement = 45
+    else                                    ; Else find parent group
+        iSelectedElement = WidgetGroups.Find(WC.asWidgetGroup[iSelectedElement])
+        iFirstElement = 0
+        iLastElement = 5
+    endIf
+    
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iSelectedElement)
+    HighlightElement(true)
+    UpdateEditModeGuide()
+endFunction
+
 ; - Cycle Elements -
 
 function CycleElements(int iNextPrev)    
@@ -693,25 +711,6 @@ function ToggleRotation()
 	endIf
     
     UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationDirectionText.text", sRotation)
-endFunction
-
-function ToggleCycleRange()
-    ; Toggle between cycling groups/single enlements
-	HighlightElement(false)
-	
-	if 0 <= iSelectedElement && iSelectedElement  <= 5           ; If group is selected, find first child
-		iSelectedElement = iFirstElementInGroup[iSelectedElement]
-        iFirstElement = 6
-		iLastElement = 45
-	else			                        ; Else find parent group
-		iSelectedElement = WidgetGroups.Find(WC.asWidgetGroup[iSelectedElement])
-        iFirstElement = 0
-        iLastElement = 5
-	endIf
-    
-	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iSelectedElement)
-	HighlightElement(true)
-	UpdateEditModeGuide()
 endFunction
 
 ; #############
