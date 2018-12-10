@@ -250,6 +250,7 @@ State ui_tgl_visWhenWeapDrawn
             elseIf currentEvent == "Default"
                 MCM.WC.bAlwaysVisibleWhenWeaponsDrawn = true
             endIf
+            MCM.SetToggleOptionValueST(MCM.WC.bAlwaysVisibleWhenWeaponsDrawn)
             MCM.WC.bFadeOptionsChanged = true
         endIf 
     endEvent

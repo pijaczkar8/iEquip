@@ -233,8 +233,18 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		elseIf PlayerRef.GetEquippedObject(2) == akBaseObject
 			equippedSlot = 2
 		endIf
+		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - akBaseObject: " + akBaseObject + " - " + akBaseObject.GetName() + ", equippedSlot: " + equippedSlot)
 		;If the item has been equipped in the left, right or shout slot
 		if equippedSlot != -1
+			int itemType
+			;If it's a 2H or ranged weapon we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
+			if equippedSlot == 0 && akBaseObject as Weapon
+				itemType = (akBaseObject as Weapon).GetWeaponType()
+				debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - itemType: " + itemType)
+				if (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
+					equippedSlot = 1
+				endIf
+			endIf
 			bool blockCall = false
 			bool formFound = iEquip_AllCurrentItemsFLST.HasForm(akBaseObject)
 			string itemName = akBaseObject.GetName()
@@ -257,6 +267,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 					endIf
 				endIf
 			endIf
+			debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
 			;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
 			if !formFound || targetIndex == -1
 				;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
@@ -272,9 +283,9 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 				endIf
 				if freeSpace
 					;If there is space in the target queue create a new jMap object and add it to the queue
-					debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - akBaseObject: " + akBaseObject + " - " + itemName + ", equippedSlot: " + equippedSlot)
+					debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
 					int itemID = WC.createItemID(itemName, akBaseObject.GetFormID())
-					int itemType = akBaseObject.GetType()
+					itemType = akBaseObject.GetType()
 					if itemType == 41 ;if it is a weapon get the weapon type
 			        	itemType = (akBaseObject as Weapon).GetWeaponType()
 			        endIf
@@ -357,7 +368,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 						actionTaken = true
 					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
 					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
-						WC.removeItemFromQueue(i, foundAt)
+						WC.removeItemFromQueue(i, foundAt, false, false, true)
 						;If the removed item was in both queues and we've got none left remove from the other queue as well
 						if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))
 							WC.removeItemFromQueue(otherHand, foundAtOtherHand)

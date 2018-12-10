@@ -138,8 +138,13 @@ function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = fa
 			UICallback.PushBool(iHandle, true)
 			UICallback.Send(iHandle)
 		endIf
-		if currPercent <= fLowChargeThreshold && !abIsChargeMeterShown[Q]
-			updateChargeMeterVisibility(Q, true)
+		if currPercent <= fLowChargeThreshold
+			if !WC.bIsWidgetShown
+				WC.updateWidgetVisibility()
+			endIf
+			if !abIsChargeMeterShown[Q]
+				updateChargeMeterVisibility(Q, true)
+			endIf
 		endIf
 		if !skipFlash && currPercent < 0.01
 			startMeterFlash(Q, true)

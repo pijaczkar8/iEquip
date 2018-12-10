@@ -55,9 +55,7 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	else
 		i = 0
 		int itemType = akBaseItem.GetType()
-		;string itemName = akBaseItem.GetName()
 		while i < 2
-			;if WC.asCurrentlyEquipped[i] == itemName
 			if WC.asCurrentlyEquipped[i] == akBaseItem.GetName()
 				;Ammo, scrolls, torch or other throwing weapons
 				;if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))

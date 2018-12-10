@@ -524,7 +524,7 @@ function openiEquipMCM(bool inMCMSelect = false)
     if Game.UsingGamepad()
         key_j = 270
         key_down = 267
-        key_scroll = 274
+        key_scroll = 280
         key_enter = 276
     else
         key_j = GetMappedKey("Journal")

@@ -601,13 +601,13 @@ function resetWidgetsToPreviousState()
 	if !EM.wasLeftCounterShown
 		setCounterVisibility(0, false)
 	else
-		setSlotCount(0, previousLeftCount)
+		setSlotCount(0, EM.previousLeftCount)
 	endIf
     
 	if !EM.wasRightCounterShown
 		setCounterVisibility(1, false)
 	else
-		setSlotCount(1, previousRightCount)
+		setSlotCount(1, EM.previousRightCount)
 	endIf
     
 	Q = 0
@@ -620,16 +620,16 @@ function resetWidgetsToPreviousState()
 		endIf
 		;Reset attribute icons
 		hideAttributeIcons(Q)
-		if bPreselectMode && preselectEnabledOnEnter
+		if bPreselectMode && EM.preselectEnabledOnEnter
 			updateAttributeIcons(Q, 0)
 		endIf
 		Q += 1
 	endWhile
     
 	;Reset Preselect Mode
-	if preselectEnabledOnEnter && bPreselectMode
+	if EM.preselectEnabledOnEnter && bPreselectMode
         PM.togglePreselectMode()
-		preselectEnabledOnEnter = false
+		EM.preselectEnabledOnEnter = false
 	endIf
     
 	;Reset enchantment meters and soulgems
@@ -894,6 +894,8 @@ bool property isEnabled
 				if bIsFirstEnabled
 					UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 					UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
+					; Add anything currently equipped in left, right and shout slots
+					addCurrentItemsOnFirstEnable()
 					; Update consumable and poison slots to show Health Potions and first poison if any present
 					int Q = 3
 					while Q < 5
@@ -956,6 +958,57 @@ bool property isEnabled
 		endIf
 	endFunction
 EndProperty
+
+function addCurrentItemsOnFirstEnable()
+	int Q = 0
+	form equippedItem
+	string itemName
+	int itemID
+	int itemType
+	while Q < 3
+		equippedItem = PlayerRef.GetEquippedObject(Q)
+		if equippedItem
+			itemName = equippedItem.getName()
+			itemID = createItemID(itemName, equippedItem.GetFormID())
+			itemType = equippedItem.GetType()
+			if itemType == 41 ;if it is a weapon get the weapon type
+	        	itemType = (equippedItem as Weapon).GetWeaponType()
+	        endIf
+			int iEquipItem = jMap.object()
+			jMap.setForm(iEquipItem, "Form", equippedItem)
+			jMap.setInt(iEquipItem, "ID", itemID)
+			jMap.setInt(iEquipItem, "Type", itemType)
+			jMap.setStr(iEquipItem, "Name", itemName)
+			jMap.setStr(iEquipItem, "Icon", GetItemIconName(equippedItem, itemType, itemName))
+			if Q < 2
+				jMap.setInt(iEquipItem, "isEnchanted", 0)
+				jMap.setInt(iEquipItem, "isPoisoned", 0)
+			endIf
+			jArray.addObj(aiTargetQ[Q], iEquipItem)
+			;Add to the AllItems formlist
+			iEquip_AllCurrentItemsFLST.AddForm(equippedItem)
+			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+			;Send to moreHUD if loaded
+			if bMoreHUDLoaded
+				if Q == 1 && AhzMoreHudIE.IsIconItemRegistered(itemID)
+					AhzMoreHudIE.RemoveIconItem(itemID)
+					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[3]) ;Both queues
+				else
+					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[Q])
+				endIf
+			endIf
+			;Now update the widget to show the equipped item
+			aiCurrentQueuePosition[Q] = 0
+			asCurrentlyEquipped[Q] = itemName
+			if Q < 2 || bShoutEnabled
+				updateWidget(Q, 0, false, true)
+			endIf
+			;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
+			checkAndEquipShownHandItem(Q, false, true)
+		endIf
+		Q += 1
+	endWhile
+endFunction
 
 function PopulateWidgetArrays()
 	asWidgetDescriptions = new string[46]
@@ -1166,7 +1219,7 @@ endFunction
 ;QUEUE FUNCTIONALITY CODE
 ;-----------------------------------------------------------------------------------------------------------------------
 
-function cycleSlot(int Q, bool Reverse = false)
+function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false)
 	debug.trace("iEquip_WidgetCore cycleSlot called, Q: " + Q + ", Reverse: " + Reverse)
 	debug.trace("iEquip_WidgetCore cycleSlot - abIsNameShown[Q]: " + abIsNameShown[Q])
 	;Q: 0 = Left hand, 1 = Right hand, 2 = Shout, 3 = Consumables, 4 = Poisons
@@ -1290,7 +1343,6 @@ function cycleSlot(int Q, bool Reverse = false)
 	else
 		targetItem = jMap.getForm(targetObject, "Form")
 	endIf
-	bool ignoreEquipOnPause = false
 	if Q < 2
 		itemType = jMap.getInt(targetObject, "Type")
 		if bSwitchingHands || bPreselectSwitchingHands
@@ -1367,7 +1419,7 @@ function cycleSlot(int Q, bool Reverse = false)
 endFunction
 
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false)
-	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem called")
+	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem called - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
 	int targetIndex = aiCurrentQueuePosition[Q]
 	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
     Form targetItem = jMap.getForm(targetObject, "Form")
@@ -1983,7 +2035,7 @@ int function findInQueue(int Q, string itemToFind)
 	endIf
 endFunction
 
-function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cyclingAmmo = false)
+function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cyclingAmmo = false, bool onItemRemoved = false)
 	debug.trace("iEquip_WidgetCore removeItemFromQueue called")
 	if bEnableRemovedItemCaching && !purging
 		AddItemToLastRemovedCache(Q, iIndex)
@@ -2006,7 +2058,7 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 			aiCurrentQueuePosition[Q] = 0
 		endIf
 		if !cyclingAmmo
-			cycleSlot(Q, false)
+			cycleSlot(Q, false, onItemRemoved)
 		endIf
 	endIf
 	if Q < 3 && bProModeEnabled && aiCurrentlyPreselected[Q] == iIndex
@@ -2034,13 +2086,27 @@ function addBackCachedItem(form addedForm)
 	while iIndex < jArray.count(iRemovedItemsCacheObj) && !found
 		targetObject = jArray.getObj(iRemovedItemsCacheObj, iIndex)
 		if addedForm == jMap.getForm(targetObject, "Form")
-			;Add the item back into the queue it was previously removed from
-			jArray.addObj(aiTargetQ[jMap.getInt(targetObject, "PrevQ")], targetObject)
+			int Q
+			int itemType = jMap.getInt(targetObject, "Type")
+			;Check if the re-added item has been equipped in either hand and set that as the target queue
+			if PlayerRef.GetEquippedObject(0) == addedForm && !(itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
+				Q = 0
+			elseIf PlayerRef.GetEquippedObject(1) == addedForm
+				Q = 1
+			;Otherwise add the item back into the queue it was previously removed from
+			else
+				Q = jMap.getInt(targetObject, "PrevQ")
+			endIf
+			jArray.addObj(aiTargetQ[Q], targetObject)
 			;Remove the form from the RemovedItems formlist
 			iEquip_RemovedItemsFLST.RemoveAddedForm(jMap.getForm(targetObject, "Form"))
 			;Add it back into the AllCurrentItems formlist
 			iEquip_AllCurrentItemsFLST.AddForm(jMap.getForm(targetObject, "Form"))
 			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+			;Add it back to the moreHUD array
+			if bMoreHUDLoaded
+				AhzMoreHudIE.AddIconItem(jMap.getInt(targetObject, "itemID"), asMoreHUDIcons[jMap.getInt(targetObject, "PrevQ")])
+    		endIf
 			;Remove the cached object from the cache jArray
 			jArray.eraseIndex(iRemovedItemsCacheObj, iIndex)
 			found = true
@@ -2096,7 +2162,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	if bSwitchingHands
 		bSwitchingHands = false
 		justSwitchedHands = true
-	elseif !bGoneUnarmed
+	elseif !bGoneUnarmed && !equippingOnAutoAdd
 		;Otherwise unequip current item
 		UnequipHand(Q)
 	endIf
@@ -2190,7 +2256,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 endFunction
 
 bool function RightHandWeaponIs2hOrRanged(int itemType = -1)
-	if itemType == -1
+	if itemType == 9
+		itemType = 12
+	elseIf itemType == -1
 		itemType = PlayerRef.GetEquippedItemType(1)
 	endIf
 	debug.trace("iEquip_WidgetCore RightHandWeaponIs2hOrRanged - itemType: " + itemType)
@@ -2206,7 +2274,9 @@ bool function RightHandWeaponIs2h(int itemType = -1)
 endFunction
 
 bool function RightHandWeaponIsRanged(int itemType = -1)
-	if itemType == -1
+	if itemType == 9
+		itemType = 12
+	elseIf itemType == -1
 		itemType = PlayerRef.GetEquippedItemType(1)
 	endIf
 	debug.trace("iEquip_WidgetCore RightHandWeaponIsRanged - itemType: " + itemType)
@@ -2672,7 +2742,6 @@ function addToQueue(int Q)
 					debug.MessageBox("You currently only have one " + itemName + " and it is already in the other hand queue")
 					return
 				endIf
-				;if Q < 2 && (itemType == 41 || itemType == 26) && !itemID
 				if itemID < 1
 					queueItemForIDGenerationOnMenuClose(Q, jArray.count(aiTargetQ[Q]), itemName, itemFormID)
 				endIf
@@ -2680,7 +2749,6 @@ function addToQueue(int Q)
 				if itemType == 41 ;if it is a weapon get the weapon type
 					Weapon W = itemForm as Weapon
 		        	itemType = W.GetWeaponType()
-		        	;debug.Notification(itemName + " , weapon type: " + itemType)
 		        endIf
 				string itemIcon = GetItemIconName(itemForm, itemType, itemName)
 				debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + asQueueName[Q] + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
@@ -3221,6 +3289,7 @@ function ApplyChanges()
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 	endIf
 	if bFadeOptionsChanged
+		updateWidgetVisibility()
 		i = 0
         while i < 8
             showName(i, true) ;Reshow all the names and either register or unregister for updates

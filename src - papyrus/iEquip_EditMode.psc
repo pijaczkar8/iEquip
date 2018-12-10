@@ -35,7 +35,7 @@ bool[] abWidget_CurV
 bool Property isEditMode = false Auto Hidden
 bool Property bDisabling = false Auto Hidden
 bool bringToFrontFirstTime = true
-bool preselectEnabledOnEnter = false
+bool property preselectEnabledOnEnter = false auto hidden
 bool property wasLeftCounterShown = false auto hidden
 bool property wasRightCounterShown = false auto hidden
 
@@ -54,8 +54,8 @@ int iHighlightColor = 0x0099FF
 int iCurrentColorValue = 0xEAAB00
 int iLastColorSelection
 int iNextColorIndex
-int previousLeftCount
-int previousRightCount
+int property previousLeftCount auto hidden
+int property previousRightCount auto hidden
 int iSelectedElementFront = -1
 int MoveStep
 int RotateStep
@@ -550,9 +550,10 @@ function UpdateElementsAll()
             SetElementDepthOrder(iIndex)
             iIndex += 1
         endWhile
+
+        HighlightElement(true)
     endIf
 
-	HighlightElement(true)
 endFunction
 
 ; - Load Data -
