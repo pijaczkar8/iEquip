@@ -243,8 +243,10 @@ function runUpdate()
                     openiEquipMCM()
                 elseif iAction == 4
                     ;HM.openHelpMenu()
+                    debug.MessageBox("This feature is currently disabled")
                 elseif iAction == 5
-                    WC.refreshWidget()
+                    ;WC.refreshWidget()
+                    debug.MessageBox("This feature is currently disabled")
                 endIf
             endIf
         endIf
