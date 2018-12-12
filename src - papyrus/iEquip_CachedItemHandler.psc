@@ -13,6 +13,7 @@ iEquip_PotionScript Property PO Auto
 Actor Property PlayerRef Auto
 
 FormList Property iEquip_RemovedItemsFLST Auto
+FormList Property iEquip_ItemsToAddFLST Auto
 
 Event OnInit()
 	gotoState("DISABLED")
@@ -28,7 +29,7 @@ function OniEquipEnabled(bool enabled)
 endFunction
 	
 Event OnPlayerLoadGame()
-	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame called")
+	debug.trace("iEquip_CachedItemHandler OnPlayerLoadGame called")
 	if WC.isEnabled
 		gotoState("")
 	else
@@ -37,35 +38,51 @@ Event OnPlayerLoadGame()
 endEvent
 
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
-	debug.trace("iEquip_PlayerEventHandler OnItemAdded called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
-	int i
-	;Handle Potions, Ammo and bound ammo first
-	if akBaseItem as potion
-		PO.onPotionAdded(akBaseItem)
-	elseIf EH.boundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(akBaseItem as ammo)
-		AM.addBoundAmmoToQueue(akBaseItem, akBaseItem.GetName())
-	elseIf AM.bAmmoMode && akBaseItem as ammo
-		if AM.currentAmmoForm.GetName() == akBaseItem.GetName()
-	    	AM.setSlotCount(PlayerRef.GetItemCount(akBaseItem))
-        endIf
-    ;Otherwise check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
-    elseIf WC.bEnableRemovedItemCaching && iEquip_RemovedItemsFLST.HasForm(akBaseItem)
-    	WC.addBackCachedItem(akBaseItem)
-    ;Or finally check if we've just added one of a currently equipped item which requires a counter update
-	else
-		i = 0
-		int itemType = akBaseItem.GetType()
-		while i < 2
-			if WC.asCurrentlyEquipped[i] == akBaseItem.GetName()
-				;Ammo, scrolls, torch or other throwing weapons
-				;if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
-				if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_WeaponExt.IsWeaponGrenade(akBaseItem as Weapon))	
-	    			WC.setSlotCount(i, PlayerRef.GetItemCount(akBaseItem))
-	    		endIf
-        	endIf
-        	i += 1
-        endWhile
-	endIf
+	debug.trace("iEquip_CachedItemHandler OnItemAdded called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
+	iEquip_ItemsToAddFLST.AddForm(akBaseItem)
+	registerForSingleUpdate(0.5)
+endEvent
+
+event OnUpdate()
+	debug.trace("iEquip_CachedItemHandler OnUpdate called")
+	int i = 0
+	int j
+	int numForms = iEquip_ItemsToAddFLST.GetSize()
+	debug.trace("iEquip_CachedItemHandler OnUpdate - number of forms to process: " + numForms)
+	form formToAdd
+	while i < numForms
+		formToAdd = iEquip_ItemsToAddFLST.GetAt(i)
+		;Handle Potions, Ammo and bound ammo first
+		if formToAdd as potion
+			PO.onPotionAdded(formToAdd)
+		elseIf EH.boundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
+			AM.addBoundAmmoToQueue(formToAdd, formToAdd.GetName())
+		elseIf AM.bAmmoMode && formToAdd as ammo
+			if AM.currentAmmoForm.GetName() == formToAdd.GetName()
+		    	AM.setSlotCount(PlayerRef.GetItemCount(formToAdd))
+	        endIf
+	    ;Otherwise check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
+	    elseIf WC.bEnableRemovedItemCaching && iEquip_RemovedItemsFLST.HasForm(formToAdd)
+	    	WC.addBackCachedItem(formToAdd)
+	    ;Or finally check if we've just added one of a currently equipped item which requires a counter update
+		else
+			j = 0
+			int itemType = formToAdd.GetType()
+			while j < 2
+				if WC.asCurrentlyEquipped[i] == formToAdd.GetName()
+					;Ammo, scrolls, torch or other throwing weapons
+					;if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
+					if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_WeaponExt.IsWeaponGrenade(formToAdd as Weapon))	
+		    			WC.setSlotCount(i, PlayerRef.GetItemCount(formToAdd))
+		    		endIf
+	        	endIf
+	        	j += 1
+	        endWhile
+		endIf
+		i += 1
+	endWhile
+	iEquip_ItemsToAddFLST.Revert()
+	debug.trace("iEquip_CachedItemHandler OnUpdate - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
 endEvent
 
 state DISABLED

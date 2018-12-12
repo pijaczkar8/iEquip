@@ -540,7 +540,10 @@ int function getPotionQueue(potion potionToCheck)
     int Q = aStrongestEffects.find(strongestEffect) ;Returns -1 if not found
     ;If it's not a regular effect check for a consummate effect
     if Q < 0
-    	Q = aConsummateEffects.find(strongestEffect) * 3 ;Puts consummate potions into the Restore queues (0,3,6)
+    	Q = aConsummateEffects.find(strongestEffect) ;Puts consummate potions into the Restore queues (0,3,6)
+        if Q != -1
+            Q = Q * 3
+        endIf
     endIf
     ;If we've not found a vanilla effect check if CACO is loaded and if so check for a CACO restore effect
     if Q < 0 && bIsCACOLoaded
@@ -737,6 +740,7 @@ function sortPotionQueue(int Q)
     debug.trace("iEquip_PotionScript sortPotionQueue called - Q: " + Q)
     ;This should sort strongest to weakest by the float value held in the Strength key on each object in the array
     int targetArray = aiPotionQ[Q]
+    jArray.unique(targetArray)
     int n = jArray.count(targetArray)
     int i
     string theKey = "Strength"

@@ -83,6 +83,7 @@ Event OnPlayerLoadGame()
 endEvent
 
 function updateAllEventFilters()
+	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters called")
 	RemoveAllInventoryEventFilters()
 	AddInventoryEventFilter(iEquip_AllCurrentItemsFLST)
 	AddInventoryEventFilter(iEquip_AmmoItemsFLST)
@@ -90,6 +91,7 @@ function updateAllEventFilters()
 endFunction
 
 function updateEventFilter(formlist listToUpdate)
+	debug.trace("iEquip_PlayerEventHandler updateEventFilter called - listToUpdate: " + listToUpdate.GetName())
 	RemoveInventoryEventFilter(listToUpdate)
 	AddInventoryEventFilter(listToUpdate)
 endFunction

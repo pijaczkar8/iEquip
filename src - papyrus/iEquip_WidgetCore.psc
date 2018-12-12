@@ -2710,6 +2710,8 @@ function addToQueue(int Q)
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + "formId")
 		itemForm = game.GetFormEx(itemFormID)
+		itemID = UI.GetInt(sCurrentMenu, sEntryPath + "itemId")
+		itemName = UI.GetString(sCurrentMenu, sEntryPath + "text")
 	endIf
 	if itemForm && itemForm != None
 		debug.trace("iEquip_WidgetCore addToQueue - itemForm: " + itemForm + ", " + itemForm.GetName() + ", itemFormID: " + itemFormID)
@@ -2717,8 +2719,6 @@ function addToQueue(int Q)
 		if itemType == 41 || itemType == 26 ;Weapons and shields only
 			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + "isEnchanted")
 		endIf
-		itemID = UI.GetInt(sCurrentMenu, sEntryPath + "itemId")
-		itemName = UI.GetString(sCurrentMenu, sEntryPath + "text")
 		if isItemValidForSlot(Q, itemForm, itemType, itemName)
 			if itemName == ""
 				itemName = itemForm.getName()
