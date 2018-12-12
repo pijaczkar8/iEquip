@@ -365,9 +365,13 @@ Event OnWidgetInit()
 EndEvent
 
 function CheckDependencies()
-	bMoreHUDLoaded = AhzMoreHudIE.GetVersion() > 0
-	if bMoreHUDLoaded && bEnabled
-		initialisemoreHUDArray()
+	if AhzMoreHudIE
+		bMoreHUDLoaded = AhzMoreHudIE.GetVersion() > 0
+		if bMoreHUDLoaded && bEnabled
+			initialisemoreHUDArray()
+		endIf
+	else
+		bMoreHUDLoaded = false
 	endIf
 endFunction
 
@@ -518,38 +522,38 @@ function refreshWidget()
 	form equippedForm
 	while Q < 3
 		equippedForm = PlayerRef.GetEquippedObject(Q)
-		aiCurrentQueuePosition[Q] = findInQueue(Q, equippedForm.GetName())
-		if aiCurrentQueuePosition[Q] == -1
+		if equippedForm
+			aiCurrentQueuePosition[Q] = findInQueue(Q, equippedForm.GetName())
+		endIf
+		if !equippedForm || aiCurrentQueuePosition[Q] == -1
 			aiCurrentQueuePosition[Q] = 0
 		endIf
 		asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Name")
 		Q += 1
 	endwhile
-	;if we're in Preselect Mode exit now
-	if bPreselectMode
-		PM.togglePreselectMode()
-		Utility.Wait(3.0)
-		debug.notification("Exiting Preselect Mode...")
-	endIf
 	;if we're in ammo mode check if we actually should be
 	if bAmmoMode && !RightHandWeaponIsRanged()
 		AM.toggleAmmoMode()
 		Utility.Wait(3.0)
 		debug.notification("Resetting Ammo Mode...")
 	endIf
+	;if we're in Preselect Mode exit now
+	if bPreselectMode
+		PM.togglePreselectMode()
+		Utility.Wait(3.0)
+		debug.notification("Exiting Preselect Mode...")
+	endIf
 	;Now we need to refresh the names and icons for each slot to show what is currently equipped
 	refreshWidgetOnLoad()
 	;We can now check if we need to fade the left icon if we've got a 2H weapon equipped
 	Utility.Wait(1.5)
 	debug.notification("Resetting icons and names...")
-	int itemType = jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "Type")
-	checkAndFadeLeftIcon(1, itemType)
+	checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "Type"))
 	;Check and show or hide left and right counters - counts have already been updated in refreshWidgetOnLoad
 	if !bAmmoMode
 		Q = 0
 		while Q < 2
-			itemType = jMap.getInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Type")
-			if itemRequiresCounter(Q, itemType)
+			if itemRequiresCounter(Q, jMap.getInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Type"))
 				;Show the counter if currently hidden
 				if !isCounterShown(Q)
 					setCounterVisibility(Q, true)
