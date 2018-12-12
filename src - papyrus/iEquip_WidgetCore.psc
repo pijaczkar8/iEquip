@@ -872,7 +872,7 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 	endIf
 endFunction
 
-; Shows the widget.
+;/ Shows the widget.
 function showWidget()
 	if(Ready)
 		FadeTo(100, 0.2)
@@ -884,7 +884,7 @@ function hideWidget()
 	if(Ready)
 		FadeTo(0, 0.2)
 	endIf
-endFunction
+endFunction/;
 
 bool property isEnabled
 {Set this property true to enable the widget}
@@ -3254,7 +3254,7 @@ function ApplyChanges()
 	if bBackgroundStyleChanged
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 	endIf
-	if bDropShadowSettingChanged
+	if bDropShadowSettingChanged && !EM.isEditMode
 		if bDropShadowEnabled
 			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false) ;Show drop shadow
 		else
