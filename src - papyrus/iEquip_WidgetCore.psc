@@ -22,6 +22,7 @@ iEquip_ProMode property PM auto
 iEquip_PotionScript property PO auto
 ;iEquip_HelpMenu property HM auto
 iEquip_PlayerEventHandler property EH auto
+iEquip_CachedItemHandler property CH auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
@@ -883,6 +884,7 @@ bool property isEnabled
 	function Set(bool enabled)
 		bEnabled = enabled
 		EH.OniEquipEnabled(enabled)
+		CH.OniEquipEnabled(enabled)
 		if (Ready)
 			if bEnabled
 				bWaitingForPotionQueues = true
@@ -1004,7 +1006,9 @@ function addCurrentItemsOnFirstEnable()
 				updateWidget(Q, 0, false, true)
 			endIf
 			;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
-			checkAndEquipShownHandItem(Q, false, true)
+			if Q < 2
+				checkAndEquipShownHandItem(Q, false, true)
+			endIf
 		endIf
 		Q += 1
 	endWhile
@@ -2709,6 +2713,8 @@ function addToQueue(int Q)
 
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + "formId")
+		itemID = UI.GetInt(sCurrentMenu, sEntryPath + "itemId")
+		itemName = UI.GetString(sCurrentMenu, sEntryPath + "text")
 		itemForm = game.GetFormEx(itemFormID)
 		itemID = UI.GetInt(sCurrentMenu, sEntryPath + "itemId")
 		itemName = UI.GetString(sCurrentMenu, sEntryPath + "text")
