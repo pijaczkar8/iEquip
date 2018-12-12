@@ -2563,34 +2563,31 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	int iHandle
 	int[] args
 	;if the currently equipped item isn't poisonable, or if it isn't currently poisoned check and remove poison info is showing
-	if cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && bAmmoMode)
-		if abPoisonInfoDisplayed[Q] || forceHide
-			;Hide the poison icon
-			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")
-			if(iHandle)
-				UICallback.PushInt(iHandle, Q) ;Which slot we're updating
-				UICallback.PushString(iHandle, "hidden") ;New icon
-				UICallback.Send(iHandle)
-			endIf
-			;Hide the poison name
-			if abIsPoisonNameShown[Q]
-				showName(Q, false, true, 0.15)
-			endIf
-			;Reset the counter text colour
-			args = new int[2]
-			if Q == 0
-				args[0] = 9 ;leftCount
-				args[1] = aiWidget_TC[9] ;leftCount text colour
-			else
-				args[0] = 22 ;rightCount
-				args[1] = aiWidget_TC[22] ;rightCount text colour
-			endIf
-			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
-			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
-			abPoisonInfoDisplayed[Q] = false
-		else
-			return
+	if (forceHide || cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && bAmmoMode)) && abPoisonInfoDisplayed[Q]
+		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - should be hiding poison icon and name now")
+		;Hide the poison icon
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")
+		if(iHandle)
+			UICallback.PushInt(iHandle, Q) ;Which slot we're updating
+			UICallback.PushString(iHandle, "hidden") ;New icon
+			UICallback.Send(iHandle)
 		endIf
+		;Hide the poison name
+		if abIsPoisonNameShown[Q]
+			showName(Q, false, true, 0.15)
+		endIf
+		;Reset the counter text colour
+		args = new int[2]
+		if Q == 0
+			args[0] = 9 ;leftCount
+			args[1] = aiWidget_TC[9] ;leftCount text colour
+		else
+			args[0] = 22 ;rightCount
+			args[1] = aiWidget_TC[22] ;rightCount text colour
+		endIf
+		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
+		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
+		abPoisonInfoDisplayed[Q] = false
 	;Otherwise update the poison name, count and icon
 	else
 		string poisonName = currentPoison.GetName()
