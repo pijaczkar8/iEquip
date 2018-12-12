@@ -127,7 +127,9 @@ function ToggleEditMode()
 		iFirstElementInGroup[4] = 38 ; consumableBg_mc
 		iFirstElementInGroup[5] = 42 ; poisonBg_mc
 
-		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true) ;Remove DropShadowFilter from all text elements before entering Edit Mode
+		if WC.bDropShadowEnabled
+            UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true) ;Remove DropShadowFilter from all text elements before entering Edit Mode
+        endIf
         ; StoreOpeningValues
         int iIndex = 0
         afWidget_CurX = new Float[46]
@@ -192,7 +194,9 @@ function ToggleEditMode()
 		iSelectedElement = -1
 
 		WC.resetWidgetsToPreviousState()
-        UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false) ;Restore DropShadowFilter to all text elements when leaving Edit Mode
+        if WC.bDropShadowEnabled
+            UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false) ;Restore DropShadowFilter to all text elements when leaving Edit Mode
+        endIf
 		UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 		SetINIFloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay) ;Resets Vanity Camera delay back to previous value on leaving Edit Mode
         

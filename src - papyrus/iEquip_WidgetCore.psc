@@ -168,6 +168,9 @@ bool property bSkipCurrentItemWhenCycling = false auto hidden
 bool property bFadeLeftIconWhen2HEquipped = true auto hidden
 float property fLeftIconFadeAmount = 70.0 auto hidden
 
+bool property bDropShadowEnabled = true auto hidden
+bool property bDropShadowSettingChanged = false auto hidden
+
 bool property bEmptyPotionQueueChoiceChanged = false auto hidden
 bool property bPotionGroupingOptionsChanged = false auto hidden
 
@@ -189,6 +192,7 @@ string[] asItemNames
 string[] asWeaponTypeNames
 
 int iQueueMenuCurrentQueue = -1
+bool bJustUsedQueueMenuDirectAccess = false
 
 string sCurrentMenu = ""
 string sEntryPath = ""
@@ -458,6 +462,9 @@ function refreshWidgetOnLoad()
 	form fItem
 	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "Name"))
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+	if !bDropShadowEnabled
+		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
+	endIf
 	while Q < 8
 		abIsNameShown[Q] = true
 		if Q < 5
@@ -898,7 +905,6 @@ bool property isEnabled
 				EndWhile
 				CheckDependencies()
 				if bIsFirstEnabled
-					UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 					UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
 					; Add anything currently equipped in left, right and shout slots
 					addCurrentItemsOnFirstEnable()
@@ -926,7 +932,13 @@ bool property isEnabled
 				args[2] = false ;Hide shout
 				args[3] = false ;Ammo Mode
 				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+				UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 				UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
+				if bDropShadowEnabled
+					UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false) ;Show
+				else
+					UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true) ;Remove
+				endIf
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
 				if CM.iChargeDisplayType > 0
 					UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
@@ -3088,12 +3100,14 @@ function purgeQueue()
 	endwhile	
 endFunction
 
-function openQueueManagerMenu()
+function openQueueManagerMenu(int Q = -1)
 	debug.trace("iEquip_WidgetCore openQueueManagerMenu() called")
-	int Q = iEquip_QueueManagerMenu.Show() ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue
-	if Q == 0 ;Exit
-		return
+	if Q == -1
+		Q = iEquip_QueueManagerMenu.Show() ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue
 	else
+		bJustUsedQueueMenuDirectAccess = true
+	endIf
+	if Q > 0
 		Q -= 1
 		int queueLength = jArray.count(aiTargetQ[Q])
 		if queueLength < 1
@@ -3110,96 +3124,45 @@ function openQueueManagerMenu()
 				i += 1
 			endWhile
 			iQueueMenuCurrentQueue = Q
-			string title = "You currently have " + queueLength + " items in your " + asQueueName[Q]
-			string[] iconNameList = createIconNameListArray()
-			string[] list = createQueueListArray()
-			bool[] enchFlags = createEnchFlagsArray()
-			bool[] poisonFlags = createPoisonFlagsArray()
-			((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNameList, list, enchFlags, poisonFlags, 0, 0)
+			initQueueMenu(Q, queueLength)
 		endIf
 	endIf
 endFunction
 
-string[] function createIconNameListArray()
-	debug.trace("iEquip_WidgetCore createIconNameListArray() called")
-	int Q = iQueueMenuCurrentQueue
+function initQueueMenu(int Q, int queueLength, bool update = false, int iIndex = -1)
 	int targetArray = aiTargetQ[Q]
-	int i = jArray.count(targetArray)
-	string[] list = Utility.CreateStringArray(i)
-	int iIndex = 0
-	while iIndex < i
-		list[iIndex] = JMap.getStr(jArray.getObj(targetArray, iIndex), "Icon")
-		;debug.trace("iEquip_WidgetCore createIconNameListArray(): " + list[iIndex] + " retrieved from list[] at index " + iIndex as string)
-		iIndex += 1
-	endwhile
-	return list
-endFunction
-
-string[] function createQueueListArray()
-	debug.trace("iEquip_WidgetCore createQueueListArray() called")
-	int Q = iQueueMenuCurrentQueue
-	int targetArray = aiTargetQ[Q]
-	int i = jArray.count(targetArray)
-	string[] list = Utility.CreateStringArray(i)
-	int iIndex = 0
-	while iIndex < i
-		list[iIndex] = JMap.getStr(jArray.getObj(targetArray, iIndex), "Name")
-		;debug.trace("iEquip_WidgetCore createQueueListArray(): " + list[iIndex] + " retrieved from list[] at index " + iIndex as string)
-		iIndex += 1
-	endwhile
-	return list
-endFunction
-
-bool[] function createEnchFlagsArray()
-	debug.trace("iEquip_WidgetCore createEnchFlagsArray() called")
-	int Q = iQueueMenuCurrentQueue
-	int targetArray = aiTargetQ[Q]
-	int i = jArray.count(targetArray)
-	bool[] list = Utility.CreateboolArray(i)
-	int iIndex = 0
-	while iIndex < i
-		list[iIndex] = false
-		if (JMap.getInt(jArray.getObj(targetArray, iIndex), "isEnchanted")) as bool == true
-			list[iIndex] = true
-		endIf
-		;debug.trace("iEquip_WidgetCore createEnchFlagsArray(): " + list[iIndex] + " retrieved from list[] at index " + iIndex as string)
-		iIndex += 1
-	endwhile
-	return list
-endFunction
-
-bool[] function createPoisonFlagsArray()
-	debug.trace("iEquip_WidgetCore createPoisonFlagsArray() called")
-	int Q = iQueueMenuCurrentQueue
-	int targetArray = aiTargetQ[Q]
-	int i = jArray.count(targetArray)
-	bool[] list = Utility.CreateboolArray(i)
-	int iIndex = 0
-	while iIndex < i
-		list[iIndex] = false
-		if (JMap.getInt(jArray.getObj(targetArray, iIndex), "isPoisoned")) as bool == true
-			list[iIndex] = true
-		endIf
-		;debug.trace("iEquip_WidgetCore createPoisonFlagsArray(): " + list[iIndex] + " retrieved from list[] at index " + iIndex as string)
-		iIndex += 1
-	endwhile
-	return list
+	string[] iconNames = Utility.CreateStringArray(queueLength)
+	string[] itemNames = Utility.CreateStringArray(queueLength)
+	bool[] enchFlags = Utility.CreateBoolArray(queueLength)
+	bool[] poisonFlags = Utility.CreateBoolArray(queueLength)
+	int i = 0
+	while i < queueLength
+		iconNames[i] = JMap.getStr(jArray.getObj(targetArray, i), "Icon")
+		itemNames[i] = JMap.getStr(jArray.getObj(targetArray, i), "Name")
+		enchFlags[i] = (JMap.getInt(jArray.getObj(targetArray, i), "isEnchanted") == 1)
+		poisonFlags[i] = (JMap.getInt(jArray.getObj(targetArray, i), "isPoisoned") == 1)
+		i += 1
+	endWhile
+	if update
+		QueueMenu_RefreshList(iconNames, itemNames, enchFlags, poisonFlags, iIndex)
+	else
+		string title = "You currently have " + queueLength + " items in your " + asQueueName[Q]
+		((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNames, itemNames, enchFlags, poisonFlags, 0, 0)
+	endIf
 endFunction
 
 function recallQueueMenu()
 	debug.trace("iEquip_WidgetCore recallQueueMenu() called")
-	Utility.Wait(0.05)
-	openQueueManagerMenu()
+	if bJustUsedQueueMenuDirectAccess
+		bJustUsedQueueMenuDirectAccess = false
+	else
+		Utility.Wait(0.05)
+		openQueueManagerMenu()
+	endIf
 endFunction
 
 function recallPreviousQueueMenu()
-	int i = jArray.count(aiTargetQ[iQueueMenuCurrentQueue])
-	string title = "You currently have " + i + " items in your " + asQueueName[iQueueMenuCurrentQueue]
-	string[] iconNameList = createIconNameListArray()
-	string[] list = createQueueListArray()
-	bool[] enchFlags = createEnchFlagsArray()
-	bool[] poisonFlags = createPoisonFlagsArray()
-	((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNameList, list, enchFlags, poisonFlags, 0, 0)
+	initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
 endFunction
 
 function QueueMenuSwap(int upDown, int iIndex)
@@ -3259,7 +3222,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 		bFirstAttemptToDeletePotionGroup = false
 		((Self as Form) as iEquip_UILIB).closeQueueMenu()
 		debug.MessageBox("Potion Groups cannot be deleted.  To remove them from your consumables queue please use the MCM Potions page do disable them.")
-		recallPreviousQueueMenu()
+		initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
 	endIf
 endFunction
 
@@ -3272,11 +3235,7 @@ function QueueMenuUpdate(int iCount, int iIndex)
 		title = "You currently have " + iCount + " items in your " + asQueueName[iQueueMenuCurrentQueue]
 	endIf
 	QueueMenu_RefreshTitle(title)
-	string[] iconNameList = createIconNameListArray()
-	string[] list = createQueueListArray()
-	bool[] enchFlags = createEnchFlagsArray()
-	bool[] poisonFlags = createPoisonFlagsArray()
-	QueueMenu_RefreshList(iconNameList, list, enchFlags, poisonFlags, iIndex)
+	initQueueMenu(iQueueMenuCurrentQueue, iCount, true, iIndex)
 endFunction
 
 function QueueMenuClearQueue()
@@ -3294,6 +3253,13 @@ function ApplyChanges()
 	endIf
 	if bBackgroundStyleChanged
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+	endIf
+	if bDropShadowSettingChanged
+		if bDropShadowEnabled
+			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false) ;Show drop shadow
+		else
+			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true) ;Remove drop shadow
+		endIf
 	endIf
 	if bFadeOptionsChanged
 		updateWidgetVisibility()

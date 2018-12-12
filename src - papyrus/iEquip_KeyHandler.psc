@@ -22,6 +22,10 @@ Int Property iRightKey = 35 Auto Hidden ;H
 Int Property iConsumableKey = 48 Auto Hidden ;B
 Int Property iUtilityKey = 29 Auto Hidden ;Left Ctrl - Active in all modes
 
+;Optional hotkeys
+Int Property iOptConsumeKey = -1 Auto Hidden
+Int Property iOptDirQueueKey = -1 Auto Hidden
+
 ;Edit Mode Keys
 Int Property iEditNextKey = 55 Auto Hidden ;Num *
 Int Property iEditPrevKey = 181 Auto Hidden ;Num /
@@ -50,6 +54,7 @@ float Property fPressAndHoldDelay = 1.0 Auto Hidden
 bool Property bAllowKeyPress = true Auto Hidden
 bool Property bNormalSystemPageBehav = true Auto Hidden
 bool bIsUtilityKeyHeld = false
+bool bIsQueueMenuComboKeyKeyHeld = false
 bool bNotInLootMenu = true
 
 ; Ints
@@ -58,6 +63,8 @@ Int iWaitingKeyCode = 0
 Int iMultiTap = 0
 
 ; MCM settings
+bool property bConsumeItemHotkeyEnabled = false auto hidden
+bool property bQueueMenuComboKeyEnabled = false auto hidden
 bool property bPreselectEnabled = false auto hidden
 bool property bQuickShieldEnabled = false auto hidden
 bool property bQuickRangedEnabled = false auto hidden
@@ -127,8 +134,11 @@ event OnKeyDown(int KeyCode)
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
     
-    if KeyCode == iUtilityKey
+    if KeyCode == iUtilityKey && !bIsQueueMenuComboKeyKeyHeld
         bIsUtilityKeyHeld = true
+    elseIf KeyCode == iOptDirQueueKey && bQueueMenuComboKeyEnabled && !bIsUtilityKeyHeld
+        bIsQueueMenuComboKeyKeyHeld = true
+        GoToState("QUEUEMENUCOMBOKEYHELD")
     endIf
 
     if bAllowKeyPress
@@ -153,6 +163,8 @@ endEvent
 event OnKeyUp(Int KeyCode, Float HoldTime)
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = false
+    elseIf KeyCode == iOptDirQueueKey
+        bIsQueueMenuComboKeyKeyHeld = false
     endIf
 
     if bAllowKeyPress
@@ -229,7 +241,12 @@ function runUpdate()
                     WC.cycleSlot(4, bIsUtilityKeyHeld)
                 endIf
             endIf
-            
+
+        elseIf iWaitingKeyCode == iOptConsumeKey 
+            if bConsumeItemHotkeyEnabled && bNotInLootMenu && WC.bConsumablesEnabled
+                WC.consumeItem()
+            endIf
+
         elseIf iWaitingKeyCode == iUtilityKey
             ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = MCM, 4 = Refresh Widget
             int iAction = iEquip_UtilityMenu.Show() 
@@ -407,11 +424,50 @@ state EDITMODE
     endFunction
 endState
 
+;Direct Queue Menu Combo Key Held
+state QUEUEMENUCOMBOKEYHELD
+    event OnKeyUp(Int KeyCode, Float HoldTime)
+        if KeyCode == iUtilityKey
+            bIsUtilityKeyHeld = false
+        elseIf KeyCode == iOptDirQueueKey
+            bIsQueueMenuComboKeyKeyHeld = false
+            Gotostate("")
+        endIf
+
+        if bAllowKeyPress
+            if KeyCode == iWaitingKeyCode && iMultiTap == 0
+                iMultiTap = 1                
+                RegisterForSingleUpdate(fMultiTapDelay)
+            endIf
+        endIf
+    endEvent
+
+    function runUpdate()
+        if iMultiTap == 1  ;Single tap
+            if iWaitingKeyCode == iLeftKey
+                WC.openQueueManagerMenu(1)
+            elseIf iWaitingKeyCode == iRightKey
+                WC.openQueueManagerMenu(2)
+            elseIf iWaitingKeyCode == iShoutKey
+                WC.openQueueManagerMenu(3)
+            elseIf iWaitingKeyCode == iConsumableKey
+                WC.openQueueManagerMenu(4)
+            endIf
+            
+        elseIf iMultiTap == 2  ; Double tap
+            if iWaitingKeyCode == iConsumableKey
+                WC.openQueueManagerMenu(5)
+            endIf
+            
+        endIf
+    endFunction
+endState
+
 ; -----------------
 ; - MISCELLANEOUS -
 ; -----------------
 
-function updateKeyMaps(int keycode)
+function updateKeyMaps()
     UnregisterForAllKeys()
 
     if EM.isEditMode
@@ -493,6 +549,12 @@ function RegisterForGameplayKeys()
 	RegisterForKey(iRightKey)
 	RegisterForKey(iConsumableKey)
 	RegisterForKey(iUtilityKey)
+    if bConsumeItemHotkeyEnabled
+        RegisterForKey(iOptConsumeKey)
+    endIf
+    if bQueueMenuComboKeyEnabled
+        RegisterForKey(iOptDirQueueKey)
+    endIf
 endFunction
 
 function RegisterForEditModeKeys()
