@@ -145,15 +145,15 @@ bool property bAmmoSortingChanged = False auto hidden
 bool property bGearedUpOptionChanged = false auto hidden
 bool property bSlotEnabledOptionsChanged = false auto hidden
 
-int property iMaxQueueLength = 7 auto hidden
+int property iMaxQueueLength = 12 auto hidden
 bool property bHardLimitQueueSize = true auto hidden
-bool property bAllowWeaponSwitchHands = true auto hidden
-bool property bAllowSingleItemsInBothQueues = true auto hidden
-bool property bAutoAddNewItems = false auto hidden
+bool property bAllowWeaponSwitchHands = false auto hidden
+bool property bAllowSingleItemsInBothQueues = false auto hidden
+bool property bAutoAddNewItems = true auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
-int property iMaxCachedItems = 30 auto hidden
+int property iMaxCachedItems = 60 auto hidden
 
-float property fWidgetFadeoutDelay = 30.0 auto hidden
+float property fWidgetFadeoutDelay = 20.0 auto hidden
 float property fWidgetFadeoutDuration = 1.5 auto hidden
 bool property bAlwaysVisibleWhenWeaponsDrawn = true auto hidden
 bool property bIsWidgetShown = false auto hidden

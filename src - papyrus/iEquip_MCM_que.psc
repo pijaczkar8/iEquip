@@ -45,7 +45,7 @@ State que_sld_maxItmQue
             MCM.SetInfoText("Select the maximum number of items you can add to each slot queue.  Bear in mind adding too many items will mean having to cycle through a LOT to get to what you want. "+\
                             "You can set a higher limit and not fill the queue as empty slots will be ignored when cycling.\nDefault = 7")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.iMaxQueueLength, 0.0, 30.0, 1.0, 7.0)
+            fillSlider(MCM.WC.iMaxQueueLength, 0.0, 30.0, 1.0, 12.0)
         elseIf currentEvent == "Accept"
             MCM.WC.iMaxQueueLength = currentVar as int
             MCM.SetSliderOptionValueST(MCM.WC.iMaxQueueLength, "Max {0} items")
@@ -101,7 +101,7 @@ State que_tgl_signlBothQue
             
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.WC.bAllowSingleItemsInBothQueues = true 
+            MCM.WC.bAllowSingleItemsInBothQueues = false 
             MCM.forcePageReset()
         endIf
     endEvent
@@ -116,7 +116,7 @@ State que_tgl_allow1hSwitch
             MCM.WC.bAllowWeaponSwitchHands = !MCM.WC.bAllowWeaponSwitchHands
             MCM.SetToggleOptionValueST(MCM.WC.bAllowWeaponSwitchHands)
         elseIf currentEvent == "Default"
-            MCM.WC.bAllowWeaponSwitchHands = true 
+            MCM.WC.bAllowWeaponSwitchHands = false 
             MCM.SetToggleOptionValueST(MCM.WC.bAllowWeaponSwitchHands)
         endIf
     endEvent
@@ -135,7 +135,7 @@ State que_tgl_autoAddItmQue
             MCM.WC.bAutoAddNewItems = !MCM.WC.bAutoAddNewItems
             MCM.SetToggleOptionValueST(MCM.WC.bAutoAddNewItems)
         elseIf currentEvent == "Default"
-            MCM.WC.bAutoAddNewItems = false 
+            MCM.WC.bAutoAddNewItems = true 
             MCM.SetToggleOptionValueST(MCM.WC.bAutoAddNewItems)
         endIf
     endEvent
@@ -199,7 +199,7 @@ State que_sld_MaxItmCache
         if currentEvent == "Highlight"
             MCM.SetInfoText("Determines the maximum number of removed items you want to remember\nDefault: 30 items")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.iMaxCachedItems, 0.0, 128.0, 1.0, 30.0)
+            fillSlider(MCM.WC.iMaxCachedItems, 0.0, 128.0, 1.0, 60.0)
         elseIf currentEvent == "Accept"
             MCM.WC.iMaxCachedItems = currentVar as int
             MCM.SetSliderOptionValueST(MCM.WC.iMaxCachedItems, "Max {0} cached items")
