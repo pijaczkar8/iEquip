@@ -13,7 +13,6 @@ iEquip_PotionScript Property PO Auto
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
-iEquip_CachedItemHandler Property CH Auto
 iEquip_WidgetVisUpdateScript property WVis auto
 
 Actor Property PlayerRef Auto
@@ -35,7 +34,6 @@ Event OnInit()
 endEvent
 
 function OniEquipEnabled(bool enabled)
-	CH.OniEquipEnabled(enabled)
 	if enabled
 		gotoState("")
 		Utility.SetINIBool("bDisableGearedUp:General", True)

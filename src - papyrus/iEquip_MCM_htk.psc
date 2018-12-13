@@ -50,7 +50,7 @@ function drawPage()
     endIf
     MCM.AddToggleOptionST("htk_tgl_optDirectQueueHotkey", "Enable direct queue menu combo key", KH.bQueueMenuComboKeyEnabled)
     if KH.bQueueMenuComboKeyEnabled
-        MCM.AddKeyMapOptionST("htk_key_optional_directQueueAccessModifier", "Direct queue menu combo key", KH.iOptDirQueueKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("htk_key_optional_queueMenuCombo", "Direct queue menu combo key", KH.iOptDirQueueKey, mcmUnmapFLAG)
     endIf
 
 endFunction
@@ -279,7 +279,7 @@ State htk_tgl_optConsumeHotkey
             elseIf currentEvent == "Default"
             KH.bConsumeItemHotkeyEnabled = false
             endIf
-            MCM.SetToggleOptionValueST(KH.bConsumeItemHotkeyEnabled)
+            ;MCM.SetToggleOptionValueST(KH.bConsumeItemHotkeyEnabled)
             MCM.forcePageReset()
         endIf
     endEvent
@@ -294,7 +294,7 @@ State htk_key_optional_consumeItem
             KH.updateKeyMaps()
             MCM.SetKeyMapOptionValueST(KH.iOptConsumeKey)
         elseIf currentEvent == "Default"
-            KH.iOptConsumeKey = 21
+            KH.iOptConsumeKey = -1
             MCM.SetKeyMapOptionValueST(KH.iOptConsumeKey)
         endIf
     endEvent
@@ -310,13 +310,13 @@ State htk_tgl_optDirectQueueHotkey
             elseIf currentEvent == "Default"
             KH.bQueueMenuComboKeyEnabled = false
             endIf
-            MCM.SetToggleOptionValueST(KH.bQueueMenuComboKeyEnabled)
+            ;MCM.SetToggleOptionValueST(KH.bQueueMenuComboKeyEnabled)
             MCM.forcePageReset()
         endIf
     endEvent
 endState
 
-State htk_key_consumPoison
+State htk_key_optional_queueMenuCombo
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Select a combo key\nTo access the queue menus press and hold this key then tap the left/right/shout/consumable key, or double tap the consumable key for the poison queue menu.\nDefault: X")
@@ -325,7 +325,7 @@ State htk_key_consumPoison
             KH.updateKeyMaps()
             MCM.SetKeyMapOptionValueST(KH.iOptDirQueueKey)
         elseIf currentEvent == "Default"
-            KH.iOptDirQueueKey = 21
+            KH.iOptDirQueueKey = -1
             MCM.SetKeyMapOptionValueST(KH.iOptDirQueueKey)
         endIf
     endEvent

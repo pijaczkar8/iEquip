@@ -186,7 +186,7 @@ endEvent
 function runUpdate()
     if iMultiTap == -1   ; Longpress
         if iWaitingKeyCode == iConsumableKey
-            if bNotInLootMenu && WC.bConsumablesEnabled
+            if bNotInLootMenu && WC.bConsumablesEnabled && !bConsumeItemHotkeyEnabled
                 WC.consumeItem()
             endIf
             

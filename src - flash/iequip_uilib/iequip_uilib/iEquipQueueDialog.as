@@ -47,6 +47,8 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
   	public var iconNameList: Array;
   	public var isEnchantedList: Array;
   	public var isPoisonedList: Array;
+
+  	public var bDirectAccess: Boolean;
   
   /* INITIALIZATION */
 
@@ -158,7 +160,12 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		clearButtonPanel.updateButtons();
 
 		exitButtonPanel.clearButtons();
-		var exitButton = exitButtonPanel.addButton({text: "Back to menu", controls: exitControls_});
+		var exitButton;
+		if (bDirectAccess) {
+			exitButton = exitButtonPanel.addButton({text: "Exit", controls: exitControls_});
+		} else {
+			exitButton = exitButtonPanel.addButton({text: "Back to menu", controls: exitControls_});
+		}
 		exitButton.addEventListener("press", this, "onExitPress");
 		exitButtonPanel.updateButtons();
 	}
@@ -214,6 +221,11 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	}
 	
   /* PAPYRUS INTERFACE */
+
+ 	public function setExitButtonText(directAccess: Boolean): Void
+ 	{
+ 		bDirectAccess = directAccess;
+ 	}
   
 	public function setPlatform(platform: Number): Void
 	{

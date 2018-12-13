@@ -42,7 +42,7 @@ function drawPage()
             
     MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[MCM.iAmmoIconStyle])
 
-    MCM.AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[WC.backgroundStyle])
+    MCM.AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[MCM.WC.iBackgroundStyle])
     MCM.AddToggleOptionST("ui_tgl_dropShadow", "Drop shadow on text", MCM.WC.bDropShadowEnabled)
             
     MCM.SetCursorPosition(1)
@@ -166,6 +166,7 @@ State ui_tgl_dropShadow
             elseIf currentEvent == "Default"
                 MCM.WC.bDropShadowEnabled = true
             endIf
+            MCM.SetToggleOptionValueST(MCM.WC.bDropShadowEnabled)
             MCM.WC.bDropShadowSettingChanged = true
         endIf
     endEvent

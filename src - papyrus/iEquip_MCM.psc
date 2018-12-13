@@ -104,6 +104,7 @@ event OnConfigOpen()
     WC.bPoisonIndicatorStyleChanged = false
     WC.bPotionGroupingOptionsChanged = false
     WC.bBackgroundStyleChanged = false
+    WC.bDropShadowSettingChanged = false
     
     if bIsFirstEnabled == false
         if WC.bProModeEnabled
