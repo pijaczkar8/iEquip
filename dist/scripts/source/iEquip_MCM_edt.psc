@@ -21,7 +21,6 @@ endFunction
 function drawPage()
     MCM.AddHeaderOption("Edit Mode Options")
     MCM.AddSliderOptionST("edt_sld_slowTimeStr", "Slow Time effect strength ", iEquip_EditModeSlowTimeStrength.GetValueint())
-    MCM.AddToggleOptionST("edt_tgl_enblBringFrnt", "Enable Bring To Front", MCM.EM.bringToFrontEnabled)
             
     MCM.SetCursorPosition(1)
             
@@ -73,21 +72,6 @@ State edt_sld_slowTimeStr
     endEvent
 endState
 
-State edt_tgl_enblBringFrnt
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("Bring To Front feature in Edit Mode allows you to rearrange the layer order of overlapping widget elements\n"+\
-                            "Disabled by default as adds a short delay when switching presets and toggling Edit Mode")
-        elseIf currentEvent == "Select"
-            MCM.EM.bringToFrontEnabled = !MCM.EM.bringToFrontEnabled
-            MCM.SetToggleOptionValueST(MCM.EM.bringToFrontEnabled)
-        elseIf currentEvent == "Default"
-            MCM.EM.bringToFrontEnabled = false
-            MCM.SetToggleOptionValueST(MCM.EM.bringToFrontEnabled)
-        endIf 
-    endEvent
-endState
-
 State edt_men_chooseHtKey
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -114,7 +98,7 @@ State edt_key_nextElem
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditNextKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditNextKey = 55
         endIf 
@@ -127,7 +111,7 @@ State edt_key_prevElem
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditPrevKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditPrevKey = 181
         endIf 
@@ -140,7 +124,7 @@ State edt_key_moveUp
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditUpKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditUpKey = 200
         endIf 
@@ -153,7 +137,7 @@ State edt_key_moveDown
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditDownKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditDownKey = 208
         endIf
@@ -166,7 +150,7 @@ State edt_key_moveLeft
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditLeftKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditLeftKey = 203
         endIf 
@@ -179,7 +163,7 @@ State edt_key_moveRight
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditRightKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditRightKey = 205
         endIf 
@@ -192,7 +176,7 @@ State edt_key_sclUp
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditScaleUpKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditScaleUpKey = 78
         endIf 
@@ -205,7 +189,7 @@ State edt_key_sclDown
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditScaleDownKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditScaleDownKey = 74
         endIf
@@ -218,7 +202,7 @@ State edt_key_rotate
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditRotateKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditRotateKey = 80
         endIf 
@@ -231,7 +215,7 @@ State edt_key_adjTransp
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditAlphaKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditAlphaKey = 81
         endIf 
@@ -244,7 +228,7 @@ State edt_key_bringFrnt
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditDepthKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditDepthKey = 72
         endIf 
@@ -257,7 +241,7 @@ State edt_key_setTxtAlCo
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditTextKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditTextKey = 79
         endIf 
@@ -270,7 +254,7 @@ State edt_key_tglRulers
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditRulersKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditRulersKey = 77
         endIf 
@@ -283,7 +267,7 @@ State edt_key_rstSelElem
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditResetKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditResetKey = 82
         endIf 
@@ -296,7 +280,7 @@ State edt_key_loadPrst
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditLoadPresetKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditLoadPresetKey = 75
         endIf 
@@ -309,7 +293,7 @@ State edt_key_savePrst
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditSavePresetKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditSavePresetKey = 76
         endIf 
@@ -322,7 +306,7 @@ State edt_key_discChangs
     event OnBeginState()
         if currentEvent == "Change"
             KH.iEditDiscardKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
         elseIf currentEvent == "Default"
             KH.iEditDiscardKey = 83
         endIf 

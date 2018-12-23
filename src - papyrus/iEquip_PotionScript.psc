@@ -75,6 +75,8 @@ String[] asPoisonIconNames
 
 bool bIsCACOLoaded = false
 MagicEffect[] aCACO_RestoreEffects
+bool bIsPAFLoaded
+MagicEffect[] aPAF_RestoreEffects
 
 bool bMoreHUDLoaded = false
 
@@ -99,8 +101,8 @@ event OnInit()
     GotoState("")
     bInitialised = false
     HUD_MENU = WC.HUD_MENU
-	WidgetRoot = WC.WidgetRoot
-	aiPotionQ = new int[9]
+    WidgetRoot = WC.WidgetRoot
+    aiPotionQ = new int[9]
     aStrongestEffects = new MagicEffect[9]
     aStrongestEffects[0] = AlchRestoreHealth
     aStrongestEffects[1] = AlchFortifyHealth
@@ -119,51 +121,51 @@ event OnInit()
 
     aPoisonEffects = new MagicEffect[22]
     aPoisonEffects[0] = AlchDamageHealth
-	aPoisonEffects[1] = AlchDamageHealthDuration
-	aPoisonEffects[2] = AlchDamageHealthRavage
-	aPoisonEffects[3] = AlchDamageMagicka
-	aPoisonEffects[4] = AlchDamageMagickaDuration
-	aPoisonEffects[5] = AlchDamageMagickaRate
-	aPoisonEffects[6] = AlchDamageMagickaRavage
-	aPoisonEffects[7] = AlchDamageSpeed
-	aPoisonEffects[8] = AlchDamageStamina
-	aPoisonEffects[9] = AlchDamageStaminaDuration
-	aPoisonEffects[10] = AlchDamageStaminaRate
-	aPoisonEffects[11] = AlchDamageStaminaRavage
-	aPoisonEffects[12] = AlchInfluenceAggUp
-	aPoisonEffects[13] = AlchInfluenceAggUpCombo
-	aPoisonEffects[14] = AlchInfluenceAggUpComboCOPY0000
-	aPoisonEffects[15] = AlchInfluenceConfDown
-	aPoisonEffects[16] = AlchParalysis
-	aPoisonEffects[17] = AlchWeaknessFire
-	aPoisonEffects[18] = AlchWeaknessFrost
-	aPoisonEffects[19] = AlchWeaknessMagic
-	aPoisonEffects[20] = AlchWeaknessPoison
-	aPoisonEffects[21] = AlchWeaknessShock
+    aPoisonEffects[1] = AlchDamageHealthDuration
+    aPoisonEffects[2] = AlchDamageHealthRavage
+    aPoisonEffects[3] = AlchDamageMagicka
+    aPoisonEffects[4] = AlchDamageMagickaDuration
+    aPoisonEffects[5] = AlchDamageMagickaRate
+    aPoisonEffects[6] = AlchDamageMagickaRavage
+    aPoisonEffects[7] = AlchDamageSpeed
+    aPoisonEffects[8] = AlchDamageStamina
+    aPoisonEffects[9] = AlchDamageStaminaDuration
+    aPoisonEffects[10] = AlchDamageStaminaRate
+    aPoisonEffects[11] = AlchDamageStaminaRavage
+    aPoisonEffects[12] = AlchInfluenceAggUp
+    aPoisonEffects[13] = AlchInfluenceAggUpCombo
+    aPoisonEffects[14] = AlchInfluenceAggUpComboCOPY0000
+    aPoisonEffects[15] = AlchInfluenceConfDown
+    aPoisonEffects[16] = AlchParalysis
+    aPoisonEffects[17] = AlchWeaknessFire
+    aPoisonEffects[18] = AlchWeaknessFrost
+    aPoisonEffects[19] = AlchWeaknessMagic
+    aPoisonEffects[20] = AlchWeaknessPoison
+    aPoisonEffects[21] = AlchWeaknessShock
 
-	asPoisonIconNames = new String[22]
+    asPoisonIconNames = new String[22]
     asPoisonIconNames[0] = "PoisonHealth"
-	asPoisonIconNames[1] = "PoisonHealth"
-	asPoisonIconNames[2] = "PoisonHealth"
-	asPoisonIconNames[3] = "PoisonMagicka"
-	asPoisonIconNames[4] = "PoisonMagicka"
-	asPoisonIconNames[5] = "PoisonMagicka"
-	asPoisonIconNames[6] = "PoisonMagicka"
-	asPoisonIconNames[7] = "PoisonStamina"
-	asPoisonIconNames[8] = "PoisonStamina"
-	asPoisonIconNames[9] = "PoisonStamina"
-	asPoisonIconNames[10] = "PoisonStamina"
-	asPoisonIconNames[11] = "PoisonStamina"
-	asPoisonIconNames[12] = "PoisonFrenzy"
-	asPoisonIconNames[13] = "PoisonFrenzy"
-	asPoisonIconNames[14] = "PoisonFrenzy"
-	asPoisonIconNames[15] = "PoisonFear"
-	asPoisonIconNames[16] = "PoisonParalysis"
-	asPoisonIconNames[17] = "PoisonWeaknessFire"
-	asPoisonIconNames[18] = "PoisonWeaknessFrost"
-	asPoisonIconNames[19] = "PoisonWeaknessMagic"
-	asPoisonIconNames[20] = "PoisonWeaknessPoison"
-	asPoisonIconNames[21] = "PoisonWeaknessShock"
+    asPoisonIconNames[1] = "PoisonHealth"
+    asPoisonIconNames[2] = "PoisonHealth"
+    asPoisonIconNames[3] = "PoisonMagicka"
+    asPoisonIconNames[4] = "PoisonMagicka"
+    asPoisonIconNames[5] = "PoisonMagicka"
+    asPoisonIconNames[6] = "PoisonMagicka"
+    asPoisonIconNames[7] = "PoisonStamina"
+    asPoisonIconNames[8] = "PoisonStamina"
+    asPoisonIconNames[9] = "PoisonStamina"
+    asPoisonIconNames[10] = "PoisonStamina"
+    asPoisonIconNames[11] = "PoisonStamina"
+    asPoisonIconNames[12] = "PoisonFrenzy"
+    asPoisonIconNames[13] = "PoisonFrenzy"
+    asPoisonIconNames[14] = "PoisonFrenzy"
+    asPoisonIconNames[15] = "PoisonFear"
+    asPoisonIconNames[16] = "PoisonParalysis"
+    asPoisonIconNames[17] = "PoisonWeaknessFire"
+    asPoisonIconNames[18] = "PoisonWeaknessFrost"
+    asPoisonIconNames[19] = "PoisonWeaknessMagic"
+    asPoisonIconNames[20] = "PoisonWeaknessPoison"
+    asPoisonIconNames[21] = "PoisonWeaknessShock"
 
     aCACO_RestoreEffects = new MagicEffect[9]
     if Game.GetModByName("Complete Alchemy & Cooking Overhaul.esp") != 255
@@ -178,7 +180,19 @@ event OnInit()
         aCACO_RestoreEffects[7] = Game.GetFormFromFile(0x001B42BF, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect ;AlchRestoreMagicka_5sec
         aCACO_RestoreEffects[8] = Game.GetFormFromFile(0x001B42C0, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect ;AlchRestoreMagicka_10sec
     endIf
-    debug.trace("iEquip_PotionScript OnInit finished - bIsCACOLoaded: " + bIsCACOLoaded)
+
+    aPAF_RestoreEffects = new MagicEffect[6]
+    if Game.GetModByName("PotionAnimatedFix.esp") != 255
+        bIsPAFLoaded = true
+        aPAF_RestoreEffects[0] = Game.GetFormFromFile(0x006B2D4, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreHealthDUPLICATE001
+        aPAF_RestoreEffects[1] = Game.GetFormFromFile(0x00754DB, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreHealthAllDUPLICATE001
+        aPAF_RestoreEffects[2] = Game.GetFormFromFile(0x00754DE, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreStaminaDUPLICATE001
+        aPAF_RestoreEffects[3] = Game.GetFormFromFile(0x00754DF, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreStaminaAllDUPLICATE001
+        aPAF_RestoreEffects[4] = Game.GetFormFromFile(0x00754DC, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreMagickaDUPLICATE001
+        aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DD, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreMagickaAllDUPLICATE001
+    endIf
+    
+    debug.trace("iEquip_PotionScript OnInit finished -  - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
     bInitialised = true
     bLoadedByOnInit = true
 endEvent
@@ -214,8 +228,20 @@ function onGameLoaded()
         else
             bIsCACOLoaded = false
         endIf
+        aPAF_RestoreEffects = new MagicEffect[6]
+        if Game.GetModByName("PotionAnimatedFix.esp") != 255
+            bIsPAFLoaded = true
+            aPAF_RestoreEffects[0] = Game.GetFormFromFile(0x006B2D4, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreHealthDUPLICATE001
+            aPAF_RestoreEffects[1] = Game.GetFormFromFile(0x00754DB, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreHealthAllDUPLICATE001
+            aPAF_RestoreEffects[2] = Game.GetFormFromFile(0x00754DE, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreStaminaDUPLICATE001
+            aPAF_RestoreEffects[3] = Game.GetFormFromFile(0x00754DF, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreStaminaAllDUPLICATE001
+            aPAF_RestoreEffects[4] = Game.GetFormFromFile(0x00754DC, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreMagickaDUPLICATE001
+            aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DD, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreMagickaAllDUPLICATE001
+        else
+            bIsPAFLoaded = false
+        endIf
     endIf
-    debug.trace("iEquip_PotionScript GameLoaded - bIsCACOLoaded: " + bIsCACOLoaded)
+    debug.trace("iEquip_PotionScript GameLoaded - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
     findAndSortPotions()
 endFunction
 
@@ -261,13 +287,13 @@ function InitialisePotionQueueArrays(int consQ, int poisQ)
     endIf
     int i = 0
     while i < 9
-    	debug.trace("iEquip_PotionScript InitialisePotionQArrays - aiPotionQ["+i+"] contains " + aiPotionQ[i])
-    	i += 1
+        debug.trace("iEquip_PotionScript InitialisePotionQArrays - aiPotionQ["+i+"] contains " + aiPotionQ[i])
+        i += 1
     endWhile
 endfunction
 
 function initialisemoreHUDArray()
-	debug.trace("iEquip_PotionScript initialisemoreHUDArray called")
+    debug.trace("iEquip_PotionScript initialisemoreHUDArray called")
     int jItemIDs = jArray.object()
     int jIconNames = jArray.object()
     int Q = 0
@@ -279,21 +305,21 @@ function initialisemoreHUDArray()
         
         while i < queueLength
             form itemForm = jMap.getForm(jArray.getObj(aiPotionQ[Q], i), "Form")
-	        if !itemForm
-				jArray.eraseIndex(aiPotionQ[Q], i)
-				queueLength -= 1
-			endIf
+            if !itemForm
+                jArray.eraseIndex(aiPotionQ[Q], i)
+                queueLength -= 1
+            endIf
             int itemID = jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "itemID")
             debug.trace("iEquip_PotionScript initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiPotionQ[Q], i), "Name"))
             if itemID == 0
-            	itemID = WC.createItemID(itemForm.GetName(), itemForm.GetFormID())
-            	jMap.setInt(jArray.getObj(aiPotionQ[Q], i), "itemID", itemID)
+                itemID = WC.createItemID(itemForm.GetName(), itemForm.GetFormID())
+                jMap.setInt(jArray.getObj(aiPotionQ[Q], i), "itemID", itemID)
             endIf
-	        if itemID != 0
-	            jArray.addInt(jItemIDs, jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "itemID"))
-	            jArray.addStr(jIconNames, "iEquipQ.png")
-	        endIf
-	        i += 1
+            if itemID != 0
+                jArray.addInt(jItemIDs, jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "itemID"))
+                jArray.addStr(jIconNames, "iEquipQ.png")
+            endIf
+            i += 1
         endWhile
 
         Q += 1
@@ -378,10 +404,10 @@ function onPotionAdded(form newPotion)
     debug.trace("iEquip_PotionScript onPotionAdded called - newPotion: " + newPotion.GetName())
     checkAndAddToPotionQueue(newPotion as potion)
     if bAddedToQueue && iQueueToSort != -1
-    	if iQueueToSort == iPoisonQ
-    		sortPoisonQueue()
-    	elseIf iQueueToSort != iConsumableQ
-        	sortPotionQueue(iQueueToSort)
+        if iQueueToSort == iPoisonQ
+            sortPoisonQueue()
+        elseIf iQueueToSort != iConsumableQ
+            sortPotionQueue(iQueueToSort)
         endIf
     endIf
 endFunction
@@ -393,62 +419,44 @@ function onPotionRemoved(form removedPotion)
     int foundPotion
     int itemCount = PlayerRef.GetItemCount(removedPotion)
     if thePotion.isPoison()
+        debug.trace("iEquip_PotionScript onPotionRemoved - removedPotion is a poison")
         if itemCount < 1
-            iEquip_AllCurrentItemsFLST.RemoveAddedForm(removedPotion)
-            EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
             foundPotion = findInQueue(iPoisonQ, removedPotion)
             if foundPotion != -1
-                if bMoreHUDLoaded
-                    AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(iPoisonQ, foundPotion), "itemID"))
-                endIf
-                jArray.eraseIndex(iPoisonQ, foundPotion)
+                WC.removeItemFromQueue(4, foundPotion, false, false, true, false)
             endIf
-        endIf
-        if WC.asCurrentlyEquipped[4] == removedPotion.GetName()
-            if itemCount > 0
-                WC.setSlotCount(4, itemCount)
-            else
-                WC.cycleSlot(4)
-            endIf
+        elseIf WC.asCurrentlyEquipped[4] == removedPotion.GetName()
+            WC.setSlotCount(4, itemCount)
         endIf
     elseIf thePotion.isFood()
+        debug.trace("iEquip_PotionScript onPotionRemoved - removedPotion is a food")
         if itemCount < 1
-            iEquip_AllCurrentItemsFLST.RemoveAddedForm(removedPotion)
-            EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
             foundPotion = findInQueue(iConsumableQ, removedPotion)
             if foundPotion != -1
-                if bMoreHUDLoaded
-                    AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(iConsumableQ, foundPotion), "itemID"))
-                endIf
-                jArray.eraseIndex(iConsumableQ, foundPotion)
+                WC.removeItemFromQueue(3, foundPotion, false, false, true, false)
             endIf
-        endIf
-        if WC.asCurrentlyEquipped[3] == removedPotion.GetName()
-            if itemCount > 0
-                WC.setSlotCount(3, itemCount)
-            else
-                WC.cycleSlot(3)
-            endIf
+        elseIf WC.asCurrentlyEquipped[3] == removedPotion.GetName()
+            WC.setSlotCount(3, itemCount)
         endIf
     else
         int Q = getPotionQueue(thePotion)
         if Q >= 0
-	        int group
-	        string potionGroup
-	        if Q < 3
-		        group = 0
-		        potionGroup = "Health Potions"
-		    elseIf Q < 6
-		        group = 1
-		        potionGroup = "Stamina Potions"
-		    else
-		        group = 2
-		        potionGroup = "Magicka Potions"
-		    endIf
-		    if WC.asCurrentlyEquipped[3] == potionGroup
-            	WC.setSlotCount(3, getPotionGroupCount(group))
+            int group
+            string potionGroup
+            if Q < 3
+                group = 0
+                potionGroup = "Health Potions"
+            elseIf Q < 6
+                group = 1
+                potionGroup = "Stamina Potions"
+            else
+                group = 2
+                potionGroup = "Magicka Potions"
             endIf
-		endIf
+            if WC.asCurrentlyEquipped[3] == potionGroup
+                WC.setSlotCount(3, getPotionGroupCount(group))
+            endIf
+        endIf
         if itemCount < 1
             iEquip_PotionItemsFLST.RemoveAddedForm(removedPotion)
             EH.updateEventFilter(iEquip_PotionItemsFLST)
@@ -540,7 +548,7 @@ int function getPotionQueue(potion potionToCheck)
     int Q = aStrongestEffects.find(strongestEffect) ;Returns -1 if not found
     ;If it's not a regular effect check for a consummate effect
     if Q < 0
-    	Q = aConsummateEffects.find(strongestEffect) ;Puts consummate potions into the Restore queues (0,3,6)
+        Q = aConsummateEffects.find(strongestEffect) ;Puts ultimate/consummate potions into the Restore queues (0,3,6)
         if Q != -1
             Q = Q * 3
         endIf
@@ -548,6 +556,7 @@ int function getPotionQueue(potion potionToCheck)
     ;If we've not found a vanilla effect check if CACO is loaded and if so check for a CACO restore effect
     if Q < 0 && bIsCACOLoaded
         Q = aCACO_RestoreEffects.find(strongestEffect) ;Returns -1 if not found
+        debug.trace("iEquip_PotionScript getPotionQueue - checking for a CACO restore effect, Q = " + Q)
         if Q != -1
             if Q < 3
                 Q = 0
@@ -557,6 +566,22 @@ int function getPotionQueue(potion potionToCheck)
                 Q = 6
             endIf
         endIf
+        debug.trace("iEquip_PotionScript getPotionQueue - CACO restore effect, final Q value = " + Q)
+    endIf
+    ;Finally check if PotionAnimatedFix is loaded and check for one of its DUPLICATE restore effects
+    if Q < 0 && bIsPAFLoaded
+        Q = aPAF_RestoreEffects.find(strongestEffect)
+        debug.trace("iEquip_PotionScript getPotionQueue - checking for a PAF restore effect, Q = " + Q)
+        if Q != -1
+            if Q < 2 ;AlchRestoreHealthDUPLICATE001 or AlchRestoreHealthAllDUPLICATE001
+                Q = 0 ;Health Restore
+            elseIf Q < 4 ;AlchRestoreStaminaDUPLICATE001 or AlchRestoreStaminaAllDUPLICATE001
+            	Q = 3 ;Stamina Restore
+            else ;AlchRestoreMagickaDUPLICATE001 or AlchRestoreMagickaAllDUPLICATE001
+            	Q = 6 ;Magicka Restore
+            endIf
+        endIf
+        debug.trace("iEquip_PotionScript getPotionQueue - PAF restore effect, final Q value = " + Q)
     endIf
     ;If it's not a health, stamina or magicka potion then there's nothing to do here
     if Q < 0
@@ -583,34 +608,27 @@ function checkAndAddToPotionQueue(potion foundPotion)
         int group
         string potionGroup
         if Q < 3
-	        group = 0
-	        potionGroup = "Health Potions"
-	    elseIf Q < 6
-	        group = 1
-	        potionGroup = "Stamina Potions"
-	    else
-	        group = 2
-	        potionGroup = "Magicka Potions"
-	    endIf
+            group = 0
+            potionGroup = "Health Potions"
+        elseIf Q < 6
+            group = 1
+            potionGroup = "Stamina Potions"
+        else
+            group = 2
+            potionGroup = "Magicka Potions"
+        endIf
         if Q != -1
             form potionForm = foundPotion as form
             ;Check it isn't already in the chosen queue and add it if not
             if findInQueue(aiPotionQ[Q], potionForm) != -1
                 debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + foundPotion.GetName() + " is already in the " + aStrongestEffects[Q].GetName() + " queue")
             else
-                int index = foundPotion.GetCostliestEffectIndex()
-                float effectMagnitude
-                if stringutil.Find(foundPotion.GetName(), "consummate", 0) > -1
-                	effectMagnitude = 9999.0 ;Ensures consummate potions are always the strongest in the Restore queues
-                else
-                	effectMagnitude = foundPotion.GetNthEffectMagnitude(index)
-                endIf
                 string potionName = foundPotion.GetName()
                 int itemID = WC.createItemID(potionName, potionForm.GetFormID())
                 int potionObj = jMap.object()
                 jMap.setForm(potionObj, "Form", potionForm)
                 jMap.setStr(potionObj, "Name", potionName)
-                jMap.setFlt(potionObj, "Strength", effectMagnitude)
+                jMap.setFlt(potionObj, "Strength", foundPotion.GetNthEffectMagnitude(foundPotion.GetCostliestEffectIndex()))
                 jMap.setInt(potionObj, "itemID", itemID)
                 jArray.addObj(aiPotionQ[Q], potionObj)
                 iEquip_PotionItemsFLST.AddForm(potionForm)
@@ -618,16 +636,16 @@ function checkAndAddToPotionQueue(potion foundPotion)
                 if bMoreHUDLoaded
                     AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
                 endIf
-                debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + foundPotion.GetName() + " added to the " + aStrongestEffects[Q].GetName() + " queue")
+                debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + potionName + " added to the " + aStrongestEffects[Q].GetName() + " queue")
                 bAddedToQueue = true
                 iQueueToSort = Q
                 WC.abPotionGroupEmpty[group] = false
             endIf
             if WC.asCurrentlyEquipped[3] == potionGroup
-            	WC.setSlotCount(3, getPotionGroupCount(group))
-            	if WC.bConsumableIconFaded
-            		WC.checkAndFadeConsumableIcon(false)
-            	endIf
+                WC.setSlotCount(3, getPotionGroupCount(group))
+                if WC.bConsumableIconFaded
+                    WC.checkAndFadeConsumableIcon(false)
+                endIf
             endIf
         endIf
     endIf
@@ -640,27 +658,38 @@ function checkAndAddToPoisonQueue(potion foundPoison)
     if findInQueue(iPoisonQ, poisonForm) != -1
         debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue -" + poisonName + " is already in the poison queue")
         if WC.asCurrentlyEquipped[4] == poisonName
-	    	WC.setSlotCount(4, PlayerRef.GetItemCount(poisonForm))
+            WC.setSlotCount(4, PlayerRef.GetItemCount(poisonForm))
         endIf
     elseIf !(jArray.count(iPoisonQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
-    	int poisonFormID = poisonForm.GetFormID()
+        int poisonFormID = poisonForm.GetFormID()
         int itemID = WC.createItemID(poisonName, poisonFormID)
-	    int poisonObj = jMap.object()
-	    jMap.setForm(poisonObj, "Form", poisonForm)
-	    jMap.setInt(poisonObj, "formID", poisonFormID)
-	    jMap.setInt(poisonObj, "itemID", itemID)
-	    jMap.setStr(poisonObj, "Name", poisonName)
-		jMap.setStr(poisonObj, "Icon", getPoisonIcon(foundPoison))
-	    jArray.addObj(iPoisonQ, poisonObj)
+        int poisonObj = jMap.object()
+        jMap.setForm(poisonObj, "Form", poisonForm)
+        jMap.setInt(poisonObj, "formID", poisonFormID)
+        jMap.setInt(poisonObj, "itemID", itemID)
+        jMap.setStr(poisonObj, "Name", poisonName)
+        jMap.setStr(poisonObj, "Icon", getPoisonIcon(foundPoison))
+        jArray.addObj(iPoisonQ, poisonObj)
         iEquip_AllCurrentItemsFLST.AddForm(poisonForm)
         EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
         if bMoreHUDLoaded
             AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
         endIf
-	    debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue - Form: " + poisonForm + ", " + poisonName + " added to the poison queue")
-	    bAddedToQueue = true
+        ;If the poison queue was previously empty update the widget to show what we've just added
+        if jArray.count(iPoisonQ) == 1
+            WC.aiCurrentQueuePosition[4] = 0
+            WC.asCurrentlyEquipped[4] = poisonName
+            if WC.bPoisonIconFaded
+                WC.checkAndFadePoisonIcon(false)
+                Utility.Wait(0.3)
+            endIf
+            WC.updateWidget(4, 0, false, true)
+            WC.setSlotCount(4, PlayerRef.GetItemCount(poisonForm))
+        endIf
+        debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue - Form: " + poisonForm + ", " + poisonName + " added to the poison queue")
+        bAddedToQueue = true
         iQueueToSort = iPoisonQ
-	endIf
+    endIf
 endFunction
 
 function checkAndAddToConsumableQueue(potion foundConsumable)
@@ -670,25 +699,47 @@ function checkAndAddToConsumableQueue(potion foundConsumable)
     if findInQueue(iConsumableQ, consumableForm) != -1
         debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue -" + consumableName + " is already in the consumable queue")
         if WC.asCurrentlyEquipped[3] == consumableName
-	    	WC.setSlotCount(3, PlayerRef.GetItemCount(consumableForm))
+            WC.setSlotCount(3, PlayerRef.GetItemCount(consumableForm))
         endIf
     elseIf !(jArray.count(iConsumableQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
-    	int consumableFormID = consumableForm.GetFormID()
+        int consumableFormID = consumableForm.GetFormID()
         int itemID = WC.createItemID(consumableName, consumableFormID)
-	    int consumableObj = jMap.object()
-	    jMap.setForm(consumableObj, "Form", consumableForm)
-	    jMap.setInt(consumableObj, "formID", consumableFormID)
-	    jMap.setInt(consumableObj, "itemID", itemID)
-	    jMap.setStr(consumableObj, "Name", consumableName)
-		jMap.setStr(consumableObj, "Icon", getConsumableIcon(foundConsumable))
-	    jArray.addObj(iConsumableQ, consumableObj)
+        int consumableObj = jMap.object()
+        jMap.setForm(consumableObj, "Form", consumableForm)
+        jMap.setInt(consumableObj, "formID", consumableFormID)
+        jMap.setInt(consumableObj, "itemID", itemID)
+        jMap.setStr(consumableObj, "Name", consumableName)
+        jMap.setStr(consumableObj, "Icon", getConsumableIcon(foundConsumable))
+        jArray.addObj(iConsumableQ, consumableObj)
         iEquip_AllCurrentItemsFLST.AddForm(consumableForm)
         EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
         if bMoreHUDLoaded
             AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
         endIf
-	    debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + consumableName + " added to the consumable queue")
-	endIf
+        if jArray.count(iConsumableQ) == 4
+            int shownPotionGroups = 0
+            if WC.bHealthPotionGrouping && !(WC.abPotionGroupEmpty[0] && iEmptyPotionQueueChoice == 1)
+                shownPotionGroups += 1
+            endIf
+            if WC.bStaminaPotionGrouping && !(WC.abPotionGroupEmpty[1] && iEmptyPotionQueueChoice == 1)
+                shownPotionGroups += 1
+            endIf
+            if WC.bMagickaPotionGrouping && !(WC.abPotionGroupEmpty[2] && iEmptyPotionQueueChoice == 1)
+                shownPotionGroups += 1
+            endIf
+            ;If there are no potion groups displayed show the added consumable in the widget
+            if shownPotionGroups == 0
+                WC.aiCurrentQueuePosition[3] = 4
+                WC.asCurrentlyEquipped[3] = consumableName
+                if WC.bConsumableIconFaded
+                    WC.checkAndFadeConsumableIcon(false)
+                    Utility.Wait(0.3)
+                endIf
+                WC.updateWidget(3, 0, false, true)
+            endIf
+        endIf
+        debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + consumableName + " added to the consumable queue")
+    endIf
 endFunction
 
 int function findInQueue(int Q, form formToFind)
@@ -715,9 +766,9 @@ string function getPoisonIcon(potion foundPoison)
         MagicEffect strongestEffect = foundPoison.GetNthEffectMagicEffect(foundPoison.GetCostliestEffectIndex())
         int i = aPoisonEffects.Find(strongestEffect)
         if i == -1
-        	IconName = "Poison"
+            IconName = "Poison"
         else
-        	IconName = asPoisonIconNames[i]
+            IconName = asPoisonIconNames[i]
         endIf
     endIf
     debug.trace("iEquip_PotionScript getPoisonIcon returning IconName as " + IconName)
@@ -725,13 +776,13 @@ string function getPoisonIcon(potion foundPoison)
 endFunction
 
 string function getConsumableIcon(potion foundConsumable)
-	string IconName
-	if foundConsumable.GetUseSound() == Game.GetForm(0x0010E2EA) ;NPCHumanEatSoup
-    	IconName = "Soup"
+    string IconName
+    if foundConsumable.GetUseSound() == Game.GetForm(0x0010E2EA) ;NPCHumanEatSoup
+        IconName = "Soup"
     elseif foundConsumable.GetUseSound() == Game.GetForm(0x000B6435) ;ITMPotionUse
-    	IconName = "Drink"
+        IconName = "Drink"
     else
-    	IconName = "Food"
+        IconName = "Food"
     endIf
     return IconName
 endFunction

@@ -170,6 +170,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var consumableIcon: MovieClip;
 	public var potionFlashAnim: MovieClip;
 	public var poisonIcon: MovieClip;
+	public var poisonFlashAnim: MovieClip;
 
 	public var leftMeter: iEquipMeter;
 	public var rightMeter: iEquipMeter;
@@ -183,7 +184,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var clipArray: Array;
 	public var clipHighlightArray: Array;
 	public var selectedText: TextField;
-	public var textElementArray: Array;
+	public static var textElementArray: Array;
 	public var textFieldArray: Array;
 	public var attributeArray: Array;
 
@@ -328,6 +329,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		consumableIcon = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIcon;
 		potionFlashAnim = widgetMaster.ConsumableWidget.consumableIcon_mc.potionFlashAnim;
 		poisonIcon = widgetMaster.PoisonWidget.poisonIcon_mc.poisonIcon;
+		poisonFlashAnim = widgetMaster.PoisonWidget.poisonIcon_mc.poisonFlashAnim;
 
 		//Set up the preselect icon object paths
 		leftPreselectIcon = widgetMaster.LeftHandWidget.leftPreselectIcon_mc.leftPreselectIcon;
@@ -440,9 +442,11 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		rightAttributeIcons.gotoAndStop("Hidden")
 		shoutIcon.gotoAndStop("Empty")
 		consumableIcon.gotoAndStop("Empty")
-		potionFlashAnim.gotoAndStop("Hidden")
+		potionFlashAnim.gotoAndStop("Hide")
 		potionFlashAnim._alpha = 0.0
 		poisonIcon.gotoAndStop("Empty")
+		poisonFlashAnim.gotoAndStop("Hide")
+		poisonFlashAnim._alpha = 0.0
 		leftPreselectIcon.gotoAndStop("Empty")
 		leftPreselectAttributeIcons.gotoAndStop("Hidden")
 		rightPreselectIcon.gotoAndStop("Empty")
@@ -689,45 +693,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		itemName.setTextFormat(textFormat);
 		//Set the Icon
 		itemIcon.gotoAndStop(sIcon);
-
-		//skyui.util.Debug.log("iEquip updateIconAndName - iSlot: " + iSlot + ", sIcon: " + sIcon)
-		/*switch (iSlot){
-			case 3:
-			//Colour the potion icons
-				switch(sIcon){
-					case "HealthPotion":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xDB2E73);
-						break
-					case "StaminaPotion":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x51DB2E);
-						break
-					case "MagickaPotion":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x2E9FDB);
-						break
-					case "FrostResistPotion":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0x1FFBFF);
-						break
-					case "FireResistPotion":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xC73636);
-						break
-					case "ShockResistPotion":
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xEAAB00);
-						break
-					default:
-						var pIconColor = new Color(colorClip);
-						pIconColor.setRGB(0xFFFFFF);
-						break
-					};
-				break
-			default:
-				break
-			};*/
 	}
 
 	//Used when a bound weapon is equipped to switch from the spell school icon to the bound weapon icon
@@ -1559,9 +1524,23 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		tl.play();
 	}
 
+	public function tweenPoisonIconAlpha(bgAlpha: Number, iconAlpha: Number, nameAlpha: Number, countAlpha: Number): Void
+	{
+		var bgClip: MovieClip = poisonBg_mc
+		var iconClip: MovieClip = poisonIcon_mc
+		var nameClip: MovieClip = poisonName_mc
+		var countClip: MovieClip = poisonCount_mc
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+		tl.to(bgClip, 0.3, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
+		.to(iconClip, 0.3, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
+		.to(nameClip, 0.3, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
+		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0);
+		tl.play();
+	}
+
 	public function runPotionFlashAnimation(potionType: Number): Void
 	{
-		skyui.util.Debug.log("iEquipWidget runPotionFlashAnimation - potionType: " + potionType)
+		//skyui.util.Debug.log("iEquipWidget runPotionFlashAnimation - potionType: " + potionType)
 		var potionFlash: MovieClip = potionFlashAnim;
 		
 		switch(potionType) {
@@ -1588,6 +1567,26 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public function onPotionFlashComplete(): Void
 	{
 		potionFlashAnim.gotoAndStop("Hide");
+	}
+
+	public function runPoisonFlashAnimation(): Void
+	{
+		var poisonFlash: MovieClip = poisonFlashAnim;
+		poisonFlash.gotoAndStop("Flash");
+
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:onPoisonFlashComplete});
+		tl.to(poisonFlash, 0.3, {_alpha:100, ease:Quad.easeOut}, 0)
+		.to(poisonFlash, 0.3, {_alpha:0, ease:Quad.easeOut})
+		.to(poisonFlash, 0.3, {_alpha:100, ease:Quad.easeOut})
+		.to(poisonFlash, 0.3, {_alpha:0, ease:Quad.easeOut})
+		.to(poisonFlash, 0.3, {_alpha:100, ease:Quad.easeOut})
+		.to(poisonFlash, 0.3, {_alpha:0, ease:Quad.easeOut});
+		tl.play();
+	}
+
+	public function onPoisonFlashComplete(): Void
+	{
+		poisonFlashAnim.gotoAndStop("Hide");
 	}
  
 	public function tweenWidgetCounterAlpha(clipIndex: Number, endValue: Number, secs: Number): Void

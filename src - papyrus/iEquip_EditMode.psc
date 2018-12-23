@@ -34,6 +34,7 @@ bool[] abWidget_CurV
 
 bool Property isEditMode = false Auto Hidden
 bool Property bDisabling = false Auto Hidden
+bool bFirstCycleKeyPressed = true
 bool bringToFrontFirstTime = true
 bool property preselectEnabledOnEnter = false auto hidden
 bool property wasLeftCounterShown = false auto hidden
@@ -68,7 +69,7 @@ string Property WidgetPresetPath = "Data/iEquip/Widget Presets/" autoReadonly
 string Property FileExtWP = ".IEQP" autoReadonly
 string[] WidgetGroups
 string[] sTextAlignment
-string HUD_MENU
+string HUD_MENU = "HUD Menu"
 string WidgetRoot
 string sRotation
 
@@ -76,7 +77,6 @@ string sRotation
 ; ### INITIALIZATION ###
 
 function OnInit()
-    HUD_MENU = WC.HUD_MENU
 	iCustomColors = new int[14]
     
 	int iIndex = iCustomColors.length
@@ -93,8 +93,8 @@ Auto State FirstTimeEntering
     function ToggleEditMode()
         Gotostate("")
         ToggleEditMode()
-        debug.MessageBox("iEquip Edit Mode\n\nWelcome to Edit Mode\n\nUse the keys shown at the top of the instructions panel to cycle through the widget elements,"+\
-                         "press and hold either key to switch between cycling the widget groups or cycling the individual elements.\n\nThe instructions panel also contains information on all the changes you can make in Edit Mode, and how to save and load layout presets.")
+        debug.MessageBox("iEquip Edit Mode\n\nWelcome to Edit Mode\n\nHere you can change the position, size and rotation of every individual element in the widget,"+\
+                         "as well as the alignment and text colour of any text element.\n\nThe instructions panel also contains information on all the changes you can make in Edit Mode, and how to save and load layout presets.")
     endFunction
 endState
 
@@ -433,6 +433,10 @@ function ApplyElementColor (int iType, int iColor)
 endFunction
 
 function ToggleCycleRange()
+	if bFirstCycleKeyPressed
+		bFirstCycleKeyPressed = false
+		showCyclingHelp()	
+	endIf
     ; Toggle between cycling groups/single enlements
     HighlightElement(false)
     
@@ -454,6 +458,10 @@ endFunction
 ; - Cycle Elements -
 
 function CycleElements(int iNextPrev)    
+	if bFirstCycleKeyPressed
+		bFirstCycleKeyPressed = false
+		showCyclingHelp()	
+	endIf
     HighlightElement(false)
     
     iSelectedElement += iNextPrev
@@ -470,6 +478,11 @@ function CycleElements(int iNextPrev)
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iSelectedElement)
 	HighlightElement(true)
 	UpdateEditModeGuide()
+endFunction
+
+function showCyclingHelp()
+	debug.MessageBox("!!! IMPORTANT INFORMATION !!!\n\nCycling elements in Edit Mode\n\nSINGLE PRESS the keys shown at the top of the instructions panel to cycle through the widget elements."+\
+        "\n\nPRESS AND HOLD either key to switch from cycling the widget groups to cycling the individual elements.")
 endFunction
 
 ; - Update Data -
@@ -572,7 +585,7 @@ function LoadAllElements()
 	EndWhile
     
 	; Show left and right counters if not currently shown
-	if !WC.bLeftCounterShown
+	if !WC.abIsCounterShown[0]
 		wasLeftCounterShown = false
 		WC.setCounterVisibility(0, true)
 	else
@@ -581,7 +594,7 @@ function LoadAllElements()
 	endIf
 	WC.setSlotCount(0,99)
     
-	if !WC.bRightCounterShown
+	if !WC.abIsCounterShown[1]
 		wasRightCounterShown = false
 		WC.setCounterVisibility(1, true)
 	else

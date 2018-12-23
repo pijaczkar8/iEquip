@@ -22,6 +22,10 @@ Int Property iRightKey = 35 Auto Hidden ;H
 Int Property iConsumableKey = 48 Auto Hidden ;B
 Int Property iUtilityKey = 29 Auto Hidden ;Left Ctrl - Active in all modes
 
+;Optional hotkeys
+Int Property iOptConsumeKey = -1 Auto Hidden
+Int Property iOptDirQueueKey = -1 Auto Hidden
+
 ;Edit Mode Keys
 Int Property iEditNextKey = 55 Auto Hidden ;Num *
 Int Property iEditPrevKey = 181 Auto Hidden ;Num /
@@ -50,6 +54,7 @@ float Property fPressAndHoldDelay = 1.0 Auto Hidden
 bool Property bAllowKeyPress = true Auto Hidden
 bool Property bNormalSystemPageBehav = true Auto Hidden
 bool bIsUtilityKeyHeld = false
+bool bIsQueueMenuComboKeyKeyHeld = false
 bool bNotInLootMenu = true
 
 ; Ints
@@ -58,6 +63,8 @@ Int iWaitingKeyCode = 0
 Int iMultiTap = 0
 
 ; MCM settings
+bool property bConsumeItemHotkeyEnabled = false auto hidden
+bool property bQueueMenuComboKeyEnabled = false auto hidden
 bool property bPreselectEnabled = false auto hidden
 bool property bQuickShieldEnabled = false auto hidden
 bool property bQuickRangedEnabled = false auto hidden
@@ -124,11 +131,12 @@ endEvent
 ; ---------------------
 
 event OnKeyDown(int KeyCode)
-    ;Handle widget visibility update on any registered key press
-    WC.updateWidgetVisibility()
     
-    if KeyCode == iUtilityKey
+    if KeyCode == iUtilityKey && !bIsQueueMenuComboKeyKeyHeld
         bIsUtilityKeyHeld = true
+    elseIf KeyCode == iOptDirQueueKey && bQueueMenuComboKeyEnabled && !bIsUtilityKeyHeld
+        bIsQueueMenuComboKeyKeyHeld = true
+        GoToState("QUEUEMENUCOMBOKEYHELD")
     endIf
 
     if bAllowKeyPress
@@ -153,6 +161,8 @@ endEvent
 event OnKeyUp(Int KeyCode, Float HoldTime)
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = false
+    elseIf KeyCode == iOptDirQueueKey
+        bIsQueueMenuComboKeyKeyHeld = false
     endIf
 
     if bAllowKeyPress
@@ -172,9 +182,12 @@ event OnKeyUp(Int KeyCode, Float HoldTime)
 endEvent
 
 function runUpdate()
+    ;Handle widget visibility update on any registered key press
+    WC.updateWidgetVisibility()
+
     if iMultiTap == -1   ; Longpress
         if iWaitingKeyCode == iConsumableKey
-            if bNotInLootMenu && WC.bConsumablesEnabled
+            if bNotInLootMenu && WC.bConsumablesEnabled && !bConsumeItemHotkeyEnabled
                 WC.consumeItem()
             endIf
             
@@ -204,7 +217,7 @@ function runUpdate()
             PM.equipAllPreselectedItems()
         endIf
         
-    elseIf iMultiTap == 1  ;Single tap
+    elseIf iMultiTap == 1  ; Single tap
         If iWaitingKeyCode == iLeftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
             if AM.bAmmoMode || (PM.bPreselectMode && (RHItemType == 7 || RHItemType == 12))
@@ -229,7 +242,12 @@ function runUpdate()
                     WC.cycleSlot(4, bIsUtilityKeyHeld)
                 endIf
             endIf
-            
+
+        elseIf iWaitingKeyCode == iOptConsumeKey 
+            if bConsumeItemHotkeyEnabled && bNotInLootMenu && WC.bConsumablesEnabled
+                WC.consumeItem()
+            endIf
+
         elseIf iWaitingKeyCode == iUtilityKey
             ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = MCM, 4 = Refresh Widget
             int iAction = iEquip_UtilityMenu.Show() 
@@ -243,8 +261,10 @@ function runUpdate()
                     openiEquipMCM()
                 elseif iAction == 4
                     ;HM.openHelpMenu()
+                    debug.MessageBox("This feature is currently disabled")
                 elseif iAction == 5
-                    WC.refreshWidget()
+                    ;WC.refreshWidget()
+                    debug.MessageBox("This feature is currently disabled")
                 endIf
             endIf
         endIf
@@ -341,72 +361,107 @@ state EDITMODE
     function runUpdate()
         if iMultiTap == 0   ; Press and hold
             if iWaitingKeyCode == iEditNextKey || iWaitingKeyCode == iEditPrevKey
-                EM.toggleSelectionRange()
+                EM.ToggleCycleRange()
             elseIf iWaitingKeyCode == iEditAlphaKey
-                EM.toggleStep(2)
+                EM.IncrementStep(2)
             elseIf iWaitingKeyCode == iEditRotateKey
-                EM.toggleStep(1)
+                EM.IncrementStep(1)
             elseIf (iWaitingKeyCode == iEditLeftKey || iWaitingKeyCode == iEditRightKey || iWaitingKeyCode == iEditUpKey ||\
                     iWaitingKeyCode == iEditDownKey || iWaitingKeyCode == iEditScaleUpKey || iWaitingKeyCode == iEditScaleDownKey)
-                EM.toggleStep(0)
+                EM.IncrementStep(0)
             elseIf iWaitingKeyCode == iEditTextKey
-                if WC.abWidget_isText[EM.SelectedItem - 1]
-                    EM.initColorPicker(2) ;Text color
-                endIf
+                EM.ShowColorSelection(2) ;Text color
             elseIf iWaitingKeyCode == iEditRulersKey
-                EM.initColorPicker(0) ;Highlight color
+                EM.ShowColorSelection(0) ;Highlight color
             endIf
             
         elseIf iMultiTap == 1  ;Single tap
-            if iWaitingKeyCode == iEditLeftKey
-                EM.MoveLeft()
-            elseIf iWaitingKeyCode == iEditRightKey
-                EM.MoveRight()
-            elseIf iWaitingKeyCode == iEditUpKey
-                EM.MoveUp()
+            if iWaitingKeyCode == iEditUpKey
+                EM.MoveElement(0)
             elseIf iWaitingKeyCode == iEditDownKey
-                EM.MoveDown()
+                EM.MoveElement(1)
+            elseIf iWaitingKeyCode == iEditLeftKey
+                EM.MoveElement(2)
+            elseIf iWaitingKeyCode == iEditRightKey
+                EM.MoveElement(3)
             elseIf iWaitingKeyCode == iEditScaleUpKey
-                EM.ScaleUp()
+                EM.ScaleElement(0)
             elseIf iWaitingKeyCode == iEditScaleDownKey
-                EM.ScaleDown()
+                EM.ScaleElement(1)
             elseIf iWaitingKeyCode == iEditRotateKey
-                EM.Rotate()
+                EM.RotateElement()
             elseIf iWaitingKeyCode == iEditAlphaKey
-                EM.SetAlpha()
+                EM.SetElementAlpha()
             elseIf iWaitingKeyCode == iEditDepthKey
-                if EM.bringToFrontEnabled
-                    EM.bringToFront()
-                else
-                    debug.messagebox("Bring To Front is currently disabled in the MCM\n\nIf you want to be able to change layer order for overlapping widget elements turn Bring To Front on first")
-                endIf
+                EM.SwapElementDepth()
             elseIf iWaitingKeyCode == iEditTextKey
-                if WC.abWidget_isText[EM.SelectedItem - 1]
-                    EM.setTextAlignment()
-                endIf
+                EM.ToggleTextAlignment()
             elseIf iWaitingKeyCode == iEditNextKey
-                EM.cycleEditModeElements(true)
+                EM.CycleElements(1)
             elseIf iWaitingKeyCode == iEditPrevKey
-                EM.cycleEditModeElements(false)
+                EM.CycleElements(-1)
             elseIf iWaitingKeyCode == iEditResetKey
-                EM.ResetItem()
+                EM.ResetElement()
             elseIf iWaitingKeyCode == iEditLoadPresetKey
-                EM.showEMPresetListMenu()
+                EM.ShowPresetList()
             elseIf iWaitingKeyCode == iEditSavePresetKey
-                EM.showEMTextInputMenu(0)
+                EM.SavePreset()
             elseIf iWaitingKeyCode == iEditRulersKey
                 EM.ToggleRulers()
             elseIf iWaitingKeyCode == iEditDiscardKey
                 EM.DiscardChanges()
             elseIf iWaitingKeyCode == iUtilityKey
-                toggleEditMode()
+                ToggleEditMode()
             endIf
             
         elseIf iMultiTap == 2  ; Double tap
             if iWaitingKeyCode == iEditRotateKey
-                EM.toggleRotateDirection()
+                EM.ToggleRotation()
             elseIf iWaitingKeyCode == iEditRulersKey
-                EM.initColorPicker(1) ;Current item info color
+                EM.ShowColorSelection(1) ;Current item info color
+            endIf
+            
+        endIf
+    endFunction
+endState
+
+;Direct Queue Menu Combo Key Held
+state QUEUEMENUCOMBOKEYHELD
+    event OnKeyUp(Int KeyCode, Float HoldTime)
+        debug.trace("iEquip_KeyHandler OnKeyUp called in QUEUEMENUCOMBOKEYHELD state")
+        if KeyCode == iUtilityKey
+            bIsUtilityKeyHeld = false
+        elseIf KeyCode == iOptDirQueueKey
+            bIsQueueMenuComboKeyKeyHeld = false
+            Gotostate("")
+        endIf
+
+        if bAllowKeyPress
+            if KeyCode == iWaitingKeyCode && iMultiTap == 0
+                iMultiTap = 1                
+                RegisterForSingleUpdate(fMultiTapDelay)
+            endIf
+        endIf
+    endEvent
+
+    function runUpdate()
+        debug.trace("iEquip_KeyHandler runUpdate called in QUEUEMENUCOMBOKEYHELD state - iMultiTap == " + iMultiTap)
+        ;Handle widget visibility update on any registered key press
+        WC.updateWidgetVisibility()
+        if iMultiTap == 1  ;Single tap
+            if iWaitingKeyCode == iLeftKey
+                WC.openQueueManagerMenu(1)
+            elseIf iWaitingKeyCode == iRightKey
+                WC.openQueueManagerMenu(2)
+            elseIf iWaitingKeyCode == iShoutKey
+                WC.openQueueManagerMenu(3)
+            elseIf iWaitingKeyCode == iConsumableKey
+                WC.openQueueManagerMenu(4)
+            endIf
+            
+        elseIf iMultiTap == 2  ; Double tap
+            if iWaitingKeyCode == iConsumableKey
+                WC.openQueueManagerMenu(5)
             endIf
             
         endIf
@@ -417,7 +472,7 @@ endState
 ; - MISCELLANEOUS -
 ; -----------------
 
-function updateKeyMaps(int keycode)
+function updateKeyMaps()
     UnregisterForAllKeys()
 
     if EM.isEditMode
@@ -427,9 +482,10 @@ function updateKeyMaps(int keycode)
     endIf
 endFunction
 
-function toggleEditMode()
+function ToggleEditMode()
 	debug.trace("iEquip KeyHandler toggleEditMode called")
     UnregisterForAllKeys()
+
     if WC.bEditModeEnabled
     	if EM.isEditMode
             GoToState("")
@@ -440,7 +496,7 @@ function toggleEditMode()
             updateEditModeKeys()
     	endIf
         
-    	EM.toggleEditMode()
+    	EM.ToggleEditMode()
     else
         debug.Messagebox("Edit Mode is currently disabled in the MCM")
     endIf
@@ -498,6 +554,12 @@ function RegisterForGameplayKeys()
 	RegisterForKey(iRightKey)
 	RegisterForKey(iConsumableKey)
 	RegisterForKey(iUtilityKey)
+    if bConsumeItemHotkeyEnabled
+        RegisterForKey(iOptConsumeKey)
+    endIf
+    if bQueueMenuComboKeyEnabled
+        RegisterForKey(iOptDirQueueKey)
+    endIf
 endFunction
 
 function RegisterForEditModeKeys()
@@ -523,7 +585,22 @@ function RegisterForEditModeKeys()
 endFunction
 
 function openiEquipMCM(bool inMCMSelect = false)
-    int key_j = GetMappedKey("Journal")
+    int key_j 
+    int key_down
+    int key_scroll
+    int key_enter
+    
+    if Game.UsingGamepad()
+        key_j = 270
+        key_down = 267
+        key_scroll = 280
+        key_enter = 276
+    else
+        key_j = GetMappedKey("Journal")
+        key_down = GetMappedKey("Back")
+        key_scroll = 76
+        key_enter = GetMappedKey("Activate")
+    endIf
     
     if inMCMSelect
         TapKey(key_j)
@@ -540,21 +617,12 @@ function openiEquipMCM(bool inMCMSelect = false)
        !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
         float startTime = Utility.GetCurrentRealTime()
         float elapsedTime
-        int key_down = GetMappedKey("Back")
         int i = 0
         
         while elapsedTime <= 2.5
             if IsMenuOpen("Journal Menu")
-                if bNormalSystemPageBehav ; Compatibility with open system page mod
-                
-                    ; Should take us to the Settings Tab
-                     if Game.UsingGamepad()
-                        TapKey(GetMappedKey("Left Attack/Block"))
-                        key_down = 267
-                    else
-                        TapKey(76)
-                    endIf
-                    
+                if bNormalSystemPageBehav ; Compatibility with open system page mod 
+                    TapKey(key_scroll)
                     Utility.WaitMenuMode(0.005)
                 endIf
                 
@@ -579,7 +647,6 @@ function openiEquipMCM(bool inMCMSelect = false)
         endIf
         
         if elapsedTime == 3.0
-            int key_enter = GetMappedKey("Activate")
             TapKey(key_enter) 
             Utility.WaitMenuMode(0.005)
             

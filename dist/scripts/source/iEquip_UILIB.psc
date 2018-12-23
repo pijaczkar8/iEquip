@@ -14,6 +14,7 @@ Bool[] bEnchFlags
 Bool[] bPoisonFlags
 Int iStartIndex
 Int iDefaultIndex
+Bool bDirectAccess
 Int iStartColor
 Int iDefaultColor
 Int[] aCustomColors
@@ -266,9 +267,8 @@ EndEvent
 Event OnColorMenuDelete(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;Event only called if Default has been pressed to reset a custom colour slot
 	If(asEventName == "iEquip_colorMenuDelete")
-		Int ArrayIndexToDelete = afNumArg as Int
 		bMenuOpen = False
-		EM.updateCustomColors(1, 0, ArrayIndexToDelete)
+		EM.DeleteCustomColor(afNumArg as Int)
 	EndIf
 EndEvent
 
@@ -298,7 +298,8 @@ Function QueueMenu_Open(Form akClient) Global
 	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_queuemenu")
 EndFunction
 
-Function QueueMenu_SetData(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex) Global
+Function QueueMenu_SetData(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex, bool directAccess) Global
+	UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.setExitButtonText", directAccess)
 	UI.InvokeNumber("CustomMenu", "_root.iEquipQueueDialog.setPlatform", (Game.UsingGamepad() as Int))
 	Int iIndex = 0
 	String iconName
@@ -355,7 +356,7 @@ Function QueueMenu_Release(Form akClient) Global
 	akClient.UnregisterForModEvent("iEquip_queueMenuExit")
 EndFunction
 
-Function ShowQueueMenu(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex)
+Function ShowQueueMenu(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex, bool directAccess = false)
 	
 	If(bMenuOpen)
 		Return
@@ -368,6 +369,7 @@ Function ShowQueueMenu(String asTitle, String[] asIconNameList, String[] asList,
 	bPoisonFlags = abPoisonFlags
 	iStartIndex = aiStartIndex
 	iDefaultIndex = aiDefaultIndex
+	bDirectAccess = directAccess
 	QueueMenu_Open(Self)
 	While(bMenuOpen)
 		Utility.WaitMenuMode(0.1)
@@ -377,7 +379,7 @@ EndFunction
 
 Event OnQueueMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	If(asEventName == "iEquip_queueMenuOpen")
-		QueueMenu_SetData(sTitle, sIconNameList, sList, bEnchFlags, bPoisonFlags, iStartIndex, iDefaultIndex)
+		QueueMenu_SetData(sTitle, sIconNameList, sList, bEnchFlags, bPoisonFlags, iStartIndex, iDefaultIndex, bDirectAccess)
 	EndIf
 EndEvent
 

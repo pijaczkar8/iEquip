@@ -234,10 +234,10 @@ function equipPreselectedItem(int Q)
 		bReadyForPreselectAnim = false
 		UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
 	endIf
-	if AM.bBoundAmmoInArrowQueue
+	if AM.abBoundAmmoInQueue[0]
     	AM.checkAndRemoveBoundAmmo(7)	
     endIf
-    if AM.bBoundAmmoInBoltQueue
+    if AM.abBoundAmmoInQueue[1]
     	AM.checkAndRemoveBoundAmmo(9)
     endIf
     int iHandle
@@ -247,9 +247,8 @@ function equipPreselectedItem(int Q)
 	form targetItem = jMap.getForm(targetObject, "Form")
 	int itemType = jMap.getInt(targetObject, "Type")
 	if (itemType == 7 || itemType == 9)
-		;checkAndRemoveBoundAmmo(itemType)
 		if (!WC.RightHandWeaponIsRanged() || AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3)
-			AM.prepareAmmoQueue(itemType)
+			AM.selectAmmoQueue(itemType)
 		endIf
 	endIf
 	string currIcon =  jMap.getStr(jArray.getObj(targetArray, WC.aiCurrentQueuePosition[Q]), "Icon")
@@ -339,7 +338,7 @@ function equipPreselectedItem(int Q)
 			if WC.itemRequiresCounter(0, leftItemType , jMap.getStr(targetObject, "Name"))
 				WC.setSlotCount(0, PlayerRef.GetItemCount(leftItem))
 				WC.setCounterVisibility(0, true)
-			elseif WC.isCounterShown(0)
+			elseif WC.abIsCounterShown[0]
 				WC.setCounterVisibility(0, false)
 			endIf
 			if !(itemType == 5 || itemType == 6) ;As long as the item which triggered toggling out of bAmmoMode isn't a 2H weapon we can now re-equip the left hand
@@ -427,7 +426,7 @@ function equipPreselectedItem(int Q)
 		if WC.itemRequiresCounter(Q)
 			WC.setSlotCount(Q, PlayerRef.GetItemCount(targetItem))
 			WC.setCounterVisibility(Q, true)
-		elseif WC.isCounterShown(Q)
+		elseif WC.abIsCounterShown[Q]
 			WC.setCounterVisibility(Q, false)
 		endIf
 		WC.checkAndUpdatePoisonInfo(Q)
@@ -627,11 +626,12 @@ event EquipAllComplete(string sEventName, string sStringArg, Float fNumArg, Form
 	endIf
 endEvent
 
-function quickShield()
+;The forceSwitch bool is set to true when quickShield is called by WC.removeItemFromQueue when a previously equipped shield has been removed, so we're only looking for a shield, not a ward
+bool function quickShield(bool forceSwitch = false)
 	debug.trace("iEquip_ProMode quickShield called")
 	;if right hand or ranged weapon in right hand and bQuickShield2HSwitchAllowed not enabled then return out
-	if (WC.RightHandWeaponIs2hOrRanged() && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)
-		return
+	if !forceSwitch && ((WC.RightHandWeaponIs2hOrRanged() && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0))
+		return false
 	endIf
 	int i = 0
 	int targetArray = WC.aiTargetQ[0]
@@ -643,7 +643,7 @@ function quickShield()
 	bool rightHandHasSpell = ((PlayerRef.GetEquippedItemType(1) == 9) && !(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "Type") == 42))
 	debug.trace("iEquip_ProMode quickShield() - RH current item: " + WC.asCurrentlyEquipped[1] + ", RH item type: " + (PlayerRef.GetEquippedItemType(1)))
 	;if player currently has a spell equipped in the right hand or we've enabled Prefer Magic in the MCM search for a ward spell first
-	if rightHandHasSpell || bQuickShieldPreferMagic
+	if !forceSwitch && (rightHandHasSpell || bQuickShieldPreferMagic)
 		while i < leftCount && found == -1
 			spellName = jMap.getStr(jArray.getObj(targetArray, i), "Name")
 			if jMap.getInt(jArray.getObj(targetArray, i), "Type") == 22 && stringutil.Find(spellName, " ward", 0) > -1
@@ -673,7 +673,7 @@ function quickShield()
 			i += 1
 		endwhile
 		;And if we haven't found a shield then look for a ward
-		if found == -1
+		if found == -1 && !forceSwitch
 			i = 0
 			while i < leftCount && found == -1
 				spellName = jMap.getStr(jArray.getObj(targetArray, i), "Name")
@@ -732,7 +732,7 @@ function quickShield()
 			elseif foundType == 26
 				PlayerRef.EquipItemEx(targetForm as Armor)
 			endIf
-			if WC.isCounterShown(0)
+			if WC.abIsCounterShown[0]
 				WC.setCounterVisibility(0, false)
 			endIf
 			if WC.abPoisonInfoDisplayed[0]
@@ -753,7 +753,12 @@ function quickShield()
 			WC.updateWidget(0, found)
 		endIf
 	else
-		debug.notification("iEquip QuickShield did not find a shield or ward in your left hand queue")
+		if forceSwitch
+			;If we've forced quickShield because a previously equipped shield was removed from the player and we haven't been able to find another in the left queue we now need to cycle the left queue
+			WC.cycleSlot(0, false, true)
+		else
+			debug.notification("iEquip QuickShield did not find a shield or ward in your left hand queue")
+		endIf
 	endIf
 endFunction
 
@@ -862,6 +867,7 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 	endIf
 endFunction
 
+;The forceSwitch bool is set to true when quickRanged is called by WC.removeItemFromQueue when a previously equipped ranged weapon has been removed, so we also set typeToFind to start by searching for another ranged weapon of the same type
 function quickRanged()
 	debug.trace("iEquip_ProMode quickRanged called")
 	;if you already have a ranged weapon equipped or if you're in Preselect Mode and have disabled quickRanged in Preselect Mode then do nothing
@@ -889,39 +895,57 @@ function quickRanged()
 	endIf
 endFunction
 
-bool function quickRangedFindAndEquipWeapon()
+bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrentlyQuickRangedFlag = true)
 	debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon called")
 
 	bool actionTaken = false
 	int preferredType = 7 ;Bow
 	int secondChoice = 9 ;Crossbow
-	if iQuickRangedPreferredWeaponType == 1 || iQuickRangedPreferredWeaponType == 3
+	if typeToFind == 9 || (typeToFind != 7 && (iQuickRangedPreferredWeaponType == 1 || iQuickRangedPreferredWeaponType == 3))
 		preferredType = 9
 		secondChoice = 7
 	endIf
+	debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon preferredType: " + preferredType + ", secondChoice: " + secondChoice)
+	debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon - number of ammo for preferredType (AM.aiTargetQ[" + (preferredType == 9) as int + "]: " + jArray.count(AM.aiTargetQ[(preferredType == 9) as int]))
+	debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon - number of ammo for secondChoice (AM.aiTargetQ[" + (secondChoice == 9) as int + "]: " + jArray.count(AM.aiTargetQ[(secondChoice == 9) as int]))
 	int i = 0
 	int targetArray = WC.aiTargetQ[1]
 	int targetObject
 	int rightCount = jArray.count(targetArray)
 	int found = -1
-	;Look for our first choice ranged weapon type
-	while i < rightCount && found == -1
-		targetObject = jArray.getObj(targetArray, i)
-		if jMap.getInt(targetObject, "Type") == preferredType
-			found = i
-		endIf
-		i += 1
-	endwhile
-	;if we haven't found our first choice ranged weapon type now look for the alternative
-	if found == -1
-		i = 0
+	;First check we've actually got ammo for our preferred weapon type
+	if jArray.count(AM.aiTargetQ[(preferredType == 9) as int]) > 0
+		;Now look for our first choice ranged weapon type
 		while i < rightCount && found == -1
 			targetObject = jArray.getObj(targetArray, i)
-			if jMap.getInt(targetObject, "Type") == secondChoice
+			if jMap.getInt(targetObject, "Type") == preferredType
 				found = i
 			endIf
 			i += 1
 		endwhile
+		if found == -1
+			debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon preferredType weapon not found")
+		else
+			debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon preferredType weapon found at index " + found)
+		endIf
+	endIf
+	;if we haven't found our first choice ranged weapon type now look for the alternative
+	if found == -1
+		if jArray.count(AM.aiTargetQ[(secondChoice == 9) as int]) > 0
+			i = 0
+			while i < rightCount && found == -1
+				targetObject = jArray.getObj(targetArray, i)
+				if jMap.getInt(targetObject, "Type") == secondChoice
+					found = i
+				endIf
+				i += 1
+			endwhile
+		endIf
+		if found == -1
+			debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon secondChoice weapon not found")
+		else
+			debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon secondChoice weapon found at index " + found)
+		endIf
 	endIf
 	if found != -1
 		;if we're not in Preselect Mode, or we've selected Preselect Mode Equip in the MCM
@@ -931,7 +955,7 @@ bool function quickRangedFindAndEquipWeapon()
 			bool foundWeaponIsPoisoned = WC.isWeaponPoisoned(1, found, true)
 			if WC.abPoisonInfoDisplayed[1] && !foundWeaponIsPoisoned
 				WC.hidePoisonInfo(1)
-				if WC.isCounterShown(1)
+				if WC.abIsCounterShown[1]
 					WC.setCounterVisibility(1, false)
 				endIf
 			endIf
@@ -941,32 +965,38 @@ bool function quickRangedFindAndEquipWeapon()
 			endIf
 			WC.aiCurrentQueuePosition[1] = found
 			targetObject = jArray.getObj(WC.aiTargetQ[1], found)
+			AM.selectAmmoQueue(jMap.getInt(targetObject, "Type"))
 			WC.asCurrentlyEquipped[1] = jMap.getStr(targetObject, "Name")
 			;Update the main right hand widget, if in Preselect Mode skipping the Preselect Mode check so we don't update the preselect slot
 			WC.updateWidget(1, found, true)
-			;if for some reason the found weapon being QuickEquipped is also the currently preselected item then advance the preselect queue by 1 as well
-			if bPreselectMode
+			;If we're in Preselect mode we need to do a couple of things here
+			;If we're already in ammo mode and we're here because our previous ranged weapon was removed or we ran out of ammo for it so we need to equip the new weapon and update the additional info
+			if bPreselectMode || AM.bAmmoMode
 				;if we're in Preselect Mode we need to toggle Ammo Mode here without the animation so it updates the left slot to show ammo
-				AM.toggleAmmoMode(true, false)
+				if !AM.bAmmoMode
+					AM.toggleAmmoMode(true, false)
+				endIf
 				PlayerRef.EquipItemEx(jMap.getForm(targetObject, "Form"), 1, false, false)
-				;if the ranged weapon we're about to equip matches the right preselected item then cycle the preselect slot
-				if WC.aiCurrentlyPreselected[1] == found
+				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
+				if bPreselectMode && WC.aiCurrentlyPreselected[1] == found
 					cyclePreselectSlot(1, rightCount, false)
 				endIf
 				if foundWeaponIsPoisoned
 					WC.checkAndUpdatePoisonInfo(1)
-				elseif WC.isCounterShown(1)
+				elseif WC.abIsCounterShown[1]
 					WC.setCounterVisibility(1, false)
 				endIf
 				WC.CM.checkAndUpdateChargeMeter(1)
 				if WC.bEnableGearedUp
 					WC.refreshGearedUp()
 				endIf
-			;if we're not in Preselect Mode we can now equip as normal which will toggle Ammo Mode
+			;if we're not in Preselect Mode or Ammo Mode we can now equip as normal which will toggle Ammo Mode
 			else
-				WC.checkAndEquipShownHandItem(1, false)
+				WC.checkAndEquipShownHandItem(1, false, false, true)
 			endIf
-			bCurrentlyQuickRanged = true
+			if setCurrentlyQuickRangedFlag && !(iQuickRangedSwitchOutAction == 0)
+				bCurrentlyQuickRanged = true
+			endIf
 		;Otherwise update the Preselect Mode preselect slot
 		else
 			WC.aiCurrentlyPreselected[1] = found
@@ -1020,7 +1050,7 @@ bool function quickRangedFindAndEquipSpell()
 			if WC.abPoisonInfoDisplayed[1]
 				WC.hidePoisonInfo(1)
 			endIf
-			if WC.isCounterShown(1)
+			if WC.abIsCounterShown[1]
 				WC.setCounterVisibility(1, false)
 			endIf
 			if WC.bLeftIconFaded
@@ -1035,7 +1065,9 @@ bool function quickRangedFindAndEquipSpell()
 				cyclePreselectSlot(1, rightCount, false)
 			endIf
 			WC.checkAndEquipShownHandItem(1, false)
-			bCurrentlyQuickRanged = true
+			if !(iQuickRangedSwitchOutAction == 0)
+				bCurrentlyQuickRanged = true
+			endIf
 		;Otherwise update the Preselect Mode preselect slot
 		else
 			WC.aiCurrentlyPreselected[1] = found
@@ -1046,7 +1078,7 @@ bool function quickRangedFindAndEquipSpell()
 	return actionTaken
 endFunction
 
-function quickRangedSwitchOut()
+function quickRangedSwitchOut(bool force1H = false)
 	debug.trace("iEquip_ProMode quickRangedSwitchOut called")
 	bCurrentlyQuickRanged = false
 	debug.trace("iEquip_ProMode quickRangedSwitchOut called - iQuickRangedSwitchOutAction: " + iQuickRangedSwitchOutAction)
@@ -1055,13 +1087,13 @@ function quickRangedSwitchOut()
 	int targetObject
 	int rightCount = jArray.count(targetArray)
 	int i = 0
-	if iQuickRangedSwitchOutAction == 1 ;Switch Back
+	if iQuickRangedSwitchOutAction == 1 && !force1H ;Switch Back
 		targetIndex = iPreviousRightHandIndex
 		debug.trace("iEquip_ProMode quickRangedSwitchOut doing iQuickRangedSwitchOutAction: 1, targetIndex: " + targetIndex)
-	elseif iQuickRangedSwitchOutAction == 2 || iQuickRangedSwitchOutAction == 3 ;Two Handed or One Handed
+	elseif force1H || iQuickRangedSwitchOutAction == 2 || iQuickRangedSwitchOutAction == 3 ;Two Handed or One Handed
 		int[] preferredType
 		int[] secondChoice
-		if iQuickRangedSwitchOutAction == 2
+		if iQuickRangedSwitchOutAction == 2 && !force1H
 			preferredType = new int[2]
 			preferredType[0] = 5
 			preferredType[1] = 6
@@ -1104,7 +1136,8 @@ function quickRangedSwitchOut()
 			endwhile
 		endIf
 		debug.trace("iEquip_ProMode quickRangedSwitchOut doing iQuickRangedSwitchOutAction = 2 or 3, targetIndex: " + targetIndex)
-	elseif iQuickRangedSwitchOutAction == 4 ;Spell
+	endIf
+	if iQuickRangedSwitchOutAction == 4 || (force1H && targetIndex == -1) ;Spell
 		;if we've selected a preferred magic school look for that type of spell first
 		if sQuickRangedPreferredMagicSchool != "" && sQuickRangedPreferredMagicSchool != "Destruction"
 			while i < rightCount && targetIndex == -1
@@ -1127,8 +1160,6 @@ function quickRangedSwitchOut()
 			endwhile
 		endIf
 		debug.trace("iEquip_ProMode quickRangedSwitchOut doing iQuickRangedSwitchOutAction: 4, targetIndex: " + targetIndex)
-	else
-		return
 	endIf
 	debug.trace("iEquip_ProMode quickRangedSwitchOut - final targetIndex: " + targetIndex)
 	targetObject = jArray.getObj(targetArray, targetIndex)
@@ -1201,7 +1232,7 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[otherHand]
 				WC.showName(otherHand)
 			endIf
-			if WC.isCounterShown(otherHand)
+			if WC.abIsCounterShown[otherHand]
 				WC.setCounterVisibility(otherHand, false)
 			endIf
 			if otherHandIndex > -1
@@ -1306,7 +1337,7 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting
 	if WC.CM.abIsChargeMeterShown[iEquipSlot]
 		WC.CM.updateChargeMeterVisibility(iEquipSlot, false)
 	endIf
-	if WC.isCounterShown(iEquipSlot)
+	if WC.abIsCounterShown[iEquipSlot]
 		WC.setCounterVisibility(iEquipSlot, false)
 	endIf
 	if WC.bLeftIconFaded

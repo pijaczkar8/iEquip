@@ -25,7 +25,6 @@ actor property PlayerRef auto
 
 Bool bRequiresResetOnUpdate = False ;Set to true for version updates which require a full reset
 
-Bool Property bReset = False Auto Hidden
 bool Property bIsFirstEnabled = true Auto Hidden
 bool Property bEnabled = false Auto Hidden
 
@@ -60,34 +59,26 @@ event OnVersionUpdate(int a_version)
 endEvent
 
 
-; ### END OF UPDATE MCM ###
-; #########################
+; ###########################
+; ### START OF CONFIG MCM ###
 
 function ApplyMCMSettings()
 	debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
 	
 	if WC.isEnabled
-		if bReset
-			EM.ResetDefaults()
-		else
-            debug.Notification("Applying iEquip settings...")
-            
-			WC.ApplyChanges()
-            KH.updateEditModeKeys()           
-            if EM.isEditMode
-                EM.LoadEditModeWidgets()
-            endIf
-		endIf
+        debug.Notification("Applying iEquip settings...")
+        
+        WC.ApplyChanges()
+        KH.updateEditModeKeys()           
+        if EM.isEditMode
+            EM.LoadAllElements()
+        endIf
 	elseIf !bIsFirstEnabled
 		debug.Notification("iEquip disabled...")
 	endIf
 endFunction
 
-; ###########################
-; ### START OF CONFIG MCM ###
-
-Event OnConfigInit()
-    
+Event OnConfigInit() 
     gen.initData()
     htk.initData()
     que.initData()
@@ -103,7 +94,6 @@ Event OnConfigInit()
 endEvent
 
 event OnConfigOpen()
-    bReset = false
     WC.bRefreshQueues = false
     WC.bFadeOptionsChanged = false
     WC.bAmmoIconChanged = false
@@ -114,6 +104,7 @@ event OnConfigOpen()
     WC.bPoisonIndicatorStyleChanged = false
     WC.bPotionGroupingOptionsChanged = false
     WC.bBackgroundStyleChanged = false
+    WC.bDropShadowSettingChanged = false
     
     if bIsFirstEnabled == false
         if WC.bProModeEnabled
@@ -161,11 +152,9 @@ Event OnConfigClose()
             WC.isEnabled = bEnabled
         endIf
     endIf
+    
     ApplyMCMSettings()
 endEvent
-
-; ### END OF CONFIG MCM ###
-; #########################
 
 ; ####################################
 ; ### START OF MCM PAGE POPULATION ###
@@ -200,8 +189,10 @@ event OnPageReset(string page)
     endif
 endEvent
 
-; ### END OF MCM PAGE POPULATION ###
-; ##################################
+; #######################
+; ### START OF EVENTS ###
+
+; Jump to script func
 
 function jumpToScriptEvent(string eventName, float tmpVar = -1.0)
     string currentState = GetState()
@@ -226,9 +217,6 @@ function jumpToScriptEvent(string eventName, float tmpVar = -1.0)
         inf.jumpToState(currentState, eventName, tmpVar)
     endIf
 endFunction
-
-; #######################
-; ### START OF EVENTS ###
 
 ; GENERAL
 
@@ -293,6 +281,3 @@ endEvent
 event OnColorAcceptST(int color)
     jumpToScriptEvent("Accept", color)
 endEvent
-
-; ### END OF EVENTS ###
-; #####################

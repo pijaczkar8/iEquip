@@ -1,6 +1,7 @@
 Scriptname iEquip_MCM_inf extends iEquip_MCM_helperfuncs
 
 iEquip_KeyHandler Property KH Auto
+iEquip_EditMode Property EM Auto
 
 ; #############
 ; ### SETUP ###
@@ -38,8 +39,8 @@ State inf_txt_rstLayout
             MCM.SetInfoText("Selecting this will nuke any changes you have made to iEquip and fully restore the default layout")
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
-                MCM.bReset = !MCM.bReset
-                KH.openiEquipMCM(true)
+                EM.ResetDefaults()
+                KH.OpeniEquipMCM(true)
             endIf
         endIf 
     endEvent

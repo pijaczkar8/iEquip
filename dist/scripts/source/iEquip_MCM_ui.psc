@@ -41,6 +41,9 @@ function drawPage()
     endIf
             
     MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[MCM.iAmmoIconStyle])
+
+    MCM.AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[MCM.WC.iBackgroundStyle])
+    MCM.AddToggleOptionST("ui_tgl_dropShadow", "Drop shadow on text", MCM.WC.bDropShadowEnabled)
             
     MCM.SetCursorPosition(1)
     ;widget fade variable sliders
@@ -142,7 +145,7 @@ endState
 State ui_men_bckgroundStyle
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose the style for your slot backgrounds.\nBackgrounds can be scaled, rotated and faded in Edit Mode\nDefault: Hidden")
+            MCM.SetInfoText("Choose the style for your slot backgrounds.\nBackgrounds can be scaled, rotated and faded in Edit Mode\nDefault: No Background")
         elseIf currentEvent == "Open"
             fillMenu(MCM.WC.iBackgroundStyle, backgroundStyleOptions, 0)
         elseIf currentEvent == "Accept"
@@ -150,6 +153,22 @@ State ui_men_bckgroundStyle
             MCM.SetMenuOptionValueST(backgroundStyleOptions[MCM.WC.iBackgroundStyle])
             MCM.WC.bBackgroundStyleChanged = true
         endIf 
+    endEvent
+endState
+
+State ui_tgl_dropShadow
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("This allows you to disable the drop shadow effect on the text elements in the widget\nDefault: Enabled")
+        else
+            if currentEvent == "Select"
+                MCM.WC.bDropShadowEnabled = !MCM.WC.bDropShadowEnabled
+            elseIf currentEvent == "Default"
+                MCM.WC.bDropShadowEnabled = true
+            endIf
+            MCM.SetToggleOptionValueST(MCM.WC.bDropShadowEnabled)
+            MCM.WC.bDropShadowSettingChanged = true
+        endIf
     endEvent
 endState
  
@@ -229,6 +248,7 @@ State ui_tgl_visWhenWeapDrawn
             elseIf currentEvent == "Default"
                 MCM.WC.bAlwaysVisibleWhenWeaponsDrawn = true
             endIf
+            MCM.SetToggleOptionValueST(MCM.WC.bAlwaysVisibleWhenWeaponsDrawn)
             MCM.WC.bFadeOptionsChanged = true
         endIf 
     endEvent

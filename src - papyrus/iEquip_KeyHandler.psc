@@ -131,8 +131,6 @@ endEvent
 ; ---------------------
 
 event OnKeyDown(int KeyCode)
-    ;Handle widget visibility update on any registered key press
-    WC.updateWidgetVisibility()
     
     if KeyCode == iUtilityKey && !bIsQueueMenuComboKeyKeyHeld
         bIsUtilityKeyHeld = true
@@ -184,6 +182,9 @@ event OnKeyUp(Int KeyCode, Float HoldTime)
 endEvent
 
 function runUpdate()
+    ;Handle widget visibility update on any registered key press
+    WC.updateWidgetVisibility()
+
     if iMultiTap == -1   ; Longpress
         if iWaitingKeyCode == iConsumableKey
             if bNotInLootMenu && WC.bConsumablesEnabled && !bConsumeItemHotkeyEnabled
@@ -427,6 +428,7 @@ endState
 ;Direct Queue Menu Combo Key Held
 state QUEUEMENUCOMBOKEYHELD
     event OnKeyUp(Int KeyCode, Float HoldTime)
+        debug.trace("iEquip_KeyHandler OnKeyUp called in QUEUEMENUCOMBOKEYHELD state")
         if KeyCode == iUtilityKey
             bIsUtilityKeyHeld = false
         elseIf KeyCode == iOptDirQueueKey
@@ -443,6 +445,9 @@ state QUEUEMENUCOMBOKEYHELD
     endEvent
 
     function runUpdate()
+        debug.trace("iEquip_KeyHandler runUpdate called in QUEUEMENUCOMBOKEYHELD state - iMultiTap == " + iMultiTap)
+        ;Handle widget visibility update on any registered key press
+        WC.updateWidgetVisibility()
         if iMultiTap == 1  ;Single tap
             if iWaitingKeyCode == iLeftKey
                 WC.openQueueManagerMenu(1)

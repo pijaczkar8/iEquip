@@ -5,6 +5,7 @@ Import iEquip_AmmoExt
 Import iEquip_WeaponExt
 Import iEquip_FormExt
 Import StringUtil
+Import Utility
 import AhzMoreHudIE
 
 iEquip_WidgetCore Property WC Auto
@@ -17,14 +18,22 @@ iEquip_WidgetVisUpdateScript property WVis auto
 
 Actor Property PlayerRef Auto
 
-FormList Property iEquip_AllCurrentItemsFLST Auto
-FormList Property iEquip_AmmoItemsFLST Auto
-FormList Property iEquip_PotionItemsFLST Auto
+; Werewolf reference - Vanilla
+race property WerewolfBeastRace auto
+; Vampire Lord reference - Dawnguard
+;race property VampireLordRace auto
+; Lich reference - Undeath
+;race property LichRace auto
+; Werewolf Lord reference - 
+;race property WerewolfLordRace auto
 
-bool Property bPoisonSlotEnabled = true Auto
-bool bIsCrossbowEquipped = false
+FormList property iEquip_AllCurrentItemsFLST Auto
+FormList property iEquip_AmmoItemsFLST Auto
+FormList property iEquip_PotionItemsFLST Auto
+
+bool property bPoisonSlotEnabled = true auto hidden
 bool bIsBoundSpellEquipped = false
-bool bWaitingForPlayerToDrawEnchantedWeapon = false
+bool property bWaitingForEnchantedWeaponDrawn = false auto hidden
 bool bUpdateThrottle
 int iSlotToUpdate = -1
 
@@ -89,27 +98,10 @@ function updateAllEventFilters()
 endFunction
 
 function updateEventFilter(formlist listToUpdate)
-	debug.trace("iEquip_PlayerEventHandler updateEventFilter called - listToUpdate: " + listToUpdate.GetName())
+	debug.trace("iEquip_PlayerEventHandler updateEventFilter called")
 	RemoveInventoryEventFilter(listToUpdate)
 	AddInventoryEventFilter(listToUpdate)
 endFunction
-
-bool Property crossbowEquipped
-	bool function Get()
-		debug.trace("iEquip_PlayerEventHandler crossbowEquipped Get called")
-		return bIsCrossbowEquipped
-	endFunction
-
-	function Set(Bool equipped)
-		bIsCrossbowEquipped = equipped
-		debug.trace("iEquip_PlayerEventHandler crossbowEquipped Set called - bIsCrossbowEquipped: " + equipped)
-		if bIsCrossbowEquipped
-			RegisterForActorAction(6)
-		else
-			UnregisterForActorAction(6)
-		endIf
-	endFunction
-endProperty
 
 bool Property boundSpellEquipped
 	bool function Get()
@@ -124,29 +116,30 @@ bool Property boundSpellEquipped
 	endFunction
 endProperty
 
-bool Property waitForEnchantedWeaponDrawn
-	bool function Get()
-		debug.trace("iEquip_PlayerEventHandler waitForEnchantedWeaponDrawn Get called")
-		return bWaitingForPlayerToDrawEnchantedWeapon
-	endFunction
+Event OnRaceSwitchComplete()
+	debug.trace("iEquip_WidgetCore OnRaceSwitchComplete called")
+	if UI.IsMenuOpen("RaceSex Menu")
+		WC.PlayerRace = PlayerRef.GetRace()
+	elseif WC.bEnableGearedUp
+		Utility.SetINIbool("bDisableGearedUp:General", !(PlayerRef.GetRace() == WC.PlayerRace))
+		WC.refreshVisibleItems()
+	endIf
+EndEvent
 
-	function Set(Bool waiting)
-		bWaitingForPlayerToDrawEnchantedWeapon = waiting
-		debug.trace("iEquip_PlayerEventHandler waitForEnchantedWeaponDrawn Set called - bWaitingForPlayerToDrawEnchantedWeapon: " + waiting)
-		;/if bWaitingForPlayerToDrawEnchantedWeapon
-			RegisterForActorAction(8) ;Draw End
-		else
-			UnregisterForActorAction(8)
-		endIf/;
-	endFunction
-endProperty
+;/Event OnRaceSwitchComplete()
+	debug.trace("iEquip_WidgetCore OnRaceSwitchComplete called")
+	if UI.IsMenuOpen("RaceSex Menu")
+		WC.PlayerRace = PlayerRef.GetRace()
+	elseif bEnableGearedUp
+		Utility.SetINIbool("bDisableGearedUp:General", !(PlayerRef.GetRace() == WC.PlayerRace))
+		WC.refreshVisibleItems()
+	endIf
+EndEvent/;
 
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	debug.trace("iEquip_PlayerEventHandler OnActorAction called - actionType: " + actionType + ", slot: " + slot)
 	if akActor == PlayerRef
-		if actionType == 6 ;Bow Release
-			AM.updateAmmoCounterOnCrossbowShot()
-		elseIf actionType == 7 ;Draw Begin
+		if actionType == 7 ;Draw Begin
 			if !WC.bIsWidgetShown
 				WC.updateWidgetVisibility()
 			endIf
@@ -154,9 +147,9 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 			if !WC.bIsWidgetShown ;In case we're drawing a spell which won't have been caught by Draw Begin
 				WC.updateWidgetVisibility()
 			endIf
-			if waitForEnchantedWeaponDrawn
+			if bWaitingForEnchantedWeaponDrawn
 				CM.updateChargeMetersOnWeaponsDrawn()
-				waitForEnchantedWeaponDrawn = false
+				bWaitingForEnchantedWeaponDrawn = false
 			endIf
 		elseIf actionType == 10 && WC.bIsWidgetShown && WC.bWidgetFadeoutEnabled ;Sheathe End
 			WVis.registerForWidgetFadeoutUpdate()
@@ -164,30 +157,19 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	endIf
 endEvent
 
-Event OnPlayerBowShot(Weapon akWeapon, Ammo akAmmo, float afPower, bool abSunGazing)
-	debug.trace("iEquip_PlayerEventHandler OnPlayerBowShot called")
-	AM.updateAmmoCounterOnBowShot(akAmmo)
-endEvent
-
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
-	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
-	if EventName == "weaponSwing" || EventName == "arrowRelease"
-		if iSlotToUpdate == -1
-			iSlotToUpdate = 1
-		elseIf iSlotToUpdate == 0
-			iSlotToUpdate = 2
-		endIf
-	elseIf EventName == "weaponLeftSwing"
-		if iSlotToUpdate == -1
-			iSlotToUpdate = 0
-		elseIf iSlotToUpdate == 1
-			iSlotToUpdate = 2
-		endIf
-	endIf
-	If !bUpdateThrottle
-		bUpdateThrottle = true
-		RegisterForSingleUpdate(0.8)
-	EndIf
+    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
+    int iTmp = 2 
+    if EventName == "weaponLeftSwing"
+        iTmp = 1
+    endIf    
+    if (iSlotToUpdate == -1 || (iSlotToUpdate + iTmp == 2))
+        iSlotToUpdate += iTmp
+        if !bUpdateThrottle
+            bUpdateThrottle = true
+            RegisterForSingleUpdate(0.8)
+        endIf
+    endIf
 EndEvent
 
 Event OnUpdate()
@@ -224,7 +206,7 @@ EndEvent
 ;This event handles auto-adding newly equipped items to the left, right and shout slots
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called")
-	if WC.bAutoAddNewItems
+	if WC.bAutoAddNewItems && (Game.GetModName(akBaseObject.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
 		int equippedSlot = -1
 		if PlayerRef.GetEquippedObject(0) == akBaseObject
 			equippedSlot = 0
@@ -335,10 +317,8 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	;Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
-	elseIf AM.bAmmoMode && akBaseItem as ammo
-		if AM.currentAmmoForm.GetName() == akBaseItem.GetName()
-	    	AM.setSlotCount(PlayerRef.GetItemCount(akBaseItem))
-        endIf
+	elseIf akBaseItem as ammo
+		AM.onAmmoRemoved(akBaseItem)
     ;Otherwise handle anything else in left, right or shout queue
 	else
 		i = 0
@@ -363,7 +343,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					int itemCount = PlayerRef.GetItemCount(akBaseItem)
 					;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
 					;if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
-					if WC.asCurrentlyEquipped[i] == itemName && itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_WeaponExt.IsWeaponGrenade(akBaseItem as Weapon)) && itemCount > 0
+					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_WeaponExt.IsWeaponGrenade(akBaseItem as Weapon)) && itemCount > 0)
 						WC.setSlotCount(i, itemCount)
 						actionTaken = true
 					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one

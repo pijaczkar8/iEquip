@@ -8,6 +8,7 @@ bool bStillToEnableProMode = true
 int iProModeEasterEggCounter = 5
 
 string[] ammoSortingOptions
+string[] whenNoAmmoLeftOptions
 
 ; #############
 ; ### SETUP ###
@@ -18,6 +19,12 @@ function initData()
     ammoSortingOptions[1] = "By damage"
     ammoSortingOptions[2] = "Alphabetically"
     ammoSortingOptions[3] = "By quantity"
+
+    whenNoAmmoLeftOptions = new String[4]
+    whenNoAmmoLeftOptions[0] = "Do nothing"
+    whenNoAmmoLeftOptions[1] = "Switch/Do nothing"
+    whenNoAmmoLeftOptions[2] = "Switch/Cycle"
+    whenNoAmmoLeftOptions[3] = "Cycle right hand"
 endFunction
 
 function drawPage()
@@ -54,7 +61,7 @@ function drawPage()
                 
         MCM.AddToggleOptionST("gen_tgl_showAtrIco", "Show attribute icons", MCM.WC.bShowAttributeIcons)
         MCM.AddMenuOptionST("gen_men_ammoLstSrt", "Ammo list sorting", ammoSortingOptions[MCM.AM.iAmmoListSorting])
-        MCM.AddToggleOptionST("gen_tgl_skpCurItem", "Skip current item", MCM.WC.bSkipCurrentItemWhenCycling)
+        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "When no ammo left", whenNoAmmoLeftOptions[MCM.AM.iActionOnLastAmmoUsed])
     endIf
 endFunction
 
@@ -288,9 +295,9 @@ endState
 State gen_men_ammoLstSrt
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("iEquip scans you inventory each time you equip a ranged weapon and updates the list of ammo as required depending on the type of weapon being equipped. "+\
+            MCM.SetInfoText("iEquip curates lists of arrows and bolts currently in your inventory and updates them whenever ammo is added or removed. "+\
                             "You can optionally choose to have the resultant list sorted by damage, alphabetically or by current quantity. "+\
-                            "If you choose to sort by damage you will always equip your strongest ammo first, and if by quantity you will equip the ammo you have the most of first.\nDefault = Unsorted")
+                            "If you choose to sort by damage you will always equip your strongest ammo first, and if by quantity you will equip the ammo you have the most of first.\nDefault = By Damage")
         elseIf currentEvent == "Open"
             fillMenu(MCM.AM.iAmmoListSorting, ammoSortingOptions, 0)
         elseIf currentEvent == "Accept"
@@ -301,17 +308,19 @@ State gen_men_ammoLstSrt
     endEvent
 endState
 
-State gen_tgl_skpCurItem
+State gen_men_whenNoAmmoLeft
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("In regular cycling you can land back on your currently equipped item to keep it equipped. "+\
-                            "With this setting enabled the currently equipped item is skipped when cycling meaning that once you start cycling you are committed to changing item.\nDefault - Off")
-        elseIf currentEvent == "Select"
-            MCM.WC.bSkipCurrentItemWhenCycling = !MCM.WC.bSkipCurrentItemWhenCycling
-            MCM.SetToggleOptionValueST(MCM.WC.bSkipCurrentItemWhenCycling)
-        elseIf currentEvent == "Default"
-            MCM.WC.bSkipCurrentItemWhenCycling = false
-            MCM.SetToggleOptionValueST(MCM.WC.bSkipCurrentItemWhenCycling)
+            MCM.SetInfoText("Choose what happens when you use up your last piece of ammo for an equipped ranged weapon\n "+\
+                            "Do Nothing - The left slot will remain empty waiting for you to find and pick up some suitable ammo\n"+\
+                            "Switch/Do Nothing - Equip an alternative ranged weapon if you have the correct ammo for it, otherwise do nothing\n"+\
+                            "Switch/Cycle - As above, but if no suitable alternative found iEquip will cycle as detailed below\n"+\
+                            "Cycle - Cycle your right hand, or if you are currently QuickRanged and have enabled Switch Out do that\nDefault = Switch / Cycle")
+        elseIf currentEvent == "Open"
+            fillMenu(MCM.AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
+        elseIf currentEvent == "Accept"
+            MCM.AM.iActionOnLastAmmoUsed = currentVar as int
+            MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[MCM.AM.iActionOnLastAmmoUsed])
         endIf
     endEvent
 endState

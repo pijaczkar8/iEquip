@@ -43,6 +43,16 @@ function drawPage()
     MCM.AddSliderOptionST("htk_sld_multiTapDelay", "Multi-Tap Delay", KH.fMultiTapDelay, "{1} seconds")
     MCM.AddSliderOptionST("htk_sld_longPrsDelay", "Long Press Delay", KH.fLongPressDelay, "{1} seconds")
     MCM.AddSliderOptionST("htk_sld_prsHoldDelay", "Press & Hold Delay", KH.fPressAndHoldDelay, "{1} seconds")
+    MCM.AddHeaderOption("Optional Additional Hotkeys")
+    MCM.AddToggleOptionST("htk_tgl_optConsumeHotkey", "Enable consume item hotkey", KH.bConsumeItemHotkeyEnabled)
+    if KH.bConsumeItemHotkeyEnabled
+        MCM.AddKeyMapOptionST("htk_key_optional_consumeItem", "Consume item hotkey", KH.iOptConsumeKey, mcmUnmapFLAG)
+    endIf
+    MCM.AddToggleOptionST("htk_tgl_optDirectQueueHotkey", "Enable direct queue menu combo key", KH.bQueueMenuComboKeyEnabled)
+    if KH.bQueueMenuComboKeyEnabled
+        MCM.AddKeyMapOptionST("htk_key_optional_queueMenuCombo", "Direct queue menu combo key", KH.iOptDirQueueKey, mcmUnmapFLAG)
+    endIf
+
 endFunction
 
 ; ######################
@@ -110,7 +120,7 @@ State htk_key_leftHand
             MCM.SetInfoText("Select a hotkey to control the left hand widget functions\nDefault: V")
         elseIf currentEvent == "Change"
             KH.iLeftKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
             MCM.SetKeyMapOptionValueST(KH.iLeftKey)
         elseIf currentEvent == "Default"
             KH.iLeftKey = 47 
@@ -125,7 +135,7 @@ State htk_key_rightHand
             MCM.SetInfoText("Select a hotkey to control the right hand widget functions\nDefault: B")
         elseIf currentEvent == "Change"
             KH.iRightKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
             MCM.SetKeyMapOptionValueST(KH.iRightKey)
         elseIf currentEvent == "Default"
             KH.iRightKey = 48 
@@ -140,7 +150,7 @@ State htk_key_shout
             MCM.SetInfoText("Select a hotkey to control the shout widget functions\nDefault: Y")
         elseIf currentEvent == "Change"
             KH.iShoutKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
             MCM.SetKeyMapOptionValueST(KH.iShoutKey)
         elseIf currentEvent == "Default"
             KH.iShoutKey = 45 
@@ -155,7 +165,7 @@ State htk_key_consumPoison
             MCM.SetInfoText("Select a hotkey to control the consumable and poison widgets functions\nDefault: X")
         elseIf currentEvent == "Change"
             KH.iConsumableKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
             MCM.SetKeyMapOptionValueST(KH.iConsumableKey)
         elseIf currentEvent == "Default"
             KH.iConsumableKey = 21
@@ -174,7 +184,7 @@ State htk_key_util
             MCM.SetInfoText("Select a hotkey for accessing various menus and modes\nDefault: NumLock")
         elseIf currentEvent == "Change"
             KH.iUtilityKey = currentVar as int
-            KH.updateKeyMaps(currentVar as int)
+            KH.updateKeyMaps()
             MCM.SetKeyMapOptionValueST(KH.iUtilityKey)
         elseIf currentEvent == "Default"
             KH.iUtilityKey = 69
@@ -251,6 +261,72 @@ State htk_sld_prsHoldDelay
         elseIf currentEvent == "Accept"
             KH.fPressAndHoldDelay = currentVar
             MCM.SetSliderOptionValueST(KH.fPressAndHoldDelay, "{1} seconds")
+        endIf
+    endEvent
+endState
+
+; --------------------
+; - Optional Hotkeys -
+; --------------------
+
+State htk_tgl_optConsumeHotkey
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("This enables an additional hotkey for consuming items shown in the consumable slot.\nThis replaces the default longpress on the consumable key\nDefault: Off")
+        else
+            If currentEvent == "Select"
+                KH.bConsumeItemHotkeyEnabled = !KH.bConsumeItemHotkeyEnabled
+            elseIf currentEvent == "Default"
+            KH.bConsumeItemHotkeyEnabled = false
+            endIf
+            ;MCM.SetToggleOptionValueST(KH.bConsumeItemHotkeyEnabled)
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State htk_key_optional_consumeItem
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Select a hotkey to consume the item currently shown in the consumable slot\nDefault: X")
+        elseIf currentEvent == "Change"
+            KH.iOptConsumeKey = currentVar as int
+            KH.updateKeyMaps()
+            MCM.SetKeyMapOptionValueST(KH.iOptConsumeKey)
+        elseIf currentEvent == "Default"
+            KH.iOptConsumeKey = -1
+            MCM.SetKeyMapOptionValueST(KH.iOptConsumeKey)
+        endIf
+    endEvent
+endState
+
+State htk_tgl_optDirectQueueHotkey
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("This enables an additional key to use in combination with the main hotkeys for direct access to that slots Queue Management Menu\nDefault: Off")
+        else
+            If currentEvent == "Select"
+                KH.bQueueMenuComboKeyEnabled = !KH.bQueueMenuComboKeyEnabled
+            elseIf currentEvent == "Default"
+            KH.bQueueMenuComboKeyEnabled = false
+            endIf
+            ;MCM.SetToggleOptionValueST(KH.bQueueMenuComboKeyEnabled)
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State htk_key_optional_queueMenuCombo
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Select a combo key\nTo access the queue menus press and hold this key then tap the left/right/shout/consumable key, or double tap the consumable key for the poison queue menu.\nDefault: X")
+        elseIf currentEvent == "Change"
+            KH.iOptDirQueueKey = currentVar as int
+            KH.updateKeyMaps()
+            MCM.SetKeyMapOptionValueST(KH.iOptDirQueueKey)
+        elseIf currentEvent == "Default"
+            KH.iOptDirQueueKey = -1
+            MCM.SetKeyMapOptionValueST(KH.iOptDirQueueKey)
         endIf
     endEvent
 endState

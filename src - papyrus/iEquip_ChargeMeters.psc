@@ -262,7 +262,7 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 		jMap.setForm(jArray.getObj(aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastKnownEnchantment", currentEnchantment as Form)
 		jMap.setInt(jArray.getObj(aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "isEnchanted", isEnchanted)
 	else
-		WC.EH.waitForEnchantedWeaponDrawn = true
+		WC.EH.bWaitingForEnchantedWeaponDrawn = true
 	endIf
 endFunction
 
