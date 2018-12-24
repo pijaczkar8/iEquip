@@ -3337,6 +3337,13 @@ function QueueMenuRemoveFromQueue(int iIndex)
 		if iIndex >= i
 			iIndex -= 1
 		endIf
+		if i < 1
+			if iQueueMenuCurrentQueue == 4
+				handleEmptyPoisonQueue()
+			else
+				setSlotToEmpty(iQueueMenuCurrentQueue)
+			endIf
+		endIf
 		QueueMenuUpdate(i, iIndex)
 	elseIf bFirstAttemptToDeletePotionGroup
 		bFirstAttemptToDeletePotionGroup = false
@@ -3361,6 +3368,11 @@ endFunction
 function QueueMenuClearQueue()
 	debug.trace("iEquip_WidgetCore QueueMenuClearQueue() called")
 	jArray.clear(aiTargetQ[iQueueMenuCurrentQueue])
+	if iQueueMenuCurrentQueue == 4
+		handleEmptyPoisonQueue()
+	else
+		setSlotToEmpty(iQueueMenuCurrentQueue)
+	endIf
 	debug.MessageBox("Your " + asQueueName[iQueueMenuCurrentQueue] + " has been cleared")
 	recallQueueMenu()
 endFunction

@@ -198,6 +198,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 		WC.bAmmoMode = bAmmoMode
 		bReadyForAmmoModeAnim = false
 		Self.RegisterForModEvent("iEquip_ReadyForAmmoModeAnimation", "ReadyForAmmoModeAnimation")
+		;Toggle in
 		if bAmmoMode
 			bAmmoModePending = false ;Reset
 			if WC.bLeftIconFaded ;In case we're coming from bAmmoModePending and it's still faded out
@@ -231,6 +232,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 					WC.setCounterVisibility(0, true)
 				endIf
 			endIf
+		;Toggle out
 		else
 			if !toggleWithoutAnimation
 				UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", false)
@@ -297,7 +299,11 @@ function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 	;Get icon and item name for item currently showing in the left preselect slot ready to update the main slot
 	int leftPreselectObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0])
 	string[] widgetData = new string[3]
-	widgetData[0] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "Icon") + sAmmoIconSuffix
+	if jArray.count(aiTargetQ[Q]) < 1
+		widgetData[0] = "Empty"
+	else
+		widgetData[0] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "Icon") + sAmmoIconSuffix
+	endIf
 	widgetData[1] = jMap.getStr(leftPreselectObject, "Icon")
 	widgetData[2] = jMap.getStr(leftPreselectObject, "Name")
 	;Update the widget - will throw away the ammo and animate the icon from preselect back to main position
@@ -366,7 +372,7 @@ function selectBestAmmo(int thisQ)
 	debug.trace("iEquip_AmmoMode selectBestAmmo called")
 	aiCurrentAmmoIndex[thisQ] = 0
 	asCurrentAmmo[thisQ] = jMap.getStr(jArray.getObj(aiTargetQ[thisQ], 0), "Name")
-	if bAmmoMode
+	if bAmmoMode && (thisQ == Q)
 		checkAndEquipAmmo(false, true)
 	endIf
 endFunction
