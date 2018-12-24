@@ -61,9 +61,9 @@ FormList Property iEquip_RemovedItemsFLST Auto
 
 int property voiceEquipSlot = 0x00025BEE AutoReadOnly ; hex code of the FormID for the Voice EquipSlot
 
-MagicEffect property EnchFireDamageFFContact auto
-MagicEffect property EnchFrostDamageFFContact auto
-MagicEffect property EnchShockDamageFFContact auto
+Keyword property MagicDamageFire auto
+Keyword property MagicDamageFrost auto
+Keyword property MagicDamageShock auto
 
 ; Arrays used by queue functions
 int[] property aiCurrentQueuePosition auto hidden ;Array containing the current index for each queue
@@ -3145,11 +3145,12 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
         	MagicEffect sEffect = S.GetNthEffectMagicEffect(sIndex)
         	IconName = sEffect.GetAssociatedSkill()
         	if IconName == "Destruction"
-        		if sEffect == EnchFireDamageFFContact
+        		debug.trace("iEquip_WidgetCore GetItemIconString - IconName: " + IconName + ", strongest magic effect: " + sEffect + ", " + (sEffect as form).GetName())
+        		if sEffect.HasKeyword(MagicDamageFire)
         			IconName += "Fire"
-        		elseIf sEffect == EnchFrostDamageFFContact
+        		elseIf sEffect.HasKeyword(MagicDamageFrost)
         			IconName += "Frost"
-        		elseIf sEffect == EnchShockDamageFFContact
+        		elseIf sEffect.HasKeyword(MagicDamageShock)
         			IconName += "Shock"
         		endIf
         	endIf
