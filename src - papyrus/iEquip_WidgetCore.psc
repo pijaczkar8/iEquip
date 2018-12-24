@@ -61,6 +61,10 @@ FormList Property iEquip_RemovedItemsFLST Auto
 
 int property voiceEquipSlot = 0x00025BEE AutoReadOnly ; hex code of the FormID for the Voice EquipSlot
 
+MagicEffect property EnchFireDamageFFContact auto
+MagicEffect property EnchFrostDamageFFContact auto
+MagicEffect property EnchShockDamageFFContact auto
+
 ; Arrays used by queue functions
 int[] property aiCurrentQueuePosition auto hidden ;Array containing the current index for each queue
 string[] property asCurrentlyEquipped auto hidden ;Array containing the itemName for whatever is currently equipped in each queue
@@ -3140,6 +3144,15 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
         	int sIndex = S.GetCostliestEffectIndex()
         	MagicEffect sEffect = S.GetNthEffectMagicEffect(sIndex)
         	IconName = sEffect.GetAssociatedSkill()
+        	if IconName == "Destruction"
+        		if sEffect == EnchFireDamageFFContact
+        			IconName += "Fire"
+        		elseIf sEffect == EnchFrostDamageFFContact
+        			IconName += "Frost"
+        		elseIf sEffect == EnchShockDamageFFContact
+        			IconName += "Shock"
+        		endIf
+        	endIf
         endIf
 
     elseif itemType == 42 ;Ammo - Throwing weapons
