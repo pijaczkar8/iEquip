@@ -3405,7 +3405,11 @@ endFunction
 
 function QueueMenuClearQueue()
 	debug.trace("iEquip_WidgetCore QueueMenuClearQueue() called")
-	jArray.clear(aiTargetQ[iQueueMenuCurrentQueue])
+	if iQueueMenuCurrentQueue == 3
+		jArray.eraseRange(aiTargetQ[iQueueMenuCurrentQueue], 3, -1)
+	else
+		jArray.clear(aiTargetQ[iQueueMenuCurrentQueue])
+	endIf
 	if iQueueMenuCurrentQueue == 4
 		handleEmptyPoisonQueue()
 	else

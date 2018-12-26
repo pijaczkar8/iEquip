@@ -54,11 +54,17 @@ bool property bQuickHealSwitchBackEnabled = true auto hidden
 
 actor property PlayerRef auto
 
+int[] aiNameElements
+
 function OnWidgetLoad()
 	WidgetRoot = WC.WidgetRoot
+	aiNameElements = new int[3]
+	aiNameElements[0] = 17
+	aiNameElements[1] = 30
+	aiNameElements[2] = 37
 endFunction
 
-function togglePreselectMode()
+function togglePreselectMode(bool enablingEditMode = false)
 	debug.trace("iEquip_ProMode togglePreselectMode Set called")
 	bPreselectMode = !bPreselectMode
 	WC.bPreselectMode = bPreselectMode
@@ -71,18 +77,38 @@ function togglePreselectMode()
 			Q = 1 ;Skip updating left hand preselect if currently in ammo mode as it's already set
 		endIf
 		while Q < 3
-			int iCount = JArray.count(WC.aiTargetQ[Q])
+			int queueLength = JArray.count(WC.aiTargetQ[Q])
 			;if any of the queues have less than 3 items in it then there is either nothing to preselect (1 item in queue) or you'd just be doing the same as regularly cycling two items so no need for preselect, therefore disable preselect elements for that slot
-			if iCount < 3
+			if queueLength < 3 && !enablingEditMode
 				WC.aiCurrentlyPreselected[Q] = -1
 			else
-				;Otherwise if enabled, set left, right and shout preselect to next item in each queue, play power up sound, update widget and show preselect elements
-				WC.aiCurrentlyPreselected[Q] = WC.aiCurrentQueuePosition[Q] + 1
-				if WC.aiCurrentlyPreselected[Q] == iCount
-					WC.aiCurrentlyPreselected[Q] = 0
+				if enablingEditMode && queueLength < 2
+					float fNameAlpha = WC.afWidget_A[aiNameElements[Q]]
+					if fNameAlpha < 1
+						fNameAlpha = 100
+					endIf
+					int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+					If(iHandle)
+						UICallback.PushInt(iHandle, Q + 5)
+						if Q == 2
+							UICallback.PushString(iHandle, "Shout")
+							UICallback.PushString(iHandle, "Something Loud and Shouty")
+						else
+							UICallback.PushString(iHandle, "Sword")
+							UICallback.PushString(iHandle, "Pointy Hurty Thing")
+						endIf
+						UICallback.PushFloat(iHandle, fNameAlpha)
+						UICallback.Send(iHandle)
+					endIf
+				else
+					;Otherwise if enabled, set left, right and shout preselect to next item in each queue, play power up sound, update widget and show preselect elements
+					WC.aiCurrentlyPreselected[Q] = WC.aiCurrentQueuePosition[Q] + 1
+					if WC.aiCurrentlyPreselected[Q] == queueLength
+						WC.aiCurrentlyPreselected[Q] = 0
+					endIf
+					debug.trace("iEquip_ProMode isPreselectMode Set(), bPreselectMode: " + bPreselectMode + ", Q: " + Q + ", aiCurrentlyPreselected[" + Q + "]: " + WC.aiCurrentlyPreselected[Q])
+					WC.updateWidget(Q, WC.aiCurrentlyPreselected[Q])
 				endIf
-				debug.trace("iEquip_ProMode isPreselectMode Set(), bPreselectMode: " + bPreselectMode + ", Q: " + Q + ", aiCurrentlyPreselected[" + Q + "]: " + WC.aiCurrentlyPreselected[Q])
-				WC.updateWidget(Q, WC.aiCurrentlyPreselected[Q])
 			endIf
 			Q += 1
 		endwhile

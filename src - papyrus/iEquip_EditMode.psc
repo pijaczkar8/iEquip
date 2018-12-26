@@ -37,8 +37,10 @@ bool Property bDisabling = false Auto Hidden
 bool bFirstCycleKeyPressed = true
 bool bringToFrontFirstTime = true
 bool property preselectEnabledOnEnter = false auto hidden
-bool property wasLeftCounterShown = false auto hidden
-bool property wasRightCounterShown = false auto hidden
+bool[] property abWasCounterShown auto hidden
+string[] asCounterTextPath
+int[] property aiPreviousCount auto hidden
+string[] asPoisonNamePath
 
 ; - Floats -
 
@@ -77,8 +79,57 @@ string sRotation
 ; ### INITIALIZATION ###
 
 function OnInit()
-	iCustomColors = new int[14]
-    
+    WidgetGroups = new String[6]
+    WidgetGroups[0] = ""
+    WidgetGroups[1] = "Left"
+    WidgetGroups[2] = "Right"
+    WidgetGroups[3] = "Shout"
+    WidgetGroups[4] = "Consumable"
+    WidgetGroups[5] = "Poison"
+    sTextAlignment = new string[3]
+    sTextAlignment[0] = "Left"
+    sTextAlignment[1] = "Center"
+    sTextAlignment[2] = "Right"
+
+    abWasCounterShown = new bool[5]
+    aiPreviousCount = new int[5]
+    int i = 0
+    while i < 5
+        abWasCounterShown[i] = false
+        aiPreviousCount[i] = 0
+        i += 1
+    endWhile
+
+    asCounterTextPath = new string[5]
+    asCounterTextPath[0] = ".widgetMaster.LeftHandWidget.leftCount_mc.leftCount.text"
+    asCounterTextPath[1] = ".widgetMaster.RightHandWidget.rightCount_mc.rightCount.text"
+    asCounterTextPath[2] = ""
+    asCounterTextPath[3] = ".widgetMaster.ConsumableWidget.consumableCount_mc.consumableCount.text"
+    asCounterTextPath[4] = ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text"
+
+    asPoisonNamePath = new string[2]
+    asPoisonNamePath[0] = ".widgetMaster.LeftHandWidget.leftPoisonName_mc.leftPoisonName.text"
+    asPoisonNamePath[1] = ".widgetMaster.RightHandWidget.rightPoisonName_mc.rightPoisonName.text"
+
+    iFirstElementInGroup = new int[6]
+    iFirstElementInGroup[0] = 6  ; leftBg_mc
+    iFirstElementInGroup[1] = 6  ; leftBg_mc
+    iFirstElementInGroup[2] = 19 ; rightBg_mc
+    iFirstElementInGroup[3] = 32 ; shoutBg_mc
+    iFirstElementInGroup[4] = 38 ; consumableBg_mc
+    iFirstElementInGroup[5] = 42 ; poisonBg_mc
+
+    afWidget_CurX = new Float[46]
+    afWidget_CurY = new Float[46]
+    afWidget_CurS = new Float[46]
+    afWidget_CurR = new Float[46]
+    afWidget_CurA = new Float[46]
+    aiWidget_CurD = new Int[46]
+    asWidget_CurTA = new string[46]
+    aiWidget_CurTC = new int[46]
+    abWidget_CurV = new bool[46]
+	
+    iCustomColors = new int[14]
 	int iIndex = iCustomColors.length
 	While iIndex > 0
         iIndex -= 1
@@ -106,42 +157,12 @@ function ToggleEditMode()
     
 	if isEditMode
         CurrentVanityModeDelay = GetINIFloat("fAutoVanityModeDelay:Camera")
-        
-		WidgetGroups = new String[6]
-		WidgetGroups[0] = ""
-		WidgetGroups[1] = "Left"
-		WidgetGroups[2] = "Right"
-		WidgetGroups[3] = "Shout"
-		WidgetGroups[4] = "Consumable"
-		WidgetGroups[5] = "Poison"
-        sTextAlignment = new string[3]
-        sTextAlignment[0] = "Left"
-        sTextAlignment[1] = "Center"
-        sTextAlignment[2] = "Right"
-
-		iFirstElementInGroup = new int[6]
-		iFirstElementInGroup[0] = 6  ; leftBg_mc
-		iFirstElementInGroup[1] = 6  ; leftBg_mc
-		iFirstElementInGroup[2] = 19 ; rightBg_mc
-		iFirstElementInGroup[3] = 32 ; shoutBg_mc
-		iFirstElementInGroup[4] = 38 ; consumableBg_mc
-		iFirstElementInGroup[5] = 42 ; poisonBg_mc
 
 		if WC.bDropShadowEnabled
             UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true) ;Remove DropShadowFilter from all text elements before entering Edit Mode
         endIf
         ; StoreOpeningValues
-        int iIndex = 0
-        afWidget_CurX = new Float[46]
-        afWidget_CurY = new Float[46]
-        afWidget_CurS = new Float[46]
-        afWidget_CurR = new Float[46]
-        afWidget_CurA = new Float[46]
-        aiWidget_CurD = new Int[46]
-        asWidget_CurTA = new string[46]
-        aiWidget_CurTC = new int[46]
-        abWidget_CurV = new bool[46]
-        
+        int iIndex = 0       
         While iIndex < WC.asWidgetDescriptions.Length
             afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
             afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
@@ -152,9 +173,9 @@ function ToggleEditMode()
             asWidget_CurTA[iIndex] = WC.asWidget_TA[iIndex]
             aiWidget_CurTC[iIndex] = WC.aiWidget_TC[iIndex]
             abWidget_CurV[iIndex] = WC.abWidget_V[iIndex]
-            
             iIndex += 1
         EndWhile
+
         iFirstElement = 0
         iLastElement = 5
 		iSelectedElement = 0
@@ -169,7 +190,7 @@ function ToggleEditMode()
       
 		if !WC.bPreselectMode
 			preselectEnabledOnEnter = true
-			PM.togglePreselectMode()
+			PM.togglePreselectMode(true)
 		endIf
         
 		LoadAllElements()
@@ -577,61 +598,52 @@ endFunction
 
 ; CHECK IF CAN BE REWRITTEN/OPTIMIZED
 function LoadAllElements()
-	int iIndex = WC.asWidgetDescriptions.Length
+	int i = WC.asWidgetDescriptions.Length
     
-	While iIndex > 0
-        iIndex -= 1
-		UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._visible", true) ;Everything else other than the backgrounds needs to be visible in Edit Mode
+	While i > 0
+        i -= 1
+		UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._visible", true) ;Everything else other than the backgrounds needs to be visible in Edit Mode
 	EndWhile
     
-	; Show left and right counters if not currently shown
-	if !WC.abIsCounterShown[0]
-		wasLeftCounterShown = false
-		WC.setCounterVisibility(0, true)
-	else
-		wasLeftCounterShown = true
-		previousLeftCount = UI.getString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftCount_mc.leftCount.text") as int
-	endIf
-	WC.setSlotCount(0,99)
-    
-	if !WC.abIsCounterShown[1]
-		wasRightCounterShown = false
-		WC.setCounterVisibility(1, true)
-	else
-		wasRightCounterShown = true
-		previousRightCount = UI.getString(HUD_MENU, WidgetRoot + ".widgetMaster.RightHandWidget.rightCount_mc.rightCount.text") as int
-	endIf
-	WC.setSlotCount(1,99)
-    
-	; Show any currently hidden names
-	while iIndex < 8
-		if !WC.abIsNameShown[iIndex]
-			WC.showName(iIndex, true, false, 0.0)
+    i = 0
+	while i < 8
+        ; Show any currently hidden names
+		if !WC.abIsNameShown[i]
+			WC.showName(i, true, false, 0.0)
 		endIf
-		iIndex += 1
-	endWhile
-	iIndex = 0
+        ; Show left and right counters if not currently shown
+        if i < 5
+            if !WC.abIsCounterShown[i]
+                abWasCounterShown[i] = false
+                WC.setCounterVisibility(i, true)
+            else
+                abWasCounterShown[i] = true
+                aiPreviousCount[i] = UI.getString(HUD_MENU, WidgetRoot + asCounterTextPath[i]) as int
+            endIf
+            WC.setSlotCount(i, 99)
+            if i < 2
+                ; Check and show left and right poison elements if not already displayed
+                if !WC.abPoisonInfoDisplayed[i]
+                    UI.SetString(HUD_MENU, WidgetRoot + asPoisonNamePath[i], "Some horrible poison")
+                    CreateHandleIntStr(".updatePoisonIcon", i, "Drops3")
+                endIf
+                
+                if !WC.abIsPoisonNameShown[i]
+                    WC.showName(i, true, true, 0.0)
+                endIf
 
-	while iIndex < 2
-		; Check and show left and right poison elements if not already displayed
-		if !WC.abPoisonInfoDisplayed[iIndex]
-			string poisonNamePath = ".widgetMaster.LeftHandWidget.leftPoisonName_mc.leftPoisonName.text"
-			if iIndex == 1
-				poisonNamePath = ".widgetMaster.RightHandWidget.rightPoisonName_mc.rightPoisonName.text"
-			endIf
-			UI.SetString(HUD_MENU, WidgetRoot + poisonNamePath, "Some horrible poison")
-            CreateHandleIntStr(".updatePoisonIcon", iIndex, "Drops3")
-		endIf
-        
-		if !WC.abIsPoisonNameShown[iIndex]
-			WC.showName(iIndex, true, true, 0.0)
-		endIf
+                ;Check and show left and right attribute icons including those for the preselect slots
+                CreateHandleIntStr(".updateAttributeIcons", i, "Both")
+                CreateHandleIntStr(".updateAttributeIcons", i + 5, "Both")
+            elseIf i == 2
 
-		;Check and show left and right attribute icons including those for the preselect slots
-        CreateHandleIntStr(".updateAttributeIcons", iIndex, "Both")
-        CreateHandleIntStr(".updateAttributeIcons", iIndex + 5, "Both")
+            elseIf i == 3
 
-		iIndex += 1
+            elseIf i == 4
+                
+            endIf
+        endIf
+		i += 1
 	endWhile
     
     UpdateEditModeGuide()
