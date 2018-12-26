@@ -151,7 +151,9 @@ bool property bGearedUpOptionChanged = false auto hidden
 bool property bSlotEnabledOptionsChanged = false auto hidden
 
 int property iMaxQueueLength = 12 auto hidden
+bool property bReduceMaxQueueLengthPending = false auto hidden
 bool property bHardLimitQueueSize = true auto hidden
+bool property bHardLimitEnabledPending = false auto hidden
 bool property bAllowWeaponSwitchHands = false auto hidden
 bool property bAllowSingleItemsInBothQueues = false auto hidden
 bool property bAutoAddNewItems = true auto hidden
@@ -1808,6 +1810,9 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true)
 		UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
 		UICallback.Send(iHandle)
 	endIf
+	if Q != 3 || (!bHealthPotionGrouping && !bStaminaPotionGrouping && !bMagickaPotionGrouping)
+		asCurrentlyEquipped[Q] = ""
+	endIf
 	; Hide any additional elements currently displayed
 	if Q < 2
 		if abPoisonInfoDisplayed[Q]
@@ -1846,6 +1851,7 @@ function handleEmptyPoisonQueue()
 	endIf
 	;Hide the count by setting it to an empty string
 	UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text", "")
+	asCurrentlyEquipped[4] = ""
 	; Set to generic poison icon and name to empty before flashing/fading/hiding
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
@@ -2194,6 +2200,24 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 			PM.cyclePreselectSlot(Q, jArray.count(aiTargetQ[Q]))
 		endIf
 	endIf
+endFunction
+
+function reduceMaxQueueLength()
+	debug.trace("iEquip_WidgetCore reduceMaxQueueLength called")
+	if iMaxQueueLength < 3 && bPreselectMode
+		PM.togglePreselectMode()
+	endIf
+	int i = 0
+	int currentLength
+	while i < 5
+		currentLength = jArray.count(aiTargetQ[i])
+		if currentLength > iMaxQueueLength
+			if i < 3 || bHardLimitQueueSize
+				jArray.eraseRange(aiTargetQ[i], iMaxQueueLength, -1)
+			endIf
+		endIf
+		i += 1
+	endWhile
 endFunction
 
 function AddItemToLastRemovedCache(int Q, int iIndex)
@@ -3347,18 +3371,18 @@ function QueueMenuRemoveFromQueue(int iIndex)
         	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
         endIf
 		jArray.eraseIndex(targetArray, iIndex)
-		int i = jArray.count(targetArray)
-		if iIndex >= i
+		int queueLength = jArray.count(targetArray)
+		if iIndex >= queueLength
 			iIndex -= 1
 		endIf
-		if i < 1
+		if queueLength < 1
 			if iQueueMenuCurrentQueue == 4
 				handleEmptyPoisonQueue()
 			else
 				setSlotToEmpty(iQueueMenuCurrentQueue)
 			endIf
 		endIf
-		QueueMenuUpdate(i, iIndex)
+		QueueMenuUpdate(queueLength, iIndex)
 	elseIf bFirstAttemptToDeletePotionGroup
 		bFirstAttemptToDeletePotionGroup = false
 		((Self as Form) as iEquip_UILIB).closeQueueMenu()
@@ -3417,6 +3441,9 @@ function ApplyChanges()
     endIf
     if bRefreshQueues
     	purgeQueue()
+    endIf
+    if bReduceMaxQueueLengthPending
+    	reduceMaxQueueLength()
     endIf
     if bGearedUpOptionChanged
     	Utility.SetINIbool("bDisableGearedUp:General", True)

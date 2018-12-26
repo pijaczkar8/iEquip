@@ -105,6 +105,7 @@ event OnConfigOpen()
     WC.bPotionGroupingOptionsChanged = false
     WC.bBackgroundStyleChanged = false
     WC.bDropShadowSettingChanged = false
+    WC.bReduceMaxQueueLengthPending = false
     
     if bIsFirstEnabled == false
         if WC.bProModeEnabled

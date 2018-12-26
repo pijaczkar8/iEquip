@@ -175,9 +175,10 @@ function PreselectModeAnimateOut()
 		bool[] args = new bool[3]
 		args[0] = bRightPreselectShown
 		args[1] = bShoutPreselectShown
-		args[2] = bLeftPreselectShown
 		if AM.bAmmoMode || WC.RightHandWeaponIsRanged()
 			args[2] = false ;Stop left slot from animating out if we currently have a ranged weapon equipped in the right hand or are in ammo mode as we still need it to show in regular mode
+		else
+			args[2] = bLeftPreselectShown
 		endIf
 		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
 	endIf
@@ -215,7 +216,7 @@ function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool a
 		if targetIndex == WC.aiCurrentQueuePosition[Q] ;Can't preselect the item you already have equipped in the widget so move on another index
 			targetIndex += 1
 		endIf
-		if targetIndex == queueLength
+		if targetIndex >= queueLength
 			targetIndex = 0
 			if targetIndex == WC.aiCurrentQueuePosition[Q] ;Have to recheck again in case aiCurrentQueuePosition[Q] == 0
 				targetIndex += 1

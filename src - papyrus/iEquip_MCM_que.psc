@@ -47,7 +47,14 @@ State que_sld_maxItmQue
         elseIf currentEvent == "Open"
             fillSlider(MCM.WC.iMaxQueueLength, 0.0, 30.0, 1.0, 12.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.iMaxQueueLength = currentVar as int
+            if currentVar as int < MCM.WC.iMaxQueueLength
+                if MCM.ShowMessage("You are about to reduce the maximum permitted queue length!\n\nAny queues which currently exceed the new length will be trimmed.\n\nDo you wish to proceed?", true, "OK", "Cancel")
+                    MCM.WC.iMaxQueueLength = currentVar as int
+                    MCM.WC.bReduceMaxQueueLengthPending = true
+                endIf
+            else
+                MCM.WC.iMaxQueueLength = currentVar as int
+            endIf
             MCM.SetSliderOptionValueST(MCM.WC.iMaxQueueLength, "Max {0} items")
         endIf
     endEvent
@@ -57,12 +64,19 @@ State que_tgl_hrdLimQueSize
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Hard limit the queue lengths to the value set above. Disabling this will allow your queues to grow dynamically if you enable auto adding of new items below\nDefault: On")
-        elseIf currentEvent == "Select"
-            MCM.WC.bHardLimitQueueSize = !MCM.WC.bHardLimitQueueSize
-            MCM.SetToggleOptionValueST(MCM.WC.bHardLimitQueueSize)
-        elseIf currentEvent == "Default"
-            MCM.WC.bHardLimitQueueSize = true 
-            MCM.SetToggleOptionValueST(MCM.WC.bHardLimitQueueSize)
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !MCM.WC.bHardLimitQueueSize)
+            bool continue = true
+            if !MCM.WC.bHardLimitQueueSize
+            	continue = MCM.ShowMessage("You are about to enable a hard limit on your maximum queue lengths!\n\nDoing so will stop the queues from being able to grow organically as new items are equipped. "+\
+            		"This can particularly affect your consumable and poison queues.\n\nDo you wish to proceed?", true, "OK", "Cancel")
+            	if continue
+            		MCM.WC.bReduceMaxQueueLengthPending = true
+            	endIf
+            endIf
+            if continue
+            	MCM.WC.bHardLimitQueueSize = !MCM.WC.bHardLimitQueueSize
+            	MCM.SetToggleOptionValueST(MCM.WC.bHardLimitQueueSize)
+            endIf
         endIf
     endEvent
 endState
