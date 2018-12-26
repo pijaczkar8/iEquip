@@ -258,7 +258,11 @@ function AmmoModeAnimateIn()
 	;Get icon name and item name data for the item currently showing in the left hand slot and the ammo to be equipped
 	int ammoObject = jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
 	string[] widgetData = new string[4]
-	widgetData[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "Icon")
+	if jArray.count(WC.aiTargetQ[0]) > 0
+		widgetData[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "Icon")
+	else
+		widgetData[0] = "Empty"
+	endIf
 	widgetData[1] = WC.asCurrentlyEquipped[0]
 	widgetData[2] = jMap.getStr(ammoObject, "Icon") + sAmmoIconSuffix
 	widgetData[3] = asCurrentAmmo[Q]
