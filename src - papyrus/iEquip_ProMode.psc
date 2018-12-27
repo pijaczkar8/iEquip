@@ -113,19 +113,10 @@ function togglePreselectMode(bool enablingEditMode = false)
 			Q += 1
 		endwhile
 
-		bLeftPreselectShown = true
-		if WC.aiCurrentlyPreselected[0] == -1
-			bLeftPreselectShown = false
-		endIf
-		bRightPreselectShown = true
-		if WC.aiCurrentlyPreselected[1] == -1
-			bRightPreselectShown = false
-		endIf
+		bLeftPreselectShown = ((WC.aiCurrentlyPreselected[0] != -1) || enablingEditMode)
+		bRightPreselectShown = ((WC.aiCurrentlyPreselected[1] != -1) || enablingEditMode)
 		;Also if shout preselect has been turned off in the MCM or hidden in Edit Mode make sure it stays hidden before showing the preselect group
-		bShoutPreselectShown = true
-		if !WC.bShoutEnabled || !bShoutPreselectEnabled || WC.aiCurrentlyPreselected[2] == -1
-			bShoutPreselectShown = false
-		endIf
+		bShoutPreselectShown = ((WC.bShoutEnabled && bShoutPreselectEnabled && (WC.aiCurrentlyPreselected[2] != -1)) || enablingEditMode)
 
 		;Add showLeft/showRight with check for number of items in queue must be greater than 1 (ie if only 1 in queue then nothing to preselect)
 		args[0] = bLeftPreselectShown ;Show left

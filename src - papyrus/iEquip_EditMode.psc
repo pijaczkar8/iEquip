@@ -41,6 +41,7 @@ bool[] property abWasCounterShown auto hidden
 string[] asCounterTextPath
 int[] property aiPreviousCount auto hidden
 string[] asPoisonNamePath
+int property iEnabledPotionGroupCount = 0 auto hidden
 
 ; - Floats -
 
@@ -598,11 +599,11 @@ endFunction
 
 ; CHECK IF CAN BE REWRITTEN/OPTIMIZED
 function LoadAllElements()
-	int i = WC.asWidgetDescriptions.Length
+	int i = WC.asWidgetDescriptions.Length - 1
     
-	While i > 0
-        i -= 1
+	While i >= 0
 		UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._visible", true) ;Everything else other than the backgrounds needs to be visible in Edit Mode
+        i -= 1
 	EndWhile
     
     i = 0
@@ -621,7 +622,12 @@ function LoadAllElements()
                 aiPreviousCount[i] = UI.getString(HUD_MENU, WidgetRoot + asCounterTextPath[i]) as int
             endIf
             WC.setSlotCount(i, 99)
+            ; Show any currently hidden elements in the left and right hand slots
             if i < 2
+                ; Check and fade in left icon if currently faded
+                if i == 0 && WC.bLeftIconFaded
+                    WC.checkAndFadeLeftIcon(0,0)
+                endIf
                 ; Check and show left and right poison elements if not already displayed
                 if !WC.abPoisonInfoDisplayed[i]
                     UI.SetString(HUD_MENU, WidgetRoot + asPoisonNamePath[i], "Some horrible poison")
@@ -632,21 +638,63 @@ function LoadAllElements()
                     WC.showName(i, true, true, 0.0)
                 endIf
 
-                ;Check and show left and right attribute icons including those for the preselect slots
+                ; Check and show left and right attribute icons including those for the preselect slots
                 CreateHandleIntStr(".updateAttributeIcons", i, "Both")
                 CreateHandleIntStr(".updateAttributeIcons", i + 5, "Both")
-            elseIf i == 2
-
-            elseIf i == 3
-
-            elseIf i == 4
-                
+            ; Handle empty shout,consumable and poison queues to ensure all elements show temporarily
+            elseIf jArray.count(WC.aiTargetQ[i]) < 1 || i == 3 && jArray.count(WC.aiTargetQ[i]) == 3
+                if i == 2
+                    setTempItemInWidget(i, "Power", "Some Awesome Power") ; Power because the preselect slot will already be set to shout if queue is empty so let's have something different
+                elseIf i == 3
+                    ; Check if there are any potion groups shown...
+                    iEnabledPotionGroupCount = 0
+                    if WC.bHealthPotionGrouping && !(WC.abPotionGroupEmpty[0] && WC.PO.iEmptyPotionQueueChoice == 1)
+                        iEnabledPotionGroupCount += 1
+                    endIf
+                    if WC.bStaminaPotionGrouping && !(WC.abPotionGroupEmpty[1] && WC.PO.iEmptyPotionQueueChoice == 1)
+                        iEnabledPotionGroupCount += 1
+                    endIf
+                    if WC.bMagickaPotionGrouping && !(WC.abPotionGroupEmpty[2] && WC.PO.iEmptyPotionQueueChoice == 1)
+                        iEnabledPotionGroupCount += 1
+                    endIf
+                    if iEnabledPotionGroupCount > 0
+                        ; ...but faded out, and un-fade if needed
+                        if WC.bConsumableIconFaded
+                            WC.checkAndFadeConsumableIcon(false)
+                        endIf
+                    ; Otherwise set temp info in the widget    
+                    else
+                        setTempItemInWidget(i, "HealthPotion", "Some Useful Potion")
+                    endIf
+                elseIf i == 4
+                    ; Check if the poison icon is currently faded and fade back in if needed
+                    if WC.bPoisonIconFaded
+                        WC.checkAndFadePoisonIcon(false)
+                    endIf
+                    ; Set temp info in the widget
+                    setTempItemInWidget(i, "Poison", "Some Horrible Poison")
+                endIf                
             endIf
         endIf
 		i += 1
 	endWhile
     
     UpdateEditModeGuide()
+endFunction
+
+function setTempItemInWidget(int Q, string iconName, string itemName)
+    float fNameAlpha = WC.afWidget_A[WC.aiNameElements[Q]]
+    if fNameAlpha < 1
+        fNameAlpha = 100
+    endIf
+    int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+    If(iHandle)
+        UICallback.PushInt(iHandle, Q)
+        UICallback.PushString(iHandle, iconName)
+        UICallback.PushString(iHandle, itemName)
+        UICallback.PushFloat(iHandle, fNameAlpha)
+        UICallback.Send(iHandle)
+    endIf
 endFunction
 
 ; ####################

@@ -203,7 +203,7 @@ function runUpdate()
             endIf
             
         elseIf iWaitingKeyCode == iLeftKey
-            if AM.bAmmoMode 
+            if AM.bAmmoMode
                 AM.toggleAmmoMode(false, false)
             else
                 RC.rechargeWeapon(0)

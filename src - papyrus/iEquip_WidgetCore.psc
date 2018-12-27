@@ -217,7 +217,7 @@ bool property bLeftIconFaded = false auto hidden
 bool property bWidgetFadeoutEnabled = false auto hidden
 bool property bNameFadeoutEnabled = false auto hidden
 bool[] property abIsNameShown auto hidden
-int[] aiNameElements
+int[] property aiNameElements auto hidden
 bool property bFirstPressShowsName = true auto hidden
 
 bool[] property abIsPoisonNameShown auto hidden
@@ -607,48 +607,65 @@ endFunction
 
 ;Called from EditMode when toggling back out
 function resetWidgetsToPreviousState()
-	int Q = 0
-	;Reset all names and reregister for fades if required
-	while Q < 8
-		showName(Q, true, false, 0.0)
-		Q += 1
-	endWhile
-    
-	;Reset left and right counters
-	if !EM.wasLeftCounterShown
-		setCounterVisibility(0, false)
-	else
-		setSlotCount(0, EM.previousLeftCount)
-	endIf
-    
-	if !EM.wasRightCounterShown
-		setCounterVisibility(1, false)
-	else
-		setSlotCount(1, EM.previousRightCount)
-	endIf
-    
-	Q = 0
-	while Q < 2
-		;Reset poison elements
-		if !abPoisonInfoDisplayed[Q]
-			hidePoisonInfo(Q, true)
-		else
-			checkAndUpdatePoisonInfo(Q)
-		endIf
-		;Reset attribute icons
-		hideAttributeIcons(Q)
-		if bPreselectMode && EM.preselectEnabledOnEnter
-			updateAttributeIcons(Q, 0)
-		endIf
-		Q += 1
-	endWhile
-    
+	int i = asWidgetDescriptions.Length
+    ;Reset visiblity on all elements
+	While i > 0
+        i -= 1
+		UI.SetBool(HUD_MENU, WidgetRoot + asWidgetElements[i] + "._visible", abWidget_V[i])
+	EndWhile
+
+	i = 0
+	while i < 8
+		;Reset all names and reregister for fades if required
+		showName(i, true, false, 0.0)
+		if i < 5
+			;Reset the counters
+            if !EM.abWasCounterShown[i]
+				setCounterVisibility(i, false)
+			else
+				setSlotCount(i, EM.aiPreviousCount[i])
+			endIf
+            if i < 2
+                ; Check and fade in left icon if currently faded
+                if i == 0 && bLeftIconFaded
+                    checkAndFadeLeftIcon(0,0)
+                endIf
+                ;Reset poison elements
+				if !abPoisonInfoDisplayed[i]
+					hidePoisonInfo(i, true)
+				else
+					checkAndUpdatePoisonInfo(i)
+				endIf
+				;Reset attribute icons
+				hideAttributeIcons(i)
+				if bPreselectMode && EM.preselectEnabledOnEnter
+					updateAttributeIcons(i, 0)
+				endIf
+            ; Handle empty shout,consumable and poison queues to ensure all temporary elements are removed
+            elseIf jArray.count(aiTargetQ[i]) < 1 || i == 3 && jArray.count(aiTargetQ[i]) == 3
+                if i == 2
+                    setSlotToEmpty(i)
+                elseIf i == 3
+                    ; Check if there are any potion groups shown...
+                    if EM.iEnabledPotionGroupCount > 0
+                        ;...and handle fade if required
+                        checkAndFadeConsumableIcon(true)
+                    ; Otherwise set temp info in the widget    
+                    else
+                        setSlotToEmpty(i)
+                    endIf
+                elseIf i == 4
+                    handleEmptyPoisonQueue()
+                endIf                
+            endIf
+        endIf
+    	i += 1
+    endWhile
 	;Reset Preselect Mode
 	if EM.preselectEnabledOnEnter && bPreselectMode
         PM.togglePreselectMode()
 		EM.preselectEnabledOnEnter = false
 	endIf
-    
 	;Reset enchantment meters and soulgems
 	CM.updateChargeMeters(true)
 endFunction
@@ -957,6 +974,7 @@ bool property isEnabled
 EndProperty
 
 function addCurrentItemsOnFirstEnable()
+	debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable called")
 	int Q = 0
 	form equippedItem
 	string itemName
@@ -970,6 +988,9 @@ function addCurrentItemsOnFirstEnable()
 			itemType = equippedItem.GetType()
 			if itemType == 41 ;if it is a weapon get the weapon type
 	        	itemType = (equippedItem as Weapon).GetWeaponType()
+	        endIf
+	        if Q == 0 && (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
+	        	Q += 1
 	        endIf
 			int iEquipItem = jMap.object()
 			jMap.setForm(iEquipItem, "Form", equippedItem)
@@ -1790,7 +1811,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	endIf
 endFunction
 
-function setSlotToEmpty(int Q, bool hidePoisonCount = true)
+function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = false)
 	debug.trace("iEquip_WidgetCore setSlotToEmpty called")
 	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
@@ -1838,7 +1859,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true)
 	elseIf Q == 5 || Q == 6
 		hideAttributeIcons(Q)
 	endIf
-	if Q < 3
+	if Q < 3 && !leaveFlag
 		abQueueWasEmpty[Q] = true
 	endIf
 endFunction

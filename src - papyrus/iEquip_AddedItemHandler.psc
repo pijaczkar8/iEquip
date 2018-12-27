@@ -69,11 +69,11 @@ event OnUpdate()
 			j = 0
 			int itemType = formToAdd.GetType()
 			while j < 2
-				if WC.asCurrentlyEquipped[i] == formToAdd.GetName()
+				if WC.asCurrentlyEquipped[j] == formToAdd.GetName()
 					;Ammo, scrolls, torch or other throwing weapons
 					;if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
 					if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_WeaponExt.IsWeaponGrenade(formToAdd as Weapon))	
-		    			WC.setSlotCount(i, PlayerRef.GetItemCount(formToAdd))
+		    			WC.setSlotCount(j, PlayerRef.GetItemCount(formToAdd))
 		    		endIf
 	        	endIf
 	        	j += 1

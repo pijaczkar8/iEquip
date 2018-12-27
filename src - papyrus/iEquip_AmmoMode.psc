@@ -323,7 +323,12 @@ function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 	PM.bWaitingForAmmoModeAnimation = true
 	UI.InvokeStringA(HUD_MENU, WidgetRoot + ".ammoModeAnimateOut", widgetData)
 	if mainQueueIsEmpty
-		WC.cycleSlot(1, false, true)
+		if (jArray.count(WC.aiTargetQ[1]) < 2)
+			WC.UnequipHand(1)
+			WC.setSlotToEmpty(1, true, true)
+		else
+			WC.cycleSlot(1, false, true)
+		endIf
 	else
 		;Update the main slot index
 		int leftObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0])
