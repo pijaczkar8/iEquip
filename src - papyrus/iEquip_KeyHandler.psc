@@ -52,7 +52,6 @@ float Property fPressAndHoldDelay = 1.0 Auto Hidden
 
 ; Bools
 bool Property bAllowKeyPress = true Auto Hidden
-bool Property bNormalSystemPageBehav = true Auto Hidden
 bool bIsUtilityKeyHeld = false
 bool bIsQueueMenuComboKeyKeyHeld = false
 bool bNotInLootMenu = true
@@ -622,13 +621,12 @@ function openiEquipMCM(bool inMCMSelect = false)
         
         while elapsedTime <= 2.5
             if IsMenuOpen("Journal Menu")
-                ;if bNormalSystemPageBehav ; Compatibility with open system page mod 
-                    TapKey(key_scroll)
-                    Utility.WaitMenuMode(0.1)
-                ;endIf
+                TapKey(key_scroll)
+                Utility.WaitMenuMode(0.1)
                 
-                while i < 3 ;Should take us to MCM Menu entry in the Settings List - LE
-                ;while i < 5 ;Should take us to MCM Menu entry in the Settings List - SE
+                ; Should take us to MCM Menu entry in the Settings List
+                while i < 3 ; - LE
+              ; while i < 5 ; - SE
                     TapKey(key_down)
                     Utility.WaitMenuMode(0.005)
                     i += 1

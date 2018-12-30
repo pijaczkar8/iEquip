@@ -8,15 +8,15 @@ import iEquip_UILIB
 
 ; - SCRIPTS
 
-iEquip_WidgetCore Property WC Auto
-iEquip_ProMode Property PM Auto
+iEquip_WidgetCore property WC auto
+iEquip_ProMode property PM auto
 
 ; - REFERENCES -
 
-Spell Property iEquip_SlowTimeSpell  Auto
-Message property iEquip_ConfirmReset Auto
-Message Property iEquip_ConfirmResetParent Auto
-Message Property iEquip_ConfirmDiscardChanges Auto
+Spell property iEquip_SlowTimeSpell auto
+Message property iEquip_ConfirmReset auto
+Message property iEquip_ConfirmResetParent auto
+Message property iEquip_ConfirmDiscardChanges auto
 
 ; - WIDGET VARIABLES -
 
@@ -32,16 +32,11 @@ bool[] abWidget_CurV
 
 ; - Bools -
 
-bool Property isEditMode = false Auto Hidden
-bool Property bDisabling = false Auto Hidden
+bool[] property abWasCounterShown auto hidden
+bool property isEditMode = false auto hidden
+bool property preselectEnabledOnEnter = false auto hidden
 bool bFirstCycleKeyPressed = true
 bool bringToFrontFirstTime = true
-bool property preselectEnabledOnEnter = false auto hidden
-bool[] property abWasCounterShown auto hidden
-string[] asCounterTextPath
-int[] property aiPreviousCount auto hidden
-string[] asPoisonNamePath
-int property iEnabledPotionGroupCount = 0 auto hidden
 
 ; - Floats -
 
@@ -49,7 +44,11 @@ float CurrentVanityModeDelay
 
 ; - Ints -
 
-int Property iSelectedElement = -1 Auto Hidden
+int[] property aiPreviousCount auto hidden
+int property iSelectedElement = -1 auto hidden
+int property iEnabledPotionGroupCount = 0 auto hidden
+int property previousLeftCount auto hidden
+int property previousRightCount auto hidden
 int[] iCustomColors
 int[] iFirstElementInGroup
 int iFirstElement
@@ -58,8 +57,6 @@ int iHighlightColor = 0x0099FF
 int iCurrentColorValue = 0xEAAB00
 int iLastColorSelection
 int iNextColorIndex
-int property previousLeftCount auto hidden
-int property previousRightCount auto hidden
 int iSelectedElementFront = -1
 int MoveStep
 int RotateStep
@@ -68,10 +65,12 @@ int RulersShown = 1
 
 ; - Strings -
 
-string Property WidgetPresetPath = "Data/iEquip/Widget Presets/" autoReadonly
-string Property FileExtWP = ".IEQP" autoReadonly
+string property WidgetPresetPath = "Data/iEquip/Widget Presets/" autoReadonly
+string property FileExtWP = ".IEQP" autoReadonly
 string[] WidgetGroups
 string[] sTextAlignment
+string[] asCounterTextPath
+string[] asPoisonNamePath
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
 string sRotation
@@ -141,93 +140,105 @@ endFunction
 ; #######################
 ; ### Toggle EditMode ###
 
-Auto State FirstTimeEntering
-    function ToggleEditMode()
-        Gotostate("")
-        ToggleEditMode()
-        debug.MessageBox("iEquip Edit Mode\n\nWelcome to Edit Mode\n\nHere you can change the position, size and rotation of every individual element in the widget,"+\
-                         "as well as the alignment and text colour of any text element.\n\nThe instructions panel also contains information on all the changes you can make in Edit Mode, and how to save and load layout presets.")
-    endFunction
-endState
-
 function ToggleEditMode()
-    WidgetRoot = WC.WidgetRoot
-	WC.updateWidgetVisibility(false)
+    WC.updateWidgetVisibility(false)
+    
     Wait(0.2)
-    isEditMode = !isEditMode
     
 	if isEditMode
-        CurrentVanityModeDelay = GetINIFloat("fAutoVanityModeDelay:Camera")
-
-		if WC.bDropShadowEnabled
-            UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true) ;Remove DropShadowFilter from all text elements before entering Edit Mode
-        endIf
-        ; StoreOpeningValues
-        int iIndex = 0       
-        While iIndex < WC.asWidgetDescriptions.Length
-            afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
-            afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
-            afWidget_CurS[iIndex] = WC.afWidget_S[iIndex]
-            afWidget_CurR[iIndex] = WC.afWidget_R[iIndex]
-            afWidget_CurA[iIndex] = WC.afWidget_A[iIndex]
-            aiWidget_CurD[iIndex] = WC.aiWidget_D[iIndex]
-            asWidget_CurTA[iIndex] = WC.asWidget_TA[iIndex]
-            aiWidget_CurTC[iIndex] = WC.aiWidget_TC[iIndex]
-            abWidget_CurV[iIndex] = WC.abWidget_V[iIndex]
-            iIndex += 1
-        EndWhile
-
-        iFirstElement = 0
-        iLastElement = 5
-		iSelectedElement = 0
-        iSelectedElementFront = -1
-		sRotation = "Clockwise"
-		MoveStep = 10
-		RotateStep = 15
-		AlphaStep = 10
-		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeHighlightColor", iHighlightColor)
-		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeCurrentValueColor", iCurrentColorValue)
-		SetINIFloat("fAutoVanityModeDelay:Camera", 9999999) ;Effectively disables Vanity Camera whilst in Edit Mode    
-      
-		if !WC.bPreselectMode
-			preselectEnabledOnEnter = true
-			PM.togglePreselectMode(true)
-		endIf
-        
-		LoadAllElements()
-		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0)
-		HighlightElement(true)
-		UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
-        
-		If RulersShown == 1
-			UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", true)
-			UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
-		elseIf RulersShown == 2
-			UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
-			UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", true)
-		else
-			UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
-			UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
-		endIf
-        
-        Game.GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
+        DisableEditMode()
 	else
-		HighlightElement(false)
-		iSelectedElement = -1
-
-		WC.resetWidgetsToPreviousState()
-        if WC.bDropShadowEnabled
-            UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false) ;Restore DropShadowFilter to all text elements when leaving Edit Mode
-        endIf
-		UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-		SetINIFloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay) ;Resets Vanity Camera delay back to previous value on leaving Edit Mode
-        
-        Game.GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
+        EnableEditmode()
 	endIf
     
-	if !bDisabling
-		WC.updateWidgetVisibility() ;Reshow widget only if toggleEditMode not called as a result of turning iEquip off in the MCM
-	endIf
+	WC.updateWidgetVisibility()
+endFunction
+
+function DisableEditMode()
+    WidgetRoot = WC.WidgetRoot
+    isEditMode = false
+
+    HighlightElement(false)
+    iSelectedElement = -1
+
+    WC.resetWidgetsToPreviousState()
+    
+    ; Restore DropShadowFilter to all text elements when leaving Edit Mode
+    if WC.bDropShadowEnabled
+        UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false)
+    endIf
+    
+    UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
+    
+    ; Reset Vanity Camera delay back to previous value on leaving Edit Mode
+    SetINIFloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay)
+    
+    Game.GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
+endFunction
+
+function EnableEditmode()
+    WidgetRoot = WC.WidgetRoot
+    isEditMode = true
+
+    ; Save and disable Vanity Camera whilst in Edit Mode
+    CurrentVanityModeDelay = GetINIFloat("fAutoVanityModeDelay:Camera")
+    SetINIFloat("fAutoVanityModeDelay:Camera", 9999999)
+
+    ; StoreOpeningValues
+    int iIndex = 0    
+    While iIndex < WC.asWidgetDescriptions.Length
+        afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
+        afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
+        afWidget_CurS[iIndex] = WC.afWidget_S[iIndex]
+        afWidget_CurR[iIndex] = WC.afWidget_R[iIndex]
+        afWidget_CurA[iIndex] = WC.afWidget_A[iIndex]
+        aiWidget_CurD[iIndex] = WC.aiWidget_D[iIndex]
+        asWidget_CurTA[iIndex] = WC.asWidget_TA[iIndex]
+        aiWidget_CurTC[iIndex] = WC.aiWidget_TC[iIndex]
+        abWidget_CurV[iIndex] = WC.abWidget_V[iIndex]
+        
+        iIndex += 1
+    EndWhile
+    
+    iFirstElement = 0
+    iLastElement = 5
+    iSelectedElement = 0
+    iSelectedElementFront = -1
+    sRotation = "Clockwise"
+    MoveStep = 10
+    RotateStep = 15
+    AlphaStep = 10
+    
+    ; Remove DropShadowFilter from all text elements before entering Edit Mode
+    if WC.bDropShadowEnabled
+        UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
+    endIf
+    
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeHighlightColor", iHighlightColor)
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeCurrentValueColor", iCurrentColorValue)
+  
+    if !WC.bPreselectMode
+        preselectEnabledOnEnter = true
+        PM.togglePreselectMode(true)
+    endIf
+    
+    LoadAllElements()
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0)
+    HighlightElement(true)
+    UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
+    
+    If RulersShown == 1
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", true)
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
+    elseIf RulersShown == 2
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", true)
+    else
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
+    endIf
+    
+    Game.GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
 endFunction
 
 ; #######################

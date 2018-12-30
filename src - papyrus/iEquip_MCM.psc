@@ -4,10 +4,6 @@ import stringUtil
 
 iEquip_WidgetCore Property WC Auto
 iEquip_EditMode Property EM Auto
-iEquip_KeyHandler Property KH Auto
-iEquip_AmmoMode Property AM Auto
-iEquip_ProMode Property PM Auto
-iEquip_PotionScript Property PO Auto
 
 iEquip_MCM_gen Property gen Auto
 iEquip_MCM_htk Property htk Auto
@@ -23,14 +19,16 @@ Float Property iEquip_CurrentVersion Auto
 
 actor property PlayerRef auto
 
+;Set to true for version updates which require a full reset
 Bool bRequiresResetOnUpdate = False ;Set to true for version updates which require a full reset
 
 bool Property bIsFirstEnabled = true Auto Hidden
 bool Property bEnabled = false Auto Hidden
 
-;Strings used by save/load settings functions
+; Strings used by save/load settings functions
 string MCMSettingsPath = "Data/iEquip/MCM Settings/"
 string FileExtMCM = ".IEQS"
+string sCurrentPage = ""
 
 int Property iCurrentWidgetFadeoutChoice = 1 Auto Hidden
 int Property iCurrentNameFadeoutChoice = 1 Auto Hidden
@@ -109,29 +107,16 @@ event OnConfigOpen()
     
     if bIsFirstEnabled == false
         if WC.bProModeEnabled
-            if WC.bEditModeEnabled
-                Pages = new String[9]
-                Pages[8] = "Information"
-                Pages[7] = "Edit Mode"
-                Pages[6] = "Misc UI Options"
-                Pages[5] = "Pro Mode"
-            else
-                Pages = new String[8] 
-                Pages[7] = "Information"
-                Pages[6] = "Misc UI Options"
-                Pages[5] = "Pro Mode"
-            endIf
+            Pages = new String[9]
+            Pages[8] = "Information"
+            Pages[7] = "Edit Mode"
+            Pages[6] = "Misc UI Options"
+            Pages[5] = "Pro Mode"
         else
-            if WC.bEditModeEnabled
-                Pages = new String[8]
-                Pages[7] = "Information"
-                Pages[6] = "Edit Mode"
-                Pages[5] = "Misc UI Options"
-            else
-                Pages = new String[7]
-                Pages[6] = "Information"
-                Pages[5] = "Misc UI Options"
-            endIf
+            Pages = new String[8]
+            Pages[7] = "Information"
+            Pages[6] = "Edit Mode"
+            Pages[5] = "Misc UI Options"
         endIf
         
         Pages[4] = "Recharging and Poisoning"
@@ -145,9 +130,9 @@ endEvent
 Event OnConfigClose()
     if WC.isEnabled != bEnabled
         if !bEnabled && EM.isEditMode
-            EM.bDisabling = true
-            EM.toggleEditMode()
-            EM.bDisabling = false
+            WC.updateWidgetVisibility(false)
+            Wait(0.2)
+            EM.DisableEditMode()
         endIf
         if !bIsFirstEnabled
             WC.isEnabled = bEnabled
@@ -162,6 +147,7 @@ endEvent
 
 event OnPageReset(string page)
     SetCursorFillMode(TOP_TO_BOTTOM)
+    sCurrentPage = page
     
     if (page == "")
         LoadCustomContent("iEquip/iEquip_splash.swf", 196, 123)
@@ -193,29 +179,29 @@ endEvent
 ; #######################
 ; ### START OF EVENTS ###
 
-; Jump to script func
+; Jump to script function
 
 function jumpToScriptEvent(string eventName, float tmpVar = -1.0)
-    string currentState = GetState()
+    string sCurrentState = GetState()
     
-    if find(currentState, "gen") == 0
-        gen.jumpToState(currentState, eventName, tmpVar)
-    elseIf find(currentState, "htk") == 0
-        htk.jumpToState(currentState, eventName, tmpVar)
-    elseIf find(currentState, "que") == 0
-        que.jumpToState(currentState, eventName, tmpVar)
-    elseIf find(currentState, "pot") == 0
-        pot.jumpToState(currentState, eventName, tmpVar)
-    elseIf find(currentState, "rep") == 0
-        poi.jumpToState(currentState, eventName, tmpVar)
-    elseIf find(currentState, "ui") == 0
-        uii.jumpToState(currentState, eventName, tmpVar)
-    elseIf find(currentState, "pro") == 0
-        pro.jumpToState(currentState, eventName, tmpVar)
-    elseIf find(currentState, "edt") == 0
-        edt.jumpToState(currentState, eventName, tmpVar)
-    elseIf find(currentState, "inf") == 0
-        inf.jumpToState(currentState, eventName, tmpVar)
+    if sCurrentPage == "General Settings"
+        gen.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "Hotkey Options"
+        htk.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "Queue Options"
+        que.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "Potions"
+        pot.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "Recharging and Poisoning"
+        poi.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "Misc UI Options"
+        uii.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "Pro Mode"
+        pro.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "Edit Mode"
+        edt.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "Information"
+        inf.jumpToState(sCurrentState, eventName, tmpVar)
     endIf
 endFunction
 

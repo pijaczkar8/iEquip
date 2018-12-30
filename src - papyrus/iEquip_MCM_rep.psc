@@ -2,6 +2,7 @@ Scriptname iEquip_MCM_rep extends iEquip_MCM_helperfuncs
 
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
+iEquip_WidgetCore Property WC Auto
 
 string[] chargeDisplayOptions
 string[] meterFillDirectionOptions
@@ -84,7 +85,7 @@ function drawPage()
 
     MCM.SetCursorPosition(1)
             
-    if !MCM.WC.bPoisonsEnabled
+    if !WC.bPoisonsEnabled
         MCM.AddEmptyOption()
         MCM.AddTextOption("Poisoning features are currently disabled.", "")
         MCM.AddTextOption("If you wish to use the poisoning features", "")
@@ -95,16 +96,16 @@ function drawPage()
                
         MCM.AddEmptyOption()
         MCM.AddHeaderOption("Poison Use Options")
-        MCM.AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[MCM.WC.iShowPoisonMessages])
-        MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "Allow poison switching", MCM.WC.bAllowPoisonSwitching)
-        MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "Allow poison top-up", MCM.WC.bAllowPoisonTopUp)
+        MCM.AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[WC.iShowPoisonMessages])
+        MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "Allow poison switching", WC.bAllowPoisonSwitching)
+        MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "Allow poison top-up", WC.bAllowPoisonTopUp)
                 
         MCM.AddHeaderOption("Poison Charge Options")
-        MCM.AddSliderOptionST("rep_sld_chargePerVial", "Charges per vial", MCM.WC.iPoisonChargesPerVial, "{0} charges")
-        MCM.AddSliderOptionST("rep_sld_chargeMult", "Charge Multiplier", MCM.WC.iPoisonChargeMultiplier, "{0}x base charges")
+        MCM.AddSliderOptionST("rep_sld_chargePerVial", "Charges per vial", WC.iPoisonChargesPerVial, "{0} charges")
+        MCM.AddSliderOptionST("rep_sld_chargeMult", "Charge Multiplier", WC.iPoisonChargeMultiplier, "{0}x base charges")
                 
         MCM.AddHeaderOption("Widget Options")
-        MCM.AddMenuOptionST("rep_men_poisonIndStyle", "Poison indicator style", poisonIndicatorOptions[MCM.WC.iPoisonIndicatorStyle])
+        MCM.AddMenuOptionST("rep_men_poisonIndStyle", "Poison indicator style", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
     endIf
 endFunction
 
@@ -467,10 +468,10 @@ State rep_men_confMsg
             MCM.SetInfoText("Choose which poisoning confirmation messages to show.\nTop-up & Switch will only show messages when you apply poison to an already poisoned item.\n"+\
                             "With messages turned off iEquip will automatically top up or clean off existing poisons\nDefault: Show All")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.WC.iShowPoisonMessages, poisonMessageOptions, 0)
+            fillMenu(WC.iShowPoisonMessages, poisonMessageOptions, 0)
         elseIf currentEvent == "Accept"
-            MCM.WC.iShowPoisonMessages = currentVar as int
-            MCM.SetMenuOptionValueST(poisonMessageOptions[MCM.WC.iShowPoisonMessages])
+            WC.iShowPoisonMessages = currentVar as int
+            MCM.SetMenuOptionValueST(poisonMessageOptions[WC.iShowPoisonMessages])
         endIf 
     endEvent
 endState
@@ -481,11 +482,11 @@ State rep_tgl_allowPoisonSwitch
             MCM.SetInfoText("With this enabled, if the weapon you are dosing is already poisoned with a different poison you will be given the option to remove the current poison before applying the new one. "+\
                             "Otherwise you will need to use up the existing poison before applying a new one\nDefault - On")
         elseIf currentEvent == "Select"
-            MCM.WC.bAllowPoisonSwitching = !MCM.WC.bAllowPoisonSwitching
-            MCM.SetToggleOptionValueST(MCM.WC.bAllowPoisonSwitching)
+            WC.bAllowPoisonSwitching = !WC.bAllowPoisonSwitching
+            MCM.SetToggleOptionValueST(WC.bAllowPoisonSwitching)
         elseIf currentEvent == "Default"
-            MCM.WC.bAllowPoisonSwitching = true
-            MCM.SetToggleOptionValueST(MCM.WC.bAllowPoisonSwitching)
+            WC.bAllowPoisonSwitching = true
+            MCM.SetToggleOptionValueST(WC.bAllowPoisonSwitching)
         endIf 
     endEvent
 endState
@@ -496,11 +497,11 @@ State rep_tgl_allowPoisonTopup
             MCM.SetInfoText("With this enabled, if the weapon you are dosing is already poisoned with the same poison you will be given the option to top up the current poison. "+\
                             "If you choose to do so the doses will stack. As with the Charges Per Vial and Multiplier settings it is entirely up to you how you wish to balance or break your game.\nDefault - Off")
         elseIf currentEvent == "Select"
-            MCM.WC.bAllowPoisonTopUp = !MCM.WC.bAllowPoisonTopUp
-            MCM.SetToggleOptionValueST(MCM.WC.bAllowPoisonTopUp)
+            WC.bAllowPoisonTopUp = !WC.bAllowPoisonTopUp
+            MCM.SetToggleOptionValueST(WC.bAllowPoisonTopUp)
         elseIf currentEvent == "Default"
-            MCM.WC.bAllowPoisonTopUp = true
-            MCM.SetToggleOptionValueST(MCM.WC.bAllowPoisonTopUp)
+            WC.bAllowPoisonTopUp = true
+            MCM.SetToggleOptionValueST(WC.bAllowPoisonTopUp)
         endIf 
     endEvent
 endState
@@ -514,10 +515,10 @@ State rep_sld_chargePerVial
         if currentEvent == "Highlight"
             MCM.SetInfoText("Allows you to set the number of charges per vial/application. Use with discretion!\nDefault: Single charge per application (vanilla)")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.iPoisonChargesPerVial, 1.0, 5.0, 1.0, 1.0)
+            fillSlider(WC.iPoisonChargesPerVial, 1.0, 5.0, 1.0, 1.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.iPoisonChargesPerVial = currentVar as int
-            MCM.SetSliderOptionValueST(MCM.WC.iPoisonChargesPerVial, "{0} charges per vial")
+            WC.iPoisonChargesPerVial = currentVar as int
+            MCM.SetSliderOptionValueST(WC.iPoisonChargesPerVial, "{0} charges per vial")
         endIf 
     endEvent
 endState
@@ -528,10 +529,10 @@ State rep_sld_chargeMult
             MCM.SetInfoText("Allows you to adjust iEquip poison dosing to match any perk overhauls you may be using which affect the Concentrated Poison perk or add new perks which multiply the number of charges per application. "+\
                             "If left set at 1 iEquip will check whether the player has the Concentrated Poison perk and apply the vanilla x2 multiplier if you do.\nDefault: 1x (vanilla)")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.iPoisonChargeMultiplier, 1.0, 5.0, 1.0, 1.0)
+            fillSlider(WC.iPoisonChargeMultiplier, 1.0, 5.0, 1.0, 1.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.iPoisonChargeMultiplier = currentVar as int
-            MCM.SetSliderOptionValueST(MCM.WC.iPoisonChargeMultiplier, "{0}x charges")
+            WC.iPoisonChargeMultiplier = currentVar as int
+            MCM.SetSliderOptionValueST(WC.iPoisonChargeMultiplier, "{0}x charges")
         endIf 
     endEvent
 endState
@@ -547,11 +548,11 @@ State rep_men_poisonIndStyle
                             "The two count options will use the regular counter in either slot but with the count displayed in green.\nThe Multiple Drops option will display one, "+\
                             "two or three drops to match the number of remaining charges, and will display three drops and a green plus sign if more than three charges remain.\nDefault: Single Drop & Count")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.WC.iPoisonIndicatorStyle, poisonIndicatorOptions, 1)
+            fillMenu(WC.iPoisonIndicatorStyle, poisonIndicatorOptions, 1)
         elseIf currentEvent == "Accept"
-            MCM.WC.iPoisonIndicatorStyle = currentVar as int
-            MCM.SetMenuOptionValueST(poisonIndicatorOptions[MCM.WC.iPoisonIndicatorStyle])
-            MCM.WC.bPoisonIndicatorStyleChanged = true
+            WC.iPoisonIndicatorStyle = currentVar as int
+            MCM.SetMenuOptionValueST(poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
+            WC.bPoisonIndicatorStyleChanged = true
         endIf 
     endEvent
 endState

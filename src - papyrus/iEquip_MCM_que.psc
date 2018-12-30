@@ -1,5 +1,6 @@
 Scriptname iEquip_MCM_que extends iEquip_MCM_helperfuncs
 
+iEquip_WidgetCore Property WC Auto
 iEquip_PotionScript Property PO Auto
 
 ; #############
@@ -7,27 +8,27 @@ iEquip_PotionScript Property PO Auto
 
 function drawPage()
     MCM.AddHeaderOption("Queue Length Options")
-    MCM.AddSliderOptionST("que_sld_maxItmQue", "Max items per queue", MCM.WC.iMaxQueueLength, "Max {0} items")
-    MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "Hard limit queue size", MCM.WC.bHardLimitQueueSize)
+    MCM.AddSliderOptionST("que_sld_maxItmQue", "Max items per queue", WC.iMaxQueueLength, "Max {0} items")
+    MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "Hard limit queue size", WC.bHardLimitQueueSize)
             
     MCM.AddHeaderOption("Add To Queue Options")
-    MCM.AddToggleOptionST("que_tgl_showConfMsg", "Show confirmation messages", MCM.WC.bShowQueueConfirmationMessages)
-    MCM.AddToggleOptionST("que_tgl_signlBothQue", "Single items in both hand queues", MCM.WC.bAllowSingleItemsInBothQueues)
+    MCM.AddToggleOptionST("que_tgl_showConfMsg", "Show confirmation messages", WC.bShowQueueConfirmationMessages)
+    MCM.AddToggleOptionST("que_tgl_signlBothQue", "Single items in both hand queues", WC.bAllowSingleItemsInBothQueues)
             
-    if MCM.WC.bAllowSingleItemsInBothQueues
-        MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "Allow 1h items to switch hands", MCM.WC.bAllowWeaponSwitchHands)
+    if WC.bAllowSingleItemsInBothQueues
+        MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "Allow 1h items to switch hands", WC.bAllowWeaponSwitchHands)
     endIf
 
     MCM.SetCursorPosition(1)
             
     MCM.AddHeaderOption("Auto Add Options")
-    MCM.AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add on equipping", MCM.WC.bAutoAddNewItems)
+    MCM.AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add on equipping", WC.bAutoAddNewItems)
     MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "Auto-add poisons", PO.bAutoAddPoisons)
     MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "Auto-add food and drink", PO.bAutoAddConsumables)
-    MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "Allow caching of removed items", MCM.WC.bEnableRemovedItemCaching)
+    MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "Allow caching of removed items", WC.bEnableRemovedItemCaching)
             
-    if MCM.WC.bEnableRemovedItemCaching
-        MCM.AddSliderOptionST("que_sld_MaxItmCache", "Max items to cache", MCM.WC.iMaxCachedItems, "Max {0} items")
+    if WC.bEnableRemovedItemCaching
+        MCM.AddSliderOptionST("que_sld_MaxItmCache", "Max items to cache", WC.iMaxCachedItems, "Max {0} items")
     endIf
 endFunction
 
@@ -45,17 +46,17 @@ State que_sld_maxItmQue
             MCM.SetInfoText("Select the maximum number of items you can add to each slot queue.  Bear in mind adding too many items will mean having to cycle through a LOT to get to what you want. "+\
                             "You can set a higher limit and not fill the queue as empty slots will be ignored when cycling.\nDefault = 7")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.iMaxQueueLength, 0.0, 30.0, 1.0, 12.0)
+            fillSlider(WC.iMaxQueueLength, 0.0, 30.0, 1.0, 12.0)
         elseIf currentEvent == "Accept"
-            if currentVar as int < MCM.WC.iMaxQueueLength
+            if currentVar as int < WC.iMaxQueueLength
                 if MCM.ShowMessage("You are about to reduce the maximum permitted queue length!\n\nAny queues which currently exceed the new length will be trimmed.\n\nDo you wish to proceed?", true, "OK", "Cancel")
-                    MCM.WC.iMaxQueueLength = currentVar as int
-                    MCM.WC.bReduceMaxQueueLengthPending = true
+                    WC.iMaxQueueLength = currentVar as int
+                    WC.bReduceMaxQueueLengthPending = true
                 endIf
             else
-                MCM.WC.iMaxQueueLength = currentVar as int
+                WC.iMaxQueueLength = currentVar as int
             endIf
-            MCM.SetSliderOptionValueST(MCM.WC.iMaxQueueLength, "Max {0} items")
+            MCM.SetSliderOptionValueST(WC.iMaxQueueLength, "Max {0} items")
         endIf
     endEvent
 endState
@@ -64,18 +65,18 @@ State que_tgl_hrdLimQueSize
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("Hard limit the queue lengths to the value set above. Disabling this will allow your queues to grow dynamically if you enable auto adding of new items below\nDefault: On")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !MCM.WC.bHardLimitQueueSize)
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bHardLimitQueueSize)
             bool continue = true
-            if !MCM.WC.bHardLimitQueueSize
+            if !WC.bHardLimitQueueSize
             	continue = MCM.ShowMessage("You are about to enable a hard limit on your maximum queue lengths!\n\nDoing so will stop the queues from being able to grow organically as new items are equipped. "+\
             		"This can particularly affect your consumable and poison queues.\n\nDo you wish to proceed?", true, "OK", "Cancel")
             	if continue
-            		MCM.WC.bReduceMaxQueueLengthPending = true
+            		WC.bReduceMaxQueueLengthPending = true
             	endIf
             endIf
             if continue
-            	MCM.WC.bHardLimitQueueSize = !MCM.WC.bHardLimitQueueSize
-            	MCM.SetToggleOptionValueST(MCM.WC.bHardLimitQueueSize)
+            	WC.bHardLimitQueueSize = !WC.bHardLimitQueueSize
+            	MCM.SetToggleOptionValueST(WC.bHardLimitQueueSize)
             endIf
         endIf
     endEvent
@@ -90,11 +91,11 @@ State que_tgl_showConfMsg
         if currentEvent == "Highlight"
             MCM.SetInfoText("Disable this to skip the confirmation messageboxes when adding items to the queues, removing items or clearing the queues")
         elseIf currentEvent == "Select"
-            MCM.WC.bShowQueueConfirmationMessages = !MCM.WC.bShowQueueConfirmationMessages
-            MCM.SetToggleOptionValueST(MCM.WC.bShowQueueConfirmationMessages)
+            WC.bShowQueueConfirmationMessages = !WC.bShowQueueConfirmationMessages
+            MCM.SetToggleOptionValueST(WC.bShowQueueConfirmationMessages)
         elseIf currentEvent == "Default"
-            MCM.WC.bShowQueueConfirmationMessages = true 
-            MCM.SetToggleOptionValueST(MCM.WC.bShowQueueConfirmationMessages)
+            WC.bShowQueueConfirmationMessages = true 
+            MCM.SetToggleOptionValueST(WC.bShowQueueConfirmationMessages)
         endIf
     endEvent
 endState
@@ -104,18 +105,18 @@ State que_tgl_signlBothQue
         if currentEvent == "Highlight"
             MCM.SetInfoText("Allow adding the same 1h item to both the left and right hand queues if you only have one of them in your inventory\nDefault: On")
         elseIf currentEvent == "Select"
-            MCM.WC.bAllowSingleItemsInBothQueues = !MCM.WC.bAllowSingleItemsInBothQueues
+            WC.bAllowSingleItemsInBothQueues = !WC.bAllowSingleItemsInBothQueues
         
-            if !MCM.WC.bAllowSingleItemsInBothQueues
+            if !WC.bAllowSingleItemsInBothQueues
                 if MCM.ShowMessage("iEquip Queue Maintenance\n\nWould you like us to check now and remove duplicate items which you only have one of? "+\
                 "Priority will be given to the left hand queue as we are only looking at 1h items here, so they will be removed from your right queue.",  true, "Purge Queues", "Leave In Both")
-                    MCM.WC.bRefreshQueues = true
+                    WC.bRefreshQueues = true
                 endIf
             endIf
             
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.WC.bAllowSingleItemsInBothQueues = false 
+            WC.bAllowSingleItemsInBothQueues = false 
             MCM.forcePageReset()
         endIf
     endEvent
@@ -127,11 +128,11 @@ State que_tgl_allow1hSwitch
             MCM.SetInfoText("If you have allowed single items in both queues this setting determines whether you want those items to be able to switch hands, "+\
                             "or if you want cycling to skip past them if they are already equipped in the other hand.\nDefault: On")
         elseIf currentEvent == "Select"
-            MCM.WC.bAllowWeaponSwitchHands = !MCM.WC.bAllowWeaponSwitchHands
-            MCM.SetToggleOptionValueST(MCM.WC.bAllowWeaponSwitchHands)
+            WC.bAllowWeaponSwitchHands = !WC.bAllowWeaponSwitchHands
+            MCM.SetToggleOptionValueST(WC.bAllowWeaponSwitchHands)
         elseIf currentEvent == "Default"
-            MCM.WC.bAllowWeaponSwitchHands = false 
-            MCM.SetToggleOptionValueST(MCM.WC.bAllowWeaponSwitchHands)
+            WC.bAllowWeaponSwitchHands = false 
+            MCM.SetToggleOptionValueST(WC.bAllowWeaponSwitchHands)
         endIf
     endEvent
 endState
@@ -146,11 +147,11 @@ State que_tgl_autoAddItmQue
             MCM.SetInfoText("Enabling this setting will allow any manually equipped item which isn't already found in your left/right/shout queue to be automatically added to the queue. "+\
                             "Hand items will only be added if not found in either queue. Items added this way will allow the queue length to grow if you have disabled the hard limit above.\nDefault: Off")
         elseIf currentEvent == "Select"
-            MCM.WC.bAutoAddNewItems = !MCM.WC.bAutoAddNewItems
-            MCM.SetToggleOptionValueST(MCM.WC.bAutoAddNewItems)
+            WC.bAutoAddNewItems = !WC.bAutoAddNewItems
+            MCM.SetToggleOptionValueST(WC.bAutoAddNewItems)
         elseIf currentEvent == "Default"
-            MCM.WC.bAutoAddNewItems = true 
-            MCM.SetToggleOptionValueST(MCM.WC.bAutoAddNewItems)
+            WC.bAutoAddNewItems = true 
+            MCM.SetToggleOptionValueST(WC.bAutoAddNewItems)
         endIf
     endEvent
 endState
@@ -199,10 +200,10 @@ State que_tgl_allowCacheRmvItm
             MCM.SetInfoText("Each time you cycle IEquip checks if you still have the item and if not removes it from your queues. "+\
                             "This allows caching of those removed items so if you later add them back into your inventory they will automatically be added back into the queue they were previously in as long as there is space in the queue or you have disabled the hard limit.\nDefault: On")
         elseIf currentEvent == "Select"
-            MCM.WC.bEnableRemovedItemCaching = !MCM.WC.bEnableRemovedItemCaching
+            WC.bEnableRemovedItemCaching = !WC.bEnableRemovedItemCaching
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.WC.bEnableRemovedItemCaching = true 
+            WC.bEnableRemovedItemCaching = true 
             MCM.forcePageReset()
         endIf
     endEvent
@@ -213,10 +214,10 @@ State que_sld_MaxItmCache
         if currentEvent == "Highlight"
             MCM.SetInfoText("Determines the maximum number of removed items you want to remember\nDefault: 30 items")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.iMaxCachedItems, 0.0, 128.0, 1.0, 60.0)
+            fillSlider(WC.iMaxCachedItems, 0.0, 128.0, 1.0, 60.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.iMaxCachedItems = currentVar as int
-            MCM.SetSliderOptionValueST(MCM.WC.iMaxCachedItems, "Max {0} cached items")
+            WC.iMaxCachedItems = currentVar as int
+            MCM.SetSliderOptionValueST(WC.iMaxCachedItems, "Max {0} cached items")
         endIf
     endEvent
 endState

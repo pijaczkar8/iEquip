@@ -1,5 +1,7 @@
 Scriptname iEquip_MCM_ui extends iEquip_MCM_helperfuncs
 
+iEquip_WidgetCore Property WC Auto
+
 string[] ammoIconOptions
 string[] backgroundStyleOptions
 string[] fadeoutOptions
@@ -34,51 +36,51 @@ endFunction
 
 function drawPage()
     MCM.AddHeaderOption("Widget Options")
-    MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "Fade left icon if 2H equipped", MCM.WC.bFadeLeftIconWhen2HEquipped)
+    MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "Fade left icon if 2H equipped", WC.bFadeLeftIconWhen2HEquipped)
             
-    if MCM.WC.bFadeLeftIconWhen2HEquipped
-        MCM.AddSliderOptionST("ui_sld_leftIcoFade", "Left icon fade", MCM.WC.fLeftIconFadeAmount, "{0}%")
+    if WC.bFadeLeftIconWhen2HEquipped
+        MCM.AddSliderOptionST("ui_sld_leftIcoFade", "Left icon fade", WC.fLeftIconFadeAmount, "{0}%")
     endIf
             
     MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[MCM.iAmmoIconStyle])
 
-    MCM.AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[MCM.WC.iBackgroundStyle])
-    MCM.AddToggleOptionST("ui_tgl_dropShadow", "Drop shadow on text", MCM.WC.bDropShadowEnabled)
+    MCM.AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[WC.iBackgroundStyle])
+    MCM.AddToggleOptionST("ui_tgl_dropShadow", "Drop shadow on text", WC.bDropShadowEnabled)
             
     MCM.SetCursorPosition(1)
     ;widget fade variable sliders
     MCM.AddHeaderOption("Fade Out Options")
-    MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "Enable widget fadeout", MCM.WC.bWidgetFadeoutEnabled)
+    MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "Enable widget fadeout", WC.bWidgetFadeoutEnabled)
             
-    if MCM.WC.bWidgetFadeoutEnabled
-        MCM.AddSliderOptionST("ui_sld_wdgetFadeDelay", "Widget fadeout delay", MCM.WC.fWidgetFadeoutDelay, "{0}")
+    if WC.bWidgetFadeoutEnabled
+        MCM.AddSliderOptionST("ui_sld_wdgetFadeDelay", "Widget fadeout delay", WC.fWidgetFadeoutDelay, "{0}")
         MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "Widget fadeout animation speed", fadeoutOptions[MCM.iCurrentWidgetFadeoutChoice])
                 
         if (MCM.iCurrentWidgetFadeoutChoice == 3)
-            MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "Widget fadeout duration", MCM.WC.fWidgetFadeoutDuration, "{1}")
+            MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "Widget fadeout duration", WC.fWidgetFadeoutDuration, "{1}")
         endIf
 
-        MCM.AddToggleOptionST("ui_tgl_visWhenWeapDrawn", "Always visible when weapons drawn", MCM.WC.bAlwaysVisibleWhenWeaponsDrawn)
+        MCM.AddToggleOptionST("ui_tgl_visWhenWeapDrawn", "Always visible when weapons drawn", WC.bAlwaysVisibleWhenWeaponsDrawn)
     endIf
     
     MCM.AddEmptyOption()
-    MCM.AddToggleOptionST("ui_tgl_enblNameFade", "Enable name fadeouts", MCM.WC.bNameFadeoutEnabled)
+    MCM.AddToggleOptionST("ui_tgl_enblNameFade", "Enable name fadeouts", WC.bNameFadeoutEnabled)
             
-    if MCM.WC.bNameFadeoutEnabled
-        MCM.AddSliderOptionST("ui_sld_mainNameFadeDelay", "Main name fadeout delay", MCM.WC.fMainNameFadeoutDelay, "{1}")
-        MCM.AddSliderOptionST("ui_sld_poisonNameFadeDelay", "Poison name fadeout delay", MCM.WC.fPoisonNameFadeoutDelay, "{1}")
+    if WC.bNameFadeoutEnabled
+        MCM.AddSliderOptionST("ui_sld_mainNameFadeDelay", "Main name fadeout delay", WC.fMainNameFadeoutDelay, "{1}")
+        MCM.AddSliderOptionST("ui_sld_poisonNameFadeDelay", "Poison name fadeout delay", WC.fPoisonNameFadeoutDelay, "{1}")
                 
-        if MCM.WC.bProModeEnabled
-            MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "Preselect name fadeout delay", MCM.WC.fPreselectNameFadeoutDelay, "{1}")
+        if WC.bProModeEnabled
+            MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "Preselect name fadeout delay", WC.fPreselectNameFadeoutDelay, "{1}")
         endIf
                 
         MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "Name fadeout animation speed", fadeoutOptions[MCM.iCurrentNameFadeoutChoice])
                 
         if (MCM.iCurrentNameFadeoutChoice == 3)
-            MCM.AddSliderOptionST("ui_sld_nameFadeDur", "Name fadeout duration", MCM.WC.fNameFadeoutDuration, "{1}")
+            MCM.AddSliderOptionST("ui_sld_nameFadeDur", "Name fadeout duration", WC.fNameFadeoutDuration, "{1}")
         endIf
                 
-        MCM.AddMenuOptionST("ui_men_firstPressNameHidn", "First press when name hidden", firstPressIfNameHiddenOptions[MCM.WC.bFirstPressShowsName as int])
+        MCM.AddMenuOptionST("ui_men_firstPressNameHidn", "First press when name hidden", firstPressIfNameHiddenOptions[WC.bFirstPressShowsName as int])
     endIf
 endFunction
 
@@ -95,10 +97,10 @@ State ui_tgl_fadeLeftIco2h
         if currentEvent == "Highlight"
             MCM.SetInfoText("If enabled the left hand icon will be faded when a 2H or ranged weapon is equipped in the right hand\nDefault: Enabled")
         elseIf currentEvent == "Select"
-            MCM.WC.bFadeLeftIconWhen2HEquipped = !MCM.WC.bFadeLeftIconWhen2HEquipped
+            WC.bFadeLeftIconWhen2HEquipped = !WC.bFadeLeftIconWhen2HEquipped
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            MCM.WC.bFadeLeftIconWhen2HEquipped = true
+            WC.bFadeLeftIconWhen2HEquipped = true
             MCM.forcePageReset()
         endIf 
     endEvent
@@ -109,10 +111,10 @@ State ui_sld_leftIcoFade
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose how much you would like the left icon faded out by.\nDefault: 70%")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.fLeftIconFadeAmount, 10.0, 80.0, 10.0, 70.0)
+            fillSlider(WC.fLeftIconFadeAmount, 10.0, 80.0, 10.0, 70.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.fLeftIconFadeAmount = currentVar
-            MCM.SetSliderOptionValueST(MCM.WC.fLeftIconFadeAmount, "{0}%")
+            WC.fLeftIconFadeAmount = currentVar
+            MCM.SetSliderOptionValueST(WC.fLeftIconFadeAmount, "{0}%")
         endIf 
     endEvent
 endState
@@ -137,7 +139,7 @@ State ui_men_ammoIcoStyle
             endIf
             
             MCM.SetMenuOptionValueST(ammoIconOptions[MCM.iAmmoIconStyle])
-            MCM.WC.bAmmoIconChanged = true
+            WC.bAmmoIconChanged = true
         endIf 
     endEvent
 endState
@@ -147,11 +149,11 @@ State ui_men_bckgroundStyle
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose the style for your slot backgrounds.\nBackgrounds can be scaled, rotated and faded in Edit Mode\nDefault: No Background")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.WC.iBackgroundStyle, backgroundStyleOptions, 0)
+            fillMenu(WC.iBackgroundStyle, backgroundStyleOptions, 0)
         elseIf currentEvent == "Accept"
-            MCM.WC.iBackgroundStyle = currentVar as int
-            MCM.SetMenuOptionValueST(backgroundStyleOptions[MCM.WC.iBackgroundStyle])
-            MCM.WC.bBackgroundStyleChanged = true
+            WC.iBackgroundStyle = currentVar as int
+            MCM.SetMenuOptionValueST(backgroundStyleOptions[WC.iBackgroundStyle])
+            WC.bBackgroundStyleChanged = true
         endIf 
     endEvent
 endState
@@ -162,12 +164,12 @@ State ui_tgl_dropShadow
             MCM.SetInfoText("This allows you to disable the drop shadow effect on the text elements in the widget\nDefault: Enabled")
         else
             if currentEvent == "Select"
-                MCM.WC.bDropShadowEnabled = !MCM.WC.bDropShadowEnabled
+                WC.bDropShadowEnabled = !WC.bDropShadowEnabled
             elseIf currentEvent == "Default"
-                MCM.WC.bDropShadowEnabled = true
+                WC.bDropShadowEnabled = true
             endIf
-            MCM.SetToggleOptionValueST(MCM.WC.bDropShadowEnabled)
-            MCM.WC.bDropShadowSettingChanged = true
+            MCM.SetToggleOptionValueST(WC.bDropShadowEnabled)
+            WC.bDropShadowSettingChanged = true
         endIf
     endEvent
 endState
@@ -182,12 +184,12 @@ State ui_tgl_enblWdgetFade
             MCM.SetInfoText("Enables widget fadeout after a period of inactivity.  Once enabled additional fadeout options will become available to you\nDefault is Disabled")
         else
             if currentEvent == "Select"
-                MCM.WC.bWidgetFadeoutEnabled = !MCM.WC.bWidgetFadeoutEnabled
+                WC.bWidgetFadeoutEnabled = !WC.bWidgetFadeoutEnabled
             elseIf currentEvent == "Default"
-                MCM.WC.bWidgetFadeoutEnabled = false
+                WC.bWidgetFadeoutEnabled = false
             endIf
             MCM.forcePageReset()
-            MCM.WC.bFadeOptionsChanged = true
+            WC.bFadeOptionsChanged = true
         endIf 
     endEvent
 endState
@@ -197,10 +199,10 @@ State ui_sld_wdgetFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("The time in seconds of inactivity after which the iEquip widget will fade out\nSetting this to zero will disable the fadeout\nDefault delay = 30 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.fWidgetFadeoutDelay, 0.0, 180.0, 5.0, 30.0)
+            fillSlider(WC.fWidgetFadeoutDelay, 0.0, 180.0, 5.0, 30.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.fWidgetFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(MCM.WC.fWidgetFadeoutDelay, "{0}")
+            WC.fWidgetFadeoutDelay = currentVar
+            MCM.SetSliderOptionValueST(WC.fWidgetFadeoutDelay, "{0}")
         endIf 
     endEvent
 endState
@@ -213,11 +215,11 @@ State ui_men_wdgetFadeSpeed
             MCM.iCurrentWidgetFadeoutChoice = currentVar as int
         
             if MCM.iCurrentWidgetFadeoutChoice == 0
-                MCM.WC.fWidgetFadeoutDuration = 3.0 ;Slow
+                WC.fWidgetFadeoutDuration = 3.0 ;Slow
             elseIf MCM.iCurrentWidgetFadeoutChoice == 1
-                MCM.WC.fWidgetFadeoutDuration = 1.5 ;Normal
+                WC.fWidgetFadeoutDuration = 1.5 ;Normal
             elseIf MCM.iCurrentWidgetFadeoutChoice == 2
-                MCM.WC.fWidgetFadeoutDuration = 0.5 ;Fast
+                WC.fWidgetFadeoutDuration = 0.5 ;Fast
             endIf
             
             MCM.SetMenuOptionValueST(fadeoutOptions[MCM.iCurrentWidgetFadeoutChoice])
@@ -230,10 +232,10 @@ State ui_sld_wdgetFadeDur
         if currentEvent == "Highlight"
             MCM.SetInfoText("The duration in seconds of the widget fade out animation\nSetting this to zero will make the text hide instantly after the delays set above\nDefault duration = 1.5 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.fWidgetFadeoutDuration, 0.0, 10.0, 0.1, 1.5)
+            fillSlider(WC.fWidgetFadeoutDuration, 0.0, 10.0, 0.1, 1.5)
         elseIf currentEvent == "Accept"
-            MCM.WC.fWidgetFadeoutDuration = currentVar
-            MCM.SetSliderOptionValueST(MCM.WC.fWidgetFadeoutDuration, "{1}")
+            WC.fWidgetFadeoutDuration = currentVar
+            MCM.SetSliderOptionValueST(WC.fWidgetFadeoutDuration, "{1}")
         endIf 
     endEvent
 endState
@@ -244,12 +246,12 @@ State ui_tgl_visWhenWeapDrawn
             MCM.SetInfoText("Ensures that the widget will always be visible when you have your weapons drawn.  If the widget is currently faded out when you draw your weapons it will automatically be re-shown\nDefault is Enabled")
         else
             if currentEvent == "Select"
-                MCM.WC.bAlwaysVisibleWhenWeaponsDrawn = !MCM.WC.bAlwaysVisibleWhenWeaponsDrawn
+                WC.bAlwaysVisibleWhenWeaponsDrawn = !WC.bAlwaysVisibleWhenWeaponsDrawn
             elseIf currentEvent == "Default"
-                MCM.WC.bAlwaysVisibleWhenWeaponsDrawn = true
+                WC.bAlwaysVisibleWhenWeaponsDrawn = true
             endIf
-            MCM.SetToggleOptionValueST(MCM.WC.bAlwaysVisibleWhenWeaponsDrawn)
-            MCM.WC.bFadeOptionsChanged = true
+            MCM.SetToggleOptionValueST(WC.bAlwaysVisibleWhenWeaponsDrawn)
+            WC.bFadeOptionsChanged = true
         endIf 
     endEvent
 endState
@@ -260,11 +262,11 @@ State ui_tgl_enblNameFade
             MCM.SetInfoText("Enables fadeout of item names after cycling.  Once enabled additional fadeout options will become available to you\nDefault is Disabled")
         else
             if currentEvent == "Select"
-                MCM.WC.bNameFadeoutEnabled = !MCM.WC.bNameFadeoutEnabled
+                WC.bNameFadeoutEnabled = !WC.bNameFadeoutEnabled
             elseIf currentEvent == "Default"
-                MCM.WC.bNameFadeoutEnabled = false
+                WC.bNameFadeoutEnabled = false
             endIf
-            MCM.WC.bFadeOptionsChanged = true
+            WC.bFadeOptionsChanged = true
             MCM.forcePageReset()
         endIf 
     endEvent
@@ -275,10 +277,10 @@ State ui_sld_mainNameFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("The time in seconds after cycling the main slots after which the main item names text will fade out\nSetting this to zero will disable the fadeout\nDefault delay = 5.0 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.fMainNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
+            fillSlider(WC.fMainNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.fMainNameFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(MCM.WC.fMainNameFadeoutDelay, "{1}")
+            WC.fMainNameFadeoutDelay = currentVar
+            MCM.SetSliderOptionValueST(WC.fMainNameFadeoutDelay, "{1}")
         endIf 
     endEvent
 endState
@@ -288,10 +290,10 @@ State ui_sld_poisonNameFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("The time in seconds after cycling the main slots after which the poison names text will fade out\nSetting this to zero will disable the fadeout\nDefault delay = 5.0 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.fPoisonNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
+            fillSlider(WC.fPoisonNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.fPoisonNameFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(MCM.WC.fPoisonNameFadeoutDelay, "{1}")
+            WC.fPoisonNameFadeoutDelay = currentVar
+            MCM.SetSliderOptionValueST(WC.fPoisonNameFadeoutDelay, "{1}")
         endIf 
     endEvent
 endState
@@ -301,10 +303,10 @@ State ui_sld_preselectNameFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("The time in seconds after cycling the preselect slots after which the preselect item names text will fade out\nSetting this to zero will disable the fadeout\nDefault delay = 5.0 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.fPreselectNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
+            fillSlider(WC.fPreselectNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
-            MCM.WC.fPreselectNameFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(MCM.WC.fPreselectNameFadeoutDelay, "{1}")
+            WC.fPreselectNameFadeoutDelay = currentVar
+            MCM.SetSliderOptionValueST(WC.fPreselectNameFadeoutDelay, "{1}")
         endIf 
     endEvent
 endState
@@ -319,11 +321,11 @@ State ui_men_nameFadeSpeed
             MCM.iCurrentNameFadeoutChoice = currentVar as int
         
             if MCM.iCurrentNameFadeoutChoice == 0
-                MCM.WC.fNameFadeoutDuration = 3.0 ;Slow
+                WC.fNameFadeoutDuration = 3.0 ;Slow
             elseIf MCM.iCurrentNameFadeoutChoice == 1
-                MCM.WC.fNameFadeoutDuration = 1.5 ;Normal
+                WC.fNameFadeoutDuration = 1.5 ;Normal
             elseIf MCM.iCurrentNameFadeoutChoice == 2
-                MCM.WC.fNameFadeoutDuration = 0.5 ;Fast
+                WC.fNameFadeoutDuration = 0.5 ;Fast
             endIf
             
             MCM.SetMenuOptionValueST(fadeoutOptions[MCM.iCurrentNameFadeoutChoice])
@@ -336,10 +338,10 @@ State ui_sld_nameFadeDur
         if currentEvent == "Highlight"
             MCM.SetInfoText("The duration in seconds of the names fade out animation\nSetting this to zero will make the text hide instantly after the delays set above\nDefault duration = 1.5 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(MCM.WC.fNameFadeoutDuration, 0.0, 10.0, 0.1, 1.5)
+            fillSlider(WC.fNameFadeoutDuration, 0.0, 10.0, 0.1, 1.5)
         elseIf currentEvent == "Accept"
-            MCM.WC.fNameFadeoutDuration = currentVar
-            MCM.SetSliderOptionValueST(MCM.WC.fNameFadeoutDuration, "{1}")
+            WC.fNameFadeoutDuration = currentVar
+            MCM.SetSliderOptionValueST(WC.fNameFadeoutDuration, "{1}")
         endIf 
     endEvent
 endState
@@ -347,10 +349,10 @@ endState
 State ui_men_firstPressNameHidn
     event OnBeginState()
         if currentEvent == "Open"
-            fillMenu(MCM.WC.bFirstPressShowsName as int, firstPressIfNameHiddenOptions, 0)
+            fillMenu(WC.bFirstPressShowsName as int, firstPressIfNameHiddenOptions, 0)
         elseIf currentEvent == "Accept"
-            MCM.WC.bFirstPressShowsName = currentVar as bool
-            MCM.SetMenuOptionValueST(firstPressIfNameHiddenOptions[MCM.WC.bFirstPressShowsName as int])
+            WC.bFirstPressShowsName = currentVar as bool
+            MCM.SetMenuOptionValueST(firstPressIfNameHiddenOptions[WC.bFirstPressShowsName as int])
         endIf 
     endEvent
 endState

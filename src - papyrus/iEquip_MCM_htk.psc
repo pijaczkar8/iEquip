@@ -31,7 +31,6 @@ function drawPage()
     MCM.AddHeaderOption("Utility Hotkey Options")
     MCM.AddKeyMapOptionST("htk_key_util", "Utility Hotkey", KH.iUtilityKey, mcmUnmapFLAG)
     MCM.AddMenuOptionST("htk_men_utilDubPress", "Utility key double press", utilityKeyDoublePressOptions[KH.iUtilityKeyDoublePress])
-    MCM.AddToggleOptionST("htk_tgl_utilCompat", "Quickmenu Compatibility", !KH.bNormalSystemPageBehav)
 
     MCM.SetCursorPosition(1)
             
@@ -199,20 +198,6 @@ State htk_men_utilDubPress
     endEvent
 endState
 
-State htk_tgl_utilCompat
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("Enable this if you have \"Stay at System Page\" installed\nDefault: Off")
-        elseIf currentEvent == "Select"
-            KH.bNormalSystemPageBehav = !KH.bNormalSystemPageBehav
-            MCM.SetToggleOptionValueST(!KH.bNormalSystemPageBehav)
-        elseIf currentEvent == "Default"
-            KH.bNormalSystemPageBehav = true 
-            MCM.SetToggleOptionValueST(!KH.bNormalSystemPageBehav)
-        endIf
-    endEvent
-endState
-
 ; ---------------------
 ; - Key Press Options -
 ; ---------------------
@@ -303,7 +288,7 @@ State htk_tgl_optDirectQueueHotkey
             If currentEvent == "Select"
                 KH.bQueueMenuComboKeyEnabled = !KH.bQueueMenuComboKeyEnabled
             elseIf currentEvent == "Default"
-            KH.bQueueMenuComboKeyEnabled = false
+                KH.bQueueMenuComboKeyEnabled = false
             endIf
             ;MCM.SetToggleOptionValueST(KH.bQueueMenuComboKeyEnabled)
             MCM.forcePageReset()
