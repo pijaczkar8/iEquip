@@ -74,6 +74,11 @@ Event OnPlayerLoadGame()
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
+		if WC.bUnequipAmmo && !AM.bAmmoMode
+			if PlayerRef.isEquipped(AM.currentAmmoForm as Ammo)
+				PlayerRef.UnequipItemEx(AM.currentAmmoForm as Ammo)
+			endIf
+		endIf
 		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 		RegisterForAnimationEvent(PlayerRef, "arrowRelease")

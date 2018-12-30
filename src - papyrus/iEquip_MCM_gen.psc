@@ -62,6 +62,9 @@ function drawPage()
         MCM.AddToggleOptionST("gen_tgl_showAtrIco", "Show attribute icons", MCM.WC.bShowAttributeIcons)
         MCM.AddMenuOptionST("gen_men_ammoLstSrt", "Ammo list sorting", ammoSortingOptions[MCM.AM.iAmmoListSorting])
         MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "When no ammo left", whenNoAmmoLeftOptions[MCM.AM.iActionOnLastAmmoUsed])
+        if MCM.WC.findInQueue(1, "Unarmed") == -1
+            MCM.AddTextOptionST("gen_txt_addFists", "Add 'Unarmed' shortcut to right queue", "")
+        endIf
     endIf
 endFunction
 
@@ -75,6 +78,11 @@ State gen_tgl_onOff
             MCM.SetInfoText("Turn iEquip ON or OFF here\nDefault: OFF")
         elseIf currentEvent == "Select"
             if MCM.bIsFirstEnabled
+                ;SE Only
+                ;/if MCM.ShowMessage("Do you have 'Stay On System Page' Installed?", true, "Yes", "No")
+                    KH.bNormalSystemPageBehav = false
+                endIf/;
+                ;MCM.ShowMessage("Please exit out of the Journal Menu, then re-open the iEquip MCM to complete the installation", False, "OK")
                 KH.openiEquipMCM(true)
             else
                 MCM.bEnabled = !MCM.bEnabled
@@ -133,7 +141,7 @@ State gen_txt_dragEastr
                 "You now have access to everything iEquip has to offer.  Now stand back while we restart the iEquip MCM and reveal your rewards...", false, "OK")
                 bStillToEnableProMode = false
                 MCM.WC.bProModeEnabled = true
-
+                ;MCM.ShowMessage("Please exit out of the Journal Menu, then re-open the iEquip MCM to finish enabling Pro Mode", False, "OK")
                 KH.openiEquipMCM(true)
             endIf
         endIf
@@ -321,6 +329,17 @@ State gen_men_whenNoAmmoLeft
         elseIf currentEvent == "Accept"
             MCM.AM.iActionOnLastAmmoUsed = currentVar as int
             MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[MCM.AM.iActionOnLastAmmoUsed])
+        endIf
+    endEvent
+endState
+
+State gen_txt_addFists
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("Add the 'Unarmed' shortcut back into your right hand queue. Cycling to this will unequip both hands, for whenever you just feel like a good old-fashioned punch-up!")
+        elseIf currentEvent == "Select"
+            MCM.WC.addFists()
+            MCM.forcePageReset()
         endIf
     endEvent
 endState

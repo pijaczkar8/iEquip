@@ -131,7 +131,7 @@ endEvent
 ; ---------------------
 
 event OnKeyDown(int KeyCode)
-    
+    debug.trace("iEquip KeyHandler OnKeyDown called KeyCode: "+KeyCode)
     if KeyCode == iUtilityKey && !bIsQueueMenuComboKeyKeyHeld
         bIsUtilityKeyHeld = true
     elseIf KeyCode == iOptDirQueueKey && bQueueMenuComboKeyEnabled && !bIsUtilityKeyHeld
@@ -159,6 +159,7 @@ event OnKeyDown(int KeyCode)
 endEvent
 
 event OnKeyUp(Int KeyCode, Float HoldTime)
+    debug.trace("iEquip KeyHandler OnKeyUp called KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = false
     elseIf KeyCode == iOptDirQueueKey
@@ -263,8 +264,8 @@ function runUpdate()
                     ;HM.openHelpMenu()
                     debug.MessageBox("This feature is currently disabled")
                 elseif iAction == 5
-                    ;WC.refreshWidget()
-                    debug.MessageBox("This feature is currently disabled")
+                    WC.refreshWidget()
+                    ;debug.MessageBox("This feature is currently disabled")
                 endIf
             endIf
         endIf
@@ -608,7 +609,7 @@ function openiEquipMCM(bool inMCMSelect = false)
         TapKey(key_j)
         Utility.WaitMenuMode(0.3)
         TapKey(key_j)
-        Utility.WaitMenuMode(0.005)
+        Utility.WaitMenuMode(0.1)
         TapKey(key_j)
         Utility.Wait(0.5)
     endIf
@@ -621,12 +622,13 @@ function openiEquipMCM(bool inMCMSelect = false)
         
         while elapsedTime <= 2.5
             if IsMenuOpen("Journal Menu")
-                if bNormalSystemPageBehav ; Compatibility with open system page mod 
+                ;if bNormalSystemPageBehav ; Compatibility with open system page mod 
                     TapKey(key_scroll)
-                    Utility.WaitMenuMode(0.005)
-                endIf
+                    Utility.WaitMenuMode(0.1)
+                ;endIf
                 
-                while i < 3 ;Should take us to MCM Menu entry in the Settings List
+                while i < 3 ;Should take us to MCM Menu entry in the Settings List - LE
+                ;while i < 5 ;Should take us to MCM Menu entry in the Settings List - SE
                     TapKey(key_down)
                     Utility.WaitMenuMode(0.005)
                     i += 1

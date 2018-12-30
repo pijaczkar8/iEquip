@@ -68,24 +68,24 @@ State htk_txt_htkHelp
     
             if MCM.WC.bProModeEnabled
                 bKeepReading = MCM.ShowMessage("Left/Right Hotkeys in Regular Mode\n\nSingle Press - Cycle queue forwards\nSingle Press with Utility Key held - Cycle queue backwards\n"+\
-                                               "Double Press - Apply current poison\nTriple Press - Recharge enchanted item\nPress and hold - Enable Preselect Mode\n\n"+\
+                                               "Double Press - Apply current poison\nLong Press - Recharge enchanted item\nTriple Press - QuickShield(L), QuickRanged(R)\n\n"+\
                                                "Left/Right Hotkeys in Preselect Mode\n\nSingle Press - Cycle preselect queue forwards\n"+\
                                                "Single Press with Utility Key held - Cycle preselect queue backwards\nLongpress - Equip preselected item\n"+\
-                                               "Press and hold - Equip all preselected items\n\nPage 1/4",  true, "Next page", "Exit")
+                                               "Press and hold - Equip all preselected items\nTriple Press - QuickShield(L), QuickRanged(R)\n\nPage 1/4",  true, "Next page", "Exit")
                 if bKeepReading 
-                    bKeepReading = MCM.ShowMessage("Shout Hotkey in Regular Mode\n\nSingle Press - Cycle queue forwards\nSingle Press with Utility Key held - Cycle queue backwards\nPress and hold - Open queue management menu\n\n"+\
+                    bKeepReading = MCM.ShowMessage("Shout Hotkey in Regular Mode\n\nSingle Press - Cycle queue forwards\nSingle Press with Utility Key held - Cycle queue backwards\nTriple Press - Toggle Preselect Mode On\n\n"+\
                                                    "Shout Hotkey in Preselect Mode\n\nSingle Press - Cycle preselect queue forwards\nSingle Press with Utility Key held - Cycle preselect queue backwards\n"+\
-                                                   "Longpress - Equip preselected shout/power\n\nPage 2/4",  true, "Next page", "Exit")
+                                                   "Longpress - Equip preselected shout/power\nTriple Press - Toggle Preselect Mode Off\n\nPage 2/4",  true, "Next page", "Exit")
                     if bKeepReading
                         bKeepReading = MCM.ShowMessage("Consumable/Poison Hotkey\n\nSingle Press - Cycle consumable queue forwards\nSingle Press with Utility Key held - Cycle consumable queue backwards\n"+\
-                                                       "Press and hold - Consume current potion/food/drink\n\nDouble Press - Cycle poison queue forwards\n"+\
-                                                       "Double Press with Utility Key held - Cycle poison queue backwards\n\nConsumable/Poison Hotkey in Preselect Mode\n\n"+\
-                                                       "Press and hold - Exit Preselect Mode\n\nPage 3/4", true, "Next page", "Exit")
+                                                       "Long press - Consume current potion/food/drink\n\nDouble Press - Cycle poison queue forwards\n"+\
+                                                       "Double Press with Utility Key held - Cycle poison queue backwards\nTriple Press - QuickHeal\n\n"+\
+                                                       "Page 3/4", true, "Next page", "Exit")
                     endIf
                 endIf
             else
                 bKeepReading = MCM.ShowMessage("Left/Right Hotkeys in Regular Mode\n\nSingle Press - Cycle queue forwards\nSingle Press with Utility Key held - Cycle queue backwards\n"+\
-                                               "Double Press - Apply current poison\nTriple Press - Recharge enchanted item\n\nPage 1/4",  true, "Next page", "Exit")
+                                               "Double Press - Apply current poison\nLong Press - Recharge enchanted item\n\nPage 1/4",  true, "Next page", "Exit")
                 if bKeepReading
                     bKeepReading = MCM.ShowMessage("Shout Hotkey in Regular Mode\n\nSingle Press - Cycle queue forwards\n"+\
                                                    "Single Press with Utility Key held - Cycle queue backwards\n\nPage 2/4",  true, "Next page", "Exit")
@@ -98,13 +98,8 @@ State htk_txt_htkHelp
             endIf
             
             if bKeepReading
-                if MCM.WC.bEditModeEnabled
-                    MCM.ShowMessage("Utility Hotkey\n\nSingle Press - Open Queue Management Menu\n\nDouble Press - Toggle Edit Mode\n\n"+\
-                                    "Triple Press - Direct access to the iEquip MCM\n\nPage 4/4", false, "Exit")
-                else
-                    MCM.ShowMessage("Utility Hotkey\n\nSingle Press - Open Queue Management Menu\n\n"+\
-                                    "Triple Press - Direct access to the iEquip MCM\n\nPage 4/4", false, "Exit")
-                endIf
+                MCM.ShowMessage("Utility Hotkey\n\nSingle Press - Open Utility Menu\n\nDouble Press - Quick Access set in MCM\n\n"+\
+                                "Page 4/4", false, "Exit")
             endIf 
         endIf
     endEvent

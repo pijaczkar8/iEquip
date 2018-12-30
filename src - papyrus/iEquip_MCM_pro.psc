@@ -141,7 +141,7 @@ endState
 State pro_txt_whatPreselect
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("iEquip Preselect Mode\n\nPreselect Mode is toggled by pressing and holding your left or right hotkey. Once enabled it reveals a new preselect slot alongside each main widget slot. "+\
+            if MCM.ShowMessage("iEquip Preselect Mode\n\nPreselect Mode is toggled by triple pressing your shout hotkey. Once enabled it reveals a new preselect slot alongside each main widget slot. "+\
                                "Your hotkey will now cycle the preselect slot allowing you to prepare your next items/shout without actually equipping them.  You can then choose to longpress left/right/shout to swap the individual slots, "+\
                                "or press and hold left/right to equip all preselected items at once\n\nPage 1/2", true, "Next page", "Cancel")
                 MCM.ShowMessage("iEquip Preselect Mode\n\nThe preselect icons will only appear for queues with 3 or more items, and you can also choose to disable shout preselect below if you'd rather just preselect left/right. "+\

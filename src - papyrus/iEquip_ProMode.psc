@@ -374,7 +374,7 @@ function equipPreselectedItem(int Q)
 		AM.checkAndEquipAmmo(false, true)
 	endIf
 
-	if Q == 1 && targetItem == WC.iEquip_Unarmed2H
+	if Q == 1 && itemType == 0
 		WC.goUnarmed()
 		return
 	endIf

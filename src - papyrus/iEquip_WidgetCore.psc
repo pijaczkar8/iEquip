@@ -43,8 +43,6 @@ iEquip_ApplyPoisonRightFXScript property PRFX auto
 ;CK-filled Properties
 Actor property PlayerRef auto
 Armor property Shoes auto
-Weapon property iEquip_Unarmed1H auto  
-Weapon property iEquip_Unarmed2H auto
 Perk property ConcentratedPoison  auto
 Sound property RemovePoison auto
 Sound property iEquip_ITMPoisonUse auto
@@ -270,12 +268,6 @@ Event OnWidgetInit()
 	PopulateWidgetArrays()
 	PlayerRace = PlayerRef.GetRace()
 	bDrawn = PlayerRef.IsWeaponDrawn()
-	if(!PlayerRef.getItemCount(iEquip_Unarmed1H))
-        PlayerRef.AddItem(iEquip_Unarmed1H)
-    endIf
-    if(!PlayerRef.getItemCount(iEquip_Unarmed2H))
-        PlayerRef.AddItem(iEquip_Unarmed2H)
-    endIf
 
 	abIsNameShown = new bool[8]
 	aiTargetQ = new int[5]
@@ -374,6 +366,7 @@ Event OnWidgetInit()
 	Utility.Wait(0.1)
 	PO.InitialisePotionQueueArrays(aiTargetQ[3], aiTargetQ[4])
 	addPotionGroups()
+	addFists()
 	KH.GameLoaded()
 EndEvent
 
@@ -473,32 +466,45 @@ function refreshWidgetOnLoad()
 	while Q < 8
 		abIsNameShown[Q] = true
 		if Q < 5
-			if Q < 2
-				checkAndUpdatePoisonInfo(Q)
-				CM.initChargeMeter(Q)
-				CM.initSoulGem(Q)
-			endIf
-			if Q == 0 && bAmmoMode
-				updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
+			if Q < 3 && (jArray.count(aiTargetQ[Q]) < 1 || !PlayerRef.GetEquippedObject(Q))
+				setSlotToEmpty(Q, true, (jArray.count(aiTargetQ[Q]) > 0))
 			else
-				updateWidget(Q, aiCurrentQueuePosition[Q])
-			endIf
-			if abIsCounterShown[Q] || Q > 2
-				if Q == 0 && bAmmoMode
-					fItem = AM.currentAmmoForm
-				else
-					fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Form")
+				if Q < 2
+					checkAndUpdatePoisonInfo(Q)
+					CM.initChargeMeter(Q)
+					CM.initSoulGem(Q)
 				endIf
-				if Q == 3 && potionGroup != -1
-					int count = PO.getPotionGroupCount(potionGroup)
-					setSlotCount(3, count)
-					if count < 1
-						checkAndFadeConsumableIcon(true)
-					elseIf bConsumableIconFaded
-						checkAndFadeConsumableIcon(false)
+				if Q == 0 && bAmmoMode
+					updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
+				else
+					updateWidget(Q, aiCurrentQueuePosition[Q])
+				endIf
+				if abIsCounterShown[Q]
+					if Q == 0 && bAmmoMode
+						fItem = AM.currentAmmoForm
+					else
+						fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Form")
 					endIf
-				elseIf fItem && !(Q < 2 && abPoisonInfoDisplayed[Q])
-					setSlotCount(Q, PlayerRef.GetItemCount(fItem))
+					if Q == 3 && potionGroup != -1
+						int count = PO.getPotionGroupCount(potionGroup)
+						setSlotCount(3, count)
+						if count < 1
+							checkAndFadeConsumableIcon(true)
+						elseIf bConsumableIconFaded
+							checkAndFadeConsumableIcon(false)
+						endIf
+					elseIf Q == 4
+						if jArray.count(aiTargetQ[4]) < 1
+							handleEmptyPoisonQueue()
+						else
+							setSlotCount(4, PlayerRef.GetItemCount(fItem))
+							if bConsumableIconFaded
+								checkAndFadePoisonIcon(false)
+							endIf
+						endIf
+					elseIf fItem && !(Q < 2 && abPoisonInfoDisplayed[Q])
+						setSlotCount(Q, PlayerRef.GetItemCount(fItem))
+					endIf
 				endIf
 			endIf
 		else
@@ -522,68 +528,152 @@ function refreshWidget()
 	KH.bAllowKeyPress = false
 	updateWidgetVisibility(false)
 	debug.notification("Refreshing iEquip widget...")
-	;Reset alpha values on every element
-	int iIndex = 6 ;Six is the first individual widget element in the array
-	while iIndex < asWidgetDescriptions.Length
-		UI.setFloat(HUD_MENU, WidgetRoot + asWidgetElements[iIndex] + "._alpha", afWidget_A[iIndex])
-		iIndex += 1
-	endwhile
-	;Check what the items and shout the player currently has equipped and find them in the queues
-	iIndex = 0
-	int Q = 0
-	form equippedForm
-	while Q < 3
-		equippedForm = PlayerRef.GetEquippedObject(Q)
-		if equippedForm
-			aiCurrentQueuePosition[Q] = findInQueue(Q, equippedForm.GetName())
-		endIf
-		if !equippedForm || aiCurrentQueuePosition[Q] == -1
-			aiCurrentQueuePosition[Q] = 0
-		endIf
-		asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Name")
-		Q += 1
-	endwhile
-	;if we're in ammo mode check if we actually should be
-	if bAmmoMode && !RightHandWeaponIsRanged()
-		AM.toggleAmmoMode()
-		Utility.Wait(3.0)
-		debug.notification("Resetting Ammo Mode...")
-	endIf
-	;if we're in Preselect Mode exit now
-	if bPreselectMode
+	;Toggle preselect mode now (we exit again later)
+	if !bPreselectMode
 		PM.togglePreselectMode()
 		Utility.Wait(3.0)
-		debug.notification("Exiting Preselect Mode...")
+	endIf
+	;Reset visibility and alpha on every element
+	int i = 0
+	while i < asWidgetDescriptions.Length
+		UI.SetBool(HUD_MENU, WidgetRoot + asWidgetElements[i] + "._visible", abWidget_V[i])
+		UI.setFloat(HUD_MENU, WidgetRoot + asWidgetElements[i] + "._alpha", afWidget_A[i])
+		i += 1
+	endwhile
+	;Exit Preselect Mode now
+	PM.togglePreselectMode()
+	Utility.Wait(3.0)
+	;Check what the items and shout the player currently has equipped and find them in the queues
+	i = 0
+	form equippedForm
+	bool rangedWeaponEquipped = false
+	bool[] slotEmpty = new bool[3]
+	while i < 3
+		slotEmpty[i] = false
+		int itemType 
+		equippedForm = PlayerRef.GetEquippedObject(i)
+		;If we have something equipped in the slot make sure it is correctly displayed
+		if equippedForm
+			if i == 0 && equippedForm as weapon
+				itemType = (equippedForm as weapon).GetWeaponType()
+				if itemType == 5 || itemType == 6
+					i = 1
+				elseIf itemType == 7 || itemType == 9
+					rangedWeaponEquipped = true
+					AM.selectAmmoQueue(itemType)
+					i = 1
+				endIf
+			endIf
+			int foundAt = findInQueue(i, equippedForm.GetName())
+			;If we've found the item in the queue then set the queue position and name
+			if foundAt != -1
+				aiCurrentQueuePosition[i] = foundAt
+				asCurrentlyEquipped[i] = jMap.getStr(jArray.getObj(aiTargetQ[i], foundAt), "Name")
+			;Otherwise unequip and re-equip the item which should then cause EH.OnObjectEquipped to add it in to the relevant queue and update the widget accordingly
+			elseIf i < 2
+				UnequipHand(i)
+				Utility.Wait(0.2)
+				if (i == 1 && itemType == 42)
+			    	PlayerRef.EquipItemEx(equippedForm as Ammo)
+			    elseif (i == 0 && itemType == 26)
+			    	PlayerRef.EquipItemEx(equippedForm as Armor)
+			    else
+			    	PlayerRef.EquipItemEx(equippedForm, i)
+			    endIf
+			else
+				if itemType == 22
+			        PlayerRef.EquipSpell(equippedForm as Spell, 2)
+			    else
+			        PlayerRef.EquipShout(equippedForm as Shout)
+			    endIf
+			endIf
+		;Otherwise set the slot to empty
+		else
+			slotEmpty[i] = true
+			setSlotToEmpty(i, (jArray.count(aiTargetQ[i]) > 0))
+		endIf
+		i += 1
+	endwhile
+	;if we're in ammo mode check if we actually should be
+	if (bAmmoMode && !rangedWeaponEquipped) || (!bAmmoMode && rangedWeaponEquipped)
+		AM.toggleAmmoMode()
+		Utility.Wait(3.0)
 	endIf
 	;Now we need to refresh the names and icons for each slot to show what is currently equipped
-	refreshWidgetOnLoad()
+	i = 0
+	while i < 5
+		abIsNameShown[i] = true
+		if i < 2
+			checkAndUpdatePoisonInfo(i)
+		endIf
+		if i == 0 && bAmmoMode
+			updateWidget(i, AM.aiCurrentAmmoIndex[AM.Q])
+		elseIf !(i < 3 && slotEmpty[i])
+			updateWidget(i, aiCurrentQueuePosition[i])
+		endIf
+		i += 1
+	endwhile
+	CM.updateChargeMeters(true)
 	;We can now check if we need to fade the left icon if we've got a 2H weapon equipped
 	Utility.Wait(1.5)
-	debug.notification("Resetting icons and names...")
 	checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "Type"))
-	;Check and show or hide left and right counters - counts have already been updated in refreshWidgetOnLoad
+	;Reset consumable count and fade
+	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "Name"))
+	int count
+	if potionGroup == -1
+		count = PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "Form"))
+	else
+		count = PO.getPotionGroupCount(potionGroup)
+	endIf
+	setSlotCount(3, count)
+	if count < 1
+		checkAndFadeConsumableIcon(true)
+	elseIf bConsumableIconFaded
+		checkAndFadeConsumableIcon(false)
+	endIf
+	;Reset poison count and fade
+	if jArray.count(aiTargetQ[4]) < 1
+		handleEmptyPoisonQueue()
+	else
+		setSlotCount(4, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4]), "Form")))
+		if bConsumableIconFaded
+			checkAndFadePoisonIcon(false)
+		endIf
+	endIf
+	;Check and show or hide left and right counters
 	if !bAmmoMode
-		Q = 0
-		while Q < 2
-			if itemRequiresCounter(Q, jMap.getInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Type"))
+		i = 0
+		while i < 2
+			if itemRequiresCounter(i, jMap.getInt(jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i]), "Type")) || abPoisonInfoDisplayed[i]
+				setSlotCount(i, PlayerRef.GetItemCount(equippedForm))
 				;Show the counter if currently hidden
-				if !abIsCounterShown[Q]
-					setCounterVisibility(Q, true)
+				if !abIsCounterShown[i]
+					setCounterVisibility(i, true)
 				endIf
 			;The item doesn't require a counter so hide it if it's currently shown
-			elseif abIsCounterShown[Q]
-				setCounterVisibility(Q, false)
+			elseif abIsCounterShown[i]
+				setCounterVisibility(i, false)
 			endIf
-			Q += 1
+			i += 1
 		endwhile
 	;We're in Ammo Mode so we need to make sure only the left counter is shown
 	else
 		if !abIsCounterShown[0]
 			setCounterVisibility(0, true)
 		endIf
-		setCounterVisibility(1, false)
+		;And hide the right hand counter unless the current ranged weapon is poisoned
+		if abIsCounterShown[1] && !abPoisonInfoDisplayed[1]
+			setCounterVisibility(1, false)
+		elseIf abPoisonInfoDisplayed[1] && !abIsCounterShown[1]
+			setCounterVisibility(1, true)
+		endIf
 	endIf
+	;Make sure that any slots which whould be hidden are hidden
 	updateSlotsEnabled()
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+	if !bDropShadowEnabled
+		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
+	endIf
 	;Show the widget
 	updateWidgetVisibility()
 	;And finally re-register for fadeouts if required
@@ -792,6 +882,17 @@ function addPotionGroups()
 	jMap.setStr(magickaPotionGroup, "Name", "Magicka Potions")
 	jMap.setStr(magickaPotionGroup, "Icon", "MagickaPotion")
 	jArray.addObj(aiTargetQ[3], magickaPotionGroup)
+endFunction
+
+function addFists()
+	debug.trace("iEquip_WidgetCore addFists called")
+	if findInQueue(1, "Fist") == -1
+		int Fists = jMap.object()
+		jMap.setInt(Fists, "Type", 0)
+		jMap.setStr(Fists, "Name", "Unarmed")
+		jMap.setStr(Fists, "Icon", "Fist")
+		jArray.addObj(aiTargetQ[1], Fists)
+	endIf
 endFunction
 
 event OnMenuOpen(string _sCurrentMenu)
@@ -1356,19 +1457,11 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			if bSwitchingHands || bPreselectSwitchingHands
 				debug.trace("iEquip_WidgetCore cycleSlot - Q: " + Q + ", bSwitchingHands: " + bSwitchingHands)
 				;if we're forcing the left hand to switch equipped items because we're switching left to right, make sure we don't leave the left hand unarmed
-				if Q == 0
-					if itemType == 0 || targetItem == iEquip_Unarmed1H
-						targetIndex += 1
-						if targetIndex == queueLength
-							targetIndex = 0
-						endIf
-					endIf
-				;if we are forcing the right hand to switch equipped items, either because we're switching right to left, or because equipping the left hand is forcing a 2h or ranged weapon to be unequipped then we need to make sure we are re-equipping a 1h weapon in the right hand
-				elseif Q == 1
+				if Q == 1
 					AM.bAmmoModePending = false
 					; Check if initial target item is 2h or ranged, or if it is a 1h item but you only have one of it and you've just equipped it in the other hand, or if it is unarmed
 					int itemCount = PlayerRef.GetItemCount(targetItem)
-					if (itemType == 0 || targetItem == iEquip_Unarmed1H || targetItem == iEquip_Unarmed2H || itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9) || ((asCurrentlyEquipped[0] == jMap.getStr(jArray.getObj(targetArray, targetIndex), "Name")) && itemCount < 2)
+					if (itemType == 0 || itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9) || ((asCurrentlyEquipped[0] == jMap.getStr(jArray.getObj(targetArray, targetIndex), "Name")) && itemCount < 2)
 						int newTarget = targetIndex + 1
 						if newTarget >= queueLength
 							newTarget = 0
@@ -1381,7 +1474,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 							itemType = jMap.getInt(targetObject, "Type")
 							itemCount = PlayerRef.GetItemCount(targetItem)
 							; if the new target item is 2h or ranged, or if it is a 1h item but you only have one of it and it's already equipped in the other hand, or it is unarmed then move on again
-							if (itemType == 0 || targetItem == iEquip_Unarmed1H || targetItem == iEquip_Unarmed2H || itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "Name")) && itemCount < 2)
+							if (itemType == 0 || itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "Name")) && itemCount < 2)
 								newTarget += 1
 								;if we have reached the final index in the array then loop to the start and keep counting forward until we reach the original starting point
 								if newTarget == queueLength
@@ -1445,8 +1538,8 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
     endIf
     bool doneHere = false
     if !equippingOnAutoAdd
-	    ;if we're equipping Fists 2H
-	    if Q == 1 && targetItem == iEquip_Unarmed2H
+	    ;if we're equipping Fists
+	    if Q == 1 && itemType == 0
 			goUnarmed()
 			doneHere = true  
 	    ;if you already have the item/shout equipped in the slot you are cycling then do nothing
@@ -1767,7 +1860,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	endIf
 	sIcon = jMap.getStr(targetObject, "Icon")
 	sName = jMap.getStr(targetObject, "Name")
-	if Q == 0 && bAmmoMode && AM.sAmmoIconSuffix != ""
+	if Q == 0 && bAmmoMode && !bCyclingLHPreselectInAmmoMode && AM.sAmmoIconSuffix != ""
 		sIcon += AM.sAmmoIconSuffix
 	endIf
 
@@ -1812,7 +1905,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 endFunction
 
 function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = false)
-	debug.trace("iEquip_WidgetCore setSlotToEmpty called")
+	debug.trace("iEquip_WidgetCore setSlotToEmpty called - Q: "+Q+", hidePoisonCount: "+hidePoisonCount+", LeaveFlag: "+LeaveFlag)
 	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
@@ -1822,9 +1915,11 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q) ;Which slot we're updating
 		if (Q == 0 && !bAmmoMode) || Q == 1
+			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Unarmed")
 			UICallback.PushString(iHandle, "Fist") ;New icon
-			UICallback.PushString(iHandle, "Fist") ;New name
+			UICallback.PushString(iHandle, "Unarmed") ;New name
 		else
+			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Empty")
 			UICallback.PushString(iHandle, "Empty") ;New icon
 			UICallback.PushString(iHandle, "") ;New name
 		endIf
@@ -2470,7 +2565,7 @@ function goUnarmed()
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
 		UICallback.PushString(iHandle, "Fist")
-		UICallback.PushString(iHandle, "Fists")
+		UICallback.PushString(iHandle, "Unarmed")
 		UICallback.PushFloat(iHandle, fNameAlpha)
 		UICallback.Send(iHandle)
 	endIf
