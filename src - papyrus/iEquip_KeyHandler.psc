@@ -486,20 +486,16 @@ function ToggleEditMode()
 	debug.trace("iEquip KeyHandler toggleEditMode called")
     UnregisterForAllKeys()
 
-    if WC.bEditModeEnabled
-    	if EM.isEditMode
-            GoToState("")
-    		RegisterForGameplayKeys()
-    	else
-            GoToState("EDITMODE")
-    		RegisterForEditModeKeys()
-            updateEditModeKeys()
-    	endIf
-        
-    	EM.ToggleEditMode()
+    if EM.isEditMode
+        GoToState("")
+        RegisterForGameplayKeys()
     else
-        debug.Messagebox("Edit Mode is currently disabled in the MCM")
+        GoToState("EDITMODE")
+        RegisterForEditModeKeys()
+        updateEditModeKeys()
     endIf
+    
+    EM.ToggleEditMode()
 endFunction
 
 function resetEditModeKeys()
