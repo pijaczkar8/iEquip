@@ -608,31 +608,32 @@ endFunction
 
 ; - Load Data -
 
-; CHECK IF CAN BE REWRITTEN/OPTIMIZED
 function LoadAllElements()
-	int i = WC.asWidgetDescriptions.Length - 1
+    int i = WC.asWidgetDescriptions.Length - 1
     
-	While i >= 0
-		UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._visible", true) ;Everything else other than the backgrounds needs to be visible in Edit Mode
+    While i >= 0
+        UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._visible", true) ;Everything else other than the backgrounds needs to be visible in Edit Mode
         i -= 1
-	EndWhile
+    EndWhile
     
     i = 0
-	while i < 8
+    while i < 8
         ; Show any currently hidden names
-		if !WC.abIsNameShown[i]
-			WC.showName(i, true, false, 0.0)
-		endIf
+        if !WC.abIsNameShown[i]
+            WC.showName(i, true, false, 0.0)
+        endIf
         ; Show left and right counters if not currently shown
         if i < 5
-            if !WC.abIsCounterShown[i]
-                abWasCounterShown[i] = false
-                WC.setCounterVisibility(i, true)
-            else
-                abWasCounterShown[i] = true
-                aiPreviousCount[i] = UI.getString(HUD_MENU, WidgetRoot + asCounterTextPath[i]) as int
+            if i != 2 ;Skip shout as it is the only slot without a counter
+                if !WC.abIsCounterShown[i]
+                    abWasCounterShown[i] = false
+                    WC.setCounterVisibility(i, true)
+                else
+                    abWasCounterShown[i] = true
+                    aiPreviousCount[i] = UI.getString(HUD_MENU, WidgetRoot + asCounterTextPath[i]) as int
+                endIf
+                WC.setSlotCount(i, 99)
             endIf
-            WC.setSlotCount(i, 99)
             ; Show any currently hidden elements in the left and right hand slots
             if i < 2
                 ; Check and fade in left icon if currently faded
@@ -687,8 +688,8 @@ function LoadAllElements()
                 endIf                
             endIf
         endIf
-		i += 1
-	endWhile
+        i += 1
+    endWhile
     
     UpdateEditModeGuide()
 endFunction

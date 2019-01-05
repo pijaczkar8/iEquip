@@ -110,11 +110,14 @@ bool property bLoading = false auto hidden
 bool property bShowQueueConfirmationMessages = true auto hidden
 bool property bLoadedbyOnWidgetInit auto hidden
 bool bRefreshingWidgetOnLoad = false
+bool property bRefreshingWidget = false auto hidden
 
 ;Ammo Mode properties and variables
 bool property bAmmoMode = false auto hidden
 bool bJustLeftAmmoMode = false
 bool bAmmoModeFirstLook = true
+
+bool property bEditModeEnabled = true auto hidden
 
 ;Auto Unequip Ammo
 bool property bUnequipAmmo = true auto hidden
@@ -522,6 +525,7 @@ endFunction
 ;ToDo - This function is still to finish/review
 function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget called")
+	bRefreshingWidget = true
 	;Hide the widget first
 	KH.bAllowKeyPress = false
 	updateWidgetVisibility(false)
@@ -689,6 +693,7 @@ function refreshWidget()
 		endIf
 	endIf
 	KH.bAllowKeyPress = true
+	bRefreshingWidget = false
 	debug.Notification("iEquip widget refresh complete")
 	debug.trace("iEquip_WidgetCore refreshWidget finished")
 endFunction
@@ -805,9 +810,6 @@ function initialisemoreHUDArray()
         int queueLength = JArray.count(aiTargetQ[Q])
         debug.trace("iEquip_WidgetCore initialisemoreHUDArray processing Q: " + Q + ", queueLength: " + queueLength)
         int i = 0
-        if Q == 3
-        	i = 3 ;Skip the potion groups in the consumables queue
-        endIf
         
         while i < queueLength
         	;Clear out any empty indices for good measure
@@ -815,33 +817,50 @@ function initialisemoreHUDArray()
         		jArray.eraseIndex(aiTargetQ[Q], i)
         		queueLength -= 1
         	endIf
-            int itemID = jMap.getInt(jArray.getObj(aiTargetQ[Q], i), "itemID")
-            debug.trace("iEquip_WidgetCore initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "Name"))
-            if itemID == 0
-            	itemID = createItemID(jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "Name"), (jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "Form")).GetFormID())
-            	jMap.setInt(jArray.getObj(aiTargetQ[Q], i), "itemID", itemID)
-            endIf
-            if itemID != 0
-	            int foundAt = -1
-	            if !(i == 0 && Q == 0)
-	            	foundAt = jArray.findInt(jItemIDs, itemID)
-	            endIf
-	            if Q == 1 && foundAt != -1
-	            	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - itemID " + itemID + " already found at index " + foundAt + ", updating icon name to " + asMoreHUDIcons[3])
-	                jArray.setStr(jIconNames, foundAt, asMoreHUDIcons[3])
-	            else
-	            	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding itemID " + itemID + " to jItemIDs")
-	                jArray.addInt(jItemIDs, itemID)
-	                if Q < 2
-	                	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + asMoreHUDIcons[Q] + " to jIconNames")
-	                	jArray.addStr(jIconNames, asMoreHUDIcons[Q])
-	                else
-	                	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + asMoreHUDIcons[2] + " to jIconNames")
-	                	jArray.addStr(jIconNames, asMoreHUDIcons[2])
-	                endIf
-	            endIf
+        	;Make sure we skip the dummy Unarmed and Potion Group items
+        	if Q == 1 || Q == 3
+	        	bool isDummyItem = true
+	        	while isDummyItem
+	        		string itemName = jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "Name")
+	        		if Q == 1
+	        			isDummyItem = (itemName == "$iEquip_common_Unarmed")
+	        		else
+	        			isDummyItem = (itemName == "Health Potions" || itemName == "Stamina Potions" || itemName == "Magicka Potions")
+	        		endIf
+	        		if isDummyItem
+	        			i += 1
+	        		endIf
+	        	endWhile
 	        endIf
-            i += 1
+	        if i < queueLength
+	            int itemID = jMap.getInt(jArray.getObj(aiTargetQ[Q], i), "itemID")
+	            debug.trace("iEquip_WidgetCore initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "Name"))
+	            if itemID == 0
+	            	itemID = createItemID(jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "Name"), (jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "Form")).GetFormID())
+	            	jMap.setInt(jArray.getObj(aiTargetQ[Q], i), "itemID", itemID)
+	            endIf
+	            if itemID != 0
+		            int foundAt = -1
+		            if !(i == 0 && Q == 0)
+		            	foundAt = jArray.findInt(jItemIDs, itemID)
+		            endIf
+		            if Q == 1 && foundAt != -1
+		            	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - itemID " + itemID + " already found at index " + foundAt + ", updating icon name to " + asMoreHUDIcons[3])
+		                jArray.setStr(jIconNames, foundAt, asMoreHUDIcons[3])
+		            else
+		            	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding itemID " + itemID + " to jItemIDs")
+		                jArray.addInt(jItemIDs, itemID)
+		                if Q < 2
+		                	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + asMoreHUDIcons[Q] + " to jIconNames")
+		                	jArray.addStr(jIconNames, asMoreHUDIcons[Q])
+		                else
+		                	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + asMoreHUDIcons[2] + " to jIconNames")
+		                	jArray.addStr(jIconNames, asMoreHUDIcons[2])
+		                endIf
+		            endIf
+		        endIf
+	            i += 1
+	        endIf
         endWhile
 
         Q += 1
@@ -887,7 +906,7 @@ function addFists()
 	if findInQueue(1, "Fist") == -1
 		int Fists = jMap.object()
 		jMap.setInt(Fists, "Type", 0)
-		jMap.setStr(Fists, "Name", "Unarmed")
+		jMap.setStr(Fists, "Name", "$iEquip_common_Unarmed")
 		jMap.setStr(Fists, "Icon", "Fist")
 		jArray.addObj(aiTargetQ[1], Fists)
 	endIf
@@ -1354,7 +1373,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	elseif bFirstPressShowsName && !bPreselectSwitchingHands && !abIsNameShown[Q] && asCurrentlyEquipped[Q] != ""
 		showName(Q)
 
-	elseIf queueLength > 1 || onItemRemoved || (Q < 3 && abQueueWasEmpty[Q])
+	elseIf queueLength > 1 || onItemRemoved || (Q < 3 && abQueueWasEmpty[Q]) || (Q == 0 && bGoneUnarmed)
 		if Q < 3
 			abQueueWasEmpty[Q] = false
 		elseIf Q == 3
@@ -1915,7 +1934,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 		if (Q == 0 && !bAmmoMode) || Q == 1
 			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Unarmed")
 			UICallback.PushString(iHandle, "Fist") ;New icon
-			UICallback.PushString(iHandle, "Unarmed") ;New name
+			UICallback.PushString(iHandle, "$iEquip_common_Unarmed") ;New name
 		else
 			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Empty")
 			UICallback.PushString(iHandle, "Empty") ;New icon
@@ -2563,7 +2582,7 @@ function goUnarmed()
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
 		UICallback.PushString(iHandle, "Fist")
-		UICallback.PushString(iHandle, "Unarmed")
+		UICallback.PushString(iHandle, "$iEquip_common_Unarmed")
 		UICallback.PushFloat(iHandle, fNameAlpha)
 		UICallback.Send(iHandle)
 	endIf

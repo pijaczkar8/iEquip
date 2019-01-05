@@ -74,7 +74,7 @@ Event OnPlayerLoadGame()
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
-		if WC.bUnequipAmmo && !AM.bAmmoMode
+		if WC.bUnequipAmmo && !AM.bAmmoMode && AM.currentAmmoForm
 			if PlayerRef.isEquipped(AM.currentAmmoForm as Ammo)
 				PlayerRef.UnequipItemEx(AM.currentAmmoForm as Ammo)
 			endIf

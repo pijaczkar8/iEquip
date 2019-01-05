@@ -126,7 +126,7 @@ function togglePreselectMode(bool enablingEditMode = false)
 		args[3] = AM.bAmmoMode
 		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 		PreselectModeAnimateIn()
-		if bPreselectModeFirstLook && !WC.EM.isEditMode
+		if bPreselectModeFirstLook && !WC.bRefreshingWidget && !WC.EM.isEditMode
 			Utility.Wait(1.0)
 			Debug.MessageBox("iEQUIP Preselect Mode\n\nYou should now see up to three new slots in the iEQUIP widget for the left hand, right hand and shout slots, as long as you have more than two items in the queue and haven't hidden or disabled the main slots in Edit Mode or the MCM\nYour hotkeys will now cycle the preselect slots rather than the main slots, and long press will then equip the preselected item.\nPress and hold the left or right keys to equip all preselected items in one go.\nPress and hold the consumable key to exit Preselect Mode")
 			bPreselectModeFirstLook = false
