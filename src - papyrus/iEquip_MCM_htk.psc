@@ -41,7 +41,6 @@ function drawPage()
     MCM.AddHeaderOption("Key Press Options")
     MCM.AddSliderOptionST("htk_sld_multiTapDelay", "Multi-Tap Delay", KH.fMultiTapDelay, "{1} seconds")
     MCM.AddSliderOptionST("htk_sld_longPrsDelay", "Long Press Delay", KH.fLongPressDelay, "{1} seconds")
-    MCM.AddSliderOptionST("htk_sld_prsHoldDelay", "Press & Hold Delay", KH.fPressAndHoldDelay, "{1} seconds")
     MCM.AddHeaderOption("Optional Additional Hotkeys")
     MCM.AddToggleOptionST("htk_tgl_optConsumeHotkey", "Enable consume item hotkey", KH.bConsumeItemHotkeyEnabled)
     if KH.bConsumeItemHotkeyEnabled
@@ -221,26 +220,12 @@ State htk_sld_longPrsDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("This defines the length of time you need to hold a key down for for it to register as a Long Press\n"+\
                             "This does not conflict with the multi-tap setting so set it to whatever you are comfortable with, "+\
-                            "but not so short that every key press is classed as a Long Press!\nDefault: 0.5 seconds")
+                            "but not so short that every key press is classed as a Long Press!\nDefault: 0.6 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(KH.fLongPressDelay, 0.3, 1.5, 0.1, 0.5)
+            fillSlider(KH.fLongPressDelay, 0.3, 1.5, 0.1, 0.6)
         elseIf currentEvent == "Accept"
             KH.fLongPressDelay = currentVar
             MCM.SetSliderOptionValueST(KH.fLongPressDelay, "{1} seconds")
-        endIf
-    endEvent
-endState
-
-State htk_sld_prsHoldDelay
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("This defines the length of time you need to hold a key down for for it to register as Press & Hold for actions like toggling Preselect and Equip All Preselected Items\n"+\
-                            "Make sure there is enough difference between this and the Long Press Delay setting to avoid key presses being misinterpreted.\nDefault: 1.0 seconds")
-        elseIf currentEvent == "Open"
-            fillSlider(KH.fPressAndHoldDelay, 0.6, 2.0, 0.1, 1.0)
-        elseIf currentEvent == "Accept"
-            KH.fPressAndHoldDelay = currentVar
-            MCM.SetSliderOptionValueST(KH.fPressAndHoldDelay, "{1} seconds")
         endIf
     endEvent
 endState

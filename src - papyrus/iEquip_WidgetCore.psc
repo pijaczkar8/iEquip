@@ -117,8 +117,6 @@ bool property bAmmoMode = false auto hidden
 bool bJustLeftAmmoMode = false
 bool bAmmoModeFirstLook = true
 
-bool property bEditModeEnabled = true auto hidden
-
 ;Auto Unequip Ammo
 bool property bUnequipAmmo = true auto hidden
 

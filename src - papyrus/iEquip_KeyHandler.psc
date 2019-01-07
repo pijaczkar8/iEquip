@@ -47,8 +47,7 @@ Int Property iEditDiscardKey = 83 Auto Hidden ;Num .
 
 ; Delays
 float Property fMultiTapDelay = 0.3 Auto Hidden
-float Property fLongPressDelay = 0.5 Auto Hidden
-float Property fPressAndHoldDelay = 1.0 Auto Hidden
+float Property fLongPressDelay = 0.6 Auto Hidden
 
 ; Bools
 bool Property bAllowKeyPress = true Auto Hidden
@@ -139,18 +138,19 @@ event OnKeyDown(int KeyCode)
     endIf
 
     if bAllowKeyPress
-        if KeyCode != iWaitingKeyCode && iWaitingKeyCode != 0 ;The player pressed a different key, so force the current one to process if there is one
+        if KeyCode != iWaitingKeyCode && iWaitingKeyCode != 0
+            ; The player pressed a different key, so force the current one to process if there is one
             UnregisterForUpdate()
             OnUpdate()
         endIf
         iWaitingKeyCode = KeyCode
     
-        if iMultiTap == 0 ; This is fhte first time the key has been pressed
-            RegisterForSingleUpdate(fPressAndHoldDelay)
-        elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
+        if iMultiTap == 0       ; This is first first time the key has been pressed
+            RegisterForSingleUpdate(fLongPressDelay)
+        elseIf iMultiTap == 1   ; This is the second time the key has been pressed.
             iMultiTap = 2
             RegisterForSingleUpdate(fMultiTapDelay)
-        elseIf iMultiTap == 2 ; This is the third time the key has been pressed
+        elseIf iMultiTap == 2   ; This is the third time the key has been pressed
             iMultiTap = 3
             RegisterForSingleUpdate(0.0)
         endIf
@@ -167,16 +167,8 @@ event OnKeyUp(Int KeyCode, Float HoldTime)
 
     if bAllowKeyPress
         if KeyCode == iWaitingKeyCode && iMultiTap == 0
-            float updateTime = 0.0
-        
-            if HoldTime >= fLongPressDelay ;If longpress.
-                iMultiTap = -1
-            else ; Turns out the key is a multiTap
-                iMultiTap = 1
-                updateTime = fMultiTapDelay
-            endIf
-            
-            RegisterForSingleUpdate(updateTime)
+            iMultiTap = 1
+            RegisterForSingleUpdate(fMultiTapDelay)
         endIf
     endIf
 endEvent
@@ -184,38 +176,39 @@ endEvent
 function runUpdate()
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
-
-    if iMultiTap == -1   ; Longpress
-        if iWaitingKeyCode == iConsumableKey
-            if bNotInLootMenu && WC.bConsumablesEnabled && !bConsumeItemHotkeyEnabled
-                WC.consumeItem()
-            endIf
-            
-        elseIf PM.bPreselectMode
-            if iWaitingKeyCode == iLeftKey
-                PM.equipPreselectedItem(0) 
-            elseIf iWaitingKeyCode == iRightKey
-                PM.equipPreselectedItem(1)
-            elseIf iWaitingKeyCode == iShoutKey
-                if bNotInLootMenu && PM.bShoutPreselectEnabled && WC.bShoutEnabled
-                    PM.equipPreselectedItem(2)
-                endIf
-            endIf
-            
-        elseIf iWaitingKeyCode == iLeftKey
-            if AM.bAmmoMode
-                AM.toggleAmmoMode(false, false)
-            else
-                RC.rechargeWeapon(0)
-            endIf
-        elseIf iWaitingKeyCode == iRightKey
-            RC.rechargeWeapon(1)
-        endIf
         
-    elseIf iMultiTap == 0  ; LongpressHold
-        if PM.bPreselectMode && (iWaitingKeyCode == iLeftKey ||  iRightKey)
-            PM.equipAllPreselectedItems()
-        endIf
+    if iMultiTap == 0  ; Long press
+            if iWaitingKeyCode == iConsumableKey
+                if bNotInLootMenu && WC.bConsumablesEnabled && !bConsumeItemHotkeyEnabled
+                    WC.consumeItem()
+                endIf
+            
+            elseIf PM.bPreselectMode
+                if iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
+                    if bIsUtilityKeyHeld
+                        PM.equipAllPreselectedItems()
+                    else
+                        if iWaitingKeyCode == iLeftKey
+                            PM.equipPreselectedItem(0) 
+                        else
+                            PM.equipPreselectedItem(1)
+                        endIf
+                    endIf
+                elseIf iWaitingKeyCode == iShoutKey
+                    if bNotInLootMenu && PM.bShoutPreselectEnabled && WC.bShoutEnabled
+                        PM.equipPreselectedItem(2)
+                    endIf
+                endIf
+                
+            elseIf iWaitingKeyCode == iLeftKey
+                if AM.bAmmoMode
+                    AM.toggleAmmoMode(false, false)
+                else
+                    RC.rechargeWeapon(0)
+                endIf
+            elseIf iWaitingKeyCode == iRightKey
+                RC.rechargeWeapon(1)
+            endIf
         
     elseIf iMultiTap == 1  ; Single tap
         If iWaitingKeyCode == iLeftKey
@@ -342,15 +335,10 @@ state EDITMODE
         if bAllowKeyPress
             if KeyCode == iWaitingKeyCode && iMultiTap == 0
                 float updateTime = 0.0
-            
-                if HoldTime >= fLongPressDelay ;If longpress.
-                    iMultiTap = -1
-                else ; Turns out the key is a multiTap
-                    iMultiTap = 1
-                    
-                    If (KeyCode == iEditRotateKey || KeyCode == iEditRulersKey)
-                        updateTime = fMultiTapDelay
-                    endIf
+                iMultiTap = 1
+                
+                If (KeyCode == iEditRotateKey || KeyCode == iEditRulersKey)
+                    updateTime = fMultiTapDelay
                 endIf
                 
                 RegisterForSingleUpdate(updateTime)
@@ -359,7 +347,7 @@ state EDITMODE
     endEvent
 
     function runUpdate()
-        if iMultiTap == 0   ; Press and hold
+        if iMultiTap == 0   ; Long press
             if iWaitingKeyCode == iEditNextKey || iWaitingKeyCode == iEditPrevKey
                 EM.ToggleCycleRange()
             elseIf iWaitingKeyCode == iEditAlphaKey
