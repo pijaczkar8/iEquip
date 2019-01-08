@@ -128,13 +128,13 @@ function OnInit()
     asWidget_CurTA = new string[46]
     aiWidget_CurTC = new int[46]
     abWidget_CurV = new bool[46]
-	
+    
     iCustomColors = new int[14]
-	int iIndex = iCustomColors.length
-	While iIndex > 0
+    int iIndex = iCustomColors.length
+    While iIndex > 0
         iIndex -= 1
-		iCustomColors[iIndex] = -1
-	endWhile
+        iCustomColors[iIndex] = -1
+    endWhile
 endFunction
 
 ; #######################
@@ -145,13 +145,13 @@ function ToggleEditMode()
     
     Wait(0.2)
     
-	if isEditMode
+    if isEditMode
         DisableEditMode()
-	else
+    else
         EnableEditmode()
-	endIf
+    endIf
     
-	WC.updateWidgetVisibility()
+    WC.updateWidgetVisibility()
 endFunction
 
 function DisableEditMode()
@@ -247,17 +247,17 @@ endFunction
 ; - Highlight -
 
 function HighlightElement(bool bAdd)
-	debug.trace("iEquip EditMode HighlightElement called")
-	int[] iArgs = new int[3]
-	iArgs[0] = WC.abWidget_isText[iSelectedElement] as int   ; Is text element
-	iArgs[1] = iSelectedElement                              ; iSelectedElement                
-	iArgs[2] = WC.aiWidget_TC[iSelectedElement]              ; Current text colour if text element
+    debug.trace("iEquip EditMode HighlightElement called")
+    int[] iArgs = new int[3]
+    iArgs[0] = WC.abWidget_isText[iSelectedElement] as int   ; Is text element
+    iArgs[1] = iSelectedElement                              ; iSelectedElement                
+    iArgs[2] = WC.aiWidget_TC[iSelectedElement]              ; Current text colour if text element
     
-	if bAdd
-		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".highlightSelectedElement", iArgs)
-	else
-		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".removeCurrentHighlight", iArgs)
-	endIf
+    if bAdd
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".highlightSelectedElement", iArgs)
+    else
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".removeCurrentHighlight", iArgs)
+    endIf
 endFunction
 
 ; - Depth -
@@ -274,17 +274,17 @@ endFunction
 function SwapElementDepth()
     ; Swap depth of the two selected elements
 
-	if bringToFrontFirstTime
-		debug.MessageBox("This feature allows you to adjust the layer order of the elements within each widget, and the layer order of the widgets themselves\n\n"+\
+    if bringToFrontFirstTime
+        debug.MessageBox("This feature allows you to adjust the layer order of the elements within each widget, and the layer order of the widgets themselves\n\n"+\
                          "You cannot bring an element of one widget in front of one from another widget, only elements within the same widget\n\nIt is disabled for backgrounds and when the complete widget is selected for obvious reasons")
-		bringToFrontFirstTime = False
-	endIf
+        bringToFrontFirstTime = False
+    endIf
 
-	if iSelectedElement != -1 && !WC.abWidget_isBg[iSelectedElement]
-		if iSelectedElementFront == -1
-			iSelectedElementFront = iSelectedElement
-			debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[iSelectedElement] + " in front of and press the Bring To Front key a second time")
-		else
+    if iSelectedElement != -1 && !WC.abWidget_isBg[iSelectedElement]
+        if iSelectedElementFront == -1
+            iSelectedElementFront = iSelectedElement
+            debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[iSelectedElement] + " in front of and press the Bring To Front key a second time")
+        else
             if WC.asWidgetGroup[iSelectedElementFront] == WC.asWidgetGroup[iSelectedElement]
                 int[] iDepthIndex = new int[2]
                 iDepthIndex[0] = iSelectedElementFront
@@ -296,8 +296,8 @@ function SwapElementDepth()
             endIf
             
             iSelectedElementFront = -1
-		endIf
-	endIf
+        endIf
+    endIf
 endFunction
 
 function SetElementDepthOrder(int DepthIndexA, bool bSet = true)
@@ -305,12 +305,12 @@ function SetElementDepthOrder(int DepthIndexA, bool bSet = true)
 
     debug.notification("Setting depth")
     
-	if bSet       ; SET
+    if bSet       ; SET
         DepthIndexB = WC.aiWidget_D[DepthIndexA]
         if DepthIndexA >= DepthIndexB
             DepthIndexB = -1
         endIf
-	else          ; RESET
+    else          ; RESET
         ; Check that value is not default already
         if WC.aiWidget_D[DepthIndexA] != WC.aiWidget_DefD[DepthIndexA]
             int iIndex = 0
@@ -323,7 +323,7 @@ function SetElementDepthOrder(int DepthIndexA, bool bSet = true)
         else
             DepthIndexB = -1
         endIf 
-	endIf
+    endIf
     
     if DepthIndexB != -1
         int[] iArgs = new int[2]
@@ -337,12 +337,12 @@ endFunction
 ; - Tween -
 
 Function TweenElement(float attribute, float targetValue, float duration)
-	float[] iArgs = new float[3]
-	iArgs[0] = attribute     ; Attribute to change - 0 = _x, 1 = _y, 2 = _xscale/_yscale, 3 = _rotation, 4 = _alpha
-	iArgs[1] = targetValue   ; Target value - sent from calling function as value after increment applied
-	iArgs[2] = duration      ; Duration in seconds for tween to take
+    float[] iArgs = new float[3]
+    iArgs[0] = attribute     ; Attribute to change - 0 = _x, 1 = _y, 2 = _xscale/_yscale, 3 = _rotation, 4 = _alpha
+    iArgs[1] = targetValue   ; Target value - sent from calling function as value after increment applied
+    iArgs[2] = duration      ; Duration in seconds for tween to take
     
-	UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenIt", iArgs)
+    UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenIt", iArgs)
 EndFunction
 
 ; - Move -
@@ -397,21 +397,21 @@ endFunction
 ; - Rotate -
 
 function RotateElement()
-	if iSelectedElement > 0
+    if iSelectedElement > 0
         float fDuration = 0.005 * RotateStep
         int iRotation = WC.afWidget_R[iSelectedElement] as int
         
         if fDuration < 0.125
-			fDuration = 0.125
-		endIf
+            fDuration = 0.125
+        endIf
     
-		if sRotation == "Clockwise"
-			iRotation = iRotation + RotateStep
+        if sRotation == "Clockwise"
+            iRotation = iRotation + RotateStep
        
             If iRotation >= 360
                 iRotation = 0
             endIf
-		else
+        else
             iRotation = iRotation - RotateStep
         
             if WC.afWidget_R[iSelectedElement] == 0
@@ -419,26 +419,26 @@ function RotateElement()
             elseIf iRotation < 0
                 iRotation = 0
             endIf
-		endIf
+        endIf
         
         WC.afWidget_R[iSelectedElement] = iRotation as float
-		TweenElement(3, WC.afWidget_R[iSelectedElement], fDuration)
+        TweenElement(3, WC.afWidget_R[iSelectedElement], fDuration)
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", iRotation as String + " degrees")
-	EndIf 
+    EndIf 
 endFunction
 
 ; - Transparency -
 
 function SetElementAlpha()
-	If iSelectedElement != -1
-		WC.afWidget_A[iSelectedElement] = WC.afWidget_A[iSelectedElement] - AlphaStep
-		if WC.afWidget_A[iSelectedElement] <= 0
-			WC.afWidget_A[iSelectedElement] = 100
-		endIf
+    If iSelectedElement != -1
+        WC.afWidget_A[iSelectedElement] = WC.afWidget_A[iSelectedElement] - AlphaStep
+        if WC.afWidget_A[iSelectedElement] <= 0
+            WC.afWidget_A[iSelectedElement] = 100
+        endIf
         
-		TweenElement(4, WC.afWidget_A[iSelectedElement], 0.01 * AlphaStep)
+        TweenElement(4, WC.afWidget_A[iSelectedElement], 0.01 * AlphaStep)
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iSelectedElement] as int) as String + "%")
-	EndIf
+    EndIf
 endFunction
 
 ; ########################
@@ -449,9 +449,9 @@ endFunction
 function ApplyElementColor (int iType, int iColor)
     if iColor > 0
         if iType == 0
-	            iHighlightColor = iColor
-	            UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeHighlightColor", iColor)
-	            HighlightElement(true)
+                iHighlightColor = iColor
+                UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeHighlightColor", iColor)
+                HighlightElement(true)
         elseIf iType == 1
             iCurrentColorValue = iColor
             UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeCurrentValueColor", iColor)
@@ -466,10 +466,10 @@ function ApplyElementColor (int iType, int iColor)
 endFunction
 
 function ToggleCycleRange()
-	if bFirstCycleKeyPressed
-		bFirstCycleKeyPressed = false
-		showCyclingHelp()	
-	endIf
+    if bFirstCycleKeyPressed
+        bFirstCycleKeyPressed = false
+        showCyclingHelp()   
+    endIf
     ; Toggle between cycling groups/single enlements
     HighlightElement(false)
     
@@ -491,30 +491,30 @@ endFunction
 ; - Cycle Elements -
 
 function CycleElements(int iNextPrev)    
-	if bFirstCycleKeyPressed
-		bFirstCycleKeyPressed = false
-		showCyclingHelp()	
-	endIf
+    if bFirstCycleKeyPressed
+        bFirstCycleKeyPressed = false
+        showCyclingHelp()   
+    endIf
     HighlightElement(false)
     
     iSelectedElement += iNextPrev
-	if iNextPrev == 1   ; Next
-		if iSelectedElement > iLastElement
-			iSelectedElement = iFirstElement
-		endIf
-	else                ; Previous
-		if iSelectedElement < iFirstElement
-			iSelectedElement = iLastElement
-		endIf
-	endIf
+    if iNextPrev == 1   ; Next
+        if iSelectedElement > iLastElement
+            iSelectedElement = iFirstElement
+        endIf
+    else                ; Previous
+        if iSelectedElement < iFirstElement
+            iSelectedElement = iLastElement
+        endIf
+    endIf
     
-	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iSelectedElement)
-	HighlightElement(true)
-	UpdateEditModeGuide()
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iSelectedElement)
+    HighlightElement(true)
+    UpdateEditModeGuide()
 endFunction
 
 function showCyclingHelp()
-	debug.MessageBox("!!! IMPORTANT INFORMATION !!!\n\nCycling elements in Edit Mode\n\nSINGLE PRESS the keys shown at the top of the instructions panel to cycle through the widget elements."+\
+    debug.MessageBox("!!! IMPORTANT INFORMATION !!!\n\nCycling elements in Edit Mode\n\nSINGLE PRESS the keys shown at the top of the instructions panel to cycle through the widget elements."+\
         "\n\nPRESS AND HOLD either key to switch from cycling the widget groups to cycling the individual elements.")
 endFunction
 
@@ -549,41 +549,41 @@ function UpdateElementText(int[] iArgs, int iNewColor)
 endFunction
 
 function UpdateEditModeGuide()
-	if iSelectedElement != -1
+    if iSelectedElement != -1
         string tmpStr
     
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.SelectedElementText.text", WC.asWidgetDescriptions[iSelectedElement])
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " pixels")
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " degrees")
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaIncrementText.text", AlphaStep as String + "%")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.SelectedElementText.text", WC.asWidgetDescriptions[iSelectedElement])
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " pixels")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " degrees")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaIncrementText.text", AlphaStep as String + "%")
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationDirectionText.text", sRotation)
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[iSelectedElement] as int) as String + "%")
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", (WC.afWidget_R[iSelectedElement] as int) as String + " degrees")
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iSelectedElement] as int) as String + "%")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", (WC.afWidget_R[iSelectedElement] as int) as String + " degrees")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iSelectedElement] as int) as String + "%")
         
-		if WC.abWidget_isText[iSelectedElement]
+        if WC.abWidget_isText[iSelectedElement]
             tmpStr = WC.asWidget_TA[iSelectedElement] + " aligned"
-		else
+        else
             tmpStr = ""
-		endIf
+        endIf
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", tmpStr)
         
-		If RulersShown == 1
+        If RulersShown == 1
             tmpStr = "Edge grid"
-		elseIf RulersShown == 2
+        elseIf RulersShown == 2
             tmpStr = "Fullscreen grid"
-		else
+        else
             tmpStr = "Hidden"
         endIf
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RulersText.text", tmpStr)
-	endIf
+    endIf
 endFunction
 
 function UpdateElementsAll()
     int[] iArgs = new int[2]
     int iIndex = 0
     
-	while iIndex < WC.asWidgetDescriptions.Length  
+    while iIndex < WC.asWidgetDescriptions.Length  
         if WC.abWidget_isText[iIndex]
             iArgs[0] = iIndex
             UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
@@ -608,6 +608,7 @@ endFunction
 
 ; - Load Data -
 
+; CHECK IF CAN BE REWRITTEN/OPTIMIZED
 function LoadAllElements()
     int i = WC.asWidgetDescriptions.Length - 1
     
@@ -738,66 +739,66 @@ endfunction
 function ToggleRulers()
     RulersShown += 1
 
-	if RulersShown == 1
-		UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", true)
-	elseIf RulersShown == 2
-		UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
-		Wait(0.5)
-		UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", true)
-	else
-		UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
-		RulersShown = 0
-	endIf
+    if RulersShown == 1
+        UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", true)
+    elseIf RulersShown == 2
+        UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
+        Wait(0.5)
+        UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", true)
+    else
+        UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
+        RulersShown = 0
+    endIf
     
-	UpdateEditModeGuide()
+    UpdateEditModeGuide()
 endFunction
 
 function IncrementStep(int iStep)
-	if iStep == 0                    ; MoveStep
-		if MoveStep == 1
-			MoveStep = 10
-		elseIf MoveStep == 10
-			MoveStep = 50
-		elseIf MoveStep == 50
-			MoveStep = 100
-		elseIf MoveStep == 100
-			MoveStep = 1
-		endIf
+    if iStep == 0                    ; MoveStep
+        if MoveStep == 1
+            MoveStep = 10
+        elseIf MoveStep == 10
+            MoveStep = 50
+        elseIf MoveStep == 50
+            MoveStep = 100
+        elseIf MoveStep == 100
+            MoveStep = 1
+        endIf
         
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " pixels")
-	elseIf iStep == 1                ; RotateStep
-		if RotateStep == 15
-			RotateStep = 45
-		elseIf RotateStep == 45
-			RotateStep = 90
-		elseIf RotateStep == 90
-			RotateStep = 1
-		elseIf RotateStep == 1
-			RotateStep = 5
-		else
-			RotateStep = 15
-		endIf
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " pixels")
+    elseIf iStep == 1                ; RotateStep
+        if RotateStep == 15
+            RotateStep = 45
+        elseIf RotateStep == 45
+            RotateStep = 90
+        elseIf RotateStep == 90
+            RotateStep = 1
+        elseIf RotateStep == 1
+            RotateStep = 5
+        else
+            RotateStep = 15
+        endIf
         
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " degrees")
-	else                            ; AlphaStep
-		if AlphaStep == 10
-			AlphaStep = 20
-		elseIf AlphaStep == 20
-			AlphaStep = 5
-		else
-			AlphaStep = 10
-		endIf
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " degrees")
+    else                            ; AlphaStep
+        if AlphaStep == 10
+            AlphaStep = 20
+        elseIf AlphaStep == 20
+            AlphaStep = 5
+        else
+            AlphaStep = 10
+        endIf
         
-		UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaIncrementText.text", AlphaStep as String + "%")
-	endIf
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaIncrementText.text", AlphaStep as String + "%")
+    endIf
 endFunction
 
 function ToggleRotation()
-	if sRotation == "Clockwise"
+    if sRotation == "Clockwise"
         sRotation = "Counterclockwise"
-	else
+    else
         sRotation = "Clockwise"
-	endIf
+    endIf
     
     UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationDirectionText.text", sRotation)
 endFunction
@@ -842,19 +843,19 @@ endFunction
 
 function ShowColorSelection(int iType)
     string sText
-	int iColor
+    int iColor
     int iDefColor
     iLastColorSelection = iType
     
-	if iType == 0       ; Highlight colour
-		sText = "Select a color for selected item highlights"
-		iColor = iHighlightColor
-		iDefColor = 0x0099FF
-	elseIf iType == 1   ; Current item info text colour
-		sText = "Select a color for selected item info text"
-		iColor = iCurrentColorValue
-		iDefColor = 0xEAAB00
-	else                ; Selected text colour
+    if iType == 0       ; Highlight colour
+        sText = "Select a color for selected item highlights"
+        iColor = iHighlightColor
+        iDefColor = 0x0099FF
+    elseIf iType == 1   ; Current item info text colour
+        sText = "Select a color for selected item info text"
+        iColor = iCurrentColorValue
+        iDefColor = 0xEAAB00
+    else                ; Selected text colour
         ; Make sure element is text
         if WC.abWidget_isText[iSelectedElement]
             sText = "Select a text color for selected text element"
@@ -958,7 +959,7 @@ endFunction
 
 function DiscardChanges()
     ; Confirmation messagebox
-	if iEquip_ConfirmDiscardChanges.Show()
+    if iEquip_ConfirmDiscardChanges.Show()
         Int iIndex = 0
         
         WC.updateWidgetVisibility(false)
@@ -980,7 +981,7 @@ function DiscardChanges()
         UpdateElementsAll()
         UpdateEditModeGuide()
         WC.updateWidgetVisibility()
-	endIf
+    endIf
 endFunction
 
 ; - Reset  -
@@ -1041,20 +1042,20 @@ endFunction
 
 function ResetDefaults()
     ; Resets all widget data
-	debug.Notification("Resetting iEquip...")
-	WC.updateWidgetVisibility(false)
-	UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-	WC.ResetWidgetArrays()
-	UpdateElementsAll()
+    debug.Notification("Resetting iEquip...")
+    WC.updateWidgetVisibility(false)
+    UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
+    WC.ResetWidgetArrays()
+    UpdateElementsAll()
     
-	if isEditMode
-		iSelectedElement = 0
-		LoadAllElements()
-		UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
-	endIf
+    if isEditMode
+        iSelectedElement = 0
+        LoadAllElements()
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
+    endIf
     
-	WC.updateWidgetVisibility()
-	debug.Notification("Finished resetting iEquip")
+    WC.updateWidgetVisibility()
+    debug.Notification("Finished resetting iEquip")
 endFunction
 
 ; #####################

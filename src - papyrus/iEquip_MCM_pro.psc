@@ -527,61 +527,56 @@ endState
 
 State pro_tgl_altSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastAlteration = !WC.bQuickDualCastAlteration
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastAlteration)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastAlteration = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastAlteration)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[0]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[0] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[0] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[0])
     endEvent
 endState
 
 State pro_tgl_conjSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastConjuration = !WC.bQuickDualCastConjuration
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastConjuration)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastConjuration = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastConjuration)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[1]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[1] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[1] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[1])
     endEvent
 endState
 
 State pro_tgl_destSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastDestruction = !WC.bQuickDualCastDestruction
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastDestruction)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastDestruction = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastDestruction)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[2]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[2] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[2] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[2])
     endEvent
 endState
 
 State pro_tgl_illSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastIllusion = !WC.bQuickDualCastIllusion
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastIllusion)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastIllusion = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastIllusion)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[3]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[3] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[3] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[3])
     endEvent
 endState
 
 State pro_tgl_restSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastRestoration = !WC.bQuickDualCastRestoration
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastRestoration)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastRestoration = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastRestoration)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[4]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[4] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[4] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[4])
     endEvent
 endState
 

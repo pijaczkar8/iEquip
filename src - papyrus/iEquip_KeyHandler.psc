@@ -76,22 +76,22 @@ string sPreviousState = ""
 ; ------------------
 
 function GameLoaded()
-	GotoState("")
+    GotoState("")
     
-	self.RegisterForMenu("InventoryMenu")
-	self.RegisterForMenu("MagicMenu")
-	self.RegisterForMenu("FavoritesMenu")
-	self.RegisterForMenu("Journal Menu")
-	self.RegisterForMenu("LootMenu")
+    self.RegisterForMenu("InventoryMenu")
+    self.RegisterForMenu("MagicMenu")
+    self.RegisterForMenu("FavoritesMenu")
+    self.RegisterForMenu("Journal Menu")
+    self.RegisterForMenu("LootMenu")
     
-	UnregisterForAllKeys() ;Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
+    UnregisterForAllKeys() ;Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
     
-	bIsUtilityKeyHeld = false
+    bIsUtilityKeyHeld = false
     bNotInLootMenu = true
 endFunction
 
 event OnMenuOpen(string MenuName)
-	if MenuName == "LootMenu"
+    if MenuName == "LootMenu"
         bNotInLootMenu = false
     else
         sPreviousState = GetState()
@@ -102,7 +102,7 @@ event OnMenuOpen(string MenuName)
         iMultiTap = 0
         
         RegisterForGameplayKeys()
-	endIf
+    endIf
 endEvent
 
 event OnMenuClose(string MenuName)
@@ -114,7 +114,7 @@ event OnMenuClose(string MenuName)
 endEvent
 
 event OnUpdate()
-	debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
+    debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
     bAllowKeyPress = false
     
     runUpdate()
@@ -145,12 +145,12 @@ event OnKeyDown(int KeyCode)
         endIf
         iWaitingKeyCode = KeyCode
     
-        if iMultiTap == 0       ; This is first first time the key has been pressed
+        if iMultiTap == 0 ; This is the first time the key has been pressed
             RegisterForSingleUpdate(fLongPressDelay)
-        elseIf iMultiTap == 1   ; This is the second time the key has been pressed.
+        elseIf iMultiTap == 1 ;This is the second time the key has been pressed.
             iMultiTap = 2
             RegisterForSingleUpdate(fMultiTapDelay)
-        elseIf iMultiTap == 2   ; This is the third time the key has been pressed
+        elseIf iMultiTap == 2 ; This is the third time the key has been pressed
             iMultiTap = 3
             RegisterForSingleUpdate(0.0)
         endIf
@@ -306,7 +306,7 @@ endFunction
 
 ; - Inventory
 state INVENTORYMENU
-	event OnKeyDown(int KeyCode)
+    event OnKeyDown(int KeyCode)
         if KeyCode == iUtilityKey
             bIsUtilityKeyHeld = true
         endIf
@@ -321,12 +321,12 @@ state INVENTORYMENU
             elseIf KeyCode == iShoutKey
                 WC.AddToQueue(2)
             elseIf KeyCode == iConsumableKey
-                WC.AddToQueue(3)		
+                WC.AddToQueue(3)        
             endIf
             
             bAllowKeyPress = true
         endIf
-	endEvent
+    endEvent
 endState
 
 ; - Editmode
@@ -471,7 +471,7 @@ function updateKeyMaps()
 endFunction
 
 function ToggleEditMode()
-	debug.trace("iEquip KeyHandler toggleEditMode called")
+    debug.trace("iEquip KeyHandler toggleEditMode called")
     UnregisterForAllKeys()
 
     if EM.isEditMode
@@ -532,12 +532,12 @@ function updateEditModeKeys()
 endFunction
 
 function RegisterForGameplayKeys()
-	debug.trace("iEquip KeyHandler RegisterForGameplayKeys called")
-	RegisterForKey(iShoutKey)
-	RegisterForKey(iLeftKey)
-	RegisterForKey(iRightKey)
-	RegisterForKey(iConsumableKey)
-	RegisterForKey(iUtilityKey)
+    debug.trace("iEquip KeyHandler RegisterForGameplayKeys called")
+    RegisterForKey(iShoutKey)
+    RegisterForKey(iLeftKey)
+    RegisterForKey(iRightKey)
+    RegisterForKey(iConsumableKey)
+    RegisterForKey(iUtilityKey)
     if bConsumeItemHotkeyEnabled
         RegisterForKey(iOptConsumeKey)
     endIf
@@ -547,25 +547,25 @@ function RegisterForGameplayKeys()
 endFunction
 
 function RegisterForEditModeKeys()
-	debug.trace("iEquip KeyHandler RegisterForEditModeKeys called")
-	RegisterForKey(iEditLeftKey)
-	RegisterForKey(iEditRightKey)
-	RegisterForKey(iEditUpKey)
-	RegisterForKey(iEditDownKey)
-	RegisterForKey(iEditScaleUpKey)
-	RegisterForKey(iEditScaleDownKey)
-	RegisterForKey(iEditNextKey)
-	RegisterForKey(iEditPrevKey)
-	RegisterForKey(iEditResetKey)
-	RegisterForKey(iEditLoadPresetKey)
-	RegisterForKey(iEditSavePresetKey)
-	RegisterForKey(iEditRotateKey)
-	RegisterForKey(iEditDepthKey)
-	RegisterForKey(iEditAlphaKey)
-	RegisterForKey(iEditTextKey)
-	RegisterForKey(iEditRulersKey)
-	RegisterForKey(iEditDiscardKey)
-	RegisterForKey(iUtilityKey)
+    debug.trace("iEquip KeyHandler RegisterForEditModeKeys called")
+    RegisterForKey(iEditLeftKey)
+    RegisterForKey(iEditRightKey)
+    RegisterForKey(iEditUpKey)
+    RegisterForKey(iEditDownKey)
+    RegisterForKey(iEditScaleUpKey)
+    RegisterForKey(iEditScaleDownKey)
+    RegisterForKey(iEditNextKey)
+    RegisterForKey(iEditPrevKey)
+    RegisterForKey(iEditResetKey)
+    RegisterForKey(iEditLoadPresetKey)
+    RegisterForKey(iEditSavePresetKey)
+    RegisterForKey(iEditRotateKey)
+    RegisterForKey(iEditDepthKey)
+    RegisterForKey(iEditAlphaKey)
+    RegisterForKey(iEditTextKey)
+    RegisterForKey(iEditRulersKey)
+    RegisterForKey(iEditDiscardKey)
+    RegisterForKey(iUtilityKey)
 endFunction
 
 function openiEquipMCM(bool inMCMSelect = false)

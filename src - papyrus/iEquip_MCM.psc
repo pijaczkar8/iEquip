@@ -4,6 +4,7 @@ import stringUtil
 
 iEquip_WidgetCore Property WC Auto
 iEquip_EditMode Property EM Auto
+iEquip_KeyHandler Property KH Auto
 
 iEquip_MCM_gen Property gen Auto
 iEquip_MCM_htk Property htk Auto
@@ -20,7 +21,7 @@ Float Property iEquip_CurrentVersion Auto
 actor property PlayerRef auto
 
 ;Set to true for version updates which require a full reset
-Bool bRequiresResetOnUpdate = False ;Set to true for version updates which require a full reset
+Bool bRequiresResetOnUpdate = False
 
 bool Property bIsFirstEnabled = true Auto Hidden
 bool Property bEnabled = false Auto Hidden
@@ -46,7 +47,7 @@ endFunction
 
 event OnVersionUpdate(int a_version)
     if (a_version > CurrentVersion && CurrentVersion > 0)
-        Debug.Notification("Updating iEquip to Version " + a_version as string)
+        Debug.Notification("$IEQ_MCM_not_Updating" + " " + a_version as string)
         if bRequiresResetOnUpdate ;For major version updates - fully resets mod, use only if absolutely neccessary
             OnConfigInit()
             EM.ResetDefaults()
@@ -61,19 +62,19 @@ endEvent
 ; ### START OF CONFIG MCM ###
 
 function ApplyMCMSettings()
-	debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
-	
-	if WC.isEnabled
-        debug.Notification("Applying iEquip settings...")
+    debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
+    
+    if WC.isEnabled
+        debug.Notification("$iEquip_MCM_not_ApplyingSettings")
         
         WC.ApplyChanges()
         KH.updateEditModeKeys()           
         if EM.isEditMode
             EM.LoadAllElements()
         endIf
-	elseIf !bIsFirstEnabled
-		debug.Notification("iEquip disabled...")
-	endIf
+    elseIf !bIsFirstEnabled
+        debug.Notification("$iEquip_MCM_not_Disabled")
+    endIf
 endFunction
 
 Event OnConfigInit() 
@@ -88,7 +89,7 @@ Event OnConfigInit()
     inf.initData()  
     
     Pages = new String[1]
-    Pages[0] = "General Settings"
+    Pages[0] = "$iEquip_MCM_lbl_General"
 endEvent
 
 event OnConfigOpen()
@@ -108,22 +109,22 @@ event OnConfigOpen()
     if bIsFirstEnabled == false
         if WC.bProModeEnabled
             Pages = new String[9]
-            Pages[8] = "Information"
-            Pages[7] = "Edit Mode"
-            Pages[6] = "Misc UI Options"
-            Pages[5] = "Pro Mode"
+            Pages[8] = "$iEquip_MCM_lbl_Info"
+            Pages[7] = "$iEquip_MCM_lbl_Edit"
+            Pages[6] = "$iEquip_MCM_lbl_Misc"
+            Pages[5] = "$iEquip_MCM_lbl_Pro"
         else
             Pages = new String[8]
-            Pages[7] = "Information"
-            Pages[6] = "Edit Mode"
-            Pages[5] = "Misc UI Options"
+            Pages[7] = "$iEquip_MCM_lbl_Info"
+            Pages[6] = "$iEquip_MCM_lbl_Edit"
+            Pages[5] = "$iEquip_MCM_lbl_Misc"
         endIf
         
-        Pages[4] = "Recharging and Poisoning"
-        Pages[3] = "Potions"
-        Pages[2] = "Queue Options"
-        Pages[1] = "Hotkey Options"
-        Pages[0] = "General Settings"
+        Pages[4] = "$iEquip_MCM_lbl_Recharging"
+        Pages[3] = "$iEquip_MCM_lbl_Potions"
+        Pages[2] = "$iEquip_MCM_lbl_Queue"
+        Pages[1] = "$iEquip_MCM_lbl_Hotkey"
+        Pages[0] = "$iEquip_MCM_lbl_General"
     endIf
 endEvent
 
@@ -131,7 +132,7 @@ Event OnConfigClose()
     if WC.isEnabled != bEnabled
         if !bEnabled && EM.isEditMode
             WC.updateWidgetVisibility(false)
-            Wait(0.2)
+            Utility.Wait(0.2)
             EM.DisableEditMode()
         endIf
         if !bIsFirstEnabled
@@ -154,23 +155,23 @@ event OnPageReset(string page)
     else
         UnloadCustomContent()
     
-        if page == "General Settings"
+        if page == "$iEquip_MCM_lbl_General"
             gen.drawPage()
-        elseIf page == "Hotkey Options"
+        elseIf page == "$iEquip_MCM_lbl_Hotkey"
             htk.drawPage()
-        elseIf page == "Queue Options" 
+        elseIf page == "$iEquip_MCM_lbl_Queue" 
             que.drawPage()
-        elseIf page == "Potions" 
+        elseIf page == "$iEquip_MCM_lbl_Potions" 
             pot.drawPage()
-        elseIf page == "Recharging and Poisoning"
+        elseIf page == "$iEquip_MCM_lbl_Recharging"
             poi.drawPage()    
-        elseIf page == "Misc UI Options"
+        elseIf page == "$iEquip_MCM_lbl_Misc"
             uii.drawPage()          
-        elseIf page == "Pro Mode"
+        elseIf page == "$iEquip_MCM_lbl_Pro"
             pro.drawPage()   
-        elseIf page == "Edit Mode"
+        elseIf page == "$iEquip_MCM_lbl_Edit"
             edt.drawPage()           
-        elseIf page == "Information"
+        elseIf page == "$iEquip_MCM_lbl_Info"
             inf.drawPage()
         endIf
     endif

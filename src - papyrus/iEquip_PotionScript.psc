@@ -195,6 +195,7 @@ event OnInit()
     debug.trace("iEquip_PotionScript OnInit finished -  - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
     bInitialised = true
     bLoadedByOnInit = true
+    debug.trace("iEquip_PotionScript OnInit finished")
 endEvent
 
 ;Called from OnPlayerLoadGame on the PlayerEventHandler script

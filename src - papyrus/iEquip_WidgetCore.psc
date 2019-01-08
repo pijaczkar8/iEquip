@@ -67,7 +67,6 @@ Keyword property MagicDamageShock auto
 int[] property aiCurrentQueuePosition auto hidden ;Array containing the current index for each queue
 string[] property asCurrentlyEquipped auto hidden ;Array containing the itemName for whatever is currently equipped in each queue
 int[] property aiCurrentlyPreselected auto hidden ;Array containing current preselect queue positions
-;int[] aiIndexOnStartCycle ;Array into which we store the currently equipped index for slots 0-2 when we start cycling, resets when checkAndEquipShownHandItem is called - allows us to skip currently equipped item when cycling
 
 ;Widget Properties
 string[] property asWidgetDescriptions auto hidden
@@ -134,11 +133,14 @@ bool property bMagickaPotionGrouping = true auto hidden
 bool property bProModeEnabled = false auto hidden
 bool property bPreselectMode = false auto hidden
 bool property bQuickDualCastEnabled = false auto hidden
-bool property bQuickDualCastDestruction = false auto hidden
-bool property bQuickDualCastIllusion = false auto hidden
-bool property bQuickDualCastAlteration = false auto hidden
-bool property bQuickDualCastRestoration = false auto hidden
-bool property bQuickDualCastConjuration = false auto hidden
+;bool property bQuickDualCastDestruction = false auto hidden
+;bool property bQuickDualCastIllusion = false auto hidden
+;bool property bQuickDualCastAlteration = false auto hidden
+;bool property bQuickDualCastRestoration = false auto hidden
+;bool property bQuickDualCastConjuration = false auto hidden
+
+string[] asSpellSchools
+bool[] property abQuickDualCastSchoolAllowed auto hidden
 
 bool property bRefreshQueues = False auto hidden
 bool property bFadeOptionsChanged = False auto hidden
@@ -278,6 +280,7 @@ Event OnWidgetInit()
 	abIsCounterShown = new bool[5]
 	abIsPoisonNameShown = new bool[2]
 	abPoisonInfoDisplayed = new bool[2]
+	abQuickDualCastSchoolAllowed = new bool[5]
 	
 	int i = 0
 	while i < 8
@@ -286,6 +289,7 @@ Event OnWidgetInit()
 			aiTargetQ[i] = 0
 			aiCurrentQueuePosition[i] = -1
 			asCurrentlyEquipped[i] = ""
+			abQuickDualCastSchoolAllowed = false
 			if i < 3
 				aiCurrentlyPreselected[i] = -1
 				abQueueWasEmpty[i] = true
@@ -330,6 +334,13 @@ Event OnWidgetInit()
 	asWeaponTypeNames[7] = "Bow"
 	asWeaponTypeNames[8] = "Staff"
 	asWeaponTypeNames[9] = "Crossbow"
+
+	asSpellSchools = new string[5]
+	asSpellSchools[0] = "Alteration"
+	asSpellSchools[1] = "Conjuration"
+	asSpellSchools[2] = "Destruction"
+	asSpellSchools[3] = "Illusion"
+	asSpellSchools[4] = "Restoration"
 
 	asBound2HWeapons = new string[5]
 	asBound2HWeapons[0] = "Bound Bow"
@@ -528,6 +539,7 @@ function refreshWidget()
 	KH.bAllowKeyPress = false
 	updateWidgetVisibility(false)
 	debug.notification("Refreshing iEquip widget...")
+	EM.UpdateElementsAll()
 	;Toggle preselect mode now (we exit again later)
 	if !bPreselectMode
 		PM.togglePreselectMode()
@@ -901,7 +913,7 @@ endFunction
 
 function addFists()
 	debug.trace("iEquip_WidgetCore addFists called")
-	if findInQueue(1, "Fist") == -1
+	if findInQueue(1, "$iEquip_common_Unarmed") == -1
 		int Fists = jMap.object()
 		jMap.setInt(Fists, "Type", 0)
 		jMap.setStr(Fists, "Name", "$iEquip_common_Unarmed")
@@ -1132,18 +1144,30 @@ function addCurrentItemsOnFirstEnable()
 				endIf
 			endIf
 			;Now update the widget to show the equipped item
-			aiCurrentQueuePosition[Q] = 0
+			if Q == 1
+				aiCurrentQueuePosition[Q] = 1 ;Make sure we show the equipped item and not the Unarmed shortcut we've already added in index 0
+			else
+				aiCurrentQueuePosition[Q] = 0
+			endIf
 			asCurrentlyEquipped[Q] = itemName
 			if Q < 2 || bShoutEnabled
-				updateWidget(Q, 0, false, true)
+				updateWidget(Q, aiCurrentQueuePosition[Q], false, true)
 			endIf
 			;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
 			if Q < 2
 				checkAndEquipShownHandItem(Q, false, true)
 			endIf
+		;Otherwise set left/right slots to Unarmed
+		elseIf Q == 0
+			setSlotToEmpty(0)
+		elseIf Q == 1
+			aiCurrentQueuePosition[Q] = 0
+			asCurrentlyEquipped[Q] = "$iEquip_common_Unarmed"
+			updateWidget(Q, aiCurrentQueuePosition[Q], false, true)
 		endIf
 		Q += 1
 	endWhile
+	;The only slots this should potentially leave as + Empty on a fresh start are the Shout and Poison slots
 endFunction
 
 function PopulateWidgetArrays()
@@ -2418,7 +2442,7 @@ endFunction
 
 function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, bool equippingOnAutoAdd = false)
     ;When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
-    debug.trace("iEquip_WidgetCore cycleHand called - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", itemType: " + itemType)
+    debug.trace("iEquip_WidgetCore cycleHand called - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", itemType: " + itemType + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
    	int iEquipSlotId = 1
     int otherHand = 0
     bool justSwitchedHands = false
@@ -2457,10 +2481,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     		UnequipHand(otherHand)
     	endIf
     endif
-    ;if we are re-equipping from an unarmed state
-    if bGoneUnarmed
-		bGoneUnarmed = false
-	endIf
+    ;In case we are re-equipping from an unarmed state
+	bGoneUnarmed = false
 	if !equippingOnAutoAdd
 		;if target item is a spell equip straight away
 		if itemType == 22
@@ -2468,7 +2490,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			if bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
 				string spellSchool = jMap.getStr(jArray.getObj(aiTargetQ[Q], targetIndex), "Icon")
 				string spellName = targetItem.GetName()
-				if (spellSchool == "Destruction" && bQuickDualCastDestruction) || (spellSchool == "Alteration" && bQuickDualCastAlteration) || (spellSchool == "Illusion" && bQuickDualCastIllusion) || (spellSchool == "Restoration" && bQuickDualCastRestoration) || (spellSchool == "Conjuration" && bQuickDualCastConjuration && (asBound2HWeapons.find(spellName) == -1))
+				;if (spellSchool == "Destruction" && bQuickDualCastDestruction) || (spellSchool == "Alteration" && bQuickDualCastAlteration) || (spellSchool == "Illusion" && bQuickDualCastIllusion) || (spellSchool == "Restoration" && bQuickDualCastRestoration) || (spellSchool == "Conjuration" && bQuickDualCastConjuration && (asBound2HWeapons.find(spellName) == -1))
+				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)]	
 					debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
 					if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "Name"), spellSchool)
 						bSwitchingHands = false ;Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
@@ -2614,7 +2637,7 @@ function goUnarmed()
 		i += 1
 	endwhile
 	ammo targetAmmo = AM.currentAmmoForm as Ammo
-	if bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
+	if targetAmmo && bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
 	if bEnableGearedUp
@@ -2740,6 +2763,7 @@ function applyPoison(int Q)
 		return
 	elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Form") as Weapon
 		messagestring = "The " + weaponName + " in your " + handName + " hand doesn't appear to match what's currently showing in iEquip. Do you wish to carry on and apply " + newPoison + " to it anyway?"
+		;messagestring = "$iEquip_WC_msg_ApplyToUnknownWeapon{ + weaponName + }{ + handName + }{ + newPoison + }"
 		iButton = showMessageWithCancel(messageString)
 		if iButton != 0
 			return
@@ -2773,6 +2797,7 @@ function applyPoison(int Q)
 		endIf
 	elseif iShowPoisonMessages == 0
 		messagestring = "Would you like to apply " + newPoison + " to your " + weaponName + "?"
+		;messagestring = "$iEquip_WC_msg_WouldYouLikeToApply{ + newPoison + }{ + weaponName + }"
 		iButton = showMessageWithCancel(messageString)
 		if iButton != 0
 			return
@@ -3002,17 +3027,19 @@ function addToQueue(int Q)
 	bool isEnchanted = false
 	bool isPoisoned = false
 	string itemName = ""
-
+	debug.trace("iEquip_WidgetCore addToQueue - UI.IsMenuOpen(Console): " + UI.IsMenuOpen("Console") + ", UI.IsMenuOpen(CustomMenu): " + UI.IsMenuOpen("CustomMenu") + ", ((Self as form) as iEquip_uilib).IsMenuOpen(): " + ((Self as form) as iEquip_uilib).IsMenuOpen())
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + "formId")
+		debug.trace("iEquip_WidgetCore addToQueue - itemFormID: " + itemFormID)
 		itemID = UI.GetInt(sCurrentMenu, sEntryPath + "itemId")
+		debug.trace("iEquip_WidgetCore addToQueue - itemID: " + itemID)
 		itemName = UI.GetString(sCurrentMenu, sEntryPath + "text")
+		debug.trace("iEquip_WidgetCore addToQueue - itemName: " + itemName)
 		itemForm = game.GetFormEx(itemFormID)
-		itemID = UI.GetInt(sCurrentMenu, sEntryPath + "itemId")
-		itemName = UI.GetString(sCurrentMenu, sEntryPath + "text")
+		debug.trace("iEquip_WidgetCore addToQueue - itemForm: " + itemForm + ", " + itemForm.GetName() + ", should match itemName: " + itemName + ", itemID: " + itemID)
 	endIf
 	if itemForm && itemForm != None
-		debug.trace("iEquip_WidgetCore addToQueue - itemForm: " + itemForm + ", " + itemForm.GetName() + ", itemFormID: " + itemFormID)
+		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check")
 		itemType = itemForm.GetType()
 		if itemType == 41 || itemType == 26 ;Weapons and shields only
 			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + "isEnchanted")
@@ -3478,7 +3505,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	int targetArray = aiTargetQ[iQueueMenuCurrentQueue]
 	int targetObject = jArray.getObj(targetArray, iIndex)
 	string itemName = JMap.getStr(targetObject, "Name")
-	if !(stringutil.Find(itemName, "Potions", 0) > -1)
+	if !(iQueueMenuCurrentQueue == 3 && (stringutil.Find(itemName, "Potions", 0) > -1)) && !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed")
 		bool keepInFLST = false
 		int itemID = JMap.getInt(targetObject, "itemID")
 		form itemForm = JMap.getForm(targetObject, "Form")
@@ -3536,12 +3563,59 @@ endFunction
 
 function QueueMenuClearQueue()
 	debug.trace("iEquip_WidgetCore QueueMenuClearQueue() called")
+	int targetArray = aiTargetQ[iQueueMenuCurrentQueue]
+	int targetObject
+	string itemName
+	int count = jArray.count(aiTargetQ[iQueueMenuCurrentQueue]) - 1
+	while count > -1
+		targetObject = jArray.getObj(targetArray, count)
+		itemName = JMap.getStr(targetObject, "Name")
+		if !(iQueueMenuCurrentQueue == 3 && (stringutil.Find(itemName, "Potions", 0) > -1)) && !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed")
+			bool keepInFLST = false
+			int itemID = JMap.getInt(targetObject, "itemID")
+			form itemForm = JMap.getForm(targetObject, "Form")
+			if bMoreHUDLoaded
+				AhzMoreHudIE.RemoveIconItem(itemID)
+			endIf
+			if iQueueMenuCurrentQueue < 2
+				int otherHandQueue = 1
+				if iQueueMenuCurrentQueue == 1
+					otherHandQueue = 0
+				endIf
+				if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+					if bMoreHUDLoaded
+						AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
+					endIf
+					keepInFLST = true
+				endIf
+	        endIf
+	        if !keepInFLST
+	        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
+	        endIf
+	    endIf
+	    count -= 1
+	endWhile
+	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+	jArray.clear(aiTargetQ[iQueueMenuCurrentQueue])
 	if iQueueMenuCurrentQueue == 3
-		jArray.eraseRange(aiTargetQ[iQueueMenuCurrentQueue], 3, -1)
-	else
-		jArray.clear(aiTargetQ[iQueueMenuCurrentQueue])
+		addPotionGroups()
+		if bHealthPotionGrouping && (!abPotionGroupEmpty[0] || PO.iEmptyPotionQueueChoice == 0)
+			aiCurrentQueuePosition[3] = 0
+		elseIf bStaminaPotionGrouping && (!abPotionGroupEmpty[1] || PO.iEmptyPotionQueueChoice == 0)
+			aiCurrentQueuePosition[3] = 1
+		elseIf bMagickaPotionGrouping && (!abPotionGroupEmpty[2] || PO.iEmptyPotionQueueChoice == 0)
+			aiCurrentQueuePosition[3] = 2
+		else
+			aiCurrentQueuePosition[3] = -1
+		endIf
 	endIf
-	if iQueueMenuCurrentQueue == 4
+	if iQueueMenuCurrentQueue == 3 && (aiCurrentQueuePosition[3] != -1)
+		updateWidget(3, aiCurrentQueuePosition[3])
+		if abPotionGroupEmpty[aiCurrentQueuePosition[3]]
+			Utility.Wait(1.0)
+			checkAndFadeConsumableIcon(true)
+		endIf
+	elseIf iQueueMenuCurrentQueue == 4
 		handleEmptyPoisonQueue()
 	else
 		setSlotToEmpty(iQueueMenuCurrentQueue)

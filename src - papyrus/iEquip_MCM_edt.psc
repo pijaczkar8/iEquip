@@ -14,19 +14,19 @@ function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
 
     EMKeysChoice = new String[2]
-    EMKeysChoice[0] = "Default"
-    EMKeysChoice[1] = "Custom"
+    EMKeysChoice[0] = "$iEquip_common_Default"
+    EMKeysChoice[1] = "$iEquip_common_Custom"
 endFunction
 
 function drawPage()
-    MCM.AddHeaderOption("Edit Mode Options")
-    MCM.AddSliderOptionST("edt_sld_slowTimeStr", "Slow Time effect strength ", iEquip_EditModeSlowTimeStrength.GetValueint())
+    MCM.AddHeaderOption("$iEquip_MCM_edt_lbl_EMOptions")
+    MCM.AddSliderOptionST("edt_sld_slowTimeStr", "$iEquip_MCM_edt_lbl_slowTimeStr", iEquip_EditModeSlowTimeStrength.GetValueint())
             
     MCM.SetCursorPosition(1)
             
-    MCM.AddHeaderOption("Edit Mode Keys")
+    MCM.AddHeaderOption("")
     MCM.AddEmptyOption()
-    MCM.AddMenuOptionST("edt_men_chooseHtKey", "Choose your hotkeys", EMKeysChoice[MCM.iCurrentEMKeysChoice])
+    MCM.AddMenuOptionST("edt_men_chooseHtKey", "$iEquip_MCM_edt_lbl_chooseHtKey", EMKeysChoice[MCM.iCurrentEMKeysChoice])
             
     if(MCM.iCurrentEMKeysChoice == 1)
         MCM.AddEmptyOption()
@@ -44,9 +44,9 @@ function drawPage()
         MCM.AddKeyMapOptionST("edt_key_setTxtAlCo", "Set text alignment and colour", KH.iEditTextKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("edt_key_tglRulers", "Toggle rulers", KH.iEditRulersKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("edt_key_rstSelElem", "Reset selected element", KH.iEditResetKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_loadPrst", "Load preset", KH.iEditLoadPresetKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_savePrst", "Save preset", KH.iEditSavePresetKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("edt_key_discChangs", "Discard changes", KH.iEditDiscardKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_loadPrst", "$iEquip_common_LoadPreset", KH.iEditLoadPresetKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_savePrst", "$iEquip_common_SavePreset", KH.iEditSavePresetKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("edt_key_discChangs", "$iEquip_common_DiscardChanges", KH.iEditDiscardKey, mcmUnmapFLAG)
     endIf
 endFunction
 

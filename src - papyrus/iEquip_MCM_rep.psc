@@ -201,7 +201,7 @@ State rep_men_showEnchCharge
             CM.iChargeDisplayType = currentVar as int
             MCM.SetMenuOptionValueST(chargeDisplayOptions[CM.iChargeDisplayType])
             
-            if CM.iChargeDisplayType == 2 && CM.bEnableGradientFill
+            if CM.iChargeDisplayType == 2
                 CM.bEnableGradientFill = false
             endIf
 

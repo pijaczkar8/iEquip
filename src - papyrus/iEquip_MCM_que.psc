@@ -68,15 +68,15 @@ State que_tgl_hrdLimQueSize
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bHardLimitQueueSize)
             bool continue = true
             if !WC.bHardLimitQueueSize
-            	continue = MCM.ShowMessage("You are about to enable a hard limit on your maximum queue lengths!\n\nDoing so will stop the queues from being able to grow organically as new items are equipped. "+\
-            		"This can particularly affect your consumable and poison queues.\n\nDo you wish to proceed?", true, "OK", "Cancel")
-            	if continue
-            		WC.bReduceMaxQueueLengthPending = true
-            	endIf
+                continue = MCM.ShowMessage("You are about to enable a hard limit on your maximum queue lengths!\n\nDoing so will stop the queues from being able to grow organically as new items are equipped. "+\
+                    "This can particularly affect your consumable and poison queues.\n\nDo you wish to proceed?", true, "OK", "Cancel")
+                if continue
+                    WC.bReduceMaxQueueLengthPending = true
+                endIf
             endIf
             if continue
-            	WC.bHardLimitQueueSize = !WC.bHardLimitQueueSize
-            	MCM.SetToggleOptionValueST(WC.bHardLimitQueueSize)
+                WC.bHardLimitQueueSize = !WC.bHardLimitQueueSize
+                MCM.SetToggleOptionValueST(WC.bHardLimitQueueSize)
             endIf
         endIf
     endEvent

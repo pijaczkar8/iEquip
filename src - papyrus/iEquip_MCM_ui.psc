@@ -1,6 +1,7 @@
 Scriptname iEquip_MCM_ui extends iEquip_MCM_helperfuncs
 
 iEquip_WidgetCore Property WC Auto
+iEquip_AmmoMode Property AM Auto
 
 string[] ammoIconOptions
 string[] backgroundStyleOptions
@@ -131,11 +132,11 @@ State ui_men_ammoIcoStyle
             MCM.iAmmoIconStyle = currentVar as int
         
             if MCM.iAmmoIconStyle == 0
-                MCM.AM.sAmmoIconSuffix = ""
+                AM.sAmmoIconSuffix = ""
             elseIf MCM.iAmmoIconStyle == 1
-                MCM.AM.sAmmoIconSuffix = "Triple"
+                AM.sAmmoIconSuffix = "Triple"
             elseIf MCM.iAmmoIconStyle == 2
-                MCM.AM.sAmmoIconSuffix = "Quiver"
+                AM.sAmmoIconSuffix = "Quiver"
             endIf
             
             MCM.SetMenuOptionValueST(ammoIconOptions[MCM.iAmmoIconStyle])

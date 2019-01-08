@@ -273,7 +273,7 @@ State htk_tgl_optDirectQueueHotkey
             If currentEvent == "Select"
                 KH.bQueueMenuComboKeyEnabled = !KH.bQueueMenuComboKeyEnabled
             elseIf currentEvent == "Default"
-                KH.bQueueMenuComboKeyEnabled = false
+            	KH.bQueueMenuComboKeyEnabled = false
             endIf
             ;MCM.SetToggleOptionValueST(KH.bQueueMenuComboKeyEnabled)
             MCM.forcePageReset()

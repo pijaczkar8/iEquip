@@ -17,53 +17,54 @@ string[] whenNoAmmoLeftOptions
 
 function initData()
     ammoSortingOptions = new String[4]
-    ammoSortingOptions[0] = "Unsorted"
-    ammoSortingOptions[1] = "By damage"
-    ammoSortingOptions[2] = "Alphabetically"
-    ammoSortingOptions[3] = "By quantity"
+    ammoSortingOptions[0] = "$iEquip_MCM_gen_opt_Unsorted"
+    ammoSortingOptions[1] = "$iEquip_MCM_gen_opt_ByDamage"
+    ammoSortingOptions[2] = "$iEquip_MCM_gen_opt_Alphabetically"
+    ammoSortingOptions[3] = "$iEquip_MCM_gen_opt_ByQuantity"
 
     whenNoAmmoLeftOptions = new String[4]
-    whenNoAmmoLeftOptions[0] = "Do nothing"
-    whenNoAmmoLeftOptions[1] = "Switch/Do nothing"
-    whenNoAmmoLeftOptions[2] = "Switch/Cycle"
-    whenNoAmmoLeftOptions[3] = "Cycle right hand"
+    whenNoAmmoLeftOptions[0] = "$iEquip_MCM_gen_opt_DoNothing"
+    whenNoAmmoLeftOptions[1] = "$iEquip_MCM_gen_opt_SwitchNothing"
+    whenNoAmmoLeftOptions[2] = "$iEquip_MCM_gen_opt_SwitchCycle"
+    whenNoAmmoLeftOptions[3] = "$iEquip_MCM_gen_opt_Cycle"
 endFunction
 
 function drawPage()
-    MCM.AddToggleOptionST("gen_tgl_onOff", "iEquip On/Off", MCM.bEnabled)
+    MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
            
     if !MCM.bIsFirstEnabled && MCM.bEnabled
+                
         if bStillToEnableProMode
-            MCM.AddTextOptionST("gen_txt_dragEastr", "", "Here be dragons...")
+            MCM.AddTextOptionST("gen_txt_dragEastr", "", "$iEquip_MCM_gen_txt_dragEastrA")
         else
-            MCM.AddToggleOptionST("gen_tgl_enblProMode", "Enable Pro Mode features", WC.bProModeEnabled)
+            MCM.AddToggleOptionST("gen_tgl_enblProMode", "$iEquip_MCM_gen_lbl_enblProMode", WC.bProModeEnabled)
         endIf
                 
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("Widget Options")
-        MCM.AddToggleOptionST("gen_tgl_enblShoutSlt", "Enable shout slot", WC.bShoutEnabled)
-        MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "Enable consumables slot", WC.bConsumablesEnabled)
-        MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "Enable poisons slot", WC.bPoisonsEnabled)
+        MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+        MCM.AddToggleOptionST("gen_tgl_enblShoutSlt", "$iEquip_MCM_gen_lbl_enblShoutSlt", WC.bShoutEnabled)
+        MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "$iEquip_MCM_gen_lbl_enblConsumSlt", WC.bConsumablesEnabled)
+        MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
                 
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("Visible Gear Options")
-        MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "Enable All Geared Up", WC.bEnableGearedUp)
-        MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "Auto Unequip Ammo", WC.bUnequipAmmo)
+        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_VisGear")
+        MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
+        MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
 
         MCM.SetCursorPosition(1)
                 
-        MCM.AddHeaderOption("Cycling behaviour")
-        MCM.AddToggleOptionST("gen_tgl_eqpPaus", "Equip on pause", WC.bEquipOnPause)
+        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_Cycling")
+        MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
                 
         if WC.bEquipOnPause
-            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "Equip on pause delay", WC.fEquipOnPauseDelay, "{1} seconds")
+            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{0} s")
         endIf
                 
-        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "Show attribute icons", WC.bShowAttributeIcons)
-        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "Ammo list sorting", ammoSortingOptions[AM.iAmmoListSorting])
-        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "When no ammo left", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
-        if WC.findInQueue(1, "Unarmed") == -1
-            MCM.AddTextOptionST("gen_txt_addFists", "Add 'Unarmed' shortcut to right queue", "")
+        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
+        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
+        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
+            MCM.AddTextOptionST("gen_txt_addFists", "$iEquip_MCM_gen_lbl_AddUnarmed", "")
         endIf
     endIf
 endFunction
@@ -75,10 +76,11 @@ endFunction
 State gen_tgl_onOff
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Turn iEquip ON or OFF here\nDefault: OFF")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff_SE")
         elseIf currentEvent == "Select"
             if MCM.bIsFirstEnabled
-                ;MCM.ShowMessage("Please exit out of the Journal Menu, then re-open the iEquip MCM to complete the installation", False, "OK")
+                ;MCM.ShowMessage("$iEquip_MCM_gen_msg_onOff", False, "$OK")
+                MCM.bEnabled = true
                 KH.openiEquipMCM(true)
             else
                 MCM.bEnabled = !MCM.bEnabled
@@ -100,17 +102,17 @@ State gen_txt_dragEastr
                 string msg
             
                 if iProModeEasterEggCounter == 5
-                    msg = "Wait, what are you doing..."
+                    msg = "$iEquip_MCM_gen_txt_dragEastrB"
                 elseIf iProModeEasterEggCounter == 4
-                    msg = "You're not seriously going in there?"
+                    msg = "$iEquip_MCM_gen_txt_dragEastrC"
                 elseIf iProModeEasterEggCounter == 3
-                    msg = "Are you out of your mind?"
+                    msg = "$iEquip_MCM_gen_txt_dragEastrD"
                 elseIf iProModeEasterEggCounter == 2
-                    msg = "I really don't think you should..."
+                    msg = "$iEquip_MCM_gen_txt_dragEastrE"
                 elseIf iProModeEasterEggCounter == 1
-                    msg = "Do you EVER listen?"
+                    msg = "$iEquip_MCM_gen_txt_dragEastrF"
                 elseIf iProModeEasterEggCounter == 0
-                    msg = "Fine, have it your way..."
+                    msg = "$iEquip_MCM_gen_txt_dragEastrG"
                 endIf
                 
                 MCM.SetTextOptionValueST(msg)
@@ -118,11 +120,10 @@ State gen_txt_dragEastr
             else
                 ; Wohoo, let's play an epic tune
                 UILevelUp.Play(MCM.PlayerRef)
-                MCM.ShowMessage("iEquip Pro Mode unlocked!\n\nYour dogged determination has paid off, friend. "+\
-                "You now have access to everything iEquip has to offer.  Now stand back while we restart the iEquip MCM and reveal your rewards...", false, "OK")
+                MCM.ShowMessage("$iEquip_MCM_gen_msg_dragEastr", false, "$OK")
                 bStillToEnableProMode = false
                 WC.bProModeEnabled = true
-                ;MCM.ShowMessage("Please exit out of the Journal Menu, then re-open the iEquip MCM to finish enabling Pro Mode", False, "OK")
+                ;MCM.ShowMessage("$iEquip_MCM_gen_msg_dragEastr_SE", False, "$OK")
                 KH.openiEquipMCM(true)
             endIf
         endIf
@@ -132,16 +133,14 @@ endState
 State gen_tgl_enblProMode
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Enabling Pro Mode unlocks many additional features and options including Preselect Mode, "+\
-                            "QuickShield and QuickDualCast\nDefault = Off")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblProMode")
         elseIf currentEvent == "Select"
             WC.bProModeEnabled = !WC.bProModeEnabled
             MCM.SetToggleOptionValueST(WC.bProModeEnabled)
         elseIf currentEvent == "Default"
-            MCM.ShowMessage("iEquip Pro Mode disabled!\n\nYou have just disabled iEquip Pro Mode.\n"+\ 
-                            "The MCM will now restart.", false, "OK")
+            MCM.ShowMessage("$iEquip_MCM_gen_msg_enblProMode", false, "$OK")
             WC.bProModeEnabled = false 
-            MCM.KH.bQuickShieldEnabled = false
+            KH.bQuickShieldEnabled = false
             WC.bQuickDualCastEnabled = false
             KH.openiEquipMCM(true)
         endIf
@@ -155,7 +154,7 @@ endState
 State gen_tgl_enblShoutSlt
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Enable the shout slot in the widget\nDefault: Enabled")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblShoutSlt")
         elseIf currentEvent == "Select"
             WC.bShoutEnabled = !WC.bShoutEnabled
             MCM.SetToggleOptionValueST(WC.bShoutEnabled)
@@ -171,8 +170,7 @@ endState
 State gen_tgl_enblConsumSlt
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Enable the consumable slot in the widget. Also disables the consume item feature.\n"+\
-                            "You can still choose to have the poison slot enabled even if the consumable slot is disabled.\nDefault: Enabled")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblConsumSlt")
         elseIf currentEvent == "Select"
             WC.bConsumablesEnabled = !WC.bConsumablesEnabled
             MCM.SetToggleOptionValueST(WC.bConsumablesEnabled)
@@ -188,8 +186,7 @@ endState
 State gen_tgl_enblPoisonSlt
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Enable the poison slot in the widget. Also disables all poisoning features.\n"+\
-                            "If you have disabled the consumable slot then you can cycle the your poisons with a single press rather than a double press\nDefault: Enabled")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblPoisonSlt")
         elseIf currentEvent == "Select"
             WC.bPoisonsEnabled = !WC.bPoisonsEnabled
             MCM.SetToggleOptionValueST(WC.bPoisonsEnabled)
@@ -209,8 +206,7 @@ endState
 State gen_tgl_enblAllGeard
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Enables the vanilla Geared Up feature which is disabled by default. This allows you to display favorited items on your character when not equipped. "+\
-                            "iEquip uses the same methods as Equipping Overhaul and Visible Favorited Items as workrounds to the bugs with the vanilla implementation.\nDefault: Off")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblAllGeard")
         elseIf currentEvent == "Select"
             WC.bEnableGearedUp = !WC.bEnableGearedUp
             MCM.SetToggleOptionValueST(WC.bEnableGearedUp)
@@ -226,8 +222,7 @@ endState
 State gen_tgl_autoUnqpAmmo
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("When enabled any currently equipped ammo will be unequipped when you no longer have a ranged weapon equipped, "+\
-                            "removing the quiver from your character when not wielding a bow or crossbow.\nDefault: On")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_autoUnqpAmmo")
         elseIf currentEvent == "Select"
             WC.bUnequipAmmo = !WC.bUnequipAmmo
             MCM.SetToggleOptionValueST(WC.bUnequipAmmo)
@@ -245,8 +240,7 @@ endState
 State gen_tgl_eqpPaus
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("With Equip On Pause enabled you can cycle through as many items as you like until you find what you want. Only once you stop cycling will the selected item equip after the delay set below.\n"+\
-                            "If you disable Equip On Pause each time you cycle a slot the item will be equipped immediately which can make cycling through quite tedious.\nDefault: ON")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_eqpPaus")
         elseIf currentEvent == "Select"
             WC.bEquipOnPause = !WC.bEquipOnPause
             MCM.forcePageReset()
@@ -263,7 +257,7 @@ State gen_sld_eqpPausDelay
             fillSlider(WC.fEquipOnPauseDelay, 0.8, 10.0, 0.1, 2.0)
         elseIf currentEvent == "Accept"
             WC.fEquipOnPauseDelay = currentVar
-            MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} seconds")
+            MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} s")
         endIf
     endEvent
 endState
@@ -271,8 +265,7 @@ endState
 State gen_tgl_showAtrIco
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Show small icons indicating item is poisoned and/or enchanted next to the item icons in the main left and right slots whilst cycling, "+\
-                            "and in the left and right preselect slots when Preselect Mode is active.")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_showAtrIco")
         elseIf currentEvent == "Select"
             WC.bShowAttributeIcons = !WC.bShowAttributeIcons
             MCM.SetToggleOptionValueST(WC.bShowAttributeIcons)
@@ -284,9 +277,7 @@ endState
 State gen_men_ammoLstSrt
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("iEquip curates lists of arrows and bolts currently in your inventory and updates them whenever ammo is added or removed. "+\
-                            "You can optionally choose to have the resultant list sorted by damage, alphabetically or by current quantity. "+\
-                            "If you choose to sort by damage you will always equip your strongest ammo first, and if by quantity you will equip the ammo you have the most of first.\nDefault = By Damage")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_ammoLstSrt")
         elseIf currentEvent == "Open"
             fillMenu(AM.iAmmoListSorting, ammoSortingOptions, 0)
         elseIf currentEvent == "Accept"
@@ -300,11 +291,7 @@ endState
 State gen_men_whenNoAmmoLeft
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose what happens when you use up your last piece of ammo for an equipped ranged weapon\n "+\
-                            "Do Nothing - The left slot will remain empty waiting for you to find and pick up some suitable ammo\n"+\
-                            "Switch/Do Nothing - Equip an alternative ranged weapon if you have the correct ammo for it, otherwise do nothing\n"+\
-                            "Switch/Cycle - As above, but if no suitable alternative found iEquip will cycle as detailed below\n"+\
-                            "Cycle - Cycle your right hand, or if you are currently QuickRanged and have enabled Switch Out do that\nDefault = Switch / Cycle")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_whenNoAmmoLeft")
         elseIf currentEvent == "Open"
             fillMenu(AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
         elseIf currentEvent == "Accept"
@@ -317,7 +304,7 @@ endState
 State gen_txt_addFists
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Add the 'Unarmed' shortcut back into your right hand queue. Cycling to this will unequip both hands, for whenever you just feel like a good old-fashioned punch-up!")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_addFists")
         elseIf currentEvent == "Select"
             WC.addFists()
             MCM.forcePageReset()
