@@ -78,8 +78,7 @@ State gen_tgl_onOff
             MCM.SetInfoText("Turn iEquip ON or OFF here\nDefault: OFF")
         elseIf currentEvent == "Select"
             if MCM.bIsFirstEnabled
-                ;MCM.ShowMessage("Please exit out of the Journal Menu, then re-open the iEquip MCM to complete the installation", False, "OK")
-                KH.openiEquipMCM(true)
+                MCM.ShowMessage("Please exit out of the Journal Menu, then re-open the iEquip MCM to complete the installation", False, "OK")
             else
                 MCM.bEnabled = !MCM.bEnabled
                 MCM.forcePageReset()
@@ -123,7 +122,6 @@ State gen_txt_dragEastr
                 bStillToEnableProMode = false
                 WC.bProModeEnabled = true
                 ;MCM.ShowMessage("Please exit out of the Journal Menu, then re-open the iEquip MCM to finish enabling Pro Mode", False, "OK")
-                KH.openiEquipMCM(true)
             endIf
         endIf
     endEvent
@@ -143,7 +141,7 @@ State gen_tgl_enblProMode
             WC.bProModeEnabled = false 
             MCM.KH.bQuickShieldEnabled = false
             WC.bQuickDualCastEnabled = false
-            KH.openiEquipMCM(true)
+            ;MCM.ShowMessage("Please exit out of the Journal Menu, then re-open the iEquip MCM to finish enabling Pro Mode", False, "OK")
         endIf
     endEvent
 endState

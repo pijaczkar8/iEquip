@@ -11,11 +11,10 @@ int mcmUnmapFLAG
 function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
 
-    utilityKeyDoublePressOptions = new String[4]
+    utilityKeyDoublePressOptions = new String[3]
     utilityKeyDoublePressOptions[0] = "Disabled"
     utilityKeyDoublePressOptions[1] = "Queue Menu"
     utilityKeyDoublePressOptions[2] = "Edit Mode"
-    utilityKeyDoublePressOptions[3] = "MCM"
 endFunction
 
 function drawPage()

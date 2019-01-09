@@ -242,7 +242,7 @@ function runUpdate()
             endIf
 
         elseIf iWaitingKeyCode == iUtilityKey
-            ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = MCM, 4 = Refresh Widget
+            ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = Help, 4 = Refresh Widget
             int iAction = iEquip_UtilityMenu.Show() 
             
             if iAction != 0 ;Exit
@@ -251,11 +251,9 @@ function runUpdate()
                 elseif iAction == 2
                     toggleEditMode()
                 elseif iAction == 3
-                    openiEquipMCM()
-                elseif iAction == 4
                     ;HM.openHelpMenu()
                     debug.MessageBox("This feature is currently disabled")
-                elseif iAction == 5
+                elseif iAction == 4
                     WC.refreshWidget()
                     ;debug.MessageBox("This feature is currently disabled")
                 endIf
@@ -263,15 +261,7 @@ function runUpdate()
         endIf
         
     elseIf iMultiTap == 2  ; Double tap
-        If iWaitingKeyCode == iUtilityKey
-            if iUtilityKeyDoublePress == 1
-                WC.openQueueManagerMenu()
-            elseIf iUtilityKeyDoublePress == 2
-                toggleEditMode()
-            elseIf iUtilityKeyDoublePress == 3
-                openiEquipMCM()
-            endIf
-        elseIf iWaitingKeyCode == iConsumableKey
+        if iWaitingKeyCode == iConsumableKey
             if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
                 WC.cycleSlot(4, bIsUtilityKeyHeld)
             endIf
@@ -566,86 +556,4 @@ function RegisterForEditModeKeys()
 	RegisterForKey(iEditRulersKey)
 	RegisterForKey(iEditDiscardKey)
 	RegisterForKey(iUtilityKey)
-endFunction
-
-function openiEquipMCM(bool inMCMSelect = false)
-    int key_j 
-    int key_down
-    int key_scroll
-    int key_enter
-    
-    if Game.UsingGamepad()
-        key_j = 270
-        key_down = 267
-        key_scroll = 280
-        key_enter = 276
-    else
-        key_j = GetMappedKey("Journal")
-        key_down = GetMappedKey("Back")
-        key_scroll = 76
-        key_enter = GetMappedKey("Activate")
-    endIf
-    
-    if inMCMSelect
-        TapKey(key_j)
-        Utility.WaitMenuMode(0.3)
-        TapKey(key_j)
-        Utility.WaitMenuMode(0.3)
-        TapKey(key_j)
-        Utility.WaitMenuMode(0.1)
-        TapKey(key_j)
-        Utility.Wait(0.5)
-    endIf
-    
-    if Game.IsMenuControlsEnabled() && !Utility.IsInMenuMode() && !IsTextInputEnabled() &&\
-       !IsMenuOpen("Dialogue Menu") && !IsMenuOpen("Crafting Menu")
-        float startTime = Utility.GetCurrentRealTime()
-        float elapsedTime
-        int i = 0
-        
-        while elapsedTime <= 2.5
-            if IsMenuOpen("Journal Menu")
-                TapKey(key_scroll)
-                Utility.WaitMenuMode(0.1)
-                
-                ; Should take us to MCM Menu entry in the Settings List
-                while i < 3 ; - LE
-              ; while i < 5 ; - SE
-                    TapKey(key_down)
-                    Utility.WaitMenuMode(0.005)
-                    i += 1
-                EndWhile
-                
-                elapsedTime = 3.0
-            else
-                TapKey(key_j)
-                Utility.WaitMenuMode(0.1)
-                elapsedTime = Utility.GetCurrentRealTime() - startTime
-            endIf
-        endWhile
- 
-        if MCM.bIsFirstEnabled
-            MCM.bEnabled = !MCM.bEnabled
-            WC.bJustEnabled = true
-            MCM.bIsFirstEnabled = false
-        endIf
-        
-        if elapsedTime == 3.0
-            TapKey(key_enter) 
-            Utility.WaitMenuMode(0.005)
-            
-            i = 0
-            while i < 128
-                TapKey(key_down)
-                Utility.WaitMenuMode(0.005)
-                
-                if GetString("Journal Menu", "_root.ConfigPanelFader.configPanel._modList.selectedEntry.text") == "iEquip"
-                    TapKey(key_enter)
-                    i = 128
-                else
-                    i += 1
-                endIf
-            endWhile
-        endIf
-    endIf
 endFunction

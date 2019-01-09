@@ -12,13 +12,22 @@ function initData()
     debug.trace("ERR: An iEquip MCM Page has no defined init data")
 endFunction
 
+int function saveData()
+    debug.trace("ERR: An iEquip MCM Page has no defined save data")
+    return -1
+endFunction
+
+function loadData(int jPageObj)
+    debug.trace("ERR: An iEquip MCM Page has no defined load data")
+endFunction
+
+
 function drawPage()
     debug.trace("ERR: An iEquip MCM Page has no defined draw page")
 endFunction
 
 ; ########################
 ; ### HELPER FUNCTIONS ###
-; ########################
 
 ; ---------------
 ; - jumpToState -
