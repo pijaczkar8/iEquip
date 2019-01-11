@@ -7,7 +7,7 @@ Import StringUtil
 
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
-iEquip_PlayerEventHandler Property EH Auto
+;iEquip_PlayerEventHandler Property EH Auto
 iEquip_PotionScript Property PO Auto
 
 Actor Property PlayerRef Auto
@@ -56,7 +56,7 @@ event OnUpdate()
 		if formToAdd as potion
 			PO.onPotionAdded(formToAdd)
 		elseIf formToAdd as ammo && (Game.GetModName(formToAdd.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
-			if EH.boundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
+			if WC.EH.boundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
 				AM.addBoundAmmoToQueue(formToAdd, formToAdd.GetName())
 			else
 				AM.onAmmoAdded(formToAdd)

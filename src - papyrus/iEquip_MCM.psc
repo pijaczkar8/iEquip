@@ -185,23 +185,23 @@ endEvent
 function jumpToScriptEvent(string eventName, float tmpVar = -1.0)
     string sCurrentState = GetState()
     
-    if sCurrentPage == "General Settings"
+    if sCurrentPage == "$iEquip_MCM_lbl_General"
         gen.jumpToState(sCurrentState, eventName, tmpVar)
-    elseIf sCurrentPage == "Hotkey Options"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Hotkey"
         htk.jumpToState(sCurrentState, eventName, tmpVar)
-    elseIf sCurrentPage == "Queue Options"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Queue"
         que.jumpToState(sCurrentState, eventName, tmpVar)
-    elseIf sCurrentPage == "Potions"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Potions"
         pot.jumpToState(sCurrentState, eventName, tmpVar)
-    elseIf sCurrentPage == "Recharging and Poisoning"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Recharging"
         poi.jumpToState(sCurrentState, eventName, tmpVar)
-    elseIf sCurrentPage == "Misc UI Options"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Misc"
         uii.jumpToState(sCurrentState, eventName, tmpVar)
-    elseIf sCurrentPage == "Pro Mode"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Pro"
         pro.jumpToState(sCurrentState, eventName, tmpVar)
-    elseIf sCurrentPage == "Edit Mode"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Edit"
         edt.jumpToState(sCurrentState, eventName, tmpVar)
-    elseIf sCurrentPage == "Information"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Info"
         inf.jumpToState(sCurrentState, eventName, tmpVar)
     endIf
 endFunction

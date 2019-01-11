@@ -117,11 +117,11 @@ function drawPage()
             
     if WC.bQuickDualCastEnabled
         MCM.AddTextOption("Enable QuickDualCast for:", "")
-        MCM.AddToggleOptionST("pro_tgl_altSpll", "   Alteration spells", WC.bQuickDualCastAlteration)
-        MCM.AddToggleOptionST("pro_tgl_conjSpll", "   Conjuration spells", WC.bQuickDualCastConjuration)
-        MCM.AddToggleOptionST("pro_tgl_destSpll", "   Destruction spells", WC.bQuickDualCastDestruction)
-        MCM.AddToggleOptionST("pro_tgl_illSpll", "   Illusion spells", WC.bQuickDualCastIllusion)
-        MCM.AddToggleOptionST("pro_tgl_restSpll", "   Restoration spells", WC.bQuickDualCastRestoration)
+        MCM.AddToggleOptionST("pro_tgl_altSpll", "   Alteration spells", WC.abQuickDualCastSchoolAllowed[0])
+        MCM.AddToggleOptionST("pro_tgl_conjSpll", "   Conjuration spells", WC.abQuickDualCastSchoolAllowed[1])
+        MCM.AddToggleOptionST("pro_tgl_destSpll", "   Destruction spells", WC.abQuickDualCastSchoolAllowed[2])
+        MCM.AddToggleOptionST("pro_tgl_illSpll", "   Illusion spells", WC.abQuickDualCastSchoolAllowed[3])
+        MCM.AddToggleOptionST("pro_tgl_restSpll", "   Restoration spells", WC.abQuickDualCastSchoolAllowed[4])
         MCM.AddToggleOptionST("pro_tgl_reqBothQue", "Only if in both queues", PM.bQuickDualCastMustBeInBothQueues)
     endIf
 endFunction
