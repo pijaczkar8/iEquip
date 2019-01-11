@@ -195,6 +195,7 @@ event OnInit()
     debug.trace("iEquip_PotionScript OnInit finished -  - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
     bInitialised = true
     bLoadedByOnInit = true
+    debug.trace("iEquip_PotionScript OnInit finished")
 endEvent
 
 ;Called from OnPlayerLoadGame on the PlayerEventHandler script
@@ -206,8 +207,6 @@ function onGameLoaded()
     HUD_MENU = WC.HUD_MENU
     WidgetRoot = WC.WidgetRoot
     bMoreHUDLoaded = WC.bMoreHUDLoaded
-    WC.bWaitingForPotionQueues = true
-    
     WC.abPotionGroupEmpty[0] = true
     WC.abPotionGroupEmpty[1] = true
     WC.abPotionGroupEmpty[2] = true
@@ -397,7 +396,6 @@ function findAndSortPotions()
     else
         debug.trace("iEquip_PotionScript findAndSortPotions - No health, stamina or magicka potions found in players inventory")
     endIf
-    WC.bWaitingForPotionQueues = false
 endFunction
 
 function onPotionAdded(form newPotion)

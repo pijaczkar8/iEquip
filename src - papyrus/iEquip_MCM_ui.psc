@@ -1,6 +1,7 @@
 Scriptname iEquip_MCM_ui extends iEquip_MCM_helperfuncs
 
 iEquip_WidgetCore Property WC Auto
+iEquip_AmmoMode Property AM Auto
 
 string[] ammoIconOptions
 string[] backgroundStyleOptions
@@ -35,52 +36,53 @@ function initData()
 endFunction
 
 function drawPage()
-    MCM.AddHeaderOption("Widget Options")
-    MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "Fade left icon if 2H equipped", WC.bFadeLeftIconWhen2HEquipped)
-            
-    if WC.bFadeLeftIconWhen2HEquipped
-        MCM.AddSliderOptionST("ui_sld_leftIcoFade", "Left icon fade", WC.fLeftIconFadeAmount, "{0}%")
-    endIf
-            
-    MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[MCM.iAmmoIconStyle])
+    if MCM.bEnabled
+        MCM.AddHeaderOption("Widget Options")
+        MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "Fade left icon if 2H equipped", WC.bFadeLeftIconWhen2HEquipped)
+                
+        if WC.bFadeLeftIconWhen2HEquipped
+            MCM.AddSliderOptionST("ui_sld_leftIcoFade", "Left icon fade", WC.fLeftIconFadeAmount, "{0}%")
+        endIf
+                
+        MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "Ammo icon style", ammoIconOptions[MCM.iAmmoIconStyle])
 
-    MCM.AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[WC.iBackgroundStyle])
-    MCM.AddToggleOptionST("ui_tgl_dropShadow", "Drop shadow on text", WC.bDropShadowEnabled)
-            
-    MCM.SetCursorPosition(1)
-    ;widget fade variable sliders
-    MCM.AddHeaderOption("Fade Out Options")
-    MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "Enable widget fadeout", WC.bWidgetFadeoutEnabled)
-            
-    if WC.bWidgetFadeoutEnabled
-        MCM.AddSliderOptionST("ui_sld_wdgetFadeDelay", "Widget fadeout delay", WC.fWidgetFadeoutDelay, "{0}")
-        MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "Widget fadeout animation speed", fadeoutOptions[MCM.iCurrentWidgetFadeoutChoice])
+        MCM.AddMenuOptionST("ui_men_bckgroundStyle", "Background style", backgroundStyleOptions[WC.iBackgroundStyle])
+        MCM.AddToggleOptionST("ui_tgl_dropShadow", "Drop shadow on text", WC.bDropShadowEnabled)
                 
-        if (MCM.iCurrentWidgetFadeoutChoice == 3)
-            MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "Widget fadeout duration", WC.fWidgetFadeoutDuration, "{1}")
-        endIf
+        MCM.SetCursorPosition(1)
+        MCM.AddHeaderOption("Fade Out Options")
+        MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "Enable widget fadeout", WC.bWidgetFadeoutEnabled)
+                
+        if WC.bWidgetFadeoutEnabled
+            MCM.AddSliderOptionST("ui_sld_wdgetFadeDelay", "Widget fadeout delay", WC.fWidgetFadeoutDelay, "{0}")
+            MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "Widget fadeout animation speed", fadeoutOptions[MCM.iCurrentWidgetFadeoutChoice])
+                    
+            if (MCM.iCurrentWidgetFadeoutChoice == 3)
+                MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "Widget fadeout duration", WC.fWidgetFadeoutDuration, "{1}")
+            endIf
 
-        MCM.AddToggleOptionST("ui_tgl_visWhenWeapDrawn", "Always visible when weapons drawn", WC.bAlwaysVisibleWhenWeaponsDrawn)
-    endIf
-    
-    MCM.AddEmptyOption()
-    MCM.AddToggleOptionST("ui_tgl_enblNameFade", "Enable name fadeouts", WC.bNameFadeoutEnabled)
-            
-    if WC.bNameFadeoutEnabled
-        MCM.AddSliderOptionST("ui_sld_mainNameFadeDelay", "Main name fadeout delay", WC.fMainNameFadeoutDelay, "{1}")
-        MCM.AddSliderOptionST("ui_sld_poisonNameFadeDelay", "Poison name fadeout delay", WC.fPoisonNameFadeoutDelay, "{1}")
-                
-        if WC.bProModeEnabled
-            MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "Preselect name fadeout delay", WC.fPreselectNameFadeoutDelay, "{1}")
+            MCM.AddToggleOptionST("ui_tgl_visWhenWeapDrawn", "Always visible when weapons drawn", WC.bAlwaysVisibleWhenWeaponsDrawn)
         endIf
+        
+        MCM.AddEmptyOption()
+        MCM.AddToggleOptionST("ui_tgl_enblNameFade", "Enable name fadeouts", WC.bNameFadeoutEnabled)
                 
-        MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "Name fadeout animation speed", fadeoutOptions[MCM.iCurrentNameFadeoutChoice])
-                
-        if (MCM.iCurrentNameFadeoutChoice == 3)
-            MCM.AddSliderOptionST("ui_sld_nameFadeDur", "Name fadeout duration", WC.fNameFadeoutDuration, "{1}")
+        if WC.bNameFadeoutEnabled
+            MCM.AddSliderOptionST("ui_sld_mainNameFadeDelay", "Main name fadeout delay", WC.fMainNameFadeoutDelay, "{1}")
+            MCM.AddSliderOptionST("ui_sld_poisonNameFadeDelay", "Poison name fadeout delay", WC.fPoisonNameFadeoutDelay, "{1}")
+                    
+            if WC.bProModeEnabled
+                MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "Preselect name fadeout delay", WC.fPreselectNameFadeoutDelay, "{1}")
+            endIf
+                    
+            MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "Name fadeout animation speed", fadeoutOptions[MCM.iCurrentNameFadeoutChoice])
+                    
+            if (MCM.iCurrentNameFadeoutChoice == 3)
+                MCM.AddSliderOptionST("ui_sld_nameFadeDur", "Name fadeout duration", WC.fNameFadeoutDuration, "{1}")
+            endIf
+                    
+            MCM.AddMenuOptionST("ui_men_firstPressNameHidn", "First press when name hidden", firstPressIfNameHiddenOptions[WC.bFirstPressShowsName as int])
         endIf
-                
-        MCM.AddMenuOptionST("ui_men_firstPressNameHidn", "First press when name hidden", firstPressIfNameHiddenOptions[WC.bFirstPressShowsName as int])
     endIf
 endFunction
 
@@ -131,11 +133,11 @@ State ui_men_ammoIcoStyle
             MCM.iAmmoIconStyle = currentVar as int
         
             if MCM.iAmmoIconStyle == 0
-                MCM.AM.sAmmoIconSuffix = ""
+                AM.sAmmoIconSuffix = ""
             elseIf MCM.iAmmoIconStyle == 1
-                MCM.AM.sAmmoIconSuffix = "Triple"
+                AM.sAmmoIconSuffix = "Triple"
             elseIf MCM.iAmmoIconStyle == 2
-                MCM.AM.sAmmoIconSuffix = "Quiver"
+                AM.sAmmoIconSuffix = "Quiver"
             endIf
             
             MCM.SetMenuOptionValueST(ammoIconOptions[MCM.iAmmoIconStyle])

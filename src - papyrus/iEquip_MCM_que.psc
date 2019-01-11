@@ -7,28 +7,30 @@ iEquip_PotionScript Property PO Auto
 ; ### SETUP ###
 
 function drawPage()
-    MCM.AddHeaderOption("Queue Length Options")
-    MCM.AddSliderOptionST("que_sld_maxItmQue", "Max items per queue", WC.iMaxQueueLength, "Max {0} items")
-    MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "Hard limit queue size", WC.bHardLimitQueueSize)
-            
-    MCM.AddHeaderOption("Add To Queue Options")
-    MCM.AddToggleOptionST("que_tgl_showConfMsg", "Show confirmation messages", WC.bShowQueueConfirmationMessages)
-    MCM.AddToggleOptionST("que_tgl_signlBothQue", "Single items in both hand queues", WC.bAllowSingleItemsInBothQueues)
-            
-    if WC.bAllowSingleItemsInBothQueues
-        MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "Allow 1h items to switch hands", WC.bAllowWeaponSwitchHands)
-    endIf
+    if MCM.bEnabled
+        MCM.AddHeaderOption("Queue Length Options")
+        MCM.AddSliderOptionST("que_sld_maxItmQue", "Max items per queue", WC.iMaxQueueLength, "Max {0} items")
+        MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "Hard limit queue size", WC.bHardLimitQueueSize)
+                
+        MCM.AddHeaderOption("Add To Queue Options")
+        MCM.AddToggleOptionST("que_tgl_showConfMsg", "Show confirmation messages", WC.bShowQueueConfirmationMessages)
+        MCM.AddToggleOptionST("que_tgl_signlBothQue", "Single items in both hand queues", WC.bAllowSingleItemsInBothQueues)
+                
+        if WC.bAllowSingleItemsInBothQueues
+            MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "Allow 1h items to switch hands", WC.bAllowWeaponSwitchHands)
+        endIf
 
-    MCM.SetCursorPosition(1)
-            
-    MCM.AddHeaderOption("Auto Add Options")
-    MCM.AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add on equipping", WC.bAutoAddNewItems)
-    MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "Auto-add poisons", PO.bAutoAddPoisons)
-    MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "Auto-add food and drink", PO.bAutoAddConsumables)
-    MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "Allow caching of removed items", WC.bEnableRemovedItemCaching)
-            
-    if WC.bEnableRemovedItemCaching
-        MCM.AddSliderOptionST("que_sld_MaxItmCache", "Max items to cache", WC.iMaxCachedItems, "Max {0} items")
+        MCM.SetCursorPosition(1)
+                
+        MCM.AddHeaderOption("Auto Add Options")
+        MCM.AddToggleOptionST("que_tgl_autoAddItmQue", "Auto-add on equipping", WC.bAutoAddNewItems)
+        MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "Auto-add poisons", PO.bAutoAddPoisons)
+        MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "Auto-add food and drink", PO.bAutoAddConsumables)
+        MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "Allow caching of removed items", WC.bEnableRemovedItemCaching)
+                
+        if WC.bEnableRemovedItemCaching
+            MCM.AddSliderOptionST("que_sld_MaxItmCache", "Max items to cache", WC.iMaxCachedItems, "Max {0} items")
+        endIf
     endIf
 endFunction
 
@@ -68,15 +70,15 @@ State que_tgl_hrdLimQueSize
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bHardLimitQueueSize)
             bool continue = true
             if !WC.bHardLimitQueueSize
-            	continue = MCM.ShowMessage("You are about to enable a hard limit on your maximum queue lengths!\n\nDoing so will stop the queues from being able to grow organically as new items are equipped. "+\
-            		"This can particularly affect your consumable and poison queues.\n\nDo you wish to proceed?", true, "OK", "Cancel")
-            	if continue
-            		WC.bReduceMaxQueueLengthPending = true
-            	endIf
+                continue = MCM.ShowMessage("You are about to enable a hard limit on your maximum queue lengths!\n\nDoing so will stop the queues from being able to grow organically as new items are equipped. "+\
+                    "This can particularly affect your consumable and poison queues.\n\nDo you wish to proceed?", true, "OK", "Cancel")
+                if continue
+                    WC.bReduceMaxQueueLengthPending = true
+                endIf
             endIf
             if continue
-            	WC.bHardLimitQueueSize = !WC.bHardLimitQueueSize
-            	MCM.SetToggleOptionValueST(WC.bHardLimitQueueSize)
+                WC.bHardLimitQueueSize = !WC.bHardLimitQueueSize
+                MCM.SetToggleOptionValueST(WC.bHardLimitQueueSize)
             endIf
         endIf
     endEvent

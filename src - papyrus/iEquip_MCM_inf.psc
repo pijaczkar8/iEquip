@@ -11,12 +11,14 @@ function drawPage()
     ;+++Version number
     ;+++Dependency checks
     ;+++Supported mods detected
-            
-    MCM.SetCursorPosition(1)
-            
-    MCM.AddHeaderOption("Maintenance")
-    MCM.AddEmptyOption()
-    MCM.AddTextOptionST("inf_txt_rstLayout", "Reset default iEquip layout", "")
+
+    if MCM.bEnabled
+        MCM.SetCursorPosition(1)
+
+        MCM.AddHeaderOption("Maintenance")
+        MCM.AddEmptyOption()
+        MCM.AddTextOptionST("inf_txt_rstLayout", "Reset default iEquip layout", "")
+    endIf
 endFunction
 
 ; ########################
@@ -40,7 +42,6 @@ State inf_txt_rstLayout
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
                 EM.ResetDefaults()
-                KH.OpeniEquipMCM(true)
             endIf
         endIf 
     endEvent

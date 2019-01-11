@@ -38,7 +38,6 @@ bool bUpdateThrottle
 int iSlotToUpdate = -1
 
 Event OnInit()
-	gotoState("DISABLED")
 	OnPlayerLoadGame()
 endEvent
 
@@ -367,7 +366,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	endIf
 endEvent
 
-state DISABLED	
+auto state DISABLED	
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	endEvent
 	

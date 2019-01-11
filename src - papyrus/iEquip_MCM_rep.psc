@@ -41,71 +41,73 @@ function initData()
 endFunction
 
 function drawPage()
-    MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "Show Enchantment Recharging Help", "")
-    MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "Enable enchanted weapon recharging", RC.bRechargingEnabled)
-    MCM.AddEmptyOption()
-            
-    if RC.bRechargingEnabled
-        MCM.AddHeaderOption("Soulgem Use Options")
-        MCM.AddToggleOptionST("rep_tgl_useLargSoul", "Use largest available soul", RC.bUseLargestSoul)
-        MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "Use oversized souls", RC.bAllowOversizedSouls)
-        MCM.AddToggleOptionST("rep_tgl_usePartGem", "Use partially filled gems", RC.bUsePartFilledGems)
+    if MCM.bEnabled
+        MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "Show Enchantment Recharging Help", "")
+        MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "Enable enchanted weapon recharging", RC.bRechargingEnabled)
+        MCM.AddEmptyOption()
                 
-        MCM.AddHeaderOption("Widget Options")
-        MCM.AddMenuOptionST("rep_men_showEnchCharge", "Charge displayed as", chargeDisplayOptions[CM.iChargeDisplayType])
-        if CM.iChargeDisplayType > 0
-            MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "Enable enchantment charge fadeout", CM.bChargeFadeoutEnabled)
-            if CM.bChargeFadeoutEnabled
-                MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "Fadeout delay", CM.fChargeFadeoutDelay, "Fade after {1} secs")
-            endIf
-            
-            MCM.AddColorOptionST("rep_col_normFillCol", "Normal charge fill colour", CM.iPrimaryFillColor)
-            MCM.AddToggleOptionST("rep_tgl_enableCustomFlashCol", "Enable custom flash colour", CM.bCustomFlashColor)
-            if CM.bCustomFlashColor
-                MCM.AddColorOptionST("rep_col_meterFlashCol", "Empty warning flash colour", CM.iFlashColor)
-            endIf
-            
-            MCM.AddToggleOptionST("rep_tgl_changeColLowCharge", "Change colour on low charge", CM.bEnableLowCharge)
-            if CM.bEnableLowCharge
-                MCM.AddSliderOptionST("rep_sld_setLowChargeTresh", "Set low charge threshold", CM.fLowChargeThreshold*100, "{0}%")
-                MCM.AddColorOptionST("rep_col_lowFillCol", "Low charge fill colour", CM.iLowChargeFillColor)
-            endIf
-            
-            if CM.iChargeDisplayType == 1
-                MCM.AddToggleOptionST("rep_tgl_enableGradientFill", "Enable gradient fill", CM.bEnableGradientFill)
-                if CM.bEnableGradientFill
-                    MCM.AddColorOptionST("rep_col_gradFillCol", "Gradient (low) fill colour", CM.iSecondaryFillColor)
+        if RC.bRechargingEnabled
+            MCM.AddHeaderOption("Soulgem Use Options")
+            MCM.AddToggleOptionST("rep_tgl_useLargSoul", "Use largest available soul", RC.bUseLargestSoul)
+            MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "Use oversized souls", RC.bAllowOversizedSouls)
+            MCM.AddToggleOptionST("rep_tgl_usePartGem", "Use partially filled gems", RC.bUsePartFilledGems)
+                    
+            MCM.AddHeaderOption("Widget Options")
+            MCM.AddMenuOptionST("rep_men_showEnchCharge", "Charge displayed as", chargeDisplayOptions[CM.iChargeDisplayType])
+            if CM.iChargeDisplayType > 0
+                MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "Enable enchantment charge fadeout", CM.bChargeFadeoutEnabled)
+                if CM.bChargeFadeoutEnabled
+                    MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "Fadeout delay", CM.fChargeFadeoutDelay, "Fade after {1} secs")
                 endIf
                 
-                MCM.AddMenuOptionST("rep_men_leftFillDir", "Left meter fill direction", meterFillDirectionOptions[meterFillDirection[0]])
-                MCM.AddMenuOptionST("rep_men_rightFillDir", "Right meter fill direction", meterFillDirectionOptions[meterFillDirection[1]])
+                MCM.AddColorOptionST("rep_col_normFillCol", "Normal charge fill colour", CM.iPrimaryFillColor)
+                MCM.AddToggleOptionST("rep_tgl_enableCustomFlashCol", "Enable custom flash colour", CM.bCustomFlashColor)
+                if CM.bCustomFlashColor
+                    MCM.AddColorOptionST("rep_col_meterFlashCol", "Empty warning flash colour", CM.iFlashColor)
+                endIf
+                
+                MCM.AddToggleOptionST("rep_tgl_changeColLowCharge", "Change colour on low charge", CM.bEnableLowCharge)
+                if CM.bEnableLowCharge
+                    MCM.AddSliderOptionST("rep_sld_setLowChargeTresh", "Set low charge threshold", CM.fLowChargeThreshold*100, "{0}%")
+                    MCM.AddColorOptionST("rep_col_lowFillCol", "Low charge fill colour", CM.iLowChargeFillColor)
+                endIf
+                
+                if CM.iChargeDisplayType == 1
+                    MCM.AddToggleOptionST("rep_tgl_enableGradientFill", "Enable gradient fill", CM.bEnableGradientFill)
+                    if CM.bEnableGradientFill
+                        MCM.AddColorOptionST("rep_col_gradFillCol", "Gradient (low) fill colour", CM.iSecondaryFillColor)
+                    endIf
+                    
+                    MCM.AddMenuOptionST("rep_men_leftFillDir", "Left meter fill direction", meterFillDirectionOptions[meterFillDirection[0]])
+                    MCM.AddMenuOptionST("rep_men_rightFillDir", "Right meter fill direction", meterFillDirectionOptions[meterFillDirection[1]])
+                endIf
             endIf
         endIf
-    endIf
 
-    MCM.SetCursorPosition(1)
-            
-    if !WC.bPoisonsEnabled
-        MCM.AddEmptyOption()
-        MCM.AddTextOption("Poisoning features are currently disabled.", "")
-        MCM.AddTextOption("If you wish to use the poisoning features", "")
-        MCM.AddTextOption("please re-enable the Poison Widget in the", "")
-        MCM.AddTextOption("General Settings page", "")
-     else
-        MCM.AddTextOptionST("rep_txt_showPoisonHelp", "Show Poisoning Help", "")
-               
-        MCM.AddEmptyOption()
-        MCM.AddHeaderOption("Poison Use Options")
-        MCM.AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[WC.iShowPoisonMessages])
-        MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "Allow poison switching", WC.bAllowPoisonSwitching)
-        MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "Allow poison top-up", WC.bAllowPoisonTopUp)
+        MCM.SetCursorPosition(1)
                 
-        MCM.AddHeaderOption("Poison Charge Options")
-        MCM.AddSliderOptionST("rep_sld_chargePerVial", "Charges per vial", WC.iPoisonChargesPerVial, "{0} charges")
-        MCM.AddSliderOptionST("rep_sld_chargeMult", "Charge Multiplier", WC.iPoisonChargeMultiplier, "{0}x base charges")
-                
-        MCM.AddHeaderOption("Widget Options")
-        MCM.AddMenuOptionST("rep_men_poisonIndStyle", "Poison indicator style", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
+        if !WC.bPoisonsEnabled
+            MCM.AddEmptyOption()
+            MCM.AddTextOption("Poisoning features are currently disabled.", "")
+            MCM.AddTextOption("If you wish to use the poisoning features", "")
+            MCM.AddTextOption("please re-enable the Poison Widget in the", "")
+            MCM.AddTextOption("General Settings page", "")
+         else
+            MCM.AddTextOptionST("rep_txt_showPoisonHelp", "Show Poisoning Help", "")
+                   
+            MCM.AddEmptyOption()
+            MCM.AddHeaderOption("Poison Use Options")
+            MCM.AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[WC.iShowPoisonMessages])
+            MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "Allow poison switching", WC.bAllowPoisonSwitching)
+            MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "Allow poison top-up", WC.bAllowPoisonTopUp)
+                    
+            MCM.AddHeaderOption("Poison Charge Options")
+            MCM.AddSliderOptionST("rep_sld_chargePerVial", "Charges per vial", WC.iPoisonChargesPerVial, "{0} charges")
+            MCM.AddSliderOptionST("rep_sld_chargeMult", "Charge Multiplier", WC.iPoisonChargeMultiplier, "{0}x base charges")
+                    
+            MCM.AddHeaderOption("Widget Options")
+            MCM.AddMenuOptionST("rep_men_poisonIndStyle", "Poison indicator style", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
+        endIf
     endIf
 endFunction
 
@@ -201,7 +203,7 @@ State rep_men_showEnchCharge
             CM.iChargeDisplayType = currentVar as int
             MCM.SetMenuOptionValueST(chargeDisplayOptions[CM.iChargeDisplayType])
             
-            if CM.iChargeDisplayType == 2 && CM.bEnableGradientFill
+            if CM.iChargeDisplayType == 2
                 CM.bEnableGradientFill = false
             endIf
 

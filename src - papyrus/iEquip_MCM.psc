@@ -1,9 +1,7 @@
 Scriptname iEquip_MCM extends SKI_ConfigBase
 
-import stringUtil
-
 iEquip_WidgetCore Property WC Auto
-iEquip_EditMode Property EM Auto
+iEquip_KeyHandler Property KH Auto
 
 iEquip_MCM_gen Property gen Auto
 iEquip_MCM_htk Property htk Auto
@@ -15,20 +13,10 @@ iEquip_MCM_pro Property pro Auto
 iEquip_MCM_edt Property edt Auto
 iEquip_MCM_inf Property inf Auto
 
-Float Property iEquip_CurrentVersion Auto
-
 actor property PlayerRef auto
 
-;Set to true for version updates which require a full reset
-Bool bRequiresResetOnUpdate = False ;Set to true for version updates which require a full reset
-
-bool Property bIsFirstEnabled = true Auto Hidden
 bool Property bEnabled = false Auto Hidden
-
-; Strings used by save/load settings functions
-string MCMSettingsPath = "Data/iEquip/MCM Settings/"
-string FileExtMCM = ".IEQS"
-string sCurrentPage = ""
+bool Property bUpdateKeyMaps = false Auto Hidden
 
 int Property iCurrentWidgetFadeoutChoice = 1 Auto Hidden
 int Property iCurrentNameFadeoutChoice = 1 Auto Hidden
@@ -37,46 +25,51 @@ int Property iCurrentQSPreferredMagicSchoolChoice = 2 Auto Hidden
 int Property iCurrentQRPreferredMagicSchoolChoice = 2 Auto Hidden
 int Property iCurrentEMKeysChoice = 0 Auto Hidden
 
+string Property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
+string Property FileExtMCM = ".IEQS" autoReadOnly
+string sCurrentPage = ""
+
 ; ###########################
-; ### START OF UPDATE MCM ###
+; ### MCM Version Control ###
 
 int function GetVersion()
     return 1
 endFunction
 
-event OnVersionUpdate(int a_version)
-    if (a_version > CurrentVersion && CurrentVersion > 0)
-        Debug.Notification("Updating iEquip to Version " + a_version as string)
-        if bRequiresResetOnUpdate ;For major version updates - fully resets mod, use only if absolutely neccessary
-            OnConfigInit()
-            EM.ResetDefaults()
-        else
-            ApplyMCMSettings()
-        endIf
+;/event OnVersionUpdate(int a_version)
+    if (a_version >= 1 && CurrentVersion < 1)
+        Debug.Notification("$IEQ_MCM_not_Updating" + " " + a_version as string)
+        OnConfigInit()
+        EM.ResetDefaults()
+        UpdateSettings()
     endIf
-endEvent
+endEvent/;
 
+; #############################
+; ### MCM Internal Settings ###
 
-; ###########################
-; ### START OF CONFIG MCM ###
-
-function ApplyMCMSettings()
-	debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
-	
-	if WC.isEnabled
-        debug.Notification("Applying iEquip settings...")
-        
+function UpdateSettings()
+    if WC.isEnabled
+        debug.Notification("$iEquip_MCM_not_ApplyingSettings")
+        if bUpdateKeyMaps
+            KH.updateKeyMaps()
+        endIf        
         WC.ApplyChanges()
-        KH.updateEditModeKeys()           
-        if EM.isEditMode
-            EM.LoadAllElements()
-        endIf
-	elseIf !bIsFirstEnabled
-		debug.Notification("iEquip disabled...")
-	endIf
+    endIf
 endFunction
 
-Event OnConfigInit() 
+event OnConfigInit()
+    Pages = new String[9]
+    Pages[0] = "$iEquip_MCM_lbl_General"
+    Pages[1] = "$iEquip_MCM_lbl_Hotkey"
+    Pages[2] = "$iEquip_MCM_lbl_Queue"
+    Pages[3] = "$iEquip_MCM_lbl_Potions"
+    Pages[4] = "$iEquip_MCM_lbl_Recharging"
+    Pages[5] = "$iEquip_MCM_lbl_Pro"
+    Pages[6] = "$iEquip_MCM_lbl_Misc"
+    Pages[7] = "$iEquip_MCM_lbl_Edit"
+    Pages[8] = "$iEquip_MCM_lbl_Info"
+
     gen.initData()
     htk.initData()
     que.initData()
@@ -85,61 +78,14 @@ Event OnConfigInit()
     uii.initData()          
     pro.initData()   
     edt.initData()           
-    inf.initData()  
-    
-    Pages = new String[1]
-    Pages[0] = "General Settings"
-endEvent
-
-event OnConfigOpen()
-    WC.bRefreshQueues = false
-    WC.bFadeOptionsChanged = false
-    WC.bAmmoIconChanged = false
-    WC.bAmmoSortingChanged = false
-    WC.bSlotEnabledOptionsChanged = false
-    WC.bGearedUpOptionChanged = false
-    WC.bAttributeIconsOptionChanged = false
-    WC.bPoisonIndicatorStyleChanged = false
-    WC.bPotionGroupingOptionsChanged = false
-    WC.bBackgroundStyleChanged = false
-    WC.bDropShadowSettingChanged = false
-    WC.bReduceMaxQueueLengthPending = false
-    
-    if bIsFirstEnabled == false
-        if WC.bProModeEnabled
-            Pages = new String[9]
-            Pages[8] = "Information"
-            Pages[7] = "Edit Mode"
-            Pages[6] = "Misc UI Options"
-            Pages[5] = "Pro Mode"
-        else
-            Pages = new String[8]
-            Pages[7] = "Information"
-            Pages[6] = "Edit Mode"
-            Pages[5] = "Misc UI Options"
-        endIf
-        
-        Pages[4] = "Recharging and Poisoning"
-        Pages[3] = "Potions"
-        Pages[2] = "Queue Options"
-        Pages[1] = "Hotkey Options"
-        Pages[0] = "General Settings"
-    endIf
+    inf.initData()
 endEvent
 
 Event OnConfigClose()
     if WC.isEnabled != bEnabled
-        if !bEnabled && EM.isEditMode
-            WC.updateWidgetVisibility(false)
-            Wait(0.2)
-            EM.DisableEditMode()
-        endIf
-        if !bIsFirstEnabled
-            WC.isEnabled = bEnabled
-        endIf
+        WC.isEnabled = bEnabled
     endIf
-    
-    ApplyMCMSettings()
+    UpdateSettings()
 endEvent
 
 ; ####################################
@@ -154,23 +100,23 @@ event OnPageReset(string page)
     else
         UnloadCustomContent()
     
-        if page == "General Settings"
+        if page == "$iEquip_MCM_lbl_General"
             gen.drawPage()
-        elseIf page == "Hotkey Options"
+        elseIf page == "$iEquip_MCM_lbl_Hotkey"
             htk.drawPage()
-        elseIf page == "Queue Options" 
+        elseIf page == "$iEquip_MCM_lbl_Queue" 
             que.drawPage()
-        elseIf page == "Potions" 
+        elseIf page == "$iEquip_MCM_lbl_Potions" 
             pot.drawPage()
-        elseIf page == "Recharging and Poisoning"
+        elseIf page == "$iEquip_MCM_lbl_Recharging"
             poi.drawPage()    
-        elseIf page == "Misc UI Options"
+        elseIf page == "$iEquip_MCM_lbl_Misc"
             uii.drawPage()          
-        elseIf page == "Pro Mode"
+        elseIf page == "$iEquip_MCM_lbl_Pro"
             pro.drawPage()   
-        elseIf page == "Edit Mode"
+        elseIf page == "$iEquip_MCM_lbl_Edit"
             edt.drawPage()           
-        elseIf page == "Information"
+        elseIf page == "$iEquip_MCM_lbl_Info"
             inf.drawPage()
         endIf
     endif
@@ -219,26 +165,6 @@ event OnDefaultST()
     jumpToScriptEvent("Default")
 endEvent
 
-; Hotkeys
-
-event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
-    if (conflictControl != "")
-        string msg
-        
-        if (conflictName != "")
-            msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n(" + conflictName + ")\n\nAre you sure you want to continue?"
-        else
-            msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n\nAre you sure you want to continue?"
-        endIf
-        
-        if ShowMessage(msg, true, "$Yes", "$No")
-            jumpToScriptEvent("Change", keyCode)
-        endIf
-    else
-        jumpToScriptEvent("Change", keyCode)
-    endIf
-endEvent
-
 ; SLIDERS
 
 event OnSliderOpenST()
@@ -267,4 +193,24 @@ endEvent
     
 event OnColorAcceptST(int color)
     jumpToScriptEvent("Accept", color)
+endEvent
+
+; HOTKEYS
+
+event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
+    if (conflictControl != "")
+        string msg
+        
+        if (conflictName != "")
+            msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n(" + conflictName + ")\n\nAre you sure you want to continue?"
+        else
+            msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n\nAre you sure you want to continue?"
+        endIf
+        
+        if ShowMessage(msg, true, "$Yes", "$No")
+            jumpToScriptEvent("Change", keyCode)
+        endIf
+    else
+        jumpToScriptEvent("Change", keyCode)
+    endIf
 endEvent

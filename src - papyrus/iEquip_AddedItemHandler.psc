@@ -15,27 +15,13 @@ Actor Property PlayerRef Auto
 FormList Property iEquip_RemovedItemsFLST Auto
 FormList Property iEquip_ItemsToAddFLST Auto
 
-Event OnInit()
-	gotoState("DISABLED")
-	OnPlayerLoadGame()
-endEvent
-
-function OniEquipEnabled(bool enabled)
-	if enabled
-		gotoState("")
+function ToggleState(bool bEnabled)
+	if bEnabled
+		GoToState("")
 	else
-		gotoState("DISABLED")
+		GoToState("DISABLED")
 	endIf
 endFunction
-	
-Event OnPlayerLoadGame()
-	debug.trace("iEquip_AddedItemHandler OnPlayerLoadGame called")
-	if WC.isEnabled
-		gotoState("")
-	else
-		gotoState("DISABLED")
-	endIf
-endEvent
 
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	debug.trace("iEquip_AddedItemHandler OnItemAdded called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
@@ -85,10 +71,8 @@ event OnUpdate()
 	debug.trace("iEquip_AddedItemHandler OnUpdate - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
 endEvent
 
-state DISABLED
-
+auto state DISABLED
 	event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 		;Do nothing
 	endEvent
-
 endState

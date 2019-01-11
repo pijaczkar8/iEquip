@@ -21,55 +21,54 @@ function initData()
 endFunction
 
 function drawPage()
-    MCM.AddEmptyOption()
-    MCM.AddHeaderOption("Health Potion Options")
-    MCM.AddToggleOptionST("pot_tgl_enblHealthGroup", "Enable Health Potion Grouping", WC.bHealthPotionGrouping)
-            
-    if WC.bHealthPotionGrouping
-        MCM.AddMenuOptionST("pot_men_hPrefEffect", "Preferred Effect", potionEffects[PO.iHealthPotionsFirstChoice])
-        MCM.AddMenuOptionST("pot_men_hPrefEffect2", "2nd Choice", potionEffects[PO.iHealthPotionsSecondChoice])
-        MCM.AddTextOptionST("pot_txt_hPrefEffect3", "3rd Choice", potionEffects[PO.iHealthPotionsThirdChoice])
-        MCM.AddToggleOptionST("pot_tgl_alwaysUseHealth", "Always use strongest potion first", PO.bUseStrongestHealthPotion)
-    else
+    if MCM.bEnabled
+        MCM.AddHeaderOption("Health Potion Options")
+        MCM.AddToggleOptionST("pot_tgl_enblHealthGroup", "Enable Health Potion Grouping", WC.bHealthPotionGrouping)
+                
+        if WC.bHealthPotionGrouping
+            MCM.AddMenuOptionST("pot_men_hPrefEffect", "Preferred Effect", potionEffects[PO.iHealthPotionsFirstChoice])
+            MCM.AddMenuOptionST("pot_men_hPrefEffect2", "2nd Choice", potionEffects[PO.iHealthPotionsSecondChoice])
+            MCM.AddTextOptionST("pot_txt_hPrefEffect3", "3rd Choice", potionEffects[PO.iHealthPotionsThirdChoice])
+            MCM.AddToggleOptionST("pot_tgl_alwaysUseHealth", "Always use strongest potion first", PO.bUseStrongestHealthPotion)
+        else
+            MCM.AddEmptyOption()
+            MCM.AddEmptyOption()
+            MCM.AddEmptyOption()
+            MCM.AddEmptyOption()
+        endIf
+                
         MCM.AddEmptyOption()
-        MCM.AddEmptyOption()
-        MCM.AddEmptyOption()
-        MCM.AddEmptyOption()
-    endIf
-            
-    MCM.AddEmptyOption()
-    MCM.AddHeaderOption("Stamina Potion Options")
-    MCM.AddToggleOptionST("pot_tgl_enblStaminaGroup", "Enable Stamina Potion Grouping", WC.bStaminaPotionGrouping)
-            
-    if WC.bStaminaPotionGrouping
-        MCM.AddMenuOptionST("pot_men_sPrefEffect", "Preferred Effect", potionEffects[PO.iStaminaPotionsFirstChoice])
-        MCM.AddMenuOptionST("pot_men_sPrefEffect2", "2nd Choice", potionEffects[PO.iStaminaPotionsSecondChoice])
-        MCM.AddTextOptionST("pot_txt_sPrefEffect3", "3rd Choice", potionEffects[PO.iStaminaPotionsThirdChoice])
-        MCM.AddToggleOptionST("pot_tgl_alwaysUseStamina", "Always use strongest potion first", PO.bUseStrongestStaminaPotion)
-    endIf
+        MCM.AddHeaderOption("Stamina Potion Options")
+        MCM.AddToggleOptionST("pot_tgl_enblStaminaGroup", "Enable Stamina Potion Grouping", WC.bStaminaPotionGrouping)
+                
+        if WC.bStaminaPotionGrouping
+            MCM.AddMenuOptionST("pot_men_sPrefEffect", "Preferred Effect", potionEffects[PO.iStaminaPotionsFirstChoice])
+            MCM.AddMenuOptionST("pot_men_sPrefEffect2", "2nd Choice", potionEffects[PO.iStaminaPotionsSecondChoice])
+            MCM.AddTextOptionST("pot_txt_sPrefEffect3", "3rd Choice", potionEffects[PO.iStaminaPotionsThirdChoice])
+            MCM.AddToggleOptionST("pot_tgl_alwaysUseStamina", "Always use strongest potion first", PO.bUseStrongestStaminaPotion)
+        endIf
 
-    MCM.SetCursorPosition(1)
-
-    MCM.AddEmptyOption()
-    MCM.AddHeaderOption("Magicka Potion Options")
-    MCM.AddToggleOptionST("pot_tgl_enblMagickaGroup", "Enable Magicka Potion Grouping", WC.bMagickaPotionGrouping)
-            
-    if WC.bMagickaPotionGrouping
-        MCM.AddMenuOptionST("pot_men_mPrefEffect", "Preferred Effect", potionEffects[PO.iMagickaPotionsFirstChoice])
-        MCM.AddMenuOptionST("pot_men_mPrefEffect2", "2nd Choice", potionEffects[PO.iMagickaPotionsSecondChoice])
-        MCM.AddTextOptionST("pot_txt_mPrefEffect3", "3rd Choice", potionEffects[PO.iMagickaPotionsThirdChoice])
-        MCM.AddToggleOptionST("pot_tgl_alwaysUseMagicka", "Always use strongest potion first", PO.bUseStrongestMagickaPotion)
-    else
+        MCM.SetCursorPosition(1)
+        MCM.AddHeaderOption("Magicka Potion Options")
+        MCM.AddToggleOptionST("pot_tgl_enblMagickaGroup", "Enable Magicka Potion Grouping", WC.bMagickaPotionGrouping)
+                
+        if WC.bMagickaPotionGrouping
+            MCM.AddMenuOptionST("pot_men_mPrefEffect", "Preferred Effect", potionEffects[PO.iMagickaPotionsFirstChoice])
+            MCM.AddMenuOptionST("pot_men_mPrefEffect2", "2nd Choice", potionEffects[PO.iMagickaPotionsSecondChoice])
+            MCM.AddTextOptionST("pot_txt_mPrefEffect3", "3rd Choice", potionEffects[PO.iMagickaPotionsThirdChoice])
+            MCM.AddToggleOptionST("pot_tgl_alwaysUseMagicka", "Always use strongest potion first", PO.bUseStrongestMagickaPotion)
+        else
+            MCM.AddEmptyOption()
+            MCM.AddEmptyOption()
+            MCM.AddEmptyOption()
+            MCM.AddEmptyOption()
+        endIf
+                
         MCM.AddEmptyOption()
-        MCM.AddEmptyOption()
-        MCM.AddEmptyOption()
-        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("Widget Options")
+        MCM.AddMenuOptionST("pot_men_whenNoPotions", "When no potions left...", emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
+        MCM.AddToggleOptionST("pot_tgl_warningOnLastPotion", "Warning flash when last potion used", PO.bFlashPotionWarning)
     endIf
-            
-    MCM.AddEmptyOption()
-    MCM.AddHeaderOption("Widget Options")
-    MCM.AddMenuOptionST("pot_men_whenNoPotions", "When no potions left...", emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
-    MCM.AddToggleOptionST("pot_tgl_warningOnLastPotion", "Warning flash when last potion used", PO.bFlashPotionWarning)
 endFunction
 
 ; ###############

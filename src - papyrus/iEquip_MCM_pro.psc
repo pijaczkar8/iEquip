@@ -1,9 +1,14 @@
 Scriptname iEquip_MCM_pro extends iEquip_MCM_helperfuncs
 
+iEquip_WidgetCore Property WC Auto
 iEquip_KeyHandler Property KH Auto
 iEquip_ProMode Property PM Auto
 iEquip_PotionScript Property PO Auto
-iEquip_WidgetCore Property WC Auto
+
+sound property UILevelUp auto
+
+bool bStillToEnableProMode = true
+int iProModeEasterEggCounter = 5
 
 string[] QSPreferredMagicSchool
 string[] preselectQuickFunctionOptions
@@ -48,81 +53,90 @@ function initData()
 endFunction
 
 function drawPage()
-    MCM.AddTextOptionST("pro_txt_whatProMode", "What is Pro Mode?", "")
-    
-    MCM.AddEmptyOption()
-    MCM.AddHeaderOption("Preselect Options")
-    MCM.AddTextOptionST("pro_txt_whatPreselect", "What is Preselect?", "")
-    MCM.AddToggleOptionST("pro_tgl_enblPreselect", "Enable Preselect", KH.bPreselectEnabled)
-            
-    if KH.bPreselectEnabled
-        MCM.AddToggleOptionST("pro_tgl_enblShoutPreselect", "Enable shout preselect", PM.bShoutPreselectEnabled)
-        MCM.AddToggleOptionST("pro_tgl_swapPreselectItm", "Swap preselect with current item", PM.bPreselectSwapItemsOnEquip)
-        MCM.AddToggleOptionST("pro_tgl_eqpAllExitPreselectMode", "Equip All Exits Preselect Mode", PM.bTogglePreselectOnEquipAll)
-    endIf
-            
-    MCM.AddEmptyOption()
-    MCM.AddHeaderOption("QuickShield Options")
-    MCM.AddTextOptionST("pro_txt_whatQuickshield", "What is QuickShield?", "")
-    MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "Enable QuickShield", KH.bQuickShieldEnabled)
-            
-    if KH.bQuickShieldEnabled
-        MCM.AddToggleOptionST("pro_tgl_with2hReqp", "With 2H/ranged equipped", PM.bQuickShield2HSwitchAllowed)
-        MCM.AddToggleOptionST("pro_tgl_prefShieldMag", "Prefer magic", PM.bQuickShieldPreferMagic)
-                
-        if PM.bQuickShieldPreferMagic
-            MCM.AddMenuOptionST("pro_men_rightHandspllTyp", "Right hand spell type", QSPreferredMagicSchool[MCM.iCurrentQSPreferredMagicSchoolChoice])
-        endIf         
-       
-        MCM.AddMenuOptionST("pro_men_inPreselectQuickshieldMode", "In Preselect Mode", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
-    endIf
-            
-    MCM.AddEmptyOption() 
-    MCM.AddHeaderOption("QuickHeal Options")
-    MCM.AddTextOptionST("pro_txt_whatQuickheal", "What is QuickHeal?", "")
-    MCM.AddToggleOptionST("pro_tgl_enblQuickheal", "Enable QuickHeal", KH.bQuickHealEnabled)
-            
-    if KH.bQuickHealEnabled
-        MCM.AddToggleOptionST("pro_tgl_prefHealMag", "Prefer magic", PM.bQuickHealPreferMagic)
-                
-        if PM.bQuickHealPreferMagic
-            MCM.AddMenuOptionST("pro_men_alwysEqpSpll", "Always equip spell...", QHEquipOptions[PM.iQuickHealEquipChoice])
+    if MCM.bEnabled
+        if bStillToEnableProMode
+            MCM.AddTextOptionST("pro_txt_dragEastr", "", "$iEquip_MCM_pro_txt_dragEastrA")
+        else
+            MCM.AddToggleOptionST("pro_tgl_enblProMode", "$iEquip_MCM_pro_lbl_enblProMode", WC.bProModeEnabled)
+            MCM.AddTextOptionST("pro_txt_whatProMode", "What is Pro Mode?", "")
         endIf
-                
-        MCM.AddToggleOptionST("pro_tgl_use2Pot", "Use 2nd Choice Potion", PO.bQuickHealUseSecondChoice)
-        MCM.AddToggleOptionST("pro_tgl_swtchBck", "Switch Back", PM.bQuickHealSwitchBackEnabled)
-    endIf
-            
-    MCM.SetCursorPosition(1)
-            
-    MCM.AddHeaderOption("QuickRanged Options")
-    MCM.AddTextOptionST("pro_txt_whatQuickranged", "What is QuickRanged?", "")
-    MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "Enable QuickRanged", KH.bQuickRangedEnabled)
-            
-    if KH.bQuickRangedEnabled
-        MCM.AddMenuOptionST("pro_men_prefWepTyp", "Preferred weapon type", QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
-        MCM.AddMenuOptionST("pro_men_swtchOut", "Switch out options", QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
+        
+        if WC.bProModeEnabled
+            MCM.AddEmptyOption()
+            MCM.AddHeaderOption("Preselect Options")
+            MCM.AddTextOptionST("pro_txt_whatPreselect", "What is Preselect?", "")
+            MCM.AddToggleOptionST("pro_tgl_enblPreselect", "Enable Preselect", KH.bPreselectEnabled)
+                    
+            if KH.bPreselectEnabled
+                MCM.AddToggleOptionST("pro_tgl_enblShoutPreselect", "Enable shout preselect", PM.bShoutPreselectEnabled)
+                MCM.AddToggleOptionST("pro_tgl_swapPreselectItm", "Swap preselect with current item", PM.bPreselectSwapItemsOnEquip)
+                MCM.AddToggleOptionST("pro_tgl_eqpAllExitPreselectMode", "Equip All Exits Preselect Mode", PM.bTogglePreselectOnEquipAll)
+            endIf
+                    
+            MCM.AddEmptyOption()
+            MCM.AddHeaderOption("QuickShield Options")
+            MCM.AddTextOptionST("pro_txt_whatQuickshield", "What is QuickShield?", "")
+            MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "Enable QuickShield", KH.bQuickShieldEnabled)
+                    
+            if KH.bQuickShieldEnabled
+                MCM.AddToggleOptionST("pro_tgl_with2hReqp", "With 2H/ranged equipped", PM.bQuickShield2HSwitchAllowed)
+                MCM.AddToggleOptionST("pro_tgl_prefShieldMag", "Prefer magic", PM.bQuickShieldPreferMagic)
+                        
+                if PM.bQuickShieldPreferMagic
+                    MCM.AddMenuOptionST("pro_men_rightHandspllTyp", "Right hand spell type", QSPreferredMagicSchool[MCM.iCurrentQSPreferredMagicSchoolChoice])
+                endIf         
+               
+                MCM.AddMenuOptionST("pro_men_inPreselectQuickshieldMode", "In Preselect Mode", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
+            endIf
+                    
+            MCM.AddEmptyOption() 
+            MCM.AddHeaderOption("QuickHeal Options")
+            MCM.AddTextOptionST("pro_txt_whatQuickheal", "What is QuickHeal?", "")
+            MCM.AddToggleOptionST("pro_tgl_enblQuickheal", "Enable QuickHeal", KH.bQuickHealEnabled)
+                    
+            if KH.bQuickHealEnabled
+                MCM.AddToggleOptionST("pro_tgl_prefHealMag", "Prefer magic", PM.bQuickHealPreferMagic)
+                        
+                if PM.bQuickHealPreferMagic
+                    MCM.AddMenuOptionST("pro_men_alwysEqpSpll", "Always equip spell...", QHEquipOptions[PM.iQuickHealEquipChoice])
+                endIf
+                        
+                MCM.AddToggleOptionST("pro_tgl_use2Pot", "Use 2nd Choice Potion", PO.bQuickHealUseSecondChoice)
+                MCM.AddToggleOptionST("pro_tgl_swtchBck", "Switch Back", PM.bQuickHealSwitchBackEnabled)
+            endIf
+                    
+            MCM.SetCursorPosition(1)
+                    
+            MCM.AddHeaderOption("QuickRanged Options")
+            MCM.AddTextOptionST("pro_txt_whatQuickranged", "What is QuickRanged?", "")
+            MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "Enable QuickRanged", KH.bQuickRangedEnabled)
+                    
+            if KH.bQuickRangedEnabled
+                MCM.AddMenuOptionST("pro_men_prefWepTyp", "Preferred weapon type", QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
+                MCM.AddMenuOptionST("pro_men_swtchOut", "Switch out options", QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
 
-        if PM.iQuickRangedSwitchOutAction == 4
-            MCM.AddMenuOptionST("pro_men_prefMagSchl", "Preferred magic school", QSPreferredMagicSchool[MCM.iCurrentQRPreferredMagicSchoolChoice])
+                if PM.iQuickRangedSwitchOutAction == 4
+                    MCM.AddMenuOptionST("pro_men_prefMagSchl", "Preferred magic school", QSPreferredMagicSchool[MCM.iCurrentQRPreferredMagicSchoolChoice])
+                endIf
+               
+                MCM.AddMenuOptionST("pro_men_inPreselectQuickrangedMode", "In Preselect Mode", preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
+            endIf
+                    
+            MCM.AddEmptyOption()
+            MCM.AddHeaderOption("QuickDualCast Options")
+            MCM.AddTextOptionST("pro_txt_whatQuickdualcast", "What is QuickDualCast?", "")
+            MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "Enable QuickDualCast", WC.bQuickDualCastEnabled)
+                    
+            if WC.bQuickDualCastEnabled
+                MCM.AddTextOption("Enable QuickDualCast for:", "")
+                MCM.AddToggleOptionST("pro_tgl_altSpll", "   Alteration spells", WC.bQuickDualCastAlteration)
+                MCM.AddToggleOptionST("pro_tgl_conjSpll", "   Conjuration spells", WC.bQuickDualCastConjuration)
+                MCM.AddToggleOptionST("pro_tgl_destSpll", "   Destruction spells", WC.bQuickDualCastDestruction)
+                MCM.AddToggleOptionST("pro_tgl_illSpll", "   Illusion spells", WC.bQuickDualCastIllusion)
+                MCM.AddToggleOptionST("pro_tgl_restSpll", "   Restoration spells", WC.bQuickDualCastRestoration)
+                MCM.AddToggleOptionST("pro_tgl_reqBothQue", "Only if in both queues", PM.bQuickDualCastMustBeInBothQueues)
+            endIf
         endIf
-       
-        MCM.AddMenuOptionST("pro_men_inPreselectQuickrangedMode", "In Preselect Mode", preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
-    endIf
-            
-    MCM.AddEmptyOption()
-    MCM.AddHeaderOption("QuickDualCast Options")
-    MCM.AddTextOptionST("pro_txt_whatQuickdualcast", "What is QuickDualCast?", "")
-    MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "Enable QuickDualCast", WC.bQuickDualCastEnabled)
-            
-    if WC.bQuickDualCastEnabled
-        MCM.AddTextOption("Enable QuickDualCast for:", "")
-        MCM.AddToggleOptionST("pro_tgl_altSpll", "   Alteration spells", WC.bQuickDualCastAlteration)
-        MCM.AddToggleOptionST("pro_tgl_conjSpll", "   Conjuration spells", WC.bQuickDualCastConjuration)
-        MCM.AddToggleOptionST("pro_tgl_destSpll", "   Destruction spells", WC.bQuickDualCastDestruction)
-        MCM.AddToggleOptionST("pro_tgl_illSpll", "   Illusion spells", WC.bQuickDualCastIllusion)
-        MCM.AddToggleOptionST("pro_tgl_restSpll", "   Restoration spells", WC.bQuickDualCastRestoration)
-        MCM.AddToggleOptionST("pro_tgl_reqBothQue", "Only if in both queues", PM.bQuickDualCastMustBeInBothQueues)
     endIf
 endFunction
 
@@ -130,11 +144,63 @@ endFunction
 ; ### Pro Mode ###
 ; ################
 
+State pro_txt_dragEastr
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("??????")
+        elseIf currentEvent == "Select"
+            if iProModeEasterEggCounter >= 0
+                string msg
+            
+                if iProModeEasterEggCounter == 5
+                    msg = "$iEquip_MCM_pro_txt_dragEastrB"
+                elseIf iProModeEasterEggCounter == 4
+                    msg = "$iEquip_MCM_pro_txt_dragEastrC"
+                elseIf iProModeEasterEggCounter == 3
+                    msg = "$iEquip_MCM_pro_txt_dragEastrD"
+                elseIf iProModeEasterEggCounter == 2
+                    msg = "$iEquip_MCM_pro_txt_dragEastrE"
+                elseIf iProModeEasterEggCounter == 1
+                    msg = "$iEquip_MCM_pro_txt_dragEastrF"
+                elseIf iProModeEasterEggCounter == 0
+                    msg = "$iEquip_MCM_pro_txt_dragEastrG"
+                endIf
+                
+                MCM.SetTextOptionValueST(msg)
+                iProModeEasterEggCounter -= 1
+            else
+                ; Wohoo, let's play an epic tune
+                UILevelUp.Play(MCM.PlayerRef)
+                bStillToEnableProMode = false
+                WC.bProModeEnabled = true
+                
+                MCM.ShowMessage("$iEquip_MCM_pro_msg_dragEastr", false, "$OK")
+                MCM.forcePageReset()
+            endIf
+        endIf
+    endEvent
+endState
+
+State pro_tgl_enblProMode
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_enblProMode")
+        elseIf currentEvent == "Select"
+            WC.bProModeEnabled = !WC.bProModeEnabled
+            MCM.forcePageReset()
+        elseIf currentEvent == "Default"
+            WC.bProModeEnabled = false 
+            KH.bQuickShieldEnabled = false
+            WC.bQuickDualCastEnabled = false
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
 State pro_txt_whatProMode
     event OnBeginState()
         if currentEvent == "Select"
-            MCM.ShowMessage("What is iEquip Pro Mode?\n\nPro Mode is a suite of advanced features and settings which allow you to fully unleash the power of iEquip. "+\
-                            "Once enabled you will find several previously hidden settings throughout the MCM and will gain access to five new gameplay features, all of which are explained seperately below.", false, "Exit")
+            MCM.ShowMessage("What is iEquip Pro Mode?\n\nPro Mode is a suite of advanced features and settings which allow you to fully unleash the power of iEquip.", false, "Exit")
         endIf
     endEvent    
 endState
@@ -527,61 +593,56 @@ endState
 
 State pro_tgl_altSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastAlteration = !WC.bQuickDualCastAlteration
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastAlteration)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastAlteration = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastAlteration)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[0]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[0] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[0] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[0])
     endEvent
 endState
 
 State pro_tgl_conjSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastConjuration = !WC.bQuickDualCastConjuration
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastConjuration)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastConjuration = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastConjuration)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[1]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[1] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[1] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[1])
     endEvent
 endState
 
 State pro_tgl_destSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastDestruction = !WC.bQuickDualCastDestruction
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastDestruction)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastDestruction = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastDestruction)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[2]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[2] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[2] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[2])
     endEvent
 endState
 
 State pro_tgl_illSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastIllusion = !WC.bQuickDualCastIllusion
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastIllusion)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastIllusion = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastIllusion)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[3]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[3] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[3] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[3])
     endEvent
 endState
 
 State pro_tgl_restSpll
     event OnBeginState()
-        if currentEvent == "Select"
-            WC.bQuickDualCastRestoration = !WC.bQuickDualCastRestoration
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastRestoration)
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastRestoration = false
-            MCM.SetToggleOptionValueST(WC.bQuickDualCastRestoration)
+        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[4]) || currentEvent == "Default"
+            WC.abQuickDualCastSchoolAllowed[4] = false
+        else
+            WC.abQuickDualCastSchoolAllowed[4] = true
         endIf
+        MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[4])
     endEvent
 endState
 
