@@ -278,7 +278,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 			        endIf
 					int iEquipItem = jMap.object()
 					jMap.setForm(iEquipItem, "Form", akBaseObject)
-					jMap.setInt(iEquipItem, "ID", itemID)
+					jMap.setInt(iEquipItem, "itemID", itemID)
 					jMap.setInt(iEquipItem, "Type", itemType)
 					jMap.setStr(iEquipItem, "Name", itemName)
 					jMap.setStr(iEquipItem, "Icon", WC.GetItemIconName(akBaseObject, itemType, itemName))

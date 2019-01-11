@@ -179,6 +179,8 @@ event OnInit()
         aCACO_RestoreEffects[6] = Game.GetFormFromFile(0x001B42BE, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect ;AlchRestoreMagicka_1sec
         aCACO_RestoreEffects[7] = Game.GetFormFromFile(0x001B42BF, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect ;AlchRestoreMagicka_5sec
         aCACO_RestoreEffects[8] = Game.GetFormFromFile(0x001B42C0, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect ;AlchRestoreMagicka_10sec
+    else
+        bIsCACOLoaded = false
     endIf
 
     aPAF_RestoreEffects = new MagicEffect[6]
@@ -190,6 +192,8 @@ event OnInit()
         aPAF_RestoreEffects[3] = Game.GetFormFromFile(0x00754DF, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreStaminaAllDUPLICATE001
         aPAF_RestoreEffects[4] = Game.GetFormFromFile(0x00754DC, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreMagickaDUPLICATE001
         aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DD, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreMagickaAllDUPLICATE001
+    else
+        bIsPAFLoaded = false
     endIf
     
     debug.trace("iEquip_PotionScript OnInit finished -  - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
