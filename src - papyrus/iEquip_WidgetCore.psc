@@ -2489,6 +2489,10 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			PlayerRef.EquipSpell(targetItem as Spell, Q)
 			if bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
 				string spellSchool = jMap.getStr(jArray.getObj(aiTargetQ[Q], targetIndex), "Icon")
+				;Handle appended Destruction icon names (ie DestructionFire)
+				if stringutil.Find(spellSchool, "Dest", 0) > -1
+					spellSchool = "Destruction"
+				endIf
 				string spellName = targetItem.GetName()
 				;if (spellSchool == "Destruction" && bQuickDualCastDestruction) || (spellSchool == "Alteration" && bQuickDualCastAlteration) || (spellSchool == "Illusion" && bQuickDualCastIllusion) || (spellSchool == "Restoration" && bQuickDualCastRestoration) || (spellSchool == "Conjuration" && bQuickDualCastConjuration && (asBound2HWeapons.find(spellName) == -1))
 				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)]	
@@ -3505,29 +3509,31 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	int targetArray = aiTargetQ[iQueueMenuCurrentQueue]
 	int targetObject = jArray.getObj(targetArray, iIndex)
 	string itemName = JMap.getStr(targetObject, "Name")
-	if !(iQueueMenuCurrentQueue == 3 && (stringutil.Find(itemName, "Potions", 0) > -1)) && !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed")
-		bool keepInFLST = false
-		int itemID = JMap.getInt(targetObject, "itemID")
-		form itemForm = JMap.getForm(targetObject, "Form")
-		if bMoreHUDLoaded
-			AhzMoreHudIE.RemoveIconItem(itemID)
-		endIf
-		if iQueueMenuCurrentQueue < 2
-			int otherHandQueue = 1
-			if iQueueMenuCurrentQueue == 1
-				otherHandQueue = 0
+	if !(iQueueMenuCurrentQueue == 3 && (stringutil.Find(itemName, "Potions", 0) > -1))
+		if !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed")
+			bool keepInFLST = false
+			int itemID = JMap.getInt(targetObject, "itemID")
+			form itemForm = JMap.getForm(targetObject, "Form")
+			if bMoreHUDLoaded
+				AhzMoreHudIE.RemoveIconItem(itemID)
 			endIf
-			if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
-				if bMoreHUDLoaded
-					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
+			if iQueueMenuCurrentQueue < 2
+				int otherHandQueue = 1
+				if iQueueMenuCurrentQueue == 1
+					otherHandQueue = 0
 				endIf
-				keepInFLST = true
-			endIf
-        endIf
-        if !keepInFLST
-        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
-        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
-        endIf
+				if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+					if bMoreHUDLoaded
+						AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
+					endIf
+					keepInFLST = true
+				endIf
+	        endIf
+	        if !keepInFLST
+	        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
+	        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+	        endIf
+	    endIf
 		jArray.eraseIndex(targetArray, iIndex)
 		int queueLength = jArray.count(targetArray)
 		if iIndex >= queueLength
