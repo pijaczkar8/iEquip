@@ -39,6 +39,7 @@ bool bWaitingForOnObjectEquippedUpdate = false
 bool processingQueuedForms = false
 
 int iSlotToUpdate = -1
+int[] itemTypesToProcess
 
 Event OnInit()
 	gotoState("DISABLED")
@@ -48,6 +49,15 @@ endEvent
 function OniEquipEnabled(bool enabled)
 	if enabled
 		gotoState("")
+		
+		itemTypesToProcess = new int[6]
+		itemTypesToProcess[0] = 22 ;Spells or shouts
+		itemTypesToProcess[1] = 23 ;Scrolls
+		itemTypesToProcess[2] = 31 ;Torches
+		itemTypesToProcess[3] = 41 ;Weapons
+		itemTypesToProcess[4] = 42 ;Ammo
+		itemTypesToProcess[5] = 119 ;Powers
+		
 		Utility.SetINIBool("bDisableGearedUp:General", True)
 		WC.refreshVisibleItems()
 		If WC.bEnableGearedUp
@@ -173,8 +183,12 @@ EndEvent
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called")
 	if !processingQueuedForms
-		iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
-		registerForSingleUpdate(0.5)
+		int itemType = akBaseObject.GetType()
+		if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
+			bWaitingForOnObjectEquippedUpdate = true
+			iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
+			registerForSingleUpdate(0.5)
+		endIf
 	endIf
 endEvent
 
