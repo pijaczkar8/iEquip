@@ -593,7 +593,7 @@ function UpdateElementsAll()
         iIndex += 1
     endWhile
     
-    if !WC.bIsFirstLoad && !WC.bLoading
+    if !WC.bIsFirstLoad && !WC.bLoading && !WC.bRefreshingWidget
         iIndex = 1
     
         while iIndex < WC.asWidgetDescriptions.Length

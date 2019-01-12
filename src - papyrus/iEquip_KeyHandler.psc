@@ -14,6 +14,7 @@ iEquip_HelpMenu Property HM Auto
 
 Actor Property PlayerRef  Auto
 Message Property iEquip_UtilityMenu Auto
+Perk RequiemEnchantingPerk
 
 ;Main gameplay keys
 Int Property iShoutKey = 21 Auto Hidden ;Y
@@ -54,6 +55,7 @@ bool Property bAllowKeyPress = true Auto Hidden
 bool bIsUtilityKeyHeld = false
 bool bIsQueueMenuComboKeyKeyHeld = false
 bool bNotInLootMenu = true
+bool bIsRequiemLoaded = false
 
 ; Ints
 int Property iUtilityKeyDoublePress = 0 Auto Hidden
@@ -88,6 +90,13 @@ function GameLoaded()
     
     bIsUtilityKeyHeld = false
     bNotInLootMenu = true
+
+    if Game.GetModByName("Requiem.esp") != 255
+        bIsRequiemLoaded = true
+        RequiemEnchantingPerk = Game.GetFormFromFile(0x001AA0B6, "Requiem.esp") as Perk ;AlchRestoreHealth_1sec
+    else
+        bIsRequiemLoaded = false
+    endIf
 endFunction
 
 event OnMenuOpen(string MenuName)
@@ -204,10 +213,18 @@ function runUpdate()
                 if AM.bAmmoMode
                     AM.toggleAmmoMode(false, false)
                 else
-                    RC.rechargeWeapon(0)
+                    if bIsRequiemLoaded && !PlayerRef.HasPerk(RequiemEnchantingPerk)
+                        debug.notification("You lack the required skill to recharge your items")
+                    else
+                        RC.rechargeWeapon(0)
+                    endIf
                 endIf
             elseIf iWaitingKeyCode == iRightKey
-                RC.rechargeWeapon(1)
+                if bIsRequiemLoaded && !PlayerRef.HasPerk(RequiemEnchantingPerk)
+                    debug.notification("You lack the required skill to recharge your items")
+                else
+                    RC.rechargeWeapon(1)
+                endIf
             endIf
         
     elseIf iMultiTap == 1  ; Single tap
