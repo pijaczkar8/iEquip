@@ -14,7 +14,7 @@ iEquip_HelpMenu Property HM Auto
 
 Actor Property PlayerRef  Auto
 Message Property iEquip_UtilityMenu Auto
-Perk RequiemEnchantingPerk
+Perk Property Enchanter00 Auto ;Used if Requiem detected - Requiem renames this perk to REQ_Perk_Enchanting_EnchantersInsight1
 
 ;Main gameplay keys
 Int Property iShoutKey = 21 Auto Hidden ;Y
@@ -93,7 +93,6 @@ function GameLoaded()
 
     if Game.GetModByName("Requiem.esp") != 255
         bIsRequiemLoaded = true
-        RequiemEnchantingPerk = Game.GetFormFromFile(0x001AA0B6, "Requiem.esp") as Perk ;AlchRestoreHealth_1sec
     else
         bIsRequiemLoaded = false
     endIf
@@ -213,15 +212,15 @@ function runUpdate()
                 if AM.bAmmoMode
                     AM.toggleAmmoMode(false, false)
                 else
-                    if bIsRequiemLoaded && !PlayerRef.HasPerk(RequiemEnchantingPerk)
-                        debug.notification("You lack the required skill to recharge your items")
+                    if bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
+                        debug.notification("$iEquip_RequiemEnchantingPerkMissing")
                     else
                         RC.rechargeWeapon(0)
                     endIf
                 endIf
             elseIf iWaitingKeyCode == iRightKey
-                if bIsRequiemLoaded && !PlayerRef.HasPerk(RequiemEnchantingPerk)
-                    debug.notification("You lack the required skill to recharge your items")
+                if bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
+                    debug.notification("$iEquip_RequiemEnchantingPerkMissing")
                 else
                     RC.rechargeWeapon(1)
                 endIf
@@ -268,13 +267,10 @@ function runUpdate()
                 elseif iAction == 2
                     toggleEditMode()
                 elseif iAction == 3
-                    openiEquipMCM()
-                elseif iAction == 4
                     ;HM.openHelpMenu()
                     debug.MessageBox("This feature is currently disabled")
-                elseif iAction == 5
+                elseif iAction == 4
                     WC.refreshWidget()
-                    ;debug.MessageBox("This feature is currently disabled")
                 endIf
             endIf
         endIf

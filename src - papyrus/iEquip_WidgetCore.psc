@@ -289,7 +289,7 @@ Event OnWidgetInit()
 			aiTargetQ[i] = 0
 			aiCurrentQueuePosition[i] = -1
 			asCurrentlyEquipped[i] = ""
-			abQuickDualCastSchoolAllowed = false
+			abQuickDualCastSchoolAllowed[i] = false
 			if i < 3
 				aiCurrentlyPreselected[i] = -1
 				abQueueWasEmpty[i] = true
@@ -931,12 +931,12 @@ event OnMenuOpen(string _sCurrentMenu)
 			bIsFirstInventoryMenu = false
 		endIf
 		if sCurrentMenu == "InventoryMenu" || sCurrentMenu == "MagicMenu"
-			sEntryPath = "_root.Menu_mc.inventoryLists.itemList.selectedEntry."
+			sEntryPath = "_root.Menu_mc.inventoryLists.itemList"
 		elseif sCurrentMenu == "FavoritesMenu"
-			sEntryPath = "_root.MenuHolder.Menu_mc.itemList.selectedEntry."
+			sEntryPath = "_root.MenuHolder.Menu_mc.itemList"
 		endIf
 	elseif sCurrentMenu == "Journal Menu"
-		sEntryPath = "_root.ConfigPanelFader.configPanel._modList.selectedEntry."
+		sEntryPath = "_root.ConfigPanelFader.configPanel._modList"
 	endIf
 	;Geared Up
 	if bEnableGearedUp && PlayerRef.GetRace() == PlayerRace
@@ -1200,7 +1200,7 @@ function PopulateWidgetArrays()
 	AddWidget("Consumable Widget", ".widgetMaster.ConsumableWidget", 0, 0, 0, 0, 0, 3, 0, None, true, true, false, false, "Consumable")
 	AddWidget("Poison Widget", ".widgetMaster.PoisonWidget", 0, 0, 0, 0, 0, 4, 0, None, true, true, false, false, "Poison")
 	;Left Hand widget components
-	AddWidget("Left Hand Background", ".widgetMaster.LeftHandWidget.leftBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Left")
+	AddWidget("Left Hand Background", ".widgetMaster.LeftHandWidget.leftBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Left")
 	AddWidget("Left Hand Icon", ".widgetMaster.LeftHandWidget.leftIcon_mc", 0, 0, 0, 0, 0, 6, 0, None, true, false, false, false, "Left")
 	AddWidget("Left Hand Item Name", ".widgetMaster.LeftHandWidget.leftName_mc", 0, 0, 0, 0, 0, 7, 16777215, "Right", true, false, true, false, "Left")
 	AddWidget("Left Hand Item Count", ".widgetMaster.LeftHandWidget.leftCount_mc", 0, 0, 0, 0, 0, 8, 16777215, "Center", true, false, true, false, "Left")
@@ -1210,12 +1210,12 @@ function PopulateWidgetArrays()
 	AddWidget("Left Hand Enchantment Meter", ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc", 0, 0, 0, 0, 0, 12, 0, None, true, false, false, false, "Left")
 	AddWidget("Left Hand Soul Gem Icon", ".widgetMaster.LeftHandWidget.leftSoulgem_mc", 0, 0, 0, 0, 0, 13, 0, None, true, false, false, false, "Left")
 	;Left Hand Preselect widget components
-	AddWidget("Left Hand Preselect Background", ".widgetMaster.LeftHandWidget.leftPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Left")
+	AddWidget("Left Hand Preselect Background", ".widgetMaster.LeftHandWidget.leftPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Left")
 	AddWidget("Left Hand Preselect Icon", ".widgetMaster.LeftHandWidget.leftPreselectIcon_mc", 0, 0, 0, 0, 0, 15, 0, None, true, false, false, false, "Left")
 	AddWidget("Left Hand Preselect Item Name", ".widgetMaster.LeftHandWidget.leftPreselectName_mc", 0, 0, 0, 0, 0, 16, 16777215, "Right", true, false, true, false, "Left")
 	AddWidget("Left Hand Preselect Attribute Icons", ".widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 17, 0, None, true, false, false, false, "Left")
 	;Right Hand widget components
-	AddWidget("Right Hand Background", ".widgetMaster.RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Right")
+	AddWidget("Right Hand Background", ".widgetMaster.RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
 	AddWidget("Right Hand Icon", ".widgetMaster.RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 19, 0, None, true, false, false, false, "Right")
 	AddWidget("Right Hand Item Name", ".widgetMaster.RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 20, 16777215, "Left", true, false, true, false, "Right")
 	AddWidget("Right Hand Item Count", ".widgetMaster.RightHandWidget.rightCount_mc", 0, 0, 0, 0, 0, 21, 16777215, "Center", true, false, true, false, "Right")
@@ -1225,25 +1225,25 @@ function PopulateWidgetArrays()
 	AddWidget("Right Hand Enchantment Meter", ".widgetMaster.RightHandWidget.rightEnchantmentMeter_mc", 0, 0, 0, 0, 0, 25, 0, None, true, false, false, false, "Right")
 	AddWidget("Right Hand Soul Gem Icon", ".widgetMaster.RightHandWidget.rightSoulgem_mc", 0, 0, 0, 0, 0, 26, 0, None, true, false, false, false, "Right")
 	;Right Hand Preselect widget components
-	AddWidget("Right Hand Preselect Background", ".widgetMaster.RightHandWidget.rightPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Right")
+	AddWidget("Right Hand Preselect Background", ".widgetMaster.RightHandWidget.rightPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
 	AddWidget("Right Hand Preselect Icon", ".widgetMaster.RightHandWidget.rightPreselectIcon_mc", 0, 0, 0, 0, 0, 28, 0, None, true, false, false, false, "Right")
 	AddWidget("Right Hand Preselect Item Name", ".widgetMaster.RightHandWidget.rightPreselectName_mc", 0, 0, 0, 0, 0, 29, 16777215, "Left", true, false, true, false, "Right")
 	AddWidget("Right Hand Preselect Attribute Icons", ".widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 30, 0, None, true, false, false, false, "Right")
 	;Shout widget components
-	AddWidget("Shout Background", ".widgetMaster.ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Shout")
+	AddWidget("Shout Background", ".widgetMaster.ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
 	AddWidget("Shout Icon", ".widgetMaster.ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 32, 0, None, true, false, false, false, "Shout")
 	AddWidget("Shout Name", ".widgetMaster.ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 33, 16777215, "Center", true, false, true, false, "Shout")
 	;Shout Preselect widget components
-	AddWidget("Shout Preselect Background", ".widgetMaster.ShoutWidget.shoutPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Shout")
+	AddWidget("Shout Preselect Background", ".widgetMaster.ShoutWidget.shoutPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
 	AddWidget("Shout Preselect Icon", ".widgetMaster.ShoutWidget.shoutPreselectIcon_mc", 0, 0, 0, 0, 0, 35, 0, None, true, false, false, false, "Shout")
 	AddWidget("Shout Preselect Name", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 36, 16777215, "Center", true, false, true, false, "Shout")
 	;Consumable widget components
-	AddWidget("Consumable Background", ".widgetMaster.ConsumableWidget.consumableBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Consumable")
+	AddWidget("Consumable Background", ".widgetMaster.ConsumableWidget.consumableBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Consumable")
 	AddWidget("Consumable Icon", ".widgetMaster.ConsumableWidget.consumableIcon_mc", 0, 0, 0, 0, 0, 38, 0, None, true, false, false, false, "Consumable")
 	AddWidget("Consumable Name", ".widgetMaster.ConsumableWidget.consumableName_mc", 0, 0, 0, 0, 0, 39, 16777215, "Right", true, false, true, false, "Consumable")
 	AddWidget("Consumable Count", ".widgetMaster.ConsumableWidget.consumableCount_mc", 0, 0, 0, 0, 0, 40, 16777215, "Center", true, false, true, false, "Consumable")
 	;Poison widget components
-	AddWidget("Poison Background", ".widgetMaster.PoisonWidget.poisonBg_mc", 0, 0, 0, 0, 0, -1, 0, None, false, false, false, true, "Poison")
+	AddWidget("Poison Background", ".widgetMaster.PoisonWidget.poisonBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Poison")
 	AddWidget("Poison Icon", ".widgetMaster.PoisonWidget.poisonIcon_mc", 0, 0, 0, 0, 0, 42, 0, None, true, false, false, false, "Poison")
 	AddWidget("Poison Name", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 43, 16777215, "Left", true, false, true, false, "Poison")
 	AddWidget("Poison Count", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 44, 16777215, "Center", true, false, true, false, "Poison")
@@ -3033,11 +3033,11 @@ function addToQueue(int Q)
 	string itemName = ""
 	debug.trace("iEquip_WidgetCore addToQueue - UI.IsMenuOpen(Console): " + UI.IsMenuOpen("Console") + ", UI.IsMenuOpen(CustomMenu): " + UI.IsMenuOpen("CustomMenu") + ", ((Self as form) as iEquip_uilib).IsMenuOpen(): " + ((Self as form) as iEquip_uilib).IsMenuOpen())
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
-		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + "formId")
+		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.formId")
 		debug.trace("iEquip_WidgetCore addToQueue - itemFormID: " + itemFormID)
-		itemID = UI.GetInt(sCurrentMenu, sEntryPath + "itemId")
+		itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
 		debug.trace("iEquip_WidgetCore addToQueue - itemID: " + itemID)
-		itemName = UI.GetString(sCurrentMenu, sEntryPath + "text")
+		itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
 		debug.trace("iEquip_WidgetCore addToQueue - itemName: " + itemName)
 		itemForm = game.GetFormEx(itemFormID)
 		debug.trace("iEquip_WidgetCore addToQueue - itemForm: " + itemForm + ", " + itemForm.GetName() + ", should match itemName: " + itemName + ", itemID: " + itemID)
@@ -3046,7 +3046,7 @@ function addToQueue(int Q)
 		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check")
 		itemType = itemForm.GetType()
 		if itemType == 41 || itemType == 26 ;Weapons and shields only
-			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + "isEnchanted")
+			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + ".selectedEntry.isEnchanted")
 		endIf
 		if isItemValidForSlot(Q, itemForm, itemType, itemName)
 			if itemName == ""
