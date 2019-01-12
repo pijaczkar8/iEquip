@@ -258,7 +258,7 @@ function runUpdate()
             endIf
 
         elseIf iWaitingKeyCode == iUtilityKey
-            ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = MCM, 4 = Refresh Widget
+            ;0 = Exit, 1 = Queue Menu, 2 = Edit Mode, 3 = MCM, 4 = Refresh Widget, 5 = Save Queues To File
             int iAction = iEquip_UtilityMenu.Show() 
             
             if iAction != 0 ;Exit
@@ -271,6 +271,8 @@ function runUpdate()
                     debug.MessageBox("This feature is currently disabled")
                 elseif iAction == 4
                     WC.refreshWidget()
+                elseif iAction == 5
+                    jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")
                 endIf
             endIf
         endIf
