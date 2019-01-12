@@ -181,7 +181,7 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called")
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called - just equipped " + akBaseObject.GetName())
 	if !processingQueuedForms
 		int itemType = akBaseObject.GetType()
 		if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
@@ -242,8 +242,9 @@ function processQueuedForms()
 	form queuedForm
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
+		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
 		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here
-		if PlayerRef.IsEquipped(queuedForm) && (Game.GetModName(queuedForm.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
+		if (Game.GetModName(queuedForm.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
 			int equippedSlot = -1
 			if PlayerRef.GetEquippedObject(0) == queuedForm
 				equippedSlot = 0
@@ -252,7 +253,7 @@ function processQueuedForms()
 			elseIf PlayerRef.GetEquippedObject(2) == queuedForm
 				equippedSlot = 2
 			endIf
-			debug.trace("iEquip_PlayerEventHandler processQueuedForms - queuedForm: " + queuedForm + " - " + queuedForm.GetName() + ", equippedSlot: " + equippedSlot)
+			debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
 			;If the item has been equipped in the left, right or shout slot
 			if equippedSlot != -1
 				int itemType
