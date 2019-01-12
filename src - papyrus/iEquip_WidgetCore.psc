@@ -10,7 +10,6 @@ Import iEquip_UILIB
 import _Q2C_Functions
 import AhzMoreHudIE
 Import WornObject
-Import iEquip_WeaponExt
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto

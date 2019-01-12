@@ -1,8 +1,6 @@
 
 Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 
-Import iEquip_AmmoExt
-Import iEquip_WeaponExt
 Import iEquip_FormExt
 Import StringUtil
 Import Utility

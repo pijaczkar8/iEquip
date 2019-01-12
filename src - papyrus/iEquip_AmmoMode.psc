@@ -606,7 +606,7 @@ function updateAmmoLists()
 		isBolt = (ammoForm as Ammo).isBolt() as int
 		AmmoName = ammoForm.GetName()
 		;The Javelin check is to get the Spears by Soolie javelins which are classed as arrows/bolts and all of which have more descriptive names than simply Javelin, which is from Throwing Weapons and is an equippable throwing weapon
-		if stringutil.Find(AmmoName, "arrow", 0) > -1 || stringutil.Find(AmmoName, "bolt", 0) > -1 || iEquip_AmmoExt.IsAmmoJavelin(ammoForm as ammo)
+		if stringutil.Find(AmmoName, "arrow", 0) > -1 || stringutil.Find(AmmoName, "bolt", 0) > -1 || iEquip_FormExt.IsJavelin(ammoForm)
 			;Make sure we're only adding arrows to the arrow queue or bolts to the bolt queue
 			if !isAlreadyInAmmoQueue(ammoForm, aiTargetQ[isBolt])
 				AddToAmmoQueue(ammoForm, AmmoName, isBolt)
