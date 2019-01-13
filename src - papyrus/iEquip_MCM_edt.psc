@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_edt extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_edt extends iEquip_MCM_Page
 
 iEquip_KeyHandler Property KH Auto
 
@@ -66,7 +66,7 @@ State edt_sld_slowTimeStr
             MCM.SetInfoText("iEquip Edit Mode runs with the game unpaused so to avoid unneccessary death or injury while you set things up we apply a slow time effect. "+\
                             "This slider lets you set how much time slows by in Edit Mode\nDefault is 100% or fully paused, at 0 time passes normally in Edit Mode")
         elseIf currentEvent == "Open"
-            fillSlider(iEquip_EditModeSlowTimeStrength.GetValue(), 0.0, 100.0, 10.0, 100.0)
+            MCM.fillSlider(iEquip_EditModeSlowTimeStrength.GetValue(), 0.0, 100.0, 10.0, 100.0)
         elseIf currentEvent == "Accept"
             MCM.SetSliderOptionValueST(currentVar)
             iEquip_EditModeSlowTimeStrength.SetValue(currentVar)
@@ -79,7 +79,7 @@ State edt_men_chooseHtKey
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose to use the recommended Edit Mode hotkeys or set your own")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.iCurrentEMKeysChoice, EMKeysChoice, 0)
+            MCM.fillMenu(MCM.iCurrentEMKeysChoice, EMKeysChoice, 0)
         elseIf currentEvent == "Accept"
             MCM.iCurrentEMKeysChoice = currentVar as int
             

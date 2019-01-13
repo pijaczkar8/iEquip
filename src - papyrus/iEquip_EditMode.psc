@@ -659,25 +659,27 @@ function LoadAllElements()
                 if i == 2
                     setTempItemInWidget(i, "Power", "Some Awesome Power") ; Power because the preselect slot will already be set to shout if queue is empty so let's have something different
                 elseIf i == 3
-                    ; Check if there are any potion groups shown...
-                    iEnabledPotionGroupCount = 0
-                    if WC.bHealthPotionGrouping && !(WC.abPotionGroupEmpty[0] && WC.PO.iEmptyPotionQueueChoice == 1)
-                        iEnabledPotionGroupCount += 1
-                    endIf
-                    if WC.bStaminaPotionGrouping && !(WC.abPotionGroupEmpty[1] && WC.PO.iEmptyPotionQueueChoice == 1)
-                        iEnabledPotionGroupCount += 1
-                    endIf
-                    if WC.bMagickaPotionGrouping && !(WC.abPotionGroupEmpty[2] && WC.PO.iEmptyPotionQueueChoice == 1)
-                        iEnabledPotionGroupCount += 1
-                    endIf
-                    if iEnabledPotionGroupCount > 0
-                        ; ...but faded out, and un-fade if needed
-                        if WC.bConsumableIconFaded
-                            WC.checkAndFadeConsumableIcon(false)
+                    if WC.bHealthPotionGrouping
+                        ; Check if there are any potion groups shown...
+                        iEnabledPotionGroupCount = 0
+                        if !(WC.abPotionGroupEmpty[0] && WC.PO.iEmptyPotionQueueChoice == 1)
+                            iEnabledPotionGroupCount += 1
                         endIf
-                    ; Otherwise set temp info in the widget    
-                    else
-                        setTempItemInWidget(i, "HealthPotion", "Some Useful Potion")
+                        if !(WC.abPotionGroupEmpty[1] && WC.PO.iEmptyPotionQueueChoice == 1)
+                            iEnabledPotionGroupCount += 1
+                        endIf
+                        if !(WC.abPotionGroupEmpty[2] && WC.PO.iEmptyPotionQueueChoice == 1)
+                            iEnabledPotionGroupCount += 1
+                        endIf
+                        if iEnabledPotionGroupCount > 0
+                            ; ...but faded out, and un-fade if needed
+                            if WC.bConsumableIconFaded
+                                WC.checkAndFadeConsumableIcon(false)
+                            endIf
+                        ; Otherwise set temp info in the widget    
+                        else
+                            setTempItemInWidget(i, "HealthPotion", "Some Useful Potion")
+                        endIf
                     endIf
                 elseIf i == 4
                     ; Check if the poison icon is currently faded and fade back in if needed

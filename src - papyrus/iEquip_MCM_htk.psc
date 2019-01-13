@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_htk extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_htk extends iEquip_MCM_Page
 
 iEquip_KeyHandler Property KH Auto
 
@@ -199,7 +199,7 @@ endState
 State htk_men_utilDubPress
     event OnBeginState()
         if currentEvent == "Open"
-            fillMenu(KH.iUtilityKeyDoublePress, utilityKeyDoublePressOptions, 0)
+            MCM.fillMenu(KH.iUtilityKeyDoublePress, utilityKeyDoublePressOptions, 0)
         elseIf currentEvent == "Accept"
             KH.iUtilityKeyDoublePress = currentVar as int
             MCM.SetMenuOptionValueST(utilityKeyDoublePressOptions[KH.iUtilityKeyDoublePress])
@@ -217,7 +217,7 @@ State htk_sld_multiTapDelay
             MCM.SetInfoText("This defines the maximum delay there can be between key presses for them to register as a multi-tap (double/triple press)\n"+\
                             "Set this to the minimum time in which you can comfortably execute a multi-tap\nDefault: 0.3 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(KH.fMultiTapDelay, 0.2, 1.0, 0.1, 0.3)
+            MCM.fillSlider(KH.fMultiTapDelay, 0.2, 1.0, 0.1, 0.3)
         elseIf currentEvent == "Accept"
             KH.fMultiTapDelay = currentVar
             MCM.SetSliderOptionValueST(KH.fMultiTapDelay, "{1} seconds")
@@ -232,7 +232,7 @@ State htk_sld_longPrsDelay
                             "This does not conflict with the multi-tap setting so set it to whatever you are comfortable with, "+\
                             "but not so short that every key press is classed as a Long Press!\nDefault: 0.6 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(KH.fLongPressDelay, 0.3, 1.5, 0.1, 0.6)
+            MCM.fillSlider(KH.fLongPressDelay, 0.3, 1.5, 0.1, 0.6)
         elseIf currentEvent == "Accept"
             KH.fLongPressDelay = currentVar
             MCM.SetSliderOptionValueST(KH.fLongPressDelay, "{1} seconds")

@@ -64,12 +64,6 @@ MagicEffect Property AlchWeaknessShock Auto ;00073f2F
 int Property iHealthPotionsFirstChoice = 0 Auto Hidden
 int Property iHealthPotionsSecondChoice = 1 Auto Hidden
 int Property iHealthPotionsThirdChoice = 2 Auto Hidden
-int Property iStaminaPotionsFirstChoice = 0 Auto Hidden
-int Property iStaminaPotionsSecondChoice = 1 Auto Hidden
-int Property iStaminaPotionsThirdChoice = 2 Auto Hidden
-int Property iMagickaPotionsFirstChoice = 0 Auto Hidden
-int Property iMagickaPotionsSecondChoice = 1 Auto Hidden
-int Property iMagickaPotionsThirdChoice = 2 Auto Hidden
 
 String[] asPoisonIconNames
 
@@ -88,8 +82,6 @@ bool property bAutoAddPoisons = true auto hidden
 bool property bAutoAddConsumables = true auto hidden
 bool Property bQuickHealUseSecondChoice = true Auto Hidden
 bool Property bUseStrongestHealthPotion = true Auto Hidden
-bool Property bUseStrongestStaminaPotion = true Auto Hidden
-bool Property bUseStrongestMagickaPotion = true Auto Hidden
 bool property bFlashPotionWarning = true auto hidden
 int property iEmptyPotionQueueChoice = 0 auto hidden
 
@@ -864,62 +856,35 @@ endFunction
 
 function selectAndConsumePotion(int potionGroup)
     debug.trace("iEquip_PotionScript selectAndConsumePotion called - potionGroup: " + potionGroup)
-    form potionToConsume
-    int targetPotion = 0
-    bool useStrongest
-    int Q = -1
-    if potionGroup == 0
-        Q = 0 + iHealthPotionsFirstChoice
+    if 0 <= potionGroup <= 2
+        potionGroup = potionGroup * 3
+        int Q = iHealthPotionsFirstChoice + potionGroup
+        
         if jArray.count(aiPotionQ[Q]) < 1
-            Q = 0 + iHealthPotionsSecondChoice
+            Q = iHealthPotionsSecondChoice + potionGroup
             if jArray.count(aiPotionQ[Q]) < 1
-                Q = 0 + iHealthPotionsThirdChoice
+                Q = iHealthPotionsThirdChoice + potionGroup
                 if jArray.count(aiPotionQ[Q]) < 1
-                    debug.notification("You do not appear to have any health potions left")
                     Q = -1
                 endIf
             endIf
         endIf
-        useStrongest = bUseStrongestHealthPotion
-    elseIf potionGroup == 1
-        Q = 3 + iStaminaPotionsFirstChoice
-        if jArray.count(aiPotionQ[Q]) < 1
-            Q = 3 + iStaminaPotionsSecondChoice
-            if jArray.count(aiPotionQ[Q]) < 1
-                Q = 3 + iStaminaPotionsThirdChoice
-                if jArray.count(aiPotionQ[Q]) < 1
-                    debug.notification("You do not appear to have any stamina potions left")
-                    Q = -1
-                endIf
+        
+        if Q != -1
+            int targetPotion
+            ; If MCM setting for given potion type is Use Weakest First then set the target to the last potion in the queue
+            if !bUseStrongestHealthPotion
+                targetPotion = jArray.count(aiPotionQ[Q]) - 1
             endIf
-        endIf
-        useStrongest = bUseStrongestStaminaPotion
-    elseIf potionGroup == 2
-        Q = 6 + iMagickaPotionsFirstChoice
-        if jArray.count(aiPotionQ[Q]) < 1
-            Q = 6 + iMagickaPotionsSecondChoice
-            if jArray.count(aiPotionQ[Q]) < 1
-                Q = 6 + iMagickaPotionsThirdChoice
-                if jArray.count(aiPotionQ[Q]) < 1
-                    debug.notification("You do not appear to have any magicka potions left")
-                    Q = -1
-                endIf
+            form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "Form")
+            if potionToConsume != None
+                ; Consume the potion
+                PlayerRef.EquipItemEx(potionToConsume)
+                debug.notification(potionToConsume.GetName() + " consumed")
             endIf
+        else
+            debug.notification("You do not appear to have any health potions left")
         endIf
-        useStrongest = bUseStrongestMagickaPotion
-    endIf
-    if Q == -1
-        return
-    endIf
-    ;If MCM setting for given potion type is Use Weakest First then set the target to the last potion in the queue
-    if !useStrongest
-        targetPotion = jArray.count(aiPotionQ[Q]) - 1
-    endIf
-    potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "Form")
-    if potionToConsume != None
-        ;Consume the potion
-        PlayerRef.EquipItemEx(potionToConsume)
-        debug.notification(potionToConsume.GetName() + " consumed")
     endIf
 endFunction
 

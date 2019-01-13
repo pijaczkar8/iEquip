@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_rep extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_rep extends iEquip_MCM_Page
 
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
@@ -198,7 +198,7 @@ State rep_men_showEnchCharge
             MCM.SetInfoText("Choose how you would like the enchantment charge for equipped weapons to be displayed in the widget\nCharge Meters - show custom enchantment charge level meters in the widget\n"+\
                 "Dynamic Soulgems - show dynamic soulgem icons in the widget which change fill level to indicate the current level of enchantment charge\nVanilla HUD enchantment charge meters will be hidden")
         elseIf currentEvent == "Open"
-            fillMenu(CM.iChargeDisplayType, chargeDisplayOptions, 1)
+            MCM.fillMenu(CM.iChargeDisplayType, chargeDisplayOptions, 1)
         elseIf currentEvent == "Accept"
             CM.iChargeDisplayType = currentVar as int
             MCM.SetMenuOptionValueST(chargeDisplayOptions[CM.iChargeDisplayType])
@@ -236,7 +236,7 @@ State rep_sld_chargeFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("Set the delay in seconds before the enchantment bars fade out")
         elseIf currentEvent == "Open"
-            fillSlider(CM.fChargeFadeoutDelay, 1.0, 20.0, 0.5, 5.0)
+            MCM.fillSlider(CM.fChargeFadeoutDelay, 1.0, 20.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
             CM.fChargeFadeoutDelay = currentVar
             MCM.SetSliderOptionValueST(CM.fChargeFadeoutDelay, "Fade after {1} secs")
@@ -379,7 +379,7 @@ State rep_sld_setLowChargeTresh
         if currentEvent == "Highlight"
             MCM.SetInfoText("Set the level below which you would like the enchantment bars to change colour")
         elseIf currentEvent == "Open"
-            fillSlider(CM.fLowChargeThreshold*100, 5.0, 50.0, 5.0, 20.0)
+            MCM.fillSlider(CM.fLowChargeThreshold*100, 5.0, 50.0, 5.0, 20.0)
         elseIf currentEvent == "Accept"
             CM.fLowChargeThreshold = currentVar/100
             MCM.SetSliderOptionValueST(CM.fLowChargeThreshold*100, "{0}%")
@@ -414,7 +414,7 @@ State rep_men_leftFillDir
             MCM.SetInfoText("Choose the fill direction for the left enchantment charge meter\nRight Fill means the full is right, empty is left.  And vice versa for Left Fill\n"+\
                             "Centre Fill means the meter will fill from the centre outwards in both directions\nDefault: Left Fill")
         elseIf currentEvent == "Open"
-            fillMenu(meterFillDirection[0], meterFillDirectionOptions, 0)
+            MCM.fillMenu(meterFillDirection[0], meterFillDirectionOptions, 0)
         elseIf currentEvent == "Accept"
             meterFillDirection[0] = currentVar as int
             MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[0]])
@@ -430,7 +430,7 @@ State rep_men_rightFillDir
             MCM.SetInfoText("Choose the fill direction for the right enchantment charge meter\nRight Fill means the full is right, empty is left.  And vice versa for Left Fill\n"+\
                             "Centre Fill means the meter will fill from the centre outwards in both directions\nDefault: Right Fill")
         elseIf currentEvent == "Open"
-            fillMenu(meterFillDirection[1], meterFillDirectionOptions, 1)
+            MCM.fillMenu(meterFillDirection[1], meterFillDirectionOptions, 1)
         elseIf currentEvent == "Accept"
             meterFillDirection[1] = currentVar as int
             MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[1]])
@@ -470,7 +470,7 @@ State rep_men_confMsg
             MCM.SetInfoText("Choose which poisoning confirmation messages to show.\nTop-up & Switch will only show messages when you apply poison to an already poisoned item.\n"+\
                             "With messages turned off iEquip will automatically top up or clean off existing poisons\nDefault: Show All")
         elseIf currentEvent == "Open"
-            fillMenu(WC.iShowPoisonMessages, poisonMessageOptions, 0)
+            MCM.fillMenu(WC.iShowPoisonMessages, poisonMessageOptions, 0)
         elseIf currentEvent == "Accept"
             WC.iShowPoisonMessages = currentVar as int
             MCM.SetMenuOptionValueST(poisonMessageOptions[WC.iShowPoisonMessages])
@@ -517,7 +517,7 @@ State rep_sld_chargePerVial
         if currentEvent == "Highlight"
             MCM.SetInfoText("Allows you to set the number of charges per vial/application. Use with discretion!\nDefault: Single charge per application (vanilla)")
         elseIf currentEvent == "Open"
-            fillSlider(WC.iPoisonChargesPerVial, 1.0, 5.0, 1.0, 1.0)
+            MCM.fillSlider(WC.iPoisonChargesPerVial, 1.0, 5.0, 1.0, 1.0)
         elseIf currentEvent == "Accept"
             WC.iPoisonChargesPerVial = currentVar as int
             MCM.SetSliderOptionValueST(WC.iPoisonChargesPerVial, "{0} charges per vial")
@@ -531,7 +531,7 @@ State rep_sld_chargeMult
             MCM.SetInfoText("Allows you to adjust iEquip poison dosing to match any perk overhauls you may be using which affect the Concentrated Poison perk or add new perks which multiply the number of charges per application. "+\
                             "If left set at 1 iEquip will check whether the player has the Concentrated Poison perk and apply the vanilla x2 multiplier if you do.\nDefault: 1x (vanilla)")
         elseIf currentEvent == "Open"
-            fillSlider(WC.iPoisonChargeMultiplier, 1.0, 5.0, 1.0, 1.0)
+            MCM.fillSlider(WC.iPoisonChargeMultiplier, 1.0, 5.0, 1.0, 1.0)
         elseIf currentEvent == "Accept"
             WC.iPoisonChargeMultiplier = currentVar as int
             MCM.SetSliderOptionValueST(WC.iPoisonChargeMultiplier, "{0}x charges")
@@ -550,7 +550,7 @@ State rep_men_poisonIndStyle
                             "The two count options will use the regular counter in either slot but with the count displayed in green.\nThe Multiple Drops option will display one, "+\
                             "two or three drops to match the number of remaining charges, and will display three drops and a green plus sign if more than three charges remain.\nDefault: Single Drop & Count")
         elseIf currentEvent == "Open"
-            fillMenu(WC.iPoisonIndicatorStyle, poisonIndicatorOptions, 1)
+            MCM.fillMenu(WC.iPoisonIndicatorStyle, poisonIndicatorOptions, 1)
         elseIf currentEvent == "Accept"
             WC.iPoisonIndicatorStyle = currentVar as int
             MCM.SetMenuOptionValueST(poisonIndicatorOptions[WC.iPoisonIndicatorStyle])

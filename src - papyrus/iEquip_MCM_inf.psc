@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_inf extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_inf extends iEquip_MCM_Page
 
 iEquip_KeyHandler Property KH Auto
 iEquip_EditMode Property EM Auto

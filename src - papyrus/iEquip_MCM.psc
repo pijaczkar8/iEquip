@@ -13,8 +13,6 @@ iEquip_MCM_pro Property pro Auto
 iEquip_MCM_edt Property edt Auto
 iEquip_MCM_inf Property inf Auto
 
-actor property PlayerRef auto
-
 bool Property bEnabled = false Auto Hidden
 bool Property bUpdateKeyMaps = false Auto Hidden
 
@@ -41,22 +39,12 @@ endFunction
         Debug.Notification("$IEQ_MCM_not_Updating" + " " + a_version as string)
         OnConfigInit()
         EM.ResetDefaults()
-        UpdateSettings()
+        updateSettings()
     endIf
 endEvent/;
 
 ; #############################
 ; ### MCM Internal Settings ###
-
-function UpdateSettings()
-    if WC.isEnabled
-        debug.Notification("$iEquip_MCM_not_ApplyingSettings")
-        if bUpdateKeyMaps
-            KH.updateKeyMaps()
-        endIf        
-        WC.ApplyChanges()
-    endIf
-endFunction
 
 event OnConfigInit()
     Pages = new String[9]
@@ -85,11 +73,21 @@ Event OnConfigClose()
     if WC.isEnabled != bEnabled
         WC.isEnabled = bEnabled
     endIf
-    UpdateSettings()
+    updateSettings()
 endEvent
 
-; ####################################
-; ### START OF MCM PAGE POPULATION ###
+function updateSettings()
+    if WC.isEnabled
+        debug.Notification("$iEquip_MCM_not_ApplyingSettings")
+        if bUpdateKeyMaps
+            KH.updateKeyMaps()
+        endIf        
+        WC.ApplyChanges()
+    endIf
+endFunction
+
+; #################
+; ### MCM Pages ###
 
 event OnPageReset(string page)
     SetCursorFillMode(TOP_TO_BOTTOM)
@@ -122,12 +120,7 @@ event OnPageReset(string page)
     endif
 endEvent
 
-; #######################
-; ### START OF EVENTS ###
-
-; Jump to script function
-
-function jumpToScriptEvent(string eventName, float tmpVar = -1.0)
+function jumpToPage(string eventName, float tmpVar = -1.0)
     string sCurrentState = GetState()
     
     if sCurrentPage == "$iEquip_MCM_lbl_General"
@@ -151,48 +144,52 @@ function jumpToScriptEvent(string eventName, float tmpVar = -1.0)
     endIf
 endFunction
 
+
+; #######################
+; ### START OF EVENTS ###
+
 ; GENERAL
 
 event OnHighlightST()
-    jumpToScriptEvent("Highlight")
+    jumpToPage("Highlight")
 endEvent
 
 event OnSelectST()
-    jumpToScriptEvent("Select")
+    jumpToPage("Select")
 endEvent
 
 event OnDefaultST()
-    jumpToScriptEvent("Default")
+    jumpToPage("Default")
 endEvent
 
 ; SLIDERS
 
 event OnSliderOpenST()
-    jumpToScriptEvent("Open")
+    jumpToPage("Open")
 endEvent
 
 event OnSliderAcceptST(float value)
-    jumpToScriptEvent("Accept", value)
+    jumpToPage("Accept", value)
 endEvent
 
 ; MENUS
 
 event OnMenuOpenST()
-    jumpToScriptEvent("Open")
+    jumpToPage("Open")
 endEvent
     
 event OnMenuAcceptST(int index)
-    jumpToScriptEvent("Accept", index)
+    jumpToPage("Accept", index)
 endEvent
 
 ; COLORS
 
 event OnColorOpenST()
-    jumpToScriptEvent("Open")
+    jumpToPage("Open")
 endEvent
     
 event OnColorAcceptST(int color)
-    jumpToScriptEvent("Accept", color)
+    jumpToPage("Accept", color)
 endEvent
 
 ; HOTKEYS
@@ -208,9 +205,54 @@ event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
         endIf
         
         if ShowMessage(msg, true, "$Yes", "$No")
-            jumpToScriptEvent("Change", keyCode)
+            jumpToPage("Change", keyCode)
         endIf
     else
-        jumpToScriptEvent("Change", keyCode)
+        jumpToPage("Change", keyCode)
     endIf
 endEvent
+
+; #################
+; ### MCM TOOLS ###
+
+; -----------
+; - Sliders -
+; -----------
+
+function fillSlider(float startVal, float startRange, float endRange, float intervalVal, float defaultVal)
+    SetSliderDialogStartValue(startVal)
+    SetSliderDialogRange(startRange, endRange)  
+    SetSliderDialogInterval(intervalVal)
+    SetSliderDialogDefaultValue(defaultVal)
+endFunction 
+
+; ---------
+; - Menus -
+; ---------
+
+function fillMenu(int startVal, string[] options, int defaultVal)
+    SetMenuDialogStartIndex(startVal)
+    SetMenuDialogOptions(options)
+    SetMenuDialogDefaultIndex(defaultVal)
+endFunction
+
+; -------------------
+; - Everything else -
+; -------------------
+
+string[] function cutStrArray(string[] stringArray, int cutIndex)
+    string[] newStringArray = Utility.CreateStringArray(stringArray.length - 1)
+    int oldAIndex
+    int newAIndex
+        
+    while oldAIndex < stringArray.length && newAIndex < stringArray.length - 1
+        if oldAIndex != cutIndex
+            newStringArray[newAIndex] = stringArray[oldAIndex]
+            newAIndex += 1
+        endIf
+            
+        oldAIndex += 1
+    endWhile
+    
+    return newStringArray
+endFunction

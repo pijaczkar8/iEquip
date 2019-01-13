@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_gen extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_gen extends iEquip_MCM_Page
 
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
@@ -180,7 +180,7 @@ endState
 State gen_sld_eqpPausDelay
     event OnBeginState()
         if currentEvent == "Open"
-            fillSlider(WC.fEquipOnPauseDelay, 0.8, 10.0, 0.1, 2.0)
+            MCM.fillSlider(WC.fEquipOnPauseDelay, 0.8, 10.0, 0.1, 2.0)
         elseIf currentEvent == "Accept"
             WC.fEquipOnPauseDelay = currentVar
             MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} s")
@@ -205,7 +205,7 @@ State gen_men_ammoLstSrt
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_ammoLstSrt")
         elseIf currentEvent == "Open"
-            fillMenu(AM.iAmmoListSorting, ammoSortingOptions, 0)
+            MCM.fillMenu(AM.iAmmoListSorting, ammoSortingOptions, 0)
         elseIf currentEvent == "Accept"
             AM.iAmmoListSorting = currentVar as int
             MCM.SetMenuOptionValueST(ammoSortingOptions[AM.iAmmoListSorting])
@@ -219,7 +219,7 @@ State gen_men_whenNoAmmoLeft
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_whenNoAmmoLeft")
         elseIf currentEvent == "Open"
-            fillMenu(AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
+            MCM.fillMenu(AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
         elseIf currentEvent == "Accept"
             AM.iActionOnLastAmmoUsed = currentVar as int
             MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])

@@ -14,20 +14,20 @@ iEquip_HelpMenu Property HM Auto
 
 Actor Property PlayerRef  Auto
 Message Property iEquip_UtilityMenu Auto
-Perk Property Enchanter00 Auto ;Used if Requiem detected - Requiem renames this perk to REQ_Perk_Enchanting_EnchantersInsight1
+Perk Property Enchanter00 Auto ; Used if Requiem detected - Requiem renames this perk to REQ_Perk_Enchanting_EnchantersInsight1
 
-;Main gameplay keys
+; Main gameplay keys
 Int Property iShoutKey = 21 Auto Hidden ;Y
 Int Property iLeftKey = 34 Auto Hidden ;G
 Int Property iRightKey = 35 Auto Hidden ;H
 Int Property iConsumableKey = 48 Auto Hidden ;B
 Int Property iUtilityKey = 29 Auto Hidden ;Left Ctrl - Active in all modes
 
-;Optional hotkeys
+; Optional hotkeys
 Int Property iOptConsumeKey = -1 Auto Hidden
 Int Property iOptDirQueueKey = -1 Auto Hidden
 
-;Edit Mode Keys
+; Edit Mode Keys
 Int Property iEditNextKey = 55 Auto Hidden ;Num *
 Int Property iEditPrevKey = 181 Auto Hidden ;Num /
 Int Property iEditUpKey = 200 Auto Hidden ;Up arrow

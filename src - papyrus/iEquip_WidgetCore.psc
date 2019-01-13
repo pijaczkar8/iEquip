@@ -125,8 +125,6 @@ Form boots
 float property fEquipOnPauseDelay = 2.0 auto hidden
 
 bool property bHealthPotionGrouping = true auto hidden
-bool property bStaminaPotionGrouping = true auto hidden
-bool property bMagickaPotionGrouping = true auto hidden
 
 bool property bProModeEnabled = false auto hidden
 bool property bPreselectMode = false auto hidden
@@ -1442,17 +1440,18 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			;Check we're not trying to select the currently equipped item - only becomes relevant if we cycle through the entire queue or change direction and cycle back past where we started from (excludes potion and poison queues), or equip the same 1H item which is currently equipped in the other hand and 1H switchign disallowed, or we're in the consumables queue and we're checking for empty potion groups
 			if Q < 4
 		    	targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "Name")
-		    	bool hideEmptyPotionGroups = (PO.iEmptyPotionQueueChoice == 1)
 			    if Q == 3
-		            while (targetName == "Health Potions" && (!bHealthPotionGrouping || (hideEmptyPotionGroups && abPotionGroupEmpty[0]))) || (targetName == "Stamina Potions" && (!bStaminaPotionGrouping || (hideEmptyPotionGroups && abPotionGroupEmpty[1]))) || (targetName == "Magicka Potions" && (!bMagickaPotionGrouping || (hideEmptyPotionGroups && abPotionGroupEmpty[2])))
-		                targetIndex = targetIndex + move
-		                if targetIndex < 0 && Reverse
-		                    targetIndex = queueLength - 1
-		                elseif targetIndex == queueLength && !Reverse
-		                    targetIndex = 0
-		                endIf
-		                targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "Name")
-		            endWhile
+                    if (!bHealthPotionGrouping && PO.iEmptyPotionQueueChoice == 1)
+                        while (targetName == "Health Potions" && abPotionGroupEmpty[0]) || (targetName == "Stamina Potions" && abPotionGroupEmpty[1]) || (targetName == "Magicka Potions" && abPotionGroupEmpty[2])
+                            targetIndex = targetIndex + move
+                            if targetIndex < 0 && Reverse
+                                targetIndex = queueLength - 1
+                            elseif targetIndex == queueLength && !Reverse
+                                targetIndex = 0
+                            endIf
+                            targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "Name")
+                        endWhile
+                    endIf
 			    elseIf Q < 3
 			    	targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "Form")
 			        while Q < 2 && targetItem == PlayerRef.GetEquippedObject(otherHand) && (PlayerRef.GetItemCount(targetItem) < 2) && !bAllowWeaponSwitchHands
@@ -1962,7 +1961,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 		UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
 		UICallback.Send(iHandle)
 	endIf
-	if Q != 3 || (!bHealthPotionGrouping && !bStaminaPotionGrouping && !bMagickaPotionGrouping)
+	if (Q != 3 || !bHealthPotionGrouping)
 		asCurrentlyEquipped[Q] = ""
 	endIf
 	; Hide any additional elements currently displayed
@@ -2298,14 +2297,14 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 	jArray.eraseIndex(aiTargetQ[Q], iIndex)
 	int queueLength = jArray.count(aiTargetQ[Q])
 	int enabledPotionGroupCount = 0
-	if Q == 3
-		if bHealthPotionGrouping && !(abPotionGroupEmpty[0] && PO.iEmptyPotionQueueChoice == 1)
+	if Q == 3 && bHealthPotionGrouping
+		if !(abPotionGroupEmpty[0] && PO.iEmptyPotionQueueChoice == 1)
 			enabledPotionGroupCount += 1
 		endIf
-		if bStaminaPotionGrouping && !(abPotionGroupEmpty[1] && PO.iEmptyPotionQueueChoice == 1)
+		if !(abPotionGroupEmpty[1] && PO.iEmptyPotionQueueChoice == 1)
 			enabledPotionGroupCount += 1
 		endIf
-		if bMagickaPotionGrouping && !(abPotionGroupEmpty[2] && PO.iEmptyPotionQueueChoice == 1)
+		if !(abPotionGroupEmpty[2] && PO.iEmptyPotionQueueChoice == 1)
 			enabledPotionGroupCount += 1
 		endIf
 	endIf
@@ -2337,7 +2336,7 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 	;Handle empty queue
 	else
 		;Empty poison queue has to match the behaiour of the potion groups in the consumables queue, so if any grouping is enabled check for fade/flash settings and mirror them
-		if Q == 4 && (bHealthPotionGrouping || bStaminaPotionGrouping || bMagickaPotionGrouping)
+		if (Q == 4 && bHealthPotionGrouping)
 			handleEmptyPoisonQueue()
 		else
 			aiCurrentQueuePosition[Q] = -1
@@ -3601,15 +3600,17 @@ function QueueMenuClearQueue()
 	jArray.clear(aiTargetQ[iQueueMenuCurrentQueue])
 	if iQueueMenuCurrentQueue == 3
 		addPotionGroups()
-		if bHealthPotionGrouping && (!abPotionGroupEmpty[0] || PO.iEmptyPotionQueueChoice == 0)
-			aiCurrentQueuePosition[3] = 0
-		elseIf bStaminaPotionGrouping && (!abPotionGroupEmpty[1] || PO.iEmptyPotionQueueChoice == 0)
-			aiCurrentQueuePosition[3] = 1
-		elseIf bMagickaPotionGrouping && (!abPotionGroupEmpty[2] || PO.iEmptyPotionQueueChoice == 0)
-			aiCurrentQueuePosition[3] = 2
-		else
-			aiCurrentQueuePosition[3] = -1
-		endIf
+        if bHealthPotionGrouping
+            if (!abPotionGroupEmpty[0] || PO.iEmptyPotionQueueChoice == 0)
+                aiCurrentQueuePosition[3] = 0
+            elseIf !abPotionGroupEmpty[1]
+                aiCurrentQueuePosition[3] = 1
+            elseIf !abPotionGroupEmpty[2]
+                aiCurrentQueuePosition[3] = 2
+            else
+                aiCurrentQueuePosition[3] = -1
+            endIf
+        endIf
 	endIf
 	if iQueueMenuCurrentQueue == 3 && (aiCurrentQueuePosition[3] != -1)
 		updateWidget(3, aiCurrentQueuePosition[3])
@@ -3721,7 +3722,7 @@ function ApplyChanges()
 		endIf
 	endIf
 	if bPotionGroupingOptionsChanged
-	    if (asCurrentlyEquipped[3] == "Health Potions" && !bHealthPotionGrouping) || (asCurrentlyEquipped[3] == "Stamina Potions" && !bStaminaPotionGrouping) || (asCurrentlyEquipped[3] == "Magicka Potions" && !bMagickaPotionGrouping)
+	    if (!bHealthPotionGrouping) && (asCurrentlyEquipped[3] == "Health Potions" || asCurrentlyEquipped[3] == "Stamina Potions" || asCurrentlyEquipped[3] == "Magicka Potions"))
 	        cycleSlot(3)
 	    endIf
         bPotionGroupingOptionsChanged = false

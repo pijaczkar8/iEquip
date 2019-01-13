@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_ui extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_ui extends iEquip_MCM_Page
 
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
@@ -113,7 +113,7 @@ State ui_sld_leftIcoFade
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose how much you would like the left icon faded out by.\nDefault: 70%")
         elseIf currentEvent == "Open"
-            fillSlider(WC.fLeftIconFadeAmount, 10.0, 80.0, 10.0, 70.0)
+            MCM.fillSlider(WC.fLeftIconFadeAmount, 10.0, 80.0, 10.0, 70.0)
         elseIf currentEvent == "Accept"
             WC.fLeftIconFadeAmount = currentVar
             MCM.SetSliderOptionValueST(WC.fLeftIconFadeAmount, "{0}%")
@@ -128,7 +128,7 @@ State ui_men_ammoIcoStyle
                             "All styles will also display an enchantment type icon if special arrows are equipped (fire, ice,shock, etc)\nSingle - A single default arrow or bolt icon\n"+\
                             "Triple - three default arrow or bolt icons of varied size\nQuiver - Arrow or bolt quiver icons\nDefault: Single")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.iAmmoIconStyle, ammoIconOptions, 0)
+            MCM.fillMenu(MCM.iAmmoIconStyle, ammoIconOptions, 0)
         elseIf currentEvent == "Accept"
             MCM.iAmmoIconStyle = currentVar as int
         
@@ -151,7 +151,7 @@ State ui_men_bckgroundStyle
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose the style for your slot backgrounds.\nBackgrounds can be scaled, rotated and faded in Edit Mode\nDefault: No Background")
         elseIf currentEvent == "Open"
-            fillMenu(WC.iBackgroundStyle, backgroundStyleOptions, 0)
+            MCM.fillMenu(WC.iBackgroundStyle, backgroundStyleOptions, 0)
         elseIf currentEvent == "Accept"
             WC.iBackgroundStyle = currentVar as int
             MCM.SetMenuOptionValueST(backgroundStyleOptions[WC.iBackgroundStyle])
@@ -201,7 +201,7 @@ State ui_sld_wdgetFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("The time in seconds of inactivity after which the iEquip widget will fade out\nSetting this to zero will disable the fadeout\nDefault delay = 30 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(WC.fWidgetFadeoutDelay, 0.0, 180.0, 5.0, 30.0)
+            MCM.fillSlider(WC.fWidgetFadeoutDelay, 0.0, 180.0, 5.0, 30.0)
         elseIf currentEvent == "Accept"
             WC.fWidgetFadeoutDelay = currentVar
             MCM.SetSliderOptionValueST(WC.fWidgetFadeoutDelay, "{0}")
@@ -212,7 +212,7 @@ endState
 State ui_men_wdgetFadeSpeed
     event OnBeginState()
         if currentEvent == "Open"
-            fillMenu(MCM.iCurrentWidgetFadeoutChoice, fadeoutOptions, 1)
+            MCM.fillMenu(MCM.iCurrentWidgetFadeoutChoice, fadeoutOptions, 1)
         elseIf currentEvent == "Accept"
             MCM.iCurrentWidgetFadeoutChoice = currentVar as int
         
@@ -234,7 +234,7 @@ State ui_sld_wdgetFadeDur
         if currentEvent == "Highlight"
             MCM.SetInfoText("The duration in seconds of the widget fade out animation\nSetting this to zero will make the text hide instantly after the delays set above\nDefault duration = 1.5 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(WC.fWidgetFadeoutDuration, 0.0, 10.0, 0.1, 1.5)
+            MCM.fillSlider(WC.fWidgetFadeoutDuration, 0.0, 10.0, 0.1, 1.5)
         elseIf currentEvent == "Accept"
             WC.fWidgetFadeoutDuration = currentVar
             MCM.SetSliderOptionValueST(WC.fWidgetFadeoutDuration, "{1}")
@@ -279,7 +279,7 @@ State ui_sld_mainNameFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("The time in seconds after cycling the main slots after which the main item names text will fade out\nSetting this to zero will disable the fadeout\nDefault delay = 5.0 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(WC.fMainNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
+            MCM.fillSlider(WC.fMainNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
             WC.fMainNameFadeoutDelay = currentVar
             MCM.SetSliderOptionValueST(WC.fMainNameFadeoutDelay, "{1}")
@@ -292,7 +292,7 @@ State ui_sld_poisonNameFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("The time in seconds after cycling the main slots after which the poison names text will fade out\nSetting this to zero will disable the fadeout\nDefault delay = 5.0 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(WC.fPoisonNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
+            MCM.fillSlider(WC.fPoisonNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
             WC.fPoisonNameFadeoutDelay = currentVar
             MCM.SetSliderOptionValueST(WC.fPoisonNameFadeoutDelay, "{1}")
@@ -305,7 +305,7 @@ State ui_sld_preselectNameFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("The time in seconds after cycling the preselect slots after which the preselect item names text will fade out\nSetting this to zero will disable the fadeout\nDefault delay = 5.0 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(WC.fPreselectNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
+            MCM.fillSlider(WC.fPreselectNameFadeoutDelay, 0.0, 30.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
             WC.fPreselectNameFadeoutDelay = currentVar
             MCM.SetSliderOptionValueST(WC.fPreselectNameFadeoutDelay, "{1}")
@@ -318,7 +318,7 @@ State ui_men_nameFadeSpeed
         if currentEvent == "Highlight"
             MCM.SetInfoText("The speed of the fadeout animation for the item name text\nDefault: Normal (1.5 seconds)")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.iCurrentNameFadeoutChoice, fadeoutOptions, 1)
+            MCM.fillMenu(MCM.iCurrentNameFadeoutChoice, fadeoutOptions, 1)
         elseIf currentEvent == "Accept"
             MCM.iCurrentNameFadeoutChoice = currentVar as int
         
@@ -340,7 +340,7 @@ State ui_sld_nameFadeDur
         if currentEvent == "Highlight"
             MCM.SetInfoText("The duration in seconds of the names fade out animation\nSetting this to zero will make the text hide instantly after the delays set above\nDefault duration = 1.5 seconds")
         elseIf currentEvent == "Open"
-            fillSlider(WC.fNameFadeoutDuration, 0.0, 10.0, 0.1, 1.5)
+            MCM.fillSlider(WC.fNameFadeoutDuration, 0.0, 10.0, 0.1, 1.5)
         elseIf currentEvent == "Accept"
             WC.fNameFadeoutDuration = currentVar
             MCM.SetSliderOptionValueST(WC.fNameFadeoutDuration, "{1}")
@@ -351,7 +351,7 @@ endState
 State ui_men_firstPressNameHidn
     event OnBeginState()
         if currentEvent == "Open"
-            fillMenu(WC.bFirstPressShowsName as int, firstPressIfNameHiddenOptions, 0)
+            MCM.fillMenu(WC.bFirstPressShowsName as int, firstPressIfNameHiddenOptions, 0)
         elseIf currentEvent == "Accept"
             WC.bFirstPressShowsName = currentVar as bool
             MCM.SetMenuOptionValueST(firstPressIfNameHiddenOptions[WC.bFirstPressShowsName as int])

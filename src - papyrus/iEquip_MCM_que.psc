@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_que extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_que extends iEquip_MCM_Page
 
 iEquip_WidgetCore Property WC Auto
 iEquip_PotionScript Property PO Auto
@@ -48,7 +48,7 @@ State que_sld_maxItmQue
             MCM.SetInfoText("Select the maximum number of items you can add to each slot queue.  Bear in mind adding too many items will mean having to cycle through a LOT to get to what you want. "+\
                             "You can set a higher limit and not fill the queue as empty slots will be ignored when cycling.\nDefault = 7")
         elseIf currentEvent == "Open"
-            fillSlider(WC.iMaxQueueLength, 0.0, 30.0, 1.0, 12.0)
+            MCM.fillSlider(WC.iMaxQueueLength, 0.0, 30.0, 1.0, 12.0)
         elseIf currentEvent == "Accept"
             if currentVar as int < WC.iMaxQueueLength
                 if MCM.ShowMessage("You are about to reduce the maximum permitted queue length!\n\nAny queues which currently exceed the new length will be trimmed.\n\nDo you wish to proceed?", true, "OK", "Cancel")
@@ -216,7 +216,7 @@ State que_sld_MaxItmCache
         if currentEvent == "Highlight"
             MCM.SetInfoText("Determines the maximum number of removed items you want to remember\nDefault: 30 items")
         elseIf currentEvent == "Open"
-            fillSlider(WC.iMaxCachedItems, 0.0, 128.0, 1.0, 60.0)
+            MCM.fillSlider(WC.iMaxCachedItems, 0.0, 128.0, 1.0, 60.0)
         elseIf currentEvent == "Accept"
             WC.iMaxCachedItems = currentVar as int
             MCM.SetSliderOptionValueST(WC.iMaxCachedItems, "Max {0} cached items")

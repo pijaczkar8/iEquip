@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_pro extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_pro extends iEquip_MCM_Page
 
 iEquip_WidgetCore Property WC Auto
 iEquip_KeyHandler Property KH Auto
@@ -353,7 +353,7 @@ State pro_men_rightHandspllTyp
             MCM.SetInfoText("If you have enabled Prefer Magic then you can also optionally choose a preferred school of magic for your right hand spell. "+\
                             "iEquip will look for a spell from that school first and if none found will look for a Destruction spell instead\nDefault = Destruction")
         elseIf currentEvent == "Open"
-            fillMenu(MCM.iCurrentQSPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
+            MCM.fillMenu(MCM.iCurrentQSPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
         elseIf currentEvent == "Accept"
             MCM.iCurrentQSPreferredMagicSchoolChoice = currentVar as int
         
@@ -379,7 +379,7 @@ State pro_men_inPreselectQuickshieldMode
         if currentEvent == "Highlight"
             MCM.SetInfoText("Choose the preffered behaviour of QuickShield when used in Preselect Mode\nDefault = Preselect")
         elseIf currentEvent == "Open"
-            fillMenu(PM.iPreselectQuickShield, preselectQuickFunctionOptions, 1)
+            MCM.fillMenu(PM.iPreselectQuickShield, preselectQuickFunctionOptions, 1)
         elseIf currentEvent == "Accept"
             PM.iPreselectQuickShield = currentVar as int
             MCM.SetMenuOptionValueST(preselectQuickFunctionOptions[PM.iPreselectQuickShield])
@@ -439,7 +439,7 @@ State pro_men_alwysEqpSpll
         if currentEvent == "Highlight"
             MCM.SetInfoText("Decide whether you would like the healing spell to be equipped in the hand it is found in, in a specific hand every time or dual casting")
         elseIf currentEvent == "Open"
-            fillMenu(PM.iQuickHealEquipChoice, QHEquipOptions, 3)
+            MCM.fillMenu(PM.iQuickHealEquipChoice, QHEquipOptions, 3)
         elseIf currentEvent == "Accept"
             PM.iQuickHealEquipChoice = currentVar as int
             MCM.SetMenuOptionValueST(QHEquipOptions[PM.iQuickHealEquipChoice])
@@ -509,7 +509,7 @@ endState
 State pro_men_prefWepTyp
     event OnBeginState()
         if currentEvent == "Open"
-            fillMenu(PM.iQuickRangedPreferredWeaponType, QRPreferredWeaponType, 0)
+            MCM.fillMenu(PM.iQuickRangedPreferredWeaponType, QRPreferredWeaponType, 0)
         elseIf currentEvent == "Accept"
             PM.iQuickRangedPreferredWeaponType = currentVar as int
             MCM.SetMenuOptionValueST(QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
@@ -520,7 +520,7 @@ endState
 State pro_men_swtchOut
     event OnBeginState()
         if currentEvent == "Open"
-            fillMenu(PM.iQuickRangedSwitchOutAction, QRSwitchOutOptions, 1)
+            MCM.fillMenu(PM.iQuickRangedSwitchOutAction, QRSwitchOutOptions, 1)
         elseIf currentEvent == "Accept"
             PM.iQuickRangedSwitchOutAction = currentVar as int
             MCM.SetMenuOptionValueST(QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
@@ -531,7 +531,7 @@ endState
 State pro_men_prefMagSchl
     event OnBeginState()
         if currentEvent == "Open"
-            fillMenu(MCM.iCurrentQRPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
+            MCM.fillMenu(MCM.iCurrentQRPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
         elseIf currentEvent == "Accept"
             MCM.iCurrentQRPreferredMagicSchoolChoice = currentVar as int
         
@@ -555,7 +555,7 @@ endState
 State pro_men_inPreselectQuickrangedMode
     event OnBeginState()
         if currentEvent == "Open"
-            fillMenu(PM.iPreselectQuickRanged, preselectQuickFunctionOptions, 1)
+            MCM.fillMenu(PM.iPreselectQuickRanged, preselectQuickFunctionOptions, 1)
         elseIf currentEvent == "Accept"
             PM.iPreselectQuickRanged = currentVar as int
             MCM.SetMenuOptionValueST(preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
