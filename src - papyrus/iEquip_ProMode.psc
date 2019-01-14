@@ -252,12 +252,6 @@ function equipPreselectedItem(int Q)
 		bReadyForPreselectAnim = false
 		UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
 	endIf
-	if AM.abBoundAmmoInQueue[0]
-    	AM.checkAndRemoveBoundAmmo(7)	
-    endIf
-    if AM.abBoundAmmoInQueue[1]
-    	AM.checkAndRemoveBoundAmmo(9)
-    endIf
     int iHandle
 	int itemToEquip = WC.aiCurrentlyPreselected[Q]
 	int targetArray = WC.aiTargetQ[Q]
@@ -265,6 +259,7 @@ function equipPreselectedItem(int Q)
 	form targetItem = jMap.getForm(targetObject, "Form")
 	int itemType = jMap.getInt(targetObject, "Type")
 	if (itemType == 7 || itemType == 9)
+		AM.checkAndRemoveBoundAmmo(itemType)
 		if (!WC.RightHandWeaponIsRanged() || AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3)
 			AM.selectAmmoQueue(itemType)
 		endIf
