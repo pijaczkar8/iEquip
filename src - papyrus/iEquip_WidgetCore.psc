@@ -58,6 +58,12 @@ FormList Property iEquip_RemovedItemsFLST Auto
 
 int property voiceEquipSlot = 0x00025BEE AutoReadOnly ; hex code of the FormID for the Voice EquipSlot
 
+EquipSlot[] EquipSlots
+EquipSlot property RightHand auto ; 0x00013F42
+EquipSlot property LeftHand auto ; 0x00013F43
+EquipSlot property EitherHand auto ; 0x00013F43
+EquipSlot property BothHands auto ; 0x00013F45
+
 Keyword property MagicDamageFire auto
 Keyword property MagicDamageFrost auto
 Keyword property MagicDamageShock auto
@@ -369,6 +375,12 @@ Event OnWidgetInit()
 	asMoreHUDIcons[1] = "iEquipQR.png" ;Right
 	asMoreHUDIcons[2] = "iEquipQ.png" ;Q - for shout/consumable/poison queues
 	asMoreHUDIcons[3] = "iEquipQB.png" ;Both - for items in both left and right queues
+
+	EquipSlots = new EquipSlot[4]
+	EquipSlots[0] = RightHand
+	EquipSlots[1] = LeftHand
+	EquipSlots[2] = EitherHand
+	EquipSlots[3] = BothHands
 
 	bLoadedbyOnWidgetInit = true
 	initDataObjects()
@@ -3030,14 +3042,10 @@ function addToQueue(int Q)
 	bool isEnchanted = false
 	bool isPoisoned = false
 	string itemName = ""
-	debug.trace("iEquip_WidgetCore addToQueue - UI.IsMenuOpen(Console): " + UI.IsMenuOpen("Console") + ", UI.IsMenuOpen(CustomMenu): " + UI.IsMenuOpen("CustomMenu") + ", ((Self as form) as iEquip_uilib).IsMenuOpen(): " + ((Self as form) as iEquip_uilib).IsMenuOpen())
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.formId")
-		debug.trace("iEquip_WidgetCore addToQueue - itemFormID: " + itemFormID)
 		itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
-		debug.trace("iEquip_WidgetCore addToQueue - itemID: " + itemID)
 		itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
-		debug.trace("iEquip_WidgetCore addToQueue - itemName: " + itemName)
 		itemForm = game.GetFormEx(itemFormID)
 		debug.trace("iEquip_WidgetCore addToQueue - itemForm: " + itemForm + ", " + itemForm.GetName() + ", should match itemName: " + itemName + ", itemID: " + itemID)
 	endIf
@@ -3106,8 +3114,17 @@ function addToQueue(int Q)
 					jMap.setStr(iEquipItem, "Name", itemName)
 					jMap.setStr(iEquipItem, "Icon", itemIcon)
 					if Q < 2
-						jMap.setInt(iEquipItem, "isEnchanted", isEnchanted as int)
-						jMap.setInt(iEquipItem, "isPoisoned", isPoisoned as int)
+						if itemType == 22
+							if stringutil.Find(itemIcon, "destruction", 0) > -1 ;Takes care of suffixed Destrution icon names ie DestructionFire
+								jMap.setStr(iEquipItem, "School", "Destruction")
+							else
+								jMap.setStr(iEquipItem, "School", itemIcon)
+							endIf
+							jMap.setInt(iEquipItem, "EquipSlot", EquipSlots.Find((itemForm as spell).GetEquipType()))
+						else
+							jMap.setInt(iEquipItem, "isEnchanted", isEnchanted as int)
+							jMap.setInt(iEquipItem, "isPoisoned", isPoisoned as int)
+						endIf
 					endIf
 					;Add any other info required for each item here - spell school, costliest effect, etc
 					jArray.addObj(aiTargetQ[Q], iEquipItem)
