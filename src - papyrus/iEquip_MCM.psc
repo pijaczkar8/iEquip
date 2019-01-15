@@ -1,9 +1,6 @@
 Scriptname iEquip_MCM extends SKI_ConfigBase
 
-import stringUtil
-
 iEquip_WidgetCore Property WC Auto
-iEquip_EditMode Property EM Auto
 iEquip_KeyHandler Property KH Auto
 
 iEquip_MCM_gen Property gen Auto
@@ -16,20 +13,8 @@ iEquip_MCM_pro Property pro Auto
 iEquip_MCM_edt Property edt Auto
 iEquip_MCM_inf Property inf Auto
 
-Float Property iEquip_CurrentVersion Auto
-
-actor property PlayerRef auto
-
-;Set to true for version updates which require a full reset
-Bool bRequiresResetOnUpdate = False
-
-bool Property bIsFirstEnabled = true Auto Hidden
 bool Property bEnabled = false Auto Hidden
-
-; Strings used by save/load settings functions
-string MCMSettingsPath = "Data/iEquip/MCM Settings/"
-string FileExtMCM = ".IEQS"
-string sCurrentPage = ""
+bool Property bUpdateKeyMaps = false Auto Hidden
 
 int Property iCurrentWidgetFadeoutChoice = 1 Auto Hidden
 int Property iCurrentNameFadeoutChoice = 1 Auto Hidden
@@ -38,46 +23,41 @@ int Property iCurrentQSPreferredMagicSchoolChoice = 2 Auto Hidden
 int Property iCurrentQRPreferredMagicSchoolChoice = 2 Auto Hidden
 int Property iCurrentEMKeysChoice = 0 Auto Hidden
 
+string Property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
+string Property FileExtMCM = ".IEQS" autoReadOnly
+string sCurrentPage = ""
+
 ; ###########################
-; ### START OF UPDATE MCM ###
+; ### MCM Version Control ###
 
 int function GetVersion()
     return 1
 endFunction
 
-event OnVersionUpdate(int a_version)
-    if (a_version > CurrentVersion && CurrentVersion > 0)
+;/event OnVersionUpdate(int a_version)
+    if (a_version >= 1 && CurrentVersion < 1)
         Debug.Notification("$IEQ_MCM_not_Updating" + " " + a_version as string)
-        if bRequiresResetOnUpdate ;For major version updates - fully resets mod, use only if absolutely neccessary
-            OnConfigInit()
-            EM.ResetDefaults()
-        else
-            ApplyMCMSettings()
-        endIf
+        OnConfigInit()
+        EM.ResetDefaults()
+        updateSettings()
     endIf
-endEvent
+endEvent/;
 
+; #############################
+; ### MCM Internal Settings ###
 
-; ###########################
-; ### START OF CONFIG MCM ###
+event OnConfigInit()
+    Pages = new String[9]
+    Pages[0] = "$iEquip_MCM_lbl_General"
+    Pages[1] = "$iEquip_MCM_lbl_Hotkey"
+    Pages[2] = "$iEquip_MCM_lbl_Queue"
+    Pages[3] = "$iEquip_MCM_lbl_Potions"
+    Pages[4] = "$iEquip_MCM_lbl_Recharging"
+    Pages[5] = "$iEquip_MCM_lbl_Pro"
+    Pages[6] = "$iEquip_MCM_lbl_Misc"
+    Pages[7] = "$iEquip_MCM_lbl_Edit"
+    Pages[8] = "$iEquip_MCM_lbl_Info"
 
-function ApplyMCMSettings()
-    debug.trace("iEquip_WidgetCore ApplyMCMSettings called")
-    
-    if WC.isEnabled
-        debug.Notification("$iEquip_MCM_not_ApplyingSettings")
-        
-        WC.ApplyChanges()
-        KH.updateEditModeKeys()           
-        if EM.isEditMode
-            EM.LoadAllElements()
-        endIf
-    elseIf !bIsFirstEnabled
-        debug.Notification("$iEquip_MCM_not_Disabled")
-    endIf
-endFunction
-
-Event OnConfigInit() 
     gen.initData()
     htk.initData()
     que.initData()
@@ -86,65 +66,28 @@ Event OnConfigInit()
     uii.initData()          
     pro.initData()   
     edt.initData()           
-    inf.initData()  
-    
-    Pages = new String[1]
-    Pages[0] = "$iEquip_MCM_lbl_General"
-endEvent
-
-event OnConfigOpen()
-    WC.bRefreshQueues = false
-    WC.bFadeOptionsChanged = false
-    WC.bAmmoIconChanged = false
-    WC.bAmmoSortingChanged = false
-    WC.bSlotEnabledOptionsChanged = false
-    WC.bGearedUpOptionChanged = false
-    WC.bAttributeIconsOptionChanged = false
-    WC.bPoisonIndicatorStyleChanged = false
-    WC.bPotionGroupingOptionsChanged = false
-    WC.bBackgroundStyleChanged = false
-    WC.bDropShadowSettingChanged = false
-    WC.bReduceMaxQueueLengthPending = false
-    
-    if bIsFirstEnabled == false
-        if WC.bProModeEnabled
-            Pages = new String[9]
-            Pages[8] = "$iEquip_MCM_lbl_Info"
-            Pages[7] = "$iEquip_MCM_lbl_Edit"
-            Pages[6] = "$iEquip_MCM_lbl_Misc"
-            Pages[5] = "$iEquip_MCM_lbl_Pro"
-        else
-            Pages = new String[8]
-            Pages[7] = "$iEquip_MCM_lbl_Info"
-            Pages[6] = "$iEquip_MCM_lbl_Edit"
-            Pages[5] = "$iEquip_MCM_lbl_Misc"
-        endIf
-        
-        Pages[4] = "$iEquip_MCM_lbl_Recharging"
-        Pages[3] = "$iEquip_MCM_lbl_Potions"
-        Pages[2] = "$iEquip_MCM_lbl_Queue"
-        Pages[1] = "$iEquip_MCM_lbl_Hotkey"
-        Pages[0] = "$iEquip_MCM_lbl_General"
-    endIf
+    inf.initData()
 endEvent
 
 Event OnConfigClose()
     if WC.isEnabled != bEnabled
-        if !bEnabled && EM.isEditMode
-            WC.updateWidgetVisibility(false)
-            Utility.Wait(0.2)
-            EM.DisableEditMode()
-        endIf
-        if !bIsFirstEnabled
-            WC.isEnabled = bEnabled
-        endIf
+        WC.isEnabled = bEnabled
     endIf
-    
-    ApplyMCMSettings()
+    updateSettings()
 endEvent
 
-; ####################################
-; ### START OF MCM PAGE POPULATION ###
+function updateSettings()
+    if WC.isEnabled
+        debug.Notification("$iEquip_MCM_not_ApplyingSettings")
+        if bUpdateKeyMaps
+            KH.updateKeyMaps()
+        endIf        
+        WC.ApplyChanges()
+    endIf
+endFunction
+
+; #################
+; ### MCM Pages ###
 
 event OnPageReset(string page)
     SetCursorFillMode(TOP_TO_BOTTOM)
@@ -177,12 +120,7 @@ event OnPageReset(string page)
     endif
 endEvent
 
-; #######################
-; ### START OF EVENTS ###
-
-; Jump to script function
-
-function jumpToScriptEvent(string eventName, float tmpVar = -1.0)
+function jumpToPage(string eventName, float tmpVar = -1.0)
     string sCurrentState = GetState()
     
     if sCurrentPage == "$iEquip_MCM_lbl_General"
@@ -206,66 +144,121 @@ function jumpToScriptEvent(string eventName, float tmpVar = -1.0)
     endIf
 endFunction
 
+
+; #######################
+; ### START OF EVENTS ###
+
 ; GENERAL
 
 event OnHighlightST()
-    jumpToScriptEvent("Highlight")
+    jumpToPage("Highlight")
 endEvent
 
 event OnSelectST()
-    jumpToScriptEvent("Select")
+    jumpToPage("Select")
 endEvent
 
 event OnDefaultST()
-    jumpToScriptEvent("Default")
+    jumpToPage("Default")
 endEvent
 
-; Hotkeys
+; SLIDERS
+
+event OnSliderOpenST()
+    jumpToPage("Open")
+endEvent
+
+event OnSliderAcceptST(float value)
+    jumpToPage("Accept", value)
+endEvent
+
+; MENUS
+
+event OnMenuOpenST()
+    jumpToPage("Open")
+endEvent
+    
+event OnMenuAcceptST(int index)
+    jumpToPage("Accept", index)
+endEvent
+
+; COLORS
+
+event OnColorOpenST()
+    jumpToPage("Open")
+endEvent
+    
+event OnColorAcceptST(int color)
+    jumpToPage("Accept", color)
+endEvent
+
+; HOTKEYS
 
 event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
     if (conflictControl != "")
         string msg
         
         if (conflictName != "")
-            msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n(" + conflictName + ")\n\nAre you sure you want to continue?"
+            ;msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n(" + conflictName + ")\n\nAre you sure you want to continue?"
+            msg = "$iEquip_MCM_msg_AlreadyMapped1{" + conflictControl + "}{" + conflictName + "}"
         else
-            msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n\nAre you sure you want to continue?"
+            ;msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n\nAre you sure you want to continue?"
+            msg = "$iEquip_MCM_msg_AlreadyMapped2{" + conflictControl + "}"
         endIf
         
         if ShowMessage(msg, true, "$Yes", "$No")
-            jumpToScriptEvent("Change", keyCode)
+            jumpToPage("Change", keyCode)
         endIf
     else
-        jumpToScriptEvent("Change", keyCode)
+        jumpToPage("Change", keyCode)
     endIf
 endEvent
 
-; SLIDERS
+; #################
+; ### MCM TOOLS ###
 
-event OnSliderOpenST()
-    jumpToScriptEvent("Open")
-endEvent
+; -----------
+; - Sliders -
+; -----------
 
-event OnSliderAcceptST(float value)
-    jumpToScriptEvent("Accept", value)
-endEvent
+function fillSlider(float startVal, float startRange, float endRange, float intervalVal, float defaultVal)
+    SetSliderDialogStartValue(startVal)
+    SetSliderDialogRange(startRange, endRange)  
+    SetSliderDialogInterval(intervalVal)
+    SetSliderDialogDefaultValue(defaultVal)
+endFunction 
 
-; MENUS
+; ---------
+; - Menus -
+; ---------
 
-event OnMenuOpenST()
-    jumpToScriptEvent("Open")
-endEvent
-    
-event OnMenuAcceptST(int index)
-    jumpToScriptEvent("Accept", index)
-endEvent
+function fillMenu(int startVal, string[] options, int defaultVal)
+    SetMenuDialogStartIndex(startVal)
+    SetMenuDialogOptions(options)
+    SetMenuDialogDefaultIndex(defaultVal)
+endFunction
 
-; COLORS
+; -------------------
+; - Everything else -
+; -------------------
 
-event OnColorOpenST()
-    jumpToScriptEvent("Open")
-endEvent
-    
-event OnColorAcceptST(int color)
-    jumpToScriptEvent("Accept", color)
-endEvent
+string[] function cutStrArray(string[] stringArray, int cutIndex)
+    if stringArray.length > 1
+        string[] newStringArray = Utility.CreateStringArray(stringArray.length - 1)
+        int oldAIndex
+        int newAIndex
+            
+        while oldAIndex < stringArray.length && newAIndex < stringArray.length - 1
+            if oldAIndex != cutIndex
+                newStringArray[newAIndex] = stringArray[oldAIndex]
+                newAIndex += 1
+            endIf
+                
+            oldAIndex += 1
+        endWhile
+        
+        return newStringArray
+    else
+        return stringArray
+    endIf
+endFunction

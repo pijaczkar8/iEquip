@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_inf extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_inf extends iEquip_MCM_Page
 
 iEquip_KeyHandler Property KH Auto
 iEquip_EditMode Property EM Auto
@@ -7,16 +7,18 @@ iEquip_EditMode Property EM Auto
 ; ### SETUP ###
 
 function drawPage()
-    MCM.AddHeaderOption("Information")
+    MCM.AddHeaderOption("$iEquip_MCM_lbl_Info")
     ;+++Version number
     ;+++Dependency checks
     ;+++Supported mods detected
-            
-    MCM.SetCursorPosition(1)
-            
-    MCM.AddHeaderOption("Maintenance")
-    MCM.AddEmptyOption()
-    MCM.AddTextOptionST("inf_txt_rstLayout", "Reset default iEquip layout", "")
+
+    if MCM.bEnabled
+        MCM.SetCursorPosition(1)
+
+        MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")
+        MCM.AddEmptyOption()
+        MCM.AddTextOptionST("inf_txt_rstLayout", "$iEquip_MCM_inf_lbl_rstLayout", "")
+    endIf
 endFunction
 
 ; ########################
@@ -36,11 +38,10 @@ endFunction
 State inf_txt_rstLayout
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Selecting this will nuke any changes you have made to iEquip and fully restore the default layout")
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_rstLayout")
         elseIf currentEvent == "Select"
-            if MCM.ShowMessage("Are you sure you wish to completely reset iEquip and discard any layout changes you have made?", true, "Reset", "Cancel")
+            if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstLayout", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
                 EM.ResetDefaults()
-                KH.OpeniEquipMCM(true)
             endIf
         endIf 
     endEvent

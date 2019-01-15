@@ -812,12 +812,7 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 			while i < rightCount && found == -1
 				targetObject = jArray.getObj(targetArray, i)
 				itemType = jMap.getInt(targetObject, "Type")
-				if itemType == 4
-					itemName = jMap.getStr(targetObject, "Name")
-					if !(stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb", 0) > -1)
-						found = i
-					endIf
-				elseif itemType > 0 && itemType < 4 || itemType == 8
+				if itemType > 0 && itemType < 4 || (itemType == 4 && !(jMap.getStr(targetObject, "Icon") == "Grenade")) || itemType == 8
 					found = i
 				endIf
 				i += 1
@@ -828,14 +823,7 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 		while i < rightCount && found == -1
 			targetObject = jArray.getObj(targetArray, i)
 			itemType = jMap.getInt(targetObject, "Type")
-			if itemType == 4
-				itemName = jMap.getStr(targetObject, "Name")
-				if !(stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb", 0) > -1)
-					found = i
-				endIf
-			elseif itemType > 0 && itemType < 4 || itemType == 8
-				found = i
-			elseif itemType == 22 && jMap.getStr(targetObject, "Icon") == "Destruction"
+			if itemType > 0 && itemType < 4 || (itemType == 4 && !(jMap.getStr(targetObject, "Icon") == "Grenade")) || itemType == 8 || (itemType == 22 && jMap.getStr(targetObject, "Icon") == "Destruction")
 				found = i
 			else
 				found = -1

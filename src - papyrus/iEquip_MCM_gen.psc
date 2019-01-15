@@ -1,13 +1,8 @@
-Scriptname iEquip_MCM_gen extends iEquip_MCM_helperfuncs
+Scriptname iEquip_MCM_gen extends iEquip_MCM_Page
 
-iEquip_WidgetCore Property WC Auto
-iEquip_KeyHandler Property KH Auto
+import iEquip_StringExt
+
 iEquip_AmmoMode Property AM Auto
-
-sound property UILevelUp auto
-
-bool bStillToEnableProMode = true
-int iProModeEasterEggCounter = 5
 
 string[] ammoSortingOptions
 string[] whenNoAmmoLeftOptions
@@ -32,15 +27,7 @@ endFunction
 function drawPage()
     MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
            
-    if !MCM.bIsFirstEnabled && MCM.bEnabled
-                
-        if bStillToEnableProMode
-            MCM.AddTextOptionST("gen_txt_dragEastr", "", "$iEquip_MCM_gen_txt_dragEastrA")
-        else
-            MCM.AddToggleOptionST("gen_tgl_enblProMode", "$iEquip_MCM_gen_lbl_enblProMode", WC.bProModeEnabled)
-        endIf
-                
-        MCM.AddEmptyOption()
+    if MCM.bEnabled
         MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
         MCM.AddToggleOptionST("gen_tgl_enblShoutSlt", "$iEquip_MCM_gen_lbl_enblShoutSlt", WC.bShoutEnabled)
         MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "$iEquip_MCM_gen_lbl_enblConsumSlt", WC.bConsumablesEnabled)
@@ -57,7 +44,7 @@ function drawPage()
         MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
                 
         if WC.bEquipOnPause
-            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{0} s")
+            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds"))
         endIf
                 
         MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
@@ -76,73 +63,13 @@ endFunction
 State gen_tgl_onOff
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff_SE")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff")
         elseIf currentEvent == "Select"
-            if MCM.bIsFirstEnabled
-                ;MCM.ShowMessage("$iEquip_MCM_gen_msg_onOff", False, "$OK")
-                MCM.bEnabled = true
-                KH.openiEquipMCM(true)
-            else
-                MCM.bEnabled = !MCM.bEnabled
-                MCM.forcePageReset()
-            endIf
+            MCM.bEnabled = !MCM.bEnabled
+            MCM.forcePageReset()
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
             MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State gen_txt_dragEastr
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("??????")
-        elseIf currentEvent == "Select"
-            if iProModeEasterEggCounter >= 0
-                string msg
-            
-                if iProModeEasterEggCounter == 5
-                    msg = "$iEquip_MCM_gen_txt_dragEastrB"
-                elseIf iProModeEasterEggCounter == 4
-                    msg = "$iEquip_MCM_gen_txt_dragEastrC"
-                elseIf iProModeEasterEggCounter == 3
-                    msg = "$iEquip_MCM_gen_txt_dragEastrD"
-                elseIf iProModeEasterEggCounter == 2
-                    msg = "$iEquip_MCM_gen_txt_dragEastrE"
-                elseIf iProModeEasterEggCounter == 1
-                    msg = "$iEquip_MCM_gen_txt_dragEastrF"
-                elseIf iProModeEasterEggCounter == 0
-                    msg = "$iEquip_MCM_gen_txt_dragEastrG"
-                endIf
-                
-                MCM.SetTextOptionValueST(msg)
-                iProModeEasterEggCounter -= 1
-            else
-                ; Wohoo, let's play an epic tune
-                UILevelUp.Play(MCM.PlayerRef)
-                MCM.ShowMessage("$iEquip_MCM_gen_msg_dragEastr", false, "$OK")
-                bStillToEnableProMode = false
-                WC.bProModeEnabled = true
-                ;MCM.ShowMessage("$iEquip_MCM_gen_msg_dragEastr_SE", False, "$OK")
-                KH.openiEquipMCM(true)
-            endIf
-        endIf
-    endEvent
-endState
-
-State gen_tgl_enblProMode
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblProMode")
-        elseIf currentEvent == "Select"
-            WC.bProModeEnabled = !WC.bProModeEnabled
-            MCM.SetToggleOptionValueST(WC.bProModeEnabled)
-        elseIf currentEvent == "Default"
-            MCM.ShowMessage("$iEquip_MCM_gen_msg_enblProMode", false, "$OK")
-            WC.bProModeEnabled = false 
-            KH.bQuickShieldEnabled = false
-            WC.bQuickDualCastEnabled = false
-            KH.openiEquipMCM(true)
         endIf
     endEvent
 endState
@@ -254,10 +181,10 @@ endState
 State gen_sld_eqpPausDelay
     event OnBeginState()
         if currentEvent == "Open"
-            fillSlider(WC.fEquipOnPauseDelay, 0.8, 10.0, 0.1, 2.0)
+            MCM.fillSlider(WC.fEquipOnPauseDelay, 0.8, 10.0, 0.1, 2.0)
         elseIf currentEvent == "Accept"
             WC.fEquipOnPauseDelay = currentVar
-            MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} s")
+            MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds"))
         endIf
     endEvent
 endState
@@ -279,7 +206,7 @@ State gen_men_ammoLstSrt
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_ammoLstSrt")
         elseIf currentEvent == "Open"
-            fillMenu(AM.iAmmoListSorting, ammoSortingOptions, 0)
+            MCM.fillMenu(AM.iAmmoListSorting, ammoSortingOptions, 0)
         elseIf currentEvent == "Accept"
             AM.iAmmoListSorting = currentVar as int
             MCM.SetMenuOptionValueST(ammoSortingOptions[AM.iAmmoListSorting])
@@ -293,7 +220,7 @@ State gen_men_whenNoAmmoLeft
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_whenNoAmmoLeft")
         elseIf currentEvent == "Open"
-            fillMenu(AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
+            MCM.fillMenu(AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
         elseIf currentEvent == "Accept"
             AM.iActionOnLastAmmoUsed = currentVar as int
             MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
