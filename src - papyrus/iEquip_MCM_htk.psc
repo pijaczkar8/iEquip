@@ -30,7 +30,6 @@ function drawPage()
                 
         MCM.AddHeaderOption("Utility Hotkey Options")
         MCM.AddKeyMapOptionST("htk_key_util", "Utility Hotkey", KH.iUtilityKey, mcmUnmapFLAG)
-        MCM.AddMenuOptionST("htk_men_utilDubPress", "Utility key double press", utilityKeyDoublePressOptions[KH.iUtilityKeyDoublePress])
 
         MCM.SetCursorPosition(1)
                 
@@ -188,17 +187,6 @@ State htk_key_util
             
             MCM.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iUtilityKey)        
-        endIf
-    endEvent
-endState
-
-State htk_men_utilDubPress
-    event OnBeginState()
-        if currentEvent == "Open"
-            MCM.fillMenu(KH.iUtilityKeyDoublePress, utilityKeyDoublePressOptions, 0)
-        elseIf currentEvent == "Accept"
-            KH.iUtilityKeyDoublePress = currentVar as int
-            MCM.SetMenuOptionValueST(utilityKeyDoublePressOptions[KH.iUtilityKeyDoublePress])
         endIf
     endEvent
 endState

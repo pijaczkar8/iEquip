@@ -555,11 +555,6 @@ function checkAndRemoveBoundAmmo(int weaponType)
 	int targetIndex = jArray.count(aiTargetQ[Q]) - 1
 	if iEquip_AmmoExt.IsAmmoBound(jMap.getForm(jArray.getObj(aiTargetQ[Q], targetIndex), "Form") as ammo)
 		jArray.eraseIndex(aiTargetQ[Q], targetIndex)
-		if iAmmoListSorting == 2 || iAmmoListSorting == 4
-			selectLastUsedAmmo(Q)
-		else
-			selectBestAmmo(Q)
-		endIf
 	endIf
 	abBoundAmmoInQueue[Q] = false
 endFunction

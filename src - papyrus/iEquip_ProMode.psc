@@ -256,12 +256,6 @@ function equipPreselectedItem(int Q)
 		bReadyForPreselectAnim = false
 		UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
 	endIf
-	if AM.abBoundAmmoInQueue[0]
-    	AM.checkAndRemoveBoundAmmo(7)	
-    endIf
-    if AM.abBoundAmmoInQueue[1]
-    	AM.checkAndRemoveBoundAmmo(9)
-    endIf
     int iHandle
 	int itemToEquip = WC.aiCurrentlyPreselected[Q]
 	int targetArray = WC.aiTargetQ[Q]
@@ -269,6 +263,7 @@ function equipPreselectedItem(int Q)
 	form targetItem = jMap.getForm(targetObject, "Form")
 	int itemType = jMap.getInt(targetObject, "Type")
 	if (itemType == 7 || itemType == 9)
+		AM.checkAndRemoveBoundAmmo(itemType)
 		if (!WC.RightHandWeaponIsRanged() || AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3)
 			AM.selectAmmoQueue(itemType)
 		endIf
@@ -821,12 +816,7 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 			while i < rightCount && found == -1
 				targetObject = jArray.getObj(targetArray, i)
 				itemType = jMap.getInt(targetObject, "Type")
-				if itemType == 4
-					itemName = jMap.getStr(targetObject, "Name")
-					if !(stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb", 0) > -1)
-						found = i
-					endIf
-				elseif itemType > 0 && itemType < 4 || itemType == 8
+				if itemType > 0 && itemType < 4 || (itemType == 4 && !(jMap.getStr(targetObject, "Icon") == "Grenade")) || itemType == 8
 					found = i
 				endIf
 				i += 1
@@ -837,14 +827,7 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 		while i < rightCount && found == -1
 			targetObject = jArray.getObj(targetArray, i)
 			itemType = jMap.getInt(targetObject, "Type")
-			if itemType == 4
-				itemName = jMap.getStr(targetObject, "Name")
-				if !(stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb", 0) > -1)
-					found = i
-				endIf
-			elseif itemType > 0 && itemType < 4 || itemType == 8
-				found = i
-			elseif itemType == 22 && jMap.getStr(targetObject, "Icon") == "Destruction"
+			if itemType > 0 && itemType < 4 || (itemType == 4 && !(jMap.getStr(targetObject, "Icon") == "Grenade")) || itemType == 8 || (itemType == 22 && jMap.getStr(targetObject, "Icon") == "Destruction")
 				found = i
 			else
 				found = -1

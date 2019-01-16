@@ -1,5 +1,7 @@
 Scriptname iEquip_MCM_gen extends iEquip_MCM_Page
 
+import iEquip_StringExt
+
 iEquip_AmmoMode Property AM Auto
 
 string[] ammoSortingOptions
@@ -42,7 +44,7 @@ function drawPage()
         MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
                 
         if WC.bEquipOnPause
-            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{0} s")
+            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds"))
         endIf
                 
         MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
@@ -61,7 +63,7 @@ endFunction
 State gen_tgl_onOff
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff_SE")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff")
         elseIf currentEvent == "Select"
             MCM.bEnabled = !MCM.bEnabled
             MCM.forcePageReset()
@@ -182,7 +184,7 @@ State gen_sld_eqpPausDelay
             MCM.fillSlider(WC.fEquipOnPauseDelay, 0.8, 10.0, 0.1, 2.0)
         elseIf currentEvent == "Accept"
             WC.fEquipOnPauseDelay = currentVar
-            MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} s")
+            MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds"))
         endIf
     endEvent
 endState

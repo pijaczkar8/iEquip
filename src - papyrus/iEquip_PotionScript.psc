@@ -711,25 +711,26 @@ function checkAndAddToConsumableQueue(potion foundConsumable)
             AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
         endIf
         if jArray.count(iConsumableQ) == 4
-            int shownPotionGroups = 0
-            if WC.bPotionGrouping && !(WC.abPotionGroupEmpty[0] && iEmptyPotionQueueChoice == 1)
-                shownPotionGroups += 1
-            endIf
-            if WC.bStaminaPotionGrouping && !(WC.abPotionGroupEmpty[1] && iEmptyPotionQueueChoice == 1)
-                shownPotionGroups += 1
-            endIf
-            if WC.bMagickaPotionGrouping && !(WC.abPotionGroupEmpty[2] && iEmptyPotionQueueChoice == 1)
-                shownPotionGroups += 1
-            endIf
-            ;If there are no potion groups displayed show the added consumable in the widget
-            if shownPotionGroups == 0
-                WC.aiCurrentQueuePosition[3] = 4
-                WC.asCurrentlyEquipped[3] = consumableName
-                if WC.bConsumableIconFaded
-                    WC.checkAndFadeConsumableIcon(false)
-                    Utility.Wait(0.3)
+            if WC.bPotionGrouping && iEmptyPotionQueueChoice != 1
+                int shownPotionGroups = 0
+                int i = 0
+                
+                while i < 3
+                    if !WC.abPotionGroupEmpty[i]
+                        shownPotionGroups += 1
+                    endIf
+                    i += 1
+                endWhile
+                
+                if shownPotionGroups == 0
+                    WC.aiCurrentQueuePosition[3] = 4
+                    WC.asCurrentlyEquipped[3] = consumableName
+                    if WC.bConsumableIconFaded
+                        WC.checkAndFadeConsumableIcon(false)
+                        Utility.Wait(0.3)
+                    endIf
+                    WC.updateWidget(3, 0, false, true)
                 endIf
-                WC.updateWidget(3, 0, false, true)
             endIf
         endIf
         debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + consumableName + " added to the consumable queue")
@@ -856,7 +857,7 @@ endFunction
 
 function selectAndConsumePotion(int potionGroup)
     debug.trace("iEquip_PotionScript selectAndConsumePotion called - potionGroup: " + potionGroup)
-    if 0 <= potionGroup <= 2
+    if 0 <= potionGroup && potionGroup <= 2
         potionGroup = potionGroup * 3
         int Q = iPotionsFirstChoice + potionGroup
         

@@ -41,7 +41,7 @@ event OnInit()
 endEvent
 
 function rechargeWeapon(int Q)
-	debug.trace("iEquip_RechargeScript rechargeWeapon called - Q: " + Q
+	debug.trace("iEquip_RechargeScript rechargeWeapon called - Q: " + Q)
     if bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
         debug.notification("$iEquip_RequiemEnchantingPerkMissing")
     else

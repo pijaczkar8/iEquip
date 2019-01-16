@@ -23,28 +23,26 @@ function drawPage()
         MCM.AddHeaderOption("$iEquip_MCM_edt_lbl_EMOptions")
         MCM.AddSliderOptionST("edt_sld_slowTimeStr", "$iEquip_MCM_edt_lbl_slowTimeStr", iEquip_EditModeSlowTimeStrength.GetValueint())
                 
-        MCM.SetCursorPosition(1)
-                
+        MCM.SetCursorPosition(1)               
         MCM.AddHeaderOption("")
-        MCM.AddEmptyOption()
         MCM.AddMenuOptionST("edt_men_chooseHtKey", "$iEquip_MCM_edt_lbl_chooseHtKey", EMKeysChoice[MCM.iCurrentEMKeysChoice])
                 
         if(MCM.iCurrentEMKeysChoice == 1)
             MCM.AddEmptyOption()
-            MCM.AddKeyMapOptionST("edt_key_nextElem", "Next element", KH.iEditNextKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_prevElem", "Previous element", KH.iEditPrevKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_moveUp", "Move up", KH.iEditUpKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_moveDown", "Move down", KH.iEditDownKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_moveLeft", "Move left", KH.iEditLeftKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_moveRight", "Move right", KH.iEditRightKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_sclUp", "Scale up", KH.iEditScaleUpKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_sclDown", "Scale down", KH.iEditScaleDownKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_rotate", "Rotate", KH.iEditRotateKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_adjTransp", "Adjust transparency", KH.iEditAlphaKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_bringFrnt", "Bring to front", KH.iEditDepthKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_setTxtAlCo", "Set text alignment and colour", KH.iEditTextKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_tglRulers", "Toggle rulers", KH.iEditRulersKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_rstSelElem", "Reset selected element", KH.iEditResetKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_nextElem", "$iEquip_MCM_edt_lbl_nextElem", KH.iEditNextKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_prevElem", "$iEquip_MCM_edt_lbl_prevElem", KH.iEditPrevKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_moveUp", "$iEquip_MCM_edt_lbl_moveUp", KH.iEditUpKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_moveDown", "$iEquip_MCM_edt_lbl_moveDown", KH.iEditDownKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_moveLeft", "$iEquip_MCM_edt_lbl_moveLeft", KH.iEditLeftKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_moveRight", "$iEquip_MCM_edt_lbl_moveRight", KH.iEditRightKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_sclUp", "$iEquip_MCM_edt_lbl_sclUp", KH.iEditScaleUpKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_sclDown", "$iEquip_MCM_edt_lbl_sclDown", KH.iEditScaleDownKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_rotate", "$iEquip_MCM_edt_lbl_rotate", KH.iEditRotateKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_adjTransp", "$iEquip_MCM_edt_lbl_adjTransp", KH.iEditAlphaKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_bringFrnt", "$iEquip_MCM_edt_lbl_bringFrnt", KH.iEditDepthKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_setTxtAlCo", "$iEquip_MCM_edt_lbl_setTxtAlCo", KH.iEditTextKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_tglRulers", "$iEquip_MCM_edt_lbl_tglRulers", KH.iEditRulersKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("edt_key_rstSelElem", "$iEquip_MCM_edt_lbl_rstSelElem", KH.iEditResetKey, mcmUnmapFLAG)
             MCM.AddKeyMapOptionST("edt_key_loadPrst", "$iEquip_common_LoadPreset", KH.iEditLoadPresetKey, mcmUnmapFLAG)
             MCM.AddKeyMapOptionST("edt_key_savePrst", "$iEquip_common_SavePreset", KH.iEditSavePresetKey, mcmUnmapFLAG)
             MCM.AddKeyMapOptionST("edt_key_discChangs", "$iEquip_common_DiscardChanges", KH.iEditDiscardKey, mcmUnmapFLAG)
@@ -63,8 +61,7 @@ endFunction
 State edt_sld_slowTimeStr
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("iEquip Edit Mode runs with the game unpaused so to avoid unneccessary death or injury while you set things up we apply a slow time effect. "+\
-                            "This slider lets you set how much time slows by in Edit Mode\nDefault is 100% or fully paused, at 0 time passes normally in Edit Mode")
+            MCM.SetInfoText("$iEquip_MCM_edt_txt_slowTimeStr")
         elseIf currentEvent == "Open"
             MCM.fillSlider(iEquip_EditModeSlowTimeStrength.GetValue(), 0.0, 100.0, 10.0, 100.0)
         elseIf currentEvent == "Accept"
@@ -77,7 +74,7 @@ endState
 State edt_men_chooseHtKey
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose to use the recommended Edit Mode hotkeys or set your own")
+            MCM.SetInfoText("$iEquip_MCM_edt_txt_chooseHtKey")
         elseIf currentEvent == "Open"
             MCM.fillMenu(MCM.iCurrentEMKeysChoice, EMKeysChoice, 0)
         elseIf currentEvent == "Accept"

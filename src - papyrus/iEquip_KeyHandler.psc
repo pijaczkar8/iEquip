@@ -82,6 +82,7 @@ function GameLoaded()
 endFunction
 
 event OnMenuOpen(string MenuName)
+    debug.trace("iEquip KeyHandler Menu being opened: "+MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = false
     else
@@ -101,6 +102,7 @@ event OnMenuOpen(string MenuName)
 endEvent
 
 event OnMenuClose(string MenuName)
+    debug.trace("iEquip KeyHandler Menu being closed: "+MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = true
     else     
@@ -173,7 +175,7 @@ function runUpdate()
                     WC.consumeItem()
                 endIf
             elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
-                if PM.bPreselectMode && IsUtilityKeyHeld
+                if PM.bPreselectMode && bIsUtilityKeyHeld
                     PM.equipAllPreselectedItems()
                 else
                     if iWaitingKeyCode == iLeftKey
@@ -185,7 +187,7 @@ function runUpdate()
                     else
                         RC.rechargeWeapon(1)
                     endIf
-                else
+                endIf
             endIf
             
     elseIf iMultiTap == 1   ; Single tap
@@ -245,7 +247,7 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     PM.equipPreselectedItem(0)
                 elseIf AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
-                    WC.cycleAmmo(0, bIsUtilityKeyHeld)
+                    AM.cycleAmmo(bIsUtilityKeyHeld)
                 else
                     WC.applyPoison(0)
                 endIf
@@ -253,7 +255,7 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     if iWaitingKeyCode == iRightKey
                         PM.equipPreselectedItem(1)
-                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu PM.bShoutPreselectEnabled && WC.bShoutEnabled
+                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && PM.bShoutPreselectEnabled && WC.bShoutEnabled
                         PM.equipPreselectedItem(2)
                     endIf
                 else

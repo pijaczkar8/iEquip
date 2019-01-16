@@ -1,0 +1,896 @@
+{
+	"spears": [
+		{
+			"name": "Riekling Spear",
+			"pluginName": "Dragonborn.esm",
+			"formID": "0x017720",
+			"isLightMod": false
+		}
+	],
+	"javelins": [
+		{
+			"name": "Javelin",
+			"pluginName": "JZBai_ThrowingWpnsLite.esp",
+			"formID": "0x151FA6",
+			"isLightMod": false
+		},
+		{
+			"name": "Dwarven Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EAB6",
+			"isLightMod": false
+		},
+		{
+			"name": "Steel Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EAC4",
+			"isLightMod": false
+		},
+		{
+			"name": "Orcish Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EAC5",
+			"isLightMod": false
+		},
+		{
+			"name": "Nord Hero Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EAC6",
+			"isLightMod": false
+		},
+		{
+			"name": "Iron Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EAC7",
+			"isLightMod": false
+		},
+		{
+			"name": "Glass Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EAC8",
+			"isLightMod": false
+		},
+		{
+			"name": "Forsworn Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EAC9",
+			"isLightMod": false
+		},
+		{
+			"name": "Elven Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EACA",
+			"isLightMod": false
+		},
+		{
+			"name": "Ebony Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EACB",
+			"isLightMod": false
+		},
+		{
+			"name": "Draugr Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EACC",
+			"isLightMod": false
+		},
+		{
+			"name": "Daedric Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x00EACD",
+			"isLightMod": false
+		},
+		{
+			"name": "Explosive Javelin",
+			"pluginName": "SpearsBySoolie.esp",
+			"formID": "0x010071",
+			"isLightMod": false
+		}
+	],
+	"grenades": [
+		{
+			"name": "Simple Frost Bomb",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x000D62",
+			"isLightMod": false
+		},
+		{
+			"name": "Simple Incendiary Bomb",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x021C2F",
+			"isLightMod": false
+		},
+		{
+			"name": "Simple Shock Bomb",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x024C3B",
+			"isLightMod": false
+		},
+		{
+			"name": "Powerful Frost Bomb",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x055C26",
+			"isLightMod": false
+		},
+		{
+			"name": "Powerful Incendiary Bomb",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x053474",
+			"isLightMod": false
+		},
+		{
+			"name": "Powerful Shock Grenade",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x0583DC",
+			"isLightMod": false
+		},
+		{
+			"name": "Devastating Frost Bomb",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x055C31",
+			"isLightMod": false
+		},
+		{
+			"name": "Devastating Incendiary Bomb",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x05347E",
+			"isLightMod": false
+		},
+		{
+			"name": "Devastating Shock Grenade",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x0583E6",
+			"isLightMod": false
+		},
+		{
+			"name": "Grenade",
+			"pluginName": "JZBai_ThrowingWpnsLite.esp",
+			"formID": "0x15AC05",
+			"isLightMod": false
+		},
+		{
+			"name": "Frost Potion Grenade",
+			"pluginName": "JZBai_ThrowingWpnsLite.esp",
+			"formID": "0x183B04",
+			"isLightMod": false
+		},
+		{
+			"name": "Oil Pot",
+			"pluginName": "JZBai_ThrowingWpnsLite.esp",
+			"formID": "0x183B05",
+			"isLightMod": false
+		},
+		{
+			"name": "Smoke Bomb",
+			"pluginName": "JZBai_ThrowingWpnsLite.esp",
+			"formID": "0x183B06",
+			"isLightMod": false
+		}
+	],
+	"throwingAxes": [
+		{
+			"name": "Throwing Axe",
+			"pluginName": "JZBai_ThrowingWpnsLite.esp",
+			"formID": "0x15AC04",
+			"isLightMod": false
+		}
+	],
+	"throwingKnives": [
+		{
+			"name": "Throwing Knife",
+			"pluginName": "JZBai_ThrowingWpnsLite.esp",
+			"formID": "0x151FA7",
+			"isLightMod": false
+		}
+	],
+	"poisonWaxes": [
+		{
+			"name": "Potent Wax of Arthropod Pain",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x56293C",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Arthropod Harm",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623203",
+			"isLightMod": false
+		},
+		{
+			"name": "Deadly Wax of Arthropod Bane",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623204",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Daedra's Pain",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x56293B",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Daedra's Harm",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623206",
+			"isLightMod": false
+		},
+		{
+			"name": "Deadly Wax of Daedra's Bane",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623208",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Dragon's Pain",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x56293E",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Dragon's Harm",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62320A",
+			"isLightMod": false
+		},
+		{
+			"name": "Deadly Wax of Dragon's Bane",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62320C",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Elves Pain",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x562940",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Elves Harm",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62320E",
+			"isLightMod": false
+		},
+		{
+			"name": "Deadly Wax of Elves Bane",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623210",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Human Pain",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x562942",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Human Harm",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623212",
+			"isLightMod": false
+		},
+		{
+			"name": "Deadly Wax of Human Bane",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623214",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Vampire Pain",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623216",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Vampire Harm",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x562944",
+			"isLightMod": false
+		},
+		{
+			"name": "Deadly Wax of Vampire Bane",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x623218",
+			"isLightMod": false
+		},
+		{
+			"name": "Weak Wax of Damage Health",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D436",
+			"isLightMod": false
+		},
+		{
+			"name": "Standard Wax of Damage Health",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D43E",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Damage Health",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D43B",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Damage Health",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D43C",
+			"isLightMod": false
+		},
+		{
+			"name": "Deadly Wax of Damage Health",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D43A",
+			"isLightMod": false
+		},
+		{
+			"name": "Weak Wax of Damage Magicka",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D44D",
+			"isLightMod": false
+		},
+		{
+			"name": "Standard Wax of Damage Magicka",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D447",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Damage Magicka",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D448",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Damage Magicka",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D449",
+			"isLightMod": false
+		},
+		{
+			"name": "Devastating Wax of Damage Magicka",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D44A",
+			"isLightMod": false
+		},
+		{
+			"name": "Weak Wax of Damage Stamina",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D457",
+			"isLightMod": false
+		},
+		{
+			"name": "Standard Wax of Damage Stamina",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D458",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Damage Stamina",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D45A",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Damage Stamina",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D45B",
+			"isLightMod": false
+		},
+		{
+			"name": "Devastating Wax of Damage Stamina",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x62D45C",
+			"isLightMod": false
+		},
+		{
+			"name": "Weak Wax of Damage Undead",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x632568",
+			"isLightMod": false
+		},
+		{
+			"name": "Standard Wax of Damage Undead",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x632569",
+			"isLightMod": false
+		},
+		{
+			"name": "Potent Wax of Damage Undead",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x63256B",
+			"isLightMod": false
+		},
+		{
+			"name": "Malign Wax of Damage Undead",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x63256D",
+			"isLightMod": false
+		},
+		{
+			"name": "Deadly Wax of Damage Undead",
+			"pluginName": "Complete Alchemy & Cooking Overhaul.esp",
+			"formID": "0x63256F",
+			"isLightMod": false
+		}
+	],
+	"poisonOils": [
+		{
+			"name": "Fire Oil I",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x006EB4",
+			"isLightMod": false
+		},
+		{
+			"name": "Fire Oil II",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x00CA41",
+			"isLightMod": false
+		},
+		{
+			"name": "Frost Oil I",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x00CA5B",
+			"isLightMod": false
+		},
+		{
+			"name": "Frost Oil II",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x00CA59",
+			"isLightMod": false
+		},
+		{
+			"name": "Shock Oil I",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x00CFD1",
+			"isLightMod": false
+		},
+		{
+			"name": "Shock Oil II",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x00CFD4",
+			"isLightMod": false
+		},
+		{
+			"name": "Caustic Oil I",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x012687",
+			"isLightMod": false
+		},
+		{
+			"name": "Caustic Oil II",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x012688",
+			"isLightMod": false
+		},
+		{
+			"name": "Sanguine Oil I",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1EFB45",
+			"isLightMod": false
+		},
+		{
+			"name": "Sanguine Oil II",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1EFB46",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Animal",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1762A8",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Animal",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1999BB",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Beastfolk",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2ED5",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Beastfolk",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2ED6",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Creature",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2ED8",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Creature",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EDA",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Daedra",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EDC",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Daedra",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EDE",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Dragon",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EE0",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Dragon",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EE2",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Human",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EE4",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Human",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EE6",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Mer",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EE8",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Mer",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EEA",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Undead",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EEC",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Undead",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1B2EEE",
+			"isLightMod": false
+		},
+		{
+			"name": "Fire Oil I (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEEA0",
+			"isLightMod": false
+		},
+		{
+			"name": "Fire Oil II (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEEA2",
+			"isLightMod": false
+		},
+		{
+			"name": "Frost Oil I (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEEA4",
+			"isLightMod": false
+		},
+		{
+			"name": "Frost Oil II (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEEA6",
+			"isLightMod": false
+		},
+		{
+			"name": "Shock Oil I (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEEA8",
+			"isLightMod": false
+		},
+		{
+			"name": "Shock Oil II (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEEAA",
+			"isLightMod": false
+		},
+		{
+			"name": "Caustic Oil I (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1F9D54",
+			"isLightMod": false
+		},
+		{
+			"name": "Caustic Oil II (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1F9D55",
+			"isLightMod": false
+		},
+		{
+			"name": "Sanguine Oil I (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE79",
+			"isLightMod": false
+		},
+		{
+			"name": "Sanguine Oil II (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE7A",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Animal (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE7C",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Animal (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE7E",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Beastfolk (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE80",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Beastfolk (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE82",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Creature (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE84",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Creature (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE86",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Daedra (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE88",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Daedra (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE8A",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Dragon (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE8C",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Dragon (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE8E",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Human (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE90",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Human (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE92",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Mer (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE94",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Mer (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE96",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil I: Undead (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE98",
+			"isLightMod": false
+		},
+		{
+			"name": "Animus Oil II: Undead (Diluted)",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x1FEE9A",
+			"isLightMod": false
+		},
+		{
+			"name": "Paralysis Oil",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x012C00",
+			"isLightMod": false
+		},
+		{
+			"name": "Fear Oil I",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x012C05",
+			"isLightMod": false
+		},
+		{
+			"name": "Fear Oil II",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x012C06",
+			"isLightMod": false
+		},
+		{
+			"name": "Frenzy Oil I",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x0187BF",
+			"isLightMod": false
+		},
+		{
+			"name": "Frenzy Oil II",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x0187C1",
+			"isLightMod": false
+		},
+		{
+			"name": "Sapping Oil I",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x0203BF",
+			"isLightMod": false
+		},
+		{
+			"name": "Sapping Oil II",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x0203C0",
+			"isLightMod": false
+		},
+		{
+			"name": "Lethargic Oil",
+			"pluginName": "SmithingOils.esp",
+			"formID": "0x00BD79",
+			"isLightMod": false
+		}
+	],
+	"spellWards": [
+		{
+			"name": "Lesser Ward",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x013018",
+			"isLightMod": false
+		},
+		{
+			"name": "Lesser Ward",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x072319",
+			"isLightMod": false
+		},
+		{
+			"name": "Greater Ward",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0211F0",
+			"isLightMod": false
+		},
+		{
+			"name": "Greater Ward",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x07231B",
+			"isLightMod": false
+		},
+		{
+			"name": "Steadfast Ward",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0211F1",
+			"isLightMod": false
+		},
+		{
+			"name": "Steadfast Ward",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x07231A",
+			"isLightMod": false
+		},
+		{
+			"name": "Bound Shield",
+			"pluginName": "Bound Shield.esp",
+			"formID": "0x000D64",
+			"isLightMod": false
+		},
+		{
+			"name": "Eminent Ward",
+			"pluginName": "WardFunctionalitiesExtended.esp",
+			"formID": "0x061BE4",
+			"isLightMod": false
+		},
+		{
+			"name": "Master Ward",
+			"pluginName": "WardFunctionalitiesExtended.esp",
+			"formID": "0x066CEB",
+			"isLightMod": false
+		}
+	],
+	"fire": [
+		{
+			"name": "Exploding Steel Bolt of Fire",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x00F1A0",
+			"isLightMod": false
+		},
+		{
+			"name": "Exploding Dwarven Bolt of Fire",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x00F1B1",
+			"isLightMod": false
+		},
+		{
+			"name": "Fire Arrow",
+			"pluginName": "ccbgssse002-exoticarrows.esl",
+			"formID": "0x802",
+			"isLightMod": true
+		}
+	],
+	"ice": [
+		{
+			"name": "Exploding Steel Bolt of Ice",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x00F1BB",
+			"isLightMod": false
+		},
+		{
+			"name": "Exploding Dwarven Bolt of Ice",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x00F1B7",
+			"isLightMod": false
+		},
+		{
+			"name": "Ice Arrow",
+			"pluginName": "ccbgssse002-exoticarrows.esl",
+			"formID": "0x803",
+			"isLightMod": true
+		}
+	],
+	"shock": [
+		{
+			"name": "Exploding Steel Bolt of Shock",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x00F1BC",
+			"isLightMod": false
+		},
+		{
+			"name": "Exploding Dwarven Bolt of Shock",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x00F1B9",
+			"isLightMod": false
+		},
+		{
+			"name": "Lightning Arrow",
+			"pluginName": "ccbgssse002-exoticarrows.esl",
+			"formID": "0x804",
+			"isLightMod": true
+		}
+	],
+	"poison": [
+	]
+}

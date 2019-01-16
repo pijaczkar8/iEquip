@@ -1,5 +1,7 @@
 Scriptname iEquip_MCM_rep extends iEquip_MCM_Page
 
+import iEquip_StringExt
+
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
 
@@ -14,71 +16,71 @@ string[] poisonIndicatorOptions
 
 function initData()
     chargeDisplayOptions = new String[3]
-    chargeDisplayOptions[0] = "Hidden"
-    chargeDisplayOptions[1] = "Charge Meters"
-    chargeDisplayOptions[2] = "Dynamic Soulgem"
+    chargeDisplayOptions[0] = "$iEquip_MCM_rep_opt_Hidden"
+    chargeDisplayOptions[1] = "$iEquip_MCM_rep_opt_Meters"
+    chargeDisplayOptions[2] = "$iEquip_MCM_rep_opt_Soulgem"
 
     meterFillDirectionOptions = new String[3]
-    meterFillDirectionOptions[0] = "left"
-    meterFillDirectionOptions[1] = "right"
-    meterFillDirectionOptions[2] = "both"
+    meterFillDirectionOptions[0] = "$iEquip_MCM_rep_opt_left"
+    meterFillDirectionOptions[1] = "$iEquip_MCM_rep_opt_right"
+    meterFillDirectionOptions[2] = "$iEquip_MCM_rep_opt_both"
 
     meterFillDirection = new int[2]
     meterFillDirection[0] = 1
     meterFillDirection[1] = 0
 
     poisonMessageOptions = new String[3]
-    poisonMessageOptions[0] = "Show All"
-    poisonMessageOptions[1] = "Top-up & Switch"
-    poisonMessageOptions[2] = "Don't show"
+    poisonMessageOptions[0] = "$iEquip_MCM_rep_opt_ShowAll"
+    poisonMessageOptions[1] = "$iEquip_MCM_rep_opt_TopUpSw"
+    poisonMessageOptions[2] = "$iEquip_MCM_rep_opt_DntShow"
     
     poisonIndicatorOptions = new String[4]
-    poisonIndicatorOptions[0] = "Count Only"
-    poisonIndicatorOptions[1] = "Single Drop & Count"
-    poisonIndicatorOptions[2] = "Single Drop"
-    poisonIndicatorOptions[3] = "Multiple Drops"
+    poisonIndicatorOptions[0] = "$iEquip_MCM_rep_opt_Count"
+    poisonIndicatorOptions[1] = "$iEquip_MCM_rep_opt_DropCount"
+    poisonIndicatorOptions[2] = "$iEquip_MCM_rep_opt_Drop"
+    poisonIndicatorOptions[3] = "$iEquip_MCM_rep_opt_Drops"
 endFunction
 
 function drawPage()
     if MCM.bEnabled
-        MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "Show Enchantment Recharging Help", "")
-        MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "Enable enchanted weapon recharging", RC.bRechargingEnabled)
+        MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "$iEquip_MCM_rep_lbl_showEnchRechHelp", "")
+        MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "$iEquip_MCM_rep_lbl_enblEnchRech", RC.bRechargingEnabled)
         MCM.AddEmptyOption()
                 
         if RC.bRechargingEnabled
-            MCM.AddHeaderOption("Soulgem Use Options")
-            MCM.AddToggleOptionST("rep_tgl_useLargSoul", "Use largest available soul", RC.bUseLargestSoul)
-            MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "Use oversized souls", RC.bAllowOversizedSouls)
-            MCM.AddToggleOptionST("rep_tgl_usePartGem", "Use partially filled gems", RC.bUsePartFilledGems)
+            MCM.AddHeaderOption("$iEquip_MCM_rep_lbl_soulgemUseOpts")
+            MCM.AddToggleOptionST("rep_tgl_useLargSoul", "$iEquip_MCM_rep_lbl_useLargSoul", RC.bUseLargestSoul)
+            MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "$iEquip_MCM_rep_lbl_useOvrsizSoul", RC.bAllowOversizedSouls)
+            MCM.AddToggleOptionST("rep_tgl_usePartGem", "$iEquip_MCM_rep_lbl_usePartGem", RC.bUsePartFilledGems)
                     
-            MCM.AddHeaderOption("Widget Options")
-            MCM.AddMenuOptionST("rep_men_showEnchCharge", "Charge displayed as", chargeDisplayOptions[CM.iChargeDisplayType])
+            MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+            MCM.AddMenuOptionST("rep_men_showEnchCharge", "$iEquip_MCM_rep_lbl_showEnchCharge", chargeDisplayOptions[CM.iChargeDisplayType])
             if CM.iChargeDisplayType > 0
-                MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "Enable enchantment charge fadeout", CM.bChargeFadeoutEnabled)
+                MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "$iEquip_MCM_rep_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
                 if CM.bChargeFadeoutEnabled
-                    MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "Fadeout delay", CM.fChargeFadeoutDelay, "Fade after {1} secs")
+                    MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "$iEquip_MCM_rep_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds")))
                 endIf
                 
-                MCM.AddColorOptionST("rep_col_normFillCol", "Normal charge fill colour", CM.iPrimaryFillColor)
-                MCM.AddToggleOptionST("rep_tgl_enableCustomFlashCol", "Enable custom flash colour", CM.bCustomFlashColor)
+                MCM.AddColorOptionST("rep_col_normFillCol", "$iEquip_MCM_rep_lbl_normFillCol", CM.iPrimaryFillColor)
+                MCM.AddToggleOptionST("rep_tgl_enableCustomFlashCol", "$iEquip_MCM_rep_lbl_enableCustomFlashCol", CM.bCustomFlashColor)
                 if CM.bCustomFlashColor
-                    MCM.AddColorOptionST("rep_col_meterFlashCol", "Empty warning flash colour", CM.iFlashColor)
+                    MCM.AddColorOptionST("rep_col_meterFlashCol", "$iEquip_MCM_rep_lbl_meterFlashCol", CM.iFlashColor)
                 endIf
                 
-                MCM.AddToggleOptionST("rep_tgl_changeColLowCharge", "Change colour on low charge", CM.bEnableLowCharge)
+                MCM.AddToggleOptionST("rep_tgl_changeColLowCharge", "$iEquip_MCM_rep_lbl_changeColLowCharge", CM.bEnableLowCharge)
                 if CM.bEnableLowCharge
-                    MCM.AddSliderOptionST("rep_sld_setLowChargeTresh", "Set low charge threshold", CM.fLowChargeThreshold*100, "{0}%")
-                    MCM.AddColorOptionST("rep_col_lowFillCol", "Low charge fill colour", CM.iLowChargeFillColor)
+                    MCM.AddSliderOptionST("rep_sld_setLowChargeTresh", "$iEquip_MCM_rep_lbl_setLowChargeTresh", CM.fLowChargeThreshold*100, "{0}%")
+                    MCM.AddColorOptionST("rep_col_lowFillCol", "$iEquip_MCM_rep_lbl_lowFillCol", CM.iLowChargeFillColor)
                 endIf
                 
                 if CM.iChargeDisplayType == 1
-                    MCM.AddToggleOptionST("rep_tgl_enableGradientFill", "Enable gradient fill", CM.bEnableGradientFill)
+                    MCM.AddToggleOptionST("rep_tgl_enableGradientFill", "$iEquip_MCM_rep_lbl_enableGradientFill", CM.bEnableGradientFill)
                     if CM.bEnableGradientFill
-                        MCM.AddColorOptionST("rep_col_gradFillCol", "Gradient (low) fill colour", CM.iSecondaryFillColor)
+                        MCM.AddColorOptionST("rep_col_gradFillCol", "$iEquip_MCM_rep_lbl_gradFillCol", CM.iSecondaryFillColor)
                     endIf
                     
-                    MCM.AddMenuOptionST("rep_men_leftFillDir", "Left meter fill direction", meterFillDirectionOptions[meterFillDirection[0]])
-                    MCM.AddMenuOptionST("rep_men_rightFillDir", "Right meter fill direction", meterFillDirectionOptions[meterFillDirection[1]])
+                    MCM.AddMenuOptionST("rep_men_leftFillDir", "$iEquip_MCM_rep_lbl_leftFillDir", meterFillDirectionOptions[meterFillDirection[0]])
+                    MCM.AddMenuOptionST("rep_men_rightFillDir", "$iEquip_MCM_rep_lbl_rightFillDir", meterFillDirectionOptions[meterFillDirection[1]])
                 endIf
             endIf
         endIf
@@ -87,25 +89,25 @@ function drawPage()
                 
         if !WC.bPoisonsEnabled
             MCM.AddEmptyOption()
-            MCM.AddTextOption("Poisoning features are currently disabled.", "")
-            MCM.AddTextOption("If you wish to use the poisoning features", "")
-            MCM.AddTextOption("please re-enable the Poison Widget in the", "")
-            MCM.AddTextOption("General Settings page", "")
+            MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled1", "")
+            MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled2", "")
+            MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled3", "")
+            MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled4", "")
          else
-            MCM.AddTextOptionST("rep_txt_showPoisonHelp", "Show Poisoning Help", "")
+            MCM.AddTextOptionST("rep_txt_showPoisonHelp", "$iEquip_MCM_rep_lbl_showPoisonHelp", "")
                    
             MCM.AddEmptyOption()
-            MCM.AddHeaderOption("Poison Use Options")
-            MCM.AddMenuOptionST("rep_men_confMsg", "Confirmation messages", poisonMessageOptions[WC.iShowPoisonMessages])
-            MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "Allow poison switching", WC.bAllowPoisonSwitching)
-            MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "Allow poison top-up", WC.bAllowPoisonTopUp)
+            MCM.AddHeaderOption("$iEquip_MCM_rep_lbl_poisonUseOpts")
+            MCM.AddMenuOptionST("rep_men_confMsg", "$iEquip_MCM_rep_lbl_confMsg", poisonMessageOptions[WC.iShowPoisonMessages])
+            MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "$iEquip_MCM_rep_lbl_allowPoisonSwitch", WC.bAllowPoisonSwitching)
+            MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "$iEquip_MCM_rep_lbl_allowPoisonTopup", WC.bAllowPoisonTopUp)
                     
-            MCM.AddHeaderOption("Poison Charge Options")
-            MCM.AddSliderOptionST("rep_sld_chargePerVial", "Charges per vial", WC.iPoisonChargesPerVial, "{0} charges")
-            MCM.AddSliderOptionST("rep_sld_chargeMult", "Charge Multiplier", WC.iPoisonChargeMultiplier, "{0}x base charges")
+            MCM.AddHeaderOption("$iEquip_MCM_rep_lbl_poisonChargeOpts")
+            MCM.AddSliderOptionST("rep_sld_chargePerVial", "$iEquip_MCM_rep_lbl_chargePerVial", WC.iPoisonChargesPerVial, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_chrgs"))
+            MCM.AddSliderOptionST("rep_sld_chargeMult", "$iEquip_MCM_rep_lbl_chargeMult", WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseChrgs"))
                     
-            MCM.AddHeaderOption("Widget Options")
-            MCM.AddMenuOptionST("rep_men_poisonIndStyle", "Poison indicator style", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
+            MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+            MCM.AddMenuOptionST("rep_men_poisonIndStyle", "$iEquip_MCM_rep_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
         endIf
     endIf
 endFunction
@@ -117,10 +119,8 @@ endFunction
 State rep_txt_showEnchRechHelp
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("Recharging enchanted items in iEquip\n\nLong press the left or right hotkeys to recharge the enchanted weapon in that hand. iEquip will then pick the most appropriate soul to use based on your settings below, "+\
-                               "such as whether you want to use the largest soul that will fit or use up smaller souls first, or if you want to stop iEquip from using souls which are larger than needed to fully recharge the weapon\n\nPage 1/2", true, "Next Page", "Exit")
-                MCM.ShowMessage("Recharging enchanted items in iEquip\n\niEquip supports GIST by opusGlass so you also have the option of not using partially filled gems.\n\n"+\
-                                "You also have the option of how the current charge is displayed in the widget with customizable meters and/or a dynamic soul gem icon with various levels of fill\n\nPage 2/2", false, "Exit")
+            if MCM.ShowMessage("$iEquip_MCM_rep_msg_showEnchRechHelp1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                MCM.ShowMessage("$iEquip_MCM_rep_msg_showEnchRechHelp2", false, "$iEquip_common_msg_Exit")
             endIf
         endIf 
     endEvent
@@ -145,7 +145,7 @@ endState
 State rep_tgl_useLargSoul
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Select whether to use the largest soul that will fit into the weapon, or to use up your smaller souls first.")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_useLargSoul")
         else
             If currentEvent == "Select"
                 RC.bUseLargestSoul = !RC.bUseLargestSoul
@@ -160,7 +160,7 @@ endState
 State rep_tgl_useOvrsizSoul
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Disabling this will stop you from wasting souls which are larger than the charge required to completely refill the weapon")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_useOvrsizSoul")
         else
             If currentEvent == "Select"
                 RC.bAllowOversizedSouls = !RC.bAllowOversizedSouls
@@ -175,7 +175,7 @@ endState
 State rep_tgl_usePartGem
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("To support GIST - Genuinely Intelligent Soul Trap by opusGlass you can stop iEquip from using partially filled gems allowing GIST to continue filling them")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_usePartGem")
         else
             If currentEvent == "Select"
                 RC.bUsePartFilledGems = !RC.bUsePartFilledGems
@@ -194,8 +194,7 @@ endState
 State rep_men_showEnchCharge
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose how you would like the enchantment charge for equipped weapons to be displayed in the widget\nCharge Meters - show custom enchantment charge level meters in the widget\n"+\
-                "Dynamic Soulgems - show dynamic soulgem icons in the widget which change fill level to indicate the current level of enchantment charge\nVanilla HUD enchantment charge meters will be hidden")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_showEnchCharge")
         elseIf currentEvent == "Open"
             MCM.fillMenu(CM.iChargeDisplayType, chargeDisplayOptions, 1)
         elseIf currentEvent == "Accept"
@@ -215,7 +214,7 @@ endState
 State rep_tgl_enableChargeFadeout
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("With this setting enabled the charge meters will show on equipping an enchanted weapon, but will fade out after the delay set below\nAdditionally you can choose whether to re-show on entering combat or when the current charge is below the low charge threshold if set below.\nDefault: Disabled")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_enableChargeFadeout")
         else
             If currentEvent == "Select"
                 CM.bChargeFadeoutEnabled = !CM.bChargeFadeoutEnabled
@@ -233,12 +232,12 @@ endState
 State rep_sld_chargeFadeDelay
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Set the delay in seconds before the enchantment bars fade out")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_chargeFadeDelay")
         elseIf currentEvent == "Open"
             MCM.fillSlider(CM.fChargeFadeoutDelay, 1.0, 20.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
             CM.fChargeFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(CM.fChargeFadeoutDelay, "Fade after {1} secs")
+            MCM.SetSliderOptionValueST(CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds")))
         endIf 
     endEvent
 endState
@@ -246,7 +245,7 @@ endState
 State rep_col_normFillCol
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Set the regular fill colour for the enchantment charge meters in the widget")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_normFillCol")
         elseIf currentEvent == "Open"
             MCM.SetColorDialogStartColor(CM.iPrimaryFillColor)
             MCM.SetColorDialogDefaultColor(0x8c9ec2)
@@ -265,7 +264,7 @@ endState
 State rep_tgl_enableCustomFlashCol
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("When your weapon enchantment charge runs out the meter or soulgem will flash a warning. By default this will match whatever you have set as your fill colour. Enabling this setting allows you to instead set a custom flash color\nDefault: Disabled")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_enableCustomFlashCol")
         else
             If currentEvent == "Select"
                 CM.bCustomFlashColor = !CM.bCustomFlashColor
@@ -286,7 +285,7 @@ endState
 State rep_col_meterFlashCol
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Set a custom colour for the warning flash that displays when the charge on the equipped weapon runs out")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_meterFlashCol")
         elseIf currentEvent == "Open"
             MCM.SetColorDialogStartColor(CM.iFlashColor)
             MCM.SetColorDialogDefaultColor(0xFFFFFF)
@@ -306,7 +305,7 @@ endState
 State rep_tgl_enableGradientFill
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Enables a gradient colour fill in the enchantment bars from regular fill (full) to secondary fill (empty)")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_enableGradientFill")
         else
             If currentEvent == "Select"
                 CM.bEnableGradientFill = !CM.bEnableGradientFill
@@ -331,7 +330,7 @@ endState
 State rep_col_gradFillCol
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Set the secondary fill colour (only used when gradient fill is enabled)")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_gradFillCol")
         elseIf currentEvent == "Open"
             if CM.iSecondaryFillColor == -1
                 MCM.SetColorDialogStartColor(0xee4242)
@@ -355,7 +354,7 @@ endState
 State rep_tgl_changeColLowCharge
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Allows the enchantment charge bars to change colour when the charge falls below the level specified below")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_changeColLowCharge")
         else
             If currentEvent == "Select"
                 CM.bEnableLowCharge = !CM.bEnableLowCharge
@@ -376,7 +375,7 @@ endState
 State rep_sld_setLowChargeTresh
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Set the level below which you would like the enchantment bars to change colour")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_setLowChargeTresh")
         elseIf currentEvent == "Open"
             MCM.fillSlider(CM.fLowChargeThreshold*100, 5.0, 50.0, 5.0, 20.0)
         elseIf currentEvent == "Accept"
@@ -390,7 +389,7 @@ endState
 State rep_col_lowFillCol
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Set the low charge fill colour for the enchantment charge meters in the widget")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_lowFillCol")
         elseIf currentEvent == "Open"
             MCM.SetColorDialogStartColor(CM.iLowChargeFillColor)
             MCM.SetColorDialogDefaultColor(0xFF0000)
@@ -410,8 +409,7 @@ endState
 State rep_men_leftFillDir
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose the fill direction for the left enchantment charge meter\nRight Fill means the full is right, empty is left.  And vice versa for Left Fill\n"+\
-                            "Centre Fill means the meter will fill from the centre outwards in both directions\nDefault: Left Fill")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_leftFillDir")
         elseIf currentEvent == "Open"
             MCM.fillMenu(meterFillDirection[0], meterFillDirectionOptions, 0)
         elseIf currentEvent == "Accept"
@@ -426,8 +424,7 @@ endState
 State rep_men_rightFillDir
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose the fill direction for the right enchantment charge meter\nRight Fill means the full is right, empty is left.  And vice versa for Left Fill\n"+\
-                            "Centre Fill means the meter will fill from the centre outwards in both directions\nDefault: Right Fill")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_rightFillDir")
         elseIf currentEvent == "Open"
             MCM.fillMenu(meterFillDirection[1], meterFillDirectionOptions, 1)
         elseIf currentEvent == "Accept"
@@ -446,13 +443,9 @@ endState
 State rep_txt_showPoisonHelp
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("Applying Poisons In iEquip\n\nDouble press the left or right hotkeys to apply the currently selected poison to the weapon in that hand.\n\n"+\
-                               "Has no effect in Preselect Mode, and left has no effect in Regular Mode if you have a ranged weapon equipped\n\nPage 1/3", true, "Next Page", "Exit")
-                if MCM.ShowMessage("Applying Poisons In iEquip\n\nIf the weapon is already dosed with a different poison you have the option to remove the current one before applying a fresh poison.\n"+\
-                                   "If the weapon is already dosed with the same poison the charges will stack\n\nPage 2/3", true, "Next Page", "Exit")
-                    MCM.ShowMessage("Applying Poisons In iEquip\n\nIf the item you are poisoning was equipped by means other than iEquip the poisoning will still work and the poison widget will be updated\n\n"+\
-                                    "The Charges Per Vial and Multiplier settings below are there to allow you to match poison dosing in iEquip to any other mods you may be using, "+\
-                                    "or to make poisoning a more viable playstyle. Use at your discretion!\n\nPage 3/3", false, "Exit")
+            if MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                if MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                    MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp3", false, "$iEquip_common_msg_Exit")
                 endIf
             endIf
         endIf 
@@ -466,8 +459,7 @@ endState
 State rep_men_confMsg
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose which poisoning confirmation messages to show.\nTop-up & Switch will only show messages when you apply poison to an already poisoned item.\n"+\
-                            "With messages turned off iEquip will automatically top up or clean off existing poisons\nDefault: Show All")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_confMsg")
         elseIf currentEvent == "Open"
             MCM.fillMenu(WC.iShowPoisonMessages, poisonMessageOptions, 0)
         elseIf currentEvent == "Accept"
@@ -480,8 +472,7 @@ endState
 State rep_tgl_allowPoisonSwitch
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("With this enabled, if the weapon you are dosing is already poisoned with a different poison you will be given the option to remove the current poison before applying the new one. "+\
-                            "Otherwise you will need to use up the existing poison before applying a new one\nDefault - On")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_allowPoisonSwitch")
         elseIf currentEvent == "Select"
             WC.bAllowPoisonSwitching = !WC.bAllowPoisonSwitching
             MCM.SetToggleOptionValueST(WC.bAllowPoisonSwitching)
@@ -495,8 +486,7 @@ endState
 State rep_tgl_allowPoisonTopup
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("With this enabled, if the weapon you are dosing is already poisoned with the same poison you will be given the option to top up the current poison. "+\
-                            "If you choose to do so the doses will stack. As with the Charges Per Vial and Multiplier settings it is entirely up to you how you wish to balance or break your game.\nDefault - Off")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_allowPoisonTopup")
         elseIf currentEvent == "Select"
             WC.bAllowPoisonTopUp = !WC.bAllowPoisonTopUp
             MCM.SetToggleOptionValueST(WC.bAllowPoisonTopUp)
@@ -514,12 +504,12 @@ endState
 State rep_sld_chargePerVial
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Allows you to set the number of charges per vial/application. Use with discretion!\nDefault: Single charge per application (vanilla)")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_chargePerVial")
         elseIf currentEvent == "Open"
             MCM.fillSlider(WC.iPoisonChargesPerVial, 1.0, 5.0, 1.0, 1.0)
         elseIf currentEvent == "Accept"
             WC.iPoisonChargesPerVial = currentVar as int
-            MCM.SetSliderOptionValueST(WC.iPoisonChargesPerVial, "{0} charges per vial")
+            MCM.SetSliderOptionValueST(WC.iPoisonChargesPerVial, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_chrgs"))
         endIf 
     endEvent
 endState
@@ -527,13 +517,12 @@ endState
 State rep_sld_chargeMult
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Allows you to adjust iEquip poison dosing to match any perk overhauls you may be using which affect the Concentrated Poison perk or add new perks which multiply the number of charges per application. "+\
-                            "If left set at 1 iEquip will check whether the player has the Concentrated Poison perk and apply the vanilla x2 multiplier if you do.\nDefault: 1x (vanilla)")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_chargeMult")
         elseIf currentEvent == "Open"
             MCM.fillSlider(WC.iPoisonChargeMultiplier, 1.0, 5.0, 1.0, 1.0)
         elseIf currentEvent == "Accept"
             WC.iPoisonChargeMultiplier = currentVar as int
-            MCM.SetSliderOptionValueST(WC.iPoisonChargeMultiplier, "{0}x charges")
+            MCM.SetSliderOptionValueST(WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseChrgs"))
         endIf 
     endEvent
 endState
@@ -545,9 +534,7 @@ endState
 State rep_men_poisonIndStyle
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("Choose how the poison charges will be displayed in the left and right slots if you have a poisoned weapon equipped.\n"+\
-                            "The two count options will use the regular counter in either slot but with the count displayed in green.\nThe Multiple Drops option will display one, "+\
-                            "two or three drops to match the number of remaining charges, and will display three drops and a green plus sign if more than three charges remain.\nDefault: Single Drop & Count")
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_poisonIndStyle")
         elseIf currentEvent == "Open"
             MCM.fillMenu(WC.iPoisonIndicatorStyle, poisonIndicatorOptions, 1)
         elseIf currentEvent == "Accept"

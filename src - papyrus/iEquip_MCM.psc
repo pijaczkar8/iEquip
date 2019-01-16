@@ -199,9 +199,11 @@ event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
         string msg
         
         if (conflictName != "")
-            msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n(" + conflictName + ")\n\nAre you sure you want to continue?"
+            ;msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n(" + conflictName + ")\n\nAre you sure you want to continue?"
+            msg = "$iEquip_MCM_msg_AlreadyMapped1{" + conflictControl + "}{" + conflictName + "}"
         else
-            msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n\nAre you sure you want to continue?"
+            ;msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n\nAre you sure you want to continue?"
+            msg = "$iEquip_MCM_msg_AlreadyMapped2{" + conflictControl + "}"
         endIf
         
         if ShowMessage(msg, true, "$Yes", "$No")
