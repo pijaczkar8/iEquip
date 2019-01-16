@@ -133,9 +133,11 @@ event OnKeyDown(int KeyCode)
 
     if bAllowKeyPress
         if KeyCode != iWaitingKeyCode && iWaitingKeyCode != 0
-            ; The player pressed a different key, so force the current one to process if there is one
-            UnregisterForUpdate()
-            OnUpdate()
+            if KeyCode != iUtilityKey 
+                ; The player pressed a different key, so force the current one to process if there is one
+                UnregisterForUpdate()
+                OnUpdate()
+            endIf
         endIf
         iWaitingKeyCode = KeyCode
     
