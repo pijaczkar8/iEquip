@@ -2,7 +2,6 @@ Scriptname iEquip_MCM_rep extends iEquip_MCM_Page
 
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
-iEquip_WidgetCore Property WC Auto
 
 string[] chargeDisplayOptions
 string[] meterFillDirectionOptions

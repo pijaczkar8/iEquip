@@ -241,18 +241,22 @@ endFunction
 ; -------------------
 
 string[] function cutStrArray(string[] stringArray, int cutIndex)
-    string[] newStringArray = Utility.CreateStringArray(stringArray.length - 1)
-    int oldAIndex
-    int newAIndex
-        
-    while oldAIndex < stringArray.length && newAIndex < stringArray.length - 1
-        if oldAIndex != cutIndex
-            newStringArray[newAIndex] = stringArray[oldAIndex]
-            newAIndex += 1
-        endIf
+    if stringArray.length > 1
+        string[] newStringArray = Utility.CreateStringArray(stringArray.length - 1)
+        int oldAIndex
+        int newAIndex
             
-        oldAIndex += 1
-    endWhile
-    
-    return newStringArray
+        while oldAIndex < stringArray.length && newAIndex < stringArray.length - 1
+            if oldAIndex != cutIndex
+                newStringArray[newAIndex] = stringArray[oldAIndex]
+                newAIndex += 1
+            endIf
+                
+            oldAIndex += 1
+        endWhile
+        
+        return newStringArray
+    else
+        return stringArray
+    endIf
 endFunction

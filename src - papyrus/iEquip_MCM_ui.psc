@@ -1,6 +1,5 @@
 Scriptname iEquip_MCM_ui extends iEquip_MCM_Page
 
-iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
 
 string[] ammoIconOptions

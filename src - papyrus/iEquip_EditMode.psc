@@ -659,7 +659,7 @@ function LoadAllElements()
                 if i == 2
                     setTempItemInWidget(i, "Power", "Some Awesome Power") ; Power because the preselect slot will already be set to shout if queue is empty so let's have something different
                 elseIf i == 3
-                    if WC.bHealthPotionGrouping
+                    if WC.bPotionGrouping
                         ; Check if there are any potion groups shown...
                         iEnabledPotionGroupCount = 0
                         if !(WC.abPotionGroupEmpty[0] && WC.PO.iEmptyPotionQueueChoice == 1)

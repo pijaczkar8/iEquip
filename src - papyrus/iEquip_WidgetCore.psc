@@ -10,12 +10,12 @@ Import iEquip_UILIB
 import _Q2C_Functions
 import AhzMoreHudIE
 Import WornObject
-Import iEquip_WeaponExt
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto
 iEquip_EditMode property EM auto
 iEquip_KeyHandler property KH auto
+iEquip_RechargeScript Property RC Auto
 iEquip_AmmoMode property AM auto
 iEquip_ProMode property PM auto
 iEquip_PotionScript property PO auto
@@ -124,7 +124,7 @@ bool bDrawn
 Form boots
 float property fEquipOnPauseDelay = 2.0 auto hidden
 
-bool property bHealthPotionGrouping = true auto hidden
+bool property bPotionGrouping = true auto hidden
 
 bool property bProModeEnabled = false auto hidden
 bool property bPreselectMode = false auto hidden
@@ -376,10 +376,14 @@ Event OnWidgetInit()
 EndEvent
 
 function CheckDependencies()
-	bMoreHUDLoaded = AhzMoreHudIE.GetVersion() > 0
-	if bMoreHUDLoaded && bEnabled
+	if AhzMoreHudIE.GetVersion() > 0
 		initialisemoreHUDArray()
 	endIf
+    if Game.GetModByName("Requiem.esp") != 255
+        RC.bIsRequiemLoaded = true
+    else
+        RC.bIsRequiemLoaded = false
+    endIf
 endFunction
 
 Event OnWidgetLoad()
@@ -1011,7 +1015,7 @@ bool property isEnabled
 		if (Ready)
             bEnabled = enabled
             EH.OniEquipEnabled(bEnabled)
-            AD.ToggleState(bEnabled)
+            AD.OniEquipEnabled(bEnabled)
             
 			if bEnabled
                 bool[] args = new bool[4]
@@ -1441,17 +1445,15 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			if Q < 4
 		    	targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "Name")
 			    if Q == 3
-                    if (!bHealthPotionGrouping && PO.iEmptyPotionQueueChoice == 1)
-                        while (targetName == "Health Potions" && abPotionGroupEmpty[0]) || (targetName == "Stamina Potions" && abPotionGroupEmpty[1]) || (targetName == "Magicka Potions" && abPotionGroupEmpty[2])
-                            targetIndex = targetIndex + move
-                            if targetIndex < 0 && Reverse
-                                targetIndex = queueLength - 1
-                            elseif targetIndex == queueLength && !Reverse
-                                targetIndex = 0
-                            endIf
-                            targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "Name")
-                        endWhile
-                    endIf
+                    while (targetName == "Health Potions" && (!bPotionGrouping || (PO.iEmptyPotionQueueChoice == 1 && abPotionGroupEmpty[0]))) || (targetName == "Stamina Potions" && (!bPotionGrouping || (PO.iEmptyPotionQueueChoice == 1 && abPotionGroupEmpty[1]))) || (targetName == "Magicka Potions" && (!bPotionGrouping || (PO.iEmptyPotionQueueChoice == 1 && abPotionGroupEmpty[2])))
+                        targetIndex = targetIndex + move
+                        if targetIndex < 0 && Reverse
+                            targetIndex = queueLength - 1
+                        elseif targetIndex == queueLength && !Reverse
+                            targetIndex = 0
+                        endIf
+                        targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "Name")
+                    endWhile
 			    elseIf Q < 3
 			    	targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "Form")
 			        while Q < 2 && targetItem == PlayerRef.GetEquippedObject(otherHand) && (PlayerRef.GetItemCount(targetItem) < 2) && !bAllowWeaponSwitchHands
@@ -1961,7 +1963,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 		UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
 		UICallback.Send(iHandle)
 	endIf
-	if (Q != 3 || !bHealthPotionGrouping)
+	if (Q != 3 || !bPotionGrouping)
 		asCurrentlyEquipped[Q] = ""
 	endIf
 	; Hide any additional elements currently displayed
@@ -2297,16 +2299,15 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 	jArray.eraseIndex(aiTargetQ[Q], iIndex)
 	int queueLength = jArray.count(aiTargetQ[Q])
 	int enabledPotionGroupCount = 0
-	if Q == 3 && bHealthPotionGrouping
-		if !(abPotionGroupEmpty[0] && PO.iEmptyPotionQueueChoice == 1)
-			enabledPotionGroupCount += 1
-		endIf
-		if !(abPotionGroupEmpty[1] && PO.iEmptyPotionQueueChoice == 1)
-			enabledPotionGroupCount += 1
-		endIf
-		if !(abPotionGroupEmpty[2] && PO.iEmptyPotionQueueChoice == 1)
-			enabledPotionGroupCount += 1
-		endIf
+	if Q == 3 && bPotionGrouping && PO.iEmptyPotionQueueChoice != 1
+        int i = 0
+        
+        while i < 3
+            if !abPotionGroupEmpty[i]
+                enabledPotionGroupCount += 1
+            endIf
+            i += 1
+        endWhile
 	endIf
 	debug.trace("iEquip_WidgetCore removeItemFromQueue - queueLength: " + queueLength + ", enabledPotionGroupCount: " + enabledPotionGroupCount)
 	;In the case of the consumables queue count will never drop below 3 because of the Potion Group slots, so either count has to be greater than 3 or at least one of the Potion Groups needs to be shown, otherwise hide the consumable widget
@@ -2336,7 +2337,7 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 	;Handle empty queue
 	else
 		;Empty poison queue has to match the behaiour of the potion groups in the consumables queue, so if any grouping is enabled check for fade/flash settings and mirror them
-		if (Q == 4 && bHealthPotionGrouping)
+		if (Q == 4 && bPotionGrouping)
 			handleEmptyPoisonQueue()
 		else
 			aiCurrentQueuePosition[Q] = -1
@@ -2706,22 +2707,24 @@ endFunction
 ;Uses the equipped item / potion in the consumable slot
 function consumeItem()
     debug.trace("iEquip_WidgetCore consumeItem called")
-    int potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "Name"))
-    if potionGroupIndex != -1
-    	PO.selectAndConsumePotion(potionGroupIndex)
-    	setSlotCount(3, PO.getPotionGroupCount(potionGroupIndex))
-    else
-	    form itemForm = jMap.getForm(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "Form")
-	    if(itemForm != None)
-	    	PlayerRef.EquipItemEx(itemForm)
-	    	int count = PlayerRef.GetItemCount(itemForm)
-	    	if count < 1
-	    		removeItemFromQueue(3, aiCurrentQueuePosition[3])
-	    	else
-	    		setSlotCount(3, count)
-	    	endIf
-	    endIf
-	endIf
+    if bConsumablesEnabled
+        int potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "Name"))
+        if potionGroupIndex != -1
+            PO.selectAndConsumePotion(potionGroupIndex)
+            setSlotCount(3, PO.getPotionGroupCount(potionGroupIndex))
+        else
+            form itemForm = jMap.getForm(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "Form")
+            if(itemForm != None)
+                PlayerRef.EquipItemEx(itemForm)
+                int count = PlayerRef.GetItemCount(itemForm)
+                if count < 1
+                    removeItemFromQueue(3, aiCurrentQueuePosition[3])
+                else
+                    setSlotCount(3, count)
+                endIf
+            endIf
+        endIf
+    endIf
 endFunction
 
 int function showMessageWithCancel(string theString)
@@ -2738,111 +2741,113 @@ endFunction
 
 function applyPoison(int Q)
 	debug.trace("iEquip_WidgetCore applyPoison called")
-	int targetObject = jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4])
-	Potion poisonToApply = jMap.getForm(targetObject, "Form") as Potion
-	if !poisonToApply
-		return
-	endIf
-	bool ApplyWithoutUpdatingWidget = false
-	string messageString
-	int iButton
-	string newPoison = jMap.getStr(targetObject, "Name")
-	bool isLeftHand = true
-	string handName = "left"
-	if Q == 1
-		isLeftHand = false
-		handName = "right"
-	endIf
-	Weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
-	string weaponName
-	if currentWeapon
-		weaponName = currentWeapon.GetName()
-	endIf
-	if (!currentWeapon)
-		debug.notification("You don't currently have a weapon in your " + handName + " hand to poison")
-		return
-	elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Form") as Weapon
-		;messagestring = "The " + weaponName + " in your " + handName + " hand doesn't appear to match what's currently showing in iEquip. Do you wish to carry on and apply " + newPoison + " to it anyway?"
-		messagestring = "$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"
-		iButton = showMessageWithCancel(messageString)
-		if iButton != 0
-			return
-		endIf
-		ApplyWithoutUpdatingWidget = true
-	endIf
+    if bPoisonsEnabled
+        int targetObject = jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4])
+        Potion poisonToApply = jMap.getForm(targetObject, "Form") as Potion
+        if !poisonToApply
+            return
+        endIf
+        bool ApplyWithoutUpdatingWidget = false
+        string messageString
+        int iButton
+        string newPoison = jMap.getStr(targetObject, "Name")
+        bool isLeftHand = true
+        string handName = "left"
+        if Q == 1
+            isLeftHand = false
+            handName = "right"
+        endIf
+        Weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
+        string weaponName
+        if currentWeapon
+            weaponName = currentWeapon.GetName()
+        endIf
+        if (!currentWeapon)
+            debug.notification("You don't currently have a weapon in your " + handName + " hand to poison")
+            return
+        elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "Form") as Weapon
+            ;messagestring = "The " + weaponName + " in your " + handName + " hand doesn't appear to match what's currently showing in iEquip. Do you wish to carry on and apply " + newPoison + " to it anyway?"
+            messagestring = "$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"
+            iButton = showMessageWithCancel(messageString)
+            if iButton != 0
+                return
+            endIf
+            ApplyWithoutUpdatingWidget = true
+        endIf
 
-	Potion currentPoison = _Q2C_Functions.WornGetPoison(PlayerRef, Q)
-	if currentPoison && (currentPoison != none)
-		string currentPoisonName = currentPoison.GetName()
-		if currentPoison != poisonToApply
-			if !bAllowPoisonSwitching
-				debug.notification("Your " + weaponName + " is already poisoned with " + currentPoisonName)
-				return
-			else
-				if iShowPoisonMessages < 2
-					messagestring = "Your " + weaponName + " is already poisoned with " + currentPoisonName + ". Would you like to clean it and apply " + newPoison + " instead?"
-					iButton = showMessageWithCancel(messageString)
-					if iButton != 0
-						return
-					endIf
-				endIf
-				_Q2C_Functions.WornRemovePoison(PlayerRef, Q)
-			endIf	
-		elseif iShowPoisonMessages < 2
-			messagestring = "Your " + weaponName + " is already poisoned with " + currentPoisonName + ". Would you like to add more poison?"
-			iButton = showMessageWithCancel(messageString)
-			if iButton != 0
-				return
-			endIf
-		endIf
-	elseif iShowPoisonMessages == 0
-		;messagestring = "Would you like to apply " + newPoison + " to your " + weaponName + "?"
-		messagestring = "$iEquip_WC_msg_WouldYouLikeToApply{" + newPoison + "}{" + weaponName + "}"
-		iButton = showMessageWithCancel(messageString)
-		if iButton != 0
-			return
-		endIf
-	endIf
-	
-	int ConcentratedPoisonMultiplier = iPoisonChargeMultiplier
-	if ConcentratedPoisonMultiplier == 1 && PlayerRef.HasPerk(ConcentratedPoison)
-		ConcentratedPoisonMultiplier = 2
-	endIf
-	int chargesToApply
-	if stringutil.Find(newPoison, "wax", 0) > -1 || stringutil.Find(newPoison, "oil", 0) > -1
-		chargesToApply = 10 * ConcentratedPoisonMultiplier
-	else
-		chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier
-	endIf
-	int newCharges = -1
-	if currentPoison == poisonToApply
-		chargesToApply += _Q2C_Functions.WornGetPoisonCharges(PlayerRef, Q)
-		;debug.trace("iEquip_WidgetCore applyPoison - about to top up the " + newPoison + " on your " + weaponName + " to " + chargesToApply + " charges")
-		newCharges = _Q2C_Functions.WornSetPoisonCharges(PlayerRef, Q, chargesToApply)
-	else
-		;debug.trace("iEquip_WidgetCore applyPoison - about to apply " + chargesToApply + " charges of " + newPoison + " to your " + weaponName)
-		newCharges = _Q2C_Functions.WornSetPoison(PlayerRef, Q, poisonToApply, chargesToApply)
-	endIf
-	;Remove one item from the player
-	PlayerRef.RemoveItem(poisonToApply, 1, true)
-	;Flag the item as poisoned
-	jMap.setInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "isPoisoned", 1)
-	int count = PlayerRef.GetItemCount(poisonToApply)
-	if count > 0
-		setSlotCount(4, count)
-	endIf
-	if !ApplyWithoutUpdatingWidget
-		checkAndUpdatePoisonInfo(Q)
-		CM.checkAndUpdateChargeMeter(Q)
-	endIf
-	;Play sound
-	iEquip_ITMPoisonUse.Play(PlayerRef)
-	;Add Poison FX to weapon
-	if Q == 0
-		PLFX.ShowPoisonFX()
-	else
-		PRFX.ShowPoisonFX()
-	endIf
+        Potion currentPoison = _Q2C_Functions.WornGetPoison(PlayerRef, Q)
+        if currentPoison && (currentPoison != none)
+            string currentPoisonName = currentPoison.GetName()
+            if currentPoison != poisonToApply
+                if !bAllowPoisonSwitching
+                    debug.notification("Your " + weaponName + " is already poisoned with " + currentPoisonName)
+                    return
+                else
+                    if iShowPoisonMessages < 2
+                        messagestring = "Your " + weaponName + " is already poisoned with " + currentPoisonName + ". Would you like to clean it and apply " + newPoison + " instead?"
+                        iButton = showMessageWithCancel(messageString)
+                        if iButton != 0
+                            return
+                        endIf
+                    endIf
+                    _Q2C_Functions.WornRemovePoison(PlayerRef, Q)
+                endIf	
+            elseif iShowPoisonMessages < 2
+                messagestring = "Your " + weaponName + " is already poisoned with " + currentPoisonName + ". Would you like to add more poison?"
+                iButton = showMessageWithCancel(messageString)
+                if iButton != 0
+                    return
+                endIf
+            endIf
+        elseif iShowPoisonMessages == 0
+            ;messagestring = "Would you like to apply " + newPoison + " to your " + weaponName + "?"
+            messagestring = "$iEquip_WC_msg_WouldYouLikeToApply{" + newPoison + "}{" + weaponName + "}"
+            iButton = showMessageWithCancel(messageString)
+            if iButton != 0
+                return
+            endIf
+        endIf
+        
+        int ConcentratedPoisonMultiplier = iPoisonChargeMultiplier
+        if ConcentratedPoisonMultiplier == 1 && PlayerRef.HasPerk(ConcentratedPoison)
+            ConcentratedPoisonMultiplier = 2
+        endIf
+        int chargesToApply
+        if stringutil.Find(newPoison, "wax", 0) > -1 || stringutil.Find(newPoison, "oil", 0) > -1
+            chargesToApply = 10 * ConcentratedPoisonMultiplier
+        else
+            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier
+        endIf
+        int newCharges = -1
+        if currentPoison == poisonToApply
+            chargesToApply += _Q2C_Functions.WornGetPoisonCharges(PlayerRef, Q)
+            ;debug.trace("iEquip_WidgetCore applyPoison - about to top up the " + newPoison + " on your " + weaponName + " to " + chargesToApply + " charges")
+            newCharges = _Q2C_Functions.WornSetPoisonCharges(PlayerRef, Q, chargesToApply)
+        else
+            ;debug.trace("iEquip_WidgetCore applyPoison - about to apply " + chargesToApply + " charges of " + newPoison + " to your " + weaponName)
+            newCharges = _Q2C_Functions.WornSetPoison(PlayerRef, Q, poisonToApply, chargesToApply)
+        endIf
+        ;Remove one item from the player
+        PlayerRef.RemoveItem(poisonToApply, 1, true)
+        ;Flag the item as poisoned
+        jMap.setInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "isPoisoned", 1)
+        int count = PlayerRef.GetItemCount(poisonToApply)
+        if count > 0
+            setSlotCount(4, count)
+        endIf
+        if !ApplyWithoutUpdatingWidget
+            checkAndUpdatePoisonInfo(Q)
+            CM.checkAndUpdateChargeMeter(Q)
+        endIf
+        ;Play sound
+        iEquip_ITMPoisonUse.Play(PlayerRef)
+        ;Add Poison FX to weapon
+        if Q == 0
+            PLFX.ShowPoisonFX()
+        else
+            PRFX.ShowPoisonFX()
+        endIf
+    endIf
 endFunction
 
 ;Convenience function
@@ -3600,15 +3605,15 @@ function QueueMenuClearQueue()
 	jArray.clear(aiTargetQ[iQueueMenuCurrentQueue])
 	if iQueueMenuCurrentQueue == 3
 		addPotionGroups()
-        if bHealthPotionGrouping
+        aiCurrentQueuePosition[3] = -1
+        
+        if bPotionGrouping
             if (!abPotionGroupEmpty[0] || PO.iEmptyPotionQueueChoice == 0)
                 aiCurrentQueuePosition[3] = 0
-            elseIf !abPotionGroupEmpty[1]
+            elseIf (!abPotionGroupEmpty[1] || PO.iEmptyPotionQueueChoice == 0)
                 aiCurrentQueuePosition[3] = 1
-            elseIf !abPotionGroupEmpty[2]
+            elseIf (!abPotionGroupEmpty[2] || PO.iEmptyPotionQueueChoice == 0)
                 aiCurrentQueuePosition[3] = 2
-            else
-                aiCurrentQueuePosition[3] = -1
             endIf
         endIf
 	endIf
@@ -3722,7 +3727,7 @@ function ApplyChanges()
 		endIf
 	endIf
 	if bPotionGroupingOptionsChanged
-	    if (!bHealthPotionGrouping) && (asCurrentlyEquipped[3] == "Health Potions" || asCurrentlyEquipped[3] == "Stamina Potions" || asCurrentlyEquipped[3] == "Magicka Potions"))
+	    if (!bPotionGrouping && (asCurrentlyEquipped[3] == "Health Potions" || asCurrentlyEquipped[3] == "Stamina Potions" || asCurrentlyEquipped[3] == "Magicka Potions"))
 	        cycleSlot(3)
 	    endIf
         bPotionGroupingOptionsChanged = false

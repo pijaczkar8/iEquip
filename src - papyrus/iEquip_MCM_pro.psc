@@ -1,7 +1,5 @@
 Scriptname iEquip_MCM_pro extends iEquip_MCM_Page
 
-iEquip_WidgetCore Property WC Auto
-iEquip_KeyHandler Property KH Auto
 iEquip_ProMode Property PM Auto
 iEquip_PotionScript Property PO Auto
 
@@ -65,9 +63,9 @@ function drawPage()
             MCM.AddEmptyOption()
             MCM.AddHeaderOption("Preselect Options")
             MCM.AddTextOptionST("pro_txt_whatPreselect", "What is Preselect?", "")
-            MCM.AddToggleOptionST("pro_tgl_enblPreselect", "Enable Preselect", KH.bPreselectEnabled)
+            MCM.AddToggleOptionST("pro_tgl_enblPreselect", "Enable Preselect", PM.bPreselectEnabled)
                     
-            if KH.bPreselectEnabled
+            if PM.bPreselectEnabled
                 MCM.AddToggleOptionST("pro_tgl_enblShoutPreselect", "Enable shout preselect", PM.bShoutPreselectEnabled)
                 MCM.AddToggleOptionST("pro_tgl_swapPreselectItm", "Swap preselect with current item", PM.bPreselectSwapItemsOnEquip)
                 MCM.AddToggleOptionST("pro_tgl_eqpAllExitPreselectMode", "Equip All Exits Preselect Mode", PM.bTogglePreselectOnEquipAll)
@@ -76,9 +74,9 @@ function drawPage()
             MCM.AddEmptyOption()
             MCM.AddHeaderOption("QuickShield Options")
             MCM.AddTextOptionST("pro_txt_whatQuickshield", "What is QuickShield?", "")
-            MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "Enable QuickShield", KH.bQuickShieldEnabled)
+            MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "Enable QuickShield", PM.bQuickShieldEnabled)
                     
-            if KH.bQuickShieldEnabled
+            if PM.bQuickShieldEnabled
                 MCM.AddToggleOptionST("pro_tgl_with2hReqp", "With 2H/ranged equipped", PM.bQuickShield2HSwitchAllowed)
                 MCM.AddToggleOptionST("pro_tgl_prefShieldMag", "Prefer magic", PM.bQuickShieldPreferMagic)
                         
@@ -92,9 +90,9 @@ function drawPage()
             MCM.AddEmptyOption() 
             MCM.AddHeaderOption("QuickHeal Options")
             MCM.AddTextOptionST("pro_txt_whatQuickheal", "What is QuickHeal?", "")
-            MCM.AddToggleOptionST("pro_tgl_enblQuickheal", "Enable QuickHeal", KH.bQuickHealEnabled)
+            MCM.AddToggleOptionST("pro_tgl_enblQuickheal", "Enable QuickHeal", PM.bQuickHealEnabled)
                     
-            if KH.bQuickHealEnabled
+            if PM.bQuickHealEnabled
                 MCM.AddToggleOptionST("pro_tgl_prefHealMag", "Prefer magic", PM.bQuickHealPreferMagic)
                         
                 if PM.bQuickHealPreferMagic
@@ -109,9 +107,9 @@ function drawPage()
                     
             MCM.AddHeaderOption("QuickRanged Options")
             MCM.AddTextOptionST("pro_txt_whatQuickranged", "What is QuickRanged?", "")
-            MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "Enable QuickRanged", KH.bQuickRangedEnabled)
+            MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "Enable QuickRanged", PM.bQuickRangedEnabled)
                     
-            if KH.bQuickRangedEnabled
+            if PM.bQuickRangedEnabled
                 MCM.AddMenuOptionST("pro_men_prefWepTyp", "Preferred weapon type", QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
                 MCM.AddMenuOptionST("pro_men_swtchOut", "Switch out options", QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
 
@@ -190,7 +188,7 @@ State pro_tgl_enblProMode
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
             WC.bProModeEnabled = false 
-            KH.bQuickShieldEnabled = false
+            PM.bQuickShieldEnabled = false
             WC.bQuickDualCastEnabled = false
             MCM.forcePageReset()
         endIf
@@ -227,10 +225,10 @@ State pro_tgl_enblPreselect
         if currentEvent == "Highlight"
             MCM.SetInfoText("Enable/disable Preselect and the associated options. For a full description of what Preselect is and what it does read the Help notes\nDefault = On")
         elseIf currentEvent == "Select"
-            KH.bPreselectEnabled = !KH.bPreselectEnabled
+            PM.bPreselectEnabled = !PM.bPreselectEnabled
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            KH.bPreselectEnabled = false
+            PM.bPreselectEnabled = false
             MCM.forcePageReset()
         endIf
     endEvent
@@ -310,10 +308,10 @@ State pro_tgl_enblQuickshield
         if currentEvent == "Highlight"
             MCM.SetInfoText("Enable/disable QuickShield and the associated options. For a full description of what QuickShield is and what it does read the Help notes\nDefault = On")
         elseIf currentEvent == "Select"
-            KH.bQuickShieldEnabled = !KH.bQuickShieldEnabled
+            PM.bQuickShieldEnabled = !PM.bQuickShieldEnabled
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            KH.bQuickShieldEnabled = false
+            PM.bQuickShieldEnabled = false
             MCM.forcePageReset()
         endIf
     endEvent
@@ -410,10 +408,10 @@ State pro_tgl_enblQuickheal
         if currentEvent == "Highlight"
             MCM.SetInfoText("Enable QuickHeal for convenient healing whenever you need it without the need for cycling")
         elseIf currentEvent == "Select"
-            KH.bQuickHealEnabled = !KH.bQuickHealEnabled
+            PM.bQuickHealEnabled = !PM.bQuickHealEnabled
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            KH.bQuickHealEnabled = false
+            PM.bQuickHealEnabled = false
             MCM.forcePageReset()
         endIf
     endEvent
@@ -497,10 +495,10 @@ State pro_tgl_enblQuickranged
             MCM.SetInfoText("Enabling this will allow you to switch back to your previously equipped items by triple pressing the consumable key for a second time after you have finished healing. "+\
                             "Only applies if a healing spell has been equipped.  If a potion has been consumed this will do nothing.")
         elseIf currentEvent == "Select"
-            KH.bQuickRangedEnabled = !KH.bQuickRangedEnabled
+            PM.bQuickRangedEnabled = !PM.bQuickRangedEnabled
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            KH.bQuickRangedEnabled = false
+            PM.bQuickRangedEnabled = false
             MCM.forcePageReset()
         endIf
     endEvent

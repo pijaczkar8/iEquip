@@ -9,11 +9,13 @@ iEquip_RechargeRightFXScript Property RFX Auto
 
 actor Property PlayerRef Auto
 sound Property iEquip_Recharge_SFX Auto
+Perk Property Enchanter00 Auto ; Used if Requiem detected - Requiem renames this perk to REQ_Perk_Enchanting_EnchantersInsight1
 
 bool Property bRechargingEnabled = true Auto Hidden
 bool Property bUseLargestSoul = true Auto Hidden
 bool Property bUsePartFilledGems = false Auto Hidden
 bool Property bAllowOversizedSouls = false Auto Hidden
+bool Property bIsRequiemLoaded = false Auto Hidden
 
 float[] afAmountToRecharge
 float[] afSkillPointsToAdd
@@ -39,37 +41,41 @@ event OnInit()
 endEvent
 
 function rechargeWeapon(int Q)
-	debug.trace("iEquip_RechargeScript rechargeWeapon called - Q: " + Q)
-    string weaponToRecharge = CM.asItemCharge[Q]
-    float currentCharge = PlayerRef.GetActorValue(weaponToRecharge)
-    ;float maxCharge = PlayerRef.GetBaseActorValue(weaponToRecharge)
-    float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
-    float requiredCharge = maxCharge - currentCharge
-    debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
-    if requiredCharge < 1.0
-        debug.Notification("This weapon is already fully charged")
+	debug.trace("iEquip_RechargeScript rechargeWeapon called - Q: " + Q
+    if bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
+        debug.notification("$iEquip_RequiemEnchantingPerkMissing")
     else
-        int requiredSoul = getRequiredSoul(Q, requiredCharge)
-        if requiredSoul > 0
-            int soulSize = iEquip_SoulSeeker.bringMeASoul(requiredSoul, bUseLargestSoul as int, bUsePartFilledGems, bAllowOversizedSouls)
-            debug.trace("iEquip_RechargeScript rechargeWeapon - bringMeASoul returned me a size " + soulSize + " soul")
-            if soulSize > 0
-                iEquip_Recharge_SFX.Play(PlayerRef)
-                if Q == 0
-                    LFX.ShowRechargeFX()
+        string weaponToRecharge = CM.asItemCharge[Q]
+        float currentCharge = PlayerRef.GetActorValue(weaponToRecharge)
+        ;float maxCharge = PlayerRef.GetBaseActorValue(weaponToRecharge)
+        float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
+        float requiredCharge = maxCharge - currentCharge
+        debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
+        if requiredCharge < 1.0
+            debug.Notification("This weapon is already fully charged")
+        else
+            int requiredSoul = getRequiredSoul(Q, requiredCharge)
+            if requiredSoul > 0
+                int soulSize = iEquip_SoulSeeker.bringMeASoul(requiredSoul, bUseLargestSoul as int, bUsePartFilledGems, bAllowOversizedSouls)
+                debug.trace("iEquip_RechargeScript rechargeWeapon - bringMeASoul returned me a size " + soulSize + " soul")
+                if soulSize > 0
+                    iEquip_Recharge_SFX.Play(PlayerRef)
+                    if Q == 0
+                        LFX.ShowRechargeFX()
+                    else
+                        RFX.ShowRechargeFX()
+                    endIf
+                    ;Just in case it's possible to overcharge a weapon ensure we never recharge more than requiredCharge
+                    if afAmountToRecharge[soulSize] < requiredCharge
+                       PlayerRef.ModActorValue(weaponToRecharge, afAmountToRecharge[soulSize])
+                    else
+                        PlayerRef.ModActorValue(weaponToRecharge, requiredCharge)
+                    endIf
+                    game.AdvanceSkill("Enchanting", afSkillPointsToAdd[soulSize])
+                    CM.checkAndUpdateChargeMeter(Q, true)
                 else
-                    RFX.ShowRechargeFX()
+                    debug.Notification("No soul found")
                 endIf
-                ;Just in case it's possible to overcharge a weapon ensure we never recharge more than requiredCharge
-                if afAmountToRecharge[soulSize] < requiredCharge
-        	       PlayerRef.ModActorValue(weaponToRecharge, afAmountToRecharge[soulSize])
-                else
-                    PlayerRef.ModActorValue(weaponToRecharge, requiredCharge)
-                endIf
-        	    game.AdvanceSkill("Enchanting", afSkillPointsToAdd[soulSize])
-        	    CM.checkAndUpdateChargeMeter(Q, true)
-            else
-            	debug.Notification("No soul found")
             endIf
         endIf
     endIf

@@ -61,9 +61,9 @@ MagicEffect Property AlchWeaknessMagic Auto ;00073f51
 MagicEffect Property AlchWeaknessPoison Auto ;00090042
 MagicEffect Property AlchWeaknessShock Auto ;00073f2F
 
-int Property iHealthPotionsFirstChoice = 0 Auto Hidden
-int Property iHealthPotionsSecondChoice = 1 Auto Hidden
-int Property iHealthPotionsThirdChoice = 2 Auto Hidden
+int Property iPotionsFirstChoice = 0 Auto Hidden
+int Property iPotionsSecondChoice = 1 Auto Hidden
+int Property iPotionsThirdChoice = 2 Auto Hidden
 
 String[] asPoisonIconNames
 
@@ -81,7 +81,7 @@ bool property bSettingsChanged = false auto hidden
 bool property bAutoAddPoisons = true auto hidden
 bool property bAutoAddConsumables = true auto hidden
 bool Property bQuickHealUseSecondChoice = true Auto Hidden
-bool Property bUseStrongestHealthPotion = true Auto Hidden
+bool Property bUseStrongestPotion = true Auto Hidden
 bool property bFlashPotionWarning = true auto hidden
 int property iEmptyPotionQueueChoice = 0 auto hidden
 
@@ -712,7 +712,7 @@ function checkAndAddToConsumableQueue(potion foundConsumable)
         endIf
         if jArray.count(iConsumableQ) == 4
             int shownPotionGroups = 0
-            if WC.bHealthPotionGrouping && !(WC.abPotionGroupEmpty[0] && iEmptyPotionQueueChoice == 1)
+            if WC.bPotionGrouping && !(WC.abPotionGroupEmpty[0] && iEmptyPotionQueueChoice == 1)
                 shownPotionGroups += 1
             endIf
             if WC.bStaminaPotionGrouping && !(WC.abPotionGroupEmpty[1] && iEmptyPotionQueueChoice == 1)
@@ -858,12 +858,12 @@ function selectAndConsumePotion(int potionGroup)
     debug.trace("iEquip_PotionScript selectAndConsumePotion called - potionGroup: " + potionGroup)
     if 0 <= potionGroup <= 2
         potionGroup = potionGroup * 3
-        int Q = iHealthPotionsFirstChoice + potionGroup
+        int Q = iPotionsFirstChoice + potionGroup
         
         if jArray.count(aiPotionQ[Q]) < 1
-            Q = iHealthPotionsSecondChoice + potionGroup
+            Q = iPotionsSecondChoice + potionGroup
             if jArray.count(aiPotionQ[Q]) < 1
-                Q = iHealthPotionsThirdChoice + potionGroup
+                Q = iPotionsThirdChoice + potionGroup
                 if jArray.count(aiPotionQ[Q]) < 1
                     Q = -1
                 endIf
@@ -873,7 +873,7 @@ function selectAndConsumePotion(int potionGroup)
         if Q != -1
             int targetPotion
             ; If MCM setting for given potion type is Use Weakest First then set the target to the last potion in the queue
-            if !bUseStrongestHealthPotion
+            if !bUseStrongestPotion
                 targetPotion = jArray.count(aiPotionQ[Q]) - 1
             endIf
             form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "Form")
@@ -891,11 +891,11 @@ endFunction
 bool function quickHealFindAndConsumePotion()
     debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion called")
     ;Check we've actually still got entries in the first and second choice health potion queues
-    int Q = 0 + iHealthPotionsFirstChoice
+    int Q = 0 + iPotionsFirstChoice
     int count = jArray.count(aiPotionQ[Q])
     bool found = false 
     if count < 1 && bQuickHealUseSecondChoice
-        Q = 0 + iHealthPotionsSecondChoice
+        Q = 0 + iPotionsSecondChoice
         count = jArray.count(aiPotionQ[Q])
     endIf
     if count > 0

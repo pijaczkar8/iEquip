@@ -1,8 +1,6 @@
 
 Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 
-Import iEquip_AmmoExt
-Import iEquip_WeaponExt
 Import iEquip_FormExt
 Import StringUtil
 Import Utility
@@ -31,11 +29,17 @@ FormList property iEquip_AllCurrentItemsFLST Auto
 FormList property iEquip_AmmoItemsFLST Auto
 FormList property iEquip_PotionItemsFLST Auto
 
+FormList Property iEquip_OnObjectEquippedFLST Auto
+
 bool property bPoisonSlotEnabled = true auto hidden
 bool bIsBoundSpellEquipped = false
 bool property bWaitingForEnchantedWeaponDrawn = false auto hidden
-bool bUpdateThrottle
+bool bWaitingForAnimationUpdate = false
+bool bWaitingForOnObjectEquippedUpdate = false
+bool processingQueuedForms = false
+
 int iSlotToUpdate = -1
+int[] itemTypesToProcess
 
 Event OnInit()
 	OnPlayerLoadGame()
@@ -44,6 +48,15 @@ endEvent
 function OniEquipEnabled(bool enabled)
 	if enabled
 		gotoState("")
+		
+		itemTypesToProcess = new int[6]
+		itemTypesToProcess[0] = 22 ;Spells or shouts
+		itemTypesToProcess[1] = 23 ;Scrolls
+		itemTypesToProcess[2] = 31 ;Torches
+		itemTypesToProcess[3] = 41 ;Weapons
+		itemTypesToProcess[4] = 42 ;Ammo
+		itemTypesToProcess[5] = 119 ;Powers
+		
 		Utility.SetINIBool("bDisableGearedUp:General", True)
 		WC.refreshVisibleItems()
 		If WC.bEnableGearedUp
@@ -130,16 +143,6 @@ Event OnRaceSwitchComplete()
 	endIf
 EndEvent
 
-;/Event OnRaceSwitchComplete()
-	debug.trace("iEquip_WidgetCore OnRaceSwitchComplete called")
-	if UI.IsMenuOpen("RaceSex Menu")
-		WC.PlayerRace = PlayerRef.GetRace()
-	elseif bEnableGearedUp
-		Utility.SetINIbool("bDisableGearedUp:General", !(PlayerRef.GetRace() == WC.PlayerRace))
-		WC.refreshVisibleItems()
-	endIf
-EndEvent/;
-
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	debug.trace("iEquip_PlayerEventHandler OnActorAction called - actionType: " + actionType + ", slot: " + slot)
 	if akActor == PlayerRef
@@ -169,16 +172,39 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     endIf    
     if (iSlotToUpdate == -1 || (iSlotToUpdate + iTmp == 2))
         iSlotToUpdate += iTmp
-        if !bUpdateThrottle
-            bUpdateThrottle = true
+        if !bWaitingForAnimationUpdate
+            bWaitingForAnimationUpdate = true
             RegisterForSingleUpdate(0.8)
         endIf
     endIf
 EndEvent
 
+Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called - just equipped " + akBaseObject.GetName())
+	if !processingQueuedForms
+		int itemType = akBaseObject.GetType()
+		if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
+			bWaitingForOnObjectEquippedUpdate = true
+			iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
+			registerForSingleUpdate(0.5)
+		endIf
+	endIf
+endEvent
+
 Event OnUpdate()
-	debug.trace("iEquip_PlayerEventHandler OnUpdate called")
-	bUpdateThrottle = false
+	debug.trace("iEquip_PlayerEventHandler OnUpdate called - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate)
+	if bWaitingForAnimationUpdate
+		bWaitingForAnimationUpdate = false
+		updateWidgetOnWeaponSwing()
+	endIf
+	if bWaitingForOnObjectEquippedUpdate
+		bWaitingForOnObjectEquippedUpdate = false
+		processQueuedForms()
+	endIf
+EndEvent
+
+function updateWidgetOnWeaponSwing()
+	debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing called")
 	if iSlotToUpdate == 0 || iSlotToUpdate == 1
 		If bPoisonSlotEnabled
 			WC.checkAndUpdatePoisonInfo(iSlotToUpdate)
@@ -205,46 +231,109 @@ Event OnUpdate()
 		endIf
 	endIf
 	iSlotToUpdate = -1
-EndEvent
+endFunction
 
 ;This event handles auto-adding newly equipped items to the left, right and shout slots
-Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called")
-	if WC.bAutoAddNewItems && (Game.GetModName(akBaseObject.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
-		int equippedSlot = -1
-		if PlayerRef.GetEquippedObject(0) == akBaseObject
-			equippedSlot = 0
-		elseIf PlayerRef.GetEquippedObject(1) == akBaseObject
-			equippedSlot = 1
-		elseIf PlayerRef.GetEquippedObject(2) == akBaseObject
-			equippedSlot = 2
-		endIf
-		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - akBaseObject: " + akBaseObject + " - " + akBaseObject.GetName() + ", equippedSlot: " + equippedSlot)
-		;If the item has been equipped in the left, right or shout slot
-		if equippedSlot != -1
-			int itemType
-			;If it's a 2H or ranged weapon we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
-			if equippedSlot == 0 && akBaseObject as Weapon
-				itemType = (akBaseObject as Weapon).GetWeaponType()
-				debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - itemType: " + itemType)
-				if (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
-					equippedSlot = 1
-				endIf
+function processQueuedForms()
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms called - number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())
+	processingQueuedForms = true
+	int i = 0
+	form queuedForm
+	while i < iEquip_OnObjectEquippedFLST.GetSize()
+		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
+		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
+		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here
+		if (Game.GetModName(queuedForm.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
+			int equippedSlot = -1
+			if PlayerRef.GetEquippedObject(0) == queuedForm
+				equippedSlot = 0
+			elseIf PlayerRef.GetEquippedObject(1) == queuedForm
+				equippedSlot = 1
+			elseIf PlayerRef.GetEquippedObject(2) == queuedForm
+				equippedSlot = 2
 			endIf
-			bool blockCall = false
-			bool formFound = iEquip_AllCurrentItemsFLST.HasForm(akBaseObject)
-			string itemName = akBaseObject.GetName()
-			;Check if we've just manually equipped an item that is already in this iEquip queue
-			int targetIndex = -1
-			if formFound
-				;If it's been found in the queue for the equippedSlot it's been equipped to
-				targetIndex = WC.findInQueue(equippedSlot, itemName)
-				if targetIndex != -1
-					;If it's already shown in the widget do nothing
-					if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex
-						blockCall = true
-					;Otherwise update the position and name, then update the widget
-					else
+			debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
+			;If the item has been equipped in the left, right or shout slot
+			if equippedSlot != -1
+				int itemType
+				;If it's a 2H or ranged weapon we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
+				if equippedSlot == 0 && queuedForm as Weapon
+					itemType = (queuedForm as Weapon).GetWeaponType()
+					if (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
+						equippedSlot = 1
+					endIf
+				endIf
+				bool actionTaken = false
+				int targetIndex
+				bool blockCall = false
+				bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
+				string itemName = queuedForm.GetName()
+				;Check if we've just manually equipped an item that is already in an iEquip queue
+				if formFound
+					;If it's been found in the queue for the equippedSlot it's been equipped to
+					targetIndex = WC.findInQueue(equippedSlot, itemName)
+					if targetIndex != -1
+						;If it's already shown in the widget do nothing
+						if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex
+							blockCall = true
+						;Otherwise update the position and name, then update the widget
+						else
+							WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
+							WC.asCurrentlyEquipped[equippedSlot] = itemName
+							if equippedSlot < 2 || WC.bShoutEnabled
+								WC.updateWidget(equippedSlot, targetIndex, false, true)
+							endIf
+						endIf
+						actionTaken = true
+					endIf
+				endIf
+				debug.trace("iEquip_PlayerEventHandler processQueuedForms - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
+				;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
+				if !actionTaken && WC.bAutoAddNewItems
+					;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
+					bool freeSpace = true
+					targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
+					if targetIndex >= WC.iMaxQueueLength
+						if WC.bHardLimitQueueSize
+							freeSpace = false
+							blockCall = true
+						else
+							WC.iMaxQueueLength += 1
+						endIf
+					endIf
+					if freeSpace
+						;If there is space in the target queue create a new jMap object and add it to the queue
+						debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
+						int itemID = WC.createItemID(itemName, queuedForm.GetFormID())
+						itemType = queuedForm.GetType()
+						if itemType == 41 ;if it is a weapon get the weapon type
+				        	itemType = (queuedForm as Weapon).GetWeaponType()
+				        endIf
+						int iEquipItem = jMap.object()
+						jMap.setForm(iEquipItem, "Form", queuedForm)
+						jMap.setInt(iEquipItem, "itemID", itemID)
+						jMap.setInt(iEquipItem, "Type", itemType)
+						jMap.setStr(iEquipItem, "Name", itemName)
+						jMap.setStr(iEquipItem, "Icon", WC.GetItemIconName(queuedForm, itemType, itemName))
+						if equippedSlot < 2
+							jMap.setInt(iEquipItem, "isEnchanted", 0)
+							jMap.setInt(iEquipItem, "isPoisoned", 0)
+						endIf
+						jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
+						;If it's not already in the AllItems formlist because it's in the other hand queue add it now
+						if !formFound
+							iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
+							updateEventFilter(iEquip_AllCurrentItemsFLST)
+						endIf
+						;Send to moreHUD if loaded
+						if WC.bMoreHUDLoaded
+							if formFound
+								AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) ;Both queues
+							else
+								AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
+							endIf
+						endIf
+						;Now update the widget to show the equipped item
 						WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
 						WC.asCurrentlyEquipped[equippedSlot] = itemName
 						if equippedSlot < 2 || WC.bShoutEnabled
@@ -252,68 +341,18 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 						endIf
 					endIf
 				endIf
-			endIf
-			debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
-			;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
-			if !formFound || targetIndex == -1
-				;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
-				bool freeSpace = true
-				targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
-				if targetIndex >= WC.iMaxQueueLength
-					if WC.bHardLimitQueueSize
-						freeSpace = false
-						blockCall = true
-					else
-						WC.iMaxQueueLength += 1
-					endIf
+				;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
+				if !blockCall && equippedSlot < 2
+					WC.checkAndEquipShownHandItem(equippedSlot, false, true)
 				endIf
-				if freeSpace
-					;If there is space in the target queue create a new jMap object and add it to the queue
-					debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
-					int itemID = WC.createItemID(itemName, akBaseObject.GetFormID())
-					itemType = akBaseObject.GetType()
-					if itemType == 41 ;if it is a weapon get the weapon type
-			        	itemType = (akBaseObject as Weapon).GetWeaponType()
-			        endIf
-					int iEquipItem = jMap.object()
-					jMap.setForm(iEquipItem, "Form", akBaseObject)
-					jMap.setInt(iEquipItem, "itemID", itemID)
-					jMap.setInt(iEquipItem, "Type", itemType)
-					jMap.setStr(iEquipItem, "Name", itemName)
-					jMap.setStr(iEquipItem, "Icon", WC.GetItemIconName(akBaseObject, itemType, itemName))
-					if equippedSlot < 2
-						jMap.setInt(iEquipItem, "isEnchanted", 0)
-						jMap.setInt(iEquipItem, "isPoisoned", 0)
-					endIf
-					jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
-					;If it's not already in the AllItems formlist because it's in the other hand queue add it now
-					if !formFound
-						iEquip_AllCurrentItemsFLST.AddForm(akBaseObject)
-						updateEventFilter(iEquip_AllCurrentItemsFLST)
-					endIf
-					;Send to moreHUD if loaded
-					if WC.bMoreHUDLoaded
-						if formFound
-							AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) ;Both queues
-						else
-							AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
-						endIf
-					endIf
-					;Now update the widget to show the equipped item
-					WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
-					WC.asCurrentlyEquipped[equippedSlot] = itemName
-					if equippedSlot < 2 || WC.bShoutEnabled
-						WC.updateWidget(equippedSlot, targetIndex, false, true)
-					endIf
-				endIf
-			endIf
-			;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
-			if !blockCall && equippedSlot < 2
-				WC.checkAndEquipShownHandItem(equippedSlot, false, true)
 			endIf
 		endIf
-	endIf
-endEvent
+		i += 1
+	endWhile
+	iEquip_OnObjectEquippedFLST.Revert()
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
+	processingQueuedForms = false
+endFunction
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
@@ -347,7 +386,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					int itemCount = PlayerRef.GetItemCount(akBaseItem)
 					;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
 					;if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
-					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_WeaponExt.IsWeaponGrenade(akBaseItem as Weapon)) && itemCount > 0)
+					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
 						WC.setSlotCount(i, itemCount)
 						actionTaken = true
 					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one

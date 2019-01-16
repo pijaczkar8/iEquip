@@ -36,6 +36,10 @@ int iPreviousLeftHandIndex
 int iPreviousRightHandIndex
 
 ;MCM Properties
+bool property bQuickShieldEnabled = false auto hidden
+bool property bQuickRangedEnabled = false auto hidden
+bool property bQuickHealEnabled = false auto hidden
+bool property bPreselectEnabled = false auto hidden
 bool property bShoutPreselectEnabled = true auto hidden
 bool property bPreselectSwapItemsOnEquip = false auto hidden
 bool property bTogglePreselectOnEquipAll = false auto hidden
@@ -648,7 +652,7 @@ endEvent
 bool function quickShield(bool forceSwitch = false)
 	debug.trace("iEquip_ProMode quickShield called")
 	;if right hand or ranged weapon in right hand and bQuickShield2HSwitchAllowed not enabled then return out
-	if !forceSwitch && ((WC.RightHandWeaponIs2hOrRanged() && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0))
+	if !bQuickShieldEnabled || (!forceSwitch && ((WC.RightHandWeaponIs2hOrRanged() && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
 		return false
 	endIf
 	int i = 0
@@ -889,28 +893,30 @@ endFunction
 function quickRanged()
 	debug.trace("iEquip_ProMode quickRanged called")
 	;if you already have a ranged weapon equipped or if you're in Preselect Mode and have disabled quickRanged in Preselect Mode then do nothing
-	if bCurrentlyQuickRanged
-		quickRangedSwitchOut()
-	else
-		if !(AM.bAmmoMode || (bPreselectMode && iPreselectQuickRanged == 0))
-			bool actionTaken = false
-			if iQuickRangedPreferredWeaponType > 1
-				actionTaken = quickRangedFindAndEquipSpell()
-			else
-				actionTaken = quickRangedFindAndEquipWeapon()
-			endIf
-			if !actionTaken
-				if iQuickRangedPreferredWeaponType > 1
-					actionTaken = quickRangedFindAndEquipWeapon()
-				else
-					actionTaken = quickRangedFindAndEquipSpell()
-				endIf
-			endIf
-			if !actionTaken
-				debug.notification("iEquip couldn't find a ranged weapon or bound spell to equip")
-			endIf
-		endIf
-	endIf
+    if bQuickRangedEnabled
+        if bCurrentlyQuickRanged
+            quickRangedSwitchOut()
+        else
+            if !(AM.bAmmoMode || (bPreselectMode && iPreselectQuickRanged == 0))
+                bool actionTaken = false
+                if iQuickRangedPreferredWeaponType > 1
+                    actionTaken = quickRangedFindAndEquipSpell()
+                else
+                    actionTaken = quickRangedFindAndEquipWeapon()
+                endIf
+                if !actionTaken
+                    if iQuickRangedPreferredWeaponType > 1
+                        actionTaken = quickRangedFindAndEquipWeapon()
+                    else
+                        actionTaken = quickRangedFindAndEquipSpell()
+                    endIf
+                endIf
+                if !actionTaken
+                    debug.notification("iEquip couldn't find a ranged weapon or bound spell to equip")
+                endIf
+            endIf
+        endIf
+    endIf
 endFunction
 
 bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrentlyQuickRangedFlag = true)
@@ -1267,26 +1273,28 @@ endFunction
 
 function quickHeal()
 	debug.trace("iEquip_ProMode quickHeal called")
-	if bCurrentlyQuickHealing
-		quickHealSwitchBack()
-	else
-		bool actionTaken = false
-		if bQuickHealPreferMagic
-			actionTaken = quickHealFindAndEquipSpell()
-		else
-			actionTaken = PO.quickHealFindAndConsumePotion()
-		endIf
-		if !actionTaken
-			if bQuickHealPreferMagic
-				actionTaken = PO.quickHealFindAndConsumePotion()
-			else
-				actionTaken = quickHealFindAndEquipSpell()
-			endIf
-		endIf
-		if !actionTaken
-			debug.notification("iEquip couldn't find a healing potion or spell to equip")
-		endIf
-	endIf
+    if bQuickHealEnabled
+        if bCurrentlyQuickHealing
+            quickHealSwitchBack()
+        else
+            bool actionTaken = false
+            if bQuickHealPreferMagic
+                actionTaken = quickHealFindAndEquipSpell()
+            else
+                actionTaken = PO.quickHealFindAndConsumePotion()
+            endIf
+            if !actionTaken
+                if bQuickHealPreferMagic
+                    actionTaken = PO.quickHealFindAndConsumePotion()
+                else
+                    actionTaken = quickHealFindAndEquipSpell()
+                endIf
+            endIf
+            if !actionTaken
+                debug.notification("iEquip couldn't find a healing potion or spell to equip")
+            endIf
+        endIf
+    endIf
 endFunction
 
 bool function quickHealFindAndEquipSpell()

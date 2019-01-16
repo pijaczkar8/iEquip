@@ -46,10 +46,6 @@ function drawPage()
         if KH.bConsumeItemHotkeyEnabled
             MCM.AddKeyMapOptionST("htk_key_optional_consumeItem", "Consume item hotkey", KH.iOptConsumeKey, mcmUnmapFLAG)
         endIf
-        MCM.AddToggleOptionST("htk_tgl_optDirectQueueHotkey", "Enable direct queue menu combo key", KH.bQueueMenuComboKeyEnabled)
-        if KH.bQueueMenuComboKeyEnabled
-            MCM.AddKeyMapOptionST("htk_key_optional_queueMenuCombo", "Direct queue menu combo key", KH.iOptDirQueueKey, mcmUnmapFLAG)
-        endIf
     endIf
 endFunction
 
@@ -64,7 +60,7 @@ State htk_txt_htkHelp
         elseIf currentEvent == "Select"
             bool bKeepReading
     
-            if MCM.WC.bProModeEnabled
+            if WC.bProModeEnabled
                 bKeepReading = MCM.ShowMessage("Left/Right Hotkeys in Regular Mode\n\nSingle Press - Cycle queue forwards\nSingle Press with Utility Key held - Cycle queue backwards\n"+\
                                                "Double Press - Apply current poison\nLong Press - Recharge enchanted item\nTriple Press - QuickShield(L), QuickRanged(R)\n\n"+\
                                                "Left/Right Hotkeys in Preselect Mode\n\nSingle Press - Cycle preselect queue forwards\n"+\
@@ -273,39 +269,6 @@ State htk_key_optional_consumeItem
             
             MCM.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iOptConsumeKey)        
-        endIf
-    endEvent
-endState
-
-State htk_tgl_optDirectQueueHotkey
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("This enables an additional key to use in combination with the main hotkeys for direct access to that slots Queue Management Menu\nDefault: Off")
-        elseIf currentEvent == "Select" || "Default"
-            If currentEvent == "Select"
-                KH.bQueueMenuComboKeyEnabled = !KH.bQueueMenuComboKeyEnabled
-            else
-            	KH.bQueueMenuComboKeyEnabled = false
-            endIf
-            ;MCM.SetToggleOptionValueST(KH.bQueueMenuComboKeyEnabled)
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State htk_key_optional_queueMenuCombo
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("Select a combo key\nTo access the queue menus press and hold this key then tap the left/right/shout/consumable key, or double tap the consumable key for the poison queue menu.\nDefault: X")
-        elseIf currentEvent == "Change" || "Default"
-            if currentEvent == "Change"
-                KH.iOptDirQueueKey = currentVar as int
-            else
-                KH.iOptDirQueueKey = -1
-            endIf
-            
-            MCM.bUpdateKeyMaps = true
-            MCM.SetKeyMapOptionValueST(KH.iOptDirQueueKey)  
         endIf
     endEvent
 endState

@@ -1,6 +1,5 @@
 Scriptname iEquip_MCM_que extends iEquip_MCM_Page
 
-iEquip_WidgetCore Property WC Auto
 iEquip_PotionScript Property PO Auto
 
 ; #############
