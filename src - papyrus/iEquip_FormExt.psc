@@ -89,13 +89,13 @@ Bool Function IsThrowingKnife(Form a_form) Global Native
 ; @brief Returns whether the given form is a poison wax.
 ; @param a_actor The form to check.
 ; @return Returns true if the given form is a poison wax, else returns false.
-Bool Function IsPoisonWax(Form a_form) Global Native
+Bool Function IsWax(Form a_form) Global Native
 
 
 ; @brief Returns whether the given form is a poison oil.
 ; @param a_actor The form to check.
 ; @return Returns true if the given form is a poison oil, else returns false.
-Bool Function IsPoisonOil(Form a_form) Global Native
+Bool Function IsOil(Form a_form) Global Native
 
 
 ; @brief Returns whether the given form is a spell ward.
@@ -126,3 +126,15 @@ Bool Function HasShock(Form a_form) Global Native
 ; @param a_actor The form to check.
 ; @return Returns true if the given form has poison, else returns false.
 Bool Function HasPoison(Form a_form) Global Native
+
+
+; @brief Returns whether the given form is a salve.
+; @param a_actor The form to check.
+; @return Returns true if the given form is a salve, else returns false.
+Bool Function IsSalve(Form a_form) Global Native
+
+
+; @brief Returns whether the given form is a bandage.
+; @param a_actor The form to check.
+; @return Returns true if the given form is a bandage, else returns false.
+Bool Function IsBandage(Form a_form) Global Native
