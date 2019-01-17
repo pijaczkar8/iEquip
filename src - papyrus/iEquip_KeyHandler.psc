@@ -137,6 +137,8 @@ event OnKeyDown(int KeyCode)
                 ; The player pressed a different key, so force the current one to process if there is one
                 UnregisterForUpdate()
                 OnUpdate()
+            else
+                iMultiTap = 0
             endIf
         endIf
         iWaitingKeyCode = KeyCode
