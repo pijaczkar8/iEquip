@@ -3,7 +3,8 @@ scriptName iEquip_PotionScript extends Quest
 
 import _Q2C_Functions
 import AhzMoreHudIE
-import stringUtil
+import iEquip_StringExt
+import iEquip_FormExt
 import UI
 
 iEquip_WidgetCore Property WC Auto
@@ -14,7 +15,7 @@ actor property PlayerRef auto
 FormList Property iEquip_AllCurrentItemsFLST Auto
 FormList Property iEquip_PotionItemsFLST Auto
 
-String HUD_MENU
+String HUD_MENU = "HUD Menu"
 String WidgetRoot
 
 int[] aiPotionQ
@@ -92,7 +93,6 @@ event OnInit()
     debug.trace("iEquip_PotionScript OnInit called")
     GotoState("")
     bInitialised = false
-    HUD_MENU = WC.HUD_MENU
     WidgetRoot = WC.WidgetRoot
     aiPotionQ = new int[9]
     aStrongestEffects = new MagicEffect[9]
@@ -200,7 +200,6 @@ function onGameLoaded()
     while !bInitialised
         Utility.Wait(0.01)
     endWhile
-    HUD_MENU = WC.HUD_MENU
     WidgetRoot = WC.WidgetRoot
     bMoreHUDLoaded = WC.bMoreHUDLoaded
     WC.abPotionGroupEmpty[0] = true
@@ -299,19 +298,19 @@ function initialisemoreHUDArray()
         debug.trace("iEquip_PotionScript initialisemoreHUDArray - Q" + Q + " contains " + queueLength + " potions")
         
         while i < queueLength
-            form itemForm = jMap.getForm(jArray.getObj(aiPotionQ[Q], i), "Form")
+            form itemForm = jMap.getForm(jArray.getObj(aiPotionQ[Q], i), "iEquipForm")
             if !itemForm
                 jArray.eraseIndex(aiPotionQ[Q], i)
                 queueLength -= 1
             endIf
-            int itemID = jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "itemID")
-            debug.trace("iEquip_PotionScript initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiPotionQ[Q], i), "Name"))
+            int itemID = jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID")
+            debug.trace("iEquip_PotionScript initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiPotionQ[Q], i), "iEquipName"))
             if itemID == 0
                 itemID = WC.createItemID(itemForm.GetName(), itemForm.GetFormID())
-                jMap.setInt(jArray.getObj(aiPotionQ[Q], i), "itemID", itemID)
+                jMap.setInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID", itemID)
             endIf
             if itemID != 0
-                jArray.addInt(jItemIDs, jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "itemID"))
+                jArray.addInt(jItemIDs, jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID"))
                 jArray.addStr(jIconNames, "iEquipQ.png")
             endIf
             i += 1
@@ -347,8 +346,8 @@ function findAndSortPotions()
             count = jArray.count(aiPotionQ[i])
             ;Check and remove any potions which are no longer in the players inventory (fallback as there shouldn't be any!)
             while iIndex < count
-                if PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "Form")) < 1
-                    iEquip_PotionItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "Form"))
+                if PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "iEquipForm")) < 1
+                    iEquip_PotionItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "iEquipForm"))
                     EH.updateEventFilter(iEquip_PotionItemsFLST)
                     removePotionFromQueue(i, iIndex)
                 endIf
@@ -439,13 +438,13 @@ function onPotionRemoved(form removedPotion)
             string potionGroup
             if Q < 3
                 group = 0
-                potionGroup = "Health Potions"
+                potionGroup = "$iEquip_common_HealthPotions"
             elseIf Q < 6
                 group = 1
-                potionGroup = "Stamina Potions"
+                potionGroup = "$iEquip_common_StaminaPotions"
             else
                 group = 2
-                potionGroup = "Magicka Potions"
+                potionGroup = "$iEquip_common_MagickaPotions"
             endIf
             if WC.asCurrentlyEquipped[3] == potionGroup
                 WC.setSlotCount(3, getPotionGroupCount(group))
@@ -466,7 +465,7 @@ endFunction
 function removePotionFromQueue(int Q, int targetPotion)
     debug.trace("iEquip_PotionScript removePotionFromQueue called - Q: " + Q + ", targetPotion: " + targetPotion)
     if bMoreHUDLoaded
-        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiPotionQ[Q], targetPotion), "itemID"))
+        AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipItemID"))
     endIf
     ;First we need to remove the potion from the relevant queue
     jArray.eraseIndex(aiPotionQ[Q], targetPotion)
@@ -474,13 +473,13 @@ function removePotionFromQueue(int Q, int targetPotion)
     string potionGroup
     if Q < 3
         Q = 0
-        potionGroup = "Health Potions"
+        potionGroup = "$iEquip_common_HealthPotions"
     elseIf Q < 6
         Q = 1
-        potionGroup = "Stamina Potions"
+        potionGroup = "$iEquip_common_StaminaPotions"
     else
         Q = 2
-        potionGroup = "Magicka Potions"
+        potionGroup = "$iEquip_common_MagickaPotions"
     endIf
     ;If all three arrays in the group are empty then we need to update the widget accordingly
     if getPotionGroupCount(Q) < 1
@@ -522,7 +521,7 @@ int function getPotionGroupCount(int potionGroup)
         debug.trace("iEquip_PotionScript getPotionGroupCount - currently checking Q: " + Q + ", queueLength: " + queueLength)
         while i < queueLength
             currentCount = count
-            count += PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(targetArray, i), "Form"))
+            count += PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm"))
             debug.trace("iEquip_PotionScript getPotionGroupCount - " + (count - currentCount) + " potions found in index " + i + " in potion queue " + Q)
             i += 1
         endWhile
@@ -603,13 +602,13 @@ function checkAndAddToPotionQueue(potion foundPotion)
         string potionGroup
         if Q < 3
             group = 0
-            potionGroup = "Health Potions"
+            potionGroup = "$iEquip_common_HealthPotions"
         elseIf Q < 6
             group = 1
-            potionGroup = "Stamina Potions"
+            potionGroup = "$iEquip_common_StaminaPotions"
         else
             group = 2
-            potionGroup = "Magicka Potions"
+            potionGroup = "$iEquip_common_MagickaPotions"
         endIf
         if Q != -1
             form potionForm = foundPotion as form
@@ -620,10 +619,10 @@ function checkAndAddToPotionQueue(potion foundPotion)
                 string potionName = foundPotion.GetName()
                 int itemID = WC.createItemID(potionName, potionForm.GetFormID())
                 int potionObj = jMap.object()
-                jMap.setForm(potionObj, "Form", potionForm)
-                jMap.setStr(potionObj, "Name", potionName)
-                jMap.setFlt(potionObj, "Strength", foundPotion.GetNthEffectMagnitude(foundPotion.GetCostliestEffectIndex()))
-                jMap.setInt(potionObj, "itemID", itemID)
+                jMap.setForm(potionObj, "iEquipForm", potionForm)
+                jMap.setStr(potionObj, "iEquipName", potionName)
+                jMap.setFlt(potionObj, "iEquipStrength", foundPotion.GetNthEffectMagnitude(foundPotion.GetCostliestEffectIndex()))
+                jMap.setInt(potionObj, "iEquipItemID", itemID)
                 jArray.addObj(aiPotionQ[Q], potionObj)
                 iEquip_PotionItemsFLST.AddForm(potionForm)
                 EH.updateEventFilter(iEquip_PotionItemsFLST)
@@ -658,11 +657,11 @@ function checkAndAddToPoisonQueue(potion foundPoison)
         int poisonFormID = poisonForm.GetFormID()
         int itemID = WC.createItemID(poisonName, poisonFormID)
         int poisonObj = jMap.object()
-        jMap.setForm(poisonObj, "Form", poisonForm)
-        jMap.setInt(poisonObj, "formID", poisonFormID)
-        jMap.setInt(poisonObj, "itemID", itemID)
-        jMap.setStr(poisonObj, "Name", poisonName)
-        jMap.setStr(poisonObj, "Icon", getPoisonIcon(foundPoison))
+        jMap.setForm(poisonObj, "iEquipForm", poisonForm)
+        jMap.setInt(poisonObj, "iEquipFormID", poisonFormID)
+        jMap.setInt(poisonObj, "iEquipItemID", itemID)
+        jMap.setStr(poisonObj, "iEquipName", poisonName)
+        jMap.setStr(poisonObj, "iEquipIcon", getPoisonIcon(foundPoison))
         jArray.addObj(iPoisonQ, poisonObj)
         iEquip_AllCurrentItemsFLST.AddForm(poisonForm)
         EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
@@ -699,11 +698,11 @@ function checkAndAddToConsumableQueue(potion foundConsumable)
         int consumableFormID = consumableForm.GetFormID()
         int itemID = WC.createItemID(consumableName, consumableFormID)
         int consumableObj = jMap.object()
-        jMap.setForm(consumableObj, "Form", consumableForm)
-        jMap.setInt(consumableObj, "formID", consumableFormID)
-        jMap.setInt(consumableObj, "itemID", itemID)
-        jMap.setStr(consumableObj, "Name", consumableName)
-        jMap.setStr(consumableObj, "Icon", getConsumableIcon(foundConsumable))
+        jMap.setForm(consumableObj, "iEquipForm", consumableForm)
+        jMap.setInt(consumableObj, "iEquipFormID", consumableFormID)
+        jMap.setInt(consumableObj, "iEquipItemID", itemID)
+        jMap.setStr(consumableObj, "iEquipName", consumableName)
+        jMap.setStr(consumableObj, "iEquipIcon", getConsumableIcon(foundConsumable))
         jArray.addObj(iConsumableQ, consumableObj)
         iEquip_AllCurrentItemsFLST.AddForm(consumableForm)
         EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
@@ -742,7 +741,7 @@ int function findInQueue(int Q, form formToFind)
     int i = 0
     int foundAt = -1
     while i < jArray.count(Q) && foundAt == -1
-        if formToFind == jMap.getForm(jArray.getObj(Q, i), "Form")
+        if formToFind == jMap.getForm(jArray.getObj(Q, i), "iEquipForm")
             foundAt = i            
         endIf
         i += 1
@@ -753,9 +752,9 @@ endFunction
 
 string function getPoisonIcon(potion foundPoison)
     string IconName
-    if stringutil.Find(foundPoison.GetName(), "wax", 0) > -1
+    if iEquip_FormExt.isWax(foundPoison as form)
         IconName = "PoisonWax"
-    elseIf stringutil.Find(foundPoison.GetName(), "oil", 0) > -1
+    elseIf iEquip_FormExt.isOil(foundPoison as form)
         IconName = "PoisonOil"
     else
         MagicEffect strongestEffect = foundPoison.GetNthEffectMagicEffect(foundPoison.GetCostliestEffectIndex())
@@ -789,7 +788,7 @@ function sortPotionQueue(int Q)
     jArray.unique(targetArray)
     int n = jArray.count(targetArray)
     int i
-    string theKey = "Strength"
+    string theKey = "iEquipStrength"
     While (n > 1)
         i = 1
         n -= 1
@@ -808,7 +807,7 @@ function sortPotionQueue(int Q)
     i = 0
     n = jArray.count(targetArray)
     while i < n
-        debug.trace("iEquip_PotionScript - sortPotionQueue, sorted " + aStrongestEffects[Q].GetName() + " array - i: " + i + ", " + jMap.getForm(jArray.getObj(targetArray, i), "Form").GetName() + ", Strength: " + jMap.getFlt(jArray.getObj(targetArray, i), "Strength"))
+        debug.trace("iEquip_PotionScript - sortPotionQueue, sorted " + aStrongestEffects[Q].GetName() + " array - i: " + i + ", " + jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm").GetName() + ", Strength: " + jMap.getFlt(jArray.getObj(targetArray, i), "iEquipStrength"))
         i += 1
     endWhile
     iQueueToSort = -1 ;Reset
@@ -816,13 +815,13 @@ EndFunction
 
 function sortPoisonQueue()
     debug.trace("iEquip_PotionScript sortPoisonQueue called")
-    form currentlyShownPoison = jMap.getForm(jArray.getObj(iPoisonQ, WC.aiCurrentQueuePosition[4]), "Form")
+    form currentlyShownPoison = jMap.getForm(jArray.getObj(iPoisonQ, WC.aiCurrentQueuePosition[4]), "iEquipForm")
     int queueLength = jArray.count(iPoisonQ)
     int tempPoisonQ = jArray.objectWithSize(queueLength)
     int i = 0
     
     while i < queueLength
-        jArray.setStr(tempPoisonQ, i, jMap.getStr(jArray.getObj(iPoisonQ, i), "Name"))
+        jArray.setStr(tempPoisonQ, i, jMap.getStr(jArray.getObj(iPoisonQ, i), "iEquipName"))
         i += 1
     endWhile
     
@@ -833,7 +832,7 @@ function sortPoisonQueue()
         string poisonName = jArray.getStr(tempPoisonQ, i)
         iIndex = 0
         
-        while poisonName != jMap.getStr(jArray.getObj(iPoisonQ, iIndex), "Name")
+        while poisonName != jMap.getStr(jArray.getObj(iPoisonQ, iIndex), "iEquipName")
             iIndex += 1
         endWhile
         jArray.swapItems(iPoisonQ, i, iIndex)
@@ -843,7 +842,7 @@ function sortPoisonQueue()
     
     ;/i = 0
     while i < queueLength
-        debug.trace("iEquip_PotionScript sortPoisonQueue - poison queue sorted, poison in index " + i + ": " + jMap.getStr(jArray.getObj(iPoisonQ, i), "Name"))
+        debug.trace("iEquip_PotionScript sortPoisonQueue - poison queue sorted, poison in index " + i + ": " + jMap.getStr(jArray.getObj(iPoisonQ, i), "iEquipName"))
         i += 1
     endWhile/;
     
@@ -877,11 +876,11 @@ function selectAndConsumePotion(int potionGroup)
             if !bUseStrongestPotion
                 targetPotion = jArray.count(aiPotionQ[Q]) - 1
             endIf
-            form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "Form")
+            form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
             if potionToConsume != None
                 ; Consume the potion
                 PlayerRef.EquipItemEx(potionToConsume)
-                debug.notification(potionToConsume.GetName() + " consumed")
+                debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
             endIf
         else
             debug.notification("You do not appear to have any health potions left")
@@ -901,9 +900,9 @@ bool function quickHealFindAndConsumePotion()
     endIf
     if count > 0
         found = true
-        form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], 0), "Form")
+        form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], 0), "iEquipForm")
         PlayerRef.EquipItemEx(potionToConsume)
-        debug.notification(potionToConsume.GetName() + " consumed")
+        debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
     endIf
     return found
 endFunction
