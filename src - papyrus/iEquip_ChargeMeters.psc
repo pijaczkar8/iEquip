@@ -4,7 +4,7 @@ scriptname iEquip_ChargeMeters extends quest
 import UI
 import UICallback
 Import WornObject
-Import StringUtil
+Import iEquip_WeaponExt
 
 iEquip_WidgetCore Property WC Auto
 iEquip_LeftChargeMeterUpdateScript Property LU Auto
@@ -215,7 +215,7 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 		weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
 		bool isBound = false 
 		if currentWeapon
-			isBound = stringutil.Find(currentWeapon.GetName(), "bound", 0) > -1
+			isBound = iEquip_WeaponExt.IsWeaponBound(currentWeapon)
 			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - weapon name: " + currentWeapon.GetName() + ", isBound: " + isBound)
 		endIf
 		enchantment currentEnchantment
@@ -259,7 +259,9 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 		endIf
 		;Now update the object keys for the currently equipped item in case anything has changed since we last equipped it
 		;ToDo - do the same in the poison functions
-		jMap.setForm(jArray.getObj(aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastKnownEnchantment", currentEnchantment as Form)
+		if currentEnchantment
+			jMap.setForm(jArray.getObj(aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastKnownEnchantment", currentEnchantment as Form)
+		endIf
 		jMap.setInt(jArray.getObj(aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "isEnchanted", isEnchanted)
 	else
 		WC.EH.bWaitingForEnchantedWeaponDrawn = true

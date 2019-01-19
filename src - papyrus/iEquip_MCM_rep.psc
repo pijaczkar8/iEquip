@@ -7,6 +7,7 @@ iEquip_ChargeMeters Property CM Auto
 
 string[] chargeDisplayOptions
 string[] meterFillDirectionOptions
+string[] rawMeterFillDirectionOptions
 int[] meterFillDirection
 string[] poisonMessageOptions
 string[] poisonIndicatorOptions
@@ -24,6 +25,11 @@ function initData()
     meterFillDirectionOptions[0] = "$iEquip_MCM_rep_opt_left"
     meterFillDirectionOptions[1] = "$iEquip_MCM_rep_opt_right"
     meterFillDirectionOptions[2] = "$iEquip_MCM_rep_opt_both"
+
+    rawMeterFillDirectionOptions = new String[3] ;DO NOT TRANSLATE!
+    rawMeterFillDirectionOptions[0] = "left"
+    rawMeterFillDirectionOptions[1] = "right"
+    rawMeterFillDirectionOptions[2] = "both"
 
     meterFillDirection = new int[2]
     meterFillDirection[0] = 1
@@ -415,7 +421,7 @@ State rep_men_leftFillDir
         elseIf currentEvent == "Accept"
             meterFillDirection[0] = currentVar as int
             MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[0]])
-            CM.asMeterFillDirection[0] = meterFillDirectionOptions[meterFillDirection[0]]
+            CM.asMeterFillDirection[0] = rawMeterFillDirectionOptions[meterFillDirection[0]]
             CM.bSettingsChanged = true
         endIf 
     endEvent
@@ -430,7 +436,7 @@ State rep_men_rightFillDir
         elseIf currentEvent == "Accept"
             meterFillDirection[1] = currentVar as int
             MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[1]])
-            CM.asMeterFillDirection[1] = meterFillDirectionOptions[meterFillDirection[1]]
+            CM.asMeterFillDirection[1] = rawMeterFillDirectionOptions[meterFillDirection[1]]
             CM.bSettingsChanged = true
         endIf 
     endEvent

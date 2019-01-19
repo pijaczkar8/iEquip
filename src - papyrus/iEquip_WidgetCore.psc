@@ -391,6 +391,26 @@ function CheckDependencies()
     else
         RC.bIsRequiemLoaded = false
     endIf
+    if Game.GetModByName("Dawnguard.esm") != 255
+		EH.DLC1VampireBeastRace = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race
+	else
+		EH.DLC1VampireBeastRace = none
+	endIf
+	if Game.GetModByName("Undeath.esp") != 255
+		EH.NecroLichRace = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race
+	else
+		EH.NecroLichRace = none
+	endIf
+	if Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
+        EH.bIsThunderchildLoaded = true
+    else
+        EH.bIsThunderchildLoaded = false
+    endIf
+    if Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255
+        EH.bIsWintersunLoaded = true
+    else
+        EH.bIsWintersunLoaded = false
+    endIf
 endFunction
 
 Event OnWidgetLoad()

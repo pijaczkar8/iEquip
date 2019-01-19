@@ -8,6 +8,7 @@ import AhzMoreHudIE
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
 iEquip_BeastMode Property BM Auto
+iEquip_KeyHandler Property KH Auto
 iEquip_PotionScript Property PO Auto
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
@@ -20,9 +21,9 @@ Race property PlayerRace auto hidden
 ; Werewolf reference - Vanilla - populated in CK
 race property WerewolfBeastRace auto
 ; Vampire Lord reference - Dawnguard - populated in OnInit or OnPlayerLoadGame
-race property VampireLordRace auto hidden
+race property DLC1VampireBeastRace auto hidden
 ; Lich reference - Undeath - populated in OnInit or OnPlayerLoadGame
-race property LichRace auto hidden
+race property NecroLichRace auto hidden
 
 FormList property iEquip_AllCurrentItemsFLST Auto
 FormList property iEquip_AmmoItemsFLST Auto
@@ -37,9 +38,9 @@ bool bWaitingForAnimationUpdate = false
 bool bWaitingForOnObjectEquippedUpdate = false
 bool processingQueuedForms = false
 
-bool bIsThunderchildLoaded = false
-bool bIsWintersunLoaded = false
-bool bPlayerIsMeditating = false
+bool property bIsThunderchildLoaded = false auto hidden
+bool property bIsWintersunLoaded = false auto hidden
+bool property bPlayerIsMeditating = false auto hidden
 
 bool bPlayerIsABeast = false
 
@@ -47,26 +48,7 @@ int iSlotToUpdate = -1
 int[] itemTypesToProcess
 
 Event OnInit()
-	if Game.GetModByName("Dawnguard.esm") != 255
-		VampireLordRace = Game.GetFormFromFile(0x001AA0B6, "Dawnguard.esm") as Race ;ToDo -insert correct formID
-	else
-		VampireLordRace = none
-	endIf
-	if Game.GetModByName("Undeath.esp") != 255
-		LichRace = Game.GetFormFromFile(0x001AA0B6, "Undeath.esp") as Race ;ToDo -insert correct formID
-	else
-		LichRace = none
-	endIf
-	if Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
-        bIsThunderchildLoaded = true
-    else
-        bIsThunderchildLoaded = false
-    endIf
-    if Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255
-        bIsWintersunLoaded = true
-    else
-        bIsWintersunLoaded = false
-    endIf
+	
     PlayerRace = PlayerRef.GetRace()
 	OnPlayerLoadGame()
 endEvent
@@ -109,26 +91,7 @@ endFunction
 	
 Event OnPlayerLoadGame()
 	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame called")
-	if Game.GetModByName("Dawnguard.esm") != 255
-		VampireLordRace = Game.GetFormFromFile(0x001AA0B6, "Dawnguard.esm") as Race ;ToDo -insert correct formID
-	else
-		VampireLordRace = none
-	endIf
-	if Game.GetModByName("Undeath.esp") != 255
-		LichRace = Game.GetFormFromFile(0x001AA0B6, "Undeath.esp") as Race ;ToDo -insert correct formID
-	else
-		LichRace = none
-	endIf
-	if Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
-        bIsThunderchildLoaded = true
-    else
-        bIsThunderchildLoaded = false
-    endIf
-    if Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255
-        bIsWintersunLoaded = true
-    else
-        bIsWintersunLoaded = false
-    endIf
+	
 	if WC.isEnabled
 		gotoState("")
 		Utility.SetINIBool("bDisableGearedUp:General", True)
@@ -200,18 +163,18 @@ Event OnRaceSwitchComplete()
 			WC.refreshVisibleItems()
 		endIf
 		PlayerRace = newRace
-		if PlayerRace == WerewolfBeastRace || PlayerRace == VampireLordRace || PlayerRace == LichRace
+		if PlayerRace == WerewolfBeastRace || PlayerRace == DLC1VampireBeastRace || PlayerRace == NecroLichRace
 			bPlayerIsABeast = true
 			if PlayerRace == WerewolfBeastRace
-				BM.updateWidgetOnPlayerTransform(0)
-			elseIf PlayerRace == VampireLordRace
-				BM.updateWidgetOnPlayerTransform(1)
+				;BM.updateWidgetOnPlayerTransform(0)
+			elseIf PlayerRace == DLC1VampireBeastRace
+				;BM.updateWidgetOnPlayerTransform(1)
 			else
-				BM.updateWidgetOnPlayerTransform(2)
+				;BM.updateWidgetOnPlayerTransform(2)
 			endIf
 		elseIf bPlayerIsABeast
 			bPlayerIsABeast = false
-			BM.resetWidgetToPreviousState()
+			;BM.resetWidgetToPreviousState()
 		endIf
 	endIf
 EndEvent
@@ -239,8 +202,8 @@ endEvent
 
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
-    ;ToDo - update meditation animation event names and MGEF formIDs
-    if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (Player.HasMagicEffect(GetFormFromFile(0x023dd5, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || Player.HasMagicEffect(GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
+    ;ToDo - update meditation animation event names
+    if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
     	bPlayerIsMeditating = true
     	KH.bAllowKeyPress = false
     elseIf bPlayerIsMeditating && EventName == "IdleGreybeardMeditateExit"

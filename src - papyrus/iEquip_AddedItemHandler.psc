@@ -3,11 +3,9 @@ Scriptname iEquip_AddedItemHandler extends ReferenceAlias
 
 Import iEquip_AmmoExt
 Import iEquip_FormExt
-Import StringUtil
 
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
-;iEquip_PlayerEventHandler Property EH Auto
 iEquip_PotionScript Property PO Auto
 
 Actor Property PlayerRef Auto
@@ -57,7 +55,6 @@ event OnUpdate()
 			while j < 2
 				if WC.asCurrentlyEquipped[j] == formToAdd.GetName()
 					;Ammo, scrolls, torch or other throwing weapons
-					;if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && (stringutil.Find(itemName, "grenade", 0) > -1 || stringutil.Find(itemName, "flask", 0) > -1 || stringutil.Find(itemName, "pot", 0) > -1 || stringutil.Find(itemName, "bomb")))
 					if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(formToAdd))	
 		    			WC.setSlotCount(j, PlayerRef.GetItemCount(formToAdd))
 		    		endIf

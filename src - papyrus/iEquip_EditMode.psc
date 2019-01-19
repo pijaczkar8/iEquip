@@ -5,6 +5,7 @@ ScriptName iEquip_EditMode Extends Quest
 import Utility
 import StringUtil
 import iEquip_UILIB
+import iEquip_StringExt
 
 ; - SCRIPTS
 
@@ -275,15 +276,14 @@ function SwapElementDepth()
     ; Swap depth of the two selected elements
 
     if bringToFrontFirstTime
-        debug.MessageBox("This feature allows you to adjust the layer order of the elements within each widget, and the layer order of the widgets themselves\n\n"+\
-                         "You cannot bring an element of one widget in front of one from another widget, only elements within the same widget\n\nIt is disabled for backgrounds and when the complete widget is selected for obvious reasons")
+        debug.MessageBox("$iEquip_EM_msg_firstBringToFront")
         bringToFrontFirstTime = False
     endIf
 
     if iSelectedElement != -1 && !WC.abWidget_isBg[iSelectedElement]
         if iSelectedElementFront == -1
             iSelectedElementFront = iSelectedElement
-            debug.MessageBox("Now select the item you want to move the " + WC.asWidgetDescriptions[iSelectedElement] + " in front of and press the Bring To Front key a second time")
+            debug.MessageBox("$iEquip_EM_msg_bringToFrontSelNext{" + WC.asWidgetDescriptions[iSelectedElement] + "}")
         else
             if WC.asWidgetGroup[iSelectedElementFront] == WC.asWidgetGroup[iSelectedElement]
                 int[] iDepthIndex = new int[2]
@@ -292,7 +292,7 @@ function SwapElementDepth()
                 
                 SwapIndexDepth(iDepthIndex)
             else
-                debug.notification("Error: The selected elements are not part of the same widget")
+                debug.notification("$iEquip_EM_not_bringToFrontError")
             endIf
             
             iSelectedElementFront = -1
@@ -303,7 +303,7 @@ endFunction
 function SetElementDepthOrder(int DepthIndexA, bool bSet = true)
     int DepthIndexB
 
-    debug.notification("Setting depth")
+    debug.notification("$iEquip_EM_not_settingDepth")
     
     if bSet       ; SET
         DepthIndexB = WC.aiWidget_D[DepthIndexA]
@@ -405,7 +405,7 @@ function RotateElement()
             fDuration = 0.125
         endIf
     
-        if sRotation == "Clockwise"
+        if sRotation == "$iEquip_EM_clockwise"
             iRotation = iRotation + RotateStep
        
             If iRotation >= 360
@@ -423,7 +423,7 @@ function RotateElement()
         
         WC.afWidget_R[iSelectedElement] = iRotation as float
         TweenElement(3, WC.afWidget_R[iSelectedElement], fDuration)
-        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", iRotation as String + " degrees")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", iRotation as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_degrees"))
     EndIf 
 endFunction
 
@@ -514,8 +514,7 @@ function CycleElements(int iNextPrev)
 endFunction
 
 function showCyclingHelp()
-    debug.MessageBox("!!! IMPORTANT INFORMATION !!!\n\nCycling elements in Edit Mode\n\nSINGLE PRESS the keys shown at the top of the instructions panel to cycle through the widget elements."+\
-        "\n\nPRESS AND HOLD either key to switch from cycling the widget groups to cycling the individual elements.")
+    debug.MessageBox("$iEquip_EM_msg_cycleHelp")
 endFunction
 
 ; - Update Data -
@@ -553,27 +552,33 @@ function UpdateEditModeGuide()
         string tmpStr
     
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.SelectedElementText.text", WC.asWidgetDescriptions[iSelectedElement])
-        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " pixels")
-        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " degrees")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_pixels"))
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_degrees"))
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaIncrementText.text", AlphaStep as String + "%")
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationDirectionText.text", sRotation)
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[iSelectedElement] as int) as String + "%")
-        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", (WC.afWidget_R[iSelectedElement] as int) as String + " degrees")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", (WC.afWidget_R[iSelectedElement] as int) as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_degrees"))
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iSelectedElement] as int) as String + "%")
         
         if WC.abWidget_isText[iSelectedElement]
-            tmpStr = WC.asWidget_TA[iSelectedElement] + " aligned"
+            if WC.asWidget_TA[iSelectedElement] == "Left"
+                tmpStr = "$iEquip_EM_leftAligned"
+            elseIf WC.asWidget_TA[iSelectedElement] == "Right"
+                tmpStr = "$iEquip_EM_rightAligned"
+            else
+                tmpStr = "$iEquip_EM_centreAligned"
+            endIf
         else
             tmpStr = ""
         endIf
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", tmpStr)
         
         If RulersShown == 1
-            tmpStr = "Edge grid"
+            tmpStr = "$iEquip_EM_edgeGrid"
         elseIf RulersShown == 2
-            tmpStr = "Fullscreen grid"
+            tmpStr = "$iEquip_EM_fullGrid"
         else
-            tmpStr = "Hidden"
+            tmpStr = "$iEquip_common_Hidden"
         endIf
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RulersText.text", tmpStr)
     endIf
@@ -643,7 +648,7 @@ function LoadAllElements()
                 endIf
                 ; Check and show left and right poison elements if not already displayed
                 if !WC.abPoisonInfoDisplayed[i]
-                    UI.SetString(HUD_MENU, WidgetRoot + asPoisonNamePath[i], "Some horrible poison")
+                    UI.SetString(HUD_MENU, WidgetRoot + asPoisonNamePath[i], "$iEquip_EM_somePoison")
                     CreateHandleIntStr(".updatePoisonIcon", i, "Drops3")
                 endIf
                 
@@ -657,7 +662,7 @@ function LoadAllElements()
             ; Handle empty shout,consumable and poison queues to ensure all elements show temporarily
             elseIf jArray.count(WC.aiTargetQ[i]) < 1 || i == 3 && jArray.count(WC.aiTargetQ[i]) == 3
                 if i == 2
-                    setTempItemInWidget(i, "Power", "Some Awesome Power") ; Power because the preselect slot will already be set to shout if queue is empty so let's have something different
+                    setTempItemInWidget(i, "Power", "$iEquip_EM_somePower") ; Power because the preselect slot will already be set to shout if queue is empty so let's have something different
                 elseIf i == 3
                     if WC.bPotionGrouping
                         ; Check if there are any potion groups shown...
@@ -678,7 +683,7 @@ function LoadAllElements()
                             endIf
                         ; Otherwise set temp info in the widget    
                         else
-                            setTempItemInWidget(i, "HealthPotion", "Some Useful Potion")
+                            setTempItemInWidget(i, "HealthPotion", "$iEquip_EM_somePotion")
                         endIf
                     endIf
                 elseIf i == 4
@@ -687,7 +692,7 @@ function LoadAllElements()
                         WC.checkAndFadePoisonIcon(false)
                     endIf
                     ; Set temp info in the widget
-                    setTempItemInWidget(i, "Poison", "Some Horrible Poison")
+                    setTempItemInWidget(i, "Poison", "$iEquip_EM_somePoison")
                 endIf                
             endIf
         endIf
@@ -717,24 +722,28 @@ endFunction
 
 function ToggleTextAlignment()
     if WC.abWidget_isText[iSelectedElement]
+        string tmpStr
         int[] iArgs = new int[2]
         iArgs[0] = iSelectedElement
-    
+        
         TweenElement(5, 0, 0.15)                                 ; Fade out before changing alignment
         
         If WC.asWidget_TA[iArgs[0]] == "Left"
             iArgs[1] = 1
+            tmpStr = "$iEquip_EM_leftAligned"
         elseIf WC.asWidget_TA[iArgs[0]] == "Center"
             iArgs[1] = 2
+            tmpStr = "$iEquip_EM_centreAligned"
         else
             iArgs[1] = 0
+            tmpStr = "$iEquip_EM_rightAligned"
         endIf
     
         UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", iArgs)
         WC.asWidget_TA[iSelectedElement] = sTextAlignment[iArgs[1]]
         
         TweenElement(5, WC.afWidget_A[iSelectedElement], 0.15)   ; Fade back in
-        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", WC.asWidget_TA[iSelectedElement] + " aligned")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", tmpStr)
     endIf
 endfunction
 
@@ -767,7 +776,7 @@ function IncrementStep(int iStep)
             MoveStep = 1
         endIf
         
-        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " pixels")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_pixels"))
     elseIf iStep == 1                ; RotateStep
         if RotateStep == 15
             RotateStep = 45
@@ -781,7 +790,7 @@ function IncrementStep(int iStep)
             RotateStep = 15
         endIf
         
-        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " degrees")
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_degrees"))
     else                            ; AlphaStep
         if AlphaStep == 10
             AlphaStep = 20
@@ -796,10 +805,10 @@ function IncrementStep(int iStep)
 endFunction
 
 function ToggleRotation()
-    if sRotation == "Clockwise"
-        sRotation = "Counterclockwise"
+    if sRotation == "$iEquip_EM_clockwise"
+        sRotation = "$iEquip_EM_counterClockwise"
     else
-        sRotation = "Clockwise"
+        sRotation = "$iEquip_EM_clockwise"
     endIf
     
     UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationDirectionText.text", sRotation)
@@ -822,11 +831,11 @@ function ShowPresetList()
                 i += 1
             EndWhile
         
-            int[] MenuReturnArgs = ((Self as Form) as iEquip_UILIB).ShowList("Select a widget preset to load", sPresetList, 0, 0)
+            int[] MenuReturnArgs = ((Self as Form) as iEquip_UILIB).ShowList("$iEquip_EM_lbl_presetListTitle", sPresetList, 0, 0)
             
             if MenuReturnArgs[1] == 0       ; Load preset
                 LoadPreset(jValue.readFromFile(WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + FileExtWP))
-                Debug.Notification("Widget layout switched to " + sPresetList[MenuReturnArgs[0]] + FileExtWP)
+                Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + FileExtWP)
                 bDontExit = false
             elseIf MenuReturnArgs[1] == 1   ; Delete preset
                 bDontExit = true
@@ -837,7 +846,7 @@ function ShowPresetList()
                 bDontExit = false
             endIf
         else
-            Debug.Notification("No saved presets found")
+            Debug.Notification("$iEquip_EM_not_noPresets")
             bDontExit = false
         endIf
     endWhile
@@ -850,17 +859,17 @@ function ShowColorSelection(int iType)
     iLastColorSelection = iType
     
     if iType == 0       ; Highlight colour
-        sText = "Select a color for selected item highlights"
+        sText = "$iEquip_EM_lbl_showColorTitle1"
         iColor = iHighlightColor
         iDefColor = 0x0099FF
     elseIf iType == 1   ; Current item info text colour
-        sText = "Select a color for selected item info text"
+        sText = "$iEquip_EM_lbl_showColorTitle2"
         iColor = iCurrentColorValue
         iDefColor = 0xEAAB00
     else                ; Selected text colour
         ; Make sure element is text
         if WC.abWidget_isText[iSelectedElement]
-            sText = "Select a text color for selected text element"
+            sText = "$iEquip_EM_lbl_showColorTitle3"
             iColor = WC.aiWidget_TC[iSelectedElement]
             iDefColor = 0xFFFFFF
         else
@@ -875,7 +884,7 @@ function ShowColorSelection(int iType)
         if MenuReturnArgs[1] == 0               ; Selected Color
             ApplyElementColor(iType, MenuReturnArgs[0])
         elseIf MenuReturnArgs[1] == 1           ; Custom Color
-            string sInput = ((Self as Form) as iEquip_UILIB).ShowTextInput("Enter a custom colour hex code", "RRGGBB")
+            string sInput = ((Self as Form) as iEquip_UILIB).ShowTextInput("$iEquip_EM_lbl_enterHex", "RRGGBB")
             
             if sInput != "" && sInput != "RRGGBB"
                 iCustomColors[iNextColorIndex] = HexStringToInt(sInput)
@@ -906,7 +915,7 @@ endFunction
 ; - Save -
 
 function SavePreset()
-    string textInput = ((Self as Form) as iEquip_UILIB).ShowTextInput("Name this layout preset", "")
+    string textInput = ((Self as Form) as iEquip_UILIB).ShowTextInput("$iEquip_EM_lbl_namePreset", "")
     
     if textInput != ""
         int jSavePreset = jMap.object()
@@ -922,7 +931,7 @@ function SavePreset()
         jMap.setObj(jSavePreset, "_V", jArray.objectWithBooleans(WC.abWidget_V))
 
         jValue.writeTofile(jSavePreset, WidgetPresetPath + textInput + FileExtWP)
-        Debug.Notification("Current layout saved as " + textInput + FileExtWP)
+        Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_savedAs") + " " + textInput + FileExtWP)
     endIf
 endFunction
 
@@ -1044,7 +1053,7 @@ endFunction
 
 function ResetDefaults()
     ; Resets all widget data
-    debug.Notification("Resetting iEquip...")
+    debug.Notification("$iEquip_EM_not_resetting")
     WC.updateWidgetVisibility(false)
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
     WC.ResetWidgetArrays()
@@ -1057,7 +1066,7 @@ function ResetDefaults()
     endIf
     
     WC.updateWidgetVisibility()
-    debug.Notification("Finished resetting iEquip")
+    debug.Notification("$iEquip_EM_not_doneResetting")
 endFunction
 
 ; #####################

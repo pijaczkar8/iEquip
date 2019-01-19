@@ -8,7 +8,6 @@ import _Q2C_Functions
 import iEquip_StringExt
 import iEquip_AmmoExt
 import iEquip_FormExt
-import stringUtil
 
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
@@ -35,6 +34,7 @@ form property currentAmmoForm auto hidden
 
 int ilastSortType = 0
 
+bool incrementDamage = false
 bool bBoundAmmoAdded = false
 bool[] property abBoundAmmoInQueue auto hidden
 string[] asBoundAmmoNames
@@ -67,8 +67,8 @@ event onInit()
 	abBoundAmmoInQueue[1] = false
 
 	asBoundAmmoNames = new string[2]
-	asBoundAmmoNames[0] = "Bound Arrow"
-	asBoundAmmoNames[1] = "Bound Bolt"
+	asBoundAmmoNames[0] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundArrow")
+	asBoundAmmoNames[1] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBolt")
 
 	asBoundAmmoIcons = new string[2]
 	asBoundAmmoIcons[0] = "BoundArrow"
@@ -192,7 +192,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 	debug.trace("iEquip_AmmoMode toggleAmmoMode called, toggleWithoutAnimation: " + toggleWithoutAnimation + ", toggleWithoutEquipping" + toggleWithoutEquipping + ", bAmmoModePending: " + bAmmoModePending)
 	if !bAmmoMode && jArray.count(aiTargetQ[Q]) < 1
 		debug.trace("iEquip_AmmoMode toggleAmmoMode - no ammo for the selected weapon, setting bAmmoModePending to true")
-		debug.Notification("You do not appear to have any ammo to equip for this type of weapon")
+		debug.Notification("$iEquip_AM_not_noAmmo")
 		WC.checkAndFadeLeftIcon(1, 5)
 		bAmmoModePending = true
 	else
@@ -215,7 +215,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				WC.CM.updateChargeMeterVisibility(0, false)
 			endIf
 			;Now unequip the left hand to avoid any strangeness when switching ranged weapons in bAmmoMode
-			if !(WC.asCurrentlyEquipped[1] == "Bound Bow" || WC.asCurrentlyEquipped[1] == "Bound Crossbow")
+			if !(WC.asCurrentlyEquipped[1] == iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow") || WC.asCurrentlyEquipped[1] == iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow"))
 				WC.UnequipHand(0)
 			endIf
 			;Prepare and run the animation
@@ -265,7 +265,7 @@ function AmmoModeAnimateIn()
 		widgetData[1] = WC.asCurrentlyEquipped[0]
 	else
 		widgetData[0] = "Fist"
-		widgetData[1] = "Fist"
+		widgetData[1] = "$iEquip_common_Unarmed"
 	endIf
 	widgetData[2] = jMap.getStr(ammoObject, "iEquipIcon") + sAmmoIconSuffix
 	widgetData[3] = asCurrentAmmo[Q]
@@ -318,7 +318,7 @@ function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 		widgetData[2] = jMap.getStr(leftPreselectObject, "iEquipName")
 	else
 		widgetData[1] = "Fist"
-		widgetData[2] = "Fist"
+		widgetData[2] = "$iEquip_common_Unarmed"
 	endIf
 	;Update the widget - will throw away the ammo and animate the icon from preselect back to main position
 	Self.RegisterForModEvent("iEquip_AmmoModeAnimationComplete", "onAmmoModeAnimationComplete")
@@ -532,7 +532,7 @@ function addBoundAmmoToQueue(form boundAmmo, string ammoName)
 	;If we've already added a dummy object to the ammo queue we only need to add the form
 	int targetObject = jArray.getObj(aiTargetQ[Q], jArray.count(aiTargetQ[Q]) - 1)
 	currentAmmoForm = boundAmmo
-	if stringutil.Find(jMap.getStr(targetObject, "iEquipName"), "bound", 0) > -1
+	if jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_BoundArrow" || jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_BoundBolt"
 		;debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding Form to dummy object")
 		jMap.setForm(targetObject, "iEquipForm", boundAmmo)
 	;Otherwise create a new jMap object for the ammo and add it to the relevant ammo queue
@@ -602,9 +602,8 @@ function updateAmmoLists()
 		ammoForm = GetNthFormOfType(PlayerRef, 42, i)
 		isBolt = (ammoForm as Ammo).isBolt() as int
 		AmmoName = ammoForm.GetName()
-		;The Javelin check is to get the Spears by Soolie javelins which are classed as arrows/bolts and all of which have more descriptive names than simply Javelin, which is from Throwing Weapons and is an equippable throwing weapon
-		if stringutil.Find(AmmoName, "arrow", 0) > -1 || stringutil.Find(AmmoName, "bolt", 0) > -1 || iEquip_FormExt.IsJavelin(ammoForm)
-			;Make sure we're only adding arrows to the arrow queue or bolts to the bolt queue
+		;Make sure we're not trying to add Throwing Weapons
+		if !((iEquip_FormExt.IsJavelin(ammoForm) && ammoName != "Javelin") || iEquip_FormExt.IsSpear(ammoForm) || iEquip_FormExt.IsGrenade(ammoForm) || iEquip_FormExt.IsThrowingKnife(ammoForm) || iEquip_FormExt.IsThrowingAxe(ammoForm))
 			if !isAlreadyInAmmoQueue(ammoForm, aiTargetQ[isBolt])
 				AddToAmmoQueue(ammoForm, AmmoName, isBolt)
 				abNeedsSorting[isBolt as int] = true
@@ -693,7 +692,12 @@ function AddToAmmoQueue(form ammoForm, string ammoName, int isBolt)
 	jMap.setForm(AmmoItem, "iEquipForm", ammoForm)
 	jMap.setStr(AmmoItem, "iEquipIcon", getAmmoIcon(ammoForm,AmmoName, isBolt))
 	jMap.setStr(AmmoItem, "iEquipName", AmmoName)
-	jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage())
+	if incrementDamage
+		incrementDamage = false
+		jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage() + 1.0) ;If we've suffixed the ammo icon name in getAmmoIcon because it's enchanted ammo then +1 the damage so they sort ahead of the base ammo
+	else
+		jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage())
+	endIf
 	jMap.setInt(AmmoItem, "iEquipCount", PlayerRef.GetItemCount(AmmoForm))
 	;Add it to the relevant ammo queue
 	jArray.addObj(aiTargetQ[isBolt], AmmoItem)
@@ -709,7 +713,6 @@ String function getAmmoIcon(form ammoForm, string AmmoName, int isBolt)
 		;Set base icon string
 		iconName = asAmmoIcons[isBolt]
 		;Check if it is likely to have an additional effect - bit hacky checking the name but I've no idea how to check for attached magic effects!
-		bool incrementDamage = false
 		if iEquip_FormExt.HasFire(ammoForm)
 			iconName += "Fire"
 			incrementDamage = true
@@ -722,9 +725,6 @@ String function getAmmoIcon(form ammoForm, string AmmoName, int isBolt)
 		elseIf iEquip_FormExt.HasPoison(ammoForm)
 			iconName += "Poison"
 			incrementDamage = true
-		endIf
-		if incrementDamage
-			jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage() + 1.0)
 		endIf
 	endIf
 	debug.trace("iEquip_AmmoMode getAmmoIcon() returning iconName: " + iconName)
