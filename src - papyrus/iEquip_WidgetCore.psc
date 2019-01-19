@@ -1,17 +1,18 @@
 
 Scriptname iEquip_WidgetCore extends SKI_WidgetBase
 
-Import Input
-Import Form
-Import UI
-Import UICallback
-Import Utility
-Import iEquip_UILIB
+import Input
+import Form
+import UI
+import UICallback
+import Utility
+import iEquip_UILIB
 import _Q2C_Functions
 import AhzMoreHudIE
-Import WornObject
-Import iEquip_FormExt
-Import iEquip_StringExt
+import WornObject
+import iEquip_FormExt
+import iEquip_StringExt
+import stringutil
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto
@@ -303,11 +304,11 @@ Event OnWidgetInit()
 	endwhile
 
 	asQueueName = new string[5]
-	asQueueName[0] = "left hand queue"
-	asQueueName[1] = "right hand queue"
-	asQueueName[2] = "shout queue"
-	asQueueName[3] = "consumable queue"
-	asQueueName[4] = "poison queue"
+	asQueueName[0] = "$iEquip_WC_common_leftQ"
+	asQueueName[1] = "$iEquip_WC_common_rightQ"
+	asQueueName[2] = "$iEquip_WC_common_shoutQ"
+	asQueueName[3] = "$iEquip_WC_common_consQ"
+	asQueueName[4] = "$iEquip_WC_common_poisonQ"
 
 	aiNameElements = new int[8]
 	aiNameElements[0] = 8
@@ -339,11 +340,11 @@ Event OnWidgetInit()
 	asSpellSchools[4] = "Restoration"
 
 	asBound2HWeapons = new string[5]
-	asBound2HWeapons[0] = "Bound Bow"
-	asBound2HWeapons[1] = "Bound Crossbow"
-	asBound2HWeapons[2] = "Bound Greatsword"
-	asBound2HWeapons[3] = "Bound Battleaxe"
-	asBound2HWeapons[4] = "Bound Warhammer"
+	asBound2HWeapons[0] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow")
+	asBound2HWeapons[1] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow")
+	asBound2HWeapons[2] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundGreatSword")
+	asBound2HWeapons[3] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBattleaxe")
+	asBound2HWeapons[4] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundWarhammer")
 
 	aiCounterClips = new int[5]
 	aiCounterClips[0] = 9
@@ -563,7 +564,7 @@ function refreshWidget()
 	;Hide the widget first
 	KH.bAllowKeyPress = false
 	updateWidgetVisibility(false)
-	debug.notification("Refreshing iEquip widget...")
+	debug.notification("$iEquip_WC_not_refreshingWidget")
 	EM.UpdateElementsAll()
 	;Toggle preselect mode now (we exit again later)
 	if !bPreselectMode
@@ -729,7 +730,7 @@ function refreshWidget()
 	endIf
 	KH.bAllowKeyPress = true
 	bRefreshingWidget = false
-	debug.Notification("iEquip widget refresh complete")
+	debug.Notification("$iEquip_WC_not_doneRefreshing")
 	debug.trace("iEquip_WidgetCore refreshWidget finished")
 endFunction
 
@@ -952,7 +953,7 @@ event OnMenuOpen(string _sCurrentMenu)
 	sCurrentMenu = _sCurrentMenu
 	if (sCurrentMenu == "InventoryMenu" || sCurrentMenu == "MagicMenu" || sCurrentMenu == "FavoritesMenu") ;if in inventory or magic menu switch states so cycle hotkeys now assign selected item to the relevant queue array
 		if  bIsFirstInventoryMenu
-			debug.MessageBox("Adding to your iEQUIP queues\n\nTo add items, spells, powers or shouts to your iEquip queues you simply need to highlight an item in your inventory or spellbook (you don't need to equip it) and press the hotkey for the slot you want to add it to.")
+			debug.MessageBox("$iEquip_WC_msg_inventoryFirstLook")
 			bIsFirstInventoryMenu = false
 		endIf
 		if sCurrentMenu == "InventoryMenu" || sCurrentMenu == "MagicMenu"
@@ -1088,7 +1089,7 @@ bool property isEnabled
                     
                     ResetWidgetArrays()
                     Utility.Wait(1.5)
-                    debug.MessageBox("Adding items to iEquip\n\nBefore you can use iEquip for the first time you need to choose your gear for each slot. Simply open your Inventory, Magic or Favorites menu and follow the instructions there.\n\nEnjoy using iEquip!")
+                    debug.MessageBox("$iEquip_WC_msg_addingItems")
 				endIf
                 
 				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
@@ -1103,7 +1104,7 @@ bool property isEnabled
 				endIf
 				iEquip_MessageQuest.Start()
 				KH.RegisterForGameplayKeys()
-				debug.notification("iEquip controls unlocked and ready to use")
+				debug.notification("$iEquip_WC_not_controlsUnlocked")
 			else
 				self.UnregisterForAllMenus()
 				KH.UnregisterForAllKeys()
@@ -1218,61 +1219,61 @@ function PopulateWidgetArrays()
 
 	;AddWidget arguments - Description, Full Path, X position, Y position, Scale, Rotation, Alpha, Depth, Text Colour, Text Alignment, Visibility, isParent, isText, isBackground, Widget Group
 	;Master widget
-	AddWidget("Complete widget", ".widgetMaster", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, false, "")
+	AddWidget("$iEquip_WC_lbl_CompleteWidget", ".widgetMaster", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, false, "")
 	;Main sub-widgets
-	AddWidget("Left Hand Widget", ".widgetMaster.LeftHandWidget", 0, 0, 0, 0, 0, -1, 0, None, true, true, false, false, "Left")
-	AddWidget("Right Hand Widget", ".widgetMaster.RightHandWidget", 0, 0, 0, 0, 0, 1, 0, None, true, true, false, false, "Right")
-	AddWidget("Shout Widget", ".widgetMaster.ShoutWidget", 0, 0, 0, 0, 0, 2, 0, None, true, true, false, false, "Shout")
-	AddWidget("Consumable Widget", ".widgetMaster.ConsumableWidget", 0, 0, 0, 0, 0, 3, 0, None, true, true, false, false, "Consumable")
-	AddWidget("Poison Widget", ".widgetMaster.PoisonWidget", 0, 0, 0, 0, 0, 4, 0, None, true, true, false, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_LeftWidget", ".widgetMaster.LeftHandWidget", 0, 0, 0, 0, 0, -1, 0, None, true, true, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_RightWidget", ".widgetMaster.RightHandWidget", 0, 0, 0, 0, 0, 1, 0, None, true, true, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_ShoutWidget", ".widgetMaster.ShoutWidget", 0, 0, 0, 0, 0, 2, 0, None, true, true, false, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ConsWidget", ".widgetMaster.ConsumableWidget", 0, 0, 0, 0, 0, 3, 0, None, true, true, false, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_PoisonWidget", ".widgetMaster.PoisonWidget", 0, 0, 0, 0, 0, 4, 0, None, true, true, false, false, "Poison")
 	;Left Hand widget components
-	AddWidget("Left Hand Background", ".widgetMaster.LeftHandWidget.leftBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Left")
-	AddWidget("Left Hand Icon", ".widgetMaster.LeftHandWidget.leftIcon_mc", 0, 0, 0, 0, 0, 6, 0, None, true, false, false, false, "Left")
-	AddWidget("Left Hand Item Name", ".widgetMaster.LeftHandWidget.leftName_mc", 0, 0, 0, 0, 0, 7, 16777215, "Right", true, false, true, false, "Left")
-	AddWidget("Left Hand Item Count", ".widgetMaster.LeftHandWidget.leftCount_mc", 0, 0, 0, 0, 0, 8, 16777215, "Center", true, false, true, false, "Left")
-	AddWidget("Left Hand Poison Icon", ".widgetMaster.LeftHandWidget.leftPoisonIcon_mc", 0, 0, 0, 0, 0, 9, 0, None, true, false, false, false, "Left")
-	AddWidget("Left Hand Poison Name", ".widgetMaster.LeftHandWidget.leftPoisonName_mc", 0, 0, 0, 0, 0, 10, 12646509, "Right", true, false, true, false, "Left")
-	AddWidget("Left Hand Attribute Icons", ".widgetMaster.LeftHandWidget.leftAttributeIcons_mc", 0, 0, 0, 0, 0, 11, 0, None, true, false, false, false, "Left")
-	AddWidget("Left Hand Enchantment Meter", ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc", 0, 0, 0, 0, 0, 12, 0, None, true, false, false, false, "Left")
-	AddWidget("Left Hand Soul Gem Icon", ".widgetMaster.LeftHandWidget.leftSoulgem_mc", 0, 0, 0, 0, 0, 13, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftBg", ".widgetMaster.LeftHandWidget.leftBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftIcon", ".widgetMaster.LeftHandWidget.leftIcon_mc", 0, 0, 0, 0, 0, 6, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftName", ".widgetMaster.LeftHandWidget.leftName_mc", 0, 0, 0, 0, 0, 7, 16777215, "Right", true, false, true, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftCount", ".widgetMaster.LeftHandWidget.leftCount_mc", 0, 0, 0, 0, 0, 8, 16777215, "Center", true, false, true, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPoisIcon", ".widgetMaster.LeftHandWidget.leftPoisonIcon_mc", 0, 0, 0, 0, 0, 9, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPoisName", ".widgetMaster.LeftHandWidget.leftPoisonName_mc", 0, 0, 0, 0, 0, 10, 12646509, "Right", true, false, true, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftAttIcon", ".widgetMaster.LeftHandWidget.leftAttributeIcons_mc", 0, 0, 0, 0, 0, 11, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftMeter", ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc", 0, 0, 0, 0, 0, 12, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftGem", ".widgetMaster.LeftHandWidget.leftSoulgem_mc", 0, 0, 0, 0, 0, 13, 0, None, true, false, false, false, "Left")
 	;Left Hand Preselect widget components
-	AddWidget("Left Hand Preselect Background", ".widgetMaster.LeftHandWidget.leftPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Left")
-	AddWidget("Left Hand Preselect Icon", ".widgetMaster.LeftHandWidget.leftPreselectIcon_mc", 0, 0, 0, 0, 0, 15, 0, None, true, false, false, false, "Left")
-	AddWidget("Left Hand Preselect Item Name", ".widgetMaster.LeftHandWidget.leftPreselectName_mc", 0, 0, 0, 0, 0, 16, 16777215, "Right", true, false, true, false, "Left")
-	AddWidget("Left Hand Preselect Attribute Icons", ".widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 17, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreBg", ".widgetMaster.LeftHandWidget.leftPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreIcon", ".widgetMaster.LeftHandWidget.leftPreselectIcon_mc", 0, 0, 0, 0, 0, 15, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreName", ".widgetMaster.LeftHandWidget.leftPreselectName_mc", 0, 0, 0, 0, 0, 16, 16777215, "Right", true, false, true, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreAtt", ".widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 17, 0, None, true, false, false, false, "Left")
 	;Right Hand widget components
-	AddWidget("Right Hand Background", ".widgetMaster.RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
-	AddWidget("Right Hand Icon", ".widgetMaster.RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 19, 0, None, true, false, false, false, "Right")
-	AddWidget("Right Hand Item Name", ".widgetMaster.RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 20, 16777215, "Left", true, false, true, false, "Right")
-	AddWidget("Right Hand Item Count", ".widgetMaster.RightHandWidget.rightCount_mc", 0, 0, 0, 0, 0, 21, 16777215, "Center", true, false, true, false, "Right")
-	AddWidget("Right Hand Poison Icon", ".widgetMaster.RightHandWidget.rightPoisonIcon_mc", 0, 0, 0, 0, 0, 22, 0, None, true, false, false, false, "Right")
-	AddWidget("Right Hand Poison Name", ".widgetMaster.RightHandWidget.rightPoisonName_mc", 0, 0, 0, 0, 0, 23, 12646509, "Left", true, false, true, false, "Right")
-	AddWidget("Right Hand Attribute Icons", ".widgetMaster.RightHandWidget.rightAttributeIcons_mc", 0, 0, 0, 0, 0, 24, 0, None, true, false, false, false, "Right")
-	AddWidget("Right Hand Enchantment Meter", ".widgetMaster.RightHandWidget.rightEnchantmentMeter_mc", 0, 0, 0, 0, 0, 25, 0, None, true, false, false, false, "Right")
-	AddWidget("Right Hand Soul Gem Icon", ".widgetMaster.RightHandWidget.rightSoulgem_mc", 0, 0, 0, 0, 0, 26, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightBg", ".widgetMaster.RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
+	AddWidget("$iEquip_WC_lbl_RightIcon", ".widgetMaster.RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 19, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightName", ".widgetMaster.RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 20, 16777215, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightCount", ".widgetMaster.RightHandWidget.rightCount_mc", 0, 0, 0, 0, 0, 21, 16777215, "Center", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPoisIcon", ".widgetMaster.RightHandWidget.rightPoisonIcon_mc", 0, 0, 0, 0, 0, 22, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPoisName", ".widgetMaster.RightHandWidget.rightPoisonName_mc", 0, 0, 0, 0, 0, 23, 12646509, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightAttIcon", ".widgetMaster.RightHandWidget.rightAttributeIcons_mc", 0, 0, 0, 0, 0, 24, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightMeter", ".widgetMaster.RightHandWidget.rightEnchantmentMeter_mc", 0, 0, 0, 0, 0, 25, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightGem", ".widgetMaster.RightHandWidget.rightSoulgem_mc", 0, 0, 0, 0, 0, 26, 0, None, true, false, false, false, "Right")
 	;Right Hand Preselect widget components
-	AddWidget("Right Hand Preselect Background", ".widgetMaster.RightHandWidget.rightPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
-	AddWidget("Right Hand Preselect Icon", ".widgetMaster.RightHandWidget.rightPreselectIcon_mc", 0, 0, 0, 0, 0, 28, 0, None, true, false, false, false, "Right")
-	AddWidget("Right Hand Preselect Item Name", ".widgetMaster.RightHandWidget.rightPreselectName_mc", 0, 0, 0, 0, 0, 29, 16777215, "Left", true, false, true, false, "Right")
-	AddWidget("Right Hand Preselect Attribute Icons", ".widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 30, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreBg", ".widgetMaster.RightHandWidget.rightPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreIcon", ".widgetMaster.RightHandWidget.rightPreselectIcon_mc", 0, 0, 0, 0, 0, 28, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreName", ".widgetMaster.RightHandWidget.rightPreselectName_mc", 0, 0, 0, 0, 0, 29, 16777215, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreAtt", ".widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 30, 0, None, true, false, false, false, "Right")
 	;Shout widget components
-	AddWidget("Shout Background", ".widgetMaster.ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
-	AddWidget("Shout Icon", ".widgetMaster.ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 32, 0, None, true, false, false, false, "Shout")
-	AddWidget("Shout Name", ".widgetMaster.ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 33, 16777215, "Center", true, false, true, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutBg", ".widgetMaster.ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutIcon", ".widgetMaster.ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 32, 0, None, true, false, false, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutName", ".widgetMaster.ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 33, 16777215, "Center", true, false, true, false, "Shout")
 	;Shout Preselect widget components
-	AddWidget("Shout Preselect Background", ".widgetMaster.ShoutWidget.shoutPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
-	AddWidget("Shout Preselect Icon", ".widgetMaster.ShoutWidget.shoutPreselectIcon_mc", 0, 0, 0, 0, 0, 35, 0, None, true, false, false, false, "Shout")
-	AddWidget("Shout Preselect Name", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 36, 16777215, "Center", true, false, true, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPreBg", ".widgetMaster.ShoutWidget.shoutPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPreIcon", ".widgetMaster.ShoutWidget.shoutPreselectIcon_mc", 0, 0, 0, 0, 0, 35, 0, None, true, false, false, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPreName", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 36, 16777215, "Center", true, false, true, false, "Shout")
 	;Consumable widget components
-	AddWidget("Consumable Background", ".widgetMaster.ConsumableWidget.consumableBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Consumable")
-	AddWidget("Consumable Icon", ".widgetMaster.ConsumableWidget.consumableIcon_mc", 0, 0, 0, 0, 0, 38, 0, None, true, false, false, false, "Consumable")
-	AddWidget("Consumable Name", ".widgetMaster.ConsumableWidget.consumableName_mc", 0, 0, 0, 0, 0, 39, 16777215, "Right", true, false, true, false, "Consumable")
-	AddWidget("Consumable Count", ".widgetMaster.ConsumableWidget.consumableCount_mc", 0, 0, 0, 0, 0, 40, 16777215, "Center", true, false, true, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsBg", ".widgetMaster.ConsumableWidget.consumableBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsIcon", ".widgetMaster.ConsumableWidget.consumableIcon_mc", 0, 0, 0, 0, 0, 38, 0, None, true, false, false, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsName", ".widgetMaster.ConsumableWidget.consumableName_mc", 0, 0, 0, 0, 0, 39, 16777215, "Right", true, false, true, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsCount", ".widgetMaster.ConsumableWidget.consumableCount_mc", 0, 0, 0, 0, 0, 40, 16777215, "Center", true, false, true, false, "Consumable")
 	;Poison widget components
-	AddWidget("Poison Background", ".widgetMaster.PoisonWidget.poisonBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Poison")
-	AddWidget("Poison Icon", ".widgetMaster.PoisonWidget.poisonIcon_mc", 0, 0, 0, 0, 0, 42, 0, None, true, false, false, false, "Poison")
-	AddWidget("Poison Name", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 43, 16777215, "Left", true, false, true, false, "Poison")
-	AddWidget("Poison Count", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 44, 16777215, "Center", true, false, true, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonBg", ".widgetMaster.PoisonWidget.poisonBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonIcon", ".widgetMaster.PoisonWidget.poisonIcon_mc", 0, 0, 0, 0, 0, 42, 0, None, true, false, false, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonName", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 43, 16777215, "Left", true, false, true, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonCount", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 44, 16777215, "Center", true, false, true, false, "Poison")
 	
 endFunction
 
@@ -1282,7 +1283,7 @@ function AddWidget( string sDescription, string sPath, float fX, float fY, float
 		iIndex += 1
 	endWhile
 	if iIndex >= asWidgetDescriptions.Length
-		Debug.MessageBox("iEquip: Failed to add widget to arrays (" + sDescription + ")")
+		Debug.MessageBox("$iEquip_WC_msg_failedToAddWidget{" + sDescription + "}")
 	else
 		asWidgetDescriptions[iIndex] = sDescription
 		asWidgetElements[iIndex] = sPath
@@ -1404,7 +1405,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	int queueLength = JArray.count(targetArray)
 	debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
 	if queueLength == 0
-		debug.notification("Your " + asQueueName[Q] + " is currently empty")
+		debug.notification("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}")
 	;if Preselect Mode is enabled then left/right/shout needs to cycle the preselect slot not the main widget. if shout preselect is disabled cycle main shout slot
 	elseif (bPreselectMode && !bPreselectSwitchingHands && (Q < 2 || (Q == 2 && PM.bShoutPreselectEnabled))) || (Q == 0 && bAmmoMode)
 		;if preselect name not shown then first cycle press shows name without advancing the queue
@@ -2060,7 +2061,7 @@ function checkIfBoundSpellEquipped()
 	while hand < 2
 		if PlayerRef.GetEquippedItemType(hand) == 9 && PlayerRef.GetEquippedSpell(hand)
 			spellName = (PlayerRef.GetEquippedSpell(hand)).GetName()
-			if stringutil.Find(spellName, "bound", 0) > -1
+			if stringutil.Find(spellName, iEquip_StringExt.LocalizeString("$iEquip_common_bound"), 0) > -1
 				boundSpellEquipped = true
 			endIf
 		endIf
@@ -2532,7 +2533,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		        	debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands: " + bSwitchingHands)
 		        	UnequipHand(otherHand)
 		        else
-		        	debug.notification(jMap.getStr(targetObject, "iEquipName") + " is already equipped in your other hand")
+		        	debug.notification(jMap.getStr(targetObject, "iEquipName") + " " + iEquip_StringExt.LocalizeString("$iEquip_WC_not_inOtherhand"))
 		        	return
 		        endIf
 		    endIf
@@ -2559,8 +2560,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	checkIfBoundSpellEquipped()
 	if (itemType == 7 || itemType == 9) && bAmmoModeFirstLook
 		Utility.Wait(0.5)
-		Debug.MessageBox("iEQUIP Ammo Mode\n\nYou have equipped a ranged weapon for the first time using iEquip and you will see that the left hand widget is now showing the first ammo in your ammo queue. if you have enabled ammo sorting in the MCM then this will either be the ammo with the highest base damage, or the first alphabetically\nThe smaller icon shows the item you will re-equip when you unequip your ranged weapon.")
-		Debug.MessageBox("iEQUIP Ammo Mode Controls\n\nSingle press left hotkey cycles the ammo\n\nDouble press left hotkey cycles the left hand item shown in the smaller icon ready for re-equipping\n\nCycling your right hand will return the left hand widget to the regular state, or you can longpress the left hotkey to re-equip the left hand item shown and swap your ranged weapon for a 1H item in the right hand")
+		Debug.MessageBox("$iEquip_WC_msg_AmmoModeFirstLook1")
+		Debug.MessageBox("$iEquip_WC_msg_AmmoModeFirstLook2")
 		bAmmoModeFirstLook = false
 	endIf
 	;if we've just equipped a 1H item in RH forcing toggleAmmoMode, now we can re-equip the left hand making sure to block QuickDualCast
@@ -2785,7 +2786,7 @@ function applyPoison(int Q)
             weaponName = currentWeapon.GetName()
         endIf
         if (!currentWeapon)
-            debug.notification("You don't currently have a weapon in your " + handName + " hand to poison")
+            debug.notification("$iEquip_WC_not_noWeapon{" + handName + "}")
             return
         elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon
             ;messagestring = "The " + weaponName + " in your " + handName + " hand doesn't appear to match what's currently showing in iEquip. Do you wish to carry on and apply " + newPoison + " to it anyway?"
@@ -2802,11 +2803,11 @@ function applyPoison(int Q)
             string currentPoisonName = currentPoison.GetName()
             if currentPoison != poisonToApply
                 if !bAllowPoisonSwitching
-                    debug.notification("Your " + weaponName + " is already poisoned with " + currentPoisonName)
+                    debug.notification("$iEquip_WC_not_alreadyPoisioned{" + weaponName + "}{" + currentPoisonName + "}")
                     return
                 else
                     if iShowPoisonMessages < 2
-                        messagestring = "Your " + weaponName + " is already poisoned with " + currentPoisonName + ". Would you like to clean it and apply " + newPoison + " instead?"
+                        messagestring = "$iEquip_WC_msg_CleanApply{" + weaponName + "}{" + currentPoisonName + "}{" + newPoison + "}"
                         iButton = showMessageWithCancel(messageString)
                         if iButton != 0
                             return
@@ -2815,7 +2816,7 @@ function applyPoison(int Q)
                     _Q2C_Functions.WornRemovePoison(PlayerRef, Q)
                 endIf	
             elseif iShowPoisonMessages < 2
-                messagestring = "Your " + weaponName + " is already poisoned with " + currentPoisonName + ". Would you like to add more poison?"
+                messagestring = "$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"
                 iButton = showMessageWithCancel(messageString)
                 if iButton != 0
                     return
@@ -3087,7 +3088,7 @@ function addToQueue(int Q)
 					endIf
 				endIf
 				if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2) && !bAllowSingleItemsInBothQueues
-					debug.MessageBox("You currently only have one " + itemName + " and it is already in the other hand queue")
+					debug.MessageBox("$iEquip_WC_msg_InOtherQ{" + itemName + "}")
 					return
 				endIf
 				if itemID < 1
@@ -3106,9 +3107,9 @@ function addToQueue(int Q)
 						iEquip_MessageObjectReference = playerREF.PlaceAtMe(iEquip_MessageObject)
 						iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
 						if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
-							iEquip_MessageAlias.GetReference().GetBaseObject().SetName("You currently only have one " + itemName + " and it is already in the other hand queue. Do you want to add it to the " + asQueueName[Q] + " as well?")
+							iEquip_MessageAlias.GetReference().GetBaseObject().SetName("$iEquip_WC_msg_AddToBoth{" + itemName + "}{" + asQueueName[Q] + "}")
 						else
-							iEquip_MessageAlias.GetReference().GetBaseObject().SetName("Would you like to add " + itemName + " to the " + asQueueName[Q] + "?")
+							iEquip_MessageAlias.GetReference().GetBaseObject().SetName("$iEquip_WC_msg_AddToQ{" + itemName + "}{" + asQueueName[Q] + "}")
 						endIf
 						int iButton = iEquip_ConfirmAddToQueue.Show()
 						iEquip_MessageAlias.Clear()
@@ -3144,20 +3145,20 @@ function addToQueue(int Q)
 					EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
 					success = true
 				else
-					debug.notification("The " + asQueueName[Q] + " is full")
+					debug.notification("$iEquip_WC_not_QIsFull{" + asQueueName[Q] + "}")
 				endIf
 				if success
-					debug.notification(itemName + " was added to the " + asQueueName[Q])
+					debug.notification("$iEquip_WC_not_AddedToQ{" + itemName + "}{" + asQueueName[Q] + "}")
 				endIf
 			else
-				debug.notification(itemName + " has already been added to the " + asQueueName[Q])
+				debug.notification("$iEquip_WC_not_AlreadyAdded{" + itemName + "}{" + asQueueName[Q] + "}")
 			endIf
 		else
 			if bIsFirstFailedToAdd
-				debug.MessageBox("You are trying to add the wrong type of item or spell to one of your iEquip queues.\n\nRULES\nLeft hand queue - 1H weapons, unarmed, staffs, spells, scrolls, torch, shield\nRight hand queue - Any weapon, spells, scrolls\nShout queue - shouts, powers\nConsumable queue - potions, food, drink\nPoison queue - poisons")
+				debug.MessageBox("$iEquip_WC_msg_failToAdd")
 				bIsFirstFailedToAdd = false
 			else
-				debug.notification(itemName + " cannot be added to the " + asQueueName[Q])
+				debug.notification("$iEquip_WC_not_CannotAdd{" + itemName + "}{"  + asQueueName[Q] + "}")
 			endIf
 		endIf
 	endIf
@@ -3261,7 +3262,7 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
         	if WeaponType <= 4 || WeaponType == 8 ;Fists, 1H weapons and Staffs only
         		isValid = true
         	endIf
-    	elseif (itemType == 22 && !isShout && itemName != "Bound Bow" && itemName != "Bound Crossbow") || itemType == 23 || itemType == 31 || (itemType == 26 && (itemForm as Armor).GetSlotMask() == 512) ;Spell, Scroll, Torch, Shield
+    	elseif (itemType == 22 && !isShout && itemName != iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow") && itemName != iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow")) || itemType == 23 || itemType == 31 || (itemType == 26 && (itemForm as Armor).GetSlotMask() == 512) ;Spell, Scroll, Torch, Shield
     		isValid = true
     	endIf
     elseif Q == 1 ;Right Hand
@@ -3271,7 +3272,7 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
         	if (iEquip_FormExt.IsJavelin(itemForm) && itemName != "Javelin") || iEquip_FormExt.IsSpear(itemForm) || iEquip_FormExt.IsGrenade(itemForm) || iEquip_FormExt.IsThrowingKnife(itemForm) || iEquip_FormExt.IsThrowingAxe(itemForm) ;Javelin is the display name for those from Throwing Weapons Lite/Redux, the javelins from Spears by Soolie all have more descriptive names than just 'javelin' and they are treated as arrows or bolts so can't be right hand equipped
         		iEquip_MessageObjectReference = playerREF.PlaceAtMe(iEquip_MessageObject)
 				iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
-				iEquip_MessageAlias.GetReference().GetBaseObject().SetName("Are these " + itemName + "s classed as throwing weapons?\n\nPlease note that the javelins from Spears by Soolie are classed as arrows or bolts and should not be added here.\n\nWould you like to proceed and add " + itemName + "s to the " + asQueueName[Q] + "?")
+				iEquip_MessageAlias.GetReference().GetBaseObject().SetName("$iEquip_WC_msg_throwingWeapons{" + itemName + "}{" + itemName + "}{" + asQueueName[Q] + "}")
 				int iButton = iEquip_ConfirmAddToQueue.Show()
 				iEquip_MessageAlias.Clear()
    	 			iEquip_MessageObjectReference.Disable()
@@ -3455,7 +3456,7 @@ function openQueueManagerMenu(int Q = -1)
 		Q -= 1
 		int queueLength = jArray.count(aiTargetQ[Q])
 		if queueLength < 1
-			debug.MessageBox("Your " + asQueueName[Q] + " is currently empty")
+			debug.MessageBox("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}")
 			recallQueueMenu()
 		else
 			int i = 0
@@ -3490,7 +3491,7 @@ function initQueueMenu(int Q, int queueLength, bool update = false, int iIndex =
 	if update
 		QueueMenu_RefreshList(iconNames, itemNames, enchFlags, poisonFlags, iIndex)
 	else
-		string title = "You currently have " + queueLength + " items in your " + asQueueName[Q]
+		string title = "$iEquip_WC_lbl_titleWithCount{" + queueLength + "}{" + asQueueName[Q] + "}"
 		((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNames, itemNames, enchFlags, poisonFlags, 0, 0, bJustUsedQueueMenuDirectAccess)
 	endIf
 endFunction
@@ -3574,7 +3575,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	elseIf bFirstAttemptToDeletePotionGroup
 		bFirstAttemptToDeletePotionGroup = false
 		((Self as Form) as iEquip_UILIB).closeQueueMenu()
-		debug.MessageBox("Potion Groups cannot be deleted.  To remove them from your consumables queue please use the MCM Potions page do disable them.")
+		debug.MessageBox("$iEquip_WC_msg_deletePotionGroup")
 		initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
 	endIf
 endFunction
@@ -3583,9 +3584,9 @@ function QueueMenuUpdate(int iCount, int iIndex)
 	debug.trace("iEquip_WidgetCore QueueMenuUpdate() called")
 	string title
 	if iCount <= 0
-		title = "Your " + asQueueName[iQueueMenuCurrentQueue] + " is currently empty"
+		title = "$iEquip_WC_common_EmptyQueue{" + asQueueName[iQueueMenuCurrentQueue] + "}"
 	else
-		title = "You currently have " + iCount + " items in your " + asQueueName[iQueueMenuCurrentQueue]
+		title = "$iEquip_WC_lbl_titleWithCount{" + iCount + "}{" + asQueueName[iQueueMenuCurrentQueue] + "}" 
 	endIf
 	QueueMenu_RefreshTitle(title)
 	initQueueMenu(iQueueMenuCurrentQueue, iCount, true, iIndex)
@@ -3652,7 +3653,7 @@ function QueueMenuClearQueue()
 	else
 		setSlotToEmpty(iQueueMenuCurrentQueue)
 	endIf
-	debug.MessageBox("Your " + asQueueName[iQueueMenuCurrentQueue] + " has been cleared")
+	debug.MessageBox("$iEquip_WC_msg_QCleared{" + asQueueName[iQueueMenuCurrentQueue] + "}")
 	recallQueueMenu()
 endFunction
 
