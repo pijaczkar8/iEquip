@@ -19,7 +19,7 @@ Int Property iShoutKey = 21 Auto Hidden ;Y
 Int Property iLeftKey = 34 Auto Hidden ;G
 Int Property iRightKey = 35 Auto Hidden ;H
 Int Property iConsumableKey = 48 Auto Hidden ;B
-Int Property iUtilityKey = 29 Auto Hidden ;Left Ctrl - Active in all modes
+Int Property iUtilityKey = 37 Auto Hidden ;K - Active in all modes
 
 ; Optional hotkeys
 Int Property iOptConsumeKey = -1 Auto Hidden
