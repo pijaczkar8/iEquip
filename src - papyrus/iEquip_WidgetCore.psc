@@ -12,6 +12,7 @@ import AhzMoreHudIE
 import WornObject
 import iEquip_FormExt
 import iEquip_StringExt
+import iEquip_SpellExt
 import stringutil
 
 ;Script Properties
@@ -60,12 +61,6 @@ FormList Property iEquip_AllCurrentItemsFLST Auto
 FormList Property iEquip_RemovedItemsFLST Auto
 
 int property voiceEquipSlot = 0x00025BEE AutoReadOnly ; hex code of the FormID for the Voice EquipSlot
-
-EquipSlot[] EquipSlots
-EquipSlot property RightHand auto ; 0x00013F42
-EquipSlot property LeftHand auto ; 0x00013F43
-EquipSlot property EitherHand auto ; 0x00013F43
-EquipSlot property BothHands auto ; 0x00013F45
 
 Keyword property MagicDamageFire auto
 Keyword property MagicDamageFrost auto
@@ -192,6 +187,8 @@ bool property bAttributeIconsOptionChanged = false auto hidden
 int[] property aiTargetQ auto hidden
 string[] asQueueName
 bool[] abQueueWasEmpty
+
+EquipSlot[] EquipSlots
 
 string[] asItemNames
 string[] asWeaponTypeNames
@@ -368,11 +365,12 @@ Event OnWidgetInit()
 	asMoreHUDIcons[2] = "iEquipQ.png" ;Q - for shout/consumable/poison queues
 	asMoreHUDIcons[3] = "iEquipQB.png" ;Both - for items in both left and right queues
 
-	EquipSlots = new EquipSlot[4]
-	EquipSlots[0] = RightHand
-	EquipSlots[1] = LeftHand
-	EquipSlots[2] = EitherHand
-	EquipSlots[3] = BothHands
+	EquipSlots = new EquipSlot[5]
+	EquipSlots[0] = Game.GetForm(0x00013F42) As EquipSlot ; LeftHand
+	EquipSlots[1] = Game.GetForm(0x00013F43) As EquipSlot ; RightHand
+	EquipSlots[2] = Game.GetForm(0x00013F44) As EquipSlot ; EitherHand
+	EquipSlots[3] = Game.GetForm(0x00013F45) As EquipSlot ; BothHands
+	EquipSlots[4] = Game.GetForm(0x00025BEE) As EquipSlot ; Voice
 
 	bLoadedbyOnWidgetInit = true
 	initDataObjects()
@@ -2056,25 +2054,20 @@ endFunction
 function checkIfBoundSpellEquipped()
 	debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped called")
 	bool boundSpellEquipped = false
-	string spellName
 	int hand = 0
 	while hand < 2
-		if PlayerRef.GetEquippedItemType(hand) == 9 && PlayerRef.GetEquippedSpell(hand)
-			spellName = (PlayerRef.GetEquippedSpell(hand)).GetName()
-			if stringutil.Find(spellName, iEquip_StringExt.LocalizeString("$iEquip_common_bound"), 0) > -1
-				boundSpellEquipped = true
-			endIf
+		if PlayerRef.GetEquippedItemType(hand) == 9 && iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand))
+			boundSpellEquipped = true
 		endIf
 		hand += 1
 	endWhile
-	;If the player has a 'Bound' spell equipped in either hand the event handler script registers for ActorAction 2 - Spell Fire, if not it unregisters for the action
+	;If the player has a bound spell equipped in either hand the event handler script registers for ActorAction 2 - Spell Fire, if not it unregisters for the action
 	EH.boundSpellEquipped = boundSpellEquipped
 endFunction
 
 ;Called from iEquip_PlayerEventHandler when OnActorAction receives actionType 2 (should only ever happen when the player has a 'Bound' spell equipped in either hand)
 function onBoundWeaponEquipped(Int weaponType, Int hand)
 	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped called")
-	;weapon equippedWeapon = PlayerRef.GetEquippedObject(hand) as Weapon	
 	string iconName = "Bound"
 	if weaponType == 6 && (PlayerRef.GetEquippedObject(hand) as Weapon).IsWarhammer()
         iconName += "Warhammer"
@@ -3252,13 +3245,13 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
 	bool isValid = false
 	bool isShout
 	if itemType == 22
-		isShout = ((((itemForm as Spell).GetEquipType() as form).GetFormID()) == voiceEquipSlot)
+		;isShout = ((((itemForm as Spell).GetEquipType() as form).GetFormID()) == voiceEquipSlot)
+		isShout = ((itemForm as Spell).GetEquipType() == EquipSlots[4])
 	endIf
 
 	if Q == 0 ;Left Hand
 		if itemType == 41 ;Weapon
-			Weapon W = itemForm as Weapon
-        	int WeaponType = W.GetWeaponType()
+        	int WeaponType = (itemForm as Weapon).GetWeaponType()
         	if WeaponType <= 4 || WeaponType == 8 ;Fists, 1H weapons and Staffs only
         		isValid = true
         	endIf
@@ -3320,10 +3313,10 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     string IconName = "Empty"
 
     if itemType < 13 ;It is a weapon
-        Weapon W = itemForm as Weapon
+        ;Weapon W = itemForm as Weapon
         IconName = asWeaponTypeNames[itemType]
         ;2H axes and maces have the same ID for some reason, so we have to differentiate them
-        if itemType == 6 && W.IsWarhammer()
+        if itemType == 6 && (itemForm as Weapon).IsWarhammer()
             IconName = "Warhammer"
         ;if this all looks a little strange it is because StringUtil find() is case sensitive so where possible I've ommitted the first letter to catch for example Spear and spear with pear
         elseif itemType == 1 && iEquip_FormExt.IsSpear(itemform) ;Looking for spears here from Spears by Soolie which are classed as 1H swords
@@ -3347,13 +3340,14 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     elseif itemType == 22 ;Is a spell
     	iconName = "Spellbook"
         Spell S = itemForm as Spell
-        EquipSlot iEquipSlotType = S.GetEquipType()
-		int iEquipSlotTypeID = (iEquipSlotType as form).GetFormID()
-    	if iEquipSlotTypeID == voiceEquipSlot
+        ;EquipSlot iEquipSlotType = S.GetEquipType()
+		;int iEquipSlotTypeID = (iEquipSlotType as form).GetFormID()
+    	;if iEquipSlotTypeID == voiceEquipSlot
+    	if S.GetEquipType() == EquipSlots[4]
     		IconName = "Power"
     	else
-        	int sIndex = S.GetCostliestEffectIndex()
-        	MagicEffect sEffect = S.GetNthEffectMagicEffect(sIndex)
+        	;int sIndex = S.GetCostliestEffectIndex()
+        	MagicEffect sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())
         	IconName = sEffect.GetAssociatedSkill()
         	if IconName == "Destruction"
         		debug.trace("iEquip_WidgetCore GetItemIconString - IconName: " + IconName + ", strongest magic effect: " + sEffect + ", " + (sEffect as form).GetName())
@@ -3391,10 +3385,10 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
             	IconName = "Food"
             endIf
         else
-	        int pIndex = P.GetCostliestEffectIndex()
-	        MagicEffect pEffect = P.GetNthEffectMagicEffect(pIndex)
-	        string pStr = pEffect.GetName()
-	        debug.trace("iEquip_WidgetCore GetItemIconString() - pIndex: " + pIndex + ", pEffect: " + pEffect + ", pStr: " + pStr)
+	        ;int pIndex = P.GetCostliestEffectIndex()
+	        ;MagicEffect pEffect = P.GetNthEffectMagicEffect(P.GetCostliestEffectIndex())
+	        string pStr = P.GetNthEffectMagicEffect(P.GetCostliestEffectIndex()).GetName()
+	        ;debug.trace("iEquip_WidgetCore GetItemIconString() - pIndex: " + pIndex + ", pEffect: " + pEffect + ", pStr: " + pStr)
 	        if(pStr == "Health" || pStr == "Restore Health" || pStr == "Health Restoration" || pStr == "Regenerate Health" || pStr == "Health Regeneration" || pStr == "Fortify Health" || pStr == "Health Fortification")
 	            IconName = "HealthPotion"
 	        elseif(pStr == "Magicka " || pStr == "Restore Magicka" || pStr == "Magicka Restoration" || pStr == "Regenerate Magicka" || pStr == "Magicka Regeneration" || pStr == "Fortify Magicka" || pStr == "Magicka Fortification")

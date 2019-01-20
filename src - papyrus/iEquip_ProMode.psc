@@ -5,8 +5,8 @@ Import UI
 Import UICallback
 Import Utility
 import _Q2C_Functions
-import stringUtil
 import iEquip_FormExt
+import iEquip_SpellExt
 
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
@@ -1289,19 +1289,15 @@ bool function quickHealFindAndEquipSpell()
 	int count
 	int targetIndex = -1
 	int containingQ
-	string spellName
 	int targetArray = WC.aiTargetQ[Q]
 	int targetObject
 	while Q < 2 && targetIndex == -1
 		count = jArray.count(targetArray)
 		while i < count && targetIndex == -1
 			targetObject = jArray.getObj(targetArray, i)
-			if jMap.getInt(targetObject, "iEquipType") == 22
-				spellName = jMap.getStr(targetObject, "iEquipName")
-				if stringutil.Find(spellName, iEquip_StringExt.LocalizeString("$iEquip_PM_heal"), 0) > -1
-					targetIndex = i
-					containingQ = Q
-				endIf
+			if jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_SpellExt.IsHealingSpell(jMap.getForm(targetObject, "iEquipForm") as spell)
+				targetIndex = i
+				containingQ = Q
 			endIf
 			i += 1
 		endwhile
