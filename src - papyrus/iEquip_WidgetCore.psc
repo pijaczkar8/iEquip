@@ -2752,7 +2752,7 @@ endFunction
 
 int function showMessageWithCancel(string theString)
 	debug.trace("iEquip_WidgetCore showMessageWithCancel called")
-	iEquip_MessageObjectReference = playerREF.PlaceAtMe(iEquip_MessageObject)
+	iEquip_MessageObjectReference = PlayerRef.PlaceAtMe(iEquip_MessageObject)
 	iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
 	iEquip_MessageAlias.GetReference().GetBaseObject().SetName(theString)
 	int iButton = iEquip_OKCancel.Show()

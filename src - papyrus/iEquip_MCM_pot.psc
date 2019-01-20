@@ -49,7 +49,7 @@ endFunction
 State pot_tgl_enblPotionGroup
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblPotionGroup")
+            MCM.SetInfoText("$iEquip_help_potionGroups")
         elseIf currentEvent == "Select"
             WC.bPotionGrouping = !WC.bPotionGrouping
             WC.bPotionGroupingOptionsChanged = true

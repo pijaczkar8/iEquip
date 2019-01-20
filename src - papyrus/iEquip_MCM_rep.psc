@@ -64,7 +64,7 @@ function drawPage()
             if CM.iChargeDisplayType > 0
                 MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "$iEquip_MCM_rep_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
                 if CM.bChargeFadeoutEnabled
-                    MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "$iEquip_MCM_rep_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds")))
+                    MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "$iEquip_MCM_rep_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds")))
                 endIf
                 
                 MCM.AddColorOptionST("rep_col_normFillCol", "$iEquip_MCM_rep_lbl_normFillCol", CM.iPrimaryFillColor)
@@ -125,8 +125,8 @@ endFunction
 State rep_txt_showEnchRechHelp
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_rep_msg_showEnchRechHelp1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                MCM.ShowMessage("$iEquip_MCM_rep_msg_showEnchRechHelp2", false, "$iEquip_common_msg_Exit")
+            if MCM.ShowMessage("$iEquip_help_recharging1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                MCM.ShowMessage("$iEquip_help_recharging2", false, "$iEquip_common_msg_Exit")
             endIf
         endIf 
     endEvent
@@ -243,7 +243,7 @@ State rep_sld_chargeFadeDelay
             MCM.fillSlider(CM.fChargeFadeoutDelay, 1.0, 20.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
             CM.fChargeFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds")))
+            MCM.SetSliderOptionValueST(CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds")))
         endIf 
     endEvent
 endState
@@ -449,10 +449,8 @@ endState
 State rep_txt_showPoisonHelp
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                if MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                    MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp3", false, "$iEquip_common_msg_Exit")
-                endIf
+            if MCM.ShowMessage("$iEquip_help_poisoning1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                MCM.ShowMessage("$iEquip_help_poisoning2", false, "$iEquip_common_msg_Exit")
             endIf
         endIf 
     endEvent
