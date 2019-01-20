@@ -40,7 +40,7 @@ event OnUpdate()
 		if formToAdd as potion
 			PO.onPotionAdded(formToAdd)
 		elseIf formToAdd as ammo && (Game.GetModName(formToAdd.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
-			if WC.EH.boundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
+			if WC.BW.bIsBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
 				AM.addBoundAmmoToQueue(formToAdd, formToAdd.GetName())
 			else
 				AM.onAmmoAdded(formToAdd)

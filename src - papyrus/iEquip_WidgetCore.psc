@@ -13,7 +13,6 @@ import WornObject
 import iEquip_FormExt
 import iEquip_StringExt
 import iEquip_SpellExt
-import stringutil
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto
@@ -23,8 +22,8 @@ iEquip_RechargeScript Property RC Auto
 iEquip_AmmoMode property AM auto
 iEquip_ProMode property PM auto
 iEquip_PotionScript property PO auto
-;iEquip_HelpMenu property HM auto
 iEquip_PlayerEventHandler property EH auto
+iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_AddedItemHandler property AD auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
@@ -59,8 +58,6 @@ Message property iEquip_QueueManagerMenu auto
 
 FormList Property iEquip_AllCurrentItemsFLST Auto
 FormList Property iEquip_RemovedItemsFLST Auto
-
-int property voiceEquipSlot = 0x00025BEE AutoReadOnly ; hex code of the FormID for the Voice EquipSlot
 
 Keyword property MagicDamageFire auto
 Keyword property MagicDamageFrost auto
@@ -188,7 +185,7 @@ int[] property aiTargetQ auto hidden
 string[] asQueueName
 bool[] abQueueWasEmpty
 
-EquipSlot[] EquipSlots
+EquipSlot[] property EquipSlots auto hidden
 
 string[] asItemNames
 string[] asWeaponTypeNames
@@ -1131,27 +1128,41 @@ function addCurrentItemsOnFirstEnable()
 	int Q = 0
 	form equippedItem
 	string itemName
+	string itemIcon
 	int itemID
 	int itemType
+	int iEquipSlot
 	while Q < 3
 		equippedItem = PlayerRef.GetEquippedObject(Q)
 		if equippedItem
 			itemName = equippedItem.getName()
 			itemID = createItemID(itemName, equippedItem.GetFormID())
 			itemType = equippedItem.GetType()
-			if itemType == 41 ;if it is a weapon get the weapon type
+			itemIcon = GetItemIconName(equippedItem, itemType, itemName)
+			if itemType == 22
+				iEquipSlot = EquipSlots.Find((equippedItem as spell).GetEquipType())
+			elseIf itemType == 41 ;if it is a weapon get the weapon type
 	        	itemType = (equippedItem as Weapon).GetWeaponType()
 	        endIf
-	        if Q == 0 && (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
-	        	Q += 1
+	        if Q == 0 && (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
+	        	Q = 1
 	        endIf
 			int iEquipItem = jMap.object()
 			jMap.setForm(iEquipItem, "iEquipForm", equippedItem)
 			jMap.setInt(iEquipItem, "iEquipItemID", itemID)
 			jMap.setInt(iEquipItem, "iEquipType", itemType)
 			jMap.setStr(iEquipItem, "iEquipName", itemName)
-			jMap.setStr(iEquipItem, "iEquipIcon", GetItemIconName(equippedItem, itemType, itemName))
+			jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
 			if Q < 2
+				if itemType == 22
+					if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
+						jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
+					else
+						jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
+					endIf
+					jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
+				endIf
+				;These will be set correctly by CycleHand() and associated functions
 				jMap.setInt(iEquipItem, "isEnchanted", 0)
 				jMap.setInt(iEquipItem, "isPoisoned", 0)
 			endIf
@@ -2062,7 +2073,7 @@ function checkIfBoundSpellEquipped()
 		hand += 1
 	endWhile
 	;If the player has a bound spell equipped in either hand the event handler script registers for ActorAction 2 - Spell Fire, if not it unregisters for the action
-	EH.boundSpellEquipped = boundSpellEquipped
+	BW.bIsBoundSpellEquipped = boundSpellEquipped
 endFunction
 
 ;Called from iEquip_PlayerEventHandler when OnActorAction receives actionType 2 (should only ever happen when the player has a 'Bound' spell equipped in either hand)
@@ -3045,6 +3056,7 @@ function addToQueue(int Q)
 	form itemForm
 	int itemType
 	int itemID = -1
+	int iEquipSlot
 	bool isEnchanted = false
 	bool isPoisoned = false
 	string itemName = ""
@@ -3058,18 +3070,20 @@ function addToQueue(int Q)
 	if itemForm && itemForm != None
 		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check")
 		itemType = itemForm.GetType()
-		if itemType == 41 || itemType == 26 ;Weapons and shields only
+		if itemType == 22
+			iEquipSlot = EquipSlots.Find((itemForm as spell).GetEquipType())
+			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue, otherwise carry on and add it as per the hotkey press.  We'll flag BothHands spells later.
+				Q = iEquipSlot
+			endIf
+		elseIf itemType == 41 || itemType == 26 ;Weapons and shields only
 			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + ".selectedEntry.isEnchanted")
 		endIf
 		if isItemValidForSlot(Q, itemForm, itemType, itemName)
 			if itemName == ""
 				itemName = itemForm.getName()
 			endIf
-			if Q == 3
-				Potion P = itemForm as Potion
-				if P.isPoison()
-					Q = 4
-				endIf
+			if Q == 3 && (itemForm as Potion).isPoison()
+				Q = 4
 			endIf
 			if !isAlreadyInQueue(Q, itemForm, itemID)
 				bool foundInOtherHandQueue = false
@@ -3089,8 +3103,7 @@ function addToQueue(int Q)
 				endIf
 				bool success = false
 				if itemType == 41 ;if it is a weapon get the weapon type
-					Weapon W = itemForm as Weapon
-		        	itemType = W.GetWeaponType()
+		        	itemType = (itemForm as Weapon).GetWeaponType()
 		        endIf
 				string itemIcon = GetItemIconName(itemForm, itemType, itemName)
 				debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + asQueueName[Q] + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
@@ -3126,7 +3139,7 @@ function addToQueue(int Q)
 							else
 								jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
 							endIf
-							jMap.setInt(iEquipItem, "iEquipSlot", EquipSlots.Find((itemForm as spell).GetEquipType()))
+							jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
 						else
 							jMap.setInt(iEquipItem, "isEnchanted", isEnchanted as int)
 							jMap.setInt(iEquipItem, "isPoisoned", isPoisoned as int)
@@ -3255,7 +3268,7 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
         	if WeaponType <= 4 || WeaponType == 8 ;Fists, 1H weapons and Staffs only
         		isValid = true
         	endIf
-    	elseif (itemType == 22 && !isShout && itemName != iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow") && itemName != iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow")) || itemType == 23 || itemType == 31 || (itemType == 26 && (itemForm as Armor).GetSlotMask() == 512) ;Spell, Scroll, Torch, Shield
+    	elseif (itemType == 22 && !isShout && asBound2HWeapons.Find(itemName) == -1) || itemType == 23 || itemType == 31 || (itemType == 26 && (itemForm as Armor).GetSlotMask() == 512) ;Spell, Scroll, Torch, Shield
     		isValid = true
     	endIf
     elseif Q == 1 ;Right Hand

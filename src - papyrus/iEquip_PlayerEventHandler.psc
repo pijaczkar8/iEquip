@@ -72,9 +72,11 @@ function OniEquipEnabled(bool enabled)
 			WC.refreshVisibleItems()
 		EndIf
 		if bIsThunderchildLoaded || bIsWintersunLoaded
-			RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
-			RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
-			RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+			RegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
+			RegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
+			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
+			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
+			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
 		endIf
 		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
@@ -106,9 +108,11 @@ Event OnPlayerLoadGame()
 			endIf
 		endIf
 		if bIsThunderchildLoaded || bIsWintersunLoaded
-			RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
-			RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
-			RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+			RegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
+			RegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
+			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
+			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
+			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
 		endIf
 		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
@@ -116,7 +120,6 @@ Event OnPlayerLoadGame()
 		RegisterForActorAction(7)
 		RegisterForActorAction(8)
 		RegisterForActorAction(10)
-		BW.bIsBoundSpellEquipped = bIsBoundSpellEquipped
 		BW.onGameLoaded()
 		PO.onGameLoaded()
 		updateAllEventFilters()
@@ -138,19 +141,6 @@ function updateEventFilter(formlist listToUpdate)
 	RemoveInventoryEventFilter(listToUpdate)
 	AddInventoryEventFilter(listToUpdate)
 endFunction
-
-bool Property boundSpellEquipped
-	bool function Get()
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get called")
-		return bIsBoundSpellEquipped
-	endFunction
-
-	function Set(Bool equipped)
-		bIsBoundSpellEquipped = equipped
-		BW.bIsBoundSpellEquipped = equipped
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - bIsBoundSpellEquipped: " + equipped)
-	endFunction
-endProperty
 
 Event OnRaceSwitchComplete()
 	debug.trace("iEquip_WidgetCore OnRaceSwitchComplete called")
@@ -203,11 +193,14 @@ endEvent
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
     ;ToDo - update meditation animation event names
-    if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
+    ;if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
+    if (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
     	bPlayerIsMeditating = true
+    	debug.trace("Look Ma, I'm meditating!")
     	KH.bAllowKeyPress = false
-    elseIf bPlayerIsMeditating && EventName == "IdleGreybeardMeditateExit"
+    elseIf bPlayerIsMeditating && EventName == "idleChairGetUp"
     	bPlayerIsMeditating = false
+    	debug.trace("OK Ma, I'm done meditating!")
     	KH.bAllowKeyPress = true
     else
 	    int iTmp = 2 
@@ -300,13 +293,16 @@ function processQueuedForms()
 			debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
 			;If the item has been equipped in the left, right or shout slot
 			if equippedSlot != -1
-				int itemType
-				;If it's a 2H or ranged weapon we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
-				if equippedSlot == 0 && queuedForm as Weapon
+				int itemType = queuedForm.GetType()
+				int iEquipSlot
+				;If it's a 2H or ranged weapon or a BothHands spell we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
+				if itemType == 22
+					iEquipSlot = WC.EquipSlots.Find((queuedForm as spell).GetEquipType())
+				elseIf itemType == 41
 					itemType = (queuedForm as Weapon).GetWeaponType()
-					if (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
-						equippedSlot = 1
-					endIf
+				endIf
+				if (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
+					equippedSlot = 1
 				endIf
 				bool actionTaken = false
 				int targetIndex
@@ -350,17 +346,23 @@ function processQueuedForms()
 						;If there is space in the target queue create a new jMap object and add it to the queue
 						debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
 						int itemID = WC.createItemID(itemName, queuedForm.GetFormID())
-						itemType = queuedForm.GetType()
-						if itemType == 41 ;if it is a weapon get the weapon type
-				        	itemType = (queuedForm as Weapon).GetWeaponType()
-				        endIf
 						int iEquipItem = jMap.object()
+						string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
 						jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
 						jMap.setInt(iEquipItem, "iEquipItemID", itemID)
 						jMap.setInt(iEquipItem, "iEquipType", itemType)
 						jMap.setStr(iEquipItem, "iEquipName", itemName)
-						jMap.setStr(iEquipItem, "iEquipIcon", WC.GetItemIconName(queuedForm, itemType, itemName))
+						jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
 						if equippedSlot < 2
+							if itemType == 22
+								if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
+									jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
+								else
+									jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
+								endIf
+								jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
+							endIf
+							;These will be set correctly by WC.CycleHand() and associated functions
 							jMap.setInt(iEquipItem, "isEnchanted", 0)
 							jMap.setInt(iEquipItem, "isPoisoned", 0)
 						endIf

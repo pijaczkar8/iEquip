@@ -6,11 +6,6 @@ iEquip_WidgetCore Property WC Auto
 
 bool property bIsBoundSpellEquipped = false auto
 
-event OnInit()
-	iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(Self)
-	iEquip_FormExt.RegisterForBoundWeaponUnequippedEvent(Self)
-endEvent
-
 function OniEquipEnabled()
 	iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(Self)
 	iEquip_FormExt.RegisterForBoundWeaponUnequippedEvent(Self)

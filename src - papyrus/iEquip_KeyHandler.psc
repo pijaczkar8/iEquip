@@ -137,6 +137,8 @@ event OnKeyDown(int KeyCode)
                 ; The player pressed a different key, so force the current one to process if there is one
                 UnregisterForUpdate()
                 OnUpdate()
+            else
+                iMultiTap = 0
             endIf
         endIf
         iWaitingKeyCode = KeyCode
@@ -201,9 +203,8 @@ function runUpdate()
                     WC.openQueueManagerMenu()
                 elseif iAction == 2     ; Edit Mode
                     toggleEditMode()
-                elseif iAction == 3     ; HM
-                    ;HM.openHelpMenu()
-                    debug.MessageBox("This feature is currently disabled")
+                elseif iAction == 3     ; Help Menu
+                    HM.showHelpMenuMain()
                 elseif iAction == 4     ; Refresh Widget
                     WC.refreshWidget()
                 elseif iAction == 5     ; Debug option
