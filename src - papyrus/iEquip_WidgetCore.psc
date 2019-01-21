@@ -1138,12 +1138,12 @@ function addCurrentItemsOnFirstEnable()
 			itemName = equippedItem.getName()
 			itemID = createItemID(itemName, equippedItem.GetFormID())
 			itemType = equippedItem.GetType()
-			itemIcon = GetItemIconName(equippedItem, itemType, itemName)
 			if itemType == 22
 				iEquipSlot = EquipSlots.Find((equippedItem as spell).GetEquipType())
 			elseIf itemType == 41 ;if it is a weapon get the weapon type
 	        	itemType = (equippedItem as Weapon).GetWeaponType()
 	        endIf
+	        itemIcon = GetItemIconName(equippedItem, itemType, itemName)
 	        if Q == 0 && (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
 	        	Q = 1
 	        endIf
@@ -3322,7 +3322,7 @@ return found
 endFunction
 
 string function GetItemIconName(form itemForm, int itemType, string itemName)
-    debug.trace("iEquip_WidgetCore GetItemIconString() called - itemType: " + itemType + ", itemName: " + itemName)
+    debug.trace("iEquip_WidgetCore GetItemIconName() called - itemType: " + itemType + ", itemName: " + itemName)
     string IconName = "Empty"
 
     if itemType < 13 ;It is a weapon
@@ -3419,7 +3419,7 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
 	        endIf
 	    endIf
     endIf
-    debug.trace("iEquip_WidgetCore GetItemIconString() returning IconName as " + IconName)
+    debug.trace("iEquip_WidgetCore GetItemIconName() returning IconName as " + IconName)
     return IconName
 endFunction
 

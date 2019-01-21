@@ -712,7 +712,7 @@ String function getAmmoIcon(form ammoForm, string AmmoName, int isBolt)
 	else
 		;Set base icon string
 		iconName = asAmmoIcons[isBolt]
-		;Check if it is likely to have an additional effect - bit hacky checking the name but I've no idea how to check for attached magic effects!
+		;Check if it is likely to have an additional effect
 		if iEquip_FormExt.HasFire(ammoForm)
 			iconName += "Fire"
 			incrementDamage = true
