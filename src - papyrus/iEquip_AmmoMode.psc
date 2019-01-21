@@ -671,14 +671,14 @@ function updateAmmoListsOnSettingChange()
 endFunction
 
 bool function isAlreadyInAmmoQueue(form itemForm, int targetQ)
-	debug.trace("iEquip_AmmoWidget isAlreadyInQueue() called - itemForm: " + itemForm)
+	debug.trace("iEquip_AmmoMode isAlreadyInQueue() called - itemForm: " + itemForm)
 	bool found = false
 	int i = 0
 	while i < JArray.count(targetQ) && !found
 		found = (itemform == jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm"))
 		i += 1
 	endWhile
-	debug.trace("iEquip_AmmoWidget isAlreadyInQueue() - returning found: " + found)
+	debug.trace("iEquip_AmmoMode isAlreadyInQueue() - returning found: " + found)
 	return found
 endFunction
 
