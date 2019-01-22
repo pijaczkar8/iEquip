@@ -3,6 +3,7 @@ ScriptName iEquip_KeyHandler extends Quest
 
 import Input
 Import UI
+import iEquip_StringExt
 
 iEquip_EditMode Property EM Auto
 iEquip_WidgetCore Property WC Auto
@@ -12,7 +13,6 @@ iEquip_RechargeScript Property RC Auto
 iEquip_HelpMenu Property HM Auto
 
 Actor Property PlayerRef  Auto
-Message Property iEquip_UtilityMenu Auto
 
 ; Main gameplay keys
 Int Property iShoutKey = 21 Auto Hidden ;Y
@@ -196,7 +196,7 @@ function runUpdate()
             
     elseIf iMultiTap == 1   ; Single tap
         if iWaitingKeyCode == iUtilityKey
-            int iAction = iEquip_UtilityMenu.Show() 
+            int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
             
             if iAction != 0             ; Exit
                 if iAction == 1         ; Queue Menu

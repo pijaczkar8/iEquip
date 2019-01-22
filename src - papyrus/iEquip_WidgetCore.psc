@@ -25,6 +25,7 @@ iEquip_PotionScript property PO auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_AddedItemHandler property AD auto
+iEquip_MCM property MCM auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
@@ -55,6 +56,7 @@ ObjectReference property iEquip_MessageObjectReference auto ; populated by scrip
 Message property iEquip_ConfirmAddToQueue auto
 Message property iEquip_OKCancel auto
 Message property iEquip_QueueManagerMenu auto
+Message Property iEquip_UtilityMenu Auto
 
 FormList Property iEquip_AllCurrentItemsFLST Auto
 FormList Property iEquip_RemovedItemsFLST Auto
@@ -948,7 +950,7 @@ event OnMenuOpen(string _sCurrentMenu)
 	sCurrentMenu = _sCurrentMenu
 	if (sCurrentMenu == "InventoryMenu" || sCurrentMenu == "MagicMenu" || sCurrentMenu == "FavoritesMenu") ;if in inventory or magic menu switch states so cycle hotkeys now assign selected item to the relevant queue array
 		if  bIsFirstInventoryMenu
-			debug.MessageBox("$iEquip_WC_msg_inventoryFirstLook")
+			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_inventoryFirstLook"))
 			bIsFirstInventoryMenu = false
 		endIf
 		if sCurrentMenu == "InventoryMenu" || sCurrentMenu == "MagicMenu"
@@ -976,6 +978,8 @@ event OnMenuClose(string _sCurrentMenu)
 	if (_sCurrentMenu == "InventoryMenu" || _sCurrentMenu == "MagicMenu" || _sCurrentMenu == "FavoritesMenu") && bItemsWaitingForID ;&& !utility.IsInMenuMode()
 		findAndFillMissingItemIDs()
 		bItemsWaitingForID = false
+	elseIf _sCurrentMenu == "Journal Menu" && MCM.bEnabled
+		MCM.bFirstEnabled = false
 	endIf
 	sCurrentMenu = ""
 	sEntryPath = ""
@@ -1084,7 +1088,7 @@ bool property isEnabled
                     
                     ResetWidgetArrays()
                     Utility.Wait(1.5)
-                    debug.MessageBox("$iEquip_WC_msg_addingItems")
+                    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
 				endIf
                 
 				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
@@ -1292,7 +1296,7 @@ function AddWidget( string sDescription, string sPath, float fX, float fY, float
 		iIndex += 1
 	endWhile
 	if iIndex >= asWidgetDescriptions.Length
-		Debug.MessageBox("$iEquip_WC_msg_failedToAddWidget{" + sDescription + "}")
+		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_failedToAddWidget{" + sDescription + "}"))
 	else
 		asWidgetDescriptions[iIndex] = sDescription
 		asWidgetElements[iIndex] = sPath
@@ -2563,8 +2567,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	checkIfBoundSpellEquipped()
 	if (itemType == 7 || itemType == 9) && bAmmoModeFirstLook
 		Utility.Wait(0.5)
-		Debug.MessageBox("$iEquip_WC_msg_AmmoModeFirstLook1")
-		Debug.MessageBox("$iEquip_WC_msg_AmmoModeFirstLook2")
+		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AmmoModeFirstLook1"))
+		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AmmoModeFirstLook2"))
 		bAmmoModeFirstLook = false
 	endIf
 	;if we've just equipped a 1H item in RH forcing toggleAmmoMode, now we can re-equip the left hand making sure to block QuickDualCast
@@ -2753,12 +2757,21 @@ function consumeItem()
     endIf
 endFunction
 
-int function showMessageWithCancel(string theString)
+int function showTranslatedMessage(int theMenu, string theString)
 	debug.trace("iEquip_WidgetCore showMessageWithCancel called")
 	iEquip_MessageObjectReference = PlayerRef.PlaceAtMe(iEquip_MessageObject)
 	iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
 	iEquip_MessageAlias.GetReference().GetBaseObject().SetName(theString)
-	int iButton = iEquip_OKCancel.Show()
+	int iButton
+	if theMenu == 0
+		iButton = iEquip_OKCancel.Show()
+	elseIf theMenu == 1
+		iButton = iEquip_ConfirmAddToQueue.Show()
+	elseIf theMenu == 2
+		iButton = iEquip_QueueManagerMenu.Show()
+	elseIf theMenu == 3
+		iButton = iEquip_UtilityMenu.Show()
+	endIf
 	iEquip_MessageAlias.Clear()
 	iEquip_MessageObjectReference.Disable()
 	iEquip_MessageObjectReference.Delete()
@@ -2774,7 +2787,6 @@ function applyPoison(int Q)
             return
         endIf
         bool ApplyWithoutUpdatingWidget = false
-        string messageString
         int iButton
         string newPoison = jMap.getStr(targetObject, "iEquipName")
         bool isLeftHand = true
@@ -2792,9 +2804,7 @@ function applyPoison(int Q)
             debug.notification("$iEquip_WC_not_noWeapon{" + handName + "}")
             return
         elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon
-            ;messagestring = "The " + weaponName + " in your " + handName + " hand doesn't appear to match what's currently showing in iEquip. Do you wish to carry on and apply " + newPoison + " to it anyway?"
-            messagestring = "$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"
-            iButton = showMessageWithCancel(messageString)
+            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"))
             if iButton != 0
                 return
             endIf
@@ -2810,8 +2820,7 @@ function applyPoison(int Q)
                     return
                 else
                     if iShowPoisonMessages < 2
-                        messagestring = "$iEquip_WC_msg_CleanApply{" + weaponName + "}{" + currentPoisonName + "}{" + newPoison + "}"
-                        iButton = showMessageWithCancel(messageString)
+                        iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_CleanApply{" + weaponName + "}{" + currentPoisonName + "}{" + newPoison + "}"))
                         if iButton != 0
                             return
                         endIf
@@ -2819,16 +2828,13 @@ function applyPoison(int Q)
                     _Q2C_Functions.WornRemovePoison(PlayerRef, Q)
                 endIf	
             elseif iShowPoisonMessages < 2
-                messagestring = "$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"
-                iButton = showMessageWithCancel(messageString)
+                iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"))
                 if iButton != 0
                     return
                 endIf
             endIf
         elseif iShowPoisonMessages == 0
-            ;messagestring = "Would you like to apply " + newPoison + " to your " + weaponName + "?"
-            messagestring = "$iEquip_WC_msg_WouldYouLikeToApply{" + newPoison + "}{" + weaponName + "}"
-            iButton = showMessageWithCancel(messageString)
+            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_WouldYouLikeToApply{" + newPoison + "}{" + weaponName + "}"))
             if iButton != 0
                 return
             endIf
@@ -3094,7 +3100,7 @@ function addToQueue(int Q)
 					endIf
 				endIf
 				if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2) && !bAllowSingleItemsInBothQueues
-					debug.MessageBox("$iEquip_WC_msg_InOtherQ{" + itemName + "}")
+					debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_InOtherQ{" + itemName + "}"))
 					return
 				endIf
 				if itemID < 1
@@ -3109,17 +3115,12 @@ function addToQueue(int Q)
 				int iEquipItem = jMap.object()
 				if jArray.count(aiTargetQ[Q]) < iMaxQueueLength
 					if bShowQueueConfirmationMessages
-						iEquip_MessageObjectReference = playerREF.PlaceAtMe(iEquip_MessageObject)
-						iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
+						int iButton
 						if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
-							iEquip_MessageAlias.GetReference().GetBaseObject().SetName("$iEquip_WC_msg_AddToBoth{" + itemName + "}{" + asQueueName[Q] + "}")
+							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToBoth{" + itemName + "}{" + asQueueName[Q] + "}"))
 						else
-							iEquip_MessageAlias.GetReference().GetBaseObject().SetName("$iEquip_WC_msg_AddToQ{" + itemName + "}{" + asQueueName[Q] + "}")
+							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
 						endIf
-						int iButton = iEquip_ConfirmAddToQueue.Show()
-						iEquip_MessageAlias.Clear()
-		   	 			iEquip_MessageObjectReference.Disable()
-		    			iEquip_MessageObjectReference.Delete()
 						if iButton != 0
 							return
 						endIf
@@ -3160,7 +3161,7 @@ function addToQueue(int Q)
 			endIf
 		else
 			if bIsFirstFailedToAdd
-				debug.MessageBox("$iEquip_WC_msg_failToAdd")
+				debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_failToAdd"))
 				bIsFirstFailedToAdd = false
 			else
 				debug.notification("$iEquip_WC_not_CannotAdd{" + itemName + "}{"  + asQueueName[Q] + "}")
@@ -3275,13 +3276,7 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
     		isValid = true
     	elseif itemType == 42 ;Ammo - looking for throwing weapons here, and these can only be equipped in the right hand
         	if (iEquip_FormExt.IsJavelin(itemForm) && itemName != "Javelin") || iEquip_FormExt.IsSpear(itemForm) || iEquip_FormExt.IsGrenade(itemForm) || iEquip_FormExt.IsThrowingKnife(itemForm) || iEquip_FormExt.IsThrowingAxe(itemForm) ;Javelin is the display name for those from Throwing Weapons Lite/Redux, the javelins from Spears by Soolie all have more descriptive names than just 'javelin' and they are treated as arrows or bolts so can't be right hand equipped
-        		iEquip_MessageObjectReference = playerREF.PlaceAtMe(iEquip_MessageObject)
-				iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
-				iEquip_MessageAlias.GetReference().GetBaseObject().SetName("$iEquip_WC_msg_throwingWeapons{" + itemName + "}{" + itemName + "}{" + asQueueName[Q] + "}")
-				int iButton = iEquip_ConfirmAddToQueue.Show()
-				iEquip_MessageAlias.Clear()
-   	 			iEquip_MessageObjectReference.Disable()
-    			iEquip_MessageObjectReference.Delete()
+				int iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_throwingWeapons{" + itemName + "}{" + itemName + "}{" + asQueueName[Q] + "}"))
 				if iButton != 0
 					isValid = false
 				else
@@ -3454,7 +3449,7 @@ endFunction
 function openQueueManagerMenu(int Q = -1)
 	debug.trace("iEquip_WidgetCore openQueueManagerMenu() called")
 	if Q == -1
-		Q = iEquip_QueueManagerMenu.Show() ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue
+		Q = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_queuemenu_title")) ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue
 	else
 		bJustUsedQueueMenuDirectAccess = true
 	endIf
@@ -3462,7 +3457,7 @@ function openQueueManagerMenu(int Q = -1)
 		Q -= 1
 		int queueLength = jArray.count(aiTargetQ[Q])
 		if queueLength < 1
-			debug.MessageBox("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}")
+			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}"))
 			recallQueueMenu()
 		else
 			int i = 0
@@ -3581,7 +3576,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	elseIf bFirstAttemptToDeletePotionGroup
 		bFirstAttemptToDeletePotionGroup = false
 		((Self as Form) as iEquip_UILIB).closeQueueMenu()
-		debug.MessageBox("$iEquip_WC_msg_deletePotionGroup")
+		debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
 		initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
 	endIf
 endFunction
@@ -3659,7 +3654,7 @@ function QueueMenuClearQueue()
 	else
 		setSlotToEmpty(iQueueMenuCurrentQueue)
 	endIf
-	debug.MessageBox("$iEquip_WC_msg_QCleared{" + asQueueName[iQueueMenuCurrentQueue] + "}")
+	debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_QCleared{" + asQueueName[iQueueMenuCurrentQueue] + "}"))
 	recallQueueMenu()
 endFunction
 

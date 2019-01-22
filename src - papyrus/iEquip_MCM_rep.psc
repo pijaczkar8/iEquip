@@ -48,7 +48,7 @@ function initData()
 endFunction
 
 function drawPage()
-    if MCM.bEnabled
+    if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "$iEquip_MCM_rep_lbl_showEnchRechHelp", "")
         MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "$iEquip_MCM_rep_lbl_enblEnchRech", RC.bRechargingEnabled)
         MCM.AddEmptyOption()
