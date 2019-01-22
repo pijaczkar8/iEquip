@@ -535,6 +535,10 @@ function addBoundAmmoToQueue(form boundAmmo, string ammoName)
 	if jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_BoundArrow" || jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_BoundBolt"
 		;debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding Form to dummy object")
 		jMap.setForm(targetObject, "iEquipForm", boundAmmo)
+		;Check and update the name if needed ie Arcane Archery equips bound ammo with names matching the weapon type such as Fire Arrow, etc
+		if jMap.getStr(targetObject, "iEquipName") != ammoName
+			jMap.setStr(targetObject, "iEquipName", ammoName)
+		endIf
 	;Otherwise create a new jMap object for the ammo and add it to the relevant ammo queue
 	else
 		;debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding new bound ammo object")

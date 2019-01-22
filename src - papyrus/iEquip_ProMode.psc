@@ -657,14 +657,12 @@ bool function quickShield(bool forceSwitch = false)
 	int found = -1
 	int foundType
 	int targetObject
-	form spellForm
 	bool rightHandHasSpell = ((PlayerRef.GetEquippedItemType(1) == 9) && !(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 42))
 	debug.trace("iEquip_ProMode quickShield() - RH current item: " + WC.asCurrentlyEquipped[1] + ", RH item type: " + (PlayerRef.GetEquippedItemType(1)))
 	;if player currently has a spell equipped in the right hand or we've enabled Prefer Magic in the MCM search for a ward spell first
 	if !forceSwitch && (rightHandHasSpell || bQuickShieldPreferMagic)
 		while i < leftCount && found == -1
-			spellForm = jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm")
-			if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(spellForm)
+			if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as spell)
 				found = i
 				foundType = 22
 			endIf
@@ -694,8 +692,7 @@ bool function quickShield(bool forceSwitch = false)
 		if found == -1 && !forceSwitch
 			i = 0
 			while i < leftCount && found == -1
-				spellForm = jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm")
-				if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(spellForm)
+				if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as spell)
 					found = i
 					foundType = 22
 				endIf

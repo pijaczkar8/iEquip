@@ -536,7 +536,7 @@ int function getPotionQueue(potion potionToCheck)
     debug.trace("iEquip_PotionScript getPotionQueue called")
     int index = potionToCheck.GetCostliestEffectIndex()
     magicEffect strongestEffect = potionToCheck.GetNthEffectMagicEffect(index)
-    debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " CostliestEffectIndex: " + index + ", strongest magic effect: " + strongestEffect as string)
+    debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + index + ", strongest magic effect: " + strongestEffect as string)
     ;Decide which potion queue it should be added to
     int Q = aStrongestEffects.find(strongestEffect) ;Returns -1 if not found
     ;If it's not a regular effect check for a consummate effect

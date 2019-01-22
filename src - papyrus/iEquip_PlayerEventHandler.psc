@@ -280,8 +280,8 @@ function processQueuedForms()
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
 		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
-		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here
-		if (Game.GetModName(queuedForm.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
+		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
+		if !((queuedForm as weapon) && iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && (Game.GetModName(queuedForm.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
 			int equippedSlot = -1
 			if PlayerRef.GetEquippedObject(0) == queuedForm
 				equippedSlot = 0
@@ -409,8 +409,8 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		PO.onPotionRemoved(akBaseItem)
 	elseIf akBaseItem as ammo
 		AM.onAmmoRemoved(akBaseItem)
-    ;Otherwise handle anything else in left, right or shout queue
-	else
+    ;Otherwise handle anything else in left, right or shout queue other than bound weapons
+	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
 		i = 0
 		int foundAt
 		bool actionTaken = false

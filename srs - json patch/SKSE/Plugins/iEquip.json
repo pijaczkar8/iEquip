@@ -820,13 +820,13 @@
 		},
 		{
 			"name": "Eminent Ward",
-			"pluginName": "WardFunctionalitiesExtended.esp",
+			"pluginName": "WardsFunctionalitiesExtended.esp",
 			"formID": "0x061BE4",
 			"isLightMod": false
 		},
 		{
 			"name": "Master Ward",
-			"pluginName": "WardFunctionalitiesExtended.esp",
+			"pluginName": "WardsFunctionalitiesExtended.esp",
 			"formID": "0x066CEB",
 			"isLightMod": false
 		}

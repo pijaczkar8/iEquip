@@ -2075,6 +2075,7 @@ function checkIfBoundSpellEquipped()
 		endIf
 		hand += 1
 	endWhile
+	debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped called - boundSpellEquipped: " + boundSpellEquipped)
 	;If the player has a bound spell equipped in either hand the event handler script registers for ActorAction 2 - Spell Fire, if not it unregisters for the action
 	BW.bIsBoundSpellEquipped = boundSpellEquipped
 endFunction
@@ -2109,7 +2110,7 @@ function onBoundWeaponUnequipped(weapon a_weap, int hand)
 	if bBlockSwitchBackToBoundSpell
 		bBlockSwitchBackToBoundSpell = false
 	else
-		if PlayerRef.GetEquippedItemType(hand) == 9 && (PlayerRef.GetEquippedObject(hand)).GetName() == a_weap.GetName()
+		if PlayerRef.GetEquippedItemType(hand) == 9 && iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedObject(hand) as spell) && (PlayerRef.GetEquippedObject(hand).GetName() == asCurrentlyEquipped[hand])
 			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIconOnly")
 			;Switch back to the spell icon from the bound weapon icon without updating the name as it should be the same anyway
 			if(iHandle)
@@ -2758,7 +2759,7 @@ function consumeItem()
 endFunction
 
 int function showTranslatedMessage(int theMenu, string theString)
-	debug.trace("iEquip_WidgetCore showMessageWithCancel called")
+	debug.trace("iEquip_WidgetCore showTranslatedMessage called - message type: " + theMenu)
 	iEquip_MessageObjectReference = PlayerRef.PlaceAtMe(iEquip_MessageObject)
 	iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
 	iEquip_MessageAlias.GetReference().GetBaseObject().SetName(theString)
@@ -3080,6 +3081,9 @@ function addToQueue(int Q)
 			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue, otherwise carry on and add it as per the hotkey press.  We'll flag BothHands spells later.
 				Q = iEquipSlot
 			endIf
+			if iEquip_FormExt.IsSpellWard(itemForm) ;The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
+				Q = 0
+			endIf
 		elseIf itemType == 41 || itemType == 26 ;Weapons and shields only
 			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + ".selectedEntry.isEnchanted")
 		endIf
@@ -3258,7 +3262,6 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
 	bool isValid = false
 	bool isShout
 	if itemType == 22
-		;isShout = ((((itemForm as Spell).GetEquipType() as form).GetFormID()) == voiceEquipSlot)
 		isShout = ((itemForm as Spell).GetEquipType() == EquipSlots[4])
 	endIf
 
