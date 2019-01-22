@@ -541,10 +541,15 @@ function addBoundAmmoToQueue(form boundAmmo, string ammoName)
 		endIf
 	;Otherwise create a new jMap object for the ammo and add it to the relevant ammo queue
 	else
-		;debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding new bound ammo object")
 		int boundAmmoObj = jMap.object()
 		jMap.setForm(boundAmmoObj, "iEquipForm", boundAmmo)
-		jMap.setStr(boundAmmoObj, "iEquipIcon", asBoundAmmoIcons[Q])
+		;Check for special arrows (ie Arcane Archery Fire Arrows, etc) and set icon to the magic arrows if so, if not set it to the bound ammo icon
+		string ammoIcon = getAmmoIcon(boundAmmo, ammoName, Q)
+		if ammoIcon == asAmmoIcons[Q]
+			ammoIcon = asBoundAmmoIcons[Q]
+		endIf
+		debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding new bound ammo object, ammoName: " + ammoName + ", icon: " + ammoIcon)
+		jMap.setStr(boundAmmoObj, "iEquipIcon", ammoIcon)
 		jMap.setStr(boundAmmoObj, "iEquipName", ammoName)
 		;Set the current queue position and name to the last index (ie the newly added bound ammo)
 		jArray.addObj(aiTargetQ[Q], boundAmmoObj)

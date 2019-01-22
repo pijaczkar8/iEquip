@@ -645,11 +645,11 @@ event EquipAllComplete(string sEventName, string sStringArg, Float fNumArg, Form
 endEvent
 
 ;The forceSwitch bool is set to true when quickShield is called by WC.removeItemFromQueue when a previously equipped shield has been removed, so we're only looking for a shield, not a ward
-bool function quickShield(bool forceSwitch = false)
+function quickShield(bool forceSwitch = false)
 	debug.trace("iEquip_ProMode quickShield called")
 	;if right hand or ranged weapon in right hand and bQuickShield2HSwitchAllowed not enabled then return out
 	if !bQuickShieldEnabled || (!forceSwitch && ((WC.RightHandWeaponIs2hOrRanged() && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
-		return false
+		return
 	endIf
 	int i = 0
 	int targetArray = WC.aiTargetQ[0]
