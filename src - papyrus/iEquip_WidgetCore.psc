@@ -471,7 +471,7 @@ Event OnWidgetLoad()
 
 	if isEnabled
 		KH.RegisterForGameplayKeys()
-		debug.notification("iEquip controls unlocked and ready to use")
+		debug.notification("$iEquip_WC_not_controlsUnlocked")
 	endIf
 	bLoading = False
 	debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
@@ -1418,7 +1418,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	int queueLength = JArray.count(targetArray)
 	debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
 	if queueLength == 0
-		debug.notification("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}")
+		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}"))
 	;if Preselect Mode is enabled then left/right/shout needs to cycle the preselect slot not the main widget. if shout preselect is disabled cycle main shout slot
 	elseif (bPreselectMode && !bPreselectSwitchingHands && (Q < 2 || (Q == 2 && PM.bShoutPreselectEnabled))) || (Q == 0 && bAmmoMode)
 		;if preselect name not shown then first cycle press shows name without advancing the queue
@@ -2802,7 +2802,7 @@ function applyPoison(int Q)
             weaponName = currentWeapon.GetName()
         endIf
         if (!currentWeapon)
-            debug.notification("$iEquip_WC_not_noWeapon{" + handName + "}")
+            debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noWeapon{" + handName + "}"))
             return
         elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon
             iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"))
@@ -2817,7 +2817,7 @@ function applyPoison(int Q)
             string currentPoisonName = currentPoison.GetName()
             if currentPoison != poisonToApply
                 if !bAllowPoisonSwitching
-                    debug.notification("$iEquip_WC_not_alreadyPoisioned{" + weaponName + "}{" + currentPoisonName + "}")
+                    debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_alreadyPoisioned{" + weaponName + "}{" + currentPoisonName + "}"))
                     return
                 else
                     if iShowPoisonMessages < 2
@@ -3155,20 +3155,20 @@ function addToQueue(int Q)
 					EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
 					success = true
 				else
-					debug.notification("$iEquip_WC_not_QIsFull{" + asQueueName[Q] + "}")
+					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_QIsFull{" + asQueueName[Q] + "}"))
 				endIf
 				if success
-					debug.notification("$iEquip_WC_not_AddedToQ{" + itemName + "}{" + asQueueName[Q] + "}")
+					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AddedToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
 				endIf
 			else
-				debug.notification("$iEquip_WC_not_AlreadyAdded{" + itemName + "}{" + asQueueName[Q] + "}")
+				debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AlreadyAdded{" + itemName + "}{" + asQueueName[Q] + "}"))
 			endIf
 		else
 			if bIsFirstFailedToAdd
 				debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_failToAdd"))
 				bIsFirstFailedToAdd = false
 			else
-				debug.notification("$iEquip_WC_not_CannotAdd{" + itemName + "}{"  + asQueueName[Q] + "}")
+				debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_CannotAdd{" + itemName + "}{"  + asQueueName[Q] + "}"))
 			endIf
 		endIf
 	endIf
@@ -3495,7 +3495,7 @@ function initQueueMenu(int Q, int queueLength, bool update = false, int iIndex =
 	if update
 		QueueMenu_RefreshList(iconNames, itemNames, enchFlags, poisonFlags, iIndex)
 	else
-		string title = "$iEquip_WC_lbl_titleWithCount{" + queueLength + "}{" + asQueueName[Q] + "}"
+		string title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_titleWithCount{" + queueLength + "}{" + asQueueName[Q] + "}")
 		((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNames, itemNames, enchFlags, poisonFlags, 0, 0, bJustUsedQueueMenuDirectAccess)
 	endIf
 endFunction
@@ -3588,9 +3588,9 @@ function QueueMenuUpdate(int iCount, int iIndex)
 	debug.trace("iEquip_WidgetCore QueueMenuUpdate() called")
 	string title
 	if iCount <= 0
-		title = "$iEquip_WC_common_EmptyQueue{" + asQueueName[iQueueMenuCurrentQueue] + "}"
+		title = iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[iQueueMenuCurrentQueue] + "}")
 	else
-		title = "$iEquip_WC_lbl_titleWithCount{" + iCount + "}{" + asQueueName[iQueueMenuCurrentQueue] + "}" 
+		title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_titleWithCount{" + iCount + "}{" + asQueueName[iQueueMenuCurrentQueue] + "}")
 	endIf
 	QueueMenu_RefreshTitle(title)
 	initQueueMenu(iQueueMenuCurrentQueue, iCount, true, iIndex)

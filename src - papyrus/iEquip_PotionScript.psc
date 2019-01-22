@@ -883,7 +883,7 @@ function selectAndConsumePotion(int potionGroup)
                 debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
             endIf
         else
-            debug.notification("You do not appear to have any health potions left")
+            debug.notification("$iEquip_PO_not_noneLeft")
         endIf
     endIf
 endFunction

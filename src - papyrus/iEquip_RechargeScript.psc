@@ -2,6 +2,7 @@
 scriptName iEquip_RechargeScript extends Quest
 
 import iEquip_SoulSeeker
+import iEquip_StringExt
 
 iEquip_ChargeMeters Property CM Auto
 iEquip_RechargeLeftFXScript Property LFX Auto
@@ -19,6 +20,8 @@ bool Property bIsRequiemLoaded = false Auto Hidden
 
 float[] afAmountToRecharge
 float[] afSkillPointsToAdd
+
+string[] asSoulNames
 
 event OnInit()
 	debug.trace("iEquip_RechargeScript OnInit called")
@@ -38,6 +41,14 @@ event OnInit()
 	afSkillPointsToAdd[3] = 0.2
 	afSkillPointsToAdd[4] = 0.4
 	afSkillPointsToAdd[5] = 0.6
+
+    asSoulNames = new string[6]
+    asSoulNames[0] = ""
+    asSoulNames[1] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_petty")
+    asSoulNames[2] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_lesser")
+    asSoulNames[3] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_common")
+    asSoulNames[4] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_greater")
+    asSoulNames[5] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_grand")
 endEvent
 
 function rechargeWeapon(int Q)
@@ -52,7 +63,7 @@ function rechargeWeapon(int Q)
         float requiredCharge = maxCharge - currentCharge
         debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
         if requiredCharge < 1.0
-            debug.Notification("This weapon is already fully charged")
+            debug.Notification("$iEquip_RC_not_alreadyFull")
         else
             int requiredSoul = getRequiredSoul(Q, requiredCharge)
             if requiredSoul > 0
@@ -72,9 +83,10 @@ function rechargeWeapon(int Q)
                         PlayerRef.ModActorValue(weaponToRecharge, requiredCharge)
                     endIf
                     game.AdvanceSkill("Enchanting", afSkillPointsToAdd[soulSize])
+                    debug.Notification(asSoulNames[soulSize])
                     CM.checkAndUpdateChargeMeter(Q, true)
                 else
-                    debug.Notification("No soul found")
+                    debug.Notification("$iEquip_RC_not_noSoul")
                 endIf
             endIf
         endIf

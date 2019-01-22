@@ -772,7 +772,7 @@ bool function quickShield(bool forceSwitch = false)
 			;If we've forced quickShield because a previously equipped shield was removed from the player and we haven't been able to find another in the left queue we now need to cycle the left queue
 			WC.cycleSlot(0, false, true)
 		else
-			debug.notification("iEquip QuickShield did not find a shield or ward in your left hand queue")
+			debug.notification("$iEquip_PM_not_QSNotFound")
 		endIf
 	endIf
 endFunction
