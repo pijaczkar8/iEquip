@@ -2078,14 +2078,14 @@ function checkIfBoundSpellEquipped()
 	bool boundSpellEquipped = false
 	int hand = 0
 	while hand < 2
-		if PlayerRef.GetEquippedItemType(hand) == 9 && iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand))
+		if PlayerRef.GetEquippedItemType(hand) == 9 && (iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand)) || (Game.GetModName(PlayerRef.GetEquippedObject(hand).GetFormID() / 0x1000000) != "Bound Shield.esp"))
 			boundSpellEquipped = true
 		endIf
 		hand += 1
 	endWhile
 	debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped called - boundSpellEquipped: " + boundSpellEquipped)
 	;If the player has a bound spell equipped in either hand the event handler script registers for ActorAction 2 - Spell Fire, if not it unregisters for the action
-	BW.bIsBoundSpellEquipped = boundSpellEquipped
+	EH.boundSpellEquipped = boundSpellEquipped
 endFunction
 
 ;Called from iEquip_PlayerEventHandler when OnActorAction receives actionType 2 (should only ever happen when the player has a 'Bound' spell equipped in either hand)
@@ -2576,9 +2576,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		endIf
 		Utility.Wait(0.2)
 	endIf
+	checkIfBoundSpellEquipped()
 	checkAndUpdatePoisonInfo(Q)
 	CM.checkAndUpdateChargeMeter(Q)
-	checkIfBoundSpellEquipped()
 	if (itemType == 7 || itemType == 9) && bAmmoModeFirstLook
 		Utility.Wait(0.5)
 		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AmmoModeFirstLook1"))

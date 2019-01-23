@@ -567,7 +567,7 @@ endState
 
 State pro_tgl_altSpll
     event OnBeginState()
-    	If (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[0]) || currentEvent == "Default"
+    	If (currentEvent == "Select") || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.abQuickDualCastSchoolAllowed[0] = !WC.abQuickDualCastSchoolAllowed[0] 
             else
@@ -581,7 +581,7 @@ endState
 
 State pro_tgl_conjSpll
     event OnBeginState()
-        If (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[1]) || currentEvent == "Default"
+        If (currentEvent == "Select") || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.abQuickDualCastSchoolAllowed[1] = !WC.abQuickDualCastSchoolAllowed[1] 
             else
@@ -595,7 +595,7 @@ endState
 
 State pro_tgl_destSpll
     event OnBeginState()
-        If (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[2]) || currentEvent == "Default"
+        If (currentEvent == "Select") || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.abQuickDualCastSchoolAllowed[2] = !WC.abQuickDualCastSchoolAllowed[2] 
             else
@@ -609,7 +609,7 @@ endState
 
 State pro_tgl_illSpll
     event OnBeginState()
-        If (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[3]) || currentEvent == "Default"
+        If (currentEvent == "Select") || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.abQuickDualCastSchoolAllowed[3] = !WC.abQuickDualCastSchoolAllowed[3] 
             else
@@ -623,7 +623,7 @@ endState
 
 State pro_tgl_restSpll
     event OnBeginState()
-        If (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[4]) || currentEvent == "Default"
+        If (currentEvent == "Select") || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.abQuickDualCastSchoolAllowed[4] = !WC.abQuickDualCastSchoolAllowed[4] 
             else
