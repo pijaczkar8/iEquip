@@ -2533,9 +2533,10 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		if itemType == 22
 			PlayerRef.EquipSpell(targetItem as Spell, Q)
 			if bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
-				string spellSchool = jMap.getStr(jArray.getObj(aiTargetQ[Q], targetIndex), "iEquipSchool")
+				string spellSchool = jMap.getStr(targetObject, "iEquipSchool")
 				string spellName = targetItem.GetName()
-				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && !(spellSchool == "Conjuration" && (asBound2HWeapons.find(spellName) > -1))
+				;Only allow QuickDualCast is the feature is enabled for this school, and if the equipped spell is GetEquipType == 2 (EitherHand), and as long as it's not a Bound 2H item or shield
+				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !(spellSchool == "Conjuration" && (asBound2HWeapons.find(spellName) > -1))
 					debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
 					if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "iEquipName"), spellSchool)
 						bSwitchingHands = false ;Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
