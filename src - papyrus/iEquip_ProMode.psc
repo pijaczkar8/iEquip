@@ -7,6 +7,7 @@ Import Utility
 import _Q2C_Functions
 import iEquip_FormExt
 import iEquip_SpellExt
+import iEquip_StringExt
 
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
@@ -133,10 +134,10 @@ function togglePreselectMode(bool enablingEditMode = false)
 		PreselectModeAnimateIn()
 		if bPreselectModeFirstLook && !WC.bRefreshingWidget && !WC.EM.isEditMode
 			Utility.Wait(1.0)
-			Debug.MessageBox("$iEquip_PM_msg_firstLook")
+			Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstLook"))
 			bPreselectModeFirstLook = false
 			if WC.RightHandWeaponIsRanged() && bAmmoModePreselectModeFirstLook
-				Debug.MessageBox("$iEquip_PM_msg_firstRanged")
+				Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
 				bAmmoModePreselectModeFirstLook = false
 			endIf
 		endIf
@@ -463,7 +464,7 @@ function equipPreselectedItem(int Q)
 			endIf
 			if AM.bAmmoMode && bAmmoModePreselectModeFirstLook
 				Utility.Wait(1.8)
-				Debug.MessageBox("$iEquip_PM_msg_firstRanged")
+				Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
 				bAmmoModePreselectModeFirstLook = false
 			endIf
 		endIf
@@ -627,7 +628,7 @@ function equipAllPreselectedItems()
 	endIf
 	if AM.bAmmoMode && bAmmoModePreselectModeFirstLook
 		Utility.Wait(1.0)
-		Debug.MessageBox("$iEquip_PM_msg_firstRanged")
+		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
 		bAmmoModePreselectModeFirstLook = false
 	endIf
 endFunction
@@ -772,7 +773,7 @@ function quickShield(bool forceSwitch = false)
 			;If we've forced quickShield because a previously equipped shield was removed from the player and we haven't been able to find another in the left queue we now need to cycle the left queue
 			WC.cycleSlot(0, false, true)
 		else
-			debug.notification("$iEquip_PM_not_QSNotFound")
+			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QSNotFound"))
 		endIf
 	endIf
 endFunction
@@ -893,7 +894,7 @@ function quickRanged()
                     endIf
                 endIf
                 if !actionTaken
-                    debug.notification("$iEquip_PM_not_QRNoRanged")
+                    debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QRNoRanged"))
                 endIf
             endIf
         endIf
@@ -1272,7 +1273,7 @@ function quickHeal()
                 endIf
             endIf
             if !actionTaken
-                debug.notification("$iEquip_PM_not_QHNotFound")
+                debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QHNotFound"))
             endIf
         endIf
     endIf

@@ -4,7 +4,7 @@ Import iEquip_FormExt
 
 iEquip_WidgetCore Property WC Auto
 
-bool property bIsBoundSpellEquipped = false auto
+bool property bIsBoundSpellEquipped = false auto hidden
 
 function OniEquipEnabled()
 	iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(Self)
@@ -42,6 +42,6 @@ Event OnBoundWeaponUnequipped(Weapon a_weap, Int a_unequipSlot)
 		else
 			a_unequipSlot = 1
 		endIf
-		WC.onBoundWeaponUnequipped(a_weap, a_unequipSlot)
+		WC.onBoundWeaponUnequipped(a_unequipSlot)
 	endIf
 EndEvent

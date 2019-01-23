@@ -218,6 +218,7 @@ bool[] property abIsPoisonNameShown auto hidden
 int[] property aiPoisonNameElements auto hidden
 bool[] property abPoisonInfoDisplayed auto hidden
 
+bool[] property abPotionGroupEnabled auto hidden
 string[] asPotionGroups
 bool[] property abPotionGroupEmpty auto hidden
 bool property bConsumableIconFaded = false auto hidden
@@ -274,6 +275,7 @@ Event OnWidgetInit()
 	abIsPoisonNameShown = new bool[2]
 	abPoisonInfoDisplayed = new bool[2]
 	abQuickDualCastSchoolAllowed = new bool[5]
+	abPotionGroupEnabled = new bool[3]
 	
 	int i = 0
 	while i < 8
@@ -286,6 +288,7 @@ Event OnWidgetInit()
 			if i < 3
 				aiCurrentlyPreselected[i] = -1
 				abQueueWasEmpty[i] = true
+				abPotionGroupEnabled[i] = false
 				abPotionGroupEmpty[i] = true
 				abIsCounterShown[i] = false
 				if i < 2
@@ -912,26 +915,32 @@ function initialisemoreHUDArray()
     PO.initialisemoreHUDArray()
 endFunction
 
-function addPotionGroups()
-	debug.trace("iEquip_WidgetCore addPotionGroups called")
-	int healthPotionGroup = jMap.object()
-	int staminaPotionGroup = jMap.object()
-	int magickaPotionGroup = jMap.object()
-
-	jMap.setInt(healthPotionGroup, "iEquipType", 46)
-	jMap.setStr(healthPotionGroup, "iEquipName", "$iEquip_common_HealthPotions")
-	jMap.setStr(healthPotionGroup, "iEquipIcon", "HealthPotion")
-	jArray.addObj(aiTargetQ[3], healthPotionGroup)
-
-	jMap.setInt(staminaPotionGroup, "iEquipType", 46)
-	jMap.setStr(staminaPotionGroup, "iEquipName", "$iEquip_common_StaminaPotions")
-	jMap.setStr(staminaPotionGroup, "iEquipIcon", "StaminaPotion")
-	jArray.addObj(aiTargetQ[3], staminaPotionGroup)
-
-	jMap.setInt(magickaPotionGroup, "iEquipType", 46)
-	jMap.setStr(magickaPotionGroup, "iEquipName", "$iEquip_common_MagickaPotions")
-	jMap.setStr(magickaPotionGroup, "iEquipIcon", "MagickaPotion")
-	jArray.addObj(aiTargetQ[3], magickaPotionGroup)
+function addPotionGroups(int groupToAdd = -1)
+	debug.trace("iEquip_WidgetCore addPotionGroups called - groupToAdd: " + groupToAdd)
+	if groupToAdd == -1 || (groupToAdd == 0 && !abPotionGroupEnabled[0])
+		int healthPotionGroup = jMap.object()
+		jMap.setInt(healthPotionGroup, "iEquipType", 46)
+		jMap.setStr(healthPotionGroup, "iEquipName", "$iEquip_common_HealthPotions")
+		jMap.setStr(healthPotionGroup, "iEquipIcon", "HealthPotion")
+		jArray.addObj(aiTargetQ[3], healthPotionGroup)
+		abPotionGroupEnabled[0] = true
+	endIf
+	if groupToAdd == -1 || (groupToAdd == 1 && !abPotionGroupEnabled[1])
+		int staminaPotionGroup = jMap.object()
+		jMap.setInt(staminaPotionGroup, "iEquipType", 46)
+		jMap.setStr(staminaPotionGroup, "iEquipName", "$iEquip_common_StaminaPotions")
+		jMap.setStr(staminaPotionGroup, "iEquipIcon", "StaminaPotion")
+		jArray.addObj(aiTargetQ[3], staminaPotionGroup)
+		abPotionGroupEnabled[1] = true
+	endIf
+	if groupToAdd == -1 || (groupToAdd == 2 && !abPotionGroupEnabled[2])
+		int magickaPotionGroup = jMap.object()
+		jMap.setInt(magickaPotionGroup, "iEquipType", 46)
+		jMap.setStr(magickaPotionGroup, "iEquipName", "$iEquip_common_MagickaPotions")
+		jMap.setStr(magickaPotionGroup, "iEquipIcon", "MagickaPotion")
+		jArray.addObj(aiTargetQ[3], magickaPotionGroup)
+		abPotionGroupEnabled[2] = true
+	endIf
 endFunction
 
 function addFists()
@@ -978,8 +987,6 @@ event OnMenuClose(string _sCurrentMenu)
 	if (_sCurrentMenu == "InventoryMenu" || _sCurrentMenu == "MagicMenu" || _sCurrentMenu == "FavoritesMenu") && bItemsWaitingForID ;&& !utility.IsInMenuMode()
 		findAndFillMissingItemIDs()
 		bItemsWaitingForID = false
-	elseIf _sCurrentMenu == "Journal Menu" && MCM.bEnabled
-		MCM.bFirstEnabled = false
 	endIf
 	sCurrentMenu = ""
 	sEntryPath = ""
@@ -1062,6 +1069,7 @@ bool property isEnabled
 				CheckDependencies()
 				if bIsFirstEnabled
                     bIsFirstEnabled = false
+                    MCM.bFirstEnabled = false
                     
 					UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
 					; Add anything currently equipped in left, right and shout slots
@@ -2086,6 +2094,10 @@ function onBoundWeaponEquipped(Int weaponType, Int hand)
 	string iconName = "Bound"
 	if weaponType == 6 && (PlayerRef.GetEquippedObject(hand) as Weapon).IsWarhammer()
         iconName += "Warhammer"
+    elseIf weaponType == 26
+    	iconName += "Shield"
+    elseIf iEquip_FormExt.IsSpear(PlayerRef.GetEquippedObject(hand))
+    	iconName += "Spear"
     else
 		iconName += asWeaponTypeNames[weaponType]
     endIf
@@ -2105,7 +2117,7 @@ function onBoundWeaponEquipped(Int weaponType, Int hand)
 	endIf
 endFunction
 
-function onBoundWeaponUnequipped(weapon a_weap, int hand)
+function onBoundWeaponUnequipped(int hand)
 	debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped called - bBlockSwitchBackToBoundSpell: " + bBlockSwitchBackToBoundSpell)
 	if bBlockSwitchBackToBoundSpell
 		bBlockSwitchBackToBoundSpell = false
@@ -3115,7 +3127,7 @@ function addToQueue(int Q)
 		        	itemType = (itemForm as Weapon).GetWeaponType()
 		        endIf
 				string itemIcon = GetItemIconName(itemForm, itemType, itemName)
-				debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + asQueueName[Q] + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
+				debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + iEquip_StringExt.LocalizeString(asQueueName[Q]) + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
 				int iEquipItem = jMap.object()
 				if jArray.count(aiTargetQ[Q]) < iMaxQueueLength
 					if bShowQueueConfirmationMessages
@@ -3538,50 +3550,53 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	int targetArray = aiTargetQ[iQueueMenuCurrentQueue]
 	int targetObject = jArray.getObj(targetArray, iIndex)
 	string itemName = JMap.getStr(targetObject, "iEquipName")
-	if !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
-		if !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed")
-			bool keepInFLST = false
-			int itemID = JMap.getInt(targetObject, "iEquipItemID")
-			form itemForm = JMap.getForm(targetObject, "iEquipForm")
-			if bMoreHUDLoaded
-				AhzMoreHudIE.RemoveIconItem(itemID)
-			endIf
-			if iQueueMenuCurrentQueue < 2
-				int otherHandQueue = 1
-				if iQueueMenuCurrentQueue == 1
-					otherHandQueue = 0
-				endIf
-				if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
-					if bMoreHUDLoaded
-						AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
-					endIf
-					keepInFLST = true
-				endIf
-	        endIf
-	        if !keepInFLST
-	        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
-	        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
-	        endIf
-	    endIf
-		jArray.eraseIndex(targetArray, iIndex)
-		int queueLength = jArray.count(targetArray)
-		if iIndex >= queueLength
-			iIndex -= 1
+	if !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed") && !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
+		bool keepInFLST = false
+		int itemID = JMap.getInt(targetObject, "iEquipItemID")
+		form itemForm = JMap.getForm(targetObject, "iEquipForm")
+		if bMoreHUDLoaded
+			AhzMoreHudIE.RemoveIconItem(itemID)
 		endIf
-		if queueLength < 1
-			if iQueueMenuCurrentQueue == 4
-				handleEmptyPoisonQueue()
-			else
-				setSlotToEmpty(iQueueMenuCurrentQueue)
+		if iQueueMenuCurrentQueue < 2
+			int otherHandQueue = 1
+			if iQueueMenuCurrentQueue == 1
+				otherHandQueue = 0
 			endIf
-		endIf
-		QueueMenuUpdate(queueLength, iIndex)
-	elseIf bFirstAttemptToDeletePotionGroup
-		bFirstAttemptToDeletePotionGroup = false
-		((Self as Form) as iEquip_UILIB).closeQueueMenu()
-		debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
-		initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
+			if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+				if bMoreHUDLoaded
+					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
+				endIf
+				keepInFLST = true
+			endIf
+        endIf
+        if !keepInFLST
+        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
+        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+        endIf
+    endIf
+	jArray.eraseIndex(targetArray, iIndex)
+	int queueLength = jArray.count(targetArray)
+	if iIndex >= queueLength
+		iIndex -= 1
 	endIf
+	if queueLength < 1
+		if iQueueMenuCurrentQueue == 4
+			handleEmptyPoisonQueue()
+		else
+			setSlotToEmpty(iQueueMenuCurrentQueue)
+		endIf
+	endIf
+	if (iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
+		abPotionGroupEnabled[asPotionGroups.Find(itemName)] = false
+		if bFirstAttemptToDeletePotionGroup
+			bFirstAttemptToDeletePotionGroup = false
+			((Self as Form) as iEquip_UILIB).closeQueueMenu()
+			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
+			initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
+			return
+		endIf
+	endIf
+	QueueMenuUpdate(queueLength, iIndex)
 endFunction
 
 function QueueMenuUpdate(int iCount, int iIndex)
@@ -3633,17 +3648,19 @@ function QueueMenuClearQueue()
 	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
 	jArray.clear(aiTargetQ[iQueueMenuCurrentQueue])
 	if iQueueMenuCurrentQueue == 3
-		addPotionGroups()
         aiCurrentQueuePosition[3] = -1
         
         if bPotionGrouping
-            if (!abPotionGroupEmpty[0] || PO.iEmptyPotionQueueChoice == 0)
-                aiCurrentQueuePosition[3] = 0
-            elseIf (!abPotionGroupEmpty[1] || PO.iEmptyPotionQueueChoice == 0)
-                aiCurrentQueuePosition[3] = 1
-            elseIf (!abPotionGroupEmpty[2] || PO.iEmptyPotionQueueChoice == 0)
-                aiCurrentQueuePosition[3] = 2
-            endIf
+        	int i = 0
+        	while i < 3
+        		if abPotionGroupEnabled[i]
+        			addPotionGroups(i)
+        			if (!abPotionGroupEmpty[i] || PO.iEmptyPotionQueueChoice == 0)
+                		aiCurrentQueuePosition[3] = aiCurrentQueuePosition[3] + 1
+                	endIf
+        		endIf
+        		i += 1
+        	endWhile
         endIf
 	endIf
 	if iQueueMenuCurrentQueue == 3 && (aiCurrentQueuePosition[3] != -1)

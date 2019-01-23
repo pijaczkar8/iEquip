@@ -567,7 +567,9 @@ endState
 
 State pro_tgl_altSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[0]) || currentEvent == "Default"
+    	if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[0]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[0] = false
         else
             WC.abQuickDualCastSchoolAllowed[0] = true
@@ -578,7 +580,9 @@ endState
 
 State pro_tgl_conjSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[1]) || currentEvent == "Default"
+        if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[1]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[1] = false
         else
             WC.abQuickDualCastSchoolAllowed[1] = true
@@ -589,7 +593,9 @@ endState
 
 State pro_tgl_destSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[2]) || currentEvent == "Default"
+        if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[2]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[2] = false
         else
             WC.abQuickDualCastSchoolAllowed[2] = true
@@ -600,7 +606,9 @@ endState
 
 State pro_tgl_illSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[3]) || currentEvent == "Default"
+        if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[3]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[3] = false
         else
             WC.abQuickDualCastSchoolAllowed[3] = true
@@ -611,7 +619,9 @@ endState
 
 State pro_tgl_restSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[4]) || currentEvent == "Default"
+        if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[4]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[4] = false
         else
             WC.abQuickDualCastSchoolAllowed[4] = true

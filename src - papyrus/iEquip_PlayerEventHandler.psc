@@ -128,6 +128,24 @@ Event OnPlayerLoadGame()
 	endIf
 endEvent
 
+bool Property boundSpellEquipped
+	bool function Get()
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get called")
+		return bIsBoundSpellEquipped
+	endFunction
+
+	function Set(Bool equipped)
+		bIsBoundSpellEquipped = equipped
+		BW.bIsBoundSpellEquipped = equipped
+		if bIsBoundSpellEquipped
+			RegisterForActorAction(2) ;Spell fire
+		else
+			UnregisterForActorAction(2)
+		endIf
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - bIsBoundSpellEquipped: " + equipped)
+	endFunction
+endProperty
+
 function updateAllEventFilters()
 	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters called")
 	RemoveAllInventoryEventFilters()
@@ -172,7 +190,12 @@ EndEvent
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	debug.trace("iEquip_PlayerEventHandler OnActorAction called - actionType: " + actionType + ", slot: " + slot)
 	if akActor == PlayerRef
-		if actionType == 7 ;Draw Begin
+		if actionType == 2 ;Spell Fire, only received if bound spell equipped, and we're only looking for bound shield here, weapons are handled in BoundWeaponEventsListener
+			Utility.Wait(0.3)
+			if PlayerRef.GetEquippedShield() && PlayerRef.GetEquippedShield().GetName() == WC.asCurrentlyEquipped[0]
+				WC.onBoundWeaponEquipped(26, 0)
+			endIf
+		elseIf actionType == 7 ;Draw Begin
 			if !WC.bIsWidgetShown
 				WC.updateWidgetVisibility()
 			endIf
@@ -409,6 +432,9 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		PO.onPotionRemoved(akBaseItem)
 	elseIf akBaseItem as ammo
 		AM.onAmmoRemoved(akBaseItem)
+	;Check if a Bound Shield has just been unequipped
+	elseIf (akBaseItem.GetType() == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
+		WC.onBoundWeaponUnequipped(0)
     ;Otherwise handle anything else in left, right or shout queue other than bound weapons
 	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
 		i = 0
