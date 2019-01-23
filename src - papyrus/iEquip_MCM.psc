@@ -14,6 +14,7 @@ iEquip_MCM_edt Property edt Auto
 iEquip_MCM_inf Property inf Auto
 
 bool Property bEnabled = false Auto Hidden
+bool Property bFirstEnabled = true Auto Hidden
 bool Property bUpdateKeyMaps = false Auto Hidden
 
 int Property iCurrentWidgetFadeoutChoice = 1 Auto Hidden

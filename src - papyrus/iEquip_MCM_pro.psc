@@ -52,7 +52,7 @@ function initData()
 endFunction
 
 function drawPage()
-    if MCM.bEnabled
+    if MCM.bEnabled && !MCM.bFirstEnabled
         if bStillToEnableProMode
             MCM.AddTextOptionST("pro_txt_dragEastr", "", "$iEquip_MCM_pro_txt_dragEastrA")
         else
@@ -211,8 +211,10 @@ endState
 State pro_txt_whatPreselect
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_pro_msg_whatPreselect1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                MCM.ShowMessage("$iEquip_MCM_pro_msg_whatPreselect2", false, "$OK")
+            if MCM.ShowMessage("$iEquip_help_preselect1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                if MCM.ShowMessage("$iEquip_help_preselect2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                    MCM.ShowMessage("$iEquip_help_preselect3", false, "$OK")
+                endIf
             endIf
         endIf
     endEvent    
@@ -281,9 +283,9 @@ endState
 State pro_txt_whatQuickshield
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_pro_msg_whatQuickshield1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                if MCM.ShowMessage("$iEquip_MCM_pro_msg_whatQuickshield2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                    MCM.ShowMessage("$iEquip_MCM_pro_msg_whatQuickshield3", false, "$OK")
+            if MCM.ShowMessage("$iEquip_help_quickshield1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                if MCM.ShowMessage("$iEquip_help_quickshield2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                    MCM.ShowMessage("$iEquip_help_quickshield3", false, "$OK")
                 endIf
             endIf
         endIf
@@ -378,8 +380,8 @@ endState
 State pro_txt_whatQuickheal
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_pro_msg_whatQuickheal1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                MCM.ShowMessage("$iEquip_MCM_pro_msg_whatQuickheal2", false, "$iEquip_common_msg_Exit")
+            if MCM.ShowMessage("$iEquip_help_quickheal1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                MCM.ShowMessage("$iEquip_help_quickheal2", false, "$iEquip_common_msg_Exit")
             endIf
         endIf
     endEvent
@@ -461,7 +463,7 @@ endState
 State pro_txt_whatQuickranged
     event OnBeginState()
         if currentEvent == "Select"
-            MCM.ShowMessage("$iEquip_MCM_pro_msg_whatQuickranged", false, "$OK")
+            MCM.ShowMessage("$iEquip_help_quickranged", false, "$OK")
         endIf
     endEvent
 endState
@@ -544,7 +546,7 @@ endState
 State pro_txt_whatQuickdualcast
     event OnBeginState()
         if currentEvent == "Select"
-            MCM.ShowMessage("$iEquip_MCM_pro_msg_whatQuickdualcast", false, "$OK")
+            MCM.ShowMessage("$iEquip_help_quickdualcast", false, "$OK")
         endIf
     endEvent
 endState  
@@ -565,7 +567,9 @@ endState
 
 State pro_tgl_altSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[0]) || currentEvent == "Default"
+    	if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[0]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[0] = false
         else
             WC.abQuickDualCastSchoolAllowed[0] = true
@@ -576,7 +580,9 @@ endState
 
 State pro_tgl_conjSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[1]) || currentEvent == "Default"
+        if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[1]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[1] = false
         else
             WC.abQuickDualCastSchoolAllowed[1] = true
@@ -587,7 +593,9 @@ endState
 
 State pro_tgl_destSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[2]) || currentEvent == "Default"
+        if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[2]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[2] = false
         else
             WC.abQuickDualCastSchoolAllowed[2] = true
@@ -598,7 +606,9 @@ endState
 
 State pro_tgl_illSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[3]) || currentEvent == "Default"
+        if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[3]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[3] = false
         else
             WC.abQuickDualCastSchoolAllowed[3] = true
@@ -609,7 +619,9 @@ endState
 
 State pro_tgl_restSpll
     event OnBeginState()
-        if (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[4]) || currentEvent == "Default"
+        if currentEvent == "Highlight"
+            ;Do nothing
+        elseIf (currentEvent == "Select" && WC.abQuickDualCastSchoolAllowed[4]) || currentEvent == "Default"
             WC.abQuickDualCastSchoolAllowed[4] = false
         else
             WC.abQuickDualCastSchoolAllowed[4] = true

@@ -8,7 +8,7 @@ iEquip_PotionScript Property PO Auto
 ; ### SETUP ###
 
 function drawPage()
-    if MCM.bEnabled
+    if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddHeaderOption("$iEquip_MCM_que_lbl_queLenOpts")
         MCM.AddSliderOptionST("que_sld_maxItmQue", "$iEquip_MCM_que_lbl_maxItmQue", WC.iMaxQueueLength, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
         MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "$iEquip_MCM_que_lbl_hrdLimQueSize", WC.bHardLimitQueueSize)

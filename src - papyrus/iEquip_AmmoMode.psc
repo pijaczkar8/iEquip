@@ -5,8 +5,9 @@ Import UI
 Import UICallback
 Import Utility
 import _Q2C_Functions
-Import iEquip_AmmoExt
-import stringUtil
+import iEquip_StringExt
+import iEquip_AmmoExt
+import iEquip_FormExt
 
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
@@ -33,6 +34,7 @@ form property currentAmmoForm auto hidden
 
 int ilastSortType = 0
 
+bool incrementDamage = false
 bool bBoundAmmoAdded = false
 bool[] property abBoundAmmoInQueue auto hidden
 string[] asBoundAmmoNames
@@ -65,8 +67,8 @@ event onInit()
 	abBoundAmmoInQueue[1] = false
 
 	asBoundAmmoNames = new string[2]
-	asBoundAmmoNames[0] = "Bound Arrow"
-	asBoundAmmoNames[1] = "Bound Bolt"
+	asBoundAmmoNames[0] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundArrow")
+	asBoundAmmoNames[1] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBolt")
 
 	asBoundAmmoIcons = new string[2]
 	asBoundAmmoIcons[0] = "BoundArrow"
@@ -148,7 +150,7 @@ function onAmmoRemoved(form removedAmmo)
 		int i = 0
 		bool found = false
 		while i < JArray.count(targetQ) && !found
-			found = (removedAmmo == jMap.getForm(jArray.getObj(targetQ, i), "Form"))
+			found = (removedAmmo == jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm"))
 			if found
 				removeAmmoFromQueue(isBolt, i)
 				;If we're in ammo mode and the ammo we've just removed matches the currently equipped ammo
@@ -190,7 +192,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 	debug.trace("iEquip_AmmoMode toggleAmmoMode called, toggleWithoutAnimation: " + toggleWithoutAnimation + ", toggleWithoutEquipping" + toggleWithoutEquipping + ", bAmmoModePending: " + bAmmoModePending)
 	if !bAmmoMode && jArray.count(aiTargetQ[Q]) < 1
 		debug.trace("iEquip_AmmoMode toggleAmmoMode - no ammo for the selected weapon, setting bAmmoModePending to true")
-		debug.Notification("You do not appear to have any ammo to equip for this type of weapon")
+		debug.Notification("$iEquip_AM_not_noAmmo")
 		WC.checkAndFadeLeftIcon(1, 5)
 		bAmmoModePending = true
 	else
@@ -213,7 +215,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				WC.CM.updateChargeMeterVisibility(0, false)
 			endIf
 			;Now unequip the left hand to avoid any strangeness when switching ranged weapons in bAmmoMode
-			if !(WC.asCurrentlyEquipped[1] == "Bound Bow" || WC.asCurrentlyEquipped[1] == "Bound Crossbow")
+			if !(WC.asCurrentlyEquipped[1] == iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow") || WC.asCurrentlyEquipped[1] == iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow"))
 				WC.UnequipHand(0)
 			endIf
 			;Prepare and run the animation
@@ -259,13 +261,13 @@ function AmmoModeAnimateIn()
 	int ammoObject = jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
 	string[] widgetData = new string[4]
 	if jArray.count(WC.aiTargetQ[0]) > 0
-		widgetData[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "Icon")
+		widgetData[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipIcon")
 		widgetData[1] = WC.asCurrentlyEquipped[0]
 	else
 		widgetData[0] = "Fist"
-		widgetData[1] = "Fist"
+		widgetData[1] = "$iEquip_common_Unarmed"
 	endIf
-	widgetData[2] = jMap.getStr(ammoObject, "Icon") + sAmmoIconSuffix
+	widgetData[2] = jMap.getStr(ammoObject, "iEquipIcon") + sAmmoIconSuffix
 	widgetData[3] = asCurrentAmmo[Q]
 	;Set the left preselect index to whatever is currently equipped in the left hand ready for cycling the preselect slot in ammo mode
 	WC.aiCurrentlyPreselected[0] = WC.aiCurrentQueuePosition[0]
@@ -282,7 +284,7 @@ function AmmoModeAnimateIn()
 		checkAndEquipAmmo(false, true, false)
 	endIf
 	;Update the left hand counter
-	WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(ammoObject, "Form")))
+	WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(ammoObject, "iEquipForm")))
 	;Show the counter if previously hidden
 	if !WC.abIsCounterShown[0]
 		WC.setCounterVisibility(0, true)
@@ -306,17 +308,17 @@ function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 	if jArray.count(aiTargetQ[Q]) < 1
 		widgetData[0] = "Empty"
 	else	
-		widgetData[0] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "Icon") + sAmmoIconSuffix
+		widgetData[0] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipIcon") + sAmmoIconSuffix
 	endIf
 	bool mainQueueIsEmpty = (jArray.count(WC.aiTargetQ[0]) < 1)
 	;Get icon and item name for item currently showing in the left preselect slot ready to update the main slot
 	if !mainQueueIsEmpty
 		leftPreselectObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0])
-		widgetData[1] = jMap.getStr(leftPreselectObject, "Icon")
-		widgetData[2] = jMap.getStr(leftPreselectObject, "Name")
+		widgetData[1] = jMap.getStr(leftPreselectObject, "iEquipIcon")
+		widgetData[2] = jMap.getStr(leftPreselectObject, "iEquipName")
 	else
 		widgetData[1] = "Fist"
-		widgetData[2] = "Fist"
+		widgetData[2] = "$iEquip_common_Unarmed"
 	endIf
 	;Update the widget - will throw away the ammo and animate the icon from preselect back to main position
 	Self.RegisterForModEvent("iEquip_AmmoModeAnimationComplete", "onAmmoModeAnimationComplete")
@@ -334,11 +336,11 @@ function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 		int leftObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0])
 		if !WC.bPreselectMode
 			WC.aiCurrentQueuePosition[0] = WC.aiCurrentlyPreselected[0]
-			WC.asCurrentlyEquipped[0] = jMap.getStr(leftObject, "Name")
+			WC.asCurrentlyEquipped[0] = jMap.getStr(leftObject, "iEquipName")
 		endIf
 		;And re-equip the left hand item, which should in turn force a re-equip on the right hand to a 1H item, as long as we've not just toggled out of ammo mode as a result of us equipping a 2H weapon in the right hand
 		if !toggleWithoutEquipping
-			WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(leftObject, "Form"))
+			WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(leftObject, "iEquipForm"))
 		endIf
 	endIf
 	;Show the left name if previously faded out on timer
@@ -351,7 +353,7 @@ function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 	;Otherwise update the counter for the new left hand item
 	else
 		if WC.itemRequiresCounter(0) && leftPreselectObject != -1
-			WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(leftPreselectObject, "Form")))
+			WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(leftPreselectObject, "iEquipForm")))
 		elseif WC.isWeaponPoisoned(0, WC.aiCurrentQueuePosition[0], true)
 			WC.checkAndUpdatePoisonInfo(0)
 		endIf
@@ -394,7 +396,7 @@ endFunction
 function selectBestAmmo(int thisQ)
 	debug.trace("iEquip_AmmoMode selectBestAmmo called")
 	aiCurrentAmmoIndex[thisQ] = 0
-	asCurrentAmmo[thisQ] = jMap.getStr(jArray.getObj(aiTargetQ[thisQ], 0), "Name")
+	asCurrentAmmo[thisQ] = jMap.getStr(jArray.getObj(aiTargetQ[thisQ], 0), "iEquipName")
 	if bAmmoMode && (thisQ == Q)
 		checkAndEquipAmmo(false, true)
 	endIf
@@ -406,7 +408,7 @@ function selectLastUsedAmmo(int thisQ)
 	bool found = false
 	if asCurrentAmmo[thisQ] != ""
 		while i < jArray.count(aiTargetQ[thisQ]) && !found
-			if asCurrentAmmo[thisQ] != jMap.getStr(jArray.getObj(aiTargetQ[thisQ], i), "Name")
+			if asCurrentAmmo[thisQ] != jMap.getStr(jArray.getObj(aiTargetQ[thisQ], i), "iEquipName")
 				i += 1
 			else
 				found = true
@@ -416,7 +418,7 @@ function selectLastUsedAmmo(int thisQ)
 	;if the last used ammo isn't found in the newly sorted queue then set the queue position to 0 and update the name ready for updateWidget
 	if !found
 		aiCurrentAmmoIndex[thisQ] = 0
-		asCurrentAmmo[thisQ] = jMap.getStr(jArray.getObj(aiTargetQ[thisQ], 0), "Name")
+		asCurrentAmmo[thisQ] = jMap.getStr(jArray.getObj(aiTargetQ[thisQ], 0), "iEquipName")
 	;if the last used ammo is found in the newly sorted queue then set the queue position to the index where it was found
 	else
 		aiCurrentAmmoIndex[thisQ] = i
@@ -425,7 +427,7 @@ endFunction
 
 function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate = true, bool equip = true)
 	debug.trace("iEquip_AmmoMode checkAndEquipAmmo called - reverse: " + reverse + ", ignoreEquipOnPause: " + ignoreEquipOnPause + ", animate: " + animate)
-	currentAmmoForm = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "Form")
+	currentAmmoForm = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipForm")
 	int ammoCount = PlayerRef.GetItemCount(currentAmmoForm)
 	;Check we've still got the at least one of the target ammo, if not remove it from the queue and advance the queue again
 	if ammoCount < 1
@@ -435,7 +437,7 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 	else
 		if animate
 			int ammoObject = jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
-			asCurrentAmmo[Q] = jMap.getStr(ammoObject, "Name")
+			asCurrentAmmo[Q] = jMap.getStr(ammoObject, "iEquipName")
 
 			float fNameAlpha = WC.afWidget_A[8]
 			if fNameAlpha < 1
@@ -445,7 +447,7 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 			If(iHandle)
 				UICallback.PushInt(iHandle, 0) ;Left hand widget
-				UICallback.PushString(iHandle, jMap.getStr(ammoObject, "Icon") + sAmmoIconSuffix) ;New icon
+				UICallback.PushString(iHandle, jMap.getStr(ammoObject, "iEquipIcon") + sAmmoIconSuffix) ;New icon
 				UICallback.PushString(iHandle, asCurrentAmmo[Q]) ;New name
 				UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
 				UICallback.Send(iHandle)
@@ -473,7 +475,7 @@ endFunction
 
 function removeAmmoFromQueue(int isBolt, int i)
 	debug.trace("iEquip_AmmoMode removeItemFromQueue called")
-	iEquip_AmmoItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiTargetQ[isBolt], i), "Form"))
+	iEquip_AmmoItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiTargetQ[isBolt], i), "iEquipForm"))
 	EH.updateEventFilter(iEquip_AmmoItemsFLST)
 	jArray.eraseIndex(aiTargetQ[isBolt], i)
 	if aiCurrentAmmoIndex[isBolt] > i ;if the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
@@ -513,8 +515,8 @@ function onBoundRangedWeaponEquipped(int weaponType)
 	;If the bound ammo has not been detected and added to the queue we just need to assume it's there and add a dummy to the queue so it can be displayed in the widget
 	if !bBoundAmmoAdded
 		int boundAmmoObj = jMap.object()
-		jMap.setStr(boundAmmoObj, "Icon", asBoundAmmoIcons[Q])
-		jMap.setStr(boundAmmoObj, "Name", asBoundAmmoNames[Q])
+		jMap.setStr(boundAmmoObj, "iEquipIcon", asBoundAmmoIcons[Q])
+		jMap.setStr(boundAmmoObj, "iEquipName", asBoundAmmoNames[Q])
 		jArray.addObj(aiTargetQ[Q], boundAmmoObj)
 		;Set the current queue position and name to the last index (ie the newly added bound ammo)
 		aiCurrentAmmoIndex[Q] = jArray.count(aiTargetQ[Q]) - 1
@@ -530,16 +532,25 @@ function addBoundAmmoToQueue(form boundAmmo, string ammoName)
 	;If we've already added a dummy object to the ammo queue we only need to add the form
 	int targetObject = jArray.getObj(aiTargetQ[Q], jArray.count(aiTargetQ[Q]) - 1)
 	currentAmmoForm = boundAmmo
-	if stringutil.Find(jMap.getStr(targetObject, "Name"), "bound", 0) > -1
+	if jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_BoundArrow" || jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_BoundBolt"
 		;debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding Form to dummy object")
-		jMap.setForm(targetObject, "Form", boundAmmo)
+		jMap.setForm(targetObject, "iEquipForm", boundAmmo)
+		;Check and update the name if needed ie Arcane Archery equips bound ammo with names matching the weapon type such as Fire Arrow, etc
+		if jMap.getStr(targetObject, "iEquipName") != ammoName
+			jMap.setStr(targetObject, "iEquipName", ammoName)
+		endIf
 	;Otherwise create a new jMap object for the ammo and add it to the relevant ammo queue
 	else
-		;debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding new bound ammo object")
 		int boundAmmoObj = jMap.object()
-		jMap.setForm(boundAmmoObj, "Form", boundAmmo)
-		jMap.setStr(boundAmmoObj, "Icon", asBoundAmmoIcons[Q])
-		jMap.setStr(boundAmmoObj, "Name", ammoName)
+		jMap.setForm(boundAmmoObj, "iEquipForm", boundAmmo)
+		;Check for special arrows (ie Arcane Archery Fire Arrows, etc) and set icon to the magic arrows if so, if not set it to the bound ammo icon
+		string ammoIcon = getAmmoIcon(boundAmmo, ammoName, Q)
+		if ammoIcon == asAmmoIcons[Q]
+			ammoIcon = asBoundAmmoIcons[Q]
+		endIf
+		debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding new bound ammo object, ammoName: " + ammoName + ", icon: " + ammoIcon)
+		jMap.setStr(boundAmmoObj, "iEquipIcon", ammoIcon)
+		jMap.setStr(boundAmmoObj, "iEquipName", ammoName)
 		;Set the current queue position and name to the last index (ie the newly added bound ammo)
 		jArray.addObj(aiTargetQ[Q], boundAmmoObj)
 		aiCurrentAmmoIndex[Q] = jArray.count(aiTargetQ[Q]) - 1 ;We've just added a new object to the queue so this is correct
@@ -553,7 +564,7 @@ function checkAndRemoveBoundAmmo(int weaponType)
 	debug.trace("iEquip_AmmoMode checkAndRemoveBoundAmmo called")
 	Q = (weaponType == 9) as int
 	int targetIndex = jArray.count(aiTargetQ[Q]) - 1
-	if iEquip_AmmoExt.IsAmmoBound(jMap.getForm(jArray.getObj(aiTargetQ[Q], targetIndex), "Form") as ammo)
+	if iEquip_AmmoExt.IsAmmoBound(jMap.getForm(jArray.getObj(aiTargetQ[Q], targetIndex), "iEquipForm") as ammo)
 		jArray.eraseIndex(aiTargetQ[Q], targetIndex)
 	endIf
 	abBoundAmmoInQueue[Q] = false
@@ -577,7 +588,7 @@ function updateAmmoLists()
 		else
 			i = 0
 			while i < count && count > 0
-				ammoForm = jMap.getForm(jArray.getObj(aiTargetQ[aB], i), "Form")
+				ammoForm = jMap.getForm(jArray.getObj(aiTargetQ[aB], i), "iEquipForm")
 				if !ammoForm || PlayerRef.GetItemCount(ammoForm) < 1
 					iEquip_AmmoItemsFLST.RemoveAddedForm(ammoForm)
 					EH.updateEventFilter(iEquip_AmmoItemsFLST)
@@ -600,9 +611,8 @@ function updateAmmoLists()
 		ammoForm = GetNthFormOfType(PlayerRef, 42, i)
 		isBolt = (ammoForm as Ammo).isBolt() as int
 		AmmoName = ammoForm.GetName()
-		;The Javelin check is to get the Spears by Soolie javelins which are classed as arrows/bolts and all of which have more descriptive names than simply Javelin, which is from Throwing Weapons and is an equippable throwing weapon
-		if stringutil.Find(AmmoName, "arrow", 0) > -1 || stringutil.Find(AmmoName, "bolt", 0) > -1 || iEquip_FormExt.IsJavelin(ammoForm)
-			;Make sure we're only adding arrows to the arrow queue or bolts to the bolt queue
+		;Make sure we're not trying to add Throwing Weapons
+		if !((iEquip_FormExt.IsJavelin(ammoForm) && ammoName != "Javelin") || iEquip_FormExt.IsSpear(ammoForm) || iEquip_FormExt.IsGrenade(ammoForm) || iEquip_FormExt.IsThrowingKnife(ammoForm) || iEquip_FormExt.IsThrowingAxe(ammoForm))
 			if !isAlreadyInAmmoQueue(ammoForm, aiTargetQ[isBolt])
 				AddToAmmoQueue(ammoForm, AmmoName, isBolt)
 				abNeedsSorting[isBolt as int] = true
@@ -622,11 +632,11 @@ function sortAmmoLists()
 	while i < 2
 		if abNeedsSorting[i]
 			if iAmmoListSorting == 1 ;By damage, highest first
-				sortAmmoQueue("Damage", aiTargetQ[i], i)
+				sortAmmoQueue("iEquipDamage", aiTargetQ[i], i)
 			elseIf iAmmoListSorting == 2 ;By name alphabetically
 				sortAmmoQueueByName(aiTargetQ[i], i)
 			elseIf iAmmoListSorting == 3 ;By quantity, most first
-				sortAmmoQueue("Count", aiTargetQ[i], i)
+				sortAmmoQueue("iEquipCount", aiTargetQ[i], i)
 			endIf
 			abNeedsSorting[i] = false
 		endIf
@@ -645,7 +655,7 @@ function updateAmmoListsOnSettingChange()
 		;First we need to check if we currently have Bound Ammo in the queue - if we do store it and remove it from the queue
 		int queueLength = jArray.count(aiTargetQ[i])
 		int targetObject = jArray.getObj(aiTargetQ[i], queueLength - 1)
-		if iEquip_AmmoExt.IsAmmoBound(jMap.getForm(targetObject, "Form") as ammo)
+		if iEquip_AmmoExt.IsAmmoBound(jMap.getForm(targetObject, "iEquipForm") as ammo)
 			tempBoundAmmoObj = targetObject
 			jArray.eraseIndex(aiTargetQ[i], queueLength - 1)
 			boundAmmoRemoved[i] = true
@@ -660,7 +670,7 @@ function updateAmmoListsOnSettingChange()
 		if boundAmmoRemoved[i]
 			jArray.addObj(aiTargetQ[i], tempBoundAmmoObj)
 			aiCurrentAmmoIndex[i] = jArray.count(aiTargetQ[i]) - 1
-			asCurrentAmmo[i] = jMap.getStr(tempBoundAmmoObj, "Name")
+			asCurrentAmmo[i] = jMap.getStr(tempBoundAmmoObj, "iEquipName")
 		endIf
 		i += 1
 	endWhile
@@ -670,14 +680,14 @@ function updateAmmoListsOnSettingChange()
 endFunction
 
 bool function isAlreadyInAmmoQueue(form itemForm, int targetQ)
-	debug.trace("iEquip_AmmoWidget isAlreadyInQueue() called - itemForm: " + itemForm)
+	debug.trace("iEquip_AmmoMode isAlreadyInQueue() called - itemForm: " + itemForm)
 	bool found = false
 	int i = 0
 	while i < JArray.count(targetQ) && !found
-		found = (itemform == jMap.getForm(jArray.getObj(targetQ, i), "Form"))
+		found = (itemform == jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm"))
 		i += 1
 	endWhile
-	debug.trace("iEquip_AmmoWidget isAlreadyInQueue() - returning found: " + found)
+	debug.trace("iEquip_AmmoMode isAlreadyInQueue() - returning found: " + found)
 	return found
 endFunction
 
@@ -688,33 +698,42 @@ function AddToAmmoQueue(form ammoForm, string ammoName, int isBolt)
 	EH.updateEventFilter(iEquip_AmmoItemsFLST)
 	;Create the ammo object
 	int AmmoItem = jMap.object()
-	jMap.setForm(AmmoItem, "Form", ammoForm)
-	jMap.setStr(AmmoItem, "Icon", getAmmoIcon(AmmoName, isBolt))
-	jMap.setStr(AmmoItem, "Name", AmmoName)
-	jMap.setFlt(AmmoItem, "Damage", (ammoForm as ammo).GetDamage())
-	jMap.setInt(AmmoItem, "Count", PlayerRef.GetItemCount(AmmoForm))
+	jMap.setForm(AmmoItem, "iEquipForm", ammoForm)
+	jMap.setStr(AmmoItem, "iEquipIcon", getAmmoIcon(ammoForm,AmmoName, isBolt))
+	jMap.setStr(AmmoItem, "iEquipName", AmmoName)
+	if incrementDamage
+		incrementDamage = false
+		jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage() + 1.0) ;If we've suffixed the ammo icon name in getAmmoIcon because it's enchanted ammo then +1 the damage so they sort ahead of the base ammo
+	else
+		jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage())
+	endIf
+	jMap.setInt(AmmoItem, "iEquipCount", PlayerRef.GetItemCount(AmmoForm))
 	;Add it to the relevant ammo queue
 	jArray.addObj(aiTargetQ[isBolt], AmmoItem)
 	debug.trace("iEquip_AmmoMode AddToAmmoQueue() finished")
 endFunction
 
-String function getAmmoIcon(string AmmoName, int isBolt)
+String function getAmmoIcon(form ammoForm, string AmmoName, int isBolt)
 	debug.trace("iEquip_AmmoMode getAmmoIcon() called - AmmoName: " + AmmoName)
 	String iconName
-	if stringutil.Find(AmmoName, "spear", 0) > -1 || stringutil.Find(AmmoName, "javelin", 0) > -1
+	if iEquip_FormExt.IsSpear(ammoForm) || iEquip_FormExt.IsJavelin(ammoForm)
 		iconName = "Spear"
 	else
 		;Set base icon string
 		iconName = asAmmoIcons[isBolt]
-		;Check if it is likely to have an additional effect - bit hacky checking the name but I've no idea how to check for attached magic effects!
-		if stringutil.Find(AmmoName, "fire", 0) > -1 || stringutil.Find(AmmoName, "torch", 0) > -1 || stringutil.Find(AmmoName, "burn", 0) > -1 || stringutil.Find(AmmoName, "incendiary", 0) > -1
+		;Check if it is likely to have an additional effect
+		if iEquip_FormExt.HasFire(ammoForm)
 			iconName += "Fire"
-		elseIf stringutil.Find(AmmoName, "frost", 0) > -1 || stringutil.Find(AmmoName, "ice", 0) > -1 || stringutil.Find(AmmoName, "freez", 0) > -1 || stringutil.Find(AmmoName, "cold", 0) > -1
+			incrementDamage = true
+		elseIf iEquip_FormExt.HasIce(ammoForm)
 			iconName += "Ice"
-		elseIf stringutil.Find(AmmoName, "shock", 0) > -1 || stringutil.Find(AmmoName, "spark", 0) > -1 || stringutil.Find(AmmoName, "electr", 0) > -1
+			incrementDamage = true
+		elseIf iEquip_FormExt.HasShock(ammoForm)
 			iconName += "Shock"
-		elseIf stringutil.Find(AmmoName, "poison", 0) > -1
+			incrementDamage = true
+		elseIf iEquip_FormExt.HasPoison(ammoForm)
 			iconName += "Poison"
+			incrementDamage = true
 		endIf
 	endIf
 	debug.trace("iEquip_AmmoMode getAmmoIcon() returning iconName: " + iconName)
@@ -728,7 +747,7 @@ function sortAmmoQueueByName(int targetQ, int thisQ)
 	int i = 0
 	string ammoName
 	while i < queueLength
-		ammoName = jMap.getStr(jArray.getObj(targetQ, i), "Name")
+		ammoName = jMap.getStr(jArray.getObj(targetQ, i), "iEquipName")
 		jArray.setStr(tempAmmoQ, i, ammoName)
 		i += 1
 	endWhile
@@ -741,7 +760,7 @@ function sortAmmoQueueByName(int targetQ, int thisQ)
 		iIndex = 0
 		found = false
 		while iIndex < queueLength && !found
-			if ammoName != jMap.getStr(jArray.getObj(targetQ, iIndex), "Name")
+			if ammoName != jMap.getStr(jArray.getObj(targetQ, iIndex), "iEquipName")
 				iIndex += 1
 			else
 				found = true
@@ -754,7 +773,7 @@ function sortAmmoQueueByName(int targetQ, int thisQ)
 	endWhile
 	;/i = 0
     while i < queueLength
-        debug.trace("iEquip_AmmoMode - sortAmmoQueueByName, sorted order: " + i + ", " + jMap.getForm(jArray.getObj(targetQ, i), "Form").GetName())
+        debug.trace("iEquip_AmmoMode - sortAmmoQueueByName, sorted order: " + i + ", " + jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm").GetName())
         i += 1
     endWhile/;
 	selectLastUsedAmmo(thisQ)
@@ -781,7 +800,7 @@ function sortAmmoQueue(string theKey, int targetQ, int thisQ)
     EndWhile
     i = 0
     while i < n
-        debug.trace("iEquip_AmmoMode - sortAmmoQueue, sorted order: " + i + ", " + jMap.getForm(jArray.getObj(targetQ, i), "Form").GetName() + ", " + theKey + ": " + jMap.getFlt(jArray.getObj(targetQ, i), theKey))
+        debug.trace("iEquip_AmmoMode - sortAmmoQueue, sorted order: " + i + ", " + jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm").GetName() + ", " + theKey + ": " + jMap.getFlt(jArray.getObj(targetQ, i), theKey))
         i += 1
     endWhile
     selectBestAmmo(thisQ)

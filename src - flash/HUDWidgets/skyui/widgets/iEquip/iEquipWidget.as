@@ -100,7 +100,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var poisonName: TextField;
 	public var poisonCount: TextField;
 	
-	//Edit Mode Guide Text Fields
+	//Edit Mode Guide Instruction Text Fields
 	public var NextPrevInstructionText: TextField;
 	public var NextPrevToggleText: TextField;
 	public var MoveInstructionText: TextField;
@@ -114,18 +114,18 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var TextColorInstructionText: TextField;
 	public var AlphaInstructionText: TextField;
 	public var ToggleAlphaInstructionText: TextField;
-	//public var VisInstructionText: TextField;
 	public var ToggleGridInstructionText: TextField;
 	public var HighlightColorInstructionText: TextField;
 	public var CurrInfoColorInstructionText: TextField;
 	public var ResetInstructionText: TextField;
+	
+	//Edit Mode Guide Current Value Text Fields
 	public var SelectedElementText: TextField;
 	public var ScaleText: TextField;
 	public var RotationText: TextField;
 	public var RotationDirectionText: TextField;
 	public var AlignmentText: TextField;
 	public var AlphaText: TextField;
-	//public var VisibilityText: TextField;
 	public var MoveIncrementText: TextField;
 	public var RotateIncrementText: TextField;
 	public var AlphaIncrementText: TextField;

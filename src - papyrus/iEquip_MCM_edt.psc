@@ -19,7 +19,7 @@ function initData()
 endFunction
 
 function drawPage()
-    if MCM.bEnabled
+    if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddHeaderOption("$iEquip_MCM_edt_lbl_EMOptions")
         MCM.AddSliderOptionST("edt_sld_slowTimeStr", "$iEquip_MCM_edt_lbl_slowTimeStr", iEquip_EditModeSlowTimeStrength.GetValueint())
                 

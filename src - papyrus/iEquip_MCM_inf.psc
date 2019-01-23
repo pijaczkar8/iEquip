@@ -12,7 +12,7 @@ function drawPage()
     ;+++Dependency checks
     ;+++Supported mods detected
 
-    if MCM.bEnabled
+    if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.SetCursorPosition(1)
 
         MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")

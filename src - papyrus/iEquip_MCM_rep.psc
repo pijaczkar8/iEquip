@@ -7,6 +7,7 @@ iEquip_ChargeMeters Property CM Auto
 
 string[] chargeDisplayOptions
 string[] meterFillDirectionOptions
+string[] rawMeterFillDirectionOptions
 int[] meterFillDirection
 string[] poisonMessageOptions
 string[] poisonIndicatorOptions
@@ -25,6 +26,11 @@ function initData()
     meterFillDirectionOptions[1] = "$iEquip_MCM_rep_opt_right"
     meterFillDirectionOptions[2] = "$iEquip_MCM_rep_opt_both"
 
+    rawMeterFillDirectionOptions = new String[3] ;DO NOT TRANSLATE!
+    rawMeterFillDirectionOptions[0] = "left"
+    rawMeterFillDirectionOptions[1] = "right"
+    rawMeterFillDirectionOptions[2] = "both"
+
     meterFillDirection = new int[2]
     meterFillDirection[0] = 1
     meterFillDirection[1] = 0
@@ -42,7 +48,7 @@ function initData()
 endFunction
 
 function drawPage()
-    if MCM.bEnabled
+    if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "$iEquip_MCM_rep_lbl_showEnchRechHelp", "")
         MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "$iEquip_MCM_rep_lbl_enblEnchRech", RC.bRechargingEnabled)
         MCM.AddEmptyOption()
@@ -58,7 +64,7 @@ function drawPage()
             if CM.iChargeDisplayType > 0
                 MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "$iEquip_MCM_rep_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
                 if CM.bChargeFadeoutEnabled
-                    MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "$iEquip_MCM_rep_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds")))
+                    MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "$iEquip_MCM_rep_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds")))
                 endIf
                 
                 MCM.AddColorOptionST("rep_col_normFillCol", "$iEquip_MCM_rep_lbl_normFillCol", CM.iPrimaryFillColor)
@@ -119,8 +125,8 @@ endFunction
 State rep_txt_showEnchRechHelp
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_rep_msg_showEnchRechHelp1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                MCM.ShowMessage("$iEquip_MCM_rep_msg_showEnchRechHelp2", false, "$iEquip_common_msg_Exit")
+            if MCM.ShowMessage("$iEquip_help_recharging1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                MCM.ShowMessage("$iEquip_help_recharging2", false, "$iEquip_common_msg_Exit")
             endIf
         endIf 
     endEvent
@@ -237,7 +243,7 @@ State rep_sld_chargeFadeDelay
             MCM.fillSlider(CM.fChargeFadeoutDelay, 1.0, 20.0, 0.5, 5.0)
         elseIf currentEvent == "Accept"
             CM.fChargeFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_txt_Seconds")))
+            MCM.SetSliderOptionValueST(CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds")))
         endIf 
     endEvent
 endState
@@ -415,7 +421,7 @@ State rep_men_leftFillDir
         elseIf currentEvent == "Accept"
             meterFillDirection[0] = currentVar as int
             MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[0]])
-            CM.asMeterFillDirection[0] = meterFillDirectionOptions[meterFillDirection[0]]
+            CM.asMeterFillDirection[0] = rawMeterFillDirectionOptions[meterFillDirection[0]]
             CM.bSettingsChanged = true
         endIf 
     endEvent
@@ -430,7 +436,7 @@ State rep_men_rightFillDir
         elseIf currentEvent == "Accept"
             meterFillDirection[1] = currentVar as int
             MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[1]])
-            CM.asMeterFillDirection[1] = meterFillDirectionOptions[meterFillDirection[1]]
+            CM.asMeterFillDirection[1] = rawMeterFillDirectionOptions[meterFillDirection[1]]
             CM.bSettingsChanged = true
         endIf 
     endEvent
@@ -443,10 +449,8 @@ endState
 State rep_txt_showPoisonHelp
     event OnBeginState()
         if currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                if MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                    MCM.ShowMessage("$iEquip_MCM_rep_msg_showPoisonHelp3", false, "$iEquip_common_msg_Exit")
-                endIf
+            if MCM.ShowMessage("$iEquip_help_poisoning1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                MCM.ShowMessage("$iEquip_help_poisoning2", false, "$iEquip_common_msg_Exit")
             endIf
         endIf 
     endEvent

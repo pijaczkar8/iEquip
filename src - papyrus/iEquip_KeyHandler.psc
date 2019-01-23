@@ -3,6 +3,7 @@ ScriptName iEquip_KeyHandler extends Quest
 
 import Input
 Import UI
+import iEquip_StringExt
 
 iEquip_EditMode Property EM Auto
 iEquip_WidgetCore Property WC Auto
@@ -12,14 +13,13 @@ iEquip_RechargeScript Property RC Auto
 iEquip_HelpMenu Property HM Auto
 
 Actor Property PlayerRef  Auto
-Message Property iEquip_UtilityMenu Auto
 
 ; Main gameplay keys
 Int Property iShoutKey = 21 Auto Hidden ;Y
 Int Property iLeftKey = 34 Auto Hidden ;G
 Int Property iRightKey = 35 Auto Hidden ;H
 Int Property iConsumableKey = 48 Auto Hidden ;B
-Int Property iUtilityKey = 29 Auto Hidden ;Left Ctrl - Active in all modes
+Int Property iUtilityKey = 37 Auto Hidden ;K - Active in all modes
 
 ; Optional hotkeys
 Int Property iOptConsumeKey = -1 Auto Hidden
@@ -196,16 +196,15 @@ function runUpdate()
             
     elseIf iMultiTap == 1   ; Single tap
         if iWaitingKeyCode == iUtilityKey
-            int iAction = iEquip_UtilityMenu.Show() 
+            int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
             
             if iAction != 0             ; Exit
                 if iAction == 1         ; Queue Menu
                     WC.openQueueManagerMenu()
                 elseif iAction == 2     ; Edit Mode
                     toggleEditMode()
-                elseif iAction == 3     ; HM
-                    ;HM.openHelpMenu()
-                    debug.MessageBox("This feature is currently disabled")
+                elseif iAction == 3     ; Help Menu
+                    HM.showHelpMenuMain()
                 elseif iAction == 4     ; Refresh Widget
                     WC.refreshWidget()
                 elseif iAction == 5     ; Debug option
