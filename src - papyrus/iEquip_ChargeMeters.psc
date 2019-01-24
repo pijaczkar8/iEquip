@@ -13,9 +13,8 @@ iEquip_RightChargeMeterUpdateScript Property RU Auto
 Actor Property PlayerRef Auto
 
 ; PRIVATE VARIABLES -------------------------------------------------------------------------------
-String HUD_MENU
+String HUD_MENU = "HUD Menu"
 String WidgetRoot
-int[] aiTargetQ
 float[] afCurrCharge
 
 ; PROPERTIES --------------------------------------------------------------------------------------
@@ -47,8 +46,6 @@ event OnInit()
 	asMeterFillDirection[0] = "left"
 	asMeterFillDirection[1] = "right"
 
-	aiTargetQ = new int[2]
-
 	afCurrCharge = new float[2]
 	afCurrCharge[0] = 0.0
 	afCurrCharge[1] = 0.0
@@ -58,12 +55,9 @@ event OnInit()
 	asItemCharge[1] = "RightItemCharge"
 endEvent
 
-function OnWidgetLoad(string sHUD_MENU, string sWidgetRoot, int leftQ, int rightQ) ;Called from WidgetCore
+function OnWidgetLoad() ;Called from WidgetCore
 	debug.trace("iEquip_ChargeMeters OnWidgetLoad called")
-	HUD_MENU = sHUD_MENU
-	WidgetRoot = sWidgetRoot
-	aiTargetQ[0] = leftQ
-	aiTargetQ[1] = rightQ
+	WidgetRoot = WC.WidgetRoot
 endFunction
 
 ; FUNCTIONS ---------------------------------------------------------------------------------------
@@ -260,9 +254,9 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 		;Now update the object keys for the currently equipped item in case anything has changed since we last equipped it
 		;ToDo - do the same in the poison functions
 		if currentEnchantment
-			jMap.setForm(jArray.getObj(aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastKnownEnchantment", currentEnchantment as Form)
+			jMap.setForm(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastKnownEnchantment", currentEnchantment as Form)
 		endIf
-		jMap.setInt(jArray.getObj(aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "isEnchanted", isEnchanted)
+		jMap.setInt(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "isEnchanted", isEnchanted)
 	else
 		WC.EH.bWaitingForEnchantedWeaponDrawn = true
 	endIf

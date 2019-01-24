@@ -191,7 +191,7 @@ EquipSlot[] property EquipSlots auto hidden
 
 string[] asItemNames
 string[] asWeaponTypeNames
-int[] ai2HWeaponTypes
+int[] property ai2HWeaponTypes auto hidden
 
 int iQueueMenuCurrentQueue = -1
 bool bJustUsedQueueMenuDirectAccess = false
@@ -430,7 +430,7 @@ Event OnWidgetLoad()
 	bLoadedbyOnWidgetInit = false
 	PM.OnWidgetLoad()
 	AM.OnWidgetLoad()
-	CM.OnWidgetLoad(HUD_MENU, WidgetRoot, aiTargetQ[0], aiTargetQ[1])
+	CM.OnWidgetLoad()
 	
 	CheckDependencies()
 
@@ -2538,7 +2538,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 				spell targetSpell = targetItem as spell
 				string spellSchool = jMap.getStr(targetObject, "iEquipSchool")
 				;Only allow QuickDualCast is the feature is enabled for this school, and if the equipped spell is GetEquipType == 2 (EitherHand), and as long as it's not a Bound 2H item or shield
-				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !(iEquip_SpellExt.IsBoundSpell(targetSpell) && (ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeaponType(targetSpell)) > -1 || iEquip_FormExt.IsSpellWard(targetItem)))
+				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !((ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(targetSpell)) > -1) || (Game.GetModName(targetItem.GetFormID() / 0x1000000) == "Bound Shield.esp"))
 					debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
 					if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "iEquipName"), spellSchool)
 						bSwitchingHands = false ;Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
@@ -3067,7 +3067,7 @@ function addToQueue(int Q)
 			iEquipSlot = EquipSlots.Find((itemForm as spell).GetEquipType())
 			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
 				Q = iEquipSlot
-			elseIf iEquipSlot == 3 || (iEquip_SpellExt.IsBoundSpell(itemForm as spell) && iEquip_SpellExt.GetBoundSpellWeaponType(itemForm as spell) > -1) ;If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
+			elseIf iEquipSlot == 3 || (iEquip_SpellExt.GetBoundSpellWeapType(itemForm as spell) > -1) ;If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
 				Q = 1
 			endIf
 			if iEquip_FormExt.IsSpellWard(itemForm) ;The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue

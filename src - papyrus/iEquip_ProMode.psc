@@ -261,7 +261,7 @@ function equipPreselectedItem(int Q)
     int iHandle
 	int itemToEquip = WC.aiCurrentlyPreselected[Q]
 	int targetArray = WC.aiTargetQ[Q]
-	int targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[Q])
+	int targetObject = jArray.getObj(targetArray, itemToEquip)
 	form targetItem = jMap.getForm(targetObject, "iEquipForm")
 	int itemType = jMap.getInt(targetObject, "iEquipType")
 	if (itemType == 7 || itemType == 9)
@@ -320,14 +320,13 @@ function equipPreselectedItem(int Q)
 		if Q == 1 && !AM.bAmmoMode ;if we're equipping the right preselected item and it's not another ranged weapon we'll just have toggled ammo mode off without animation, now we need to remove the ammo from the left slot and replace it with the current left hand item
 			if bAmmoModeActiveOnTogglePreselect && !bEquippingAllPreselectedItems ;if we were in ammo mode when we toggled Preselect Mode then use the equipPreselected animation, otherwise use updateWidget
 				bAmmoModeActiveOnTogglePreselect = false ;Reset
-				int leftItemToEquip = WC.aiCurrentlyPreselected[0]
 				targetArray = WC.aiTargetQ[0]
-			    currIcon =  jMap.getStr(AM.getCurrentAmmoObject(), "iEquipIcon")
-			    currPIcon = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0]), "iEquipIcon")
-			    cyclePreselectSlot(0, jArray.count(targetArray), false, false)
-			    targetObject = jArray.getObj(targetArray, leftItemToEquip)
+				targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
 			    newName = jMap.getStr(targetObject, "iEquipName")
 				newIcon = jMap.getStr(targetObject, "iEquipIcon")
+			    currIcon =  jMap.getStr(AM.getCurrentAmmoObject(), "iEquipIcon")
+			    currPIcon = newIcon
+			    cyclePreselectSlot(0, jArray.count(targetArray), false, false)
 				targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
 				iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".equipPreselectedItem")
 				if(iHandle)
@@ -343,9 +342,8 @@ function equipPreselectedItem(int Q)
 			else
 				WC.updateWidget(0, WC.aiCurrentQueuePosition[0], true)
 			endIf
-			ammo targetAmmo = AM.currentAmmoForm as Ammo
-			if WC.bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
-				PlayerRef.UnequipItemEx(targetAmmo)
+			if WC.bUnequipAmmo && PlayerRef.isEquipped(AM.currentAmmoForm as Ammo)
+				PlayerRef.UnequipItemEx(AM.currentAmmoForm as Ammo)
 			endIf
 			if WC.bNameFadeoutEnabled
 				WC.LNUpdate.registerForNameFadeoutUpdate()
@@ -360,7 +358,7 @@ function equipPreselectedItem(int Q)
 			elseif WC.abIsCounterShown[0]
 				WC.setCounterVisibility(0, false)
 			endIf
-			if !(itemType == 5 || itemType == 6) ;As long as the item which triggered toggling out of bAmmoMode isn't a 2H weapon we can now re-equip the left hand
+			if !(itemType == 5 || itemType == 6 || (itemType == 22 && (targetItem as Spell).GetEquipType() == 3)) ;As long as the item which triggered toggling out of bAmmoMode isn't a 2H weapon or spell we can now re-equip the left hand
 				if leftItemType == 22
 					PlayerRef.EquipSpell(leftItem as Spell, 0)
 			    elseif leftItemType == 26
@@ -398,7 +396,7 @@ function equipPreselectedItem(int Q)
 		;Unequip current item
 		WC.UnequipHand(Q)
 		;if equipping the left hand will cause a 2H or ranged weapon to be unequipped in the right hand, or the one handed weapon you are about to equip is already equipped in the other hand and you only have one of it then cycle the main slot and equip a suitable 1H item
-		if (Q == 0 && (WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > -1)) || (targetItem == PlayerRef.GetEquippedObject(otherHand) && itemType != 22 && PlayerRef.GetItemCount(targetItem) < 2) || (WC.bGoneUnarmed && !(itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9))
+		if (Q == 0 && (WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > -1)) || (targetItem == PlayerRef.GetEquippedObject(otherHand) && itemType != 22 && PlayerRef.GetItemCount(targetItem) < 2) || (WC.bGoneUnarmed && !(WC.ai2HWeaponTypes.Find(itemType) > -1))
 			if !bEquippingAllPreselectedItems
 	        	WC.bPreselectSwitchingHands = true
 	        endif
