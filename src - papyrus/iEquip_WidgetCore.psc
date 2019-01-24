@@ -227,7 +227,6 @@ bool bFirstAttemptToDeletePotionGroup = true
 
 bool property bPoisonIconFaded = false auto hidden
 
-string[] asBound2HWeapons
 bool property bBlockSwitchBackToBoundSpell = false auto hidden
 
 bool property bMoreHUDLoaded = false auto hidden
@@ -338,13 +337,6 @@ Event OnWidgetInit()
 	asSpellSchools[2] = "Destruction"
 	asSpellSchools[3] = "Illusion"
 	asSpellSchools[4] = "Restoration"
-
-	asBound2HWeapons = new string[5]
-	asBound2HWeapons[0] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow")
-	asBound2HWeapons[1] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow")
-	asBound2HWeapons[2] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundGreatSword")
-	asBound2HWeapons[3] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBattleaxe")
-	asBound2HWeapons[4] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundWarhammer")
 
 	ai2HWeaponTypes = new int[5]
 	ai2HWeaponTypes[0] = 5 ;Greatswotd
@@ -2496,16 +2488,17 @@ endFunction
 function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, bool equippingOnAutoAdd = false)
     ;When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
     debug.trace("iEquip_WidgetCore cycleHand called - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", itemType: " + itemType + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
+   	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
+    if itemType == -1
+    	itemType = jMap.getInt(targetObject, "iEquipType")
+    endIf
    	int iEquipSlotId = 1
     int otherHand = 0
     bool justSwitchedHands = false
     bool previously2H = false
-    bool targetWeaponIs2hOrRanged = ai2HWeaponTypes.Find(itemType) > -1
+    bool targetObjectIs2hOrRanged = (ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3))
     bBlockSwitchBackToBoundSpell = true
-    int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
-    if itemType == -1
-    	itemType = jMap.getInt(targetObject, "iEquipType")
-    endIf
+    
     ;Hide the attribute icons ready to show full poison and enchantment elements if required
     hideAttributeIcons(Q)
     
@@ -2513,7 +2506,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     	iEquipSlotId = 2
     	otherHand = 1
     else
-    	previously2H = RightHandWeaponIs2h()
+    	int currRHType = PlayerRef.GetEquippedItemType(1)
+    	previously2H = currRHType == 5 || currRHType == 6 || (currRHType == 9 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3))
     endIf
 	debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", iEquipSlotId = " + iEquipSlotId + ", otherHand = " + otherHand + ", bSwitchingHands = " + bSwitchingHands + ", bGoneUnarmed = " + bGoneUnarmed)
 	;if we're switching hands we can reset to false now, and we don't need to unequip here because we already did so when we started switching hands
@@ -2525,11 +2519,11 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		UnequipHand(Q)
 	endIf
 	;if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place
-    if (Q == 0 && RightHandWeaponIs2hOrRanged()) || (bGoneUnarmed && !targetWeaponIs2hOrRanged) || targetWeaponIs2hOrRanged
-    	if !targetWeaponIs2hOrRanged
+    if (Q == 0 && (ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > -1)) || (bGoneUnarmed && !targetObjectIs2hOrRanged) || targetObjectIs2hOrRanged
+    	if !targetObjectIs2hOrRanged
     		bSwitchingHands = true
     	endIf
-    	debug.trace("iEquip_WidgetCore cycleHand - Q == 0 && RightHandWeaponIs2hOrRanged: " + RightHandWeaponIs2hOrRanged() + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands)
+    	debug.trace("iEquip_WidgetCore cycleHand - Q == 0 && RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands)
     	if !bGoneUnarmed
     		UnequipHand(otherHand)
     	endIf
@@ -2541,10 +2535,10 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		if itemType == 22
 			PlayerRef.EquipSpell(targetItem as Spell, Q)
 			if bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
+				spell targetSpell = targetItem as spell
 				string spellSchool = jMap.getStr(targetObject, "iEquipSchool")
-				string spellName = targetItem.GetName()
 				;Only allow QuickDualCast is the feature is enabled for this school, and if the equipped spell is GetEquipType == 2 (EitherHand), and as long as it's not a Bound 2H item or shield
-				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !(spellSchool == "Conjuration" && (asBound2HWeapons.find(spellName) > -1))
+				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !(iEquip_SpellExt.IsBoundSpell(targetSpell) && (ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeaponType(targetSpell)) > -1 || iEquip_FormExt.IsSpellWard(targetItem)))
 					debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
 					if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "iEquipName"), spellSchool)
 						bSwitchingHands = false ;Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
@@ -2593,8 +2587,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AmmoModeFirstLook2"))
 		bAmmoModeFirstLook = false
 	endIf
-	;if we've just equipped a 1H item in RH forcing toggleAmmoMode, now we can re-equip the left hand making sure to block QuickDualCast
-	if Q == 1 && (bJustLeftAmmoMode || previously2H) && !(itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
+	;if we've just equipped a 1H item in RH forcing left hand to reequip, now we can re-equip the left hand making sure to block QuickDualCast
+	if Q == 1 && (bJustLeftAmmoMode || previously2H) && !ai2HWeaponTypes.Find(itemType) > -1
 		targetObject = jArray.getObj(aiTargetQ[0], aiCurrentQueuePosition[0])
 		int leftType = jMap.getInt(targetObject, "iEquipType")
 		PM.bBlockQuickDualCast = (leftType == 22)
@@ -2604,37 +2598,13 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     elseif bSwitchingHands
     	debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands = " + bSwitchingHands + ", calling cycleSlot(" + otherHand + ", false)")
     	Utility.Wait(0.1)
-		cycleSlot(otherHand, false)
+		cycleSlot(otherHand, false, true)
 	endIf
 	if bEnableGearedUp
 		refreshGearedUp()
 	endIf
 	bBlockSwitchBackToBoundSpell = false
 	debug.trace("iEquip_WidgetCore cycleHand finished")
-endFunction
-
-bool function RightHandWeaponIs2hOrRanged(int itemType = -1)
-	if itemType == -1
-		itemType = PlayerRef.GetEquippedItemType(1)
-	endIf
-	debug.trace("iEquip_WidgetCore RightHandWeaponIs2hOrRanged - itemType: " + itemType)
-	return ai2HWeaponTypes.Find(itemType) > -1
-endFunction
-
-bool function RightHandWeaponIs2h(int itemType = -1)
-	if itemType == -1
-		itemType = PlayerRef.GetEquippedItemType(1)
-	endIf
-	debug.trace("iEquip_WidgetCore RightHandWeaponIs2h - itemType: " + itemType)
-	return (itemType == 5 || itemType == 6)
-endFunction
-
-bool function RightHandWeaponIsRanged(int itemType = -1)
-	if itemType == -1
-		itemType = PlayerRef.GetEquippedItemType(1)
-	endIf
-	debug.trace("iEquip_WidgetCore RightHandWeaponIsRanged - itemType: " + itemType)
-	return ai2HWeaponTypes.Find(itemType) > 2
 endFunction
 
 function goUnarmed()
@@ -3030,7 +3000,7 @@ endFunction
 bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 	bool isPoisoned = false
 	;if we're checking the left hand item but we currently have a 2H or ranged weapon equipped, or if we're cycling we need to check the object data for the last know poison info
-	if cycling || (Q == 0 && RightHandWeaponIs2hOrRanged())
+	if cycling || (Q == 0 && (ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > -1))
 		isPoisoned = jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "isPoisoned") as bool
 	;Otherwise we're checking an equipped item so we can check the actual data from the weapon
 	else
@@ -3097,7 +3067,7 @@ function addToQueue(int Q)
 			iEquipSlot = EquipSlots.Find((itemForm as spell).GetEquipType())
 			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
 				Q = iEquipSlot
-			elseIf iEquipSlot == 3 ;If the spell is a two handed spell only add to right hand queue
+			elseIf iEquipSlot == 3 || (iEquip_SpellExt.IsBoundSpell(itemForm as spell) && iEquip_SpellExt.GetBoundSpellWeaponType(itemForm as spell) > -1) ;If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
 				Q = 1
 			endIf
 			if iEquip_FormExt.IsSpellWard(itemForm) ;The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
@@ -3290,7 +3260,7 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
         	if WeaponType <= 4 || WeaponType == 8 ;Fists, 1H weapons and Staffs only
         		isValid = true
         	endIf
-    	elseif (itemType == 22 && !isShout && asBound2HWeapons.Find(itemName) == -1) || itemType == 23 || itemType == 31 || (itemType == 26 && (itemForm as Armor).GetSlotMask() == 512) ;Spell, Scroll, Torch, Shield
+    	elseif (itemType == 22 && !isShout) || itemType == 23 || itemType == 31 || (itemType == 26 && (itemForm as Armor).GetSlotMask() == 512) ;Spell, Scroll, Torch, Shield
     		isValid = true
     	endIf
     elseif Q == 1 ;Right Hand

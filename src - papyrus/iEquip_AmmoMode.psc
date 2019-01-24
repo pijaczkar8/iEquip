@@ -8,6 +8,7 @@ import _Q2C_Functions
 import iEquip_StringExt
 import iEquip_AmmoExt
 import iEquip_FormExt
+import iEquip_WeaponExt
 
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
@@ -214,8 +215,8 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			if WC.CM.abIsChargeMeterShown[0]
 				WC.CM.updateChargeMeterVisibility(0, false)
 			endIf
-			;Now unequip the left hand to avoid any strangeness when switching ranged weapons in bAmmoMode
-			if !(WC.asCurrentlyEquipped[1] == iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow") || WC.asCurrentlyEquipped[1] == iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow"))
+			;Now unequip the left hand to avoid any strangeness when switching ranged weapons in bAmmoMode unless we currently have a bound ranged weapon equipped
+			if !((PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12) && iEquip_WeaponExt.IsWeaponBound(PlayerRef.GetEquippedObject(1) as weapon))
 				WC.UnequipHand(0)
 			endIf
 			;Prepare and run the animation

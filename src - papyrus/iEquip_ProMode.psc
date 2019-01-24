@@ -136,7 +136,7 @@ function togglePreselectMode(bool enablingEditMode = false)
 			Utility.Wait(1.0)
 			Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstLook"))
 			bPreselectModeFirstLook = false
-			if WC.RightHandWeaponIsRanged() && bAmmoModePreselectModeFirstLook
+			if (WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > 2) && bAmmoModePreselectModeFirstLook
 				Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
 				bAmmoModePreselectModeFirstLook = false
 			endIf
@@ -144,7 +144,7 @@ function togglePreselectMode(bool enablingEditMode = false)
 	else
 		;Hide preselect widget elements
 		PreselectModeAnimateOut()
-		if AM.bAmmoMode || WC.RightHandWeaponIsRanged()
+		if AM.bAmmoMode || (WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > 2)
 			args[0] = true
 		else
 			args[0] = false ;Hide left
@@ -198,7 +198,7 @@ function PreselectModeAnimateOut()
 		bool[] args = new bool[3]
 		args[0] = bRightPreselectShown
 		args[1] = bShoutPreselectShown
-		if AM.bAmmoMode || WC.RightHandWeaponIsRanged()
+		if AM.bAmmoMode || (WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > 2)
 			args[2] = false ;Stop left slot from animating out if we currently have a ranged weapon equipped in the right hand or are in ammo mode as we still need it to show in regular mode
 		else
 			args[2] = bLeftPreselectShown
@@ -266,7 +266,7 @@ function equipPreselectedItem(int Q)
 	int itemType = jMap.getInt(targetObject, "iEquipType")
 	if (itemType == 7 || itemType == 9)
 		AM.checkAndRemoveBoundAmmo(itemType)
-		if (!WC.RightHandWeaponIsRanged() || AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3)
+		if (!(WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > 2) || AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3)
 			AM.selectAmmoQueue(itemType)
 		endIf
 	endIf
@@ -398,7 +398,7 @@ function equipPreselectedItem(int Q)
 		;Unequip current item
 		WC.UnequipHand(Q)
 		;if equipping the left hand will cause a 2H or ranged weapon to be unequipped in the right hand, or the one handed weapon you are about to equip is already equipped in the other hand and you only have one of it then cycle the main slot and equip a suitable 1H item
-		if (Q == 0 && WC.RightHandWeaponIs2hOrRanged()) || (targetItem == PlayerRef.GetEquippedObject(otherHand) && itemType != 22 && PlayerRef.GetItemCount(targetItem) < 2) || (WC.bGoneUnarmed && !(itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9))
+		if (Q == 0 && (WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > -1)) || (targetItem == PlayerRef.GetEquippedObject(otherHand) && itemType != 22 && PlayerRef.GetItemCount(targetItem) < 2) || (WC.bGoneUnarmed && !(itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9))
 			if !bEquippingAllPreselectedItems
 	        	WC.bPreselectSwitchingHands = true
 	        endif
@@ -649,7 +649,7 @@ endEvent
 function quickShield(bool forceSwitch = false)
 	debug.trace("iEquip_ProMode quickShield called")
 	;if right hand or ranged weapon in right hand and bQuickShield2HSwitchAllowed not enabled then return out
-	if !bQuickShieldEnabled || (!forceSwitch && ((WC.RightHandWeaponIs2hOrRanged() && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
+	if !bQuickShieldEnabled || (!forceSwitch && (((WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
 		return
 	endIf
 	int i = 0
@@ -735,7 +735,7 @@ function quickShield(bool forceSwitch = false)
 				WC.checkAndFadeLeftIcon(0, foundType)
 			endIf
 			bool switchRightHand = false
-			if WC.RightHandWeaponIs2hOrRanged() || (foundType == 22 && bQuickShieldPreferMagic && !rightHandHasSpell) || WC.bGoneUnarmed
+			if (WC.ai2HWeaponTypes.Find(PlayerRef.GetEquippedItemType(1)) > -1) || (foundType == 22 && bQuickShieldPreferMagic && !rightHandHasSpell) || WC.bGoneUnarmed
 				switchRightHand = true
 				if !WC.bGoneUnarmed
 					WC.UnequipHand(1)
@@ -1182,7 +1182,7 @@ function quickRangedSwitchOut(bool force1H = false)
 		if WC.aiCurrentlyPreselected[1] == targetIndex
 			cyclePreselectSlot(1, jArray.count(targetArray), false)
 		endIf
-		if !WC.RightHandWeaponIs2hOrRanged(jMap.getInt(targetObject, "iEquipType"))
+		if WC.ai2HWeaponTypes.Find(jMap.getInt(targetObject, "iEquipType")) == -1
 			targetArray = WC.aiTargetQ[0]
 			PlayerRef.EquipItemEx(jMap.getForm(jArray.getObj(targetArray, WC.aiCurrentQueuePosition[0]), "iEquipForm"), 2, false, false)
 			WC.checkAndUpdatePoisonInfo(0)
