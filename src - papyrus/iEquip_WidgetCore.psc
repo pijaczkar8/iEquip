@@ -191,6 +191,7 @@ EquipSlot[] property EquipSlots auto hidden
 
 string[] asItemNames
 string[] asWeaponTypeNames
+int[] ai2HWeaponTypes
 
 int iQueueMenuCurrentQueue = -1
 bool bJustUsedQueueMenuDirectAccess = false
@@ -344,6 +345,13 @@ Event OnWidgetInit()
 	asBound2HWeapons[2] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundGreatSword")
 	asBound2HWeapons[3] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBattleaxe")
 	asBound2HWeapons[4] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundWarhammer")
+
+	ai2HWeaponTypes = new int[5]
+	ai2HWeaponTypes[0] = 5 ;Greatswotd
+	ai2HWeaponTypes[1] = 6 ;Waraxe/Warhammer
+	ai2HWeaponTypes[2] = 7 ;Bow
+	ai2HWeaponTypes[3] = 9 ;Crossbow
+	ai2HWeaponTypes[4] = 12 ;Also Crossbow depending on where the type has been received from
 
 	aiCounterClips = new int[5]
 	aiCounterClips[0] = 9
@@ -1546,7 +1554,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				int itemType = jMap.getInt(targetObject, "iEquipType")
 				AM.bAmmoModePending = false
 				; Check if initial target item is 2h or ranged, or if it is a 1h item but you only have one of it and you've just equipped it in the other hand, or if it is unarmed
-				if (itemType == 0 || itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9) || ((asCurrentlyEquipped[0] == jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2)
+				if (itemType == 0 || ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipSlot") == 3) || ((asCurrentlyEquipped[0] == jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
 					int newIndex = targetIndex + 1
 					if newIndex == queueLength
 						newIndex = 0
@@ -1557,7 +1565,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 						targetObject = jArray.getObj(targetArray, newIndex)
 						itemType = jMap.getInt(targetObject, "iEquipType")
 						; if the new target item is 2h or ranged, or if it is a 1h item but you only have one of it and it's already equipped in the other hand, or it is unarmed then move on again
-						if (itemType == 0 || itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) < 2)
+						if (itemType == 0 || ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipSlot") == 3) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) < 2))
 							newIndex += 1
 							;if we have reached the final index in the array then loop to the start and keep counting forward until we reach the original starting point
 							if newIndex == queueLength
@@ -2078,7 +2086,7 @@ function checkIfBoundSpellEquipped()
 	bool boundSpellEquipped = false
 	int hand = 0
 	while hand < 2
-		if PlayerRef.GetEquippedItemType(hand) == 9 && (iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand)) || (Game.GetModName(PlayerRef.GetEquippedObject(hand).GetFormID() / 0x1000000) != "Bound Shield.esp"))
+		if PlayerRef.GetEquippedItemType(hand) == 9 && (iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand)) || (Game.GetModName(PlayerRef.GetEquippedObject(hand).GetFormID() / 0x1000000) == "Bound Shield.esp"))
 			boundSpellEquipped = true
 		endIf
 		hand += 1
@@ -2443,7 +2451,7 @@ function addBackCachedItem(form addedForm)
 			int Q
 			int itemType = jMap.getInt(targetObject, "iEquipType")
 			;Check if the re-added item has been equipped in either hand and set that as the target queue
-			if PlayerRef.GetEquippedObject(0) == addedForm && !(itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
+			if PlayerRef.GetEquippedObject(0) == addedForm && ai2HWeaponTypes.Find(itemType) == -1
 				Q = 0
 			elseIf PlayerRef.GetEquippedObject(1) == addedForm
 				Q = 1
@@ -2492,7 +2500,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     int otherHand = 0
     bool justSwitchedHands = false
     bool previously2H = false
-    bool targetWeaponIs2hOrRanged = (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9)
+    bool targetWeaponIs2hOrRanged = ai2HWeaponTypes.Find(itemType) > -1
     bBlockSwitchBackToBoundSpell = true
     int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
     if itemType == -1
@@ -2606,13 +2614,11 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 endFunction
 
 bool function RightHandWeaponIs2hOrRanged(int itemType = -1)
-	if itemType == 9
-		itemType = 12
-	elseIf itemType == -1
+	if itemType == -1
 		itemType = PlayerRef.GetEquippedItemType(1)
 	endIf
 	debug.trace("iEquip_WidgetCore RightHandWeaponIs2hOrRanged - itemType: " + itemType)
-	return (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 12) ;GetEquippedItemType returns 12 rather than 9 for Crossbow
+	return ai2HWeaponTypes.Find(itemType) > -1
 endFunction
 
 bool function RightHandWeaponIs2h(int itemType = -1)
@@ -2624,13 +2630,11 @@ bool function RightHandWeaponIs2h(int itemType = -1)
 endFunction
 
 bool function RightHandWeaponIsRanged(int itemType = -1)
-	if itemType == 9
-		itemType = 12
-	elseIf itemType == -1
+	if itemType == -1
 		itemType = PlayerRef.GetEquippedItemType(1)
 	endIf
 	debug.trace("iEquip_WidgetCore RightHandWeaponIsRanged - itemType: " + itemType)
-	return (itemType == 7 || itemType == 12) ;GetEquippedItemType returns 12 rather than 9 for Crossbow
+	return ai2HWeaponTypes.Find(itemType) > 2
 endFunction
 
 function goUnarmed()
@@ -3091,8 +3095,10 @@ function addToQueue(int Q)
 		itemType = itemForm.GetType()
 		if itemType == 22
 			iEquipSlot = EquipSlots.Find((itemForm as spell).GetEquipType())
-			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue, otherwise carry on and add it as per the hotkey press.  We'll flag BothHands spells later.
+			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
 				Q = iEquipSlot
+			elseIf iEquipSlot == 3 ;If the spell is a two handed spell only add to right hand queue
+				Q = 1
 			endIf
 			if iEquip_FormExt.IsSpellWard(itemForm) ;The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
 				Q = 0
