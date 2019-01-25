@@ -314,7 +314,7 @@ function equipPreselectedItem(int Q)
 		endIf
 	endIf
 	;if we're in ammo mode whilst in Preselect Mode and either we're equipping the left preselected item, or we're equipping the right and it's not another ranged weapon we need to turn ammo mode off
-	if (AM.bAmmoMode && (Q == 0 || Q == 1 && !(itemType == 7 || itemType == 9))) || (!AM.bAmmoMode && (Q == 1 && (itemType == 7 || itemType == 9)))
+	if (AM.bAmmoMode && (Q == 0 || (Q == 1 && !(itemType == 7 || itemType == 9)))) || (!AM.bAmmoMode && (Q == 1 && (itemType == 7 || itemType == 9)))
 		AM.toggleAmmoMode(true, (itemType == 5 || itemType == 6)) ;Toggle ammo mode off/on without the animation, and without re-equipping if RH is equipping 2H
 		Utility.Wait(0.05)
 		if Q == 1 && !AM.bAmmoMode ;if we're equipping the right preselected item and it's not another ranged weapon we'll just have toggled ammo mode off without animation, now we need to remove the ammo from the left slot and replace it with the current left hand item

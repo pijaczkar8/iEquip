@@ -334,14 +334,13 @@ function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 		endIf
 	else
 		;Update the main slot index
-		int leftObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0])
 		if !WC.bPreselectMode
 			WC.aiCurrentQueuePosition[0] = WC.aiCurrentlyPreselected[0]
-			WC.asCurrentlyEquipped[0] = jMap.getStr(leftObject, "iEquipName")
+			WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipName")
 		endIf
 		;And re-equip the left hand item, which should in turn force a re-equip on the right hand to a 1H item, as long as we've not just toggled out of ammo mode as a result of us equipping a 2H weapon in the right hand
 		if !toggleWithoutEquipping
-			WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(leftObject, "iEquipForm"))
+			WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
 		endIf
 	endIf
 	;Show the left name if previously faded out on timer
