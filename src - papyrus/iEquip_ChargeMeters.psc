@@ -163,16 +163,13 @@ function startMeterFlash(int Q, bool forceFlash = false) ; Starts meter flashing
 endFunction
 
 function updateChargeMeters(bool forceUpdate = false)
-	debug.trace("iEquip_ChargeMeters updateChargeMeters called")
+	debug.trace("iEquip_ChargeMeters updateChargeMeters called - forceUpdate: " + forceUpdate)
 	int Q = 0
 	if iChargeDisplayType > 0
 		while Q < 2
 			;Force both meters and both gems to hide first then call checkAndUpdate to reshow the relevant one if required
-			;if iChargeDisplayType == 2
-				updateChargeMeterVisibility(Q, false, true) ;hideMeters
-			;elseIf iChargeDisplayType == 1
-				updateChargeMeterVisibility(Q, false, false, true) ;hideGems
-			;endIf
+			updateChargeMeterVisibility(Q, false, true) ;hideMeters
+			updateChargeMeterVisibility(Q, false, false, true) ;hideGems
 			checkAndUpdateChargeMeter(Q, forceUpdate)
 			Q += 1
 		endWhile
@@ -188,15 +185,13 @@ function updateChargeMetersOnWeaponsDrawn()
 	debug.trace("iEquip_ChargeMeters updateChargeMetersOnWeaponsDrawn called")
 	int Q = 0
 	while Q < 2
-		;if PlayerRef.GetEquippedWeapon(Q)
-		checkAndUpdateChargeMeter(Q, false)
-		;endIf
+		checkAndUpdateChargeMeter(Q, true)
 		Q += 1
 	endWhile
 endFunction
 
 function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
-	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter called - Q: " + Q)
+	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter called - Q: " + Q + ", forceUpdate: " + forceUpdate)
 	if !PlayerRef.IsWeaponDrawn()
 		Utility.Wait(0.2)
 	endIf

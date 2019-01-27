@@ -225,12 +225,12 @@ function onGameLoaded()
         aPAF_RestoreEffects = new MagicEffect[6]
         if Game.GetModByName("PotionAnimatedFix.esp") != 255
             bIsPAFLoaded = true
-            aPAF_RestoreEffects[0] = Game.GetFormFromFile(0x006B2D4, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreHealthDUPLICATE001
-            aPAF_RestoreEffects[1] = Game.GetFormFromFile(0x00754DB, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreHealthAllDUPLICATE001
-            aPAF_RestoreEffects[2] = Game.GetFormFromFile(0x00754DE, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreStaminaDUPLICATE001
-            aPAF_RestoreEffects[3] = Game.GetFormFromFile(0x00754DF, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreStaminaAllDUPLICATE001
-            aPAF_RestoreEffects[4] = Game.GetFormFromFile(0x00754DC, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreMagickaDUPLICATE001
-            aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DD, "PotionAnimatedFix.esp") as MagicEffect ;AlchRestoreMagickaAllDUPLICATE001
+            aPAF_RestoreEffects[0] = Game.GetFormFromFile(0x006B2D4, "PotionAnimatedFix.esp") as MagicEffect
+            aPAF_RestoreEffects[1] = Game.GetFormFromFile(0x00754DB, "PotionAnimatedFix.esp") as MagicEffect
+            aPAF_RestoreEffects[2] = Game.GetFormFromFile(0x00754DE, "PotionAnimatedFix.esp") as MagicEffect
+            aPAF_RestoreEffects[3] = Game.GetFormFromFile(0x00754DF, "PotionAnimatedFix.esp") as MagicEffect
+            aPAF_RestoreEffects[4] = Game.GetFormFromFile(0x00754DC, "PotionAnimatedFix.esp") as MagicEffect
+            aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DD, "PotionAnimatedFix.esp") as MagicEffect
         else
             bIsPAFLoaded = false
         endIf

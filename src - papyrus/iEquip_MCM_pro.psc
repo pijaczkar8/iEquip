@@ -84,7 +84,7 @@ function drawPage()
                 if PM.bQuickShieldPreferMagic
                     MCM.AddMenuOptionST("pro_men_rightHandspllTyp", "$iEquip_MCM_pro_lbl_rightHandspllTyp", QSPreferredMagicSchool[MCM.iCurrentQSPreferredMagicSchoolChoice])
                 endIf         
-               
+                MCM.AddToggleOptionST("pro_tgl_ifNotFound", "$iEquip_MCM_pro_lbl_ifNotFound", PM.bQuickShieldUnequipLeftIfNotFound)
                 MCM.AddMenuOptionST("pro_men_inPreselectQuickshieldMode", "$iEquip_MCM_pro_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
             endIf
                     
@@ -356,6 +356,21 @@ State pro_men_rightHandspllTyp
             endIf
             
             MCM.SetMenuOptionValueST(QSPreferredMagicSchool[MCM.iCurrentQSPreferredMagicSchoolChoice])
+        endIf
+    endEvent
+endState
+
+State pro_tgl_ifNotFound
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_ifNotFound")
+        else
+            if currentEvent == "Select"
+                PM.bQuickShieldUnequipLeftIfNotFound = !PM.bQuickShieldUnequipLeftIfNotFound
+            elseIf currentEvent == "Default"
+                PM.bQuickShieldUnequipLeftIfNotFound = false
+            endIf
+            MCM.SetToggleOptionValueST(PM.bQuickShieldUnequipLeftIfNotFound)
         endIf
     endEvent
 endState

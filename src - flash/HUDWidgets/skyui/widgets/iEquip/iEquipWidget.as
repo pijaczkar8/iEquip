@@ -1492,7 +1492,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		TweenLite.to(nameClip, secs, {_alpha:endValue, ease:Quad.easeOut});
 	}
 
-	public function tweenLeftIconAlpha(bgAlpha: Number, iconAlpha: Number, nameAlpha: Number, countAlpha: Number, poisonIconAlpha: Number, poisonNameAlpha: Number): Void
+	public function tweenLeftIconAlpha(bgAlpha: Number, iconAlpha: Number, nameAlpha: Number, countAlpha: Number, poisonIconAlpha: Number, poisonNameAlpha: Number, i_target: Number, enchantmentAlpha: Number): Void
 	{
 		var bgClip: MovieClip = leftBg_mc
 		var iconClip: MovieClip = leftIcon_mc
@@ -1500,13 +1500,15 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		var countClip: MovieClip = leftCount_mc
 		var poisonIconClip: MovieClip = leftPoisonIcon_mc
 		var poisonNameClip: MovieClip = leftPoisonName_mc
+		var enchantmentClip: MovieClip = i_target == 0 ? leftEnchantmentMeter_mc : leftSoulgem_mc;
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		tl.to(bgClip, 0.3, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
 		.to(iconClip, 0.3, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
 		.to(nameClip, 0.3, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
 		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0)
 		.to(poisonIconClip, 0.3, {_alpha:poisonIconAlpha, ease:Quad.easeOut}, 0)
-		.to(poisonNameClip, 0.3, {_alpha:poisonNameAlpha, ease:Quad.easeOut}, 0);
+		.to(poisonNameClip, 0.3, {_alpha:poisonNameAlpha, ease:Quad.easeOut}, 0)
+		.to(enchantmentClip, 0.3, {_alpha:enchantmentAlpha, ease:Quad.easeOut}, 0);
 		tl.play();
 	}
 
@@ -1616,10 +1618,10 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		clip1.swapDepths(clip2);
 	}
 
-	public function updateCounter(target: Number, a_count: Number): Void
+	public function updateCounter(iTarget: Number, a_count: Number): Void
 	{
 		var targetCount: TextField;
-		switch(target) {
+		switch(iTarget) {
 			case 0:
 				targetCount = leftCount;
 				break
@@ -1638,22 +1640,12 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		targetCount.setTextFormat(textFormat);
 	}
 
-	public function updatePoisonIcon(target: Number, sIcon: String): Void
+	public function updatePoisonIcon(iTarget: Number, sIcon: String): Void
 	{
-		var poisonIcon: MovieClip;
-		var poisonIcon_mc: MovieClip;
-
-		switch(target) {
-			case 0:
-				poisonIcon = leftPoisonIcon;
-				poisonIcon_mc = leftPoisonIcon_mc;
-				break
-			case 1:
-				poisonIcon = rightPoisonIcon;
-				poisonIcon_mc = rightPoisonIcon_mc;
-				break
-			}
+		var poisonIcon: MovieClip = iTarget == 0 ? leftPoisonIcon : rightPoisonIcon;
+		var poisonIcon_mc: MovieClip = iTarget == 0 ? leftPoisonIcon_mc : rightPoisonIcon_mc;
 		var currAlpha = poisonIcon_mc._alpha; 
+		
 		TweenLite.to(poisonIcon_mc, 0.15, {_alpha:0, ease:Quad.easeOut});
 		poisonIcon.gotoAndStop(sIcon);
 		TweenLite.to(poisonIcon_mc, 0.2, {_alpha:currAlpha, ease:Quad.easeOut});
