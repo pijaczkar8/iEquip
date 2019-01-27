@@ -8,6 +8,7 @@ import _Q2C_Functions
 import iEquip_StringExt
 import iEquip_AmmoExt
 import iEquip_FormExt
+import iEquip_WeaponExt
 
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
@@ -214,8 +215,8 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			if WC.CM.abIsChargeMeterShown[0]
 				WC.CM.updateChargeMeterVisibility(0, false)
 			endIf
-			;Now unequip the left hand to avoid any strangeness when switching ranged weapons in bAmmoMode
-			if !(WC.asCurrentlyEquipped[1] == iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow") || WC.asCurrentlyEquipped[1] == iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow"))
+			;Now unequip the left hand to avoid any strangeness when switching ranged weapons in bAmmoMode unless we currently have a bound ranged weapon equipped
+			if !((PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12) && iEquip_WeaponExt.IsWeaponBound(PlayerRef.GetEquippedObject(1) as weapon))
 				WC.UnequipHand(0)
 			endIf
 			;Prepare and run the animation
@@ -333,14 +334,13 @@ function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 		endIf
 	else
 		;Update the main slot index
-		int leftObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0])
 		if !WC.bPreselectMode
 			WC.aiCurrentQueuePosition[0] = WC.aiCurrentlyPreselected[0]
-			WC.asCurrentlyEquipped[0] = jMap.getStr(leftObject, "iEquipName")
+			WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipName")
 		endIf
 		;And re-equip the left hand item, which should in turn force a re-equip on the right hand to a 1H item, as long as we've not just toggled out of ammo mode as a result of us equipping a 2H weapon in the right hand
 		if !toggleWithoutEquipping
-			WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(leftObject, "iEquipForm"))
+			WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
 		endIf
 	endIf
 	;Show the left name if previously faded out on timer

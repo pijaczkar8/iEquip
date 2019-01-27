@@ -41,6 +41,8 @@ bool processingQueuedForms = false
 bool property bIsThunderchildLoaded = false auto hidden
 bool property bIsWintersunLoaded = false auto hidden
 bool property bPlayerIsMeditating = false auto hidden
+bool property bDualCasting = false auto hidden
+int dualCastCounter = 0
 
 bool bPlayerIsABeast = false
 
@@ -48,7 +50,7 @@ int iSlotToUpdate = -1
 int[] itemTypesToProcess
 
 Event OnInit()
-	
+	debug.trace("iEquip_PlayerEventHandler OnInit called")
     PlayerRace = PlayerRef.GetRace()
 	OnPlayerLoadGame()
 endEvent
@@ -146,6 +148,21 @@ bool Property boundSpellEquipped
 	endFunction
 endProperty
 
+bool property bJustQuickDualCast
+	bool function Get()
+		return bDualCasting
+	endFunction
+
+	function set(bool dualCasting)
+		bDualCasting = dualCasting
+		if dualCasting
+			dualCastCounter = 2
+		else
+			dualCastCounter = 0
+		endIf
+	endFunction
+endProperty
+
 function updateAllEventFilters()
 	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters called")
 	RemoveAllInventoryEventFilters()
@@ -194,6 +211,8 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 			Utility.Wait(0.3)
 			if PlayerRef.GetEquippedShield() && PlayerRef.GetEquippedShield().GetName() == WC.asCurrentlyEquipped[0]
 				WC.onBoundWeaponEquipped(26, 0)
+				iEquip_AllCurrentItemsFLST.AddForm(PlayerRef.GetEquippedShield() as form)
+				updateEventFilter(iEquip_AllCurrentItemsFLST)
 			endIf
 		elseIf actionType == 7 ;Draw Begin
 			if !WC.bIsWidgetShown
@@ -241,13 +260,20 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called - just equipped " + akBaseObject.GetName())
-	if !processingQueuedForms
-		int itemType = akBaseObject.GetType()
-		if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
-			bWaitingForOnObjectEquippedUpdate = true
-			iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
-			registerForSingleUpdate(0.5)
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called - just equipped " + akBaseObject.GetName() + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
+	if !WC.bAddingItemsOnFirstEnable && !processingQueuedForms
+		if akBaseObject as spell && bDualCasting
+			dualCastCounter -=1
+			if dualCastCounter == 0
+				bDualCasting = false
+			endIf
+		else
+			int itemType = akBaseObject.GetType()
+			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
+				bWaitingForOnObjectEquippedUpdate = true
+				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
+				registerForSingleUpdate(0.5)
+			endIf
 		endIf
 	endIf
 endEvent
@@ -304,7 +330,7 @@ function processQueuedForms()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
 		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
 		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
-		if !((queuedForm as weapon) && iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && (Game.GetModName(queuedForm.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
+		if !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
 			int equippedSlot = -1
 			if PlayerRef.GetEquippedObject(0) == queuedForm
 				equippedSlot = 0
@@ -313,9 +339,9 @@ function processQueuedForms()
 			elseIf PlayerRef.GetEquippedObject(2) == queuedForm
 				equippedSlot = 2
 			endIf
-			debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
 			;If the item has been equipped in the left, right or shout slot
 			if equippedSlot != -1
+				debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
 				int itemType = queuedForm.GetType()
 				int iEquipSlot
 				;If it's a 2H or ranged weapon or a BothHands spell we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
@@ -434,7 +460,9 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		AM.onAmmoRemoved(akBaseItem)
 	;Check if a Bound Shield has just been unequipped
 	elseIf (akBaseItem.GetType() == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
-		WC.onBoundWeaponUnequipped(0)
+		WC.onBoundWeaponUnequipped(0, true)
+		iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
+		updateEventFilter(iEquip_AllCurrentItemsFLST)
     ;Otherwise handle anything else in left, right or shout queue other than bound weapons
 	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
 		i = 0
