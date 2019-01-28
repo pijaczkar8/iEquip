@@ -67,6 +67,7 @@ int Property iPotionsSecondChoice = 1 Auto Hidden
 int Property iPotionsThirdChoice = 2 Auto Hidden
 
 String[] asPoisonIconNames
+String[] asPlayerStats
 
 bool bIsCACOLoaded = false
 MagicEffect[] aCACO_RestoreEffects
@@ -158,6 +159,11 @@ event OnInit()
     asPoisonIconNames[19] = "PoisonWeaknessMagic"
     asPoisonIconNames[20] = "PoisonWeaknessPoison"
     asPoisonIconNames[21] = "PoisonWeaknessShock"
+
+    asPlayerStats = new string[3]
+    asPlayerStats[0] = "Health"
+    asPlayerStats[1] = "Stamina"
+    asPlayerStats[2] = "Magicka"
 
     aCACO_RestoreEffects = new MagicEffect[9]
     if Game.GetModByName("Complete Alchemy & Cooking Overhaul.esp") != 255
@@ -818,7 +824,7 @@ function sortPoisonQueue()
     form currentlyShownPoison = jMap.getForm(jArray.getObj(iPoisonQ, WC.aiCurrentQueuePosition[4]), "iEquipForm")
     int queueLength = jArray.count(iPoisonQ)
     int tempPoisonQ = jArray.objectWithSize(queueLength)
-    int i = 0
+    int i
     
     while i < queueLength
         jArray.setStr(tempPoisonQ, i, jMap.getStr(jArray.getObj(iPoisonQ, i), "iEquipName"))
@@ -857,6 +863,7 @@ endFunction
 function selectAndConsumePotion(int potionGroup)
     debug.trace("iEquip_PotionScript selectAndConsumePotion called - potionGroup: " + potionGroup)
     if 0 <= potionGroup && potionGroup <= 2
+        string targetStat = asPlayerStats[potionGroup]
         potionGroup = potionGroup * 3
         int Q = iPotionsFirstChoice + potionGroup
         
@@ -893,7 +900,7 @@ bool function quickHealFindAndConsumePotion()
     ;Check we've actually still got entries in the first and second choice health potion queues
     int Q = 0 + iPotionsFirstChoice
     int count = jArray.count(aiPotionQ[Q])
-    bool found = false 
+    bool found
     if count < 1 && bQuickHealUseSecondChoice
         Q = 0 + iPotionsSecondChoice
         count = jArray.count(aiPotionQ[Q])
