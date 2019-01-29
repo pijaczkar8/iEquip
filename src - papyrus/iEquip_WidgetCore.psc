@@ -427,12 +427,6 @@ endFunction
 Event OnWidgetLoad()
 	debug.trace("iEquip_WidgetCore OnWidgetLoad called")
 
-	ai2HWeaponTypesAlt = new int[4]
-	ai2HWeaponTypesAlt[0] = 5 ;Greatsword
-	ai2HWeaponTypesAlt[1] = 6 ;Waraxe/Warhammer
-	ai2HWeaponTypesAlt[2] = 7 ;Bow
-	ai2HWeaponTypesAlt[3] = 12 ;Crossbow
-
 	EM.isEditMode = false
 	bPreselectMode = false
 	bCyclingLHPreselectInAmmoMode = false
@@ -1701,7 +1695,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 						setSlotCount(0, PlayerRef.GetItemCount(AM.currentAmmoForm))
 					endIf
 				else
-					AM.toggleAmmoMode() ;Animate in
+					AM.toggleAmmoMode(false, equippingOnAutoAdd) ;Animate in without any equipping/unequipping if equippingOnAutoAdd
 				endIf
 				if !isWeaponPoisoned(1, aiCurrentQueuePosition[1])
 					setCounterVisibility(1, false)
@@ -2631,7 +2625,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		bAmmoModeFirstLook = false
 	endIf
 	;if we've just equipped a 1H item in RH forcing left hand to reequip, now we can re-equip the left hand making sure to block QuickDualCast
-	if Q == 1 && (bJustLeftAmmoMode || previously2H) && !(ai2HWeaponTypes.Find(itemType) > -1) && !b2HSpellEquipped
+	if Q == 1 && jArray.count(aiTargetQ[0]) > 0 && (bJustLeftAmmoMode || previously2H) && (ai2HWeaponTypes.Find(itemType) == -1) && !b2HSpellEquipped
 		targetObject = jArray.getObj(aiTargetQ[0], aiCurrentQueuePosition[0])
 		PM.bBlockQuickDualCast = (jMap.getInt(targetObject, "iEquipType") == 22)
 		debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", bJustLeftAmmoMode: " + bJustLeftAmmoMode + ", about to equip left hand item of type: " + jMap.getInt(targetObject, "iEquipType") + ", blockQuickDualCast: " + PM.bBlockQuickDualCast)

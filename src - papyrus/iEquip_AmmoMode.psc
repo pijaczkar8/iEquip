@@ -216,7 +216,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				WC.CM.updateChargeMeterVisibility(0, false)
 			endIf
 			;Now unequip the left hand to avoid any strangeness when switching ranged weapons in bAmmoMode unless we currently have a bound ranged weapon equipped
-			if !((PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12) && iEquip_WeaponExt.IsWeaponBound(PlayerRef.GetEquippedObject(1) as weapon))
+			if !toggleWithoutEquipping && !((PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12) && iEquip_WeaponExt.IsWeaponBound(PlayerRef.GetEquippedObject(1) as weapon))
 				WC.UnequipHand(0)
 			endIf
 			;Prepare and run the animation

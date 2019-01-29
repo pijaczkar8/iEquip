@@ -69,6 +69,9 @@ int Property iPotionsThirdChoice = 2 Auto Hidden
 String[] asPoisonIconNames
 String[] asPlayerStats
 
+int property iPotionSelectChoice = 0 auto hidden ; 0 = Always use strongest, 1 = Smart Select, 2 = Always Use Weakest
+float property fSmartConsumeThreshold = 0.4 auto hidden
+
 bool bIsCACOLoaded = false
 MagicEffect[] aCACO_RestoreEffects
 bool bIsPAFLoaded
@@ -83,7 +86,6 @@ bool property bSettingsChanged = false auto hidden
 bool property bAutoAddPoisons = true auto hidden
 bool property bAutoAddConsumables = true auto hidden
 bool Property bQuickHealUseSecondChoice = true Auto Hidden
-bool Property bUseStrongestPotion = true Auto Hidden
 bool property bFlashPotionWarning = true auto hidden
 int property iEmptyPotionQueueChoice = 0 auto hidden
 
@@ -878,9 +880,9 @@ function selectAndConsumePotion(int potionGroup)
         endIf
         
         if Q != -1
-            int targetPotion
-            ; If MCM setting for given potion type is Use Weakest First then set the target to the last potion in the queue
-            if !bUseStrongestPotion
+            int targetPotion ; Default value is 0 which is the array index for the strongest potion of the type requested
+            ; If MCM setting for given potion type is Use Weakest First, or MCM setting is Smart Select then check for weapons not drawn and current stat value as percent of current max including buffs against threshold set, then set the target to the last potion in the queue
+            if iPotionSelectChoice == 2 || (iPotionsSecondChoice == 1 && !(PlayerRef.IsWeaponDrawn() || PlayerRef.GetActorValue(targetStat) >= ((PlayerRef.GetActorValue(targetStat) / PlayerRef.GetActorValuePercentage(targetStat)) * fSmartConsumeThreshold)))
                 targetPotion = jArray.count(aiPotionQ[Q]) - 1
             endIf
             form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
