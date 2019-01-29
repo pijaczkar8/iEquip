@@ -52,21 +52,24 @@ int[] itemTypesToProcess
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit called")
     PlayerRace = PlayerRef.GetRace()
-	OnPlayerLoadGame()
+
+    itemTypesToProcess = new int[6]
+	itemTypesToProcess[0] = 22 ;Spells or shouts
+	itemTypesToProcess[1] = 23 ;Scrolls
+	itemTypesToProcess[2] = 31 ;Torches
+	itemTypesToProcess[3] = 41 ;Weapons
+	itemTypesToProcess[4] = 42 ;Ammo
+	itemTypesToProcess[5] = 119 ;Powers
 endEvent
 
-function OniEquipEnabled(bool enabled)
+Event OnPlayerLoadGame()
+	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame called")	
+	initialise(WC.isEnabled)
+endEvent
+
+function initialise(bool enabled)
 	if enabled
 		gotoState("")
-		
-		itemTypesToProcess = new int[6]
-		itemTypesToProcess[0] = 22 ;Spells or shouts
-		itemTypesToProcess[1] = 23 ;Scrolls
-		itemTypesToProcess[2] = 31 ;Torches
-		itemTypesToProcess[3] = 41 ;Weapons
-		itemTypesToProcess[4] = 42 ;Ammo
-		itemTypesToProcess[5] = 119 ;Powers
-		
 		Utility.SetINIBool("bDisableGearedUp:General", True)
 		WC.refreshVisibleItems()
 		If WC.bEnableGearedUp
@@ -86,49 +89,13 @@ function OniEquipEnabled(bool enabled)
 		RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
 		RegisterForActorAction(8) ;Draw End - weapons and spells
 		RegisterForActorAction(10) ;Sheathe End - weapons and spells
-		BW.OniEquipEnabled()
+		BW.initialise()
+		PO.initialise()
 		updateAllEventFilters()
 	else
 		gotoState("DISABLED")
 	endIf
 endFunction
-	
-Event OnPlayerLoadGame()
-	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame called")
-	
-	if WC.isEnabled
-		gotoState("")
-		Utility.SetINIBool("bDisableGearedUp:General", True)
-		WC.refreshVisibleItems()
-		If WC.bEnableGearedUp
-			Utility.SetINIBool("bDisableGearedUp:General", False)
-			WC.refreshVisibleItems()
-		EndIf
-		if WC.bUnequipAmmo && !AM.bAmmoMode && AM.currentAmmoForm
-			if PlayerRef.isEquipped(AM.currentAmmoForm as Ammo)
-				PlayerRef.UnequipItemEx(AM.currentAmmoForm as Ammo)
-			endIf
-		endIf
-		if bIsThunderchildLoaded || bIsWintersunLoaded
-			RegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
-			RegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
-		endIf
-		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
-		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
-		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
-		RegisterForActorAction(7)
-		RegisterForActorAction(8)
-		RegisterForActorAction(10)
-		BW.onGameLoaded()
-		PO.onGameLoaded()
-		updateAllEventFilters()
-	else
-		gotoState("DISABLED")
-	endIf
-endEvent
 
 bool Property boundSpellEquipped
 	bool function Get()

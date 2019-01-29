@@ -1054,8 +1054,8 @@ bool property isEnabled
 	function Set(bool enabled)
 		if (Ready)
             bEnabled = enabled
-            EH.OniEquipEnabled(bEnabled)
-            AD.OniEquipEnabled(bEnabled)
+            EH.initialise(bEnabled) ;Also triggers PO.initialise() which includes findAndSortPotions, and BW.initialise()
+            AD.initialise(bEnabled)
             
 			if bEnabled
                 bool[] args = new bool[4]
@@ -1070,7 +1070,6 @@ bool property isEnabled
 				self.RegisterForMenu("ContainerMenu")
 				self.RegisterForMenu("Journal Menu")    
             
-				PO.findAndSortPotions()
 				AM.updateAmmoLists()
 				if bIsFirstEnabled
                     bIsFirstEnabled = false

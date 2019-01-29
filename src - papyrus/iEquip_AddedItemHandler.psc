@@ -13,7 +13,7 @@ Actor Property PlayerRef Auto
 FormList Property iEquip_RemovedItemsFLST Auto
 FormList Property iEquip_ItemsToAddFLST Auto
 
-function OniEquipEnabled(bool bEnabled)
+function initialise(bool bEnabled)
 	if bEnabled
 		GoToState("")
 	else
