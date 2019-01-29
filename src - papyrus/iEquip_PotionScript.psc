@@ -414,8 +414,8 @@ function onPotionAdded(form newPotion)
 endFunction
 
 function onPotionRemoved(form removedPotion)
-    debug.trace("iEquip_PotionScript onPotionRemoved called - removedPotion: " + removedPotion.GetName())
     GotoState("PROCESSING")
+    debug.trace("iEquip_PotionScript onPotionRemoved called - removedPotion: " + removedPotion.GetName())
     potion thePotion = removedPotion as potion
     int foundPotion
     int itemCount = PlayerRef.GetItemCount(removedPotion)
@@ -866,6 +866,7 @@ function selectAndConsumePotion(int potionGroup)
     debug.trace("iEquip_PotionScript selectAndConsumePotion called - potionGroup: " + potionGroup)
     if 0 <= potionGroup && potionGroup <= 2
         string targetStat = asPlayerStats[potionGroup]
+        debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup received: " + potionGroup + ", targetStat: " + targetStat)
         potionGroup = potionGroup * 3
         int Q = iPotionsFirstChoice + potionGroup
         
@@ -880,13 +881,25 @@ function selectAndConsumePotion(int potionGroup)
         endIf
         
         if Q != -1
+            debug.trace("iEquip_PotionScript selectAndConsumePotion - potionQ selected: " + Q + ", iPotionSelectChoice: " + iPotionSelectChoice + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
             int targetPotion ; Default value is 0 which is the array index for the strongest potion of the type requested
             ; If MCM setting for given potion type is Use Weakest First, or MCM setting is Smart Select then check for weapons not drawn and current stat value as percent of current max including buffs against threshold set, then set the target to the last potion in the queue
             if iPotionSelectChoice == 2 || (iPotionsSecondChoice == 1 && !(PlayerRef.IsWeaponDrawn() || PlayerRef.GetActorValue(targetStat) >= ((PlayerRef.GetActorValue(targetStat) / PlayerRef.GetActorValuePercentage(targetStat)) * fSmartConsumeThreshold)))
+                ;ToDo - This next if statement is purely debug, remove once done here
+                if iPotionSelectChoice == 1
+                    float currValue = PlayerRef.GetActorValue(targetStat)
+                    float currLevel = PlayerRef.GetActorValuePercentage(targetStat)
+                    float maxValue = (currValue / currLevel)
+                    float threshold = (maxValue * fSmartConsumeThreshold)
+                    debug.trace("iEquip_PotionScript selectAndConsumePotion - " + targetStat + ", currValue: " + currValue + ", GetActorBaseValue: " + PlayerRef.GetActorBaseValue(targetStat) + ", calculated max: " + maxValue)
+                    debug.trace("iEquip_PotionScript selectAndConsumePotion - current " + targetStat + " value: " + currValue + "/" + maxValue)
+                    debug.trace("iEquip_PotionScript selectAndConsumePotion - threshold: " + fSmartConsumeThreshold*100 + "% (" + threshold + "), currently at " + currLevel*100 + "%")
+                endIf
                 targetPotion = jArray.count(aiPotionQ[Q]) - 1
             endIf
             form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
             if potionToConsume != None
+                debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is a " + potionToConsume.GetName())
                 ; Consume the potion
                 PlayerRef.EquipItemEx(potionToConsume)
                 debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))

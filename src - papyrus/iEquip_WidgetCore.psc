@@ -2825,24 +2825,17 @@ function cyclePoison(form targetItem)
     setSlotCount(4, PlayerRef.GetItemCount(targetItem))
 endFunction
 
-;Uses the equipped item / potion in the consumable slot
+;Uses the equipped item / potion in the consumable slot - no need to set counts here as this is done through OnItemRemoved in PlayerEventHandler > PO.onPotionRemoved
 function consumeItem()
     debug.trace("iEquip_WidgetCore consumeItem called")
     if bConsumablesEnabled
         int potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
         if potionGroupIndex != -1
             PO.selectAndConsumePotion(potionGroupIndex)
-            setSlotCount(3, PO.getPotionGroupCount(potionGroupIndex))
         else
             form itemForm = jMap.getForm(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipForm")
             if(itemForm != None)
                 PlayerRef.EquipItemEx(itemForm)
-                int count = PlayerRef.GetItemCount(itemForm)
-                if count < 1
-                    removeItemFromQueue(3, aiCurrentQueuePosition[3])
-                else
-                    setSlotCount(3, count)
-                endIf
             endIf
         endIf
     endIf
@@ -2954,13 +2947,8 @@ function applyPoison(int Q)
         PlayerRef.RemoveItem(poisonToApply, 1, true)
         ;Flag the item as poisoned
         jMap.setInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "isPoisoned", 1)
-        int count = PlayerRef.GetItemCount(poisonToApply)
-        if count > 0
-            setSlotCount(4, count)
-        endIf
         if !ApplyWithoutUpdatingWidget
             checkAndUpdatePoisonInfo(Q)
-            CM.checkAndUpdateChargeMeter(Q)
         endIf
         ;Play sound
         iEquip_ITMPoisonUse.Play(PlayerRef)
