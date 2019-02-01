@@ -932,19 +932,19 @@ function addPotionGroups(int groupToAdd = -1)
 		abPotionGroupEnabled[0] = true
 	endIf
 	if groupToAdd == -1 || (groupToAdd == 1 && !abPotionGroupEnabled[1])
-		int staminaPotionGroup = jMap.object()
-		jMap.setInt(staminaPotionGroup, "iEquipType", 46)
-		jMap.setStr(staminaPotionGroup, "iEquipName", "$iEquip_common_StaminaPotions")
-		jMap.setStr(staminaPotionGroup, "iEquipIcon", "StaminaPotion")
-		jArray.addObj(aiTargetQ[3], staminaPotionGroup)
-		abPotionGroupEnabled[1] = true
-	endIf
-	if groupToAdd == -1 || (groupToAdd == 2 && !abPotionGroupEnabled[2])
 		int magickaPotionGroup = jMap.object()
 		jMap.setInt(magickaPotionGroup, "iEquipType", 46)
 		jMap.setStr(magickaPotionGroup, "iEquipName", "$iEquip_common_MagickaPotions")
 		jMap.setStr(magickaPotionGroup, "iEquipIcon", "MagickaPotion")
 		jArray.addObj(aiTargetQ[3], magickaPotionGroup)
+		abPotionGroupEnabled[1] = true
+	endIf
+	if groupToAdd == -1 || (groupToAdd == 2 && !abPotionGroupEnabled[2])
+		int staminaPotionGroup = jMap.object()
+		jMap.setInt(staminaPotionGroup, "iEquipType", 46)
+		jMap.setStr(staminaPotionGroup, "iEquipName", "$iEquip_common_StaminaPotions")
+		jMap.setStr(staminaPotionGroup, "iEquipIcon", "StaminaPotion")
+		jArray.addObj(aiTargetQ[3], staminaPotionGroup)
 		abPotionGroupEnabled[2] = true
 	endIf
 endFunction

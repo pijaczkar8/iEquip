@@ -39,3 +39,15 @@ Function EquipPoisonedItemEx(Actor a_actor, Form a_item, Int a_slotID, Potion a_
 ; @param a_equipSound Plays the equip sound when the item is equipped.
 ; @notes Same usage notes apply from EquipEnchantedItemEx().
 Function EquipEnchantedAndPoisonedItemEx(Actor a_actor, Form a_item, Int a_slotID, Enchantment a_enchantment, Potion a_poison, Int a_count = 1, Bool a_preventUnequip = False, Bool a_equipSound = True) Native Global
+
+
+; @brief Returns the damage dealt to the specified actor value
+; @param a_actor The actor to fetch the actor value from
+; @param a_actorValue The actor value to calculate
+; @return Returns 0.0 on error, else returns the damage dealt to the actor value as a function of its maximum - current
+; VALID ACTOR VALUES:
+; Anything in the range [0, 163]
+; 24 - Health
+; 25 - Magicka
+; 26 - Stamina
+Float Function GetAVDamage(Actor a_actor, Int a_actorValue) Native Global
