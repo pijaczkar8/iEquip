@@ -2,7 +2,8 @@ Scriptname iEquip_MCM_gen extends iEquip_MCM_Page
 
 import iEquip_StringExt
 
-iEquip_AmmoMode Property AM Auto
+iEquip_AmmoMode property AM auto
+iEquip_PlayerEventHandler property EH auto
 
 string[] ammoSortingOptions
 string[] whenNoAmmoLeftOptions
@@ -75,8 +76,13 @@ State gen_tgl_onOff
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff")
         elseIf currentEvent == "Select"
-            MCM.bEnabled = !MCM.bEnabled
-            MCM.forcePageReset()
+            ;Block enabling if player is currently a werewolf, vampire lord or lich.  iEquip will handle any subsequent player transformations once enabled.
+            if !MCM.bEnabled && EH.bPlayerIsABeast
+                MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
+            else
+                MCM.bEnabled = !MCM.bEnabled
+                MCM.forcePageReset()
+            endIf
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
             MCM.forcePageReset()

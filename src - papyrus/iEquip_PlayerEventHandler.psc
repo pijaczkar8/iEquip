@@ -46,7 +46,7 @@ bool property bPlayerIsMeditating = false auto hidden
 bool property bDualCasting = false auto hidden
 int dualCastCounter = 0
 
-bool bPlayerIsABeast = false
+bool property bPlayerIsABeast = false auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
@@ -54,7 +54,7 @@ int[] itemTypesToProcess
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
     PlayerRace = PlayerRef.GetRace()
-
+    bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
     itemTypesToProcess = new int[6]
 	itemTypesToProcess[0] = 22 ;Spells or shouts
 	itemTypesToProcess[1] = 23 ;Scrolls
@@ -165,7 +165,7 @@ Event OnRaceSwitchComplete()
 		PlayerRace = PlayerRef.GetRace()
 	else
 		race newRace = PlayerRef.GetRace()
-		if WC.bEnableGearedUp
+		if WC.isEnabled && WC.bEnableGearedUp
 			Utility.SetINIbool("bDisableGearedUp:General", !(newRace == PlayerRace))
 			WC.refreshVisibleItems()
 		endIf
@@ -173,7 +173,9 @@ Event OnRaceSwitchComplete()
 			PlayerRace = newRace
 			if bPlayerIsABeast || PlayerRace == WerewolfBeastRace || (bIsDawnguardLoaded && PlayerRace == DLC1VampireBeastRace) || (bIsUndeathLoaded && PlayerRace == NecroLichRace)
 				bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
-				BM.onPlayerTransform(PlayerRace)
+				if WC.isEnabled
+					BM.onPlayerTransform(PlayerRace)
+				endIf
 			endIf
 		endIf
 	endIf
@@ -494,7 +496,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
 
-auto state DISABLED	
+auto state DISABLED
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	endEvent
 	
