@@ -24,7 +24,7 @@ float[] afSkillPointsToAdd
 string[] asSoulNames
 
 event OnInit()
-	debug.trace("iEquip_RechargeScript OnInit called")
+	debug.trace("iEquip_RechargeScript OnInit start")
 
 	afAmountToRecharge = new float[6]
 	afAmountToRecharge[0] = 0.0 ;Empty
@@ -49,10 +49,12 @@ event OnInit()
     asSoulNames[3] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_common")
     asSoulNames[4] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_greater")
     asSoulNames[5] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_grand")
+    debug.trace("iEquip_RechargeScript OnInit end")
 endEvent
 
 function rechargeWeapon(int Q)
-	debug.trace("iEquip_RechargeScript rechargeWeapon called - Q: " + Q)
+    debug.trace("iEquip_RechargeScript rechargeWeapon start")
+	debug.trace("iEquip_RechargeScript rechargeWeapon - Q: " + Q)
     if bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
         debug.notification("$iEquip_RequiemEnchantingPerkMissing")
     else
@@ -91,11 +93,13 @@ function rechargeWeapon(int Q)
             endIf
         endIf
     endIf
+    debug.trace("iEquip_RechargeScript rechargeWeapon end")
 endFunction
 
 ;ToDo - once operation confirmed remove debug line and make requiredCharge inline
 int function getRequiredSoul(int Q, float requiredCharge)
-	debug.trace("iEquip_RechargeScript getRequiredSoul called - Q: " + Q)
+    debug.trace("iEquip_RechargeScript getRequiredSoul start")
+	debug.trace("iEquip_RechargeScript getRequiredSoul - Q: " + Q)
     int bestFitSoul = 0
     if requiredCharge > 0
         if requiredCharge < 251.0
@@ -114,5 +118,6 @@ int function getRequiredSoul(int Q, float requiredCharge)
         bestFitSoul -= 1
     endIf
     debug.trace("iEquip_RechargeScript getRequiredSoul - returning bestFitSoul: " + bestFitSoul)
+    debug.trace("iEquip_RechargeScript getRequiredSoul end")
     return bestFitSoul
 endFunction    

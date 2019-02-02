@@ -14,21 +14,25 @@ FormList Property iEquip_RemovedItemsFLST Auto
 FormList Property iEquip_ItemsToAddFLST Auto
 
 function initialise(bool bEnabled)
+	debug.trace("iEquip_AddedItemHandler initialise start")
 	if bEnabled
 		GoToState("")
 	else
 		GoToState("DISABLED")
 	endIf
+	debug.trace("iEquip_AddedItemHandler initialise end")
 endFunction
 
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
-	debug.trace("iEquip_AddedItemHandler OnItemAdded called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
+	debug.trace("iEquip_AddedItemHandler OnItemAdded start")
+	debug.trace("iEquip_AddedItemHandler OnItemAdded - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
 	iEquip_ItemsToAddFLST.AddForm(akBaseItem)
 	registerForSingleUpdate(0.5)
+	debug.trace("iEquip_AddedItemHandler OnItemAdded end")
 endEvent
 
 event OnUpdate()
-	debug.trace("iEquip_AddedItemHandler OnUpdate called")
+	debug.trace("iEquip_AddedItemHandler OnUpdate start")
 	int i = 0
 	int j
 	int numForms = iEquip_ItemsToAddFLST.GetSize()
@@ -66,6 +70,7 @@ event OnUpdate()
 	endWhile
 	iEquip_ItemsToAddFLST.Revert()
 	debug.trace("iEquip_AddedItemHandler OnUpdate - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
+	debug.trace("iEquip_AddedItemHandler OnUpdate end")
 endEvent
 
 auto state DISABLED

@@ -65,6 +65,7 @@ string sPreviousState = ""
 ; ------------------
 
 function GameLoaded()
+    debug.trace("iEquip_KeyHandler GameLoaded start")
     GotoState("")
     
     self.RegisterForMenu("InventoryMenu")
@@ -79,9 +80,11 @@ function GameLoaded()
     
     bIsUtilityKeyHeld = false
     bNotInLootMenu = true
+    debug.trace("iEquip_KeyHandler GameLoaded end")
 endFunction
 
 event OnMenuOpen(string MenuName)
+    debug.trace("iEquip_KeyHandler OnMenuOpen start")
     debug.trace("iEquip KeyHandler Menu being opened: "+MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = false
@@ -99,18 +102,28 @@ event OnMenuOpen(string MenuName)
         iWaitingKeyCode = 0
         iMultiTap = 0
     endIf
+    debug.trace("iEquip_KeyHandler OnMenuOpen end")
 endEvent
 
 event OnMenuClose(string MenuName)
+    debug.trace("iEquip_KeyHandler OnMenuClose start")
     debug.trace("iEquip KeyHandler Menu being closed: "+MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = true
-    else     
+    elseIf !utility.IsInMenuMode()
+        if EM.isEditMode
+            GoToState("EDITMODE")
+        else
+            GoToState("")
+        endIf
+    else 
         GotoState(sPreviousState)
     endIf
+    debug.trace("iEquip_KeyHandler OnMenuClose end")
 endEvent
 
 event OnUpdate()
+    debug.trace("iEquip_KeyHandler OnUpdate start")
     debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
     bAllowKeyPress = false
     
@@ -119,6 +132,7 @@ event OnUpdate()
     iMultiTap = 0
     iWaitingKeyCode = 0
     bAllowKeyPress = true
+    debug.trace("iEquip_KeyHandler OnUpdate end")
 endEvent
 
 ; ---------------------
@@ -126,6 +140,7 @@ endEvent
 ; ---------------------
 
 event OnKeyDown(int KeyCode)
+    debug.trace("iEquip_KeyHandler OnKeyDown start")
     debug.trace("iEquip KeyHandler OnKeyDown called KeyCode: "+KeyCode)
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = true
@@ -155,10 +170,12 @@ event OnKeyDown(int KeyCode)
             RegisterForSingleUpdate(0.0)
         endIf
     endif
+    debug.trace("iEquip_KeyHandler OnKeyDown end")
 endEvent
 
 event OnKeyUp(Int KeyCode, Float HoldTime)
-    debug.trace("iEquip KeyHandler OnKeyUp called KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
+    debug.trace("iEquip_KeyHandler OnKeyUp start")
+    debug.trace("iEquip KeyHandler OnKeyUp KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = false
     endIf
@@ -167,9 +184,11 @@ event OnKeyUp(Int KeyCode, Float HoldTime)
         iMultiTap = 1
         RegisterForSingleUpdate(fMultiTapDelay)
     endIf
+    debug.trace("iEquip_KeyHandler OnKeyUp end")
 endEvent
 
 function runUpdate()
+    debug.trace("iEquip_KeyHandler runUpdate start")
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
         
@@ -179,8 +198,14 @@ function runUpdate()
                     WC.consumeItem()
                 endIf
             elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
-                if PM.bPreselectMode && bIsUtilityKeyHeld
-                    PM.equipAllPreselectedItems()
+                ;if PM.bPreselectMode && bIsUtilityKeyHeld
+                    ;PM.equipAllPreselectedItems()
+                if PM.bPreselectMode
+                    if bIsUtilityKeyHeld
+                        RC.rechargeWeapon((iWaitingKeyCode == iRightKey) as int)
+                    else
+                        PM.equipAllPreselectedItems()
+                    endIf
                 else
                     if iWaitingKeyCode == iLeftKey
                         if AM.bAmmoMode
@@ -247,15 +272,24 @@ function runUpdate()
             if iWaitingKeyCode == iLeftKey
                 int RHItemType = PlayerRef.GetEquippedItemType(1)
                 
-                if bIsUtilityKeyHeld
+                ;/if bIsUtilityKeyHeld
                     PM.equipPreselectedItem(0)
                 elseIf AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
                     AM.cycleAmmo(bIsUtilityKeyHeld)
                 else
                     WC.applyPoison(0)
+                endIf/;
+                if bIsUtilityKeyHeld
+                    if AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
+                        AM.cycleAmmo(bIsUtilityKeyHeld)
+                    else
+                        WC.applyPoison(0)
+                    endIf
+                else
+                    PM.equipPreselectedItem(0)
                 endIf
             else
-                if bIsUtilityKeyHeld
+                ;/if bIsUtilityKeyHeld
                     if iWaitingKeyCode == iRightKey
                         PM.equipPreselectedItem(1)
                     elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && PM.bShoutPreselectEnabled && WC.bShoutEnabled
@@ -264,6 +298,17 @@ function runUpdate()
                 else
                     if iWaitingKeyCode == iRightKey
                         WC.applyPoison(1)
+                    endIf
+                endIf/;
+                if bIsUtilityKeyHeld
+                    if iWaitingKeyCode == iRightKey
+                        WC.applyPoison(1)
+                    endIf
+                else
+                    if iWaitingKeyCode == iRightKey
+                        PM.equipPreselectedItem(1)
+                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && PM.bShoutPreselectEnabled && WC.bShoutEnabled
+                        PM.equipPreselectedItem(2)
                     endIf
                 endIf
             endIf
@@ -304,6 +349,7 @@ function runUpdate()
             endIf
         endIf
     endIf
+    debug.trace("iEquip_KeyHandler runUpdate end")
 endFunction
 
 ; --------------------
@@ -313,6 +359,7 @@ endFunction
 ; - Inventory
 state INVENTORYMENU
     event OnKeyDown(int KeyCode)
+        debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start")
         if KeyCode == iUtilityKey
             bIsUtilityKeyHeld = true
         endIf
@@ -332,12 +379,14 @@ state INVENTORYMENU
             
             bAllowKeyPress = true
         endIf
+        debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU end")
     endEvent
 endState
 
 ; - Editmode
 state EDITMODE
     event OnKeyUp(Int KeyCode, Float HoldTime)
+        debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
         if bAllowKeyPress
             if KeyCode == iWaitingKeyCode && iMultiTap == 0
                 float updateTime = 0.0
@@ -350,9 +399,11 @@ state EDITMODE
                 RegisterForSingleUpdate(updateTime)
             endIf
         endIf
+        debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE end")
     endEvent
 
     function runUpdate()
+        debug.trace("iEquip_KeyHandler runUpdate EDITMODE start")
         if iMultiTap == 0       ; Long press
             if iWaitingKeyCode == iEditNextKey || iWaitingKeyCode == iEditPrevKey
                 EM.ToggleCycleRange()
@@ -416,6 +467,7 @@ state EDITMODE
             endIf
             
         endIf
+        debug.trace("iEquip_KeyHandler runUpdate EDITMODE end")
     endFunction
 endState
 
@@ -435,7 +487,7 @@ endState
 ; -----------------
 
 function ToggleEditMode()
-    debug.trace("iEquip KeyHandler toggleEditMode called")
+    debug.trace("iEquip KeyHandler toggleEditMode start")
     if EM.isEditMode
         GoToState("")
     else
@@ -443,9 +495,11 @@ function ToggleEditMode()
     endIf
     EM.ToggleEditMode()
     updateKeyMaps()
+    debug.trace("iEquip_KeyHandler toggleEditMode end")
 endFunction
 
 function updateKeyMaps()
+    debug.trace("iEquip_KeyHandler updateKeyMaps start")
     UnregisterForAllKeys()   
     if EM.isEditMode
         int[] keys = new int[18]
@@ -473,9 +527,11 @@ function updateKeyMaps()
     else
         RegisterForGameplayKeys()
     endIf
+    debug.trace("iEquip_KeyHandler updateKeyMaps end")
 endFunction
 
 function resetEditModeKeys()
+    debug.trace("iEquip_KeyHandler resetEditModeKeys start")
     iEditNextKey = 55
     iEditPrevKey = 181
     iEditUpKey = 200
@@ -493,10 +549,11 @@ function resetEditModeKeys()
     iEditLoadPresetKey = 75
     iEditSavePresetKey = 76
     iEditDiscardKey = 83
+    debug.trace("iEquip_KeyHandler resetEditModeKeys end")
 endFunction
 
 function RegisterForGameplayKeys()
-    debug.trace("iEquip KeyHandler RegisterForGameplayKeys called")
+    debug.trace("iEquip_KeyHandler RegisterForGameplayKeys start")
     RegisterForKey(iShoutKey)
     RegisterForKey(iLeftKey)
     RegisterForKey(iRightKey)
@@ -505,10 +562,11 @@ function RegisterForGameplayKeys()
     if bConsumeItemHotkeyEnabled
         RegisterForKey(iOptConsumeKey)
     endIf
+    debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
 endFunction
 
 function RegisterForEditModeKeys()
-    debug.trace("iEquip KeyHandler RegisterForEditModeKeys called")
+    debug.trace("iEquip_KeyHandler RegisterForEditModeKeys start")
     RegisterForKey(iEditLeftKey)
     RegisterForKey(iEditRightKey)
     RegisterForKey(iEditUpKey)
@@ -527,4 +585,5 @@ function RegisterForEditModeKeys()
     RegisterForKey(iEditRulersKey)
     RegisterForKey(iEditDiscardKey)
     RegisterForKey(iUtilityKey)
+    debug.trace("iEquip_KeyHandler RegisterForEditModeKeys end")
 endFunction
