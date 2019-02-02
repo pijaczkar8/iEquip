@@ -127,7 +127,7 @@ State pot_men_PotionSelect
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_pot_txt_PotionSelect")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(PO.iPotionSelectChoice, potionSelectOptions, 0)
+            MCM.fillMenu(PO.iPotionSelectChoice, potionSelectOptions, 1)
         elseIf currentEvent == "Accept"
             PO.iPotionSelectChoice = currentVar as int
             MCM.forcePageReset()

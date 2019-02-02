@@ -52,7 +52,7 @@ int iSlotToUpdate = -1
 int[] itemTypesToProcess
 
 Event OnInit()
-	debug.trace("iEquip_PlayerEventHandler OnInit called")
+	debug.trace("iEquip_PlayerEventHandler OnInit start")
     PlayerRace = PlayerRef.GetRace()
 
     itemTypesToProcess = new int[6]
@@ -62,14 +62,17 @@ Event OnInit()
 	itemTypesToProcess[3] = 41 ;Weapons
 	itemTypesToProcess[4] = 42 ;Ammo
 	itemTypesToProcess[5] = 119 ;Powers
+	debug.trace("iEquip_PlayerEventHandler OnInit end")
 endEvent
 
 Event OnPlayerLoadGame()
-	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame called")	
+	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")	
 	initialise(WC.isEnabled)
+	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame end")
 endEvent
 
 function initialise(bool enabled)
+	debug.trace("iEquip_PlayerEventHandler initialise start")	
 	if enabled
 		gotoState("")
 		Utility.SetINIBool("bDisableGearedUp:General", True)
@@ -97,15 +100,18 @@ function initialise(bool enabled)
 	else
 		gotoState("DISABLED")
 	endIf
+	debug.trace("iEquip_PlayerEventHandler initialise end")
 endFunction
 
 bool Property boundSpellEquipped
 	bool function Get()
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get called")
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get start")
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get end")
 		return bIsBoundSpellEquipped
 	endFunction
 
 	function Set(Bool equipped)
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set start")	
 		bIsBoundSpellEquipped = equipped
 		BW.bIsBoundSpellEquipped = equipped
 		if bIsBoundSpellEquipped
@@ -114,40 +120,47 @@ bool Property boundSpellEquipped
 			UnregisterForActorAction(2)
 		endIf
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - bIsBoundSpellEquipped: " + equipped)
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set end")
 	endFunction
 endProperty
 
 bool property bJustQuickDualCast
 	bool function Get()
+		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Get start")
+		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Get end")
 		return bDualCasting
 	endFunction
 
 	function set(bool dualCasting)
+		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Set start")	
 		bDualCasting = dualCasting
 		if dualCasting
 			dualCastCounter = 2
 		else
 			dualCastCounter = 0
 		endIf
+		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Set end")
 	endFunction
 endProperty
 
 function updateAllEventFilters()
-	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters called")
+	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters start")
 	RemoveAllInventoryEventFilters()
 	AddInventoryEventFilter(iEquip_AllCurrentItemsFLST)
 	AddInventoryEventFilter(iEquip_AmmoItemsFLST)
 	AddInventoryEventFilter(iEquip_PotionItemsFLST)
+	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters end")
 endFunction
 
 function updateEventFilter(formlist listToUpdate)
-	debug.trace("iEquip_PlayerEventHandler updateEventFilter called")
+	debug.trace("iEquip_PlayerEventHandler updateEventFilter start")
 	RemoveInventoryEventFilter(listToUpdate)
 	AddInventoryEventFilter(listToUpdate)
+	debug.trace("iEquip_PlayerEventHandler updateEventFilter end")
 endFunction
 
 Event OnRaceSwitchComplete()
-	debug.trace("iEquip_WidgetCore OnRaceSwitchComplete called")
+	debug.trace("iEquip_WidgetCore OnRaceSwitchComplete start")
 	if UI.IsMenuOpen("RaceSex Menu")
 		PlayerRace = PlayerRef.GetRace()
 	else
@@ -164,13 +177,15 @@ Event OnRaceSwitchComplete()
 			endIf
 		endIf
 	endIf
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete end")
 EndEvent
 
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
-	debug.trace("iEquip_PlayerEventHandler OnActorAction called - actionType: " + actionType + ", slot: " + slot)
+	debug.trace("iEquip_PlayerEventHandler OnActorAction start")	
+	debug.trace("iEquip_PlayerEventHandler OnActorAction - actionType: " + actionType + ", slot: " + slot)
 	if akActor == PlayerRef
 		if actionType == 2 ;Spell Fire, only received if bound spell equipped, and we're only looking for bound shield here, weapons are handled in BoundWeaponEventsListener
-			Utility.Wait(0.3)
+			Utility.WaitMenuMode(0.3)
 			if PlayerRef.GetEquippedShield() && PlayerRef.GetEquippedShield().GetName() == WC.asCurrentlyEquipped[0]
 				WC.onBoundWeaponEquipped(26, 0)
 				iEquip_AllCurrentItemsFLST.AddForm(PlayerRef.GetEquippedShield() as form)
@@ -192,9 +207,11 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 			WVis.registerForWidgetFadeoutUpdate()
 		endIf
 	endIf
+	debug.trace("iEquip_PlayerEventHandler OnActorAction end")
 endEvent
 
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
+	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent start")	
     debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
     ;ToDo - update meditation animation event names
     ;if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
@@ -219,10 +236,12 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	        endIf
 	    endIf
 	endIf
+	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent end")
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped called - just equipped " + akBaseObject.GetName() + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
 	if !WC.bAddingItemsOnFirstEnable && !processingQueuedForms
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
@@ -238,10 +257,12 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 			endIf
 		endIf
 	endIf
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped end")
 endEvent
 
 Event OnUpdate()
-	debug.trace("iEquip_PlayerEventHandler OnUpdate called - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate)
+	debug.trace("iEquip_PlayerEventHandler OnUpdate start")	
+	debug.trace("iEquip_PlayerEventHandler OnUpdate - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate)
 	if bWaitingForAnimationUpdate
 		bWaitingForAnimationUpdate = false
 		updateWidgetOnWeaponSwing()
@@ -250,10 +271,11 @@ Event OnUpdate()
 		bWaitingForOnObjectEquippedUpdate = false
 		processQueuedForms()
 	endIf
+	debug.trace("iEquip_PlayerEventHandler OnUpdate end")	
 EndEvent
 
 function updateWidgetOnWeaponSwing()
-	debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing called")
+	debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing start")
 	if iSlotToUpdate == 0 || iSlotToUpdate == 1
 		If bPoisonSlotEnabled
 			WC.checkAndUpdatePoisonInfo(iSlotToUpdate)
@@ -280,11 +302,13 @@ function updateWidgetOnWeaponSwing()
 		endIf
 	endIf
 	iSlotToUpdate = -1
+	debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing end")
 endFunction
 
 ;This event handles auto-adding newly equipped items to the left, right and shout slots
 function processQueuedForms()
-	debug.trace("iEquip_PlayerEventHandler processQueuedForms called - number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms start")	
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms - number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())
 	processingQueuedForms = true
 	int i = 0
 	form queuedForm
@@ -410,10 +434,12 @@ function processQueuedForms()
 	iEquip_OnObjectEquippedFLST.Revert()
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
 	processingQueuedForms = false
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms end")
 endFunction
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
-	debug.trace("iEquip_PlayerEventHandler OnItemRemoved called - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
+	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start")	
+	debug.trace("iEquip_PlayerEventHandler OnItemRemoved - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
 	int i
 	;Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
@@ -465,6 +491,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
         	i += 1
         endWhile
 	endIf
+	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
 
 auto state DISABLED	
