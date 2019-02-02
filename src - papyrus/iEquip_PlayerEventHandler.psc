@@ -40,6 +40,8 @@ bool processingQueuedForms = false
 
 bool property bIsThunderchildLoaded = false auto hidden
 bool property bIsWintersunLoaded = false auto hidden
+bool property bIsDawnguardLoaded = false auto hidden
+bool property bIsUndeathLoaded = false auto hidden
 bool property bPlayerIsMeditating = false auto hidden
 bool property bDualCasting = false auto hidden
 int dualCastCounter = 0
@@ -154,19 +156,12 @@ Event OnRaceSwitchComplete()
 			Utility.SetINIbool("bDisableGearedUp:General", !(newRace == PlayerRace))
 			WC.refreshVisibleItems()
 		endIf
-		PlayerRace = newRace
-		if PlayerRace == WerewolfBeastRace || PlayerRace == DLC1VampireBeastRace || PlayerRace == NecroLichRace
-			bPlayerIsABeast = true
-			if PlayerRace == WerewolfBeastRace
-				;BM.updateWidgetOnPlayerTransform(0)
-			elseIf PlayerRace == DLC1VampireBeastRace
-				;BM.updateWidgetOnPlayerTransform(1)
-			else
-				;BM.updateWidgetOnPlayerTransform(2)
+		if PlayerRace != newRace
+			PlayerRace = newRace
+			if bPlayerIsABeast || PlayerRace == WerewolfBeastRace || (bIsDawnguardLoaded && PlayerRace == DLC1VampireBeastRace) || (bIsUndeathLoaded && PlayerRace == NecroLichRace)
+				bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
+				BM.onPlayerTransform(PlayerRace)
 			endIf
-		elseIf bPlayerIsABeast
-			bPlayerIsABeast = false
-			;BM.resetWidgetToPreviousState()
 		endIf
 	endIf
 EndEvent

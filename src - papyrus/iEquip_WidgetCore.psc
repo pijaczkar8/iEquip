@@ -21,6 +21,7 @@ iEquip_KeyHandler property KH auto
 iEquip_RechargeScript Property RC Auto
 iEquip_AmmoMode property AM auto
 iEquip_ProMode property PM auto
+iEquip_BeastMode property BM auto
 iEquip_PotionScript property PO auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_BoundWeaponEventsListener Property BW Auto
@@ -402,15 +403,26 @@ function CheckDependencies()
     else
         RC.bIsRequiemLoaded = false
     endIf
+    race tempRace
     if Game.GetModByName("Dawnguard.esm") != 255
-		EH.DLC1VampireBeastRace = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race
+    	EH.bIsDawnguardLoaded = true
+    	tempRace = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race
+		EH.DLC1VampireBeastRace = tempRace
+		BM.arBeastRaces[1] = tempRace
 	else
+		EH.bIsDawnguardLoaded = false
 		EH.DLC1VampireBeastRace = none
+		BM.arBeastRaces[1] = none
 	endIf
 	if Game.GetModByName("Undeath.esp") != 255
-		EH.NecroLichRace = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race
+		EH.bIsUndeathLoaded = true
+		tempRace = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race
+		EH.NecroLichRace = tempRace
+		BM.arBeastRaces[2] = tempRace
 	else
+		EH.bIsUndeathLoaded = false
 		EH.NecroLichRace = none
+		BM.arBeastRaces[2] = none
 	endIf
 	if Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
         EH.bIsThunderchildLoaded = true
