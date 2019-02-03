@@ -2706,6 +2706,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    endIf
 		endIf
 		Utility.WaitMenuMode(0.2)
+	;If we've just directly equipped and are auto adding a 2H spell now we need to show it in the left slot as well, which will also sit b2HSpellEquipped to true blocking cycleHand(0) below
+	elseIf itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3
+		updateLeftSlotOn2HSpellEquipped()
 	endIf
 	checkIfBoundSpellEquipped()
 	checkAndUpdatePoisonInfo(Q)
@@ -2913,7 +2916,10 @@ function handleConsumableIconFadeAndFlash(int potionGroupIndex)
 	endIf
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".runPotionFlashAnimation", potionGroupIndex)
     Utility.WaitMenuMode(1.4)
-	checkAndFadeConsumableIcon(true)
+    ;Just in case the user has picked up a potion in the second and a half the flash animation has been running...
+    if PO.getPotionGroupCount(potionGroupIndex) < 1
+		checkAndFadeConsumableIcon(true)
+	endIf
 	debug.trace("iEquip_WidgetCore handleConsumableIconFadeAndFlash end")
 endFunction
 
