@@ -1013,10 +1013,19 @@ endEvent
 event OnMenuClose(string _sCurrentMenu)
 	debug.trace("iEquip_WidgetCore OnMenuClose start")
 	debug.trace("iEquip_WidgetCore OnMenuClose - current menu: " + _sCurrentMenu + ", bItemsWaitingForID: " + bItemsWaitingForID)
-	if (_sCurrentMenu == "InventoryMenu" || _sCurrentMenu == "MagicMenu" || _sCurrentMenu == "FavoritesMenu") && bItemsWaitingForID ;&& !utility.IsInMenuMode()
+	if bItemsWaitingForID ;&& !utility.IsInMenuMode()
 		findAndFillMissingItemIDs()
 		bItemsWaitingForID = false
 	endIf
+	int i
+	;Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
+	while i < 2
+		if PlayerRef.GetEquippedObject(i) as Weapon
+			checkAndUpdatePoisonInfo(i)
+			CM.checkAndUpdateChargeMeter(i)
+		endIf
+		i += 1
+	endWhile
 	sCurrentMenu = ""
 	sEntryPath = ""
 	debug.trace("iEquip_WidgetCore OnWidgetLoad end")
@@ -2026,7 +2035,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	if bRefreshingWidgetOnLoad && Q > 4
 		debug.trace("iEquip_WidgetCore updateWidget - 1st option")
 		targetObject = jArray.getObj(aiTargetQ[Q - 5], iIndex)
-	elseif (bPreselectMode && !overridePreselect && !bPreselectSwitchingHands && Q <= 2) || bCyclingLHPreselectInAmmoMode
+	elseif (bPreselectMode && !overridePreselect && !bPreselectSwitchingHands && (Q < 2 || Q == 2 && PM.bShoutPreselectEnabled)) || bCyclingLHPreselectInAmmoMode
 		debug.trace("iEquip_WidgetCore updateWidget - 2nd option")
 		Slot += 5
 		targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentlyPreselected[Q])
@@ -3924,8 +3933,8 @@ function ApplyChanges()
     if !bAmmoMode && bUnequipAmmo && targetAmmo && PlayerRef.isEquipped(targetAmmo)
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
-    if !bProModeEnabled && bPreselectMode
-    	bPreselectMode = false
+    if bPreselectMode && (!PM.bPreselectEnabled || !bProModeEnabled)
+    	PM.togglePreselectMode()
     endIf
     if bAmmoMode
 	    if bAmmoSortingChanged

@@ -16,7 +16,7 @@ actor property PlayerRef auto
 ; Werewolf reference - Vanilla - populated in CK
 race property WerewolfBeastRace auto
 
-race property arBeastRaces auto hidden
+race[] property arBeastRaces auto hidden
 
 event OnInit()
 	arBeastRaces = new race[3]

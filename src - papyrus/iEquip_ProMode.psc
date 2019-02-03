@@ -75,89 +75,91 @@ endFunction
 
 function togglePreselectMode(bool enablingEditMode = false)
 	debug.trace("iEquip_ProMode togglePreselectMode start")
-	bPreselectMode = !bPreselectMode
-	WC.bPreselectMode = bPreselectMode
-	bool[] args = new bool[5]
-	if bPreselectMode
-		Self.RegisterForModEvent("iEquip_ReadyForPreselectAnimation", "ReadyForPreselectAnimation")
-		int Q = 0
-		if AM.bAmmoMode
-			bAmmoModeActiveOnTogglePreselect = true
-			Q = 1 ;Skip updating left hand preselect if currently in ammo mode as it's already set
-		endIf
-		while Q < 3
-			int queueLength = JArray.count(WC.aiTargetQ[Q])
-			;if any of the queues have less than 3 items in it then there is either nothing to preselect (1 item in queue) or you'd just be doing the same as regularly cycling two items so no need for preselect, therefore disable preselect elements for that slot
-			if queueLength < 3 && !enablingEditMode
-				WC.aiCurrentlyPreselected[Q] = -1
-			else
-				if enablingEditMode && queueLength < 2
-					float fNameAlpha = WC.afWidget_A[aiNameElements[Q]]
-					if fNameAlpha < 1
-						fNameAlpha = 100
-					endIf
-					int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
-					If(iHandle)
-						UICallback.PushInt(iHandle, Q + 5)
-						if Q == 2
-							UICallback.PushString(iHandle, "Shout")
-							UICallback.PushString(iHandle, "$iEquip_PM_lbl_EMdummyShout")
-						else
-							UICallback.PushString(iHandle, "Sword")
-							UICallback.PushString(iHandle, "$iEquip_PM_lbl_EMdummySword")
-						endIf
-						UICallback.PushFloat(iHandle, fNameAlpha)
-						UICallback.Send(iHandle)
-					endIf
+	if bPreselectEnabled
+		bPreselectMode = !bPreselectMode
+		WC.bPreselectMode = bPreselectMode
+		bool[] args = new bool[5]
+		if bPreselectMode
+			Self.RegisterForModEvent("iEquip_ReadyForPreselectAnimation", "ReadyForPreselectAnimation")
+			int Q = 0
+			if AM.bAmmoMode
+				bAmmoModeActiveOnTogglePreselect = true
+				Q = 1 ;Skip updating left hand preselect if currently in ammo mode as it's already set
+			endIf
+			while Q < 3
+				int queueLength = JArray.count(WC.aiTargetQ[Q])
+				;if any of the queues have less than 3 items in it then there is either nothing to preselect (1 item in queue) or you'd just be doing the same as regularly cycling two items so no need for preselect, therefore disable preselect elements for that slot
+				if queueLength < 3 && !enablingEditMode
+					WC.aiCurrentlyPreselected[Q] = -1
 				else
-					;Otherwise if enabled, set left, right and shout preselect to next item in each queue, play power up sound, update widget and show preselect elements
-					WC.aiCurrentlyPreselected[Q] = WC.aiCurrentQueuePosition[Q] + 1
-					if WC.aiCurrentlyPreselected[Q] == queueLength
-						WC.aiCurrentlyPreselected[Q] = 0
+					if enablingEditMode && queueLength < 2
+						float fNameAlpha = WC.afWidget_A[aiNameElements[Q]]
+						if fNameAlpha < 1
+							fNameAlpha = 100
+						endIf
+						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+						If(iHandle)
+							UICallback.PushInt(iHandle, Q + 5)
+							if Q == 2
+								UICallback.PushString(iHandle, "Shout")
+								UICallback.PushString(iHandle, "$iEquip_PM_lbl_EMdummyShout")
+							else
+								UICallback.PushString(iHandle, "Sword")
+								UICallback.PushString(iHandle, "$iEquip_PM_lbl_EMdummySword")
+							endIf
+							UICallback.PushFloat(iHandle, fNameAlpha)
+							UICallback.Send(iHandle)
+						endIf
+					elseIf !(Q == 2 && !bShoutPreselectEnabled)
+						;Otherwise if enabled, set left, right and shout preselect to next item in each queue, play power up sound, update widget and show preselect elements
+						WC.aiCurrentlyPreselected[Q] = WC.aiCurrentQueuePosition[Q] + 1
+						if WC.aiCurrentlyPreselected[Q] == queueLength
+							WC.aiCurrentlyPreselected[Q] = 0
+						endIf
+						debug.trace("iEquip_ProMode isPreselectMode Set(), bPreselectMode: " + bPreselectMode + ", Q: " + Q + ", aiCurrentlyPreselected[" + Q + "]: " + WC.aiCurrentlyPreselected[Q])
+						WC.updateWidget(Q, WC.aiCurrentlyPreselected[Q])
 					endIf
-					debug.trace("iEquip_ProMode isPreselectMode Set(), bPreselectMode: " + bPreselectMode + ", Q: " + Q + ", aiCurrentlyPreselected[" + Q + "]: " + WC.aiCurrentlyPreselected[Q])
-					WC.updateWidget(Q, WC.aiCurrentlyPreselected[Q])
+				endIf
+				Q += 1
+			endwhile
+
+			bLeftPreselectShown = ((WC.aiCurrentlyPreselected[0] != -1) || enablingEditMode)
+			bRightPreselectShown = ((WC.aiCurrentlyPreselected[1] != -1) || enablingEditMode)
+			;Also if shout preselect has been turned off in the MCM or hidden in Edit Mode make sure it stays hidden before showing the preselect group
+			bShoutPreselectShown = ((WC.bShoutEnabled && bShoutPreselectEnabled && (WC.aiCurrentlyPreselected[2] != -1)) || enablingEditMode)
+
+			;Add showLeft/showRight with check for number of items in queue must be greater than 1 (ie if only 1 in queue then nothing to preselect)
+			args[0] = bLeftPreselectShown ;Show left
+			args[1] = bRightPreselectShown ;Show right
+			args[2] = bShoutPreselectShown ;Show shout if not hidden in edit mode or bShoutPreselectEnabled disabled in MCM
+			;args[3] = EM.enableBackgrounds ;Show backgrounds if enabled
+			args[3] = AM.bAmmoMode
+			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+			PreselectModeAnimateIn()
+			if bPreselectModeFirstLook && !WC.bRefreshingWidget && !WC.EM.isEditMode
+				Utility.WaitMenuMode(1.0)
+				Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstLook"))
+				bPreselectModeFirstLook = false
+				if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2) && bAmmoModePreselectModeFirstLook
+					Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
+					bAmmoModePreselectModeFirstLook = false
 				endIf
 			endIf
-			Q += 1
-		endwhile
-
-		bLeftPreselectShown = ((WC.aiCurrentlyPreselected[0] != -1) || enablingEditMode)
-		bRightPreselectShown = ((WC.aiCurrentlyPreselected[1] != -1) || enablingEditMode)
-		;Also if shout preselect has been turned off in the MCM or hidden in Edit Mode make sure it stays hidden before showing the preselect group
-		bShoutPreselectShown = ((WC.bShoutEnabled && bShoutPreselectEnabled && (WC.aiCurrentlyPreselected[2] != -1)) || enablingEditMode)
-
-		;Add showLeft/showRight with check for number of items in queue must be greater than 1 (ie if only 1 in queue then nothing to preselect)
-		args[0] = bLeftPreselectShown ;Show left
-		args[1] = bRightPreselectShown ;Show right
-		args[2] = bShoutPreselectShown ;Show shout if not hidden in edit mode or bShoutPreselectEnabled disabled in MCM
-		;args[3] = EM.enableBackgrounds ;Show backgrounds if enabled
-		args[3] = AM.bAmmoMode
-		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-		PreselectModeAnimateIn()
-		if bPreselectModeFirstLook && !WC.bRefreshingWidget && !WC.EM.isEditMode
-			Utility.WaitMenuMode(1.0)
-			Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstLook"))
-			bPreselectModeFirstLook = false
-			if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2) && bAmmoModePreselectModeFirstLook
-				Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
-				bAmmoModePreselectModeFirstLook = false
-			endIf
-		endIf
-	else
-		;Hide preselect widget elements
-		PreselectModeAnimateOut()
-		if AM.bAmmoMode || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2)
-			args[0] = true
 		else
-			args[0] = false ;Hide left
+			;Hide preselect widget elements
+			PreselectModeAnimateOut()
+			if AM.bAmmoMode || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2)
+				args[0] = true
+			else
+				args[0] = false ;Hide left
+			endIf
+			args[1] = false ;Hide right
+			args[2] = false ;Hide shout
+			args[3] = AM.bAmmoMode
+			Utility.WaitMenuMode(2.0)
+			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+			Self.UnregisterForModEvent("iEquip_ReadyForPreselectAnimation")
 		endIf
-		args[1] = false ;Hide right
-		args[2] = false ;Hide shout
-		args[3] = AM.bAmmoMode
-		Utility.WaitMenuMode(2.0)
-		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-		Self.UnregisterForModEvent("iEquip_ReadyForPreselectAnimation")
 	endIf
 	debug.trace("iEquip_ProMode togglePreselectMode end")
 endFunction
@@ -231,23 +233,23 @@ function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool a
 	int targetIndex
 	if Reverse
 		targetIndex = WC.aiCurrentlyPreselected[Q] - 1
-		if targetIndex == WC.aiCurrentQueuePosition[Q] ;Can't preselect the item you already have equipped in the widget so move on another index
+		if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Can't preselect the item you already have equipped in the widget so move on another index
 			targetIndex -= 1
 		endIf
 		if targetIndex < 0
 			targetIndex = queueLength - 1
-			if targetIndex == WC.aiCurrentQueuePosition[Q] ;Have to recheck again in case aiCurrentQueuePosition[Q] == queueLength - 1
+			if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Have to recheck again in case aiCurrentQueuePosition[Q] == queueLength - 1
 				targetIndex -= 1
 			endIf
 		endIf
 	else
 		targetIndex = WC.aiCurrentlyPreselected[Q] + 1
-		if targetIndex == WC.aiCurrentQueuePosition[Q] ;Can't preselect the item you already have equipped in the widget so move on another index
+		if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Can't preselect the item you already have equipped in the widget so move on another index
 			targetIndex += 1
 		endIf
 		if targetIndex >= queueLength
 			targetIndex = 0
-			if targetIndex == WC.aiCurrentQueuePosition[Q] ;Have to recheck again in case aiCurrentQueuePosition[Q] == 0
+			if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Have to recheck again in case aiCurrentQueuePosition[Q] == 0
 				targetIndex += 1
 			endIf
 		endIf
@@ -690,7 +692,7 @@ function quickShield(bool forceSwitch = false)
 	;if player currently has a spell equipped in the right hand or we've enabled Prefer Magic in the MCM search for a ward spell first
 	if !forceSwitch && (rightHandHasSpell || bQuickShieldPreferMagic)
 		while i < leftCount && found == -1
-			if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as spell)
+			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0]) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as spell)
 				found = i
 				foundType = 22
 			endIf
@@ -700,7 +702,7 @@ function quickShield(bool forceSwitch = false)
 		if found == -1
 			i = 0
 			while i < leftCount && found == -1
-				if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 26
+				if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0]) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 26
 					found = i
 					foundType = 26
 				endIf
@@ -710,7 +712,7 @@ function quickShield(bool forceSwitch = false)
 	;Otherwise look for a shield first
 	else
 		while i < leftCount && found == -1
-			if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 26
+			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0]) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 26
 				found = i
 				foundType = 26
 			endIf
@@ -720,7 +722,7 @@ function quickShield(bool forceSwitch = false)
 		if found == -1 && !forceSwitch
 			i = 0
 			while i < leftCount && found == -1
-				if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as spell)
+				if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0]) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as spell)
 					found = i
 					foundType = 22
 				endIf
@@ -958,7 +960,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 		;Now look for our first choice ranged weapon type
 		while i < rightCount && found == -1
 			targetObject = jArray.getObj(targetArray, i)
-			if jMap.getInt(targetObject, "iEquipType") == preferredType
+			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0]) && jMap.getInt(targetObject, "iEquipType") == preferredType
 				found = i
 			endIf
 			i += 1
@@ -975,7 +977,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 			i = 0
 			while i < rightCount && found == -1
 				targetObject = jArray.getObj(targetArray, i)
-				if jMap.getInt(targetObject, "iEquipType") == secondChoice
+				if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0]) && jMap.getInt(targetObject, "iEquipType") == secondChoice
 					found = i
 				endIf
 				i += 1
@@ -1066,7 +1068,7 @@ bool function quickRangedFindAndEquipSpell()
 	;Look for our first choice bound ranged weapon spell
 	while i < rightCount && found == -1
 		targetObject = jArray.getObj(targetArray, i)
-		if jMap.getStr(targetObject, "iEquipName") == preferredType
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0]) && jMap.getStr(targetObject, "iEquipName") == preferredType
 			found = i
 		endIf
 		i += 1
@@ -1076,7 +1078,7 @@ bool function quickRangedFindAndEquipSpell()
 		i = 0
 		while i < rightCount && found == -1
 			targetObject = jArray.getObj(targetArray, i)
-			if jMap.getStr(targetObject, "iEquipName") == secondChoice
+			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0]) && jMap.getStr(targetObject, "iEquipName") == secondChoice
 				found = i
 			endIf
 			i += 1
