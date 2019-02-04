@@ -347,10 +347,10 @@ function processQueuedForms()
 					equippedSlot = 1
 				endIf
 				if equippedSlot == 3
-					updateSlotOnObjectEquipped(0)
-					updateSlotOnObjectEquipped(1)
+					updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
+					updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
 				else
-					updateSlotOnObjectEquipped(equippedSlot)
+					updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
 				endIf
 			endIf
 		endIf
@@ -362,7 +362,7 @@ function processQueuedForms()
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms end")
 endFunction
 
-function updateSlotOnObjectEquipped(int equippedSlot)
+function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start")
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot)
 	bool actionTaken = false
