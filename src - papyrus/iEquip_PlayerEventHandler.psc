@@ -321,11 +321,16 @@ function processQueuedForms()
 		if !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
 			int equippedSlot = -1
 			if PlayerRef.GetEquippedObject(0) == queuedForm
-				equippedSlot = 0
+				;Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
+				if PlayerRef.GetEquippedObject(1) == queuedForm
+					equippedSlot = 3 ;We'll use 3 to indicate the same 1H item has been found in both hands so we can update both queues and widget slots
+				else
+					equippedSlot = 0 ;Left
+				endIf
 			elseIf PlayerRef.GetEquippedObject(1) == queuedForm
-				equippedSlot = 1
+				equippedSlot = 1 ;Right
 			elseIf PlayerRef.GetEquippedObject(2) == queuedForm
-				equippedSlot = 2
+				equippedSlot = 2 ;Shout/Power
 			endIf
 			;If the item has been equipped in the left, right or shout slot
 			if equippedSlot != -1
