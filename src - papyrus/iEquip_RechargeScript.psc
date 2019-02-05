@@ -14,9 +14,9 @@ Perk Property Enchanter00 Auto ; Used if Requiem detected - Requiem renames this
 
 bool Property bRechargingEnabled = true Auto Hidden
 bool Property bUseLargestSoul = true Auto Hidden
-bool Property bUsePartFilledGems = false Auto Hidden
-bool Property bAllowOversizedSouls = false Auto Hidden
-bool Property bIsRequiemLoaded = false Auto Hidden
+bool Property bUsePartFilledGems Auto Hidden
+bool Property bAllowOversizedSouls Auto Hidden
+bool Property bIsRequiemLoaded Auto Hidden
 
 float[] afAmountToRecharge
 float[] afSkillPointsToAdd
@@ -100,7 +100,7 @@ endFunction
 int function getRequiredSoul(int Q, float requiredCharge)
     debug.trace("iEquip_RechargeScript getRequiredSoul start")
 	debug.trace("iEquip_RechargeScript getRequiredSoul - Q: " + Q)
-    int bestFitSoul = 0
+    int bestFitSoul
     if requiredCharge > 0
         if requiredCharge < 251.0
         	bestFitSoul = 1

@@ -10,7 +10,7 @@ int Q
 String WidgetRoot
 int iTargetDisplay
 
-bool bWaitingForMeterFadeoutUpdate = false
+bool bWaitingForMeterFadeoutUpdate
 
 function registerForMeterFadeoutUpdate(int slot, int displayType, float delay)
 	Q = slot

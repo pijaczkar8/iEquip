@@ -7,6 +7,10 @@ string[] backgroundStyleOptions
 string[] fadeoutOptions
 string[] firstPressIfNameHiddenOptions
 
+int iCurrentWidgetFadeoutChoice = 1
+int iCurrentNameFadeoutChoice = 1
+int iAmmoIconStyle
+
 ; #############
 ; ### SETUP ###
 
@@ -43,7 +47,7 @@ function drawPage()
             MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
         endIf
                 
-        MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[MCM.iAmmoIconStyle])
+        MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
 
         MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
         MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
@@ -54,9 +58,9 @@ function drawPage()
                 
         if WC.bWidgetFadeoutEnabled
             MCM.AddSliderOptionST("ui_sld_wdgetFadeDelay", "$iEquip_MCM_ui_lbl_wdgetFadeDelay", WC.fWidgetFadeoutDelay, "{0}")
-            MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "$iEquip_MCM_ui_lbl_wdgetFadeSpeed", fadeoutOptions[MCM.iCurrentWidgetFadeoutChoice])
+            MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "$iEquip_MCM_ui_lbl_wdgetFadeSpeed", fadeoutOptions[iCurrentWidgetFadeoutChoice])
                     
-            if (MCM.iCurrentWidgetFadeoutChoice == 3)
+            if iCurrentWidgetFadeoutChoice == 3
                 MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "$iEquip_MCM_ui_lbl_wdgetFadeDur", WC.fWidgetFadeoutDuration, "{1}")
             endIf
 
@@ -74,9 +78,9 @@ function drawPage()
                 MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "$iEquip_MCM_ui_lbl_preselectNameFadeDelay", WC.fPreselectNameFadeoutDelay, "{1}")
             endIf
                     
-            MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "$iEquip_MCM_ui_lbl_nameFadeSpeed", fadeoutOptions[MCM.iCurrentNameFadeoutChoice])
+            MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "$iEquip_MCM_ui_lbl_nameFadeSpeed", fadeoutOptions[iCurrentNameFadeoutChoice])
                     
-            if (MCM.iCurrentNameFadeoutChoice == 3)
+            if (iCurrentNameFadeoutChoice == 3)
                 MCM.AddSliderOptionST("ui_sld_nameFadeDur", "$iEquip_MCM_ui_lbl_nameFadeDur", WC.fNameFadeoutDuration, "{1}")
             endIf
                     
@@ -125,19 +129,19 @@ State ui_men_ammoIcoStyle
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_ammoIcoStyle")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(MCM.iAmmoIconStyle, ammoIconOptions, 0)
+            MCM.fillMenu(iAmmoIconStyle, ammoIconOptions, 0)
         elseIf currentEvent == "Accept"
-            MCM.iAmmoIconStyle = currentVar as int
+            iAmmoIconStyle = currentVar as int
         
-            if MCM.iAmmoIconStyle == 0
+            if iAmmoIconStyle == 0
                 AM.sAmmoIconSuffix = ""
-            elseIf MCM.iAmmoIconStyle == 1
+            elseIf iAmmoIconStyle == 1
                 AM.sAmmoIconSuffix = "Triple"
-            elseIf MCM.iAmmoIconStyle == 2
+            elseIf iAmmoIconStyle == 2
                 AM.sAmmoIconSuffix = "Quiver"
             endIf
             
-            MCM.SetMenuOptionValueST(ammoIconOptions[MCM.iAmmoIconStyle])
+            MCM.SetMenuOptionValueST(ammoIconOptions[iAmmoIconStyle])
             WC.bAmmoIconChanged = true
         endIf 
     endEvent
@@ -209,19 +213,19 @@ endState
 State ui_men_wdgetFadeSpeed
     event OnBeginState()
         if currentEvent == "Open"
-            MCM.fillMenu(MCM.iCurrentWidgetFadeoutChoice, fadeoutOptions, 1)
+            MCM.fillMenu(iCurrentWidgetFadeoutChoice, fadeoutOptions, 1)
         elseIf currentEvent == "Accept"
-            MCM.iCurrentWidgetFadeoutChoice = currentVar as int
+            iCurrentWidgetFadeoutChoice = currentVar as int
         
-            if MCM.iCurrentWidgetFadeoutChoice == 0
+            if iCurrentWidgetFadeoutChoice == 0
                 WC.fWidgetFadeoutDuration = 3.0 ;Slow
-            elseIf MCM.iCurrentWidgetFadeoutChoice == 1
+            elseIf iCurrentWidgetFadeoutChoice == 1
                 WC.fWidgetFadeoutDuration = 1.5 ;Normal
-            elseIf MCM.iCurrentWidgetFadeoutChoice == 2
+            elseIf iCurrentWidgetFadeoutChoice == 2
                 WC.fWidgetFadeoutDuration = 0.5 ;Fast
             endIf
             
-            MCM.SetMenuOptionValueST(fadeoutOptions[MCM.iCurrentWidgetFadeoutChoice])
+            MCM.SetMenuOptionValueST(fadeoutOptions[iCurrentWidgetFadeoutChoice])
         endIf 
     endEvent
 endState
@@ -315,19 +319,19 @@ State ui_men_nameFadeSpeed
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_nameFadeSpeed")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(MCM.iCurrentNameFadeoutChoice, fadeoutOptions, 1)
+            MCM.fillMenu(iCurrentNameFadeoutChoice, fadeoutOptions, 1)
         elseIf currentEvent == "Accept"
-            MCM.iCurrentNameFadeoutChoice = currentVar as int
+            iCurrentNameFadeoutChoice = currentVar as int
         
-            if MCM.iCurrentNameFadeoutChoice == 0
+            if iCurrentNameFadeoutChoice == 0
                 WC.fNameFadeoutDuration = 3.0 ;Slow
-            elseIf MCM.iCurrentNameFadeoutChoice == 1
+            elseIf iCurrentNameFadeoutChoice == 1
                 WC.fNameFadeoutDuration = 1.5 ;Normal
-            elseIf MCM.iCurrentNameFadeoutChoice == 2
+            elseIf iCurrentNameFadeoutChoice == 2
                 WC.fNameFadeoutDuration = 0.5 ;Fast
             endIf
             
-            MCM.SetMenuOptionValueST(fadeoutOptions[MCM.iCurrentNameFadeoutChoice])
+            MCM.SetMenuOptionValueST(fadeoutOptions[iCurrentNameFadeoutChoice])
         endIf 
     endEvent
 endState

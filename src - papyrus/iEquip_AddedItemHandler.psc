@@ -33,7 +33,7 @@ endEvent
 
 event OnUpdate()
 	debug.trace("iEquip_AddedItemHandler OnUpdate start")
-	int i = 0
+	int i
 	int j
 	int numForms = iEquip_ItemsToAddFLST.GetSize()
 	debug.trace("iEquip_AddedItemHandler OnUpdate - number of forms to process: " + numForms)

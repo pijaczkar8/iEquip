@@ -707,28 +707,29 @@ function checkAndAddToConsumableQueue(potion foundConsumable)
         if bMoreHUDLoaded
             AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
         endIf
-        if jArray.count(iConsumableQ) == 4
-            if WC.bPotionGrouping && iEmptyPotionQueueChoice != 1
-                int shownPotionGroups = 0
-                int i = 0
-                
-                while i < 3
+        int count = jArray.count(iConsumableQ)
+        int enabledPotionGroups
+        int groupHasPotions
+        if WC.bPotionGrouping
+            int i = 0
+            while i < 3
+                if WC.abPotionGroupEnabled[i]
+                    enabledPotionGroups += 1
                     if !WC.abPotionGroupEmpty[i]
-                        shownPotionGroups += 1
+                        groupHasPotions += 1
                     endIf
-                    i += 1
-                endWhile
-                
-                if shownPotionGroups == 0
-                    WC.aiCurrentQueuePosition[3] = 4
-                    WC.asCurrentlyEquipped[3] = consumableName
-                    if WC.bConsumableIconFaded
-                        WC.checkAndFadeConsumableIcon(false)
-                        Utility.WaitMenuMode(0.3)
-                    endIf
-                    WC.updateWidget(3, 0, false, true)
                 endIf
+                i += 1
+            endWhile
+        endIf    
+        if count == 1 || ((count - enabledPotionGroups == 1) && groupHasPotions == 0)
+            WC.aiCurrentQueuePosition[3] = count - 1
+            WC.asCurrentlyEquipped[3] = consumableName
+            if WC.bConsumableIconFaded
+                WC.checkAndFadeConsumableIcon(false)
+                Utility.WaitMenuMode(0.3)
             endIf
+            WC.updateWidget(3, count - 1, false, true)
         endIf
         debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + consumableName + " added to the consumable queue")
     endIf
@@ -897,7 +898,7 @@ function selectAndConsumePotion(int potionGroup)
                 targetPotion = smartSelectRestorePotion(Q, currAVDamage)
             endIf
             form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
-            if potionToConsume != None
+            if potionToConsume
                 debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is a " + potionToConsume.GetName())
                 ; Consume the potion
                 PlayerRef.EquipItemEx(potionToConsume)

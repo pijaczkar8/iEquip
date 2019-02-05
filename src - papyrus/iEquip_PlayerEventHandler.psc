@@ -32,21 +32,21 @@ FormList property iEquip_PotionItemsFLST Auto
 FormList Property iEquip_OnObjectEquippedFLST Auto
 
 bool property bPoisonSlotEnabled = true auto hidden
-bool bIsBoundSpellEquipped = false
-bool property bWaitingForEnchantedWeaponDrawn = false auto hidden
-bool bWaitingForAnimationUpdate = false
-bool bWaitingForOnObjectEquippedUpdate = false
-bool processingQueuedForms = false
+bool bIsBoundSpellEquipped
+bool property bWaitingForEnchantedWeaponDrawn auto hidden
+bool bWaitingForAnimationUpdate
+bool bWaitingForOnObjectEquippedUpdate
+bool processingQueuedForms
 
-bool property bIsThunderchildLoaded = false auto hidden
-bool property bIsWintersunLoaded = false auto hidden
-bool property bIsDawnguardLoaded = false auto hidden
-bool property bIsUndeathLoaded = false auto hidden
-bool property bPlayerIsMeditating = false auto hidden
-bool property bDualCasting = false auto hidden
-int dualCastCounter = 0
+bool property bIsThunderchildLoaded auto hidden
+bool property bIsWintersunLoaded auto hidden
+bool property bIsDawnguardLoaded auto hidden
+bool property bIsUndeathLoaded auto hidden
+bool property bPlayerIsMeditating auto hidden
+bool property bDualCasting auto hidden
+int dualCastCounter
 
-bool property bPlayerIsABeast = false auto hidden
+bool property bPlayerIsABeast auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
@@ -312,7 +312,7 @@ function processQueuedForms()
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms start")	
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())
 	processingQueuedForms = true
-	int i = 0
+	int i
 	form queuedForm
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
@@ -365,9 +365,9 @@ endFunction
 function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start")
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot)
-	bool actionTaken = false
+	bool actionTaken
 	int targetIndex
-	bool blockCall = false
+	bool blockCall
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName = queuedForm.GetName()
 	;Check if we've just manually equipped an item that is already in an iEquip queue
@@ -474,7 +474,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
 		i = 0
 		int foundAt
-		bool actionTaken = false
+		bool actionTaken
 		while i < 3 && !actionTaken
 			string itemName = akBaseItem.GetName()
 			foundAt = WC.findInQueue(i, itemName)
@@ -484,11 +484,8 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					WC.removeItemFromQueue(i, foundAt)
 					actionTaken = true
 				else
-					int otherHand = 1
+					int otherHand = (i + 1) % 2
 					int itemType = akBaseItem.GetType()
-					if i == 1
-						otherHand = 0
-					endIf
 					;Check if it's contained in the other hand queue as well
 					int foundAtOtherHand = WC.findInQueue(otherHand, itemName)
 					int itemCount = PlayerRef.GetItemCount(akBaseItem)

@@ -48,17 +48,17 @@ float Property fMultiTapDelay = 0.3 Auto Hidden
 float Property fLongPressDelay = 0.6 Auto Hidden
 
 ; Bools
-bool Property bConsumeItemHotkeyEnabled = false Auto Hidden
+bool Property bConsumeItemHotkeyEnabled Auto Hidden
 bool Property bAllowKeyPress = true Auto Hidden
-bool bIsUtilityKeyHeld = false
+bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
 
 ; Ints
-Int iWaitingKeyCode = 0
-Int iMultiTap = 0
+Int iWaitingKeyCode
+Int iMultiTap
 
 ; Strings
-string sPreviousState = ""
+string sPreviousState
 
 ; ------------------
 ; - GENERAL EVENTS -
@@ -220,7 +220,7 @@ function runUpdate()
             endIf
             
     elseIf iMultiTap == 1   ; Single tap
-        if iWaitingKeyCode == iUtilityKey
+        if iWaitingKeyCode == iUtilityKey && !PlayerRef.IsWeaponDrawn()
             int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
             
             if iAction != 0             ; Exit
@@ -389,7 +389,7 @@ state EDITMODE
         debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
         if bAllowKeyPress
             if KeyCode == iWaitingKeyCode && iMultiTap == 0
-                float updateTime = 0.0
+                float updateTime
                 iMultiTap = 1
                 
                 If (KeyCode == iEditRotateKey || KeyCode == iEditRulersKey)

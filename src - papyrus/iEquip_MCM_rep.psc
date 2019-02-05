@@ -33,7 +33,6 @@ function initData()
 
     meterFillDirection = new int[2]
     meterFillDirection[0] = 1
-    meterFillDirection[1] = 0
 
     poisonMessageOptions = new String[3]
     poisonMessageOptions[0] = "$iEquip_MCM_rep_opt_ShowAll"

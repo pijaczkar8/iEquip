@@ -1,32 +1,25 @@
 Scriptname iEquip_MCM extends SKI_ConfigBase
 
-iEquip_WidgetCore Property WC Auto
-iEquip_KeyHandler Property KH Auto
+iEquip_WidgetCore property WC auto
+iEquip_KeyHandler property KH auto
 
-iEquip_MCM_gen Property gen Auto
-iEquip_MCM_htk Property htk Auto
-iEquip_MCM_que Property que Auto
-iEquip_MCM_pot Property pot Auto
-iEquip_MCM_rep Property poi Auto
-iEquip_MCM_ui Property uii Auto
-iEquip_MCM_pro Property pro Auto
-iEquip_MCM_edt Property edt Auto
-iEquip_MCM_inf Property inf Auto
+iEquip_MCM_gen property gen auto
+iEquip_MCM_htk property htk auto
+iEquip_MCM_que property que auto
+iEquip_MCM_pot property pot auto
+iEquip_MCM_rep property poi auto
+iEquip_MCM_ui property uii auto
+iEquip_MCM_pro property pro auto
+iEquip_MCM_edt property edt auto
+iEquip_MCM_inf property inf auto
 
-bool Property bEnabled = false Auto Hidden
-bool Property bFirstEnabled = true Auto Hidden
-bool Property bUpdateKeyMaps = false Auto Hidden
+bool property bEnabled auto hidden
+bool property bFirstEnabled = true auto hidden
+bool property bUpdateKeyMaps auto hidden
 
-int Property iCurrentWidgetFadeoutChoice = 1 Auto Hidden
-int Property iCurrentNameFadeoutChoice = 1 Auto Hidden
-int Property iAmmoIconStyle = 0 Auto Hidden
-int Property iCurrentQSPreferredMagicSchoolChoice = 2 Auto Hidden
-int Property iCurrentQRPreferredMagicSchoolChoice = 2 Auto Hidden
-int Property iCurrentEMKeysChoice = 0 Auto Hidden
-
-string Property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
-string Property FileExtMCM = ".IEQS" autoReadOnly
-string sCurrentPage = ""
+string property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
+string property FileExtMCM = ".IEQS" autoReadOnly
+string sCurrentPage
 
 ; ###########################
 ; ### MCM Version Control ###

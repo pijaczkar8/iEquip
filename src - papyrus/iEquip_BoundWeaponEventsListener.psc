@@ -4,7 +4,7 @@ Import iEquip_FormExt
 
 iEquip_WidgetCore Property WC Auto
 
-bool property bIsBoundSpellEquipped = false auto hidden
+bool property bIsBoundSpellEquipped auto hidden
 
 function initialise()
 	iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(Self)

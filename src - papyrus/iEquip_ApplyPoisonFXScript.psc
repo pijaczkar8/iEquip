@@ -3,7 +3,7 @@ Scriptname iEquip_ApplyPoisonFXScript extends ReferenceAlias Hidden
 SPELL Property iEquip_ApplyPoisonFXSpell  Auto
 Actor Property PlayerRef Auto
 
-bool bIsSpellEquipped = false 
+bool bIsSpellEquipped
  
 function showPoisonFX()
 	debug.trace("iEquip_ApplyPoisonFXScript showPoisonFX called")

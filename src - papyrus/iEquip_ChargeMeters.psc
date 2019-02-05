@@ -23,8 +23,8 @@ int property iLowChargeFillColor = 0xFF0000 auto hidden
 int property iSecondaryFillColor	= -1 auto hidden ;Only used if a gradient fill is required
 int	property iFlashColor = -1 auto hidden ;White by default
 int property iChargeDisplayType = 1 auto Hidden ; 0 = None, 1 = Charge meters, 2 = Dynamic soulgems
-bool property bChargeFadeoutEnabled = false auto hidden
-bool property bCustomFlashColor = false auto hidden
+bool property bChargeFadeoutEnabled auto hidden
+bool property bCustomFlashColor auto hidden
 bool property bEnableLowCharge = true auto hidden
 bool property bEnableGradientFill = false auto hidden
 float property fChargeFadeoutDelay = 5.0 auto hidden
@@ -33,22 +33,18 @@ bool[] property abIsChargeMeterShown auto hidden
 string[] property asMeterFillDirection auto hidden
 string[] property asItemCharge auto hidden
 
-bool property bSettingsChanged = false auto hidden
+bool property bSettingsChanged auto hidden
 
 ; EVENTS ------------------------------------------------------------------------------------------
 event OnInit()
 	debug.trace("iEquip_ChargeMeters OnInit start")
 	abIsChargeMeterShown = new bool[2]
-	abIsChargeMeterShown[0] = false
-	abIsChargeMeterShown[1] = false
 
 	asMeterFillDirection = new string[2]
 	asMeterFillDirection[0] = "left"
 	asMeterFillDirection[1] = "right"
 
 	afCurrCharge = new float[2]
-	afCurrCharge[0] = 0.0
-	afCurrCharge[1] = 0.0
 
 	asItemCharge = new string[2]
 	asItemCharge[0] = "LeftItemCharge"
@@ -104,9 +100,8 @@ function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = fa
 	debug.trace("iEquip_ChargeMeters updateMeterPercent start")
 	debug.trace("iEquip_ChargeMeters updateMeterPercent - Q: " + Q + ", asItemCharge[Q]: " + asItemCharge[Q] + ", forceUpdate: " + forceUpdate + ", skipFlash: " + skipFlash)
 	float currentCharge = PlayerRef.GetActorValue(asItemCharge[Q])
-	;float maxCharge = PlayerRef.GetBaseActorValue(asItemCharge[Q])
 	float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
-	float currPercent = 0.0
+	float currPercent
 	if maxCharge > 0.0 && currentCharge > 0.0
 		currPercent = currentCharge / maxCharge
 	endIf
@@ -170,7 +165,7 @@ endFunction
 function updateChargeMeters(bool forceUpdate = false)
 	debug.trace("iEquip_ChargeMeters updateChargeMeters start")
 	debug.trace("iEquip_ChargeMeters updateChargeMeters - forceUpdate: " + forceUpdate)
-	int Q = 0
+	int Q
 	if iChargeDisplayType > 0
 		while Q < 2
 			;Force both meters and both gems to hide first then call checkAndUpdate to reshow the relevant one if required
@@ -190,7 +185,7 @@ endFunction
 
 function updateChargeMetersOnWeaponsDrawn()
 	debug.trace("iEquip_ChargeMeters updateChargeMetersOnWeaponsDrawn start")
-	int Q = 0
+	int Q
 	while Q < 2
 		checkAndUpdateChargeMeter(Q, true)
 		Q += 1
@@ -205,13 +200,10 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 		Utility.WaitMenuMode(0.2)
 	endIf
 	if PlayerRef.IsWeaponDrawn()
-		int isEnchanted = 0
-		bool isLeftHand = false
-		if Q == 0
-			isLeftHand = true
-		endIf
+		int isEnchanted
+		bool isLeftHand = !(Q as bool)
 		weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
-		bool isBound = false 
+		bool isBound
 		if currentWeapon
 			isBound = iEquip_WeaponExt.IsWeaponBound(currentWeapon)
 			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - weapon name: " + currentWeapon.GetName() + ", isBound: " + isBound)

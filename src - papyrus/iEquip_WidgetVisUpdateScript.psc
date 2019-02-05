@@ -4,7 +4,7 @@ iEquip_WidgetCore Property WC Auto
 
 Actor property PlayerRef auto
 
-bool bWaitingForWidgetFadeoutUpdate = false
+bool bWaitingForWidgetFadeoutUpdate
 
 function registerForWidgetFadeoutUpdate()
 	RegisterForSingleUpdate(WC.fWidgetFadeoutDelay)

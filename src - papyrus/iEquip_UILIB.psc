@@ -147,7 +147,6 @@ Int[] Function ShowList(String asTitle, String[] asOptions, Int aiStartIndex, In
 	debug.trace("iEquip_UILIB ShowList start")
 	int[] args = new int[2]
 	args[0] = -1
-	args[1] = 0
 	If(bMenuOpen)
 		Return args
 	EndIf
@@ -218,7 +217,6 @@ Int[] Function ShowColorMenu(String asTitle, Int aiStartColor, Int aiDefaultColo
 	debug.trace("iEquip_UILIB ShowColorMenu start")
 	int[] args = new int[2]
 	args[0] = -1
-	args[1] = 0
 	If(bMenuOpen)
 		Return args
 	EndIf
@@ -230,7 +228,7 @@ Int[] Function ShowColorMenu(String asTitle, Int aiStartColor, Int aiDefaultColo
 	iDefaultColor = aiDefaultColor
 	aCustomColors = new int[14]
 	aCustomColors = CustomColors
-	Int NewCustom = 0
+	Int NewCustom
 	ColorMenu_Open(Self)
 	While(bMenuOpen)
 		Utility.WaitMenuMode(0.1)
@@ -267,8 +265,8 @@ EndEvent
 
 Function ColorMenu_SetData(String asTitle, Int aiStartColor, Int aiDefaultColor, Int[] aaCustomColors) Global
 	debug.trace("iEquip_UILIB ColorMenu_SetData start")
-	Int iIndex = 0
-	Int iIndex2 = 0
+	Int iIndex
+	Int iIndex2
 	Int[] args = new Int[2]
 	While iIndex < aaCustomColors.length
 		if aaCustomColors[iIndex] != -1
@@ -354,7 +352,7 @@ Function QueueMenu_SetData(String asTitle, String[] asIconNameList, String[] asL
 	debug.trace("iEquip_UILIB QueueMenu_SetData start")
 	UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.setExitButtonText", directAccess)
 	UI.InvokeNumber("CustomMenu", "_root.iEquipQueueDialog.setPlatform", (Game.UsingGamepad() as Int))
-	Int iIndex = 0
+	Int iIndex
 	String iconName
 	bool isEnchanted
 	bool isPoisoned
@@ -387,7 +385,7 @@ endFunction
 Function QueueMenu_RefreshList(String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, int iIndex) Global
 	debug.trace("iEquip_UILIB QueueMenu_RefreshList start")
 	UI.Invoke("CustomMenu", "_root.iEquipQueueDialog.clearIconLists")
-	Int iIndex2 = 0
+	Int iIndex2
 	String iconName
 	bool isEnchanted
 	bool isPoisoned

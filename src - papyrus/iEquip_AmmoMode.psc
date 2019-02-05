@@ -17,15 +17,15 @@ iEquip_PlayerEventHandler property EH auto
 actor property PlayerRef auto
 FormList property iEquip_AmmoItemsFLST auto
 
-string property sAmmoIconSuffix = "" auto hidden
+string property sAmmoIconSuffix auto hidden
 int property iAmmoListSorting = 1 auto hidden
 int property iActionOnLastAmmoUsed = 1 auto hidden
 
-bool property bAmmoMode = false auto hidden
-bool bReadyForAmmoModeAnim = false
-bool property bAmmoModePending = false auto hidden
+bool property bAmmoMode auto hidden
+bool bReadyForAmmoModeAnim
+bool property bAmmoModePending auto hidden
 
-int property Q = 0 auto hidden
+int property Q auto hidden
 int[] property aiTargetQ auto hidden
 bool[] abNeedsSorting
 
@@ -33,10 +33,10 @@ int[] property aiCurrentAmmoIndex auto hidden
 string[] property asCurrentAmmo auto hidden
 form property currentAmmoForm auto hidden
 
-int ilastSortType = 0
+int ilastSortType
 
-bool incrementDamage = false
-bool bBoundAmmoAdded = false
+bool incrementDamage
+bool bBoundAmmoAdded
 bool[] property abBoundAmmoInQueue auto hidden
 string[] asBoundAmmoNames
 string[] asBoundAmmoIcons
@@ -49,24 +49,10 @@ String WidgetRoot
 event onInit()
 	debug.trace("iEquip_AmmoMode onInit start")
 	aiTargetQ = new int[2]
-	aiTargetQ[0] = 0
-	aiTargetQ[1] = 0
-
 	aiCurrentAmmoIndex = new int[2]
-	aiCurrentAmmoIndex[0] = 0
-	aiCurrentAmmoIndex[1] = 0
-
 	asCurrentAmmo = new string[2]
-	asCurrentAmmo[0] = ""
-	asCurrentAmmo[1] = ""
-
 	abNeedsSorting = new bool[2]
-	abNeedsSorting[0] = false
-	abNeedsSorting[1] = false
-
 	abBoundAmmoInQueue = new bool[2]
-	abBoundAmmoInQueue[0] = false
-	abBoundAmmoInQueue[1] = false
 
 	asBoundAmmoNames = new string[2]
 	asBoundAmmoNames[0] = iEquip_StringExt.LocalizeString("$iEquip_common_BoundArrow")
@@ -158,8 +144,8 @@ function onAmmoRemoved(form removedAmmo)
 	elseIf iEquip_AmmoItemsFLST.HasForm(removedAmmo)
 		int isBolt = (removedAmmo as ammo).isBolt() as int
 		int targetQ = aiTargetQ[isBolt]
-		int i = 0
-		bool found = false
+		int i
+		bool found
 		while i < JArray.count(targetQ) && !found
 			found = (removedAmmo == jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm"))
 			if found
@@ -171,7 +157,7 @@ function onAmmoRemoved(form removedAmmo)
 						checkAndEquipAmmo(false, true)
 					;Otherwise check what is to happen when last ammo used up
 					else
-						bool switchedRangedWeapon = false
+						bool switchedRangedWeapon
 						if iActionOnLastAmmoUsed == 1 || iActionOnLastAmmoUsed == 2 ;If we've chosen one of the Switch Type options first check for a ranged weapon of a different type
 							int typeToFind = 7
 							if !isBolt
@@ -202,7 +188,7 @@ endFunction
 
 function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutEquipping = false)
 	debug.trace("iEquip_AmmoMode toggleAmmoMode start")
-	debug.trace("iEquip_AmmoMode toggleAmmoMode - toggleWithoutAnimation: " + toggleWithoutAnimation + ", toggleWithoutEquipping" + toggleWithoutEquipping + ", bAmmoModePending: " + bAmmoModePending)
+	debug.trace("iEquip_AmmoMode toggleAmmoMode - toggleWithoutAnimation: " + toggleWithoutAnimation + ", toggleWithoutEquipping: " + toggleWithoutEquipping + ", bAmmoModePending: " + bAmmoModePending)
 	if !bAmmoMode && jArray.count(aiTargetQ[Q]) < 1
 		debug.trace("iEquip_AmmoMode toggleAmmoMode - no ammo for the selected weapon, setting bAmmoModePending to true")
 		debug.Notification("$iEquip_AM_not_noAmmo")
@@ -423,8 +409,8 @@ endFunction
 
 function selectLastUsedAmmo(int thisQ)
 	debug.trace("iEquip_AmmoMode selectLastUsedAmmo start")
-	int i = 0
-	bool found = false
+	int i
+	bool found
 	if asCurrentAmmo[thisQ] != ""
 		while i < jArray.count(aiTargetQ[thisQ]) && !found
 			if asCurrentAmmo[thisQ] != jMap.getStr(jArray.getObj(aiTargetQ[thisQ], i), "iEquipName")
@@ -514,7 +500,6 @@ function setSlotCount(int count)
 	debug.trace("iEquip_AmmoMode setSlotCount start")
 	debug.trace("iEquip_AmmoMode setSlotCount - count: " + count)
 	int[] widgetData = new int[2]
-	widgetData[0] = 0
 	widgetData[1] = count
 	UI.invokeIntA(HUD_MENU, WidgetRoot + ".updateCounter", widgetData)
 	debug.trace("iEquip_AmmoMode setSlotCount end")
@@ -608,7 +593,7 @@ endFunction
 function updateAmmoLists()
 	debug.trace("iEquip_AmmoMode updateAmmoLists start")
 	int i
-	int aB = 0
+	int aB
 	int count
 	form ammoForm
 	while aB < 2
@@ -662,7 +647,7 @@ endFunction
 
 function sortAmmoLists()
 	debug.trace("iEquip_AmmoMode sortAmmoLists start")
-	int i = 0
+	int i
 	while i < 2
 		if abNeedsSorting[i]
 			if iAmmoListSorting == 1 ;By damage, highest first
@@ -681,10 +666,8 @@ endFunction
 
 function updateAmmoListsOnSettingChange()
 	debug.trace("iEquip_AmmoMode updateAmmoListsOnSettingChange start")
-	int i = 0
+	int i
 	bool[] boundAmmoRemoved = new bool[2]
-	boundAmmoRemoved[0] = false
-	boundAmmoRemoved[1] = false
 	int tempBoundAmmoObj
 	while i < 2
 		;First we need to check if we currently have Bound Ammo in the queue - if we do store it and remove it from the queue
@@ -718,8 +701,8 @@ endFunction
 bool function isAlreadyInAmmoQueue(form itemForm, int targetQ)
 	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue start")
 	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue - itemForm: " + itemForm)
-	bool found = false
-	int i = 0
+	bool found
+	int i
 	while i < JArray.count(targetQ) && !found
 		found = (itemform == jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm"))
 		i += 1
@@ -784,7 +767,7 @@ function sortAmmoQueueByName(int targetQ, int thisQ)
 	debug.trace("iEquip_AmmoMode sortAmmoQueueByName start")
 	int queueLength = jArray.count(targetQ)
 	int tempAmmoQ = jArray.objectWithSize(queueLength)
-	int i = 0
+	int i
 	string ammoName
 	while i < queueLength
 		ammoName = jMap.getStr(jArray.getObj(targetQ, i), "iEquipName")

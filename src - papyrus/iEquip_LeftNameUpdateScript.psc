@@ -9,7 +9,7 @@ String WidgetRoot
 Float fDelay
 Float fDuration
 
-bool bWaitingForNameFadeoutUpdate = false
+bool bWaitingForNameFadeoutUpdate
 
 function registerForNameFadeoutUpdate()
 	debug.trace("iEquip_LeftNameUpdateScript registerForNameFadeoutUpdate called")

@@ -15,6 +15,9 @@ string[] QHEquipOptions
 string[] QRPreferredWeaponType
 string[] QRSwitchOutOptions
 
+int iCurrentQSPreferredMagicSchoolChoice = 2
+int iCurrentQRPreferredMagicSchoolChoice = 2
+
 ; #############
 ; ### SETUP ###
 
@@ -82,7 +85,7 @@ function drawPage()
                 MCM.AddToggleOptionST("pro_tgl_prefShieldMag", "$iEquip_MCM_pro_lbl_prefMag", PM.bQuickShieldPreferMagic)
                         
                 if PM.bQuickShieldPreferMagic
-                    MCM.AddMenuOptionST("pro_men_rightHandspllTyp", "$iEquip_MCM_pro_lbl_rightHandspllTyp", QSPreferredMagicSchool[MCM.iCurrentQSPreferredMagicSchoolChoice])
+                    MCM.AddMenuOptionST("pro_men_rightHandspllTyp", "$iEquip_MCM_pro_lbl_rightHandspllTyp", QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])
                 endIf         
                 MCM.AddToggleOptionST("pro_tgl_ifNotFound", "$iEquip_MCM_pro_lbl_ifNotFound", PM.bQuickShieldUnequipLeftIfNotFound)
                 MCM.AddMenuOptionST("pro_men_inPreselectQuickshieldMode", "$iEquip_MCM_pro_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
@@ -115,7 +118,7 @@ function drawPage()
                 MCM.AddMenuOptionST("pro_men_swtchOut", "$iEquip_MCM_pro_lbl_swtchOut", QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
 
                 if PM.iQuickRangedSwitchOutAction == 4
-                    MCM.AddMenuOptionST("pro_men_prefMagSchl", "$iEquip_MCM_pro_lbl_prefMagSchl", QSPreferredMagicSchool[MCM.iCurrentQRPreferredMagicSchoolChoice])
+                    MCM.AddMenuOptionST("pro_men_prefMagSchl", "$iEquip_MCM_pro_lbl_prefMagSchl", QSPreferredMagicSchool[iCurrentQRPreferredMagicSchoolChoice])
                 endIf
                
                 MCM.AddMenuOptionST("pro_men_inPreselectQuickrangedMode", "$iEquip_MCM_pro_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
@@ -339,23 +342,23 @@ State pro_men_rightHandspllTyp
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_pro_txt_rightHandspllTyp")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(MCM.iCurrentQSPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
+            MCM.fillMenu(iCurrentQSPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
         elseIf currentEvent == "Accept"
-            MCM.iCurrentQSPreferredMagicSchoolChoice = currentVar as int
+            iCurrentQSPreferredMagicSchoolChoice = currentVar as int
         
-            if MCM.iCurrentQSPreferredMagicSchoolChoice == 0
+            if iCurrentQSPreferredMagicSchoolChoice == 0
                 PM.sQuickShieldPreferredMagicSchool = "Alteration"
-            elseIf MCM.iCurrentQSPreferredMagicSchoolChoice == 1
+            elseIf iCurrentQSPreferredMagicSchoolChoice == 1
                 PM.sQuickShieldPreferredMagicSchool = "Conjuration"
-            elseIf MCM.iCurrentQSPreferredMagicSchoolChoice == 2
+            elseIf iCurrentQSPreferredMagicSchoolChoice == 2
                 PM.sQuickShieldPreferredMagicSchool = "Destruction"
-            elseIf MCM.iCurrentQSPreferredMagicSchoolChoice == 3
+            elseIf iCurrentQSPreferredMagicSchoolChoice == 3
                 PM.sQuickShieldPreferredMagicSchool = "Illusion"
-            elseIf MCM.iCurrentQSPreferredMagicSchoolChoice == 4
+            elseIf iCurrentQSPreferredMagicSchoolChoice == 4
                 PM.sQuickShieldPreferredMagicSchool = "Restoration"
             endIf
             
-            MCM.SetMenuOptionValueST(QSPreferredMagicSchool[MCM.iCurrentQSPreferredMagicSchoolChoice])
+            MCM.SetMenuOptionValueST(QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])
         endIf
     endEvent
 endState
@@ -522,23 +525,23 @@ endState
 State pro_men_prefMagSchl
     event OnBeginState()
         if currentEvent == "Open"
-            MCM.fillMenu(MCM.iCurrentQRPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
+            MCM.fillMenu(iCurrentQRPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
         elseIf currentEvent == "Accept"
-            MCM.iCurrentQRPreferredMagicSchoolChoice = currentVar as int
+            iCurrentQRPreferredMagicSchoolChoice = currentVar as int
         
-            if MCM.iCurrentQRPreferredMagicSchoolChoice == 0
+            if iCurrentQRPreferredMagicSchoolChoice == 0
                 PM.sQuickRangedPreferredMagicSchool = "Alteration"
-            elseIf MCM.iCurrentQRPreferredMagicSchoolChoice == 1
+            elseIf iCurrentQRPreferredMagicSchoolChoice == 1
                 PM.sQuickRangedPreferredMagicSchool = "Conjuration"
-            elseIf MCM.iCurrentQRPreferredMagicSchoolChoice == 2
+            elseIf iCurrentQRPreferredMagicSchoolChoice == 2
                 PM.sQuickRangedPreferredMagicSchool = "Destruction"
-            elseIf MCM.iCurrentQRPreferredMagicSchoolChoice == 3
+            elseIf iCurrentQRPreferredMagicSchoolChoice == 3
                 PM.sQuickRangedPreferredMagicSchool = "Illusion"
-            elseIf MCM.iCurrentQRPreferredMagicSchoolChoice == 4
+            elseIf iCurrentQRPreferredMagicSchoolChoice == 4
                 PM.sQuickRangedPreferredMagicSchool = "Restoration"
             endIf
             
-            MCM.SetMenuOptionValueST(QSPreferredMagicSchool[MCM.iCurrentQRPreferredMagicSchoolChoice])
+            MCM.SetMenuOptionValueST(QSPreferredMagicSchool[iCurrentQRPreferredMagicSchoolChoice])
         endIf
     endEvent
 endState

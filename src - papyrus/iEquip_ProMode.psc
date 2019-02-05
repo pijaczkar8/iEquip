@@ -16,46 +16,46 @@ iEquip_PotionScript Property PO Auto
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
 
-bool property bPreselectMode = false auto hidden
+bool property bPreselectMode auto hidden
 bool bPreselectModeFirstLook = true
-bool bEquippingAllPreselectedItems = false
-bool bTogglingPreselectOnEquipAll = false
-bool bReadyForPreselectAnim = false
-bool bAllEquipped = false
+bool bEquippingAllPreselectedItems
+bool bTogglingPreselectOnEquipAll
+bool bReadyForPreselectAnim
+bool bAllEquipped
 bool bLeftPreselectShown = true
 bool bRightPreselectShown = true
 bool bShoutPreselectShown = true
 bool bAmmoModePreselectModeFirstLook = true
 
-bool property bWaitingForAmmoModeAnimation = false Auto Hidden
-bool bAmmoModeActiveOnTogglePreselect = false
-bool property bBlockQuickDualCast = false auto hidden
+bool property bWaitingForAmmoModeAnimation Auto Hidden
+bool bAmmoModeActiveOnTogglePreselect
+bool property bBlockQuickDualCast auto hidden
 
-bool property bCurrentlyQuickRanged = false auto hidden
-bool property bCurrentlyQuickHealing = false auto hidden
+bool property bCurrentlyQuickRanged auto hidden
+bool property bCurrentlyQuickHealing auto hidden
 int iQuickHealSlotsEquipped = -1
 int iPreviousLeftHandIndex
 int iPreviousRightHandIndex
 
 ;MCM Properties
-bool property bQuickShieldEnabled = false auto hidden
-bool property bQuickRangedEnabled = false auto hidden
-bool property bQuickHealEnabled = false auto hidden
-bool property bPreselectEnabled = false auto hidden
+bool property bQuickShieldEnabled auto hidden
+bool property bQuickRangedEnabled auto hidden
+bool property bQuickHealEnabled auto hidden
+bool property bPreselectEnabled auto hidden
 bool property bShoutPreselectEnabled = true auto hidden
-bool property bPreselectSwapItemsOnEquip = false auto hidden
-bool property bTogglePreselectOnEquipAll = false auto hidden
+bool property bPreselectSwapItemsOnEquip auto hidden
+bool property bTogglePreselectOnEquipAll auto hidden
 bool property bQuickShield2HSwitchAllowed = true auto hidden
-bool property bQuickShieldUnequipLeftIfNotFound = false auto hidden
+bool property bQuickShieldUnequipLeftIfNotFound auto hidden
 int property iPreselectQuickShield = 1 auto hidden
-bool property bQuickShieldPreferMagic = false auto hidden
+bool property bQuickShieldPreferMagic auto hidden
 string property sQuickShieldPreferredMagicSchool = "Destruction" auto hidden
 int property iPreselectQuickRanged = 1 auto hidden
-int property iQuickRangedPreferredWeaponType = 0 auto hidden
+int property iQuickRangedPreferredWeaponType auto hidden
 int property iQuickRangedSwitchOutAction = 1 auto hidden
 string property sQuickRangedPreferredMagicSchool = "Destruction" auto hidden
-bool property bQuickDualCastMustBeInBothQueues = false auto hidden
-bool property bQuickHealPreferMagic = false auto hidden
+bool property bQuickDualCastMustBeInBothQueues auto hidden
+bool property bQuickHealPreferMagic auto hidden
 int property iQuickHealEquipChoice = 2 auto hidden
 bool property bQuickHealSwitchBackEnabled = true auto hidden
 
@@ -81,7 +81,7 @@ function togglePreselectMode(bool enablingEditMode = false)
 		bool[] args = new bool[5]
 		if bPreselectMode
 			Self.RegisterForModEvent("iEquip_ReadyForPreselectAnimation", "ReadyForPreselectAnimation")
-			int Q = 0
+			int Q
 			if AM.bAmmoMode
 				bAmmoModeActiveOnTogglePreselect = true
 				Q = 1 ;Skip updating left hand preselect if currently in ammo mode as it's already set
@@ -149,12 +149,8 @@ function togglePreselectMode(bool enablingEditMode = false)
 			;Hide preselect widget elements
 			PreselectModeAnimateOut()
 			if AM.bAmmoMode || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2)
-				args[0] = true
-			else
-				args[0] = false ;Hide left
+				args[0] = true ;Show left
 			endIf
-			args[1] = false ;Hide right
-			args[2] = false ;Hide shout
 			args[3] = AM.bAmmoMode
 			Utility.WaitMenuMode(2.0)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
@@ -167,16 +163,14 @@ endFunction
 function PreselectModeAnimateIn()
 	debug.trace("iEquip_ProMode PreselectModeAnimateIn start")
 	bool[] args = new bool[3]
-	if AM.bAmmoMode
-		args[0] = false ;Don't animate the left icon if already shown in ammo mode
-	else
-		args[0] = bLeftPreselectShown
+	if !AM.bAmmoMode
+		args[0] = bLeftPreselectShown ;Only animate the left icon if not already shown in ammo mode
 	endIf
 	args[1] = bShoutPreselectShown
 	args[2] = bRightPreselectShown
 	UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn", args)
 	if WC.bNameFadeoutEnabled
-		int i = 0
+		int i
 		while i < 3
 			if i < 2
 				WC.updateAttributeIcons(i, WC.aiCurrentlyPreselected[i])
@@ -205,14 +199,12 @@ function PreselectModeAnimateOut()
 		bool[] args = new bool[3]
 		args[0] = bRightPreselectShown
 		args[1] = bShoutPreselectShown
-		if AM.bAmmoMode || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2)
-			args[2] = false ;Stop left slot from animating out if we currently have a ranged weapon equipped in the right hand or are in ammo mode as we still need it to show in regular mode
-		else
-			args[2] = bLeftPreselectShown
+		if !(AM.bAmmoMode || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2))
+			args[2] = bLeftPreselectShown ;Only animate out left slot if we don't currently have a ranged weapon equipped in the right hand or are in ammo mode as we still need it to show in regular mode
 		endIf
 		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
 	endIf
-	int i = 0
+	int i
 	while i < 3
 		if (i == 0 && !AM.bAmmoMode) || i == 1
 			WC.hideAttributeIcons(i + 5)
@@ -385,7 +377,7 @@ function equipPreselectedItem(int Q)
 
 	if Q == 1 && itemType == 0
 		WC.goUnarmed()
-	elseIf Q == 2 && targetItem != none ;Shout/Power
+	elseIf Q == 2 && targetItem ;Shout/Power
 	    if itemType == 22
 	        PlayerRef.EquipSpell(targetItem as Spell, 2)
 	    else
@@ -395,10 +387,9 @@ function equipPreselectedItem(int Q)
 		WC.bPreselectSwitchingHands = false ;Reset just in case
 		;When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
 	    int iEquipSlotId = 1
-	    int otherHand = 0
+	    int otherHand = (Q + 1) % 2
 	    if Q == 0
 	    	iEquipSlotId = 2
-	    	otherHand = 1
 	    endIf
 		;Unequip current item
 		WC.UnequipHand(Q)
@@ -539,15 +530,6 @@ function equipAllPreselectedItems()
 			shoutData[4] = jMap.getStr(targetObject, "iEquipName")
 			Utility.WaitMenuMode(0.2)
 		endIf
-	else
-		;if !bShoutPreselectEnabled clear array indices
-		shoutData[0] = ""
-		shoutData[1] = ""
-		shoutData[2] = ""
-		if !bTogglePreselectOnEquipAll
-			shoutData[3] = ""
-			shoutData[4] = ""
-		endIf
 	endIf
 	;Equip right hand first so any 2H/Ranged weapons take priority and equipping left hand can be blocked
 	if bRightPreselectShown
@@ -562,14 +544,6 @@ function equipAllPreselectedItems()
 			rightData[3] = jMap.getStr(targetObject, "iEquipIcon")
 			rightData[4] = jMap.getStr(targetObject, "iEquipName")
 			Utility.WaitMenuMode(0.2)
-		endIf
-	else
-		rightData[0] = ""
-		rightData[1] = ""
-		rightData[2] = ""
-		if !bTogglePreselectOnEquipAll
-			rightData[3] = ""
-			rightData[4] = ""
 		endIf
 	endIf
 	targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1])
@@ -596,15 +570,6 @@ function equipAllPreselectedItems()
 			targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
 			leftData[3] = jMap.getStr(targetObject, "iEquipIcon")
 			leftData[4] = jMap.getStr(targetObject, "iEquipName")
-		endIf
-	else
-		equipLeft = false
-		leftData[0] = ""
-		leftData[1] = ""
-		leftData[2] = ""
-		if !bTogglePreselectOnEquipAll
-			leftData[3] = ""
-			leftData[4] = ""
 		endIf
 	endIf
     
@@ -681,7 +646,7 @@ function quickShield(bool forceSwitch = false)
 	if !bQuickShieldEnabled || (!forceSwitch && (((WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
 		return
 	endIf
-	int i = 0
+	int i
 	int targetArray = WC.aiTargetQ[0]
 	int leftCount = jArray.count(targetArray)
 	int found = -1
@@ -738,8 +703,6 @@ function quickShield(bool forceSwitch = false)
 				;And if we're not in Preselect Mode we need to hide the left preselect elements
 				if !bPreselectMode
 					bool[] args = new bool[3]
-					args[0] = false
-					args[1] = false
 					args[2] = true
 					UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
 				endIf
@@ -763,7 +726,7 @@ function quickShield(bool forceSwitch = false)
 				Utility.WaitMenuMode(0.3)
 				WC.checkAndFadeLeftIcon(0, foundType)
 			endIf
-			bool switchRightHand = false
+			bool switchRightHand
 			if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) || (foundType == 22 && bQuickShieldPreferMagic && !rightHandHasSpell) || WC.bGoneUnarmed || WC.b2HSpellEquipped
 				switchRightHand = true
 				if !WC.bGoneUnarmed
@@ -812,7 +775,7 @@ endFunction
 function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 	debug.trace("iEquip_ProMode quickShieldSwitchRightHand start")
 	debug.trace("iEquip_ProMode QuickShieldSwitchRightHand - foundType: " + foundType + ", bQuickShieldPreferMagic: " + bQuickShieldPreferMagic + ", rightHandHasSpell: " + rightHandHasSpell)
-	int i = 0
+	int i
 	int targetArray = WC.aiTargetQ[1]
 	int rightCount = jArray.count(targetArray)
 	int found = -1
@@ -912,7 +875,7 @@ function quickRanged()
             quickRangedSwitchOut()
         else
             if !(AM.bAmmoMode || (bPreselectMode && iPreselectQuickRanged == 0))
-                bool actionTaken = false
+                bool actionTaken
                 if iQuickRangedPreferredWeaponType > 1
                     actionTaken = quickRangedFindAndEquipSpell()
                 else
@@ -940,7 +903,7 @@ endFunction
 bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrentlyQuickRangedFlag = true)
 	debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon start")
 
-	bool actionTaken = false
+	bool actionTaken
 	int preferredType = 7 ;Bow
 	int secondChoice = 9 ;Crossbow
 	if typeToFind == 9 || (typeToFind != 7 && (iQuickRangedPreferredWeaponType == 1 || iQuickRangedPreferredWeaponType == 3))
@@ -950,7 +913,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 	debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon preferredType: " + preferredType + ", secondChoice: " + secondChoice)
 	debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon - number of ammo for preferredType (AM.aiTargetQ[" + (preferredType == 9) as int + "]: " + jArray.count(AM.aiTargetQ[(preferredType == 9) as int]))
 	debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon - number of ammo for secondChoice (AM.aiTargetQ[" + (secondChoice == 9) as int + "]: " + jArray.count(AM.aiTargetQ[(secondChoice == 9) as int]))
-	int i = 0
+	int i
 	int targetArray = WC.aiTargetQ[1]
 	int targetObject
 	int rightCount = jArray.count(targetArray)
@@ -1053,14 +1016,14 @@ endFunction
 bool function quickRangedFindAndEquipSpell()
 	debug.trace("iEquip_ProMode quickRangedFindAndEquipSpell start")
 
-	bool actionTaken = false
+	bool actionTaken
 	string preferredType = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow")
 	string secondChoice = iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow")
 	if iQuickRangedPreferredWeaponType == 3 || iQuickRangedPreferredWeaponType == 1
 		preferredType = iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow")
 		secondChoice = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow")
 	endIf
-	int i = 0
+	int i
 	int targetArray = WC.aiTargetQ[1]
 	int targetObject
 	int rightCount = jArray.count(targetArray)
@@ -1130,7 +1093,7 @@ function quickRangedSwitchOut(bool force1H = false)
 	int targetArray = WC.aiTargetQ[1]
 	int targetObject
 	int rightCount = jArray.count(targetArray)
-	int i = 0
+	int i
 	if iQuickRangedSwitchOutAction == 1 && !force1H ;Switch Back
 		targetIndex = iPreviousRightHandIndex
 		debug.trace("iEquip_ProMode quickRangedSwitchOut doing iQuickRangedSwitchOutAction: 1, targetIndex: " + targetIndex)
@@ -1243,10 +1206,9 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 		bBlockQuickDualCast = false
 		return false
 	else
-		int otherHand = 0
+		int otherHand = (Q + 1) % 2
 		int nameElement = 21
 		if Q == 0
-			otherHand = 1
 			nameElement = 8
 		endIf
 		int otherHandIndex = -1
@@ -1299,7 +1261,7 @@ function quickHeal()
         if bCurrentlyQuickHealing
             quickHealSwitchBack()
         else
-            bool actionTaken = false
+            bool actionTaken
             if bQuickHealPreferMagic
                 actionTaken = quickHealFindAndEquipSpell()
             elseIf iEquip_ActorExt.GetAVDamage(PlayerRef, 24) > 0
@@ -1330,9 +1292,9 @@ endFunction
 
 bool function quickHealFindAndEquipSpell()
 	debug.trace("iEquip_ProMode quickHealFindAndEquipSpell start")
-	bool actionTaken = false
-	int i = 0
-	int Q = 0
+	bool actionTaken
+	int i
+	int Q
 	int count
 	int targetIndex = -1
 	int containingQ
@@ -1354,7 +1316,7 @@ bool function quickHealFindAndEquipSpell()
 	debug.trace("iEquip_ProMode quickHealFindAndEquipSpell - spell found at targetIndex: " + targetIndex + " in containingQ: " + containingQ + ", iQuickHealEquipChoice: " + iQuickHealEquipChoice)
 	if targetIndex != -1
 		int iEquipSlot = iQuickHealEquipChoice
-		bool equippingOtherHand = false
+		bool equippingOtherHand
 		if iEquipSlot < 2 && iEquipSlot != containingQ
 			equippingOtherHand = true
 		elseIf iEquipSlot == 3 ;Equip spell where it is found
@@ -1370,10 +1332,7 @@ bool function quickHealFindAndEquipSpell()
 		if iEquipSlot < 2
 			quickHealEquipSpell(iEquipSlot, containingQ, targetIndex, false, equippingOtherHand)
 		else
-			int otherHand = 0
-			if containingQ == 0
-				otherHand = 1
-			endIf
+			int otherHand = (containingQ + 1) % 2
 			quickHealEquipSpell(containingQ, containingQ, targetIndex)
 			quickHealEquipSpell(otherHand, containingQ, targetIndex, true)
 		endIf
