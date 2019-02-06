@@ -730,6 +730,7 @@ function checkAndAddToConsumableQueue(potion foundConsumable)
                 Utility.WaitMenuMode(0.3)
             endIf
             WC.updateWidget(3, count - 1, false, true)
+            WC.setSlotCount(3, PlayerRef.GetItemCount(consumableForm))
         endIf
         debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + consumableName + " added to the consumable queue")
     endIf

@@ -91,6 +91,7 @@ function initialise(bool enabled)
 		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
+		RegisterForAnimationEvent(PlayerRef, "bashStop")
 		RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
 		RegisterForActorAction(8) ;Draw End - weapons and spells
 		RegisterForActorAction(10) ;Sheathe End - weapons and spells
@@ -436,6 +437,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			;Send to moreHUD if loaded
 			if WC.bMoreHUDLoaded
 				if formFound
+					AhzMoreHudIE.RemoveIconItem(itemID)
 					AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) ;Both queues
 				else
 					AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
