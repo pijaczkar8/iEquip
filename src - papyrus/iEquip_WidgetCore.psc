@@ -2689,10 +2689,18 @@ endFunction
 
 function goUnarmed()
 	debug.trace("iEquip_WidgetCore goUnarmed start")
+	EH.bGoingUnarmed = true
 	bBlockSwitchBackToBoundSpell = true
 	UnequipHand(1)
 	Utility.WaitMenuMode(0.1)
-	UnequipHand(0)
+	;Now check if the game has just re-equipped any previous item in either hand and remove them as well
+	if PlayerRef.GetEquippedObject(1)
+		UnequipHand(1)
+		Utility.WaitMenuMode(0.1)
+	endIf
+	if PlayerRef.GetEquippedObject(0)
+		UnequipHand(0)
+	endIf
 	;And now we need to update the left hand widget
 	float fNameAlpha = afWidget_A[aiNameElements[0]]
 	if fNameAlpha < 1
@@ -2737,6 +2745,7 @@ function goUnarmed()
 	if bEnableGearedUp
 		refreshGearedUp()
 	endIf
+	EH.bGoingUnarmed = false
 	bBlockSwitchBackToBoundSpell = false
 	debug.trace("iEquip_WidgetCore goUnarmed end")
 endFunction

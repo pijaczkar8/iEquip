@@ -44,6 +44,7 @@ bool property bIsDawnguardLoaded auto hidden
 bool property bIsUndeathLoaded auto hidden
 bool property bPlayerIsMeditating auto hidden
 bool property bDualCasting auto hidden
+bool property bGoingUnarmed auto hidden
 int dualCastCounter
 
 bool property bPlayerIsABeast auto hidden
@@ -245,7 +246,7 @@ EndEvent
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
-	if !WC.bAddingItemsOnFirstEnable && !processingQueuedForms
+	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
 			if dualCastCounter == 0
