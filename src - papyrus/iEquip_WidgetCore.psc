@@ -2723,6 +2723,8 @@ function goUnarmed()
 		bool[] args = new bool[3]
 		args[2] = true
 		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
+		args = new bool[4]
+		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 	endIf
 	bGoneUnarmed = true
 	int i
@@ -2775,6 +2777,8 @@ function updateLeftSlotOn2HSpellEquipped()
 		bool[] args = new bool[3]
 		args[2] = true
 		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
+		args = new bool[4]
+		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 	endIf
 	b2HSpellEquipped = true
 	hideAttributeIcons(0)
