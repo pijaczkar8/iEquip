@@ -109,6 +109,7 @@ bool bIsFirstInventoryMenu = true
 bool bIsFirstMagicMenu = true
 bool bIsFirstFailedToAdd = true
 bool property bLoading auto hidden
+bool property bShowTooltips = true auto hidden
 bool property bShowQueueConfirmationMessages = true auto hidden
 bool property bLoadedbyOnWidgetInit auto hidden
 bool bRefreshingWidgetOnLoad
@@ -972,7 +973,9 @@ event OnMenuOpen(string _sCurrentMenu)
 	sCurrentMenu = _sCurrentMenu
 	if (sCurrentMenu == "InventoryMenu" || sCurrentMenu == "MagicMenu" || sCurrentMenu == "FavoritesMenu") ;if in inventory or magic menu switch states so cycle hotkeys now assign selected item to the relevant queue array
 		if  bIsFirstInventoryMenu
-			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_inventoryFirstLook"))
+			if bShowTooltips
+				debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_inventoryFirstLook"))
+			endIf
 			bIsFirstInventoryMenu = false
 		endIf
 		if sCurrentMenu == "InventoryMenu" || sCurrentMenu == "MagicMenu"
@@ -1124,7 +1127,9 @@ bool property isEnabled
                     
                     ResetWidgetArrays()
                     Utility.WaitMenuMode(1.5)
-                    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
+                    if bShowTooltips
+                    	debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
+                    endIf
 				endIf
                 
 				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
@@ -2658,9 +2663,11 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	checkAndUpdatePoisonInfo(Q)
 	CM.checkAndUpdateChargeMeter(Q, true)
 	if (itemType == 7 || itemType == 9) && bAmmoModeFirstLook
-		Utility.WaitMenuMode(0.5)
-		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AmmoModeFirstLook1"))
-		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AmmoModeFirstLook2"))
+		if bShowTooltips
+			Utility.WaitMenuMode(0.5)
+			Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AmmoModeFirstLook1"))
+			Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AmmoModeFirstLook2"))
+		endIf
 		bAmmoModeFirstLook = false
 	endIf
 	;if we've just equipped a 1H item in RH forcing left hand to reequip, now we can re-equip the left hand making sure to block QuickDualCast
@@ -3750,10 +3757,12 @@ function QueueMenuRemoveFromQueue(int iIndex)
 		abPotionGroupEnabled[asPotionGroups.Find(itemName)] = false
 		if bFirstAttemptToDeletePotionGroup
 			bFirstAttemptToDeletePotionGroup = false
-			((Self as Form) as iEquip_UILIB).closeQueueMenu()
-			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
-			initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
-			return
+			if bShowTooltips
+				((Self as Form) as iEquip_UILIB).closeQueueMenu()
+				debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
+				initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
+				return
+			endIf
 		endIf
 	endIf
 	QueueMenuUpdate(queueLength, iIndex)

@@ -485,7 +485,9 @@ endFunction
 function CycleElements(int iNextPrev)    
     if bFirstCycleKeyPressed
         bFirstCycleKeyPressed = false
-        showCyclingHelp()   
+        if WC.bShowTooltips
+            showCyclingHelp()
+        endIf 
     endIf
     HighlightElement(false)
     

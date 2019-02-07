@@ -137,11 +137,15 @@ function togglePreselectMode(bool enablingEditMode = false)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			PreselectModeAnimateIn()
 			if bPreselectModeFirstLook && !WC.bRefreshingWidget && !WC.EM.isEditMode
-				Utility.WaitMenuMode(1.0)
-				Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstLook"))
+				if WC.bShowTooltips
+					Utility.WaitMenuMode(1.0)
+					Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstLook"))
+				endIf
 				bPreselectModeFirstLook = false
 				if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2) && bAmmoModePreselectModeFirstLook
-					Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
+					if WC.bShowTooltips
+						Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
+					endIf
 					bAmmoModePreselectModeFirstLook = false
 				endIf
 			endIf
@@ -469,8 +473,10 @@ function equipPreselectedItem(int Q)
 				WC.refreshGearedUp()
 			endIf
 			if AM.bAmmoMode && bAmmoModePreselectModeFirstLook
-				Utility.WaitMenuMode(1.8)
-				Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
+				if WC.bShowTooltips
+					Utility.WaitMenuMode(1.8)
+					Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
+				endIf
 				bAmmoModePreselectModeFirstLook = false
 			endIf
 		endIf
@@ -619,8 +625,10 @@ function equipAllPreselectedItems()
 		WC.refreshGearedUp()
 	endIf
 	if AM.bAmmoMode && bAmmoModePreselectModeFirstLook
-		Utility.WaitMenuMode(1.0)
-		Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
+		if WC.bShowTooltips
+			Utility.WaitMenuMode(1.0)
+			Debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_PM_msg_firstRanged"))
+		endIf
 		bAmmoModePreselectModeFirstLook = false
 	endIf
 	debug.trace("iEquip_ProMode equipAllPreselectedItems end")
