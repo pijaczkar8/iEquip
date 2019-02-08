@@ -285,7 +285,7 @@ function runUpdate()
                     else
                         WC.applyPoison(0)
                     endIf
-                else
+                elseIf PM.abPreselectSlotEnabled[0]
                     PM.equipPreselectedItem(0)
                 endIf
             else
@@ -305,9 +305,9 @@ function runUpdate()
                         WC.applyPoison(1)
                     endIf
                 else
-                    if iWaitingKeyCode == iRightKey
+                    if iWaitingKeyCode == iRightKey && PM.abPreselectSlotEnabled[1]
                         PM.equipPreselectedItem(1)
-                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && PM.bShoutPreselectEnabled && WC.bShoutEnabled
+                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
                         PM.equipPreselectedItem(2)
                     endIf
                 endIf

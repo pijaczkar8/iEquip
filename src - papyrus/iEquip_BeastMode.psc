@@ -24,7 +24,7 @@ event OnInit()
 endEvent
 
 function initialise()
-
+	
 endFunction
 
 function onPlayerTransform(race newRace)
