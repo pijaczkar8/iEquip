@@ -89,7 +89,7 @@ function togglePreselectMode(bool enablingEditMode = false)
 			while Q < 3
 				int queueLength = JArray.count(WC.aiTargetQ[Q])
 				;if any of the queues have less than 3 items in it then there is either nothing to preselect (1 item in queue) or you'd just be doing the same as regularly cycling two items so no need for preselect, therefore disable preselect elements for that slot
-				if queueLength < 3 && !enablingEditMode
+				if queueLength < 2 && !enablingEditMode
 					WC.aiCurrentlyPreselected[Q] = -1
 				else
 					if enablingEditMode && queueLength < 2
@@ -226,33 +226,35 @@ endFunction
 
 function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool animate = true)
 	debug.trace("iEquip_ProMode cyclePreselectSlot start")
-	int targetIndex
-	if Reverse
-		targetIndex = WC.aiCurrentlyPreselected[Q] - 1
-		if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Can't preselect the item you already have equipped in the widget so move on another index
-			targetIndex -= 1
-		endIf
-		if targetIndex < 0
-			targetIndex = queueLength - 1
-			if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Have to recheck again in case aiCurrentQueuePosition[Q] == queueLength - 1
+	if queueLength > 2
+		int targetIndex
+		if Reverse
+			targetIndex = WC.aiCurrentlyPreselected[Q] - 1
+			if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Can't preselect the item you already have equipped in the widget so move on another index
 				targetIndex -= 1
 			endIf
-		endIf
-	else
-		targetIndex = WC.aiCurrentlyPreselected[Q] + 1
-		if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Can't preselect the item you already have equipped in the widget so move on another index
-			targetIndex += 1
-		endIf
-		if targetIndex >= queueLength
-			targetIndex = 0
-			if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Have to recheck again in case aiCurrentQueuePosition[Q] == 0
+			if targetIndex < 0
+				targetIndex = queueLength - 1
+				if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Have to recheck again in case aiCurrentQueuePosition[Q] == queueLength - 1
+					targetIndex -= 1
+				endIf
+			endIf
+		else
+			targetIndex = WC.aiCurrentlyPreselected[Q] + 1
+			if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Can't preselect the item you already have equipped in the widget so move on another index
 				targetIndex += 1
 			endIf
+			if targetIndex >= queueLength
+				targetIndex = 0
+				if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Have to recheck again in case aiCurrentQueuePosition[Q] == 0
+					targetIndex += 1
+				endIf
+			endIf
 		endIf
-	endIf
-	WC.aiCurrentlyPreselected[Q] = targetIndex
-	if animate
-		WC.updateWidget(Q, targetIndex, false, true)
+		WC.aiCurrentlyPreselected[Q] = targetIndex
+		if animate
+			WC.updateWidget(Q, targetIndex, false, true)
+		endIf
 	endIf
 	debug.trace("iEquip_ProMode cyclePreselectSlot end")
 endFunction
@@ -281,7 +283,7 @@ function equipPreselectedItem(int Q)
 	string newName = jMap.getStr(targetObject, "iEquipName")
 	string newIcon = currPIcon
     ;if we've chosen to swap items when equipping preselect then set the new preselect index to the currently equipped item ready to animate into the preselect slot
-    if bPreselectSwapItemsOnEquip
+    if bPreselectSwapItemsOnEquip || jArray.count(targetArray) == 2
 		WC.aiCurrentlyPreselected[Q] = WC.aiCurrentQueuePosition[Q]
     ;Otherwise advance preselect queue
 	else
