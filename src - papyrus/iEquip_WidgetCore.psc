@@ -1483,7 +1483,9 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	int targetArray = aiTargetQ[Q]
 	int queueLength = JArray.count(targetArray)
 	debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
-	if queueLength == 0
+	if EH.bPlayerIsABeast
+		BM.cycleSlot(Q, Reverse)
+	elseIf queueLength == 0
 		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}"))
 	;if Preselect Mode is enabled then left/right/shout needs to cycle the preselect slot not the main widget. if shout preselect is disabled cycle main shout slot
 	elseif (bPreselectMode && !bPreselectSwitchingHands && (Q < 2 || (Q == 2 && PM.bShoutPreselectEnabled))) || (Q == 0 && bAmmoMode)
@@ -1523,10 +1525,6 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		;Make sure we're starting from the correct index, in case somehow the queue has been amended without the aiCurrentQueuePosition array being updated
 		if asCurrentlyEquipped[Q] != ""
 			aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q])
-		endIf
-		;In the unlikely event that the item currently shown in the widget has not been found in the queue array then start cycling from index 0
-		if aiCurrentQueuePosition[Q] == -1
-			aiCurrentQueuePosition[Q] = 0
 		endIf
 		
 		if queueLength > 1
@@ -2045,6 +2043,36 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		endIf
 	endIf
 	debug.trace("iEquip_WidgetCore updateWidget end")
+endFunction
+
+function updateWidgetBM(int Q, string sIcon, string sName)
+	debug.trace("iEquip_WidgetCore updateWidgetBM start")
+
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
+	if fNameAlpha < 1
+		fNameAlpha = 100
+	endIf
+
+	debug.trace("iEquip_WidgetCore updateWidgetBM about to call .updateWidget - Slot: " + Q + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+	If(iHandle)
+		UICallback.PushInt(iHandle, Q) ;Which slot we're updating
+		UICallback.PushString(iHandle, sIcon) ;New icon
+		UICallback.PushString(iHandle, sName) ;New name
+		UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
+		UICallback.Send(iHandle)
+	endIf
+
+	if bNameFadeoutEnabled
+		if Q == 0
+			LNUpdate.registerForNameFadeoutUpdate()
+		elseif Q == 1
+			RNUpdate.registerForNameFadeoutUpdate()
+		elseif Q == 2
+			SNUpdate.registerForNameFadeoutUpdate()
+		endIf
+	endIf
+	debug.trace("iEquip_WidgetCore updateWidgetBM end")
 endFunction
 
 function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = false)

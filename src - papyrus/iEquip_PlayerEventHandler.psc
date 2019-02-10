@@ -48,6 +48,7 @@ bool property bGoingUnarmed auto hidden
 int dualCastCounter
 
 bool property bPlayerIsABeast auto hidden
+bool property bWaitingForTransform auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
@@ -162,11 +163,12 @@ function updateEventFilter(formlist listToUpdate)
 endFunction
 
 Event OnRaceSwitchComplete()
-	debug.trace("iEquip_WidgetCore OnRaceSwitchComplete start")
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start")
 	if UI.IsMenuOpen("RaceSex Menu")
 		PlayerRace = PlayerRef.GetRace()
 	else
 		race newRace = PlayerRef.GetRace()
+		debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current PlayerRace: " + PlayerRace.GetName() + ", newRace: " + newRace.GetName())
 		if WC.isEnabled && WC.bEnableGearedUp
 			Utility.SetINIbool("bDisableGearedUp:General", !(newRace == PlayerRace))
 			WC.refreshVisibleItems()
@@ -175,6 +177,7 @@ Event OnRaceSwitchComplete()
 			PlayerRace = newRace
 			if bPlayerIsABeast || PlayerRace == WerewolfBeastRace || (bIsDawnguardLoaded && PlayerRace == DLC1VampireBeastRace) || (bIsUndeathLoaded && PlayerRace == NecroLichRace)
 				bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
+				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsABeast: " + bPlayerIsABeast)
 				if WC.isEnabled
 					BM.onPlayerTransform(PlayerRace)
 				endIf
@@ -255,9 +258,11 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		else
 			int itemType = akBaseObject.GetType()
 			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
-				bWaitingForOnObjectEquippedUpdate = true
 				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
-				registerForSingleUpdate(0.5)
+				if !(bPlayerIsABeast && bWaitingForTransform)
+					bWaitingForOnObjectEquippedUpdate = true
+					registerForSingleUpdate(0.5)
+				endIf
 			endIf
 		endIf
 	endIf
@@ -348,7 +353,14 @@ function processQueuedForms()
 				if (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
 					equippedSlot = 1
 				endIf
-				if equippedSlot == 3
+				if bPlayerIsABeast
+					if equippedSlot == 3
+						BM.updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
+						BM.updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
+					else
+						BM.updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
+					endIf
+				elseIf equippedSlot == 3
 					updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
 					updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
 				else
