@@ -1588,7 +1588,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			targetIndex = 0
 		endIf
 
-		if Q < 2 && bSwitchingHands || bPreselectSwitchingHands
+		if Q < 2 && (bSwitchingHands || bPreselectSwitchingHands)
 			debug.trace("iEquip_WidgetCore cycleSlot - Q: " + Q + ", bSwitchingHands: " + bSwitchingHands)
 			ignoreEquipOnPause = true
 			;if we're forcing the left hand to switch equipped items because we're switching left to right, make sure we don't leave the left hand unarmed
@@ -2191,7 +2191,7 @@ function onBoundWeaponUnequipped(int hand, bool isBoundShield = false)
 				UICallback.Send(iHandle)
 			endIf
 			if bAmmoMode
-				AM.toggleAmmoMode()
+				AM.toggleAmmoMode(bPreselectMode && PM.abPreselectSlotEnabled[0])
 			endIf
 			if bLeftIconFaded
 				checkAndFadeLeftIcon(hand, 9)
@@ -2564,24 +2564,21 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     	itemType = jMap.getInt(targetObject, "iEquipType")
     endIf
    	int iEquipSlotId = 1
-    int otherHand
+   	if Q == 0
+    	iEquipSlotId = 2
+    endIf
+    int otherHand = (Q + 1) % 2
     bool justSwitchedHands
-    bool previously2H
+    int currRHType = PlayerRef.GetEquippedItemType(1)
+    bool previously2H = currRHType == 5 || currRHType == 6 || (currRHType == 9 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3))
     bool previouslyUnarmedOr2HSpell
     bool targetObjectIs2hOrRanged = (ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3))
     bBlockSwitchBackToBoundSpell = true
     
     ;Hide the attribute icons ready to show full poison and enchantment elements if required
     hideAttributeIcons(Q)
-    
-    if Q == 0
-    	iEquipSlotId = 2
-    	otherHand = 1
-    else
-    	int currRHType = PlayerRef.GetEquippedItemType(1)
-    	previously2H = currRHType == 5 || currRHType == 6 || (currRHType == 9 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3))
-    endIf
-	debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", iEquipSlotId = " + iEquipSlotId + ", otherHand = " + otherHand + ", bSwitchingHands = " + bSwitchingHands + ", bGoneUnarmed = " + bGoneUnarmed)
+
+	debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", iEquipSlotId = " + iEquipSlotId + ", otherHand = " + otherHand + ", bSwitchingHands = " + bSwitchingHands + ", bGoneUnarmed = " + bGoneUnarmed + ", currRHType: " + currRHType + ", previously2H: " + previously2H)
 	;if we're switching hands we can reset to false now, and we don't need to unequip here because we already did so when we started switching hands
 	if bSwitchingHands
 		bSwitchingHands = false
@@ -2591,15 +2588,15 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		UnequipHand(Q)
 	endIf
 	;if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place
-    if (Q == 0 && (ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1)) || ((bGoneUnarmed || b2HSpellEquipped) && !targetObjectIs2hOrRanged) || targetObjectIs2hOrRanged
+    if (Q == 0 && (ai2HWeaponTypesAlt.Find(currRHType) > -1)) || ((bGoneUnarmed || b2HSpellEquipped) && !targetObjectIs2hOrRanged) || targetObjectIs2hOrRanged
     	if !targetObjectIs2hOrRanged
     		bSwitchingHands = true
     	endIf
     	if bGoneUnarmed || b2HSpellEquipped
     		previouslyUnarmedOr2HSpell = true
     	endIf
-    	debug.trace("iEquip_WidgetCore cycleHand - Q == 0 && RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands)
-    	if !bGoneUnarmed && !b2HSpellEquipped && !equippingOnAutoAdd
+    	debug.trace("iEquip_WidgetCore cycleHand - Q == 0 && RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypesAlt.Find(currRHType) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands)
+    	if !bGoneUnarmed && !b2HSpellEquipped && !equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) == -1
     		UnequipHand(otherHand)
     	endIf
     endif
@@ -2679,6 +2676,10 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     ;if we unequipped the other hand now equip the next item
     elseif bSwitchingHands
     	debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands = " + bSwitchingHands + ", calling cycleSlot(" + otherHand + ", false)")
+    	if bPreselectMode
+    		bSwitchingHands = false
+    		bPreselectSwitchingHands = true
+    	endIf
     	Utility.WaitMenuMode(0.1)
     	if Q == 1 && previouslyUnarmedOr2HSpell
     		reequipOtherHand(0)

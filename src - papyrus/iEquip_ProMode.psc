@@ -134,14 +134,14 @@ function togglePreselectMode(bool enablingEditMode = false)
 						if WC.aiCurrentlyPreselected[Q] == queueLength
 							WC.aiCurrentlyPreselected[Q] = 0
 						endIf
-						debug.trace("iEquip_ProMode isPreselectMode Set(), bPreselectMode: " + bPreselectMode + ", Q: " + Q + ", aiCurrentlyPreselected[" + Q + "]: " + WC.aiCurrentlyPreselected[Q])
+						debug.trace("iEquip_ProMode togglePreselectMode, bPreselectMode: " + bPreselectMode + ", Q: " + Q + ", aiCurrentlyPreselected[" + Q + "]: " + WC.aiCurrentlyPreselected[Q])
 						WC.updateWidget(Q, WC.aiCurrentlyPreselected[Q])
 					endIf
 				endIf
 				Q += 1
 			endwhile
 
-			abPreselectSlotEnabled[0] = ((WC.aiCurrentlyPreselected[0] != -1) || enablingEditMode)
+			abPreselectSlotEnabled[0] = (((WC.aiCurrentlyPreselected[0] != -1) && JArray.count(WC.aiTargetQ[0]) > 1) || enablingEditMode)
 			abPreselectSlotEnabled[1] = ((WC.aiCurrentlyPreselected[1] != -1) || enablingEditMode)
 			;Also if shout preselect has been turned off in the MCM or hidden in Edit Mode make sure it stays hidden before showing the preselect group
 			abPreselectSlotEnabled[2] = ((WC.bShoutEnabled && bShoutPreselectEnabled && (WC.aiCurrentlyPreselected[2] != -1)) || enablingEditMode)
@@ -152,6 +152,7 @@ function togglePreselectMode(bool enablingEditMode = false)
 			args[2] = abPreselectSlotEnabled[2] ;Show shout if not hidden in edit mode or bShoutPreselectEnabled disabled in MCM
 			args[3] = AM.bAmmoMode
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+			debug.trace("iEquip_ProMode togglePreselectMode, left slot enabled: " + args[0] + ", right slot enabled: " + args[1] + ", shout slot enabled: " + args[2] + ", ammo mode: " + AM.bAmmoMode)
 			PreselectModeAnimateIn()
 			if bPreselectModeFirstLook && !WC.bRefreshingWidget && !WC.EM.isEditMode
 				if WC.bShowTooltips
@@ -243,6 +244,7 @@ endFunction
 
 function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool animate = true)
 	debug.trace("iEquip_ProMode cyclePreselectSlot start")
+	debug.trace("iEquip_ProMode cyclePreselectSlot - Q: " + Q + ", queueLength: " + queueLength + ", reverse: " + Reverse + ", animate: " + animate)
 	if queueLength > 2
 		int targetIndex
 		if Reverse
@@ -341,56 +343,64 @@ function equipPreselectedItem(int Q)
 	endIf
 	;if we're in ammo mode whilst in Preselect Mode and either we're equipping the left preselected item, or we're equipping the right and it's not another ranged weapon we need to turn ammo mode off
 	if (AM.bAmmoMode && (Q == 0 || (Q == 1 && !(itemType == 7 || itemType == 9)))) || (!AM.bAmmoMode && (Q == 1 && (itemType == 7 || itemType == 9)))
-		AM.toggleAmmoMode(true, (itemType == 5 || itemType == 6)) ;Toggle ammo mode off/on without the animation, and without re-equipping if RH is equipping 2H
+		AM.toggleAmmoMode(abPreselectSlotEnabled[0], (itemType == 5 || itemType == 6)) ;Toggle ammo mode off/on without the animation (unless the left Preselect slot isn't currently showing), and without re-equipping if RH is equipping 2H
 		Utility.WaitMenuMode(0.05)
 		if Q == 1 && !AM.bAmmoMode ;if we're equipping the right preselected item and it's not another ranged weapon we'll just have toggled ammo mode off without animation, now we need to remove the ammo from the left slot and replace it with the current left hand item
-			if bAmmoModeActiveOnTogglePreselect && !bEquippingAllPreselectedItems ;if we were in ammo mode when we toggled Preselect Mode then use the equipPreselected animation, otherwise use updateWidget
-				bAmmoModeActiveOnTogglePreselect = false ;Reset
-				targetArray = WC.aiTargetQ[0]
-				targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
-			    newName = jMap.getStr(targetObject, "iEquipName")
-				newIcon = jMap.getStr(targetObject, "iEquipIcon")
-			    currIcon =  jMap.getStr(AM.getCurrentAmmoObject(), "iEquipIcon")
-			    currPIcon = newIcon
-			    cyclePreselectSlot(0, jArray.count(targetArray), false, false)
-				targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
-				iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".equipPreselectedItem")
-				if(iHandle)
-					UICallback.PushInt(iHandle, 0)
-					UICallback.PushString(iHandle, currIcon)
-					UICallback.PushString(iHandle, newIcon)
-					UICallback.PushString(iHandle, newName)
-					UICallback.PushString(iHandle, currPIcon)
-					UICallback.PushString(iHandle, jMap.getStr(targetObject, "iEquipIcon"))
-					UICallback.PushString(iHandle, jMap.getStr(targetObject, "iEquipName"))
-					UICallback.Send(iHandle)
+			if abPreselectSlotEnabled[0]
+				if bAmmoModeActiveOnTogglePreselect && !bEquippingAllPreselectedItems ;if we were in ammo mode when we toggled Preselect Mode then use the equipPreselected animation, otherwise use updateWidget
+					bAmmoModeActiveOnTogglePreselect = false ;Reset
+					targetArray = WC.aiTargetQ[0]
+					targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
+				    newName = jMap.getStr(targetObject, "iEquipName")
+					newIcon = jMap.getStr(targetObject, "iEquipIcon")
+				    currIcon =  jMap.getStr(AM.getCurrentAmmoObject(), "iEquipIcon")
+				    currPIcon = newIcon
+				    cyclePreselectSlot(0, jArray.count(targetArray), false, false)
+					targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
+					iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".equipPreselectedItem")
+					if(iHandle)
+						UICallback.PushInt(iHandle, 0)
+						UICallback.PushString(iHandle, currIcon)
+						UICallback.PushString(iHandle, newIcon)
+						UICallback.PushString(iHandle, newName)
+						UICallback.PushString(iHandle, currPIcon)
+						UICallback.PushString(iHandle, jMap.getStr(targetObject, "iEquipIcon"))
+						UICallback.PushString(iHandle, jMap.getStr(targetObject, "iEquipName"))
+						UICallback.Send(iHandle)
+					endIf
+				else
+					WC.updateWidget(0, WC.aiCurrentQueuePosition[0], true)
 				endIf
 			else
-				WC.updateWidget(0, WC.aiCurrentQueuePosition[0], true)
+				bAmmoModeActiveOnTogglePreselect = false ;Reset
 			endIf
 			if WC.bUnequipAmmo && PlayerRef.isEquipped(AM.currentAmmoForm as Ammo)
 				PlayerRef.UnequipItemEx(AM.currentAmmoForm as Ammo)
 			endIf
 			if WC.bNameFadeoutEnabled
 				WC.LNUpdate.registerForNameFadeoutUpdate()
-				WC.LPNUpdate.registerForNameFadeoutUpdate()
+				if abPreselectSlotEnabled[0]
+					WC.LPNUpdate.registerForNameFadeoutUpdate()
+				endIf
 			endIf
-			targetObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0])
-			int leftItemType = jMap.getInt(targetObject, "iEquipType")
-			form leftItem = jMap.getForm(targetObject, "iEquipForm")
-			if WC.itemRequiresCounter(0, leftItemType , jMap.getStr(targetObject, "iEquipName"))
-				WC.setSlotCount(0, PlayerRef.GetItemCount(leftItem))
-				WC.setCounterVisibility(0, true)
-			elseif WC.abIsCounterShown[0]
-				WC.setCounterVisibility(0, false)
-			endIf
-			if !(itemType == 5 || itemType == 6 || (itemType == 22 && (targetItem as Spell).GetEquipType() == WC.EquipSlots[3])) ;As long as the item which triggered toggling out of bAmmoMode isn't a 2H weapon or spell we can now re-equip the left hand
-				if leftItemType == 22
-					PlayerRef.EquipSpell(leftItem as Spell, 0)
-			    elseif leftItemType == 26
-			    	PlayerRef.EquipItem(leftItem as Armor)
-				else
-				    PlayerRef.EquipItemEx(leftItem, 2, false, false)
+			if abPreselectSlotEnabled[0]
+				targetObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0])
+				int leftItemType = jMap.getInt(targetObject, "iEquipType")
+				form leftItem = jMap.getForm(targetObject, "iEquipForm")
+				if WC.itemRequiresCounter(0, leftItemType , jMap.getStr(targetObject, "iEquipName"))
+					WC.setSlotCount(0, PlayerRef.GetItemCount(leftItem))
+					WC.setCounterVisibility(0, true)
+				elseif WC.abIsCounterShown[0]
+					WC.setCounterVisibility(0, false)
+				endIf
+				if !(itemType == 5 || itemType == 6 || (itemType == 22 && (targetItem as Spell).GetEquipType() == WC.EquipSlots[3])) ;As long as the item which triggered toggling out of bAmmoMode isn't a 2H weapon or spell we can now re-equip the left hand
+					if leftItemType == 22
+						PlayerRef.EquipSpell(leftItem as Spell, 0)
+				    elseif leftItemType == 26
+				    	PlayerRef.EquipItem(leftItem as Armor)
+					else
+					    PlayerRef.EquipItemEx(leftItem, 2, false, false)
+					endIf
 				endIf
 			endIf
 		endIf
@@ -729,7 +739,7 @@ function quickShield(bool forceSwitch = false)
 			;if we're in ammo mode we need to toggle out without equipping or animating
 			if AM.bAmmoMode
 				bCurrentlyQuickRanged = false
-				AM.toggleAmmoMode(true, true)
+				AM.toggleAmmoMode((!bPreselectMode || abPreselectSlotEnabled[0]), true)
 				;And if we're not in Preselect Mode we need to hide the left preselect elements
 				if !bPreselectMode
 					bool[] args = new bool[3]
@@ -1009,7 +1019,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 			if bPreselectMode || AM.bAmmoMode
 				;if we're in Preselect Mode we need to toggle Ammo Mode here without the animation so it updates the left slot to show ammo
 				if !AM.bAmmoMode
-					AM.toggleAmmoMode(true, false)
+					AM.toggleAmmoMode(abPreselectSlotEnabled[0], false)
 				endIf
 				PlayerRef.EquipItemEx(jMap.getForm(targetObject, "iEquipForm"), 1, false, false)
 				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
@@ -1205,7 +1215,7 @@ function quickRangedSwitchOut(bool force1H = false)
 	WC.updateWidget(1, targetIndex, true)
 	if bPreselectMode
 		WC.bBlockSwitchBackToBoundSpell = true
-		AM.toggleAmmoMode(true, false)
+		AM.toggleAmmoMode(abPreselectSlotEnabled[0], false)
 		form formToEquip = jMap.getForm(targetObject, "iEquipForm")
 		PlayerRef.EquipItemEx(formToEquip, 1, false, false)
 		WC.checkAndUpdatePoisonInfo(1)

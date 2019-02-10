@@ -209,7 +209,7 @@ function runUpdate()
                 else
                     if iWaitingKeyCode == iLeftKey
                         if AM.bAmmoMode
-                            AM.toggleAmmoMode(false, false)
+                            AM.toggleAmmoMode()
                         else
                             RC.rechargeWeapon(0)
                         endIf
@@ -286,7 +286,12 @@ function runUpdate()
                         WC.applyPoison(0)
                     endIf
                 elseIf PM.abPreselectSlotEnabled[0]
+                    debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling equipPreselectedItem")
                     PM.equipPreselectedItem(0)
+                elseIf AM.bAmmoMode
+                    debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling toggleAmmoMode")
+                    AM.toggleAmmoMode()
+                    WC.bPreselectSwitchingHands = false
                 endIf
             else
                 ;/if bIsUtilityKeyHeld
@@ -305,7 +310,7 @@ function runUpdate()
                         WC.applyPoison(1)
                     endIf
                 else
-                    if iWaitingKeyCode == iRightKey && PM.abPreselectSlotEnabled[1]
+                    if iWaitingKeyCode == iRightKey && (PM.abPreselectSlotEnabled[1] || AM.bAmmoMode)
                         PM.equipPreselectedItem(1)
                     elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
                         PM.equipPreselectedItem(2)

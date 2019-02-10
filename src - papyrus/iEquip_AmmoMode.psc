@@ -234,14 +234,12 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				endIf
 			endIf
 		;Toggle out
-		else
-			if !toggleWithoutAnimation
-				UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", false)
-				while !bReadyForAmmoModeAnim
-					Utility.WaitMenuMode(0.01)
-				endwhile
-				AmmoModeAnimateOut(toggleWithoutEquipping)
-			endIf
+		elseIf !toggleWithoutAnimation
+			UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", false)
+			while !bReadyForAmmoModeAnim
+				Utility.WaitMenuMode(0.01)
+			endwhile
+			AmmoModeAnimateOut(toggleWithoutEquipping)
 		endIf
 		Self.UnregisterForModEvent("iEquip_ReadyForAmmoModeAnimation")
 	endIf
@@ -537,7 +535,7 @@ function onBoundRangedWeaponEquipped(int weaponType)
 		asCurrentAmmo[Q] = asBoundAmmoNames[Q]
 		bBoundAmmoAdded = true
 	endIf
-	toggleAmmoMode()
+	toggleAmmoMode(PM.bPreselectEnabled && PM.abPreselectSlotEnabled[0]) ;If we're in preselect mode and the left preselect slot is enabled then toggle without animation
 	debug.trace("iEquip_AmmoMode onBoundRangedWeaponEquipped end")
 endFunction
 
