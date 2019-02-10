@@ -239,48 +239,15 @@ function onGameLoaded()
     findAndSortPotions()
 endFunction
 
-function InitialisePotionQueueArrays(int consQ, int poisQ)
+function InitialisePotionQueueArrays(int jHolderObj, int consQ, int poisQ)
     debug.trace("iEquip_PotionScript InitialisePotionQArrays called")
     iConsumableQ = consQ
     iPoisonQ = poisQ
-    if aiPotionQ[0] == 0
-        aiPotionQ[0] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "healthRestoreQ", aiPotionQ[0])
-    endIf
-    if aiPotionQ[1] == 0
-        aiPotionQ[1] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "healthFortifyQ", aiPotionQ[1])
-    endIf
-    if aiPotionQ[2] == 0
-        aiPotionQ[2] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "healthRegenQ", aiPotionQ[2])
-    endIf
-    if aiPotionQ[3] == 0
-        aiPotionQ[3] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "staminaRestoreQ", aiPotionQ[3])
-    endIf
-    if aiPotionQ[4] == 0
-        aiPotionQ[4] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "staminaFortifyQ", aiPotionQ[4])
-    endIf
-    if aiPotionQ[5] == 0
-        aiPotionQ[5] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "staminaRegenQ", aiPotionQ[5])
-    endIf
-    if aiPotionQ[6] == 0
-        aiPotionQ[6] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "magickaRestoreQ", aiPotionQ[6])
-    endIf
-    if aiPotionQ[7] == 0
-        aiPotionQ[7] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "magickaFortifyQ", aiPotionQ[7])
-    endIf
-    if aiPotionQ[8] == 0
-        aiPotionQ[8] = JArray.object()
-        JMap.setObj(WC.iEquipQHolderObj, "magickaRegenQ", aiPotionQ[8])
-    endIf
+	
     int i = 0
     while i < 9
+		aiPotionQ[i] = JArray.object()
+		JArray.addObj(jHolderObj, aiPotionQ[i])
         debug.trace("iEquip_PotionScript InitialisePotionQArrays - aiPotionQ["+i+"] contains " + aiPotionQ[i])
         i += 1
     endWhile

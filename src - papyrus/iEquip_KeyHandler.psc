@@ -64,7 +64,7 @@ string sPreviousState = ""
 ; - GENERAL EVENTS -
 ; ------------------
 
-function GameLoaded()
+endEvent GameLoaded()
     GotoState("")
     
     self.RegisterForMenu("InventoryMenu")

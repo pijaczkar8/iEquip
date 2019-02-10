@@ -73,8 +73,9 @@ endEvent
 Event OnConfigClose()
     if WC.isEnabled != bEnabled
         WC.isEnabled = bEnabled
+	else
+		updateSettings()
     endIf
-    updateSettings()
 endEvent
 
 function updateSettings()
