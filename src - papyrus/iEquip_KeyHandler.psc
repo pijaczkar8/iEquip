@@ -8,6 +8,7 @@ import iEquip_StringExt
 iEquip_EditMode Property EM Auto
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
+iEquip_BeastMode Property BM Auto
 iEquip_ProMode Property PM Auto
 iEquip_RechargeScript Property RC Auto
 iEquip_HelpMenu Property HM Auto
@@ -191,8 +192,11 @@ function runUpdate()
     debug.trace("iEquip_KeyHandler runUpdate start")
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
+    
+    if EH.bPlayerIsABeast
+        handleBeastModeKeyPress()
         
-    if iMultiTap == 0       ; Long press
+    elseIf iMultiTap == 0 ; Long press
             if iWaitingKeyCode == iConsumableKey
                 if bNotInLootMenu && !bConsumeItemHotkeyEnabled
                     WC.consumeItem()
@@ -356,6 +360,22 @@ function runUpdate()
     endIf
     debug.trace("iEquip_KeyHandler runUpdate end")
 endFunction
+
+function handleBeastModeKeyPress()
+    debug.trace("iEquip_KeyHandler handleBeastModeKeyPress start")
+    ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptConsumeKey/poison key presses
+    if iWaitingKeyCode == iLeftKey
+        BM.cycleSlot(0, bIsUtilityKeyHeld)
+    
+    elseIf iWaitingKeyCode == iRightKey
+        BM.cycleSlot(1, bIsUtilityKeyHeld)
+    
+    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu
+        BM.cycleSlot(2, bIsUtilityKeyHeld)
+    endIf
+    debug.trace("iEquip_KeyHandler handleBeastModeKeyPress end")
+endFunction
+
 
 ; --------------------
 ; - OTHER BEHAVIOURS -

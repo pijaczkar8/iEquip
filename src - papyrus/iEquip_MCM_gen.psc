@@ -3,6 +3,7 @@ Scriptname iEquip_MCM_gen extends iEquip_MCM_Page
 import iEquip_StringExt
 
 iEquip_AmmoMode property AM auto
+iEquip_BeastMode property BM auto
 iEquip_PlayerEventHandler property EH auto
 
 string[] ammoSortingOptions
@@ -66,6 +67,16 @@ function drawPage()
 	        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
 	            MCM.AddTextOptionST("gen_txt_addFists", "$iEquip_MCM_gen_lbl_AddUnarmed", "")
 	        endIf
+
+            MCM.AddEmptyOption()
+            MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_BeastMode")
+            MCM.AddToggleOptionST("gen_tgl_BM_werewolf", "$iEquip_MCM_gen_lbl_BM_werewolf", BM.abShowInTransformedState[0])
+            if EH.bIsDawnguardLoaded
+                MCM.AddToggleOptionST("gen_tgl_BM_vampLord", "$iEquip_MCM_gen_lbl_BM_vampLord", BM.abShowInTransformedState[1])
+            endIf
+            if EH.bIsUndeathLoaded
+                MCM.AddToggleOptionST("gen_tgl_BM_lich", "$iEquip_MCM_gen_lbl_BM_lich", BM.abShowInTransformedState[2])
+            endIf
 	    endIf
     endIf
 endFunction
@@ -271,6 +282,40 @@ State gen_txt_addFists
         elseIf currentEvent == "Select"
             WC.addFists()
             MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_tgl_BM_werewolf
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_BM_werewolf")
+        elseIf currentEvent == "Select"
+            BM.abShowInTransformedState[0] = !BM.abShowInTransformedState[0]
+            MCM.SetToggleOptionValueST(BM.abShowInTransformedState[0])
+            WC.bBeastModeOptionsChanged = true
+        endIf
+    endEvent
+endState
+State gen_tgl_BM_vampLord
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_BM_vampLord")
+        elseIf currentEvent == "Select"
+            BM.abShowInTransformedState[1] = !BM.abShowInTransformedState[1]
+            MCM.SetToggleOptionValueST(BM.abShowInTransformedState[1])
+            WC.bBeastModeOptionsChanged = true
+        endIf
+    endEvent
+endState
+State gen_tgl_BM_lich
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_BM_lich")
+        elseIf currentEvent == "Select"
+            BM.abShowInTransformedState[2] = !BM.abShowInTransformedState[2]
+            MCM.SetToggleOptionValueST(BM.abShowInTransformedState[2])
+            WC.bBeastModeOptionsChanged = true
         endIf
     endEvent
 endState

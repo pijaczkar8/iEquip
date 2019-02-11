@@ -23,7 +23,7 @@ race[] property arBeastRaces auto hidden
 
 formlist property iEquip_BeastModeItemsFLST auto
 
-int currRace
+int property currRace auto hidden
 int[] aiBMQueues
 
 int[] aiCurrentBMQueuePosition
@@ -35,6 +35,7 @@ bool bConsumableSlotEnabled
 bool bPoisonSlotEnabled
 bool bShoutSlotEnabled
 bool bProModeEnabled
+bool bPreselectEnabled
 
 bool[] property abShowInTransformedState auto hidden
 
@@ -119,26 +120,49 @@ function onPlayerTransform(race newRace)
 	WC.updateWidgetVisibility(false)
 	currRace = arBeastRaces.Find(newRace)
 	if currRace == -1
+		;Player is no longer one of the supported beast races so we assume they have transformed back
 		resetWidgetOnTransformBack()
 		WC.updateWidgetVisibility()
+		;Any MCM changes not relevant to beast mode will still be pending so run them now
+		WC.ApplyChanges()
 		KH.bAllowKeyPress = true
 	else
+		;Store pre-transformation states
 		bConsumableSlotEnabled = WC.bConsumablesEnabled
 		bPoisonSlotEnabled = WC.bPoisonsEnabled
 		bShoutSlotEnabled = WC.bShoutEnabled
 		bProModeEnabled = WC.bProModeEnabled
+		bPreselectEnabled = WC.bPreselectMode
+		;Toggle out of Preselect Mode if active
 		if WC.bPreselectMode
 			PM.togglePreselectMode()
 		endIf
+		;Next toggle out of Ammo Mode to hide the left Preselect slot
 		if AM.bAmmoMode
 			AM.toggleAmmoMode(false, true)
 		endIf
+		;Now hide the consumable and poison slots and show the shout slot if previously hidden
 		WC.bConsumablesEnabled = false
 		WC.bPoisonsEnabled = false
 		WC.bShoutEnabled = true
 		WC.updateSlotsEnabled()
 		int i
+		int queueLength
 		while i < 3
+			;Check the current queue items for the current beast race and remove any the player no longer has (should handle spell/power changes on level progression)
+			int targetQ = aiBMQueues[(currRace * 3) + i]
+			queueLength = jArray.count(targetQ)
+			if queueLength > 0
+				int j
+				while j < queueLength
+					if !WC.playerStillHasItem(jMap.getForm(jArray.getObj(targetQ, j), "iEquipForm"))
+						jArray.eraseIndex(targetQ, j)
+					else
+						j += 1
+					endIf
+				endWhile
+			endIf
+			;Hide the attribute, poison, count and charge info
 			if i < 2
 				WC.hideAttributeIcons(i)
 				WC.setCounterVisibility(i, false)
@@ -147,6 +171,7 @@ function onPlayerTransform(race newRace)
 					CM.updateChargeMeterVisibility(i, false)
 				endIf
 			endIf
+			;Reset beast mode queue position ready to allow processQueuedForms to update the widget
 			aiCurrentBMQueuePosition[(currRace * 3) + i] = -1
 			asCurrentlyEquipped[(currRace * 3) + i] = ""
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[i]
@@ -154,10 +179,13 @@ function onPlayerTransform(race newRace)
 			endIf
 			i += 1
 		endWhile
+		;If we're a werewolf then show claws in both hand slots
 		if currRace == 0
 			showClaws()
 		endIf
+		;Release the queued forms to update the widget
 		EH.processQueuedForms()
+		;And finally if vis is enabled for this beast form show the widget and unlock controls
 		if abShowInTransformedState[currRace]
 			WC.updateWidgetVisibility()
 			KH.bAllowKeyPress = true
@@ -167,9 +195,42 @@ function onPlayerTransform(race newRace)
 	debug.trace("iEquip_BeastMode onPlayerTransform end")
 endFunction
 
+function updateWidgetVisOnSettingsChanged()
+	debug.trace("iEquip_BeastMode updateWidgetVisOnSettingsChanged end")
+	if WC.bIsWidgetShown
+		if !abShowInTransformedState[currRace]
+			WC.updateWidgetVisibility(false)
+			KH.bAllowKeyPress = false
+		endIf
+	elseIf abShowInTransformedState[currRace]
+		WC.updateWidgetVisibility()
+		KH.bAllowKeyPress = true
+	endIf
+	debug.trace("iEquip_BeastMode updateWidgetVisOnSettingsChanged end")
+endFunction
+
 function resetWidgetOnTransformBack()
 	debug.trace("iEquip_BeastMode resetWidgetOnTransformBack start")
-
+	;Return the consumable, poison and shout slots to their previous state
+	WC.bConsumablesEnabled = bConsumableSlotEnabled
+	WC.bPoisonsEnabled = bPoisonSlotEnabled
+	WC.bShoutEnabled = bShoutSlotEnabled
+	WC.updateSlotsEnabled()
+	;Reset left slot to show previous left item in case we are re-equipping a ranged or 2H weapon ready for Ammo Mode or left icon fade
+	WC.updateWidget(0, WC.aiCurrentQueuePosition[1])
+	;Next reset the right and shout queues to force processQueuedForms to run in full
+	int i = 1
+	while i < 3
+		WC.aiCurrentQueuePosition[i] = -1
+		WC.asCurrentlyEquipped[i] = ""
+		i += 1
+	endWhile
+	;Now release the queued forms which should then fully update the widget which should handle left icon fade if 2H or Ammo Mode if ranged, along with poison/count/charge info
+	EH.processQueuedForms()
+	;And finally toggle back into Preselect if it was active before transformation
+	if bPreselectEnabled
+		PM.togglePreselectMode()
+	endIf
 	debug.trace("iEquip_BeastMode resetWidgetOnTransformBack end")
 endFunction
 

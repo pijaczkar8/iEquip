@@ -182,6 +182,7 @@ int property iPoisonChargesPerVial = 1 auto hidden
 int property iShowPoisonMessages auto hidden
 int property iPoisonIndicatorStyle = 1 auto hidden
 bool property bPoisonIndicatorStyleChanged auto hidden
+bool property bBeastModeOptionsChanged auto hidden
 
 bool property bShowAttributeIcons = true auto hidden
 bool property bAttributeIconsOptionChanged auto hidden
@@ -1483,9 +1484,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	int targetArray = aiTargetQ[Q]
 	int queueLength = JArray.count(targetArray)
 	debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
-	if EH.bPlayerIsABeast
-		BM.cycleSlot(Q, Reverse)
-	elseIf queueLength == 0
+	if queueLength == 0
 		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}"))
 	;if Preselect Mode is enabled then left/right/shout needs to cycle the preselect slot not the main widget. if shout preselect is disabled cycle main shout slot
 	elseif (bPreselectMode && !bPreselectSwitchingHands && (Q < 2 || (Q == 2 && PM.bShoutPreselectEnabled))) || (Q == 0 && bAmmoMode)
@@ -3883,10 +3882,6 @@ function ApplyChanges()
 	debug.trace("iEquip_WidgetCore ApplyChanges start")
 	int i
     
-	if bSlotEnabledOptionsChanged
-		updateSlotsEnabled()
-        bSlotEnabledOptionsChanged = false
-	endIf
 	if bBackgroundStyleChanged
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
         bBackgroundStyleChanged = false
@@ -3904,83 +3899,94 @@ function ApplyChanges()
         endwhile
         bFadeOptionsChanged = false
     endIf
-    if bRefreshQueues
-    	purgeQueue()
-        bRefreshQueues = false
-    endIf
-    if bReduceMaxQueueLengthPending
-    	reduceMaxQueueLength()
-        bReduceMaxQueueLengthPending = false
-    endIf
-    if bGearedUpOptionChanged
-    	Utility.SetINIbool("bDisableGearedUp:General", True)
-		refreshVisibleItems()
-		if bEnableGearedUp
-			Utility.SetINIbool("bDisableGearedUp:General", False)
+    if EH.bPlayerIsABeast
+    	if bBeastModeOptionsChanged
+    		updateWidgetVisOnSettingsChanged()
+    		bBeastModeOptionsChanged = false
+    	endIf
+    else
+	    if bSlotEnabledOptionsChanged
+			updateSlotsEnabled()
+	        bSlotEnabledOptionsChanged = false
+		endIf
+	    if bRefreshQueues
+	    	purgeQueue()
+	        bRefreshQueues = false
+	    endIf
+	    if bReduceMaxQueueLengthPending
+	    	reduceMaxQueueLength()
+	        bReduceMaxQueueLengthPending = false
+	    endIf
+	    if bGearedUpOptionChanged
+	    	Utility.SetINIbool("bDisableGearedUp:General", True)
 			refreshVisibleItems()
+			if bEnableGearedUp
+				Utility.SetINIbool("bDisableGearedUp:General", False)
+				refreshVisibleItems()
+			endIf
+	        bGearedUpOptionChanged = false
+	    endIf
+	    ammo targetAmmo = AM.currentAmmoForm as ammo
+	    if !bAmmoMode && bUnequipAmmo && targetAmmo && PlayerRef.isEquipped(targetAmmo)
+			PlayerRef.UnequipItemEx(targetAmmo)
 		endIf
-        bGearedUpOptionChanged = false
-    endIf
-    ammo targetAmmo = AM.currentAmmoForm as ammo
-    if !bAmmoMode && bUnequipAmmo && targetAmmo && PlayerRef.isEquipped(targetAmmo)
-		PlayerRef.UnequipItemEx(targetAmmo)
-	endIf
-    if bPreselectMode && (!PM.bPreselectEnabled || !bProModeEnabled)
-    	PM.togglePreselectMode()
-    endIf
-    if bAmmoMode
-	    if bAmmoSortingChanged
-	    	AM.updateAmmoListsOnSettingChange()
-            bAmmoSortingChanged = false
+	    if bPreselectMode && (!PM.bPreselectEnabled || !bProModeEnabled)
+	    	PM.togglePreselectMode()
 	    endIf
-	    if bAmmoIconChanged
-	    	AM.checkAndEquipAmmo(false, false, true, false)
-            bAmmoIconChanged = false
-	    endIf
-	endIf
-	if bPreselectMode || bAttributeIconsOptionChanged
-		i = 0
-		while i < 2
-			if bShowAttributeIcons
-				updateAttributeIcons(i, 0)
+	    if bAmmoMode
+		    if bAmmoSortingChanged
+		    	AM.updateAmmoListsOnSettingChange()
+	            bAmmoSortingChanged = false
+		    endIf
+		    if bAmmoIconChanged
+		    	AM.checkAndEquipAmmo(false, false, true, false)
+	            bAmmoIconChanged = false
+		    endIf
+		endIf
+		if bPreselectMode || bAttributeIconsOptionChanged
+			i = 0
+			while i < 2
+				if bShowAttributeIcons
+					updateAttributeIcons(i, 0)
+				else
+					hideAttributeIcons(i + 5)
+				endIf
+				i += 1
+			endwhile
+	        bAttributeIconsOptionChanged = false
+		endIf
+		if bPoisonIndicatorStyleChanged
+			i = 0
+			while i < 2
+				if abPoisonInfoDisplayed[i]
+					checkAndUpdatePoisonInfo(i)
+				endIf
+				i += 1
+			endwhile
+	        bPoisonIndicatorStyleChanged = false
+		endIf
+		if CM.bSettingsChanged
+			CM.bSettingsChanged = false
+			CM.updateChargeMeters(true) ;forceUpdate will make sure updateMeterPercent runs in full
+			if CM.iChargeDisplayType > 0
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD Alt Charge Meter
 			else
-				hideAttributeIcons(i + 5)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 100)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
 			endIf
-			i += 1
-		endwhile
-        bAttributeIconsOptionChanged = false
-	endIf
-	if bPoisonIndicatorStyleChanged
-		i = 0
-		while i < 2
-			if abPoisonInfoDisplayed[i]
-				checkAndUpdatePoisonInfo(i)
-			endIf
-			i += 1
-		endwhile
-        bPoisonIndicatorStyleChanged = false
-	endIf
-	if CM.bSettingsChanged
-		CM.bSettingsChanged = false
-		CM.updateChargeMeters(true) ;forceUpdate will make sure updateMeterPercent runs in full
-		if CM.iChargeDisplayType > 0
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD Alt Charge Meter
-		else
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 100)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
 		endIf
-	endIf
-	if bPotionGroupingOptionsChanged
-	    if !bPotionGrouping && (asPotionGroups.Find(asCurrentlyEquipped[3]) > -1)
-	        cycleSlot(3)
+		if bPotionGroupingOptionsChanged
+		    if !bPotionGrouping && (asPotionGroups.Find(asCurrentlyEquipped[3]) > -1)
+		        cycleSlot(3)
+		    endIf
+	        bPotionGroupingOptionsChanged = false
+		endIf
+	    if EM.isEditMode
+	        EM.LoadAllElements()
 	    endIf
-        bPotionGroupingOptionsChanged = false
 	endIf
-    if EM.isEditMode
-        EM.LoadAllElements()
-    endIf
     debug.trace("iEquip_WidgetCore ApplyChanges end")
 endFunction
