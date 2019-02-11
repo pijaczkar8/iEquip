@@ -176,8 +176,14 @@ Event OnRaceSwitchComplete()
 		if PlayerRace != newRace
 			PlayerRace = newRace
 			if bPlayerIsABeast || PlayerRace == WerewolfBeastRace || (bIsDawnguardLoaded && PlayerRace == DLC1VampireBeastRace) || (bIsUndeathLoaded && PlayerRace == NecroLichRace)
-				bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
+				int beastRaceCheck = BM.arBeastRaces.Find(PlayerRace)
+				bPlayerIsABeast = beastRaceCheck > -1
 				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsABeast: " + bPlayerIsABeast)
+				if beastRaceCheck == 1
+					RegisterForVLEvents()
+				else
+					UnregisterForVLEvents()
+				endIf
 				if WC.isEnabled
 					BM.onPlayerTransform(PlayerRace)
 				endIf
@@ -186,6 +192,26 @@ Event OnRaceSwitchComplete()
 	endIf
 	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete end")
 EndEvent
+
+; Register for all of the animation events we care about.
+Function RegisterForVLEvents()
+    Debug.Trace( "Registering for Animation Events" )
+    RegisterForAnimationEvent(PlayerRef, "GroundStart")
+    RegisterForAnimationEvent(PlayerRef, "LevitateStart")
+    RegisterForAnimationEvent(PlayerRef, "LiftoffStart")
+    RegisterForAnimationEvent(PlayerRef, "LandStart")
+    RegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+EndFunction
+
+; Unregister for all of the animation events we registered for.
+Function UnregisterForVLEvents()
+    Debug.Trace( "Unregistering for Animation Events" )
+    UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LiftoffStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LandStart")
+    UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+EndFunction
 
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	debug.trace("iEquip_PlayerEventHandler OnActorAction start")	
@@ -220,9 +246,11 @@ endEvent
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent start")	
     debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
+    if EventName == "LandStart"
+    	BM.showClaws()
     ;ToDo - update meditation animation event names
     ;if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
-    if (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
+    elseIf (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
     	bPlayerIsMeditating = true
     	debug.trace("Look Ma, I'm meditating!")
     	KH.bAllowKeyPress = false
@@ -474,53 +502,55 @@ endFunction
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start")	
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
-	int i
-	;Handle potions/consumales/poisons and ammo in AmmoMode first
-	if akBaseItem as potion
-		PO.onPotionRemoved(akBaseItem)
-	elseIf akBaseItem as ammo
-		AM.onAmmoRemoved(akBaseItem)
-	;Check if a Bound Shield has just been unequipped
-	elseIf (akBaseItem.GetType() == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
-		WC.onBoundWeaponUnequipped(0, true)
-		iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
-		updateEventFilter(iEquip_AllCurrentItemsFLST)
-    ;Otherwise handle anything else in left, right or shout queue other than bound weapons
-	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
-		i = 0
-		int foundAt
-		bool actionTaken
-		while i < 3 && !actionTaken
-			string itemName = akBaseItem.GetName()
-			foundAt = WC.findInQueue(i, itemName)
-			if foundAt != -1
-				;If it's a shout or power remove it straight away
-				if i == 2
-					WC.removeItemFromQueue(i, foundAt)
-					actionTaken = true
-				else
-					int otherHand = (i + 1) % 2
-					int itemType = akBaseItem.GetType()
-					;Check if it's contained in the other hand queue as well
-					int foundAtOtherHand = WC.findInQueue(otherHand, itemName)
-					int itemCount = PlayerRef.GetItemCount(akBaseItem)
-					;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
-					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
-						WC.setSlotCount(i, itemCount)
+	if !bPlayerIsABeast ;Ignore this event if we're in beast mode
+		int i
+		;Handle potions/consumales/poisons and ammo in AmmoMode first
+		if akBaseItem as potion
+			PO.onPotionRemoved(akBaseItem)
+		elseIf akBaseItem as ammo
+			AM.onAmmoRemoved(akBaseItem)
+		;Check if a Bound Shield has just been unequipped
+		elseIf (akBaseItem.GetType() == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
+			WC.onBoundWeaponUnequipped(0, true)
+			iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
+			updateEventFilter(iEquip_AllCurrentItemsFLST)
+	    ;Otherwise handle anything else in left, right or shout queue other than bound weapons
+		elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
+			i = 0
+			int foundAt
+			bool actionTaken
+			while i < 3 && !actionTaken
+				string itemName = akBaseItem.GetName()
+				foundAt = WC.findInQueue(i, itemName)
+				if foundAt != -1
+					;If it's a shout or power remove it straight away
+					if i == 2
+						WC.removeItemFromQueue(i, foundAt)
 						actionTaken = true
-					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
-					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
-						WC.removeItemFromQueue(i, foundAt, false, false, true)
-						;If the removed item was in both queues and we've got none left remove from the other queue as well
-						if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))
-							WC.removeItemFromQueue(otherHand, foundAtOtherHand)
-						endIf
-						actionTaken = true
-		    		endIf
-		    	endIf
-        	endIf
-        	i += 1
-        endWhile
+					else
+						int otherHand = (i + 1) % 2
+						int itemType = akBaseItem.GetType()
+						;Check if it's contained in the other hand queue as well
+						int foundAtOtherHand = WC.findInQueue(otherHand, itemName)
+						int itemCount = PlayerRef.GetItemCount(akBaseItem)
+						;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
+						if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
+							WC.setSlotCount(i, itemCount)
+							actionTaken = true
+						;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
+						elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
+							WC.removeItemFromQueue(i, foundAt, false, false, true)
+							;If the removed item was in both queues and we've got none left remove from the other queue as well
+							if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))
+								WC.removeItemFromQueue(otherHand, foundAtOtherHand)
+							endIf
+							actionTaken = true
+			    		endIf
+			    	endIf
+	        	endIf
+	        	i += 1
+	        endWhile
+		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent

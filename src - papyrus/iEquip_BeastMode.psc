@@ -195,6 +195,30 @@ function onPlayerTransform(race newRace)
 	debug.trace("iEquip_BeastMode onPlayerTransform end")
 endFunction
 
+; Register for all of the animation events we care about.
+Function RegisterForVLEvents()
+    Debug.Trace( "Registering for Animation Events" )
+    actor PlayerActor = Game.GetPlayer()
+    RegisterForAnimationEvent(PlayerActor, Ground)
+    RegisterForAnimationEvent(PlayerActor, Levitate)
+    RegisterForAnimationEvent(PlayerActor, BiteStart)
+    RegisterForAnimationEvent(PlayerActor, LiftoffStart)
+    RegisterForAnimationEvent(PlayerActor, LandStart)
+    RegisterForAnimationEvent(PlayerActor, TransformToHuman )
+EndFunction
+
+; Unregister for all of the animation events we registered for.
+Function UnregisterForVLEvents()
+    Debug.Trace( "Unregistering for Animation Events" )
+    actor PlayerActor = Game.GetPlayer()
+    UnRegisterForAnimationEvent(PlayerActor, Ground)
+    UnRegisterForAnimationEvent(PlayerActor, Levitate)
+    UnRegisterForAnimationEvent(PlayerActor, BiteStart)
+    UnRegisterForAnimationEvent(PlayerActor, LiftoffStart)
+    UnRegisterForAnimationEvent(PlayerActor, LandStart)
+    UnRegisterForAnimationEvent(PlayerActor, TransformToHuman )
+EndFunction
+
 function updateWidgetVisOnSettingsChanged()
 	debug.trace("iEquip_BeastMode updateWidgetVisOnSettingsChanged end")
 	if WC.bIsWidgetShown
