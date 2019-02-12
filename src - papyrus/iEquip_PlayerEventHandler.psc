@@ -83,28 +83,95 @@ function initialise(bool enabled)
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
-		if bIsThunderchildLoaded || bIsWintersunLoaded
-			RegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
-			RegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
-		endIf
-		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
-		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
-		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
-		RegisterForAnimationEvent(PlayerRef, "bashStop")
-		RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
-		RegisterForActorAction(8) ;Draw End - weapons and spells
-		RegisterForActorAction(10) ;Sheathe End - weapons and spells
+		registerForCoreAnimationEvents()
+		registerForCoreActorActions()
 		BW.initialise()
 		PO.initialise()
 		BM.initialise()
 		updateAllEventFilters()
 	else
 		gotoState("DISABLED")
+		UnregisterForAllEvents()
 	endIf
 	debug.trace("iEquip_PlayerEventHandler initialise end")
+endFunction
+
+function registerForCoreAnimationEvents()
+	if bIsThunderchildLoaded || bIsWintersunLoaded
+		RegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
+		RegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
+		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
+		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
+		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+	endIf
+	RegisterForAnimationEvent(PlayerRef, "weaponSwing")
+	RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
+	RegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	RegisterForAnimationEvent(PlayerRef, "bashStop")
+endFunction
+
+function registerForCoreActorActions()
+	RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
+	RegisterForActorAction(8) ;Draw End - weapons and spells
+	RegisterForActorAction(10) ;Sheathe End - weapons and spells
+endFunction
+
+function UnregisterForCoreAnimationEvents()
+	if bIsThunderchildLoaded || bIsWintersunLoaded
+		UnRegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
+		UnRegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+	endIf
+	UnRegisterForAnimationEvent(PlayerRef, "weaponSwing")
+	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
+	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+endFunction
+
+; Register for all of the animation events we care about for Vampire Lord form
+Function RegisterForVLEvents()
+    ;RegisterForAnimationEvent(PlayerRef, "GroundStart")
+    ;RegisterForAnimationEvent(PlayerRef, "LevitateStart")
+    RegisterForAnimationEvent(PlayerRef, "LiftoffStart")
+    RegisterForAnimationEvent(PlayerRef, "LandStart")
+    ;RegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+EndFunction
+
+; Unregister for the Vampire Lord animation events we registered for.
+Function UnregisterForVLEvents()
+   	;UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
+   	;UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LiftoffStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LandStart")
+   	;UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+EndFunction
+
+function UnregisterForAllEvents()
+	;Core animation events
+	if bIsThunderchildLoaded || bIsWintersunLoaded
+		UnRegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
+		UnRegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+	endIf
+	UnRegisterForAnimationEvent(PlayerRef, "weaponSwing")
+	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
+	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+	;Vampire Lord animation events
+	;UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
+   	;UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LiftoffStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LandStart")
+   	;UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+   	;Actor actions
+   	UnregisterForActorAction(2)
+   	UnregisterForActorAction(7)
+	UnregisterForActorAction(8)
+	UnregisterForActorAction(10)
 endFunction
 
 bool Property boundSpellEquipped
@@ -182,9 +249,13 @@ Event OnRaceSwitchComplete()
 				KH.bPlayerIsABeast = bPlayerIsABeast
 				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsABeast: " + bPlayerIsABeast)
 				if beastRaceCheck == 1
+					gotoState("BEASTMODE")
+					UnregisterForCoreAnimationEvents()
 					RegisterForVLEvents()
 				else
 					UnregisterForVLEvents()
+					RegisterForCoreAnimationEvents()
+					gotoState("")
 				endIf
 				if WC.isEnabled
 					BM.onPlayerTransform(PlayerRace)
@@ -194,26 +265,6 @@ Event OnRaceSwitchComplete()
 	endIf
 	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete end")
 EndEvent
-
-; Register for all of the animation events we care about.
-Function RegisterForVLEvents()
-    Debug.Trace( "Registering for Animation Events" )
-    RegisterForAnimationEvent(PlayerRef, "GroundStart")
-    RegisterForAnimationEvent(PlayerRef, "LevitateStart")
-    RegisterForAnimationEvent(PlayerRef, "LiftoffStart")
-    RegisterForAnimationEvent(PlayerRef, "LandStart")
-    RegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
-EndFunction
-
-; Unregister for all of the animation events we registered for.
-Function UnregisterForVLEvents()
-    Debug.Trace( "Unregistering for Animation Events" )
-    UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
-    UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
-    UnRegisterForAnimationEvent(PlayerRef, "LiftoffStart")
-    UnRegisterForAnimationEvent(PlayerRef, "LandStart")
-    UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
-EndFunction
 
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	debug.trace("iEquip_PlayerEventHandler OnActorAction start")	
@@ -248,13 +299,9 @@ endEvent
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent start")	
     debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
-    if EventName == "LandStart"
-    	BM.showClaws()
-    elseIf EventName == "LiftoffStart"
-    	BM.showPreviousItems()
     ;ToDo - update meditation animation event names
     ;if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
-    elseIf (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
+    if (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
     	bPlayerIsMeditating = true
     	debug.trace("Look Ma, I'm meditating!")
     	KH.bAllowKeyPress = false
@@ -506,64 +553,94 @@ endFunction
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start")	
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
-	if !bPlayerIsABeast ;Ignore this event if we're in beast mode
-		int i
-		;Handle potions/consumales/poisons and ammo in AmmoMode first
-		if akBaseItem as potion
-			PO.onPotionRemoved(akBaseItem)
-		elseIf akBaseItem as ammo
-			AM.onAmmoRemoved(akBaseItem)
-		;Check if a Bound Shield has just been unequipped
-		elseIf (akBaseItem.GetType() == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
-			WC.onBoundWeaponUnequipped(0, true)
-			iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
-			updateEventFilter(iEquip_AllCurrentItemsFLST)
-	    ;Otherwise handle anything else in left, right or shout queue other than bound weapons
-		elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
-			i = 0
-			int foundAt
-			bool actionTaken
-			while i < 3 && !actionTaken
-				string itemName = akBaseItem.GetName()
-				foundAt = WC.findInQueue(i, itemName)
-				if foundAt != -1
-					;If it's a shout or power remove it straight away
-					if i == 2
-						WC.removeItemFromQueue(i, foundAt)
+	int i
+	;Handle potions/consumales/poisons and ammo in AmmoMode first
+	if akBaseItem as potion
+		PO.onPotionRemoved(akBaseItem)
+	elseIf akBaseItem as ammo
+		AM.onAmmoRemoved(akBaseItem)
+	;Check if a Bound Shield has just been unequipped
+	elseIf (akBaseItem.GetType() == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
+		WC.onBoundWeaponUnequipped(0, true)
+		iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
+		updateEventFilter(iEquip_AllCurrentItemsFLST)
+    ;Otherwise handle anything else in left, right or shout queue other than bound weapons
+	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
+		i = 0
+		int foundAt
+		bool actionTaken
+		while i < 3 && !actionTaken
+			string itemName = akBaseItem.GetName()
+			foundAt = WC.findInQueue(i, itemName)
+			if foundAt != -1
+				;If it's a shout or power remove it straight away
+				if i == 2
+					WC.removeItemFromQueue(i, foundAt)
+					actionTaken = true
+				else
+					int otherHand = (i + 1) % 2
+					int itemType = akBaseItem.GetType()
+					;Check if it's contained in the other hand queue as well
+					int foundAtOtherHand = WC.findInQueue(otherHand, itemName)
+					int itemCount = PlayerRef.GetItemCount(akBaseItem)
+					;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
+					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
+						WC.setSlotCount(i, itemCount)
 						actionTaken = true
-					else
-						int otherHand = (i + 1) % 2
-						int itemType = akBaseItem.GetType()
-						;Check if it's contained in the other hand queue as well
-						int foundAtOtherHand = WC.findInQueue(otherHand, itemName)
-						int itemCount = PlayerRef.GetItemCount(akBaseItem)
-						;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
-						if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
-							WC.setSlotCount(i, itemCount)
-							actionTaken = true
-						;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
-						elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
-							WC.removeItemFromQueue(i, foundAt, false, false, true)
-							;If the removed item was in both queues and we've got none left remove from the other queue as well
-							if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))
-								WC.removeItemFromQueue(otherHand, foundAtOtherHand)
-							endIf
-							actionTaken = true
-			    		endIf
-			    	endIf
-	        	endIf
-	        	i += 1
-	        endWhile
-		endIf
+					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
+					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
+						WC.removeItemFromQueue(i, foundAt, false, false, true)
+						;If the removed item was in both queues and we've got none left remove from the other queue as well
+						if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))
+							WC.removeItemFromQueue(otherHand, foundAtOtherHand)
+						endIf
+						actionTaken = true
+		    		endIf
+		    	endIf
+        	endIf
+        	i += 1
+        endWhile
 	endIf
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
 
+auto state BEASTMODE
+	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE start")	
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE - actionType: " + actionType + ", slot: " + slot)
+		if akActor == PlayerRef
+			if actionType == 7 ;Draw Begin
+				if !WC.bIsWidgetShown
+					WC.updateWidgetVisibility()
+				endIf
+			elseIf actionType == 8 ;Draw End
+				if !WC.bIsWidgetShown ;In case we're drawing a spell which won't have been caught by Draw Begin
+					WC.updateWidgetVisibility()
+				endIf
+			elseIf actionType == 10 && WC.bIsWidgetShown && WC.bWidgetFadeoutEnabled ;Sheathe End
+				WVis.registerForWidgetFadeoutUpdate()
+			endIf
+		endIf
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE end")
+	endEvent
+
+	event OnAnimationEvent(ObjectReference aktarg, string EventName)
+		debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE start")
+	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE received - EventName: " + EventName)
+	    if EventName == "LandStart"
+	    	BM.showClaws()
+	    elseIf EventName == "LiftoffStart"
+	    	BM.showPreviousItems()
+	    endIf
+	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE end")
+	endEvent
+
+	event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
+	endEvent
+endState
+
 auto state DISABLED
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
-	endEvent
-	
-	event OnPlayerBowShot(Weapon akWeapon, Ammo akAmmo, float afPower, bool abSunGazing)
 	endEvent
 
 	event OnAnimationEvent(ObjectReference aktarg, string EventName)

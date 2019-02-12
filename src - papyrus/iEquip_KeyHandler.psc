@@ -53,7 +53,7 @@ bool property bConsumeItemHotkeyEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
-bool property bPlayerIsABeast auto hidden
+bool bPlayerIsABeast
 
 ; Ints
 int iWaitingKeyCode
@@ -84,6 +84,21 @@ function GameLoaded()
     bNotInLootMenu = true
     debug.trace("iEquip_KeyHandler GameLoaded end")
 endFunction
+
+bool property playerIsABeast
+    bool function Get()
+        return bPlayerIsABeast
+    endFunction
+
+    bool function Set(bool inBeastForm)
+        bPlayerIsABeast = inBeastForm
+        if inBeastForm
+            gotoState("BEASTMODE")
+        else
+            gotoState("")
+        endIf
+    endFunction
+endProperty
 
 event OnMenuOpen(string MenuName)
     debug.trace("iEquip_KeyHandler OnMenuOpen start")
@@ -194,10 +209,7 @@ function runUpdate()
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
     
-    if bPlayerIsABeast
-        handleBeastModeKeyPress()
-        
-    elseIf iMultiTap == 0 ; Long press
+    if iMultiTap == 0 ; Long press
             if iWaitingKeyCode == iConsumableKey
                 if bNotInLootMenu && !bConsumeItemHotkeyEnabled
                     WC.consumeItem()
@@ -362,25 +374,29 @@ function runUpdate()
     debug.trace("iEquip_KeyHandler runUpdate end")
 endFunction
 
-function handleBeastModeKeyPress()
-    debug.trace("iEquip_KeyHandler handleBeastModeKeyPress start")
-    ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptConsumeKey/poison key presses
-    if iWaitingKeyCode == iLeftKey
-        BM.cycleSlot(0, bIsUtilityKeyHeld)
-    
-    elseIf iWaitingKeyCode == iRightKey
-        BM.cycleSlot(1, bIsUtilityKeyHeld)
-    
-    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu
-        BM.cycleSlot(2, bIsUtilityKeyHeld)
-    endIf
-    debug.trace("iEquip_KeyHandler handleBeastModeKeyPress end")
-endFunction
-
-
 ; --------------------
 ; - OTHER BEHAVIOURS -
 ; --------------------
+
+;Beast Mode - while player is in werewolf, vampire lord or lich form
+state BEASTMODE
+    function runUpdate()
+        debug.trace("iEquip_KeyHandler runUpdate BEASTMODE start")
+        ;Handle widget visibility update on any registered key press
+        WC.updateWidgetVisibility()
+        ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptConsumeKey/poison key presses
+        if iWaitingKeyCode == iLeftKey
+            BM.cycleSlot(0, bIsUtilityKeyHeld)
+        
+        elseIf iWaitingKeyCode == iRightKey
+            BM.cycleSlot(1, bIsUtilityKeyHeld)
+        
+        elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu
+            BM.cycleSlot(2, bIsUtilityKeyHeld)
+        endIf
+        debug.trace("iEquip_KeyHandler runUpdate BEASTMODE end")
+    endFunction
+endState
 
 ; - Inventory
 state INVENTORYMENU

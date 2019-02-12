@@ -219,16 +219,39 @@ function resetWidgetOnTransformBack()
 	WC.bPoisonsEnabled = bPoisonSlotEnabled
 	WC.bShoutEnabled = bShoutSlotEnabled
 	WC.updateSlotsEnabled()
-	;Reset left slot to show previous left item in case we are re-equipping a ranged or 2H weapon ready for Ammo Mode or left icon fade
-	WC.updateWidget(0, WC.aiCurrentQueuePosition[1])
-	;Next reset the right and shout queues to force processQueuedForms to run in full
-	int i = 1
-	while i < 3
-		WC.aiCurrentQueuePosition[i] = -1
-		WC.asCurrentlyEquipped[i] = ""
-		i += 1
-	endWhile
-	;Now release the queued forms which should then fully update the widget which should handle left icon fade if 2H or Ammo Mode if ranged, along with poison/count/charge info
+	;ReEquip the shout/power that was equipped before the transformation and update the widget as it isn't re-equipped during the transformation
+	WC.cycleShout(2, WC.aiCurrentQueuePosition[2], jMap.getForm(jArray.getObj(WC.aiTargetQ[2], WC.aiCurrentQueuePosition[2]), "iEquipForm"))
+	WC.updateWidget(2, WC.aiCurrentQueuePosition[2])
+	;If we were previously unarmed then return the widget to that state
+	if WC.bGoneUnarmed
+		int i
+		while i < 2
+			float fNameAlpha = afWidget_A[aiNameElements[i]]
+			if fNameAlpha < 1
+				fNameAlpha = 100
+			endIf
+			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+			If(iHandle)
+				UICallback.PushInt(iHandle, i)
+				UICallback.PushString(iHandle, "Fist")
+				UICallback.PushString(iHandle, "$iEquip_common_Unarmed")
+				UICallback.PushFloat(iHandle, fNameAlpha)
+				UICallback.Send(iHandle)
+			endIf
+			i += 1
+		endWhile
+	;Otherwise reset the widget and queue positions accordingly and allow processQueuedForms to the widget fully as items are re-equipped
+	else
+		;First, reset left slot to show previous left item in case we are re-equipping a ranged or 2H weapon ready for Ammo Mode or left icon fade
+		WC.updateWidget(0, WC.aiCurrentQueuePosition[0])
+		;Next reset the left (if last equipped item wasn't a shield as it hasn't been unequipped) and right queues to force processQueuedForms to run in full
+		if jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") != 26
+			WC.aiCurrentQueuePosition[0] = -1
+			WC.asCurrentlyEquipped[0] = ""
+		endIf
+		WC.aiCurrentQueuePosition[1] = -1
+		WC.asCurrentlyEquipped[1] = ""
+	;Now release the queued forms which should then fully update the widget, handling left icon fade if 2H or Ammo Mode if ranged, along with poison/count/charge info
 	EH.processQueuedForms()
 	;And finally toggle back into Preselect if it was active before transformation
 	if bPreselectEnabled
