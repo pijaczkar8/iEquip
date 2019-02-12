@@ -15,6 +15,7 @@ iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
 
 actor property PlayerRef auto
+Race property OriginalPlayerRace auto hidden
 
 ; Werewolf reference - Vanilla - populated in CK
 race property WerewolfBeastRace auto
@@ -115,37 +116,45 @@ endfunction
 
 function onPlayerTransform(race newRace)
 	debug.trace("iEquip_BeastMode onPlayerTransform start")
+	;Lock out controls and hide the widget while we switch.  If we've switched to an unsupported form the widget will stay hidden until we switch back
 	KH.bAllowKeyPress = false
-	EH.bWaitingForTransform = true
 	WC.updateWidgetVisibility(false)
 	currRace = arBeastRaces.Find(newRace)
-	if currRace == -1
-		;Player is no longer one of the supported beast races so we assume they have transformed back
-		resetWidgetOnTransformBack()
+	if currRace == OriginalPlayerRace
+		EH.bWaitingForTransform = true
+		if bInSupportedBeastForm ;Player is no longer one of the supported beast races so we assume they have transformed back to their original form, if we transformed to something other than a supported form we won't have altered the widget so no need to reset here
+			bInSupportedBeastForm = false
+			resetWidgetOnTransformBack()
+		endIf
 		WC.updateWidgetVisibility()
 		;Any MCM changes not relevant to beast mode will still be pending so run them now
 		WC.ApplyChanges()
 		KH.bAllowKeyPress = true
-	else
-		;Store pre-transformation states
-		bConsumableSlotEnabled = WC.bConsumablesEnabled
-		bPoisonSlotEnabled = WC.bPoisonsEnabled
-		bShoutSlotEnabled = WC.bShoutEnabled
-		bProModeEnabled = WC.bProModeEnabled
-		bPreselectEnabled = WC.bPreselectMode
-		;Toggle out of Preselect Mode if active
-		if WC.bPreselectMode
-			PM.togglePreselectMode()
+		EH.bWaitingForTransform = false
+	elseIf currRace > -1
+		EH.bWaitingForTransform = true
+		;If we have somehow managed to transform from one supported beast form to another (don't even know if that's possible, but hey...)
+		if !bInSupportedBeastForm
+			;Store pre-transformation states
+			bConsumableSlotEnabled = WC.bConsumablesEnabled
+			bPoisonSlotEnabled = WC.bPoisonsEnabled
+			bShoutSlotEnabled = WC.bShoutEnabled
+			bProModeEnabled = WC.bProModeEnabled
+			bPreselectEnabled = WC.bPreselectMode
+			;Toggle out of Preselect Mode if active
+			if WC.bPreselectMode
+				PM.togglePreselectMode()
+			endIf
+			;Next toggle out of Ammo Mode to hide the left Preselect slot
+			if AM.bAmmoMode
+				AM.toggleAmmoMode(false, true)
+			endIf
+			;Now hide the consumable and poison slots and show the shout slot if previously hidden
+			WC.bConsumablesEnabled = false
+			WC.bPoisonsEnabled = false
+			WC.bShoutEnabled = true
+			WC.updateSlotsEnabled()
 		endIf
-		;Next toggle out of Ammo Mode to hide the left Preselect slot
-		if AM.bAmmoMode
-			AM.toggleAmmoMode(false, true)
-		endIf
-		;Now hide the consumable and poison slots and show the shout slot if previously hidden
-		WC.bConsumablesEnabled = false
-		WC.bPoisonsEnabled = false
-		WC.bShoutEnabled = true
-		WC.updateSlotsEnabled()
 		int i
 		int queueLength
 		while i < 3
@@ -166,7 +175,7 @@ function onPlayerTransform(race newRace)
 				endWhile
 			endIf
 			;Hide the attribute, poison, count and charge info
-			if i < 2
+			if i < 2 && !bInSupportedBeastForm
 				WC.hideAttributeIcons(i)
 				WC.setCounterVisibility(i, false)
 				WC.hidePoisonInfo(i)
@@ -194,6 +203,7 @@ function onPlayerTransform(race newRace)
 			WC.updateWidgetVisibility()
 			KH.bAllowKeyPress = true
 		endIf
+		bInSupportedBeastForm = true
 	endIf
 	EH.bWaitingForTransform = false
 	debug.trace("iEquip_BeastMode onPlayerTransform end")
@@ -253,6 +263,7 @@ function resetWidgetOnTransformBack()
 		WC.aiCurrentQueuePosition[1] = -1
 		WC.asCurrentlyEquipped[1] = ""
 	;Now release the queued forms which should then fully update the widget, handling left icon fade if 2H or Ammo Mode if ranged, along with poison/count/charge info
+	Utility.WaitMenuMode(1.0)
 	EH.processQueuedForms()
 	;And finally toggle back into Preselect if it was active before transformation
 	if bPreselectEnabled

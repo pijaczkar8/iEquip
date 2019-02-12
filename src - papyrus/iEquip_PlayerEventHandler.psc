@@ -17,6 +17,9 @@ iEquip_WidgetVisUpdateScript property WVis auto
 
 Actor Property PlayerRef Auto
 Race property PlayerRace auto hidden
+Race OriginalPlayerRace
+
+bool bPlayerRaceConfirmed
 
 ; Werewolf reference - Vanilla - populated in CK
 race property WerewolfBeastRace auto
@@ -56,6 +59,7 @@ int[] itemTypesToProcess
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
     PlayerRace = PlayerRef.GetRace()
+    OriginalPlayerRace = PlayerRace
     bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
     itemTypesToProcess = new int[6]
 	itemTypesToProcess[0] = 22 ;Spells or shouts
@@ -68,7 +72,8 @@ Event OnInit()
 endEvent
 
 Event OnPlayerLoadGame()
-	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")	
+	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")
+	PlayerRace = PlayerRef.GetRace()
 	initialise(WC.isEnabled)
 	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame end")
 endEvent
@@ -83,11 +88,16 @@ function initialise(bool enabled)
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
-		registerForCoreAnimationEvents()
-		registerForCoreActorActions()
+		if bPlayerIsABeast
+			registerForBMEvents()
+		elseIf PlayerRace == OriginalPlayerRace
+			registerForCoreAnimationEvents()
+			registerForCoreActorActions()
+		endIf
 		BW.initialise()
 		PO.initialise()
 		BM.initialise()
+		BM.OriginalPlayerRace = OriginalPlayerRace
 		updateAllEventFilters()
 	else
 		gotoState("DISABLED")
@@ -123,7 +133,7 @@ function registerForCoreActorActions()
 	RegisterForActorAction(10) ;Sheathe End - weapons and spells
 endFunction
 
-function UnregisterForCoreAnimationEvents()
+function unregisterForCoreAnimationEvents()
 	if bIsThunderchildLoaded || bIsWintersunLoaded
 		UnRegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
 		UnRegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
@@ -145,7 +155,7 @@ function UnregisterForCoreAnimationEvents()
 endFunction
 
 ; Register for all of the animation events we care about for beast mode
-Function RegisterForBMEvents()
+Function registerForBMEvents()
 	RegisterForAnimationEvent(PlayerRef, "SetRace")
     RegisterForAnimationEvent(PlayerRef, "GroundStart")
     RegisterForAnimationEvent(PlayerRef, "LevitateStart")
@@ -160,7 +170,7 @@ Function RegisterForBMEvents()
 EndFunction
 
 ; Unregister for the beast mode animation events we registered for.
-Function UnregisterForBMEvents()
+Function unregisterForBMEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
    	UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
    	UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
@@ -174,7 +184,7 @@ Function UnregisterForBMEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
 EndFunction
 
-function UnregisterForAllEvents()
+function unregisterForAllEvents()
 	;Core animation events
 	if bIsThunderchildLoaded || bIsWintersunLoaded
 		UnRegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
@@ -268,7 +278,7 @@ Event OnRaceSwitchComplete()
 		PlayerRace = PlayerRef.GetRace()
 	else
 		race newRace = PlayerRef.GetRace()
-		debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current PlayerRace: " + PlayerRace.GetName() + ", newRace: " + newRace.GetName())
+		debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current PlayerRace: " + PlayerRace.GetName() + ", newRace: " + newRace.GetName() + ", original race: " + OriginalPlayerRace.GetName())
 		if WC.isEnabled && WC.bEnableGearedUp
 			Utility.SetINIbool("bDisableGearedUp:General", !(newRace == PlayerRace))
 			WC.refreshVisibleItems()
@@ -277,17 +287,25 @@ Event OnRaceSwitchComplete()
 			PlayerRace = newRace
 			if bPlayerIsABeast || PlayerRace == WerewolfBeastRace || (bIsDawnguardLoaded && PlayerRace == DLC1VampireBeastRace) || (bIsUndeathLoaded && PlayerRace == NecroLichRace)
 				int beastRaceCheck = BM.arBeastRaces.Find(PlayerRace)
+				if !bPlayerRaceConfirmed && bPlayerIsABeast && beastRaceCheck == -1 ;We've just transformed back from one of the supported transformations and we've not somehow managed to change from one supported beast form to another
+					OriginalPlayerRace = PlayerRace
+					BM.OriginalPlayerRace = OriginalPlayerRace ;Confirm original player race just in case the user did something stupid like install iEquip onto a save where they were already transformed into an unsupported beast form
+					bPlayerRaceConfirmed = true
+				endIf
 				bPlayerIsABeast = beastRaceCheck > -1
 				KH.bPlayerIsABeast = bPlayerIsABeast
 				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsABeast: " + bPlayerIsABeast)
-				if beastRaceCheck == 1
+				if bPlayerIsABeast
 					gotoState("BEASTMODE")
-					UnregisterForCoreAnimationEvents()
-					RegisterForBMEvents()
-				else
-					UnregisterForBMEvents()
-					RegisterForCoreAnimationEvents()
+					unregisterForCoreAnimationEvents()
+					registerForBMEvents()
+				elseIf PlayerRace == OriginalPlayerRace
+					unregisterForBMEvents()
+					registerForCoreAnimationEvents()
 					gotoState("")
+				else ;If we're not one of the supported beast races, and we're not in our original form then we must be an unsupported transformation so unregister for all events and block all relevant OnXxx events
+					unregisterForAllEvents()
+					gotoState("DISABLED")
 				endIf
 				if WC.isEnabled
 					BM.onPlayerTransform(PlayerRace)
