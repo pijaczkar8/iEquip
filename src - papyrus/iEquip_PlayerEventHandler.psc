@@ -99,6 +99,7 @@ function initialise(bool enabled)
 		RegisterForActorAction(10) ;Sheathe End - weapons and spells
 		BW.initialise()
 		PO.initialise()
+		BM.initialise()
 		updateAllEventFilters()
 	else
 		gotoState("DISABLED")
@@ -178,6 +179,7 @@ Event OnRaceSwitchComplete()
 			if bPlayerIsABeast || PlayerRace == WerewolfBeastRace || (bIsDawnguardLoaded && PlayerRace == DLC1VampireBeastRace) || (bIsUndeathLoaded && PlayerRace == NecroLichRace)
 				int beastRaceCheck = BM.arBeastRaces.Find(PlayerRace)
 				bPlayerIsABeast = beastRaceCheck > -1
+				KH.bPlayerIsABeast = bPlayerIsABeast
 				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsABeast: " + bPlayerIsABeast)
 				if beastRaceCheck == 1
 					RegisterForVLEvents()
@@ -248,6 +250,8 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
     if EventName == "LandStart"
     	BM.showClaws()
+    elseIf EventName == "LiftoffStart"
+    	BM.showPreviousItems()
     ;ToDo - update meditation animation event names
     ;if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
     elseIf (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))

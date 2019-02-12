@@ -3546,18 +3546,25 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     	IconName = "Torch"
 
     elseif itemType == 119
-    	IconName = "Shout"
+    	if EH.bPlayerIsABeast && BM.currRace == 0 ;Werewolf
+    		IconName = "Howl"
+    	else
+    		IconName = "Shout"
+    	endIf
     
     elseif itemType == 22 ;Is a spell
-    	iconName = "Spellbook"
         Spell S = itemForm as Spell
-        ;EquipSlot iEquipSlotType = S.GetEquipType()
-		;int iEquipSlotTypeID = (iEquipSlotType as form).GetFormID()
-    	;if iEquipSlotTypeID == voiceEquipSlot
+
     	if S.GetEquipType() == EquipSlots[4]
     		IconName = "Power"
+    		if EH.bPlayerIsABeast && BM.currRace > 0
+    			if BM.currRace == 1 ;Vampire Lord
+    				IconName += "Vamp"
+    			else ;2 - Lich
+    				IconName += "Lich"
+    			endIf
+    		endIf
     	else
-        	;int sIndex = S.GetCostliestEffectIndex()
         	MagicEffect sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())
         	IconName = sEffect.GetAssociatedSkill()
         	if IconName == "Destruction"
@@ -3569,6 +3576,17 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
         		elseIf sEffect.HasKeyword(MagicDamageShock)
         			IconName += "Shock"
         		endIf
+        	endIf
+        endIf
+        if !IconName
+        	if EH.bPlayerIsABeast && BM.currRace > 0
+        		if BM.currRace == 1 ;Vampire Lord
+        			IconName = "SpellVamp"
+        		else ;2 - Lich
+        			IconName = "SpellLich"
+        		endIf
+        	else
+        		IconName = "Spellbook"
         	endIf
         endIf
 
@@ -3901,7 +3919,7 @@ function ApplyChanges()
     endIf
     if EH.bPlayerIsABeast
     	if bBeastModeOptionsChanged
-    		updateWidgetVisOnSettingsChanged()
+    		BM.updateWidgetVisOnSettingsChanged()
     		bBeastModeOptionsChanged = false
     	endIf
     else

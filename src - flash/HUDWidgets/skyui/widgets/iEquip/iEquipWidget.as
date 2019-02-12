@@ -780,18 +780,11 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		shoutPreselectBg_mc._alpha = 0
 		rightPreselectBg_mc._alpha = 0
 
-		/*if (!backgroundsShown){
-			leftPreselectBg_mc._visible = backgroundsShown
-			shoutPreselectBg_mc._visible = backgroundsShown
-			rightPreselectBg_mc._visible = backgroundsShown
-		} else {
+		if(!ammoMode){
 			leftPreselectBg_mc._visible = leftEnabled
-			shoutPreselectBg_mc._visible = shoutEnabled
-			rightPreselectBg_mc._visible = rightEnabled
-		}*/
-		leftPreselectBg_mc._visible = leftEnabled
-		leftPreselectIcon_mc._visible = leftEnabled
-		leftPreselectName_mc._visible = leftEnabled
+			leftPreselectIcon_mc._visible = leftEnabled
+			leftPreselectName_mc._visible = leftEnabled
+		}
 		shoutPreselectBg_mc._visible = shoutEnabled
 		shoutPreselectIcon_mc._visible = shoutEnabled
 		shoutPreselectName_mc._visible = shoutEnabled
@@ -1334,6 +1327,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		leftIcon._yscale = 25;
 		leftIcon.gotoAndStop(newIcon);
 		leftPreselectIcon._alpha = 0;
+		leftPreselectName_mc._alpha = 0;
 		leftPreselectIcon.gotoAndStop(currIcon);
 		leftPreselectIcon_mc._visible = true
 		leftPreselectName_mc._visible = true
@@ -1341,7 +1335,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		tl.to(leftName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
 		.call(updateNamesForEquipPreselect, [leftName, leftPreselectName, newName, currName])
 		.to(tempIcon, 0.6, {_x:leftTargetX, _y:leftTargetY, _rotation:0, _alpha:leftPIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
-		.to(leftPreselectIcon, 0, {_alpha:leftPIconAlpha, ease:Linear.easeNone})
+		.to(leftPreselectIcon, 0, {_alpha:leftPIconAlpha, ease:Linear.easeNone}, 0.6)
 		.to(leftIcon, 0.4, {_alpha:leftIconAlpha, _xscale:100, _yscale:100, ease:Elastic.easeOut}, 0.3)
 		.to(leftPreselectBg_mc, 0.4, {_rotation:180, _alpha:100, ease:Back.easeOut}, 0.4)
 		.to(leftName_mc, 0.3, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.6)

@@ -5,58 +5,59 @@ import Input
 Import UI
 import iEquip_StringExt
 
-iEquip_EditMode Property EM Auto
-iEquip_WidgetCore Property WC Auto
-iEquip_AmmoMode Property AM Auto
-iEquip_BeastMode Property BM Auto
-iEquip_ProMode Property PM Auto
-iEquip_RechargeScript Property RC Auto
-iEquip_HelpMenu Property HM Auto
+iEquip_EditMode property EM auto
+iEquip_WidgetCore property WC auto
+iEquip_AmmoMode property AM auto
+iEquip_BeastMode property BM auto
+iEquip_ProMode property PM auto
+iEquip_RechargeScript property RC auto
+iEquip_HelpMenu property HM auto
 
-Actor Property PlayerRef  Auto
+Actor property PlayerRef  auto
 
 ; Main gameplay keys
-Int Property iShoutKey = 21 Auto Hidden ;Y
-Int Property iLeftKey = 34 Auto Hidden ;G
-Int Property iRightKey = 35 Auto Hidden ;H
-Int Property iConsumableKey = 48 Auto Hidden ;B
-Int Property iUtilityKey = 37 Auto Hidden ;K - Active in all modes
+int property iShoutKey = 21 auto hidden ;Y
+int property iLeftKey = 34 auto hidden ;G
+int property iRightKey = 35 auto hidden ;H
+int property iConsumableKey = 48 auto hidden ;B
+int property iUtilityKey = 37 auto hidden ;K - Active in all modes
 
 ; Optional hotkeys
-Int Property iOptConsumeKey = -1 Auto Hidden
+int property iOptConsumeKey = -1 auto hidden
 
 ; Edit Mode Keys
-Int Property iEditNextKey = 55 Auto Hidden ;Num *
-Int Property iEditPrevKey = 181 Auto Hidden ;Num /
-Int Property iEditUpKey = 200 Auto Hidden ;Up arrow
-Int Property iEditDownKey = 208 Auto Hidden ;Down arrow
-Int Property iEditRightKey = 205 Auto Hidden ;Right arrow
-Int Property iEditLeftKey = 203 Auto Hidden ;Left arrow
-Int Property iEditScaleUpKey = 78 Auto Hidden ;Num +
-Int Property iEditScaleDownKey = 74 Auto Hidden ;Num -
-Int Property iEditDepthKey  = 72 Auto Hidden ;Num 8
-Int Property iEditRotateKey  = 79 Auto Hidden ;Num 1
-Int Property iEditTextKey = 80 Auto Hidden ;Num 2
-Int Property iEditAlphaKey = 81 Auto Hidden ;Num 3
-Int Property iEditRulersKey = 75 Auto Hidden ;Num 4
-Int Property iEditResetKey = 82 Auto Hidden ;Num 0
-Int Property iEditLoadPresetKey = 76 Auto Hidden ;Num 5
-Int Property iEditSavePresetKey = 77 Auto Hidden ;Num 6
-Int Property iEditDiscardKey = 83 Auto Hidden ;Num .
+int property iEditNextKey = 55 auto hidden ;Num *
+int property iEditPrevKey = 181 auto hidden ;Num /
+int property iEditUpKey = 200 auto hidden ;Up arrow
+int property iEditDownKey = 208 auto hidden ;Down arrow
+int property iEditRightKey = 205 auto hidden ;Right arrow
+int property iEditLeftKey = 203 auto hidden ;Left arrow
+int property iEditScaleUpKey = 78 auto hidden ;Num +
+int property iEditScaleDownKey = 74 auto hidden ;Num -
+int property iEditDepthKey  = 72 auto hidden ;Num 8
+int property iEditRotateKey  = 79 auto hidden ;Num 1
+int property iEditTextKey = 80 auto hidden ;Num 2
+int property iEditAlphaKey = 81 auto hidden ;Num 3
+int property iEditRulersKey = 75 auto hidden ;Num 4
+int property iEditResetKey = 82 auto hidden ;Num 0
+int property iEditLoadPresetKey = 76 auto hidden ;Num 5
+int property iEditSavePresetKey = 77 auto hidden ;Num 6
+int property iEditDiscardKey = 83 auto hidden ;Num .
 
 ; Delays
-float Property fMultiTapDelay = 0.3 Auto Hidden
-float Property fLongPressDelay = 0.6 Auto Hidden
+float property fMultiTapDelay = 0.3 auto hidden
+float property fLongPressDelay = 0.6 auto hidden
 
 ; Bools
-bool Property bConsumeItemHotkeyEnabled Auto Hidden
-bool Property bAllowKeyPress = true Auto Hidden
+bool property bConsumeItemHotkeyEnabled auto hidden
+bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
+bool property bPlayerIsABeast auto hidden
 
 ; Ints
-Int iWaitingKeyCode
-Int iMultiTap
+int iWaitingKeyCode
+int iMultiTap
 
 ; Strings
 string sPreviousState
@@ -174,7 +175,7 @@ event OnKeyDown(int KeyCode)
     debug.trace("iEquip_KeyHandler OnKeyDown end")
 endEvent
 
-event OnKeyUp(Int KeyCode, Float HoldTime)
+event OnKeyUp(int KeyCode, Float HoldTime)
     debug.trace("iEquip_KeyHandler OnKeyUp start")
     debug.trace("iEquip KeyHandler OnKeyUp KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
     if KeyCode == iUtilityKey
@@ -193,7 +194,7 @@ function runUpdate()
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
     
-    if EH.bPlayerIsABeast
+    if bPlayerIsABeast
         handleBeastModeKeyPress()
         
     elseIf iMultiTap == 0 ; Long press
@@ -410,7 +411,7 @@ endState
 
 ; - Editmode
 state EDITMODE
-    event OnKeyUp(Int KeyCode, Float HoldTime)
+    event OnKeyUp(int KeyCode, Float HoldTime)
         debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
         if bAllowKeyPress
             if KeyCode == iWaitingKeyCode && iMultiTap == 0

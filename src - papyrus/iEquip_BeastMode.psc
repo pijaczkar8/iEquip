@@ -154,8 +154,11 @@ function onPlayerTransform(race newRace)
 			queueLength = jArray.count(targetQ)
 			if queueLength > 0
 				int j
+				form targetForm
 				while j < queueLength
-					if !WC.playerStillHasItem(jMap.getForm(jArray.getObj(targetQ, j), "iEquipForm"))
+					targetForm = jMap.getForm(jArray.getObj(targetQ, j), "iEquipForm")
+					if !WC.playerStillHasItem(targetForm)
+						iEquip_BeastModeItemsFLST.RemoveAddedForm(targetForm)
 						jArray.eraseIndex(targetQ, j)
 					else
 						j += 1
@@ -194,30 +197,6 @@ function onPlayerTransform(race newRace)
 	EH.bWaitingForTransform = false
 	debug.trace("iEquip_BeastMode onPlayerTransform end")
 endFunction
-
-; Register for all of the animation events we care about.
-Function RegisterForVLEvents()
-    Debug.Trace( "Registering for Animation Events" )
-    actor PlayerActor = Game.GetPlayer()
-    RegisterForAnimationEvent(PlayerActor, Ground)
-    RegisterForAnimationEvent(PlayerActor, Levitate)
-    RegisterForAnimationEvent(PlayerActor, BiteStart)
-    RegisterForAnimationEvent(PlayerActor, LiftoffStart)
-    RegisterForAnimationEvent(PlayerActor, LandStart)
-    RegisterForAnimationEvent(PlayerActor, TransformToHuman )
-EndFunction
-
-; Unregister for all of the animation events we registered for.
-Function UnregisterForVLEvents()
-    Debug.Trace( "Unregistering for Animation Events" )
-    actor PlayerActor = Game.GetPlayer()
-    UnRegisterForAnimationEvent(PlayerActor, Ground)
-    UnRegisterForAnimationEvent(PlayerActor, Levitate)
-    UnRegisterForAnimationEvent(PlayerActor, BiteStart)
-    UnRegisterForAnimationEvent(PlayerActor, LiftoffStart)
-    UnRegisterForAnimationEvent(PlayerActor, LandStart)
-    UnRegisterForAnimationEvent(PlayerActor, TransformToHuman )
-EndFunction
 
 function updateWidgetVisOnSettingsChanged()
 	debug.trace("iEquip_BeastMode updateWidgetVisOnSettingsChanged end")
@@ -300,6 +279,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		if !formFound
 			iEquip_BeastModeItemsFLST.AddForm(queuedForm)
 		endIf
+		targetIndex = jArray.count(aiBMQueues[targetQ]) - 1
 		;Now update the widget to show the equipped item
 		aiCurrentBMQueuePosition[targetQ] = targetIndex
 		asCurrentlyEquipped[targetQ] = itemName
@@ -479,17 +459,46 @@ function showClaws()
 		endIf
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 		If(iHandle)
+			debug.trace("iEquip_BeastMode showClaws - got iHandle, i: " + i)
 			UICallback.PushInt(iHandle, i)
 			UICallback.PushString(iHandle, "Claws")
 			UICallback.PushString(iHandle, "$iEquip_common_Claws")
 			UICallback.PushFloat(iHandle, fNameAlpha)
 			UICallback.Send(iHandle)
 		endIf
-		aiCurrentBMQueuePosition[(currRace * 3) + i] = -1
-		asCurrentlyEquipped[(currRace * 3) + i] = ""
+		;aiCurrentBMQueuePosition[(currRace * 3) + i] = -1
+		;asCurrentlyEquipped[(currRace * 3) + i] = ""
 		i += 1
 	endWhile
 	debug.trace("iEquip_BeastMode showClaws end")
+endFunction
+
+function showPreviousItems()
+	debug.trace("iEquip_BeastMode showPreviousItems start")
+	int i
+	float fNameAlpha
+	int iHandle
+	int Q
+	while i < 2
+		Q = (currRace * 3) + i
+		fNameAlpha = WC.afWidget_A[WC.aiNameElements[i]]
+		if fNameAlpha < 1
+			fNameAlpha = 100
+		endIf
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+		If(iHandle)
+			debug.trace("iEquip_BeastMode showClaws - got iHandle, i: " + i)
+			UICallback.PushInt(iHandle, i)
+			UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiBMQueues[Q], aiCurrentBMQueuePosition[Q]), "iEquipIcon"))
+			UICallback.PushString(iHandle, asCurrentlyEquipped[Q])
+			UICallback.PushFloat(iHandle, fNameAlpha)
+			UICallback.Send(iHandle)
+		endIf
+		;aiCurrentBMQueuePosition[(currRace * 3) + i] = -1
+		;asCurrentlyEquipped[(currRace * 3) + i] = ""
+		i += 1
+	endWhile
+	debug.trace("iEquip_BeastMode showPreviousItems end")
 endFunction
 
 function reequipOtherHand(int otherHand)
@@ -502,7 +511,7 @@ function reequipOtherHand(int otherHand)
 	endIf
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
-		UICallback.PushInt(iHandle, Q)
+		UICallback.PushInt(iHandle, otherHand)
 		UICallback.PushString(iHandle, jMap.getStr(targetObject, "iEquipIcon"))
 		UICallback.PushString(iHandle, asCurrentlyEquipped[Q])
 		UICallback.PushFloat(iHandle, fNameAlpha)
