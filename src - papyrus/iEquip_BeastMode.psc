@@ -186,7 +186,8 @@ function onPlayerTransform(race newRace)
 		if currRace == 0
 			showClaws()
 		endIf
-		;Release the queued forms to update the widget
+		;Release the queued forms to update the widget - need the delay to allow time for all three spells/powers to be added to the OnObjectEquippedFLST
+		Utility.WaitMenuMode(1.0)
 		EH.processQueuedForms()
 		;And finally if vis is enabled for this beast form show the widget and unlock controls
 		if abShowInTransformedState[currRace]
