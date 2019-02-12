@@ -130,22 +130,26 @@ function UnregisterForCoreAnimationEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
 endFunction
 
-; Register for all of the animation events we care about for Vampire Lord form
-Function RegisterForVLEvents()
-    ;RegisterForAnimationEvent(PlayerRef, "GroundStart")
-    ;RegisterForAnimationEvent(PlayerRef, "LevitateStart")
+; Register for all of the animation events we care about for beast mode
+Function RegisterForBMEvents()
+	RegisterForAnimationEvent(PlayerRef, "SetRace")
+    RegisterForAnimationEvent(PlayerRef, "GroundStart")
+    RegisterForAnimationEvent(PlayerRef, "LevitateStart")
     RegisterForAnimationEvent(PlayerRef, "LiftoffStart")
     RegisterForAnimationEvent(PlayerRef, "LandStart")
-    ;RegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+    RegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+    RegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
 EndFunction
 
-; Unregister for the Vampire Lord animation events we registered for.
-Function UnregisterForVLEvents()
-   	;UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
-   	;UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
+; Unregister for the beast mode animation events we registered for.
+Function UnregisterForBMEvents()
+	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
+   	UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
+   	UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
     UnRegisterForAnimationEvent(PlayerRef, "LiftoffStart")
     UnRegisterForAnimationEvent(PlayerRef, "LandStart")
-   	;UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+   	UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+   	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
 EndFunction
 
 function UnregisterForAllEvents()
@@ -161,12 +165,14 @@ function UnregisterForAllEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
 	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
-	;Vampire Lord animation events
-	;UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
-   	;UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
+	;Beast Mode animation events
+	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
+	UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
+   	UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
     UnRegisterForAnimationEvent(PlayerRef, "LiftoffStart")
     UnRegisterForAnimationEvent(PlayerRef, "LandStart")
-   	;UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+   	UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+   	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
    	;Actor actions
    	UnregisterForActorAction(2)
    	UnregisterForActorAction(7)
@@ -251,9 +257,9 @@ Event OnRaceSwitchComplete()
 				if beastRaceCheck == 1
 					gotoState("BEASTMODE")
 					UnregisterForCoreAnimationEvents()
-					RegisterForVLEvents()
+					RegisterForBMEvents()
 				else
-					UnregisterForVLEvents()
+					UnregisterForBMEvents()
 					RegisterForCoreAnimationEvents()
 					gotoState("")
 				endIf
