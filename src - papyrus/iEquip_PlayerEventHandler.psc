@@ -108,6 +108,13 @@ function registerForCoreAnimationEvents()
 	RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	RegisterForAnimationEvent(PlayerRef, "arrowRelease")
 	RegisterForAnimationEvent(PlayerRef, "bashStop")
+	;Listeners for the beast form transformation sAttributes
+	RegisterForAnimationEvent(PlayerRef, "SetRace")
+	RegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+	RegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	RegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	RegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	RegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
 endFunction
 
 function registerForCoreActorActions()
@@ -128,6 +135,13 @@ function UnregisterForCoreAnimationEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
 	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+	;Listeners for the beast form transformation sAttributes
+	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
+	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+	UnRegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
 endFunction
 
 ; Register for all of the animation events we care about for beast mode
@@ -139,6 +153,10 @@ Function RegisterForBMEvents()
     RegisterForAnimationEvent(PlayerRef, "LandStart")
     RegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
     RegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+    RegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	RegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	RegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	RegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
 EndFunction
 
 ; Unregister for the beast mode animation events we registered for.
@@ -150,6 +168,10 @@ Function UnregisterForBMEvents()
     UnRegisterForAnimationEvent(PlayerRef, "LandStart")
    	UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
    	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+   	UnRegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
 EndFunction
 
 function UnregisterForAllEvents()
@@ -173,6 +195,10 @@ function UnregisterForAllEvents()
     UnRegisterForAnimationEvent(PlayerRef, "LandStart")
    	UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
    	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+   	UnRegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
    	;Actor actions
    	UnregisterForActorAction(2)
    	UnregisterForActorAction(7)
