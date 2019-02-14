@@ -51,3 +51,9 @@ Function EquipEnchantedAndPoisonedItemEx(Actor a_actor, Form a_item, Int a_slotI
 ; 25 - Magicka
 ; 26 - Stamina
 Float Function GetAVDamage(Actor a_actor, Int a_actorValue) Native Global
+
+
+; @brief Returns the base race of the specified actor
+; @param a_actor The actor to fetch the base race from
+; @return Returns NONE on error, else returns the base race of the specified actor
+Race Function GetBaseRace(Actor a_actor) Native Global

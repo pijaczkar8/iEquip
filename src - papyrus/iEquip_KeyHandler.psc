@@ -53,7 +53,7 @@ bool property bConsumeItemHotkeyEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
-bool bPlayerIsABeast
+bool _bPlayerIsABeast
 
 ; Ints
 int iWaitingKeyCode
@@ -85,18 +85,21 @@ function GameLoaded()
     debug.trace("iEquip_KeyHandler GameLoaded end")
 endFunction
 
-bool property playerIsABeast
+bool property bPlayerIsABeast
     bool function Get()
-        return bPlayerIsABeast
+        return _bPlayerIsABeast
     endFunction
 
-    bool function Set(bool inBeastForm)
-        bPlayerIsABeast = inBeastForm
+    function Set(bool inBeastForm)
+        debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() start")
+        _bPlayerIsABeast = inBeastForm
+         debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() - bPlayerIsABeast: " + inBeastForm)
         if inBeastForm
             gotoState("BEASTMODE")
         else
             gotoState("")
         endIf
+        debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() - state set to: " + GetState())
     endFunction
 endProperty
 
@@ -114,7 +117,7 @@ event OnMenuOpen(string MenuName)
         else
             GoToState("DISABLED")
         endIf
-        
+        debug.trace("iEquip_KeyHandler OnMenuOpen - state set to: " + GetState())
         UnregisterForUpdate()
         iWaitingKeyCode = 0
         iMultiTap = 0
@@ -130,12 +133,15 @@ event OnMenuClose(string MenuName)
     elseIf !utility.IsInMenuMode()
         if EM.isEditMode
             GoToState("EDITMODE")
+        elseIf _bPlayerIsABeast
+            GoToState("BEASTMODE")
         else
             GoToState("")
         endIf
     else 
         GotoState(sPreviousState)
     endIf
+    debug.trace("iEquip_KeyHandler OnMenuClose - state set to: " + GetState())
     debug.trace("iEquip_KeyHandler OnMenuClose end")
 endEvent
 

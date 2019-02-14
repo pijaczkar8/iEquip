@@ -15,7 +15,7 @@ iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
 
 actor property PlayerRef auto
-Race property OriginalPlayerRace auto hidden
+Race property PlayerBaseRace auto hidden
 
 ; Werewolf reference - Vanilla - populated in CK
 race property WerewolfBeastRace auto
@@ -39,6 +39,8 @@ bool bProModeEnabled
 bool bPreselectEnabled
 
 bool[] property abShowInTransformedState auto hidden
+bool bInSupportedBeastForm
+bool bAlreadyHidden
 
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
@@ -114,15 +116,27 @@ function initialiseQueueArrays()
     debug.trace("iEquip_BeastMode initialiseQueueArrays end")
 endfunction
 
-function onPlayerTransform(race newRace)
-	debug.trace("iEquip_BeastMode onPlayerTransform start")
-	;Lock out controls and hide the widget while we switch.  If we've switched to an unsupported form the widget will stay hidden until we switch back
+function OnWerewolfTransformationStart()
+	debug.trace("iEquip_BeastMode OnWerewolfTransformationStart start")
 	KH.bAllowKeyPress = false
 	WC.updateWidgetVisibility(false)
+	bAlreadyHidden = true
+	debug.trace("iEquip_BeastMode OnWerewolfTransformationStart end")
+endFunction
+
+function onPlayerTransform(race newRace, bool bPlayerIsAVampire, bool bLoading = false)
+	debug.trace("iEquip_BeastMode onPlayerTransform start")
+	;Lock out controls and hide the widget while we switch.  If we've switched to an unsupported form the widget will stay hidden until we switch back
+	if !bAlreadyHidden && !bLoading
+		KH.bAllowKeyPress = false
+		WC.updateWidgetVisibility(false)
+		Utility.WaitMenuMode(0.4)
+	endIf
+	bAlreadyHidden = false
 	currRace = arBeastRaces.Find(newRace)
-	if currRace == OriginalPlayerRace
+	if newRace == PlayerBaseRace || bPlayerIsAVampire && !bLoading
 		EH.bWaitingForTransform = true
-		if bInSupportedBeastForm ;Player is no longer one of the supported beast races so we assume they have transformed back to their original form, if we transformed to something other than a supported form we won't have altered the widget so no need to reset here
+		if bInSupportedBeastForm ;Player is no longer one of the supported beast races and have transformed back to their original form, if we transformed to something other than a supported form we won't have altered the widget so no need to reset here
 			bInSupportedBeastForm = false
 			resetWidgetOnTransformBack()
 		endIf
@@ -134,13 +148,15 @@ function onPlayerTransform(race newRace)
 	elseIf currRace > -1
 		EH.bWaitingForTransform = true
 		;If we have somehow managed to transform from one supported beast form to another (don't even know if that's possible, but hey...)
-		if !bInSupportedBeastForm
-			;Store pre-transformation states
-			bConsumableSlotEnabled = WC.bConsumablesEnabled
-			bPoisonSlotEnabled = WC.bPoisonsEnabled
-			bShoutSlotEnabled = WC.bShoutEnabled
-			bProModeEnabled = WC.bProModeEnabled
-			bPreselectEnabled = WC.bPreselectMode
+		if !bInSupportedBeastForm || bLoading
+			if !bLoading
+				;Store pre-transformation states
+				bConsumableSlotEnabled = WC.bConsumablesEnabled
+				bPoisonSlotEnabled = WC.bPoisonsEnabled
+				bShoutSlotEnabled = WC.bShoutEnabled
+				bProModeEnabled = WC.bProModeEnabled
+				bPreselectEnabled = WC.bPreselectMode
+			endIf
 			;Toggle out of Preselect Mode if active
 			if WC.bPreselectMode
 				PM.togglePreselectMode()
@@ -149,6 +165,9 @@ function onPlayerTransform(race newRace)
 			if AM.bAmmoMode
 				AM.toggleAmmoMode(false, true)
 			endIf
+			if WC.bLeftIconFaded
+				WC.checkAndFadeLeftIcon(0, 22)
+			endIf
 			;Now hide the consumable and poison slots and show the shout slot if previously hidden
 			WC.bConsumablesEnabled = false
 			WC.bPoisonsEnabled = false
@@ -156,26 +175,9 @@ function onPlayerTransform(race newRace)
 			WC.updateSlotsEnabled()
 		endIf
 		int i
-		int queueLength
 		while i < 3
-			;Check the current queue items for the current beast race and remove any the player no longer has (should handle spell/power changes on level progression)
-			int targetQ = aiBMQueues[(currRace * 3) + i]
-			queueLength = jArray.count(targetQ)
-			if queueLength > 0
-				int j
-				form targetForm
-				while j < queueLength
-					targetForm = jMap.getForm(jArray.getObj(targetQ, j), "iEquipForm")
-					if !WC.playerStillHasItem(targetForm)
-						iEquip_BeastModeItemsFLST.RemoveAddedForm(targetForm)
-						jArray.eraseIndex(targetQ, j)
-					else
-						j += 1
-					endIf
-				endWhile
-			endIf
 			;Hide the attribute, poison, count and charge info
-			if i < 2 && !bInSupportedBeastForm
+			if i < 2 && (!bInSupportedBeastForm || bLoading)
 				WC.hideAttributeIcons(i)
 				WC.setCounterVisibility(i, false)
 				WC.hidePoisonInfo(i)
@@ -183,9 +185,14 @@ function onPlayerTransform(race newRace)
 					CM.updateChargeMeterVisibility(i, false)
 				endIf
 			endIf
-			;Reset beast mode queue position ready to allow processQueuedForms to update the widget
-			aiCurrentBMQueuePosition[(currRace * 3) + i] = -1
-			asCurrentlyEquipped[(currRace * 3) + i] = ""
+			if bLoading && !(currRace == 0 && i < 2)
+				int targetQ = (currRace * 3) + i
+				WC.updateWidgetBM(i, jMap.getStr(jArray.getObj(aiBMQueues[targetQ], aiCurrentBMQueuePosition[targetQ]), "iEquipIcon"), asCurrentlyEquipped[targetQ])
+			else
+				;Reset beast mode queue position ready to allow processQueuedForms to update the widget
+				aiCurrentBMQueuePosition[(currRace * 3) + i] = -1
+				asCurrentlyEquipped[(currRace * 3) + i] = ""
+			endIf
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[i]
 				WC.showName(i)
 			endIf
@@ -195,15 +202,41 @@ function onPlayerTransform(race newRace)
 		if currRace == 0
 			showClaws()
 		endIf
-		;Release the queued forms to update the widget - need the delay to allow time for all three spells/powers to be added to the OnObjectEquippedFLST
-		Utility.WaitMenuMode(1.0)
-		EH.processQueuedForms()
-		;And finally if vis is enabled for this beast form show the widget and unlock controls
-		if abShowInTransformedState[currRace]
-			WC.updateWidgetVisibility()
-			KH.bAllowKeyPress = true
+		if !bLoading
+			;Release the queued forms to update the widget - need the delay to allow time for all three spells/powers to be added to the OnObjectEquippedFLST
+			Utility.WaitMenuMode(3.0)
+			EH.processQueuedForms()
+			;Check the current queue items for the current beast race and remove any the player no longer has (should handle spell/power changes on level progression)
+			i = 0
+			int queueLength
+			while i < 3
+				int targetQ = aiBMQueues[(currRace * 3) + i]
+				queueLength = jArray.count(targetQ)
+				if queueLength > 0
+					int j
+					form targetForm
+					while j < queueLength
+						targetForm = jMap.getForm(jArray.getObj(targetQ, j), "iEquipForm")
+						if !WC.playerStillHasItem(targetForm)
+							iEquip_BeastModeItemsFLST.RemoveAddedForm(targetForm)
+							jArray.eraseIndex(targetQ, j)
+							queueLength -= 1
+						else
+							j += 1
+						endIf
+					endWhile
+				endIf
+				i += 1
+			endWhile
+			;And finally if vis is enabled for this beast form show the widget and unlock controls
+			if abShowInTransformedState[currRace]
+				WC.updateWidgetVisibility()
+				KH.bAllowKeyPress = true
+			endIf
 		endIf
 		bInSupportedBeastForm = true
+	else
+		bInSupportedBeastForm = false
 	endIf
 	EH.bWaitingForTransform = false
 	debug.trace("iEquip_BeastMode onPlayerTransform end")
@@ -237,7 +270,7 @@ function resetWidgetOnTransformBack()
 	if WC.bGoneUnarmed
 		int i
 		while i < 2
-			float fNameAlpha = afWidget_A[aiNameElements[i]]
+			float fNameAlpha = WC.afWidget_A[WC.aiNameElements[i]]
 			if fNameAlpha < 1
 				fNameAlpha = 100
 			endIf
@@ -262,8 +295,9 @@ function resetWidgetOnTransformBack()
 		endIf
 		WC.aiCurrentQueuePosition[1] = -1
 		WC.asCurrentlyEquipped[1] = ""
+	endIf
 	;Now release the queued forms which should then fully update the widget, handling left icon fade if 2H or Ammo Mode if ranged, along with poison/count/charge info
-	Utility.WaitMenuMode(1.0)
+	Utility.WaitMenuMode(3.0)
 	EH.processQueuedForms()
 	;And finally toggle back into Preselect if it was active before transformation
 	if bPreselectEnabled

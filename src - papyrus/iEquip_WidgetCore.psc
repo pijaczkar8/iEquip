@@ -482,7 +482,9 @@ Event OnWidgetLoad()
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD alt charge meter
 			endIf
 			Utility.WaitMenuMode(0.5)
-			checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+			if !EH.bPlayerIsABeast
+				checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+			endIf
 		endIf
 	endIf
 
@@ -563,6 +565,12 @@ function refreshWidgetOnLoad()
 	endwhile
 	if bEnabled
 		CM.updateChargeMeters(true)
+		;And finally if we've loaded a save where the player is in beast form toggle the widget now
+		if EH.bPlayerIsABeast
+			BM.onPlayerTransform(PlayerRef.GetRace(), EH.bPlayerIsAVampire, true)
+		else
+			updateSlotsEnabled()
+		endIf
 	endIf
 	;just to make sure!
 	UI.setbool(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
@@ -801,7 +809,7 @@ function resetWidgetsToPreviousState()
     endWhile
 	;Reset Preselect Mode
 	if EM.preselectEnabledOnEnter && bPreselectMode
-        PM.togglePreselectMode()
+        PM.togglePreselectMode(true)
 		EM.preselectEnabledOnEnter = false
 	endIf
 	;Reset enchantment meters and soulgems
