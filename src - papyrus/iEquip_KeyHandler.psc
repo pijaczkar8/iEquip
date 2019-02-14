@@ -429,6 +429,9 @@ endState
 state EDITMODE
     event OnKeyUp(int KeyCode, Float HoldTime)
         debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
+        if KeyCode == iUtilityKey
+            bIsUtilityKeyHeld = false
+        endIf
         if bAllowKeyPress
             if KeyCode == iWaitingKeyCode && iMultiTap == 0
                 float updateTime
