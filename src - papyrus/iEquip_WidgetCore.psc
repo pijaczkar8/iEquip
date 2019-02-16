@@ -1475,7 +1475,6 @@ function setSlotCount(int Q, int count)
 	;widgetData[0] = Q
 	;widgetData[1] = count
 	;UI.invokeIntA(HUD_MENU, WidgetRoot + ".updateCounter", widgetData)
-
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateCounter")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q) ;Which slot we're updating

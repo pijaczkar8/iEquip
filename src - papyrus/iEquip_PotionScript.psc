@@ -67,6 +67,7 @@ int Property iPotionsFirstChoice = 0 Auto Hidden
 int Property iPotionsSecondChoice = 1 Auto Hidden
 int Property iPotionsThirdChoice = 2 Auto Hidden
 
+string[] asPotionGroups
 String[] asPoisonIconNames
 string[] asActorValues
 int[] aiActorValues
@@ -172,6 +173,11 @@ event OnInit()
     aiActorValues[0] = 24 ;Health
     aiActorValues[1] = 25 ;Magicka
     aiActorValues[2] = 26 ;Stamina
+
+    asPotionGroups = new string[3]
+    asPotionGroups[0] = "$iEquip_common_HealthPotions"
+    asPotionGroups[1] = "$iEquip_common_MagickaPotions"
+    asPotionGroups[2] = "$iEquip_common_StaminaPotions"
     
     bInitialised = true
     debug.trace("iEquip_PotionScript OnInit end")
@@ -971,6 +977,29 @@ bool function quickHealFindAndConsumePotion()
     endIf
     debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion end")
     return found
+endFunction
+
+function warnOnLowRestorePotionCount(int restoreCount, int potionGroup)
+    debug.trace("iEquip_PotionScript warnOnLowRestorePotionCount start")
+    string sPotionGroup = asPotionGroups[potionGroup]
+    ;If we've just dropped into one of the early warning thresholds and the consumable widget is currently displaying the Potion Group for the restore potion we've just consumed check and flash
+    if restoreCount == 5 || restoreCount == 2 && bFlashPotionWarning && WC.asCurrentlyEquipped[3] == sPotionGroup
+        UI.InvokeInt(HUD_MENU, WidgetRoot + ".runPotionFlashAnimation", potionGroup)
+    endIf
+    ;Display the early warning notification
+    if bNotificationOnLowRestorePotions
+        string sWarning
+        if restoreCount == 0 && getPotionGroupCount(potionGroup) > 0 ;No need for a notification if the entire potion group is empty as this will be handled elsewhere
+            sWarning = iEquip_StringExt.LocalizeString("$iEquip_WC_noRestorePotionsLeft{" + sPotionGroup + "}")
+        elseIf restoreCount < 3
+            sWarning = iEquip_StringExt.LocalizeString("$iEquip_WC_nearlyOutOfRestorePotions{" + sPotionGroup + "}")
+        else
+            sWarning = iEquip_StringExt.LocalizeString("$iEquip_WC_notManyRestorePotionsLeft{" + sPotionGroup + "}")
+        endIf
+        debug.notification(sWarning)
+    endIf
+    ;NB - the count colour will already have been set through WC.setSlotCount()
+    debug.trace("iEquip_PotionScript warnOnLowRestorePotionCount end")
 endFunction
 
 state PROCESSING
