@@ -524,6 +524,22 @@ int function getPotionGroupCount(int potionGroup)
     return count
 endFunction
 
+int function getRestoreCount(int potionGroup)
+    debug.trace("iEquip_PotionScript getRestoreCount start")
+    debug.trace("iEquip_PotionScript getRestoreCount - potionGroup: " + potionGroup)
+    int count
+    int targetArray = aiPotionQ[potionGroup * 3]
+    int queueLength = jArray.count(targetArray)
+    int i
+    while i < queueLength
+        count += PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm"))
+        i += 1
+    endWhile
+    debug.trace("iEquip_PotionScript getRestoreCount returning count: " + count)
+    debug.trace("iEquip_PotionScript getRestoreCount end")
+    return count
+endFunction
+
 int function getPotionQueue(potion potionToCheck)
     debug.trace("iEquip_PotionScript getPotionQueue start")
     int index = potionToCheck.GetCostliestEffectIndex()

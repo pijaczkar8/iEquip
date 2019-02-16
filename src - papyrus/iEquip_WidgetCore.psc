@@ -1471,10 +1471,31 @@ endFunction
 function setSlotCount(int Q, int count)
 	debug.trace("iEquip_WidgetCore setSlotCount start")
 	debug.trace("iEquip_WidgetCore setSlotCount - Q: " + Q + ", count: " + count)
-	int[] widgetData = new int[2]
-	widgetData[0] = Q
-	widgetData[1] = count
-	UI.invokeIntA(HUD_MENU, WidgetRoot + ".updateCounter", widgetData)
+	;int[] widgetData = new int[2]
+	;widgetData[0] = Q
+	;widgetData[1] = count
+	;UI.invokeIntA(HUD_MENU, WidgetRoot + ".updateCounter", widgetData)
+
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateCounter")
+	If(iHandle)
+		UICallback.PushInt(iHandle, Q) ;Which slot we're updating
+		UICallback.PushInt(iHandle, count) ;New count
+		if Q == 3
+			int iPotionGroup = asPotionGroups.Find(asCurrentlyEquipped[3])
+			UICallback.PushBool(iHandle, iPotionGroup > -1) ;isPotionGroup so we can set the early warning colour if needed
+			if iPotionGroup > -1
+				UICallback.PushInt(iHandle, PO.getRestoreCount(iPotionGroup))
+			else
+				UICallback.PushInt(iHandle, 0)
+			endIf
+			UICallback.PushInt(iHandle, aiWidget_TC[41]) ;Consumable Count text colour, used to reset to white/Edit Mode set colour if count is above 5, otherwise colour is handled by ActionScript
+		else
+			UICallback.PushBool(iHandle, false) ;Default to false for anything other than a Potion Group in Q == 3
+			UICallback.PushInt(iHandle, 0) ;Not needed if Q != 3
+			UICallback.PushInt(iHandle, 0) ;Not needed if Q != 3
+		endIf
+		UICallback.Send(iHandle)
+	endIf
 	debug.trace("iEquip_WidgetCore setSlotCount end")
 endFunction
 

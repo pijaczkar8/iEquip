@@ -1612,7 +1612,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		clip1.swapDepths(clip2);
 	}
 
-	public function updateCounter(iTarget: Number, a_count: Number): Void
+	public function updateCounter(iTarget: Number, iCount: Number, bIsPotionGroup: Boolean, iRestoreCount: Number, iColor: Number): Void
 	{
 		var targetCount: TextField;
 		switch(iTarget) {
@@ -1630,7 +1630,29 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				break
 			}
 		var textFormat:TextFormat = targetCount.getTextFormat();
-		targetCount.text = String(a_count);
+		//If we're in the consumable queue
+		if (Q == 3) {
+			//If we're displaying a potion group count set the text colour for the counter depending on number of restore potions left in the group (yellow/orange/red early warning system)
+			if (bIsPotionGroup) {
+				switch(iRestoreCount) {
+					case 0:
+						textFormat.color = 0xFF0000 //Red
+						break
+					case <2:
+						textFormat.color = 0xFF9016 //Orange
+						break
+					case <6:
+						textFormat.color = 0xFFDB00 //Yellow
+						break
+					case default:
+						textFormat.color = iColor
+						break
+					}
+			} else {
+				textFormat.color = iColor
+			}
+		}
+		targetCount.text = String(iCount);
 		targetCount.setTextFormat(textFormat);
 	}
 
