@@ -1,3 +1,0 @@
-
-Scriptname iEquip_RechargeRightFXScript extends iEquip_RechargeFXScript Hidden
-
