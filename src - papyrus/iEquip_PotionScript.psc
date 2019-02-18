@@ -984,11 +984,11 @@ function selectAndConsumePotion(int potionGroup)
         endIf
         
         if Q != -1
-            debug.trace("iEquip_PotionScript selectAndConsumePotion - potionQ selected: " + Q + ", iPotionSelectChoice: " + iPotionSelectChoice + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
+            debug.trace("iEquip_PotionScript selectAndConsumePotion - potionQ selected: " + Q + ", iPotionSelectChoice: " + iPotionSelectChoice + ", in combat: " + PlayerRef.IsInCombat())
             int targetPotion ; Default value is 0 which is the array index for the strongest potion of the type requested
             bool isRestore = (Q == 0 || Q == 3 || Q == 6)
             ; If MCM setting is Use Weakest First, or MCM setting is Smart Select then check for weapons not drawn and current stat value as percent of current max including buffs against threshold set, then set the target to the last potion in the queue
-            if iPotionSelectChoice == 2 || (iPotionSelectChoice == 1 && !(PlayerRef.IsWeaponDrawn() || (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV))) <= fSmartConsumeThreshold))    
+            if iPotionSelectChoice == 2 || (iPotionSelectChoice == 1 && !(PlayerRef.IsInCombat() || (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV))) <= fSmartConsumeThreshold))    
                 targetPotion = jArray.count(aiPotionQ[Q]) - 1
             elseIf isRestore ;Restore queues only - select strongest potion needed to fill current damage
                 targetPotion = smartSelectRestorePotion(Q, currAVDamage)
