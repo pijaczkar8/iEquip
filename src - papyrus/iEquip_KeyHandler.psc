@@ -371,7 +371,7 @@ function runUpdate()
             PM.quickRanged()
         elseIf bNotInLootMenu
             if iWaitingKeyCode == iConsumableKey
-                PM.quickHeal()
+                PM.quickRestore()
             elseIf iWaitingKeyCode == iShoutKey
                 PM.togglePreselectMode()
             endIf

@@ -60,7 +60,8 @@ function drawPage()
 	        if WC.bEquipOnPause
 	            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 	        endIf
-	                
+
+	        MCM.AddToggleOptionST("gen_tgl_showPosInd", "$iEquip_MCM_gen_lbl_showshowPosInd", WC.bShowPositionIndicators)
 	        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
 	        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
 	        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
@@ -232,6 +233,17 @@ State gen_sld_eqpPausDelay
         elseIf currentEvent == "Accept"
             WC.fEquipOnPauseDelay = currentVar
             MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        endIf
+    endEvent
+endState
+
+State gen_tgl_showPosInd
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_showPosInd")
+        elseIf currentEvent == "Select"
+            WC.bShowPositionIndicators = !WC.bShowPositionIndicators
+            MCM.SetToggleOptionValueST(WC.bShowPositionIndicators)
         endIf
     endEvent
 endState

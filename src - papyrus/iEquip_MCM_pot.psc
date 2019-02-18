@@ -38,6 +38,10 @@ function drawPage()
             if PO.iPotionSelectChoice == 1 ; Smart Select
                 MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartConsumeThreshold*100, "{0} %")
             endIf
+            MCM.AddToggleOptionST("pot_tgl_enblRestPotWarn", "$iEquip_MCM_pot_lbl_enblRestPotWarn", PO.bEnableRestorePotionWarnings)
+            if PO.bEnableRestorePotionWarnings
+                MCM.AddToggleOptionST("pot_tgl_lowRestPotNot", "$iEquip_MCM_pot_lbl_lowRestPotNot", PO.bNotificationOnLowRestorePotions)
+            endIf
             MCM.AddEmptyOption()
             if !WC.abPotionGroupEnabled[0]
                 MCM.AddTextOptionST("pot_txt_addHealthGroup", "$iEquip_MCM_gen_lbl_addHealthGroup", "")
@@ -69,12 +73,12 @@ State pot_tgl_enblPotionGroup
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_help_potionGroups")
-        elseIf currentEvent == "Select"
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bPotionGrouping)
             WC.bPotionGrouping = !WC.bPotionGrouping
-            WC.bPotionGroupingOptionsChanged = true
-            MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            WC.bPotionGrouping = true
+            ;If we've just re-enabled Potion Grouping we need to add all three groups back into the consumable queue. If we've just disabled then WC.ApplyChanges() will handle removing any remaining groups
+            if WC.bPotionGrouping
+                WC.addPotionGroups()
+            endIf
             WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
@@ -148,12 +152,38 @@ State pot_sld_StatThreshold
     endEvent
 endState
 
+State pot_tgl_enblRestPotWarn
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblRestPotWarn")
+        elseIf currentEvent == "Select"
+            PO.bEnableRestorePotionWarnings = !PO.bEnableRestorePotionWarnings
+            MCM.SetToggleOptionValueST(PO.bEnableRestorePotionWarnings)
+            WC.bRestorePotionWarningSettingChanged = true
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_tgl_lowRestPotNot
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_lowRestPotNot")
+        elseIf currentEvent == "Select"
+            PO.bNotificationOnLowRestorePotions = !PO.bNotificationOnLowRestorePotions
+            MCM.SetToggleOptionValueST(PO.bNotificationOnLowRestorePotions)
+        endIf
+    endEvent
+endState
+
 State pot_txt_addHealthGroup
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_pot_txt_addHealthGroup")
         elseIf currentEvent == "Select"
             WC.addPotionGroups(0)
+            WC.abPotionGroupAddedBack[0] = true
+            WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent
@@ -165,6 +195,8 @@ State pot_txt_addMagickaGroup
             MCM.SetInfoText("$iEquip_MCM_pot_txt_addMagickaGroup")
         elseIf currentEvent == "Select"
             WC.addPotionGroups(1)
+            WC.abPotionGroupAddedBack[1] = true
+            WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent
@@ -176,6 +208,8 @@ State pot_txt_addStaminaGroup
             MCM.SetInfoText("$iEquip_MCM_pot_txt_addStaminaGroup")
         elseIf currentEvent == "Select"
             WC.addPotionGroups(2)
+            WC.abPotionGroupAddedBack[2] = true
+            WC.bPotionGroupingOptionsChanged = true
             MCM.forcePageReset()
         endIf
     endEvent

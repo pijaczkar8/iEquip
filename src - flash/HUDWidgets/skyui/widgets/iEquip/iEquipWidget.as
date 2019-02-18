@@ -587,49 +587,49 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				itemIcon = leftIcon
 				nameClip = leftName_mc
 				itemName = leftName
-				break
+				break;
 			case 1:
 				iconClip = rightIcon_mc
 				itemIcon = rightIcon
 				nameClip = rightName_mc
 				itemName = rightName
-				break
+				break;
 			case 2:
 				iconClip = shoutIcon_mc
 				itemIcon = shoutIcon
 				nameClip = shoutName_mc
 				itemName = shoutName		
-				break
+				break;
 			case 3:
 				iconClip = consumableIcon_mc
 				itemIcon = consumableIcon
 				nameClip = consumableName_mc
 				itemName = consumableName
-				break
+				break;
 			case 4:
 				iconClip = poisonIcon_mc
 				itemIcon = poisonIcon
 				nameClip = poisonName_mc
 				itemName = poisonName				
-				break
+				break;
 			case 5:
 				iconClip = leftPreselectIcon_mc
 				itemIcon = leftPreselectIcon
 				nameClip = leftPreselectName_mc
 				itemName = leftPreselectName
-				break
+				break;
 			case 6:
 				iconClip = rightPreselectIcon_mc
 				itemIcon = rightPreselectIcon
 				nameClip = rightPreselectName_mc
 				itemName = rightPreselectName
-				break
+				break;
 			case 7:
 				iconClip = shoutPreselectIcon_mc
 				itemIcon = shoutPreselectIcon
 				nameClip = shoutPreselectName_mc
 				itemName = shoutPreselectName
-				break
+				break;
 			};
 		//Store current alpha and scale values so we fade back in to the same settings
 		var currAlpha = iconClip._alpha
@@ -659,19 +659,19 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			case 0:
 				attributesClip = leftAttributeIcons_mc
 				attributeIcons = leftAttributeIcons
-				break
+				break;
 			case 1:
 				attributesClip = rightAttributeIcons_mc
 				attributeIcons = rightAttributeIcons
-				break
+				break;
 			case 5:
 				attributesClip = leftPreselectAttributeIcons_mc
 				attributeIcons = leftPreselectAttributeIcons		
-				break
+				break;
 			case 6:
 				attributesClip = rightPreselectAttributeIcons_mc
 				attributeIcons = rightPreselectAttributeIcons
-				break
+				break;
 			};
 		//Store current alpha and scale values so we fade back in to the same settings
 		var currAttributesAlpha = attributesClip._alpha
@@ -703,10 +703,10 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		switch(iSlot) {
 			case 0:
 				iconClip = leftIcon_mc
-				break
+				break;
 			case 1:
 				iconClip = rightIcon_mc
-				break
+				break;
 			};
 
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
@@ -723,10 +723,10 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		switch(iSlot) {
 			case 0:
 				itemIcon = leftIcon
-				break
+				break;
 			case 1:
 				itemIcon = rightIcon
-				break
+				break;
 			};
 
 		itemIcon.gotoAndStop(sIcon);
@@ -739,19 +739,19 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		switch(iOption) {
 			case 0:
 				backgroundName = "Hidden";
-				break
+				break;
 			case 1:
 				backgroundName = "Square";
-				break
+				break;
 			case 2:
 				backgroundName = "SquareNoBorder";
-				break
+				break;
 			case 3:
 				backgroundName = "Round";
-				break
+				break;
 			case 4:
 				backgroundName = "RoundNoBorder";
-				break
+				break;
 			};
 
 		leftBg_mc.gotoAndStop(backgroundName);
@@ -977,7 +977,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				pIconTargetScale = leftTargetScale;
 				itemNameAlpha = leftNameAlpha;
 				preselectNameAlpha = leftPNameAlpha;
-				break
+				break;
 			case 1:
 				iconClip = rightIcon;
 				iconClip_mc = rightIcon_mc;
@@ -997,7 +997,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				pIconTargetScale = rightTargetScale;
 				itemNameAlpha = rightNameAlpha;
 				preselectNameAlpha = rightPNameAlpha;
-				break
+				break;
 			case 2:
 				iconClip = shoutIcon;
 				iconClip_mc = shoutIcon_mc;
@@ -1017,7 +1017,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				pIconTargetScale = shoutTargetScale;
 				itemNameAlpha = shoutNameAlpha;
 				preselectNameAlpha = shoutPNameAlpha;
-				break
+				break;
 			}
 
 		if (itemNameAlpha < 1.0){
@@ -1135,7 +1135,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				iconAlpha = leftIconAlpha;
 				pIconTargetScale = leftTargetScale;
 				itemNameAlpha = leftNameAlpha;
-				break
+				break;
 			case 1:
 				iconClip = rightIcon;
 				iconClip_mc = rightIcon_mc;
@@ -1154,7 +1154,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				iconAlpha = rightIconAlpha;
 				pIconTargetScale = rightTargetScale;
 				itemNameAlpha = rightNameAlpha;
-				break
+				break;
 			case 2:
 				iconClip = shoutIcon;
 				iconClip_mc = shoutIcon_mc;
@@ -1173,7 +1173,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 				iconAlpha = shoutIconAlpha;
 				pIconTargetScale = shoutTargetScale;
 				itemNameAlpha = shoutNameAlpha;
-				break
+				break;
 			}
 
 		if (itemNameAlpha < 1.0){
@@ -1464,19 +1464,19 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		switch(tweenType) {
 			case 0:
 				TweenLite.to(clip, secs, {_x:endValue, ease:Quad.easeOut});
-				break
+				break;
 			case 1:
 				TweenLite.to(clip, secs, {_y:endValue, ease:Quad.easeOut});
-				break
+				break;
 			case 2:
 				TweenLite.to(clip, secs, {_xscale:endValue, _yscale:endValue, ease:Quad.easeOut});
-				break
+				break;
 			case 3:
 				TweenLite.to(clip, secs, {directionalRotation:{_rotation: endValue + "_short"}, ease:Quad.easeOut});
-				break
+				break;
 			case 4:
 				TweenLite.to(clip, secs, {_alpha:endValue, ease:Quad.easeOut});
-				break
+				break;
 			}
 	}
 
@@ -1542,13 +1542,13 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		switch(potionType) {
 			case 0:
 				potionFlash.gotoAndStop("Health");
-				break
+				break;
 			case 1:
 				potionFlash.gotoAndStop("Stamina");
-				break
+				break;
 			case 2:
 				potionFlash.gotoAndStop("Magicka");
-				break
+				break;
 			}
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:onPotionFlashComplete});
 		tl.to(potionFlash, 0.3, {_alpha:100, ease:Quad.easeOut}, 0)
@@ -1591,16 +1591,16 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		switch(clipIndex) {
 			case 0:
 				counterClip = leftCount_mc;
-				break
+				break;
 			case 1:
 				counterClip = rightCount_mc;
-				break
+				break;
 			case 3:
 				counterClip = consumableCount_mc;
-				break
+				break;
 			case 4:
 				counterClip = poisonCount_mc;
-				break
+				break;
 			}
 		TweenLite.to(counterClip, secs, {_alpha:endValue, ease:Quad.easeOut});
 	}
@@ -1618,38 +1618,39 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		switch(iTarget) {
 			case 0:
 				targetCount = leftCount;
-				break
+				break;
 			case 1:
 				targetCount = rightCount;
-				break
+				break;
 			case 3:
 				targetCount = consumableCount;
-				break
+				break;
 			case 4:
 				targetCount = poisonCount;
-				break
 			}
 		var textFormat:TextFormat = targetCount.getTextFormat();
 		//If we're in the consumable queue
-		if (Q == 3) {
+		if (iTarget == 3) {
 			//If we're displaying a potion group count set the text colour for the counter depending on number of restore potions left in the group (yellow/orange/red early warning system)
 			if (bIsPotionGroup) {
 				switch(iRestoreCount) {
 					case 0:
-						textFormat.color = 0xFF0000 //Red
-						break
-					case <2:
-						textFormat.color = 0xFF9016 //Orange
-						break
-					case <6:
-						textFormat.color = 0xFFDB00 //Yellow
-						break
-					case default:
-						textFormat.color = iColor
-						break
+						textFormat.color = 0xFF0000; //Red
+						break;
+					case 1:
+					case 2:
+						textFormat.color = 0xFF9016; //Orange
+						break;
+					case 3:
+					case 4:
+					case 5:
+						textFormat.color = 0xFFDB00; //Yellow
+						break;
+					default:
+						textFormat.color = iColor;
 					}
 			} else {
-				textFormat.color = iColor
+				textFormat.color = iColor;
 			}
 		}
 		targetCount.text = String(iCount);

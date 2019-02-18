@@ -60,7 +60,6 @@ function rechargeWeapon(int Q)
     else
         string weaponToRecharge = CM.asItemCharge[Q]
         float currentCharge = PlayerRef.GetActorValue(weaponToRecharge)
-        ;float maxCharge = PlayerRef.GetBaseActorValue(weaponToRecharge)
         float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
         float requiredCharge = maxCharge - currentCharge
         debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
@@ -96,22 +95,21 @@ function rechargeWeapon(int Q)
     debug.trace("iEquip_RechargeScript rechargeWeapon end")
 endFunction
 
-;ToDo - once operation confirmed remove debug line and make requiredCharge inline
 int function getRequiredSoul(int Q, float requiredCharge)
     debug.trace("iEquip_RechargeScript getRequiredSoul start")
 	debug.trace("iEquip_RechargeScript getRequiredSoul - Q: " + Q)
     int bestFitSoul
     if requiredCharge > 0
         if requiredCharge < 251.0
-        	bestFitSoul = 1
+        	bestFitSoul = 1 ;Petty
         elseIf requiredCharge < 501.0
-        	bestFitSoul = 2
+        	bestFitSoul = 2 ;Lesser
         elseIf requiredCharge < 1001.0
-        	bestFitSoul = 3
+        	bestFitSoul = 3 ;Common
         elseIf requiredCharge < 2001.0
-        	bestFitSoul = 4
+        	bestFitSoul = 4 ;Greater
         else
-        	bestFitSoul = 5
+        	bestFitSoul = 5 ;Grand
         endIf
     endIf
     if bestFitSoul > 1 && !bAllowOversizedSouls

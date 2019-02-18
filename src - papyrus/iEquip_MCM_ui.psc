@@ -41,12 +41,18 @@ endFunction
 function drawPage()
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+        if WC.bShowPositionIndicators
+            MCM.AddColorOptionST("ui_sld_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
+            MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
+        endIf
         MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
                 
         if WC.bFadeLeftIconWhen2HEquipped
             MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
         endIf
-                
+
+        MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", WC.bFadeIconOnDegrade)
+
         MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
 
         MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
@@ -96,6 +102,49 @@ endFunction
 ; ------------------
 ; - Widget Options -
 ; ------------------
+
+State ui_sld_posIndColor
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_posIndColor")
+        elseIf currentEvent == "Open"
+            MCM.SetColorDialogStartColor(WC.iPositionIndicatorColor)
+            MCM.SetColorDialogDefaultColor(0xFFFFFF)
+        else
+            If currentEvent == "Accept"
+                WC.iPositionIndicatorColor = currentVar as int
+            elseIf currentEvent == "Default"
+                WC.iPositionIndicatorColor = 0xFFFFFF
+            endIf
+            MCM.SetColorOptionValueST(WC.iPositionIndicatorColor)
+            WC.bPositionIndicatorSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_sld_posIndAlpha
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_posIndAlpha")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fPositionIndicatorAlpha*100, 10.0, 100.0, 10.0, 60.0)
+        elseIf currentEvent == "Accept"
+            WC.fPositionIndicatorAlpha = currentVar/100
+            MCM.SetSliderOptionValueST(WC.fPositionIndicatorAlpha*100, "{0}%")
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_tempLvlFade
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tempLvlFade")
+        elseIf currentEvent == "Select"
+            WC.bFadeIconOnDegrade = !WC.bFadeIconOnDegrade
+            WC.bTemperFadeSettingChanged = true
+        endIf 
+    endEvent
+endState
 
 State ui_tgl_fadeLeftIco2h
     event OnBeginState()

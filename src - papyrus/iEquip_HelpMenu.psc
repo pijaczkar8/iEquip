@@ -100,10 +100,16 @@ bool function showHelpMenuProMode() ; Return false to exit
                     endIf
                 endIf
             
-            elseif iAction == 4     ; QuickHeal
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_quickheal1"))
+            elseif iAction == 4     ; QuickRestore
+                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore1"))
                 if iAction == 0
-                    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickheal2"))
+                    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore2"))
+                    if iAction == 0
+                        debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore3"))
+                        if iAction == 0
+                            debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore4"))
+                        endIf
+                    endIf
                 endIf
 
             elseif iAction == 4     ; QuickDualCast

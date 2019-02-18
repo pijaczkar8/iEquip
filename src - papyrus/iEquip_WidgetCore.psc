@@ -57,7 +57,8 @@ ObjectReference property iEquip_MessageObjectReference auto ; populated by scrip
 Message property iEquip_ConfirmAddToQueue auto
 Message property iEquip_OKCancel auto
 Message property iEquip_QueueManagerMenu auto
-Message Property iEquip_UtilityMenu Auto
+Message property iEquip_UtilityMenu auto
+Message property iEquip_OK auto
 
 FormList Property iEquip_AllCurrentItemsFLST Auto
 FormList Property iEquip_RemovedItemsFLST Auto
@@ -168,12 +169,16 @@ float property fNameFadeoutDuration = 1.5 auto hidden
 bool property bBackgroundStyleChanged auto hidden
 bool property bFadeLeftIconWhen2HEquipped = true auto hidden
 float property fLeftIconFadeAmount = 70.0 auto hidden
+bool property bFadeIconOnDegrade = true auto hidden
+bool property bTemperFadeSettingChanged auto hidden
 
 bool property bDropShadowEnabled = true auto hidden
 bool property bDropShadowSettingChanged auto hidden
 
 bool property bEmptyPotionQueueChoiceChanged auto hidden
+bool[] property abPotionGroupAddedBack auto hidden
 bool property bPotionGroupingOptionsChanged auto hidden
+bool property bRestorePotionWarningSettingChanged auto hidden
 
 bool property bAllowPoisonSwitching = true auto hidden
 bool property bAllowPoisonTopUp = true auto hidden
@@ -183,6 +188,11 @@ int property iShowPoisonMessages auto hidden
 int property iPoisonIndicatorStyle = 1 auto hidden
 bool property bPoisonIndicatorStyleChanged auto hidden
 bool property bBeastModeOptionsChanged auto hidden
+
+bool property bShowPositionIndicators = true auto hidden
+int property iPositionIndicatorColor = 0xFFFFFF auto hidden
+float property fPositionIndicatorAlpha = 0.6 auto hidden
+bool property bPositionIndicatorSettingsChanged auto hidden
 
 bool property bShowAttributeIcons = true auto hidden
 bool property bAttributeIconsOptionChanged auto hidden
@@ -283,6 +293,7 @@ Event OnWidgetInit()
 	abPoisonInfoDisplayed = new bool[2]
 	abQuickDualCastSchoolAllowed = new bool[5]
 	abPotionGroupEnabled = new bool[3]
+	abPotionGroupAddedBack = new bool[3]
 	
 	int i
 	while i < 8
@@ -964,6 +975,25 @@ function addPotionGroups(int groupToAdd = -1)
 	debug.trace("iEquip_WidgetCore addPotionGroups end")
 endFunction
 
+function removePotionGroups()
+	debug.trace("iEquip_WidgetCore removePotionGroups start")
+	int i
+	while i < 3
+		if abPotionGroupEnabled[i]
+			int queueIndex = findInQueue(3, asPotionGroups[i])
+			if queueIndex > -1
+				jArray.eraseIndex(3, queueIndex)
+			endIf
+			int iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_PotionGroupRemoved{" + asPotionGroups[i] + "}"))
+			if iButton == 0
+				PO.addIndividualPotionsToQueue(i)
+			endIf
+		endIf
+		i += 1
+	endWhile
+	debug.trace("iEquip_WidgetCore removePotionGroups end")
+endFunction
+
 function addFists()
 	debug.trace("iEquip_WidgetCore addFists start")
 	if findInQueue(1, "$iEquip_common_Unarmed") == -1
@@ -1479,7 +1509,7 @@ function setSlotCount(int Q, int count)
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q) ;Which slot we're updating
 		UICallback.PushInt(iHandle, count) ;New count
-		if Q == 3
+		if Q == 3 && PO.bEnableRestorePotionWarnings
 			int iPotionGroup = asPotionGroups.Find(asCurrentlyEquipped[3])
 			UICallback.PushBool(iHandle, iPotionGroup > -1) ;isPotionGroup so we can set the early warning colour if needed
 			if iPotionGroup > -1
@@ -1581,10 +1611,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
                         endIf
                         targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
                     endWhile
-			    elseIf Q < 3
+			    else
 			    	if !(Q == 1 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed")
 			    		targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
-			    		if Q < 2 && !bAllowWeaponSwitchHands
+			    		if Q < 2 && !jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipType") == 22 && !bAllowWeaponSwitchHands
 			    			int otherHand = (Q + 1) % 2
 					        while targetItem == PlayerRef.GetEquippedObject(otherHand) && (PlayerRef.GetItemCount(targetItem) < 2)
 					            targetIndex = targetIndex + move
@@ -1598,8 +1628,6 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 					        endWhile
 					    endIf
 				    endIf
-			    else
-			        debug.trace("Error Occured")
 			    endIf
 		    endIf
 			;if we're switching because of a hand to hand swap in EquipPreselectedItem then if the targetIndex matches the currently preselected item skip past it when advancing the main queue.
@@ -2980,6 +3008,8 @@ int function showTranslatedMessage(int theMenu, string theString)
 		iButton = iEquip_QueueManagerMenu.Show()
 	elseIf theMenu == 3
 		iButton = iEquip_UtilityMenu.Show()
+	elseIf theMenu == 4
+		iButton = iEquip_OK.Show()
 	endIf
 	iEquip_MessageAlias.Clear()
 	iEquip_MessageObjectReference.Disable()
@@ -3829,17 +3859,21 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	endIf
 	if (iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
 		abPotionGroupEnabled[asPotionGroups.Find(itemName)] = false
+		((Self as Form) as iEquip_UILIB).closeQueueMenu()
 		if bFirstAttemptToDeletePotionGroup
 			bFirstAttemptToDeletePotionGroup = false
 			if bShowTooltips
-				((Self as Form) as iEquip_UILIB).closeQueueMenu()
-				debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
-				initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
-				return
+				int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
 			endIf
 		endIf
+		int iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_PotionGroupRemoved{" + itemName + "}"))
+		if iButton == 0
+			PO.addIndividualPotionsToQueue(asPotionGroups.Find(itemName))
+		endIf
+		initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
+	else
+		QueueMenuUpdate(queueLength, iIndex)
 	endIf
-	QueueMenuUpdate(queueLength, iIndex)
 	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue end")
 endFunction
 
@@ -4025,10 +4059,37 @@ function ApplyChanges()
 			endIf
 		endIf
 		if bPotionGroupingOptionsChanged
-		    if !bPotionGrouping && (asPotionGroups.Find(asCurrentlyEquipped[3]) > -1)
-		        cycleSlot(3)
+		    if !bPotionGrouping
+		    	;If we've just turned potion grouping off remove any of the three groups still in the consumable queue and advance the widget if one of them is currently shown
+		    	removePotionGroups()
+		    	if (asPotionGroups.Find(asCurrentlyEquipped[3]) > -1)
+		        	cycleSlot(3)
+		        endIf
+		    else
+		    	i = 0
+		    	while i < 3
+		    		if abPotionGroupAddedBack[i]
+		    			int iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_RemovePotionsFromConsumableQueue{" + asPotionGroups[i] + "}"))
+		    			if iButton == 0
+		    				PO.removeGroupedPotionsFromConsumableQueue(i)
+		    			endIf
+		    			abPotionGroupAddedBack[i] = false
+		    		endIf
+		    		i += 1
+		    	endWhile
 		    endIf
 	        bPotionGroupingOptionsChanged = false
+		endIf
+		if bRestorePotionWarningSettingChanged
+			bRestorePotionWarningSettingChanged = false
+			int potionGroup = asPotionGroups.Find(asCurrentlyEquipped[3])
+			if (potionGroup > -1)
+	        	setSlotCount(3, PO.getPotionGroupCount(potionGroup))
+	        endIf
+		endIf
+		if bPositionIndicatorSettingsChanged
+			bPositionIndicatorSettingsChanged = false
+			
 		endIf
 	    if EM.isEditMode
 	        EM.LoadAllElements()

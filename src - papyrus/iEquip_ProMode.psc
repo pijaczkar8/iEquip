@@ -5,6 +5,7 @@ Import UI
 Import UICallback
 Import Utility
 import _Q2C_Functions
+import iEquip_ActorExt
 import iEquip_FormExt
 import iEquip_SpellExt
 import iEquip_StringExt
@@ -38,7 +39,13 @@ int iPreviousRightHandIndex
 ;MCM Properties
 bool property bQuickShieldEnabled auto hidden
 bool property bQuickRangedEnabled auto hidden
-bool property bQuickHealEnabled auto hidden
+bool property bQuickRestoreEnabled auto hidden
+float property fQuickRestoreThreshold = 0.7 auto hidden
+bool property bQuickHealEnabled = true auto hidden
+bool property bQuickHealUseFallback = true auto hidden
+bool property bQuickStaminaEnabled = true auto hidden
+bool property bQuickMagickaEnabled = true auto hidden
+bool property bQuickBuffEnabled = true auto hidden
 bool property bPreselectEnabled auto hidden
 bool property bShoutPreselectEnabled = true auto hidden
 bool property bPreselectSwapItemsOnEquip auto hidden
@@ -56,6 +63,7 @@ bool property bQuickDualCastMustBeInBothQueues auto hidden
 bool property bQuickHealPreferMagic auto hidden
 int property iQuickHealEquipChoice = 2 auto hidden
 bool property bQuickHealSwitchBackEnabled = true auto hidden
+bool property bQuickHealSwitchBackAndRestore = true auto hidden
 
 actor property PlayerRef auto
 
@@ -1295,37 +1303,58 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 	debug.trace("iEquip_ProMode quickDualCastEquipSpellInOtherHand end")
 endFunction
 
-function quickHeal()
+function quickRestore()
+	debug.trace("iEquip_ProMode quickRestore start")
+	if bQuickRestoreEnabled
+		bool bWeaponsDrawn = PlayerRef.IsWeaponDrawn()
+		if bQuickHealEnabled
+	        if bCurrentlyQuickHealing
+	        	debug.trace("iEquip_ProMode quickRestore - bCurrentlyQuickHealing, switching back")
+	            quickHealSwitchBack(bWeaponsDrawn)
+	        else
+	        	debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
+	        	quickHeal(bWeaponsDrawn)
+	        endIf
+	    endIf
+
+	    if bQuickStaminaEnabled && ((!bWeaponsDrawn && bQuickBuffEnabled) || (bWeaponsDrawn && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26))) <= fQuickRestoreThreshold))
+	    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Stamina")
+	    	PO.quickRestoreFindAndConsumePotion(2, !bWeaponsDrawn) ;Stamina
+	    endIf
+
+	    if bQuickMagickaEnabled && ((!bWeaponsDrawn && bQuickBuffEnabled) || (bWeaponsDrawn && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25))) <= fQuickRestoreThreshold))
+	    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Magicka")
+	    	PO.quickRestoreFindAndConsumePotion(1, !bWeaponsDrawn) ;Magicka
+	    endIf
+	endIf
+    debug.trace("iEquip_ProMode quickRestore end")
+endFunction
+
+function quickHeal(bool bWeaponsDrawn)
 	debug.trace("iEquip_ProMode quickHeal start")
-    if bQuickHealEnabled
-        if bCurrentlyQuickHealing
-            quickHealSwitchBack()
-        else
-            bool actionTaken
-            if bQuickHealPreferMagic
-                actionTaken = quickHealFindAndEquipSpell()
-            elseIf iEquip_ActorExt.GetAVDamage(PlayerRef, 24) > 0
-                actionTaken = PO.quickHealFindAndConsumePotion()
+    bool actionTaken
+    if bQuickHealPreferMagic
+        actionTaken = quickHealFindAndEquipSpell()
+    elseIf ((!bWeaponsDrawn && bQuickBuffEnabled) || (bWeaponsDrawn && (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24))) <= fQuickRestoreThreshold))
+        actionTaken = PO.quickRestoreFindAndConsumePotion(0, !bWeaponsDrawn)
+    else
+    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
+    	actionTaken = true
+    endIf
+    if !actionTaken && bQuickHealUseFallback
+        if bQuickHealPreferMagic
+        	if ((!bWeaponsDrawn && bQuickBuffEnabled) || (bWeaponsDrawn && (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24))) <= fQuickRestoreThreshold))
+            	actionTaken = PO.quickRestoreFindAndConsumePotion(0, !bWeaponsDrawn)
             else
-            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
-            	actionTaken = true
+            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
+    			actionTaken = true
             endIf
-            if !actionTaken
-                if bQuickHealPreferMagic
-                	if iEquip_ActorExt.GetAVDamage(PlayerRef, 24) > 0
-                    	actionTaken = PO.quickHealFindAndConsumePotion()
-                    else
-                    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
-            			actionTaken = true
-                    endIf
-                else
-                    actionTaken = quickHealFindAndEquipSpell()
-                endIf
-            endIf
-            if !actionTaken
-                debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QHNotFound"))
-            endIf
+        else
+            actionTaken = quickHealFindAndEquipSpell()
         endIf
+    endIf
+    if !actionTaken
+        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QHNotFound"))
     endIf
     debug.trace("iEquip_ProMode quickHeal end")
 endFunction
@@ -1445,7 +1474,7 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting
 	debug.trace("iEquip_ProMode quickHealEquipSpell end")
 endFunction
 
-function quickHealSwitchBack()
+function quickHealSwitchBack(bool bWeaponsDrawn)
 	debug.trace("iEquip_ProMode quickHealSwitchBack start")
 	bCurrentlyQuickHealing = false
 	WC.aiCurrentQueuePosition[0] = iPreviousLeftHandIndex
@@ -1464,6 +1493,9 @@ function quickHealSwitchBack()
 		WC.checkAndEquipShownHandItem(1)
 	else
 		debug.trace("iEquip_ProMode quickHealSwitchBack - Something went wrong!")
+	endIf
+	if bQuickHealSwitchBackAndRestore && bWeaponsDrawn
+		bool actionTaken = PO.quickRestoreFindAndConsumePotion(1) ;Magicka potions
 	endIf
 	iQuickHealSlotsEquipped = -1 ;Reset
 	debug.trace("iEquip_ProMode quickHealSwitchBack end")
