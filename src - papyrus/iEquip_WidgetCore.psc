@@ -1716,7 +1716,7 @@ endFunction
 
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false, bool calledByQuickRanged = false)
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start")
-	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
+	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
 	int targetIndex = aiCurrentQueuePosition[Q]
 	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
     Form targetItem = jMap.getForm(targetObject, "iEquipForm")
@@ -1777,7 +1777,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 					if !calledByQuickRanged
 						AM.selectAmmoQueue(itemType)
 					endIf
-				elseif (AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3)  && !calledByQuickRanged
+				elseif (AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3) && !calledByQuickRanged
 					AM.selectAmmoQueue(itemType)
 					AM.checkAndEquipAmmo(false, true, false)
 					skipSetCount = true
@@ -2651,6 +2651,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     	iEquipSlotId = 2
     endIf
     int otherHand = (Q + 1) % 2
+    bool otherHandUnequipped
     bool justSwitchedHands
     int currRHType = PlayerRef.GetEquippedItemType(1)
     bool previously2H = currRHType == 5 || currRHType == 6 || (currRHType == 9 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3))
@@ -2681,6 +2682,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     	debug.trace("iEquip_WidgetCore cycleHand - Q == 0 && RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypesAlt.Find(currRHType) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands)
     	if !bGoneUnarmed && !b2HSpellEquipped && !equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) == -1
     		UnequipHand(otherHand)
+    		otherHandUnequipped = true
     	endIf
     endif
     ;In case we are re-equipping from an unarmed or 2H spell state
@@ -2706,7 +2708,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		else
 			;if item is anything other than a spell check if it is already equipped, possibly in the other hand, and there is only 1 of it
 			int itemCount = PlayerRef.GetItemCount(targetItem)
-		    if (targetItem == PlayerRef.GetEquippedObject(otherHand)) && itemCount < 2
+		    if !otherHandUnequipped && (targetItem == PlayerRef.GetEquippedObject(otherHand)) && itemCount < 2
 		    	debug.trace("iEquip_WidgetCore cycleHand - targetItem found in other hand and only one of them")
 		    	;if it is already equipped and player has allowed switching hands then unequip the other hand first before equipping the target item in this hand
 		        if bAllowWeaponSwitchHands

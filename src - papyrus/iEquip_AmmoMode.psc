@@ -505,8 +505,11 @@ endFunction
 
 bool function switchingRangedWeaponType(int itemType)
 	debug.trace("iEquip_AmmoMode switchingRangedWeaponType start")
+	bool switching = (Q != ((itemType == 9) as int))
+	debug.trace("iEquip_AmmoMode switchingRangedWeaponType - switching type: " + switching)
 	debug.trace("iEquip_AmmoMode switchingRangedWeaponType end")
-	return Q != ((itemType == 9) as int)
+	return switching
+	;return Q != ((itemType == 9) as int)
 endFunction
 
 function equipAmmo()
