@@ -85,7 +85,6 @@ bool bMoreHUDLoaded = false
 bool bAddedToQueue = false
 int iQueueToSort = -1 ;Only used if potion added by onPotionAdded
 
-bool property bSettingsChanged = false auto hidden
 bool property bAutoAddPoisons = true auto hidden
 bool property bAutoAddPotions = true auto hidden
 bool property bAutoAddConsumables = true auto hidden
@@ -695,7 +694,7 @@ function checkAndAddToPotionQueue(potion foundPotion)
             WC.abPotionGroupEmpty[group] = false
         endIf
         ;If it isn't a grouped potion, or if potion grouping is disabled then if bAutoAddPotions is enabled add it directly to the consumable queue
-        if bAutoAddPotions && (Q == -1 || !WC.bPotionGrouping)
+        if bAutoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group])
 	        checkAndAddToConsumableQueue(foundPotion, true)
         elseIf WC.asCurrentlyEquipped[3] == potionGroup
             WC.setSlotCount(3, getPotionGroupCount(group))

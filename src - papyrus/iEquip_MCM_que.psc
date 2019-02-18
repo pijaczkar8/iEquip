@@ -24,6 +24,7 @@ function drawPage()
         MCM.SetCursorPosition(1)
         MCM.AddHeaderOption("$iEquip_MCM_que_lbl_autoAddOpts")
         MCM.AddToggleOptionST("que_tgl_autoAddItmQue", "$iEquip_MCM_que_lbl_autoAddItmQue", WC.bAutoAddNewItems)
+        MCM.AddToggleOptionST("que_tgl_autoAddPotions", "$iEquip_MCM_que_lbl_autoAddPotions", PO.bAutoAddPotions)
         MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "$iEquip_MCM_que_lbl_autoAddPoisons", PO.bAutoAddPoisons)
         MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
         MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "$iEquip_MCM_que_lbl_allowCacheRmvItm", WC.bEnableRemovedItemCaching)
@@ -153,6 +154,22 @@ State que_tgl_autoAddItmQue
     endEvent
 endState
 
+State que_tgl_autoAddPotions
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddPotions")
+        else
+            If currentEvent == "Select"
+                PO.bAutoAddPotions = !PO.bAutoAddPotions
+                MCM.SetToggleOptionValueST(PO.bAutoAddPotions)
+            elseIf currentEvent == "Default"
+                PO.bAutoAddPotions = true
+            endIf
+            MCM.SetToggleOptionValueST(PO.bAutoAddPotions)
+        endIf 
+    endEvent
+endState
+
 State que_tgl_autoAddPoisons
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -165,7 +182,6 @@ State que_tgl_autoAddPoisons
                 PO.bAutoAddPoisons = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddPoisons)
-            PO.bSettingsChanged = true
         endIf 
     endEvent
 endState
@@ -182,7 +198,6 @@ State que_tgl_autoAddConsumables
                 PO.bAutoAddConsumables = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddConsumables)
-            PO.bSettingsChanged = true
         endIf 
     endEvent
 endState
