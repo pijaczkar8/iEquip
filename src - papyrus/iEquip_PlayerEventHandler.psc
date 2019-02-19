@@ -58,6 +58,12 @@ FormList property iEquip_AllCurrentItemsFLST Auto
 FormList property iEquip_AmmoItemsFLST Auto
 FormList property iEquip_PotionItemsFLST Auto
 
+Formlist[] property blackListFLSTs auto hidden
+
+Formlist Property iEquip_LeftHandBlacklistFLST Auto
+Formlist Property iEquip_RightHandBlacklistFLST Auto
+Formlist Property iEquip_GeneralBlacklistFLST Auto ;Shout, Consumable and Poison Queues
+
 FormList Property iEquip_OnObjectEquippedFLST Auto
 
 bool property bPoisonSlotEnabled = true auto hidden
@@ -114,6 +120,7 @@ Event OnInit()
     aPlayerBaseVampireRaces[9] = WoodElfRaceVampire
 
     bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
+
     itemTypesToProcess = new int[6]
 	itemTypesToProcess[0] = 22 ;Spells or shouts
 	itemTypesToProcess[1] = 23 ;Scrolls
@@ -121,6 +128,12 @@ Event OnInit()
 	itemTypesToProcess[3] = 41 ;Weapons
 	itemTypesToProcess[4] = 42 ;Ammo
 	itemTypesToProcess[5] = 119 ;Powers
+
+	blackListFLSTs = new formlist[3]
+	blackListFLSTs[0] = iEquip_LeftHandBlacklistFLST
+	blackListFLSTs[1] = iEquip_RightHandBlacklistFLST
+	blackListFLSTs[2] = iEquip_GeneralBlacklistFLST
+
 	debug.trace("iEquip_PlayerEventHandler OnInit end")
 endEvent
 
@@ -589,69 +602,72 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
-	;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
-	if !actionTaken && WC.bAutoAddNewItems
-		;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
-		bool freeSpace = true
-		targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
-		if targetIndex >= WC.iMaxQueueLength
-			if WC.bHardLimitQueueSize
-				freeSpace = false
-				blockCall = true
-			else
-				WC.iMaxQueueLength += 1
-			endIf
-		endIf
-		if freeSpace
-			;If there is space in the target queue create a new jMap object and add it to the queue
-			debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
-			int itemID = WC.createItemID(itemName, queuedForm.GetFormID())
-			int iEquipItem = jMap.object()
-			string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
-			jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
-			jMap.setInt(iEquipItem, "iEquipItemID", itemID)
-			jMap.setInt(iEquipItem, "iEquipType", itemType)
-			jMap.setStr(iEquipItem, "iEquipName", itemName)
-			jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
-			if equippedSlot < 2
-				if itemType == 22
-					if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
-						jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
-					else
-						jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
-					endIf
-					jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
-				endIf
-				;These will be set correctly by WC.CycleHand() and associated functions
-				jMap.setInt(iEquipItem, "isEnchanted", 0)
-				jMap.setInt(iEquipItem, "isPoisoned", 0)
-			endIf
-			jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
-			;If it's not already in the AllItems formlist because it's in the other hand queue add it now
-			if !formFound
-				iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
-				updateEventFilter(iEquip_AllCurrentItemsFLST)
-			endIf
-			;Send to moreHUD if loaded
-			if WC.bMoreHUDLoaded
-				if formFound
-					AhzMoreHudIE.RemoveIconItem(itemID)
-					AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) ;Both queues
+	;Check that the queuedForm isn't blacklisted for the slot it's been equipped to
+	if !blackListFLSTSs[equippedSlot].HasForm(queuedForm)
+		;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
+		if !actionTaken && WC.bAutoAddNewItems
+			;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
+			bool freeSpace = true
+			targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
+			if targetIndex >= WC.iMaxQueueLength
+				if WC.bHardLimitQueueSize
+					freeSpace = false
+					blockCall = true
 				else
-					AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
+					WC.iMaxQueueLength += 1
 				endIf
 			endIf
-			;Now update the widget to show the equipped item
-			WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
-			WC.asCurrentlyEquipped[equippedSlot] = itemName
-			if equippedSlot < 2 || WC.bShoutEnabled
-				WC.updateWidget(equippedSlot, targetIndex, false, true)
+			if freeSpace
+				;If there is space in the target queue create a new jMap object and add it to the queue
+				debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
+				int itemID = WC.createItemID(itemName, queuedForm.GetFormID())
+				int iEquipItem = jMap.object()
+				string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
+				jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
+				jMap.setInt(iEquipItem, "iEquipItemID", itemID)
+				jMap.setInt(iEquipItem, "iEquipType", itemType)
+				jMap.setStr(iEquipItem, "iEquipName", itemName)
+				jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+				if equippedSlot < 2
+					if itemType == 22
+						if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
+							jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
+						else
+							jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
+						endIf
+						jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
+					endIf
+					;These will be set correctly by WC.CycleHand() and associated functions
+					jMap.setInt(iEquipItem, "isEnchanted", 0)
+					jMap.setInt(iEquipItem, "isPoisoned", 0)
+				endIf
+				jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
+				;If it's not already in the AllItems formlist because it's in the other hand queue add it now
+				if !formFound
+					iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
+					updateEventFilter(iEquip_AllCurrentItemsFLST)
+				endIf
+				;Send to moreHUD if loaded
+				if WC.bMoreHUDLoaded
+					if formFound
+						AhzMoreHudIE.RemoveIconItem(itemID)
+						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) ;Both queues
+					else
+						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
+					endIf
+				endIf
+				;Now update the widget to show the equipped item
+				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
+				WC.asCurrentlyEquipped[equippedSlot] = itemName
+				if equippedSlot < 2 || WC.bShoutEnabled
+					WC.updateWidget(equippedSlot, targetIndex, false, true)
+				endIf
 			endIf
 		endIf
-	endIf
-	;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
-	if !blockCall && equippedSlot < 2
-		WC.checkAndEquipShownHandItem(equippedSlot, false, true)
+		;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
+		if !blockCall && equippedSlot < 2
+			WC.checkAndEquipShownHandItem(equippedSlot, false, true)
+		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
 endFunction

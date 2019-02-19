@@ -15,6 +15,7 @@ actor property PlayerRef auto
 
 FormList Property iEquip_AllCurrentItemsFLST Auto
 FormList Property iEquip_PotionItemsFLST Auto
+Formlist Property iEquip_GeneralBlacklistFLST Auto ;To block individual potions and poisons previously manually removed through the queue menus from being auto-added again. Does not affect Potion Groups
 
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
@@ -651,10 +652,10 @@ function checkAndAddToPotionQueue(potion foundPotion)
     debug.trace("iEquip_PotionScript checkAndAddToPotionQueue start")
     ;Check if the nth potion is a poison or a food and switch functions if required
     bAddedToQueue = false
-    if foundPotion.isPoison() && bAutoAddPoisons
+    if foundPotion.isPoison() && bAutoAddPoisons && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
         checkAndAddToPoisonQueue(foundPotion)
 
-    elseIf foundPotion.isFood() && bAutoAddConsumables
+    elseIf foundPotion.isFood() && bAutoAddConsumables && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
         checkAndAddToConsumableQueue(foundPotion)
 
     else
@@ -694,7 +695,7 @@ function checkAndAddToPotionQueue(potion foundPotion)
             WC.abPotionGroupEmpty[group] = false
         endIf
         ;If it isn't a grouped potion, or if potion grouping is disabled then if bAutoAddPotions is enabled add it directly to the consumable queue
-        if bAutoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group])
+        if bAutoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group]) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
 	        checkAndAddToConsumableQueue(foundPotion, true)
         elseIf WC.asCurrentlyEquipped[3] == potionGroup
             WC.setSlotCount(3, getPotionGroupCount(group))

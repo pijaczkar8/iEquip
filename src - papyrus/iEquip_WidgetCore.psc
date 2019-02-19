@@ -3418,6 +3418,12 @@ function addToQueue(int Q)
 					jArray.addObj(aiTargetQ[Q], iEquipItem)
 					iEquip_AllCurrentItemsFLST.AddForm(itemForm)
 					EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+					;Remove added item from the relevant blackList
+					if Q < 2
+			        	EH.blackListFLSTs[Q].RemoveAddedForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
+			        else
+			        	EH.blackListFLSTs[2].RemoveAddedForm(itemForm) ;iEquip_GeneralBlacklistFLST
+			        endIf
 					success = true
 				else
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_QIsFull{" + asQueueName[Q] + "}"))
@@ -3855,6 +3861,12 @@ function QueueMenuRemoveFromQueue(int iIndex)
 				endIf
 				keepInFLST = true
 			endIf
+        endIf
+        ;Add manually removed items to the relevant blackList
+        if iQueueMenuCurrentQueue < 2
+        	EH.blackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
+        else
+        	EH.blackListFLSTs[2].AddForm(itemForm) ;iEquip_GeneralBlacklistFLST
         endIf
         if !keepInFLST
         	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
