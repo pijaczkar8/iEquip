@@ -1056,7 +1056,7 @@ event OnMenuClose(string _sCurrentMenu)
 	endWhile
 	sCurrentMenu = ""
 	sEntryPath = ""
-	debug.trace("iEquip_WidgetCore OnWidgetLoad end")
+	debug.trace("iEquip_WidgetCore OnMenuClose end")
 endEvent
 
 function refreshGearedUp()
@@ -2640,24 +2640,37 @@ endFunction
 
 function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, bool equippingOnAutoAdd = false)
 	debug.trace("iEquip_WidgetCore cycleHand start")
-    ;When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
     debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", itemType: " + itemType + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
+   	
+   	bool otherHandUnequipped
+    bool justSwitchedHands
+    bool previouslyUnarmedOr2HSpell
+
+   	bBlockSwitchBackToBoundSpell = true
+   	
    	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
+    
+    ;Set targetObjectIs2hOrRanged to true if the item we're about to equip is a 2H or ranged weapon
     if itemType == -1
     	itemType = jMap.getInt(targetObject, "iEquipType")
     endIf
+    bool targetObjectIs2hOrRanged = (ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3))
+   	
+   	;When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
    	int iEquipSlotId = 1
    	if Q == 0
     	iEquipSlotId = 2
     endIf
     int otherHand = (Q + 1) % 2
-    bool otherHandUnequipped
-    bool justSwitchedHands
-    int currRHType = PlayerRef.GetEquippedItemType(1)
-    bool previously2H = currRHType == 5 || currRHType == 6 || (currRHType == 9 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3))
-    bool previouslyUnarmedOr2HSpell
-    bool targetObjectIs2hOrRanged = (ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3))
-    bBlockSwitchBackToBoundSpell = true
+
+    ;Get the current (or previous if equippingOnAutoAdd) right hand item type and set previously2H to true if it is/was a 2H weapon or 2H spell
+    int currRHType
+    if equippingOnAutoAdd
+    	currRHType = jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType")
+    else
+    	currRHType = PlayerRef.GetEquippedItemType(1)
+    endIf
+    bool previously2H = currRHType == 5 || currRHType == 6 || (equippingOnAutoAdd && currRHType == 22 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)) || (!equippingOnAutoAdd && currRHType == 9 && (PlayerRef.GetEquippedObject(1) as spell).GetEquipType() == 3)
     
     ;Hide the attribute icons ready to show full poison and enchantment elements if required
     hideAttributeIcons(Q)
@@ -2667,12 +2680,12 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	if bSwitchingHands
 		bSwitchingHands = false
 		justSwitchedHands = true
+	;Otherwise unequip current item if we need to
 	elseif !bGoneUnarmed && !equippingOnAutoAdd
-		;Otherwise unequip current item
 		UnequipHand(Q)
 	endIf
 	;if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place
-    if (Q == 0 && (ai2HWeaponTypesAlt.Find(currRHType) > -1)) || ((bGoneUnarmed || b2HSpellEquipped) && !targetObjectIs2hOrRanged) || targetObjectIs2hOrRanged
+    if (Q == 0 && ((equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) > -1) || (!equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) > -1))) || (targetObjectIs2hOrRanged || (bGoneUnarmed || b2HSpellEquipped))
     	if !targetObjectIs2hOrRanged
     		bSwitchingHands = true
     	endIf
@@ -2688,6 +2701,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     ;In case we are re-equipping from an unarmed or 2H spell state
 	bGoneUnarmed = false
 	b2HSpellEquipped = false
+	
 	if !equippingOnAutoAdd
 		;if target item is a spell equip straight away
 		if itemType == 22
@@ -3935,6 +3949,7 @@ function QueueMenuClearQueue()
         	int i
         	while i < 3
         		if abPotionGroupEnabled[i]
+        			abPotionGroupEnabled[i] = false
         			addPotionGroups(i)
         			if (!abPotionGroupEmpty[i] || PO.iEmptyPotionQueueChoice == 0)
                 		aiCurrentQueuePosition[3] = aiCurrentQueuePosition[3] + 1
