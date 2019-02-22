@@ -174,6 +174,11 @@ bool property bTemperFadeSettingChanged auto hidden
 
 bool property bDropShadowEnabled = true auto hidden
 bool property bDropShadowSettingChanged auto hidden
+float property fDropShadowAlpha = 0.8 auto hidden
+float property fDropShadowAngle = 105.0 auto hidden
+int property iDropShadowBlur = 2 auto hidden
+float property fDropShadowDistance = 2.0 auto hidden
+float property fDropShadowStrength = 1.0 auto hidden
 
 bool property bEmptyPotionQueueChoiceChanged auto hidden
 bool[] property abPotionGroupAddedBack auto hidden
@@ -525,11 +530,14 @@ function refreshWidgetOnLoad()
 	if !bDropShadowEnabled
 		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
 	endIf
+	initQueuePositionIndicators()
+	int count
 	while Q < 8
+		count = jArray.count(aiTargetQ[Q])
 		abIsNameShown[Q] = true
 		if Q < 5
-			if Q < 3 && (jArray.count(aiTargetQ[Q]) < 1 || !PlayerRef.GetEquippedObject(Q))
-				setSlotToEmpty(Q, true, (jArray.count(aiTargetQ[Q]) > 0))
+			if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
+				setSlotToEmpty(Q, true, (count > 0))
 			else
 				if Q < 2
 					checkAndUpdatePoisonInfo(Q)
@@ -556,7 +564,7 @@ function refreshWidgetOnLoad()
 							checkAndFadeConsumableIcon(false)
 						endIf
 					elseIf Q == 4
-						if jArray.count(aiTargetQ[4]) < 1
+						if count < 1
 							handleEmptyPoisonQueue()
 						else
 							setSlotCount(4, PlayerRef.GetItemCount(fItem))
@@ -826,6 +834,24 @@ function resetWidgetsToPreviousState()
 	;Reset enchantment meters and soulgems
 	CM.updateChargeMeters(true)
 	debug.trace("iEquip_WidgetCore resetWidgetsToPreviousState end")
+endFunction
+
+function initQueuePositionIndicators()
+	debug.trace("iEquip_WidgetCore initQueuePositionIndicators start")
+	int i
+	while i < 3
+		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".initQueuePositionIndicator")
+		If(iHandle)
+			UICallback.PushInt(iHandle, i)
+			UICallback.PushInt(iHandle, iPositionIndicatorColor)
+			UICallback.PushFloat(iHandle, iPositionIndicatorColor)
+			UICallback.PushInt(iHandle, jArray.count(aiTargetQ[i]))
+			UICallback.PushBool(iHandle, aiCurrentQueuePosition[Q])
+			UICallback.Send(iHandle)
+		endIf
+		i += 1
+	endWhile
+	debug.trace("iEquip_WidgetCore initQueuePositionIndicators end")
 endFunction
 
 function initDataObjects()
@@ -1532,7 +1558,7 @@ endFunction
 ;QUEUE FUNCTIONALITY CODE
 ;-----------------------------------------------------------------------------------------------------------------------
 
-function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false, bool onItemRemoved = false)
+function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false, bool onItemRemoved = false, bool onKeyPress = false)
 	debug.trace("iEquip_WidgetCore cycleSlot start")
 	debug.trace("iEquip_WidgetCore cycleSlot - Q: " + Q + ", Reverse: " + Reverse)
 	debug.trace("iEquip_WidgetCore cycleSlot - abIsNameShown[Q]: " + abIsNameShown[Q])
@@ -1683,6 +1709,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			checkAndFadePoisonIcon(false)
 			Utility.WaitMenuMode(0.3)
 		endIf
+		;Show the queue position indicator if required (only if cycleSlot was called as a result of a cycle hotkey key press)
+		if Q < 3 && onKeyPress && bShowPositionIndicators
+			updateQueuePositionIndicator(Q, queueLength, aiCurrentQueuePosition[Q], targetIndex)
+		endIf
 		;Update the widget to the next queued item immediately then register for bEquipOnPause update or call cycle functions straight away
 		aiCurrentQueuePosition[Q] = targetIndex
 		asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
@@ -1693,12 +1723,19 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			if !ignoreEquipOnPause && bEquipOnPause
 				if Q == 0
 					LHUpdate.registerForEquipOnPauseUpdate(Reverse)
-				elseif Q == 1
+				else
 					RHUpdate.registerForEquipOnPauseUpdate(Reverse)
 				endIf
 			;Otherwise carry on and equip/cycle
 			else
 				checkAndEquipShownHandItem(Q, Reverse)
+				if onKeyPress && bShowPositionIndicators
+					if Q == 0
+						LHPosUpdate.registerForFadeoutUpdate()
+					else
+						RHPosUpdate.registerForFadeoutUpdate()
+					endIf
+				endIf
 			endIf
 		else
 			bool isPotionGroup
@@ -1717,16 +1754,25 @@ endFunction
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false, bool calledByQuickRanged = false)
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start")
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
+	; Hide the position indicator (if !bEquipOnPause we've registered for an update which will handle this)
+	if bEquipOnPause
+		UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
+	endIf
+	
 	int targetIndex = aiCurrentQueuePosition[Q]
 	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
     Form targetItem = jMap.getForm(targetObject, "iEquipForm")
     int itemType = jMap.getInt(targetObject, "iEquipType")
+    
     PM.bCurrentlyQuickRanged = false
     PM.bCurrentlyQuickHealing = false
+    
     if itemType == 7 || itemType == 9
     	AM.checkAndRemoveBoundAmmo(itemType)
     endIf
+    
     bool doneHere
+    
     if !equippingOnAutoAdd
 	    ;if we're equipping Fists
 	    if Q == 1 && itemType == 0
@@ -1920,7 +1966,6 @@ function checkAndEquipShownShoutOrConsumable(int Q, bool Reverse, int targetInde
 		cycleSlot(Q, Reverse)
 	else
 		if Q == 2 && bShoutEnabled && !(targetItem == PlayerRef.GetEquippedShout())
-			;aiIndexOnStartCycle[2] = -1 ;Reset ready for next cycle
 			cycleShout(Q, targetIndex, targetItem)
 		elseif Q == 3 && bConsumablesEnabled
 			cycleConsumable(targetItem, targetIndex, isPotionGroup)
@@ -2028,6 +2073,19 @@ function updateSlotsEnabled()
 		hidePoisonInfo(1)
 	endIf
 	debug.trace("iEquip_WidgetCore updateSlotsEnabled end")
+endFunction
+
+function updateQueuePositionIndicator(int Q, int count)
+	debug.trace("iEquip_WidgetCore initQueuePositionIndicator start - Q: " + Q)
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionIndicator")
+	If(iHandle)
+		UICallback.PushInt(iHandle, Q)
+		UICallback.PushInt(iHandle, count)
+		UICallback.PushBool(iHandle, aiCurrentQueuePosition[Q])
+		UICallback.PushBool(iHandle, newPosition)
+		UICallback.Send(iHandle)
+	endIf
+	debug.trace("iEquip_WidgetCore initQueuePositionIndicator end")
 endFunction
 
 function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cycling = false)
@@ -2933,6 +2991,9 @@ function cycleShout(int Q, int targetIndex, form targetItem)
         PlayerRef.EquipSpell(targetItem as Spell, 2)
     else
         PlayerRef.EquipShout(targetItem as Shout)
+    endIf
+    if bShowPositionIndicators
+    	SPosUpdate.registerForFadeoutUpdate()
     endIf
     debug.trace("iEquip_WidgetCore cycleShout end")
 endFunction
@@ -3996,7 +4057,16 @@ function ApplyChanges()
         bBackgroundStyleChanged = false
 	endIf
 	if bDropShadowSettingChanged && !EM.isEditMode
-        UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", !bDropShadowEnabled)
+		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateTextFieldDropShadow")
+		If(iHandle)
+			UICallback.PushInt(iHandle, fDropShadowAngle as int)
+			UICallback.PushFloat(iHandle, fDropShadowAlpha)
+			UICallback.PushInt(iHandle, iDropShadowBlur)
+			UICallback.PushInt(iHandle, fDropShadowDistance as int)
+			UICallback.PushInt(iHandle, fDropShadowStrength as int)
+			UICallback.PushBool(iHandle, bDropShadowEnabled)
+			UICallback.Send(iHandle)
+		endIf
         bDropShadowSettingChanged = false
 	endIf
 	if bFadeOptionsChanged
@@ -4007,6 +4077,16 @@ function ApplyChanges()
             i += 1
         endwhile
         bFadeOptionsChanged = false
+    endIf
+    if bPositionIndicatorSettingsChanged
+    	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionMarkers")
+		If(iHandle)
+			UICallback.PushInt(iHandle, i)
+			UICallback.PushInt(iHandle, iPositionIndicatorColor)
+			UICallback.PushFloat(iHandle, fPositionIndicatorAlpha)
+			UICallback.Send(iHandle)
+		endIf
+    	bPositionIndicatorSettingsChanged = false
     endIf
     if EH.bPlayerIsABeast
     	if bBeastModeOptionsChanged

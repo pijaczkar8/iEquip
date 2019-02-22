@@ -7,6 +7,8 @@ string[] backgroundStyleOptions
 string[] fadeoutOptions
 string[] firstPressIfNameHiddenOptions
 
+int[] aiDropShadowBlurValues
+
 int iCurrentWidgetFadeoutChoice = 1
 int iCurrentNameFadeoutChoice = 1
 int iAmmoIconStyle
@@ -36,6 +38,15 @@ function initData()
     firstPressIfNameHiddenOptions = new String[2]
     firstPressIfNameHiddenOptions[0] = "$iEquip_MCM_ui_opt_CycleSlot"
     firstPressIfNameHiddenOptions[1] = "$iEquip_MCM_ui_opt_ShowName"
+
+    aiDropShadowBlurValues = new int[6]
+    aiDropShadowBlurValues[0] = 0
+    aiDropShadowBlurValues[1] = 2
+    aiDropShadowBlurValues[2] = 4
+    aiDropShadowBlurValues[3] = 8
+    aiDropShadowBlurValues[4] = 16
+    aiDropShadowBlurValues[5] = 32
+
 endFunction
 
 function drawPage()
@@ -56,8 +67,20 @@ function drawPage()
         MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
 
         MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
-        MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
-                
+        
+       ;We don't want drop shadow settings being messed around with while we are in Edit Mode
+       if !WC.EM.isEditMode
+           MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
+            
+            if WC.bDropShadowEnabled
+                MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha, "{0}%")
+                MCM.AddSliderOptionST("ui_sld_dropShadowAngle", "$iEquip_MCM_ui_lbl_dropShadowAngle", WC.fDropShadowAngle, "{0 " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
+                MCM.AddTextOptionST("ui_txt_dropShadowBlur", "$iEquip_MCM_ui_lbl_dropShadowBlur", WC.iDropShadowBlur + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+                MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0 " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+                MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength, "{0}%")
+            endIf
+        endIf
+
         MCM.SetCursorPosition(1)
         MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_fadeoutopts")
         MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
@@ -221,8 +244,82 @@ State ui_tgl_dropShadow
                 WC.bDropShadowEnabled = true
             endIf
             MCM.SetToggleOptionValueST(WC.bDropShadowEnabled)
+            MCM.forcePageReset()
             WC.bDropShadowSettingChanged = true
         endIf
+    endEvent
+endState
+
+State ui_sld_dropShadowAlpha
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowAlpha")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fDropShadowAlpha*100, 10.0, 100.0, 10.0, 80.0)
+        elseIf currentEvent == "Accept"
+            WC.fDropShadowAlpha = currentVar/100
+            MCM.SetSliderOptionValueST(WC.fDropShadowAlpha*100, "{0}%")
+            WC.bDropShadowSettingChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_sld_dropShadowAngle
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowAngle")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fDropShadowAngle, 0.0, 360.0, 15.0, 105.0)
+        elseIf currentEvent == "Accept"
+            WC.fDropShadowAngle = currentVar
+            MCM.SetSliderOptionValueST(WC.fDropShadowAngle, "{0 " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
+            WC.bDropShadowSettingChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_txt_dropShadowBlur
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowBlur")
+        elseIf currentEvent == "Select"
+            int i = aiDropShadowBlurValues.Find(WC.iDropShadowBlur)
+            i += 1
+            if i > 5
+                i = 0
+            endIf
+            WC.iDropShadowBlur = aiDropShadowBlurValues[i]
+            MCM.SetTextOptionValueST(aiDropShadowBlurValues[i] + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+            WC.bDropShadowSettingChanged = true
+        endIf
+    endEvent
+endState
+
+State ui_sld_dropShadowDistance
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowDistance")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fDropShadowDistance, 0.0, 10.0, 1.0, 2.0)
+        elseIf currentEvent == "Accept"
+            WC.fDropShadowDistance = currentVar
+            MCM.SetSliderOptionValueST(WC.fDropShadowDistance, "{0 " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+            WC.bDropShadowSettingChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_sld_dropShadowStrength
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowStrength")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fDropShadowStrength*100, 25.0, 300.0, 25.0, 100.0)
+        elseIf currentEvent == "Accept"
+            WC.fDropShadowStrength = currentVar/100
+            MCM.SetSliderOptionValueST(WC.fDropShadowStrength*100, "{0}%")
+            WC.bDropShadowSettingChanged = true
+        endIf 
     endEvent
 endState
  
