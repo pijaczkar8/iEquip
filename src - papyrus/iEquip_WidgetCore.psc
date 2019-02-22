@@ -18,18 +18,21 @@ import iEquip_SpellExt
 iEquip_ChargeMeters property CM auto
 iEquip_EditMode property EM auto
 iEquip_KeyHandler property KH auto
-iEquip_RechargeScript Property RC Auto
+iEquip_RechargeScript property RC auto
 iEquip_AmmoMode property AM auto
 iEquip_ProMode property PM auto
 iEquip_BeastMode property BM auto
 iEquip_PotionScript property PO auto
 iEquip_PlayerEventHandler property EH auto
-iEquip_BoundWeaponEventsListener Property BW Auto
+iEquip_BoundWeaponEventsListener property BW auto
 iEquip_AddedItemHandler property AD auto
 iEquip_MCM property MCM auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
+iEquip_LeftPositionIndicatorUpdateScript property LHPosUpdate auto
+iEquip_RightPositionIndicatorUpdateScript property RHPosUpdate auto
+iEquip_ShoutPositionIndicatorUpdateScript property SPosUpdate auto
 iEquip_LeftNameUpdateScript property LNUpdate auto
 iEquip_LeftPoisonNameUpdateScript property LPoisonNUpdate auto
 iEquip_LeftPreselectNameUpdateScript property LPNUpdate auto
@@ -59,9 +62,14 @@ Message property iEquip_OKCancel auto
 Message property iEquip_QueueManagerMenu auto
 Message property iEquip_UtilityMenu auto
 Message property iEquip_OK auto
+Message property iEquip_ConfirmClearQueue auto
+Message property iEquip_ConfirmDeletePreset auto
+Message property iEquip_ConfirmReset auto
+Message property iEquip_ConfirmResetParent auto
+Message property iEquip_ConfirmDiscardChanges auto
 
-FormList Property iEquip_AllCurrentItemsFLST Auto
-FormList Property iEquip_RemovedItemsFLST Auto
+FormList property iEquip_AllCurrentItemsFLST auto
+FormList property iEquip_RemovedItemsFLST auto
 
 Keyword property MagicDamageFire auto
 Keyword property MagicDamageFrost auto
@@ -121,7 +129,7 @@ bool property bAmmoMode auto hidden
 bool bJustLeftAmmoMode
 bool bAmmoModeFirstLook = true
 
-;Auto Unequip Ammo
+;auto Unequip Ammo
 bool property bUnequipAmmo = true auto hidden
 
 ;Geared Up properties and variables
@@ -556,7 +564,7 @@ function refreshWidgetOnLoad()
 						fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")
 					endIf
 					if Q == 3 && potionGroup != -1
-						int count = PO.getPotionGroupCount(potionGroup)
+						count = PO.getPotionGroupCount(potionGroup)
 						setSlotCount(3, count)
 						if count < 1
 							checkAndFadeConsumableIcon(true)
@@ -844,9 +852,9 @@ function initQueuePositionIndicators()
 		If(iHandle)
 			UICallback.PushInt(iHandle, i)
 			UICallback.PushInt(iHandle, iPositionIndicatorColor)
-			UICallback.PushFloat(iHandle, iPositionIndicatorColor)
+			UICallback.PushFloat(iHandle, fPositionIndicatorAlpha)
 			UICallback.PushInt(iHandle, jArray.count(aiTargetQ[i]))
-			UICallback.PushBool(iHandle, aiCurrentQueuePosition[Q])
+			UICallback.PushBool(iHandle, aiCurrentQueuePosition[i])
 			UICallback.Send(iHandle)
 		endIf
 		i += 1
@@ -1196,7 +1204,7 @@ bool property isEnabled
                     	debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
                     endIf
 				endIf
-                
+                initQueuePositionIndicators()
 				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 				UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 				UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
@@ -2075,14 +2083,14 @@ function updateSlotsEnabled()
 	debug.trace("iEquip_WidgetCore updateSlotsEnabled end")
 endFunction
 
-function updateQueuePositionIndicator(int Q, int count)
+function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
 	debug.trace("iEquip_WidgetCore initQueuePositionIndicator start - Q: " + Q)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionIndicator")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q)
 		UICallback.PushInt(iHandle, count)
-		UICallback.PushBool(iHandle, aiCurrentQueuePosition[Q])
-		UICallback.PushBool(iHandle, newPosition)
+		UICallback.PushBool(iHandle, currPos)
+		UICallback.PushBool(iHandle, newPos)
 		UICallback.Send(iHandle)
 	endIf
 	debug.trace("iEquip_WidgetCore initQueuePositionIndicator end")
@@ -2728,7 +2736,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     else
     	currRHType = PlayerRef.GetEquippedItemType(1)
     endIf
-    bool previously2H = currRHType == 5 || currRHType == 6 || (equippingOnAutoAdd && currRHType == 22 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)) || (!equippingOnAutoAdd && currRHType == 9 && (PlayerRef.GetEquippedObject(1) as spell).GetEquipType() == 3)
+    bool previously2H = currRHType == 5 || currRHType == 6 || (equippingOnAutoAdd && currRHType == 22 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)) || (!equippingOnAutoAdd && currRHType == 9 && EquipSlots.Find((PlayerRef.GetEquippedObject(1) as spell).GetEquipType()) == 3)
     
     ;Hide the attribute icons ready to show full poison and enchantment elements if required
     hideAttributeIcons(Q)
@@ -3087,6 +3095,16 @@ int function showTranslatedMessage(int theMenu, string theString)
 		iButton = iEquip_UtilityMenu.Show()
 	elseIf theMenu == 4
 		iButton = iEquip_OK.Show()
+	elseIf theMenu == 5
+		iButton == iEquip_ConfirmClearQueue.Show()
+	elseIf theMenu == 6
+		iButton == iEquip_ConfirmDeletePreset.Show()
+	elseIf theMenu == 7
+		iButton == iEquip_ConfirmReset.Show()
+	elseIf theMenu == 8
+		iButton == iEquip_ConfirmResetParent.Show()
+	elseIf theMenu == 9
+		iButton == iEquip_ConfirmDiscardChanges.Show()
 	endIf
 	iEquip_MessageAlias.Clear()
 	iEquip_MessageObjectReference.Disable()

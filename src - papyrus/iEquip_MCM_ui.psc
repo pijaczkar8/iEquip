@@ -22,12 +22,14 @@ function initData()
     ammoIconOptions[1] = "$iEquip_MCM_ui_opt_Triple"
     ammoIconOptions[2] = "$iEquip_MCM_ui_opt_Quiver"
     
-    backgroundStyleOptions = new String[5]
+    backgroundStyleOptions = new String[7]
     backgroundStyleOptions[0] = "$iEquip_MCM_ui_opt_NoBg"
     backgroundStyleOptions[1] = "$iEquip_MCM_ui_opt_SqBBg"
     backgroundStyleOptions[2] = "$iEquip_MCM_ui_opt_SqNoBBg"
     backgroundStyleOptions[3] = "$iEquip_MCM_ui_opt_RoBBg"
     backgroundStyleOptions[4] = "$iEquip_MCM_ui_opt_RoNoBBg"
+    backgroundStyleOptions[5] = "$iEquip_MCM_ui_opt_RoFade"
+    backgroundStyleOptions[6] = "$iEquip_MCM_ui_opt_Dialogue"
     
     fadeoutOptions = new String[4]
     fadeoutOptions[0] = "$iEquip_MCM_ui_opt_Slow"
@@ -54,7 +56,7 @@ function drawPage()
         MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
         if WC.bShowPositionIndicators
             MCM.AddColorOptionST("ui_sld_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
-            MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
+            MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha*100, "{0}%")
         endIf
         MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
                 
