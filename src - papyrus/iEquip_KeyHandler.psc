@@ -262,22 +262,22 @@ function runUpdate()
         elseIf iWaitingKeyCode == iLeftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
             if AM.bAmmoMode || (PM.bPreselectMode && (RHItemType == 7 || RHItemType == 12))
-                AM.cycleAmmo(bIsUtilityKeyHeld)
+                AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
             else
-                WC.cycleSlot(0, bIsUtilityKeyHeld)
+                WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
             endIf
         elseIf iWaitingKeyCode == iRightKey
-            WC.cycleSlot(1, bIsUtilityKeyHeld)
+            WC.cycleSlot(1, bIsUtilityKeyHeld, false, false, true)
         elseIf bNotInLootMenu
             if iWaitingKeyCode == iShoutKey
                 if WC.bShoutEnabled
-                    WC.cycleSlot(2, bIsUtilityKeyHeld)
+                    WC.cycleSlot(2, bIsUtilityKeyHeld, false, false, true)
                 endIf
             elseIf iWaitingKeyCode == iConsumableKey
                 if WC.bConsumablesEnabled
-                    WC.cycleSlot(3, bIsUtilityKeyHeld)
+                    WC.cycleSlot(3, bIsUtilityKeyHeld, false, false, true)
                 elseIf WC.bPoisonsEnabled
-                    WC.cycleSlot(4, bIsUtilityKeyHeld)
+                    WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
                 endIf
             elseIf iWaitingKeyCode == iOptConsumeKey 
                 if bConsumeItemHotkeyEnabled && WC.bConsumablesEnabled
@@ -289,7 +289,7 @@ function runUpdate()
     elseIf iMultiTap == 2  ; Double tap
         if iWaitingKeyCode == iConsumableKey 
             if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
-                WC.cycleSlot(4, bIsUtilityKeyHeld)
+                WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
             endIf 
         elseif PM.bPreselectMode
             if iWaitingKeyCode == iLeftKey
@@ -304,7 +304,7 @@ function runUpdate()
                 endIf/;
                 if bIsUtilityKeyHeld
                     if AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
-                        AM.cycleAmmo(bIsUtilityKeyHeld)
+                        AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
                     else
                         WC.applyPoison(0)
                     endIf
@@ -345,7 +345,7 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     WC.openQueueManagerMenu(1)
                 elseIf AM.bAmmoMode
-                    WC.cycleSlot(0, bIsUtilityKeyHeld)
+                    WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
                 else
                     WC.applyPoison(0)
                 endIf
@@ -392,13 +392,13 @@ state BEASTMODE
         WC.updateWidgetVisibility()
         ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptConsumeKey/poison key presses
         if iWaitingKeyCode == iLeftKey
-            BM.cycleSlot(0, bIsUtilityKeyHeld)
+            BM.cycleSlot(0, bIsUtilityKeyHeld, true)
         
         elseIf iWaitingKeyCode == iRightKey
-            BM.cycleSlot(1, bIsUtilityKeyHeld)
+            BM.cycleSlot(1, bIsUtilityKeyHeld, true)
         
         elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu
-            BM.cycleSlot(2, bIsUtilityKeyHeld)
+            BM.cycleSlot(2, bIsUtilityKeyHeld, true)
         endIf
         debug.trace("iEquip_KeyHandler runUpdate BEASTMODE end")
     endFunction

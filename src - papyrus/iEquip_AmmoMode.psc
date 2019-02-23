@@ -284,6 +284,10 @@ function AmmoModeAnimateIn()
 	endIf
 	;Update the left hand counter
 	WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(ammoObject, "iEquipForm")))
+	;If queue position indicators are on and permanent update the left indicator
+	if WC.bShowPositionIndicators && WC.bPermanentPositionIndicators
+		WC.updateQueuePositionIndicator(0, jArray.count(aiTargetQ[Q]), aiCurrentAmmoIndex[Q], aiCurrentAmmoIndex[Q])
+	endIf
 	;Show the counter if previously hidden
 	if !WC.abIsCounterShown[0]
 		WC.setCounterVisibility(0, true)
@@ -372,7 +376,7 @@ event onAmmoModeAnimationComplete(string sEventName, string sStringArg, Float fN
 	debug.trace("iEquip_AmmoMode onAmmoModeAnimationComplete end")
 endEvent
 
-function cycleAmmo(bool reverse, bool ignoreEquipOnPause = false)
+function cycleAmmo(bool reverse, bool ignoreEquipOnPause = false, bool onKeyPress = false)
 	debug.trace("iEquip_AmmoMode cycleAmmo start")
 	int queueLength = jArray.count(aiTargetQ[Q])
 	int targetIndex
@@ -389,6 +393,10 @@ function cycleAmmo(bool reverse, bool ignoreEquipOnPause = false)
 		endIf
 	endIf
 	if targetIndex != aiCurrentAmmoIndex[Q]
+		if onKeyPress && WC.bShowPositionIndicators
+			WC.updateQueuePositionIndicator(0, queueLength, aiCurrentAmmoIndex[Q], targetIndex)
+			WC.abCyclingQueue[Q] = true
+		endIf
 		aiCurrentAmmoIndex[Q] = targetIndex
 		checkAndEquipAmmo(reverse, ignoreEquipOnPause)
 	endIf
@@ -473,6 +481,9 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 			else
 				debug.trace("iEquip_AmmoMode checkAndEquipAmmo - about to equip " + asCurrentAmmo[Q])
 				PlayerRef.EquipItemEx(currentAmmoForm as Ammo)
+				if WC.bShowPositionIndicators
+					WC.LHPosUpdate.registerForFadeoutUpdate()
+				endIf
 			endIf
 		endIf
 	endIf
@@ -505,15 +516,18 @@ endFunction
 
 bool function switchingRangedWeaponType(int itemType)
 	debug.trace("iEquip_AmmoMode switchingRangedWeaponType start")
-	bool switching = (Q != ((itemType == 9) as int))
-	debug.trace("iEquip_AmmoMode switchingRangedWeaponType - switching type: " + switching)
 	debug.trace("iEquip_AmmoMode switchingRangedWeaponType end")
-	return switching
-	;return Q != ((itemType == 9) as int)
+	return Q != ((itemType == 9) as int)
 endFunction
 
 function equipAmmo()
 	debug.trace("iEquip_AmmoMode equipAmmo start")
+	if WC.bEquipOnPause
+		WC.abCyclingQueue[0] = false
+		if !WC.bPermanentPositionIndicators
+			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", 0)
+		endIf
+	endIf
 	PlayerRef.EquipItemEx(currentAmmoForm as Ammo)
 	debug.trace("iEquip_AmmoMode equipAmmo end")
 endFunction

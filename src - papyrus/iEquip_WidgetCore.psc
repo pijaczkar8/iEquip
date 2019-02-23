@@ -30,9 +30,9 @@ iEquip_MCM property MCM auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
-iEquip_LeftPositionIndicatorUpdateScript property LHPosUpdate auto
-iEquip_RightPositionIndicatorUpdateScript property RHPosUpdate auto
-iEquip_ShoutPositionIndicatorUpdateScript property SPosUpdate auto
+iEquip_LeftPosIndUpdateScript property LHPosUpdate auto
+iEquip_RightPosIndUpdateScript property RHPosUpdate auto
+iEquip_ShoutPosIndUpdateScript property SPosUpdate auto
 iEquip_LeftNameUpdateScript property LNUpdate auto
 iEquip_LeftPoisonNameUpdateScript property LPoisonNUpdate auto
 iEquip_LeftPreselectNameUpdateScript property LPNUpdate auto
@@ -203,9 +203,13 @@ bool property bPoisonIndicatorStyleChanged auto hidden
 bool property bBeastModeOptionsChanged auto hidden
 
 bool property bShowPositionIndicators = true auto hidden
+bool property bPermanentPositionIndicators auto hidden
 int property iPositionIndicatorColor = 0xFFFFFF auto hidden
-float property fPositionIndicatorAlpha = 0.6 auto hidden
+float property fPositionIndicatorAlpha = 60.0 auto hidden
+int property iCurrPositionIndicatorColor = 0xCCCCCC auto hidden
+float property fCurrPositionIndicatorAlpha = 40.0 auto hidden
 bool property bPositionIndicatorSettingsChanged auto hidden
+bool[] property abCyclingQueue auto hidden
 
 bool property bShowAttributeIcons = true auto hidden
 bool property bAttributeIconsOptionChanged auto hidden
@@ -307,6 +311,7 @@ Event OnWidgetInit()
 	abQuickDualCastSchoolAllowed = new bool[5]
 	abPotionGroupEnabled = new bool[3]
 	abPotionGroupAddedBack = new bool[3]
+	abCyclingQueue = new bool[3]
 	
 	int i
 	while i < 8
@@ -458,6 +463,7 @@ endFunction
 Event OnWidgetLoad()
 	debug.trace("iEquip_WidgetCore OnWidgetLoad start")
 
+	fPositionIndicatorAlpha = 60.0
 	EM.isEditMode = false
 	bPreselectMode = false
 	bCyclingLHPreselectInAmmoMode = false
@@ -853,8 +859,10 @@ function initQueuePositionIndicators()
 			UICallback.PushInt(iHandle, i)
 			UICallback.PushInt(iHandle, iPositionIndicatorColor)
 			UICallback.PushFloat(iHandle, fPositionIndicatorAlpha)
+			UICallback.PushInt(iHandle, iCurrPositionIndicatorColor)
+			UICallback.PushFloat(iHandle, fCurrPositionIndicatorAlpha)
 			UICallback.PushInt(iHandle, jArray.count(aiTargetQ[i]))
-			UICallback.PushBool(iHandle, aiCurrentQueuePosition[i])
+			UICallback.PushInt(iHandle, aiCurrentQueuePosition[i])
 			UICallback.Send(iHandle)
 		endIf
 		i += 1
@@ -1588,7 +1596,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			if Q == 0 && bAmmoMode
 				bCyclingLHPreselectInAmmoMode = true
 			endIf
-			PM.cyclePreselectSlot(Q, queueLength, Reverse)
+			PM.cyclePreselectSlot(Q, queueLength, Reverse, true, onKeyPress)
 		endIf
 	;if name not shown then first cycle press shows name without advancing the queue
 	elseif bFirstPressShowsName && !bPreselectSwitchingHands && !abIsNameShown[Q] && asCurrentlyEquipped[Q] != ""
@@ -1720,6 +1728,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		;Show the queue position indicator if required (only if cycleSlot was called as a result of a cycle hotkey key press)
 		if Q < 3 && onKeyPress && bShowPositionIndicators
 			updateQueuePositionIndicator(Q, queueLength, aiCurrentQueuePosition[Q], targetIndex)
+			abCyclingQueue[Q] = true
 		endIf
 		;Update the widget to the next queued item immediately then register for bEquipOnPause update or call cycle functions straight away
 		aiCurrentQueuePosition[Q] = targetIndex
@@ -1762,9 +1771,12 @@ endFunction
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false, bool calledByQuickRanged = false)
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start")
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
-	; Hide the position indicator (if !bEquipOnPause we've registered for an update which will handle this)
+	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
-		UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
+		abCyclingQueue[Q] = false
+		if !bPermanentPositionIndicators
+			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
+		endIf
 	endIf
 	
 	int targetIndex = aiCurrentQueuePosition[Q]
@@ -2084,16 +2096,17 @@ function updateSlotsEnabled()
 endFunction
 
 function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
-	debug.trace("iEquip_WidgetCore initQueuePositionIndicator start - Q: " + Q)
+	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator start - Q: " + Q + ", count: " + count + ", currPos: " + currPos + ", newPos: " + newPos)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionIndicator")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q)
 		UICallback.PushInt(iHandle, count)
-		UICallback.PushBool(iHandle, currPos)
-		UICallback.PushBool(iHandle, newPos)
+		UICallback.PushInt(iHandle, currPos)
+		UICallback.PushInt(iHandle, newPos)
+		UICallback.PushBool(iHandle, abCyclingQueue[Q])
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_WidgetCore initQueuePositionIndicator end")
+	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator end")
 endFunction
 
 function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cycling = false)
@@ -4077,8 +4090,8 @@ function ApplyChanges()
 	if bDropShadowSettingChanged && !EM.isEditMode
 		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateTextFieldDropShadow")
 		If(iHandle)
-			UICallback.PushInt(iHandle, fDropShadowAngle as int)
 			UICallback.PushFloat(iHandle, fDropShadowAlpha)
+			UICallback.PushInt(iHandle, fDropShadowAngle as int)
 			UICallback.PushInt(iHandle, iDropShadowBlur)
 			UICallback.PushInt(iHandle, fDropShadowDistance as int)
 			UICallback.PushInt(iHandle, fDropShadowStrength as int)
@@ -4099,9 +4112,10 @@ function ApplyChanges()
     if bPositionIndicatorSettingsChanged
     	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionMarkers")
 		If(iHandle)
-			UICallback.PushInt(iHandle, i)
 			UICallback.PushInt(iHandle, iPositionIndicatorColor)
 			UICallback.PushFloat(iHandle, fPositionIndicatorAlpha)
+			UICallback.PushInt(iHandle, iCurrPositionIndicatorColor)
+			UICallback.PushFloat(iHandle, fCurrPositionIndicatorAlpha)
 			UICallback.Send(iHandle)
 		endIf
     	bPositionIndicatorSettingsChanged = false
