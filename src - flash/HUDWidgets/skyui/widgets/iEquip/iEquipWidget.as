@@ -16,9 +16,6 @@ import com.greensock.easing.*;
 import com.greensock.plugins.TweenPlugin;
 import com.greensock.plugins.DirectionalRotationPlugin;
 
-//import skyui.defines.Actor
-//import skyui.defines.Form
-//import skyui.defines.Weapon
 import flash.geom.ColorTransform;
 import flash.geom.Transform;
 
@@ -101,6 +98,13 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	public var consumableCount: TextField;
 	public var poisonName: TextField;
 	public var poisonCount: TextField;
+
+	//Potion Selector Elements
+	public var potionSelector_mc: MovieClip;
+	public var selector: MovieClip;
+	public var restoreText: TextField;
+	public var fortifyText: TextField;
+	public var regenText: TextField;
 	
 	//Edit Mode Guide Instruction Text Fields
 	public var NextPrevInstructionText: TextField;
@@ -316,6 +320,15 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		rightPositionIndicator = widgetMaster.RightHandWidget.rightPositionIndicator_mc.rightPositionIndicator;
 		shoutPositionIndicator = widgetMaster.ShoutWidget.shoutPositionIndicator_mc.shoutPositionIndicator;
 
+		//Set up the potion selector paths
+		potionSelector_mc = widgetMaster.ConsumableWidget.potionSelector_mc;
+		selector = widgetMaster.ConsumableWidget.potionSelector_mc.selector;
+		restoreText = widgetMaster.ConsumableWidget.potionSelector_mc.restoreText;
+		fortifyText = widgetMaster.ConsumableWidget.potionSelector_mc.fortifyText;
+		regenText = widgetMaster.ConsumableWidget.potionSelector_mc.regenText;
+		potionSelector_mc._visible = false;
+		potionSelector_mc.gotoAndStop("right");
+
 		//Set up the preselect icon and text field holder MovieClips
 		leftPreselectIcon_mc = widgetMaster.LeftHandWidget.leftPreselectIcon_mc;
 		leftPreselectAttributeIcons_mc = widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc;
@@ -446,29 +459,29 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 		consumableCount.textAutoSize = "shrink";
 		poisonName.textAutoSize = "shrink";
 		poisonCount.textAutoSize = "shrink";
-		leftIcon.gotoAndStop("Empty")
-		leftPoisonIcon.gotoAndStop("Hidden")
-		leftAttributeIcons.gotoAndStop("Hidden")
-		rightIcon.gotoAndStop("Empty")
-		rightPoisonIcon.gotoAndStop("Hidden")
-		rightAttributeIcons.gotoAndStop("Hidden")
-		shoutIcon.gotoAndStop("Empty")
-		consumableIcon.gotoAndStop("Empty")
-		potionFlashAnim.gotoAndStop("Hide")
-		potionFlashAnim._alpha = 0.0
-		poisonIcon.gotoAndStop("Empty")
-		poisonFlashAnim.gotoAndStop("Hide")
-		poisonFlashAnim._alpha = 0.0
-		leftPreselectIcon.gotoAndStop("Empty")
-		leftPreselectAttributeIcons.gotoAndStop("Hidden")
-		rightPreselectIcon.gotoAndStop("Empty")
-		rightPreselectAttributeIcons.gotoAndStop("Hidden")
-		shoutPreselectIcon.gotoAndStop("Empty")
+		leftIcon.gotoAndStop("Empty");
+		leftPoisonIcon.gotoAndStop("Hidden");
+		leftAttributeIcons.gotoAndStop("Hidden");
+		rightIcon.gotoAndStop("Empty");
+		rightPoisonIcon.gotoAndStop("Hidden");
+		rightAttributeIcons.gotoAndStop("Hidden");
+		shoutIcon.gotoAndStop("Empty");
+		consumableIcon.gotoAndStop("Empty");
+		potionFlashAnim.gotoAndStop("Hide");
+		potionFlashAnim._alpha = 0.0;
+		poisonIcon.gotoAndStop("Empty");
+		poisonFlashAnim.gotoAndStop("Hide");
+		poisonFlashAnim._alpha = 0.0;
+		leftPreselectIcon.gotoAndStop("Empty");
+		leftPreselectAttributeIcons.gotoAndStop("Hidden");
+		rightPreselectIcon.gotoAndStop("Empty");
+		rightPreselectAttributeIcons.gotoAndStop("Hidden");
+		shoutPreselectIcon.gotoAndStop("Empty");
 
-		leftEnchantmentMeter_mc._visible = false
-		leftSoulgem_mc._visible = false
-		rightEnchantmentMeter_mc._visible = false
-		rightSoulgem_mc._visible = false
+		leftEnchantmentMeter_mc._visible = false;
+		leftSoulgem_mc._visible = false;
+		rightEnchantmentMeter_mc._visible = false;
+		rightSoulgem_mc._visible = false;
 
 		//Set up arrays of MovieClips and text elements ready for use in Edit Mode etc
 		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
@@ -709,7 +722,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 	//Used when a bound weapon is equipped to switch from the spell school icon to the bound weapon icon
 	public function updateIconOnly(iSlot: Number, sIcon: String): Void
 	{
-		var iconClip: MovieClip;
+		/*var iconClip: MovieClip;
 		
 		switch(iSlot) {
 			case 0:
@@ -718,8 +731,9 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			case 1:
 				iconClip = rightIcon_mc
 				break;
-			};
+			};*/
 
+		var iconClip: MovieClip = iSlot == 0 ? leftIcon_mc : rightIcon_mc;
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 
 		tl.to(iconClip, 1.2, {_rotation:"+=1080", ease:Strong.easeInOut}, 0)
@@ -729,7 +743,7 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 
 	public function switchToBoundItemIcon(iSlot: Number, sIcon: String): Void
 	{
-		var itemIcon: MovieClip;
+		/*var itemIcon: MovieClip;
 
 		switch(iSlot) {
 			case 0:
@@ -738,8 +752,8 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 			case 1:
 				itemIcon = rightIcon
 				break;
-			};
-
+			};*/
+		var itemIcon: MovieClip = iSlot == 0 ? leftIcon : rightIcon;
 		itemIcon.gotoAndStop(sIcon);
 	}
 
@@ -1835,7 +1849,6 @@ class skyui.widgets.iEquip.iEquipWidget extends WidgetBase
 
 	public function updateQueuePositionIndicator(Q: Number, currentQueueLength: Number, currPosition: Number, newPosition: Number, bCycling: Boolean): Void
 	{
-		//skyui.util.Debug.log("iEquipWidget updateQueuePositionIndicator - Q: " + Q + ", count: " + currentQueueLength + ", currPos: " + currPosition + ", newPos: " + newPosition)
 		var targetIndicator: iEquipPositionIndicator = posIndArray[Q];
 		targetIndicator.update(currentQueueLength, currPosition, newPosition, bCycling);
 	}
