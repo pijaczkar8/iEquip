@@ -163,11 +163,13 @@ bool property bAllowSingleItemsInBothQueues auto hidden
 bool property bAutoAddNewItems = true auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
 int property iMaxCachedItems = 60 auto hidden
+bool property bBlacklistEnabled = true auto hidden
 
 float property fWidgetFadeoutDelay = 20.0 auto hidden
 float property fWidgetFadeoutDuration = 1.5 auto hidden
 bool property bAlwaysVisibleWhenWeaponsDrawn = true auto hidden
 bool property bIsWidgetShown auto hidden
+bool bFadingWidgetOut
 
 float property fMainNameFadeoutDelay = 5.0 auto hidden
 float property fPoisonNameFadeoutDelay = 5.0 auto hidden
@@ -467,6 +469,9 @@ Event OnWidgetLoad()
 	EM.isEditMode = false
 	bPreselectMode = false
 	bCyclingLHPreselectInAmmoMode = false
+	bSwitchingHands = false
+	bPreselectSwitchingHands = false
+	bFadingWidgetOut = false
 	PM.bBlockQuickDualCast = false
 	GotoState("")
 	bLoading = true
@@ -1137,6 +1142,9 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 	debug.trace("iEquip_WidgetCore updateWidgetVisibility - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
 	if show
 		if !bIsWidgetShown
+			while bFadingWidgetOut
+				Utility.WaitMenuMode(0.05)
+			endWhile
 			bIsWidgetShown = true
 			;UpdateWidgetModes()
 			FadeTo(100, 0.2)
@@ -1147,7 +1155,10 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 		endIf
 	elseIf bIsWidgetShown
 		bIsWidgetShown = false
+		bFadingWidgetOut = true
 		FadeTo(0, fDuration)
+		Utility.WaitMenuMode(fDuration)
+		bFadingWidgetOut = false
 	endIf
 	debug.trace("iEquip_WidgetCore updateWidgetVisibility end")
 endFunction
@@ -1579,7 +1590,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	debug.trace("iEquip_WidgetCore cycleSlot - Q: " + Q + ", Reverse: " + Reverse)
 	debug.trace("iEquip_WidgetCore cycleSlot - abIsNameShown[Q]: " + abIsNameShown[Q])
 	;Q: 0 = Left hand, 1 = Right hand, 2 = Shout, 3 = Consumables, 4 = Poisons
-
+	if onKeyPress
+		bSwitchingHands = false
+		bPreselectSwitchingHands = false
+	endIf
 	;Check if queue contains anything and return out if not
 	int targetArray = aiTargetQ[Q]
 	int queueLength = JArray.count(targetArray)
@@ -3109,15 +3123,15 @@ int function showTranslatedMessage(int theMenu, string theString)
 	elseIf theMenu == 4
 		iButton = iEquip_OK.Show()
 	elseIf theMenu == 5
-		iButton == iEquip_ConfirmClearQueue.Show()
+		iButton = iEquip_ConfirmClearQueue.Show()
 	elseIf theMenu == 6
-		iButton == iEquip_ConfirmDeletePreset.Show()
+		iButton = iEquip_ConfirmDeletePreset.Show()
 	elseIf theMenu == 7
-		iButton == iEquip_ConfirmReset.Show()
+		iButton = iEquip_ConfirmReset.Show()
 	elseIf theMenu == 8
-		iButton == iEquip_ConfirmResetParent.Show()
+		iButton = iEquip_ConfirmResetParent.Show()
 	elseIf theMenu == 9
-		iButton == iEquip_ConfirmDiscardChanges.Show()
+		iButton = iEquip_ConfirmDiscardChanges.Show()
 	endIf
 	iEquip_MessageAlias.Clear()
 	iEquip_MessageObjectReference.Disable()
@@ -3258,7 +3272,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	int[] args
 	;if the currently equipped item isn't poisonable, or if it isn't currently poisoned check and remove poison info is showing
 	if cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && bAmmoMode)
-		if abPoisonInfoDisplayed[Q] || forceHide
+		if abPoisonInfoDisplayed[Q] || forceHide || bRefreshingWidget
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - should be hiding poison icon and name now")
 			;Hide the poison icon
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")
@@ -3268,9 +3282,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				UICallback.Send(iHandle)
 			endIf
 			;Hide the poison name
-			if abIsPoisonNameShown[Q]
-				showName(Q, false, true, 0.15)
-			endIf
+			showName(Q, false, true, 0.15)
 			;Hide the counter if it's still showing and not needed
 			if !(itemRequiresCounter(Q, jMap.getInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipType")))
 				setCounterVisibility(Q, false)
@@ -3955,11 +3967,13 @@ function QueueMenuRemoveFromQueue(int iIndex)
 			endIf
         endIf
         ;Add manually removed items to the relevant blackList
-        if iQueueMenuCurrentQueue < 2
-        	EH.blackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
-        else
-        	EH.blackListFLSTs[2].AddForm(itemForm) ;iEquip_GeneralBlacklistFLST
-        endIf
+        if bBlacklistEnabled
+	        if iQueueMenuCurrentQueue < 2
+	        	EH.blackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
+	        else
+	        	EH.blackListFLSTs[2].AddForm(itemForm) ;iEquip_GeneralBlacklistFLST
+	        endIf
+	    endIf
         if !keepInFLST
         	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
         	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)

@@ -86,16 +86,8 @@ endEvent
 function OnWidgetLoad()
 	debug.trace("iEquip_ProMode OnWidgetLoad start")
 	WidgetRoot = WC.WidgetRoot
-	;ToDo - remove
-	aiNameElements = new int[3]
-	aiNameElements[0] = 17
-	aiNameElements[1] = 30
-	aiNameElements[2] = 37
-
-	abPreselectSlotEnabled = new bool[3]
-	abPreselectSlotEnabled[0] = true
-	abPreselectSlotEnabled[1] = true
-	abPreselectSlotEnabled[2] = true
+	bPreselectMode = false
+	bTogglingPreselectOnEquipAll = false
 	debug.trace("iEquip_ProMode OnWidgetLoad end")
 endFunction
 
