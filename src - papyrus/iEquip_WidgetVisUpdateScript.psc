@@ -11,9 +11,9 @@ function registerForWidgetFadeoutUpdate()
 	bWaitingForWidgetFadeoutUpdate = true
 endFunction
 
-function unregisterForNameFadeoutUpdate()
-	UnregisterForUpdate()
+function unregisterForWidgetFadeoutUpdate()
 	bWaitingForWidgetFadeoutUpdate = false
+	UnregisterForUpdate()
 endFunction
 
 event OnUpdate()

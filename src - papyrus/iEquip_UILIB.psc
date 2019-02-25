@@ -1,6 +1,8 @@
 ScriptName iEquip_UILIB Extends Form
 {SkyUILib API - Version 1}
 
+import iEquip_StringExt
+
 ;Private variables
 Bool bMenuOpen
 Bool bCallTextInput
@@ -20,9 +22,6 @@ Int iDefaultColor
 Int[] aCustomColors
 Int iInput
 Int iLoadDelete
-
-Message Property iEquip_ConfirmDeletePreset Auto
-Message Property iEquip_ConfirmClearQueue Auto
 
 iEquip_EditMode Property EM Auto
 iEquip_WidgetCore Property WC Auto
@@ -187,7 +186,7 @@ EndEvent
 Event OnListMenuDeletePreset(String asEventName, String asStringArg, Float afInput, Form akSender)
 	debug.trace("iEquip_UILIB OnListMenuDeletePreset start")
 	If(asEventName == "iEquip_listMenuDeletePreset")
-		int iButton = iEquip_ConfirmDeletePreset.Show()
+		int iButton = WC.showTranslatedMessage(6, iEquip_StringExt.LocalizeString("$iEquip_msg_delPreset"))
         if iButton != 1
         	iInput = 0
         	iLoadDelete = 2
@@ -475,7 +474,7 @@ Event OnQueueMenuClear(String asEventName, String asStringArg, Float afNumArg, F
 	debug.trace("iEquip_UILIB OnQueueMenuClear start")
 	If(asEventName == "iEquip_queueMenuClear")
 		bMenuOpen = False
-		int i = iEquip_ConfirmClearQueue.Show()
+		int i = WC.showTranslatedMessage(5, iEquip_StringExt.LocalizeString("$iEquip_msg_clearQueue"))
 		if i == 0 ;Cancel
 			WC.recallPreviousQueueMenu()
 		else

@@ -393,10 +393,14 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 				updateEventFilter(iEquip_AllCurrentItemsFLST)
 			endIf
 		elseIf actionType == 7 ;Draw Begin
+			debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
+			WVis.unregisterForWidgetFadeoutUpdate() ;Unregister first in case it's just about to fade out
 			if !WC.bIsWidgetShown
 				WC.updateWidgetVisibility()
 			endIf
 		elseIf actionType == 8 ;Draw End
+			debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
+			WVis.unregisterForWidgetFadeoutUpdate()
 			if !WC.bIsWidgetShown ;In case we're drawing a spell which won't have been caught by Draw Begin
 				WC.updateWidgetVisibility()
 			endIf
@@ -603,7 +607,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	endIf
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
 	;Check that the queuedForm isn't blacklisted for the slot it's been equipped to
-	if !blackListFLSTSs[equippedSlot].HasForm(queuedForm)
+	if !blackListFLSTs[equippedSlot].HasForm(queuedForm)
 		;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
 		if !actionTaken && WC.bAutoAddNewItems
 			;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled

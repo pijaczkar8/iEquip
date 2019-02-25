@@ -379,7 +379,7 @@ int function findInQueue(int Q, string itemToFind)
 	endIf
 endFunction
 
-function cycleSlot(int Q, bool Reverse = false)
+function cycleSlot(int Q, bool Reverse = false, bool onKeyPress = false)
 	;Q: 0 = Left hand, 1 = Right hand, 2 = Shout
 	int targetQ = (currRace * 3) + Q
 	int targetArray = aiBMQueues[targetQ]
@@ -417,6 +417,10 @@ function cycleSlot(int Q, bool Reverse = false)
 		else
 			targetIndex = 0
 		endIf
+		if onKeyPress && WC.bShowPositionIndicators
+			WC.updateQueuePositionIndicator(Q, queueLength, aiCurrentBMQueuePosition[targetQ], targetIndex)
+			WC.abCyclingQueue[Q] = true
+		endIf
 		;Update the widget to the next queued item immediately then register for bEquipOnPause update or call cycle functions straight away
 		aiCurrentBMQueuePosition[targetQ] = targetIndex
 		asCurrentlyEquipped[targetQ] = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
@@ -433,6 +437,13 @@ function cycleSlot(int Q, bool Reverse = false)
 			;Otherwise carry on and equip/cycle
 			else
 				checkAndEquipShownHandItem(Q, false)
+				if onKeyPress && WC.bShowPositionIndicators
+					if Q == 0
+						WC.LHPosUpdate.registerForFadeoutUpdate()
+					else
+						WC.RHPosUpdate.registerForFadeoutUpdate()
+					endIf
+				endIf
 			endIf
 		else
 			checkAndEquipShownPower(targetQ)
@@ -443,6 +454,12 @@ endFunction
 
 function checkAndEquipShownHandItem(int hand, bool equippingOnAutoAdd = false)
 	debug.trace("iEquip_BeastMode checkAndEquipShownHandItem start")
+	if WC.bEquipOnPause
+		WC.abCyclingQueue[hand] = false
+		if !WC.bPermanentPositionIndicators
+			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", hand)
+		endIf
+	endIf
 	int Q = (currRace * 3) + hand
    	int targetObject = jArray.getObj(aiBMQueues[Q], aiCurrentBMQueuePosition[Q])
     int itemType = jMap.getInt(targetObject, "iEquipType")
@@ -599,6 +616,9 @@ function checkAndEquipShownPower(int Q)
         PlayerRef.EquipSpell(targetItem as Spell, 2)
     else
         PlayerRef.EquipShout(targetItem as Shout)
+    endIf
+    if WC.bShowPositionIndicators
+    	WC.SPosUpdate.registerForFadeoutUpdate()
     endIf
     debug.trace("iEquip_BeastMode checkAndEquipShownPower end")
 endFunction

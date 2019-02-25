@@ -541,6 +541,7 @@ function addIndividualPotionsToQueue(int potionGroup)
         queueLength = jArray.count(targetArray)
         while i < queueLength
             if findInQueue(iConsumableQ, jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm")) == -1
+                jMap.setStr(jArray.getObj(targetArray, i), "iEquipIcon", getPotionIcon(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as potion))
                 jArray.addObj(iConsumableQ, jArray.getObj(targetArray, i))
             endIf
             i += 1
@@ -681,6 +682,7 @@ function checkAndAddToPotionQueue(potion foundPotion)
             int potionObj = jMap.object()
             jMap.setForm(potionObj, "iEquipForm", potionForm)
             jMap.setStr(potionObj, "iEquipName", potionName)
+            jMap.setStr(potionObj, "iEquipIcon", getPotionIcon(foundPotion))
             jMap.setFlt(potionObj, "iEquipStrength", foundPotion.GetNthEffectMagnitude(foundPotion.GetCostliestEffectIndex()))
             jMap.setInt(potionObj, "iEquipItemID", itemID)
             jArray.addObj(aiPotionQ[Q], potionObj)

@@ -22,12 +22,14 @@ function initData()
     ammoIconOptions[1] = "$iEquip_MCM_ui_opt_Triple"
     ammoIconOptions[2] = "$iEquip_MCM_ui_opt_Quiver"
     
-    backgroundStyleOptions = new String[5]
+    backgroundStyleOptions = new String[7]
     backgroundStyleOptions[0] = "$iEquip_MCM_ui_opt_NoBg"
     backgroundStyleOptions[1] = "$iEquip_MCM_ui_opt_SqBBg"
     backgroundStyleOptions[2] = "$iEquip_MCM_ui_opt_SqNoBBg"
     backgroundStyleOptions[3] = "$iEquip_MCM_ui_opt_RoBBg"
     backgroundStyleOptions[4] = "$iEquip_MCM_ui_opt_RoNoBBg"
+    backgroundStyleOptions[5] = "$iEquip_MCM_ui_opt_RoFade"
+    backgroundStyleOptions[6] = "$iEquip_MCM_ui_opt_Dialogue"
     
     fadeoutOptions = new String[4]
     fadeoutOptions[0] = "$iEquip_MCM_ui_opt_Slow"
@@ -53,8 +55,10 @@ function drawPage()
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
         if WC.bShowPositionIndicators
-            MCM.AddColorOptionST("ui_sld_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
+            MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
             MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
+            MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
+            MCM.AddSliderOptionST("ui_sld_currPosIndAlpha", "$iEquip_MCM_ui_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
         endIf
         MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
                 
@@ -73,11 +77,11 @@ function drawPage()
            MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
             
             if WC.bDropShadowEnabled
-                MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha, "{0}%")
-                MCM.AddSliderOptionST("ui_sld_dropShadowAngle", "$iEquip_MCM_ui_lbl_dropShadowAngle", WC.fDropShadowAngle, "{0 " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
-                MCM.AddTextOptionST("ui_txt_dropShadowBlur", "$iEquip_MCM_ui_lbl_dropShadowBlur", WC.iDropShadowBlur + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
-                MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0 " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
-                MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength, "{0}%")
+                MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha*100, "{0}%")
+                MCM.AddSliderOptionST("ui_sld_dropShadowAngle", "$iEquip_MCM_ui_lbl_dropShadowAngle", WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
+                MCM.AddTextOptionST("ui_txt_dropShadowBlur", "$iEquip_MCM_ui_lbl_dropShadowBlur", WC.iDropShadowBlur as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+                MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+                MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength*100, "{0}%")
             endIf
         endIf
 
@@ -126,7 +130,7 @@ endFunction
 ; - Widget Options -
 ; ------------------
 
-State ui_sld_posIndColor
+State ui_col_posIndColor
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_posIndColor")
@@ -150,10 +154,44 @@ State ui_sld_posIndAlpha
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_posIndAlpha")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fPositionIndicatorAlpha*100, 10.0, 100.0, 10.0, 60.0)
+            MCM.fillSlider(WC.fPositionIndicatorAlpha, 10.0, 100.0, 10.0, 60.0)
         elseIf currentEvent == "Accept"
-            WC.fPositionIndicatorAlpha = currentVar/100
-            MCM.SetSliderOptionValueST(WC.fPositionIndicatorAlpha*100, "{0}%")
+            WC.fPositionIndicatorAlpha = currentVar
+            MCM.SetSliderOptionValueST(WC.fPositionIndicatorAlpha, "{0}%")
+            WC.bPositionIndicatorSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_col_currPosIndColor
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_currPosIndColor")
+        elseIf currentEvent == "Open"
+            MCM.SetColorDialogStartColor(WC.iCurrPositionIndicatorColor)
+            MCM.SetColorDialogDefaultColor(0xCCCCCC)
+        else
+            If currentEvent == "Accept"
+                WC.iCurrPositionIndicatorColor = currentVar as int
+            elseIf currentEvent == "Default"
+                WC.iCurrPositionIndicatorColor = 0xCCCCCC
+            endIf
+            MCM.SetColorOptionValueST(WC.iCurrPositionIndicatorColor)
+            WC.bPositionIndicatorSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_sld_currPosIndAlpha
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_currPosIndAlpha")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fCurrPositionIndicatorAlpha, 10.0, 100.0, 10.0, 40.0)
+        elseIf currentEvent == "Accept"
+            WC.fCurrPositionIndicatorAlpha = currentVar
+            MCM.SetSliderOptionValueST(WC.fCurrPositionIndicatorAlpha, "{0}%")
+            WC.bPositionIndicatorSettingsChanged = true
         endIf 
     endEvent
 endState
@@ -272,7 +310,7 @@ State ui_sld_dropShadowAngle
             MCM.fillSlider(WC.fDropShadowAngle, 0.0, 360.0, 15.0, 105.0)
         elseIf currentEvent == "Accept"
             WC.fDropShadowAngle = currentVar
-            MCM.SetSliderOptionValueST(WC.fDropShadowAngle, "{0 " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
+            MCM.SetSliderOptionValueST(WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
             WC.bDropShadowSettingChanged = true
         endIf 
     endEvent
@@ -289,7 +327,7 @@ State ui_txt_dropShadowBlur
                 i = 0
             endIf
             WC.iDropShadowBlur = aiDropShadowBlurValues[i]
-            MCM.SetTextOptionValueST(aiDropShadowBlurValues[i] + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+            MCM.SetTextOptionValueST(aiDropShadowBlurValues[i] as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
             WC.bDropShadowSettingChanged = true
         endIf
     endEvent
@@ -303,7 +341,7 @@ State ui_sld_dropShadowDistance
             MCM.fillSlider(WC.fDropShadowDistance, 0.0, 10.0, 1.0, 2.0)
         elseIf currentEvent == "Accept"
             WC.fDropShadowDistance = currentVar
-            MCM.SetSliderOptionValueST(WC.fDropShadowDistance, "{0 " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+            MCM.SetSliderOptionValueST(WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
             WC.bDropShadowSettingChanged = true
         endIf 
     endEvent

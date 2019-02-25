@@ -86,16 +86,8 @@ endEvent
 function OnWidgetLoad()
 	debug.trace("iEquip_ProMode OnWidgetLoad start")
 	WidgetRoot = WC.WidgetRoot
-	;ToDo - remove
-	aiNameElements = new int[3]
-	aiNameElements[0] = 17
-	aiNameElements[1] = 30
-	aiNameElements[2] = 37
-
-	abPreselectSlotEnabled = new bool[3]
-	abPreselectSlotEnabled[0] = true
-	abPreselectSlotEnabled[1] = true
-	abPreselectSlotEnabled[2] = true
+	bPreselectMode = false
+	bTogglingPreselectOnEquipAll = false
 	debug.trace("iEquip_ProMode OnWidgetLoad end")
 endFunction
 
@@ -250,7 +242,7 @@ function PreselectModeAnimateOut()
 	debug.trace("iEquip_ProMode PreselectModeAnimateOut end")
 endFunction
 
-function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool animate = true)
+function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool animate = true, bool onKeyPress = false)
 	debug.trace("iEquip_ProMode cyclePreselectSlot start")
 	debug.trace("iEquip_ProMode cyclePreselectSlot - Q: " + Q + ", queueLength: " + queueLength + ", reverse: " + Reverse + ", animate: " + animate)
 	if queueLength > 2
@@ -275,6 +267,19 @@ function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool a
 				targetIndex = 0
 				if targetIndex == WC.aiCurrentQueuePosition[Q] && !(Q == 0 && AM.bAmmoMode) ;Have to recheck again in case aiCurrentQueuePosition[Q] == 0
 					targetIndex += 1
+				endIf
+			endIf
+		endIf
+		if WC.bShowPositionIndicators && (onKeyPress || WC.bPermanentPositionIndicators)
+			WC.abCyclingQueue[Q] = false
+			WC.updateQueuePositionIndicator(Q, queueLength, WC.aiCurrentQueuePosition[Q], targetIndex)
+			if !WC.bPermanentPositionIndicators
+				if Q == 0
+					WC.LHPosUpdate.registerForFadeoutUpdate()
+				elseIf Q == 1
+					WC.RHPosUpdate.registerForFadeoutUpdate()
+				else
+					WC.SPosUpdate.registerForFadeoutUpdate()
 				endIf
 			endIf
 		endIf
@@ -488,6 +493,10 @@ function equipPreselectedItem(int Q)
 	endIf
 	WC.aiCurrentQueuePosition[Q] = itemToEquip
 	WC.asCurrentlyEquipped[Q] = newName
+	if WC.bShowPositionIndicators && WC.bPermanentPositionIndicators
+		WC.abCyclingQueue[Q] = false
+		WC.updateQueuePositionIndicator(Q, jArray.count(targetArray), WC.aiCurrentQueuePosition[Q], WC.aiCurrentlyPreselected[Q])
+	endIf
 	Utility.WaitMenuMode(0.05)
 	if Q < 2 && !WC.bGoneUnarmed
 		if WC.itemRequiresCounter(Q)

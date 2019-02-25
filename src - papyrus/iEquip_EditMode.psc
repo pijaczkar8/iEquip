@@ -15,9 +15,6 @@ iEquip_ProMode property PM auto
 ; - REFERENCES -
 
 Spell property iEquip_SlowTimeSpell auto
-Message property iEquip_ConfirmReset auto
-Message property iEquip_ConfirmResetParent auto
-Message property iEquip_ConfirmDiscardChanges auto
 
 ; - WIDGET VARIABLES -
 
@@ -160,7 +157,8 @@ function DisableEditMode()
     if WC.bDropShadowEnabled
         UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false)
     endIf
-    
+
+    UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", false)    
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
     
     ; Reset Vanity Camera delay back to previous value on leaving Edit Mode
@@ -424,7 +422,7 @@ endFunction
 function SetElementAlpha()
     If iSelectedElement != -1
         WC.afWidget_A[iSelectedElement] = WC.afWidget_A[iSelectedElement] - AlphaStep
-        if WC.afWidget_A[iSelectedElement] <= 0
+        if WC.afWidget_A[iSelectedElement] < 0
             WC.afWidget_A[iSelectedElement] = 100
         endIf
         
@@ -615,6 +613,8 @@ function LoadAllElements()
         UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._visible", true) ;Everything else other than the backgrounds needs to be visible in Edit Mode
         i -= 1
     EndWhile
+
+    UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", true)
     
     i = 0
     while i < 8
@@ -964,7 +964,7 @@ endFunction
 
 function DiscardChanges()
     ; Confirmation messagebox
-    if iEquip_ConfirmDiscardChanges.Show()
+    if WC.showTranslatedMessage(9, iEquip_StringExt.LocalizeString("$iEquip_msg_confDiscard"))
         Int iIndex
         
         WC.updateWidgetVisibility(false)
@@ -1010,16 +1010,19 @@ endFunction
 
 function ResetElement()
     If iSelectedElement > 0
-        Message msgBox
+        int theMessage
+        string theString
     
         If WC.abWidget_isParent[iSelectedElement]
-            msgBox = iEquip_ConfirmResetParent
+            theMessage = 8 ;iEquip_ConfirmResetParent
+            theString = iEquip_StringExt.LocalizeString("$iEquip_msg_confReset")
         else
-            msgBox = iEquip_ConfirmReset
+            theMessage = 7 ;iEquip_ConfirmReset
+            theString = iEquip_StringExt.LocalizeString("$iEquip_msg_confResetParent")
         endIf
         
         ; Confirm choice
-        if msgBox.Show() == 1
+        if WC.showTranslatedMessage(theMessage, theString) == 1
             int[] iArgs = new int[2]
             HighlightElement(false)
             TweenElement(5, 0, 0.15)

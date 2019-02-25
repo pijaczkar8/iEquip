@@ -18,18 +18,21 @@ import iEquip_SpellExt
 iEquip_ChargeMeters property CM auto
 iEquip_EditMode property EM auto
 iEquip_KeyHandler property KH auto
-iEquip_RechargeScript Property RC Auto
+iEquip_RechargeScript property RC auto
 iEquip_AmmoMode property AM auto
 iEquip_ProMode property PM auto
 iEquip_BeastMode property BM auto
 iEquip_PotionScript property PO auto
 iEquip_PlayerEventHandler property EH auto
-iEquip_BoundWeaponEventsListener Property BW Auto
+iEquip_BoundWeaponEventsListener property BW auto
 iEquip_AddedItemHandler property AD auto
 iEquip_MCM property MCM auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
+iEquip_LeftPosIndUpdateScript property LHPosUpdate auto
+iEquip_RightPosIndUpdateScript property RHPosUpdate auto
+iEquip_ShoutPosIndUpdateScript property SPosUpdate auto
 iEquip_LeftNameUpdateScript property LNUpdate auto
 iEquip_LeftPoisonNameUpdateScript property LPoisonNUpdate auto
 iEquip_LeftPreselectNameUpdateScript property LPNUpdate auto
@@ -59,9 +62,14 @@ Message property iEquip_OKCancel auto
 Message property iEquip_QueueManagerMenu auto
 Message property iEquip_UtilityMenu auto
 Message property iEquip_OK auto
+Message property iEquip_ConfirmClearQueue auto
+Message property iEquip_ConfirmDeletePreset auto
+Message property iEquip_ConfirmReset auto
+Message property iEquip_ConfirmResetParent auto
+Message property iEquip_ConfirmDiscardChanges auto
 
-FormList Property iEquip_AllCurrentItemsFLST Auto
-FormList Property iEquip_RemovedItemsFLST Auto
+FormList property iEquip_AllCurrentItemsFLST auto
+FormList property iEquip_RemovedItemsFLST auto
 
 Keyword property MagicDamageFire auto
 Keyword property MagicDamageFrost auto
@@ -121,7 +129,7 @@ bool property bAmmoMode auto hidden
 bool bJustLeftAmmoMode
 bool bAmmoModeFirstLook = true
 
-;Auto Unequip Ammo
+;auto Unequip Ammo
 bool property bUnequipAmmo = true auto hidden
 
 ;Geared Up properties and variables
@@ -155,11 +163,13 @@ bool property bAllowSingleItemsInBothQueues auto hidden
 bool property bAutoAddNewItems = true auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
 int property iMaxCachedItems = 60 auto hidden
+bool property bBlacklistEnabled = true auto hidden
 
 float property fWidgetFadeoutDelay = 20.0 auto hidden
 float property fWidgetFadeoutDuration = 1.5 auto hidden
 bool property bAlwaysVisibleWhenWeaponsDrawn = true auto hidden
 bool property bIsWidgetShown auto hidden
+bool bFadingWidgetOut
 
 float property fMainNameFadeoutDelay = 5.0 auto hidden
 float property fPoisonNameFadeoutDelay = 5.0 auto hidden
@@ -195,9 +205,13 @@ bool property bPoisonIndicatorStyleChanged auto hidden
 bool property bBeastModeOptionsChanged auto hidden
 
 bool property bShowPositionIndicators = true auto hidden
+bool property bPermanentPositionIndicators auto hidden
 int property iPositionIndicatorColor = 0xFFFFFF auto hidden
-float property fPositionIndicatorAlpha = 0.6 auto hidden
+float property fPositionIndicatorAlpha = 60.0 auto hidden
+int property iCurrPositionIndicatorColor = 0xCCCCCC auto hidden
+float property fCurrPositionIndicatorAlpha = 40.0 auto hidden
 bool property bPositionIndicatorSettingsChanged auto hidden
+bool[] property abCyclingQueue auto hidden
 
 bool property bShowAttributeIcons = true auto hidden
 bool property bAttributeIconsOptionChanged auto hidden
@@ -299,6 +313,7 @@ Event OnWidgetInit()
 	abQuickDualCastSchoolAllowed = new bool[5]
 	abPotionGroupEnabled = new bool[3]
 	abPotionGroupAddedBack = new bool[3]
+	abCyclingQueue = new bool[3]
 	
 	int i
 	while i < 8
@@ -450,9 +465,13 @@ endFunction
 Event OnWidgetLoad()
 	debug.trace("iEquip_WidgetCore OnWidgetLoad start")
 
+	fPositionIndicatorAlpha = 60.0
 	EM.isEditMode = false
 	bPreselectMode = false
 	bCyclingLHPreselectInAmmoMode = false
+	bSwitchingHands = false
+	bPreselectSwitchingHands = false
+	bFadingWidgetOut = false
 	PM.bBlockQuickDualCast = false
 	GotoState("")
 	bLoading = true
@@ -556,7 +575,7 @@ function refreshWidgetOnLoad()
 						fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")
 					endIf
 					if Q == 3 && potionGroup != -1
-						int count = PO.getPotionGroupCount(potionGroup)
+						count = PO.getPotionGroupCount(potionGroup)
 						setSlotCount(3, count)
 						if count < 1
 							checkAndFadeConsumableIcon(true)
@@ -844,9 +863,11 @@ function initQueuePositionIndicators()
 		If(iHandle)
 			UICallback.PushInt(iHandle, i)
 			UICallback.PushInt(iHandle, iPositionIndicatorColor)
-			UICallback.PushFloat(iHandle, iPositionIndicatorColor)
+			UICallback.PushFloat(iHandle, fPositionIndicatorAlpha)
+			UICallback.PushInt(iHandle, iCurrPositionIndicatorColor)
+			UICallback.PushFloat(iHandle, fCurrPositionIndicatorAlpha)
 			UICallback.PushInt(iHandle, jArray.count(aiTargetQ[i]))
-			UICallback.PushBool(iHandle, aiCurrentQueuePosition[Q])
+			UICallback.PushInt(iHandle, aiCurrentQueuePosition[i])
 			UICallback.Send(iHandle)
 		endIf
 		i += 1
@@ -1121,6 +1142,9 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 	debug.trace("iEquip_WidgetCore updateWidgetVisibility - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
 	if show
 		if !bIsWidgetShown
+			while bFadingWidgetOut
+				Utility.WaitMenuMode(0.05)
+			endWhile
 			bIsWidgetShown = true
 			;UpdateWidgetModes()
 			FadeTo(100, 0.2)
@@ -1131,7 +1155,10 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 		endIf
 	elseIf bIsWidgetShown
 		bIsWidgetShown = false
+		bFadingWidgetOut = true
 		FadeTo(0, fDuration)
+		Utility.WaitMenuMode(fDuration)
+		bFadingWidgetOut = false
 	endIf
 	debug.trace("iEquip_WidgetCore updateWidgetVisibility end")
 endFunction
@@ -1196,7 +1223,7 @@ bool property isEnabled
                     	debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
                     endIf
 				endIf
-                
+                initQueuePositionIndicators()
 				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 				UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 				UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
@@ -1563,7 +1590,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	debug.trace("iEquip_WidgetCore cycleSlot - Q: " + Q + ", Reverse: " + Reverse)
 	debug.trace("iEquip_WidgetCore cycleSlot - abIsNameShown[Q]: " + abIsNameShown[Q])
 	;Q: 0 = Left hand, 1 = Right hand, 2 = Shout, 3 = Consumables, 4 = Poisons
-
+	if onKeyPress
+		bSwitchingHands = false
+		bPreselectSwitchingHands = false
+	endIf
 	;Check if queue contains anything and return out if not
 	int targetArray = aiTargetQ[Q]
 	int queueLength = JArray.count(targetArray)
@@ -1580,7 +1610,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			if Q == 0 && bAmmoMode
 				bCyclingLHPreselectInAmmoMode = true
 			endIf
-			PM.cyclePreselectSlot(Q, queueLength, Reverse)
+			PM.cyclePreselectSlot(Q, queueLength, Reverse, true, onKeyPress)
 		endIf
 	;if name not shown then first cycle press shows name without advancing the queue
 	elseif bFirstPressShowsName && !bPreselectSwitchingHands && !abIsNameShown[Q] && asCurrentlyEquipped[Q] != ""
@@ -1712,6 +1742,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		;Show the queue position indicator if required (only if cycleSlot was called as a result of a cycle hotkey key press)
 		if Q < 3 && onKeyPress && bShowPositionIndicators
 			updateQueuePositionIndicator(Q, queueLength, aiCurrentQueuePosition[Q], targetIndex)
+			abCyclingQueue[Q] = true
 		endIf
 		;Update the widget to the next queued item immediately then register for bEquipOnPause update or call cycle functions straight away
 		aiCurrentQueuePosition[Q] = targetIndex
@@ -1754,9 +1785,12 @@ endFunction
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false, bool calledByQuickRanged = false)
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start")
 	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
-	; Hide the position indicator (if !bEquipOnPause we've registered for an update which will handle this)
+	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
-		UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
+		abCyclingQueue[Q] = false
+		if !bPermanentPositionIndicators
+			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
+		endIf
 	endIf
 	
 	int targetIndex = aiCurrentQueuePosition[Q]
@@ -2075,17 +2109,18 @@ function updateSlotsEnabled()
 	debug.trace("iEquip_WidgetCore updateSlotsEnabled end")
 endFunction
 
-function updateQueuePositionIndicator(int Q, int count)
-	debug.trace("iEquip_WidgetCore initQueuePositionIndicator start - Q: " + Q)
+function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
+	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator start - Q: " + Q + ", count: " + count + ", currPos: " + currPos + ", newPos: " + newPos)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionIndicator")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q)
 		UICallback.PushInt(iHandle, count)
-		UICallback.PushBool(iHandle, aiCurrentQueuePosition[Q])
-		UICallback.PushBool(iHandle, newPosition)
+		UICallback.PushInt(iHandle, currPos)
+		UICallback.PushInt(iHandle, newPos)
+		UICallback.PushBool(iHandle, abCyclingQueue[Q])
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_WidgetCore initQueuePositionIndicator end")
+	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator end")
 endFunction
 
 function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cycling = false)
@@ -2728,7 +2763,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     else
     	currRHType = PlayerRef.GetEquippedItemType(1)
     endIf
-    bool previously2H = currRHType == 5 || currRHType == 6 || (equippingOnAutoAdd && currRHType == 22 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)) || (!equippingOnAutoAdd && currRHType == 9 && (PlayerRef.GetEquippedObject(1) as spell).GetEquipType() == 3)
+    bool previously2H = currRHType == 5 || currRHType == 6 || (equippingOnAutoAdd && currRHType == 22 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)) || (!equippingOnAutoAdd && currRHType == 9 && EquipSlots.Find((PlayerRef.GetEquippedObject(1) as spell).GetEquipType()) == 3)
     
     ;Hide the attribute icons ready to show full poison and enchantment elements if required
     hideAttributeIcons(Q)
@@ -3087,6 +3122,16 @@ int function showTranslatedMessage(int theMenu, string theString)
 		iButton = iEquip_UtilityMenu.Show()
 	elseIf theMenu == 4
 		iButton = iEquip_OK.Show()
+	elseIf theMenu == 5
+		iButton = iEquip_ConfirmClearQueue.Show()
+	elseIf theMenu == 6
+		iButton = iEquip_ConfirmDeletePreset.Show()
+	elseIf theMenu == 7
+		iButton = iEquip_ConfirmReset.Show()
+	elseIf theMenu == 8
+		iButton = iEquip_ConfirmResetParent.Show()
+	elseIf theMenu == 9
+		iButton = iEquip_ConfirmDiscardChanges.Show()
 	endIf
 	iEquip_MessageAlias.Clear()
 	iEquip_MessageObjectReference.Disable()
@@ -3229,7 +3274,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	int[] args
 	;if the currently equipped item isn't poisonable, or if it isn't currently poisoned check and remove poison info is showing
 	if cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && bAmmoMode)
-		if abPoisonInfoDisplayed[Q] || forceHide
+		if abPoisonInfoDisplayed[Q] || forceHide || bRefreshingWidget
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - should be hiding poison icon and name now")
 			;Hide the poison icon
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")
@@ -3239,9 +3284,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				UICallback.Send(iHandle)
 			endIf
 			;Hide the poison name
-			if abIsPoisonNameShown[Q]
-				showName(Q, false, true, 0.15)
-			endIf
+			showName(Q, false, true, 0.15)
 			;Hide the counter if it's still showing and not needed
 			if !(itemRequiresCounter(Q, jMap.getInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipType")))
 				setCounterVisibility(Q, false)
@@ -3926,11 +3969,13 @@ function QueueMenuRemoveFromQueue(int iIndex)
 			endIf
         endIf
         ;Add manually removed items to the relevant blackList
-        if iQueueMenuCurrentQueue < 2
-        	EH.blackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
-        else
-        	EH.blackListFLSTs[2].AddForm(itemForm) ;iEquip_GeneralBlacklistFLST
-        endIf
+        if bBlacklistEnabled
+	        if iQueueMenuCurrentQueue < 2
+	        	EH.blackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
+	        else
+	        	EH.blackListFLSTs[2].AddForm(itemForm) ;iEquip_GeneralBlacklistFLST
+	        endIf
+	    endIf
         if !keepInFLST
         	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
         	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
@@ -4061,8 +4106,8 @@ function ApplyChanges()
 	if bDropShadowSettingChanged && !EM.isEditMode
 		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateTextFieldDropShadow")
 		If(iHandle)
-			UICallback.PushInt(iHandle, fDropShadowAngle as int)
 			UICallback.PushFloat(iHandle, fDropShadowAlpha)
+			UICallback.PushInt(iHandle, fDropShadowAngle as int)
 			UICallback.PushInt(iHandle, iDropShadowBlur)
 			UICallback.PushInt(iHandle, fDropShadowDistance as int)
 			UICallback.PushInt(iHandle, fDropShadowStrength as int)
@@ -4083,9 +4128,10 @@ function ApplyChanges()
     if bPositionIndicatorSettingsChanged
     	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionMarkers")
 		If(iHandle)
-			UICallback.PushInt(iHandle, i)
 			UICallback.PushInt(iHandle, iPositionIndicatorColor)
 			UICallback.PushFloat(iHandle, fPositionIndicatorAlpha)
+			UICallback.PushInt(iHandle, iCurrPositionIndicatorColor)
+			UICallback.PushFloat(iHandle, fCurrPositionIndicatorAlpha)
 			UICallback.Send(iHandle)
 		endIf
     	bPositionIndicatorSettingsChanged = false
