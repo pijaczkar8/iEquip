@@ -207,8 +207,8 @@ function EnableEditmode()
         UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
     endIf
     
-    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeHighlightColor", iHighlightColor)
-    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeCurrentValueColor", iCurrentColorValue)
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setEditModeHighlightColor", iHighlightColor)
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setEditModeCurrentValueColor", iCurrentColorValue)
   
     if !WC.bPreselectMode
         preselectEnabledOnEnter = true
@@ -216,7 +216,7 @@ function EnableEditmode()
     endIf
     
     LoadAllElements()
-    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0)
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setCurrentClip", 0)
     HighlightElement(true)
     UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
     
@@ -247,9 +247,9 @@ function HighlightElement(bool bAdd)
     iArgs[2] = WC.aiWidget_TC[iSelectedElement]              ; Current text colour if text element
     
     if bAdd
-        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".highlightSelectedElement", iArgs)
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.highlightSelectedElement", iArgs)
     else
-        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".removeCurrentHighlight", iArgs)
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.removeCurrentHighlight", iArgs)
     endIf
 endFunction
 
@@ -261,7 +261,7 @@ function SwapIndexDepth(int[] iDepthIndex)
 
     WC.aiWidget_D[iDepthIndex[0]] = WC.aiWidget_D[iDepthIndex[1]]
     WC.aiWidget_D[iDepthIndex[1]] = iTmp
-    UI.InvokeIntA(HUD_MENU, WidgetRoot + ".swapItemDepths", iDepthIndex)
+    UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.swapItemDepths", iDepthIndex)
 endFunction
 
 function SwapElementDepth()
@@ -334,7 +334,7 @@ Function TweenElement(float attribute, float targetValue, float duration)
     iArgs[1] = targetValue   ; Target value - sent from calling function as value after increment applied
     iArgs[2] = duration      ; Duration in seconds for tween to take
     
-    UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenIt", iArgs)
+    UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".EditModeGuide.tweenIt", iArgs)
 EndFunction
 
 ; - Move -
@@ -442,11 +442,11 @@ function ApplyElementColor (int iType, int iColor)
     if iColor > 0
         if iType == 0
                 iHighlightColor = iColor
-                UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeHighlightColor", iColor)
+                UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setEditModeHighlightColor", iColor)
                 HighlightElement(true)
         elseIf iType == 1
             iCurrentColorValue = iColor
-            UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeCurrentValueColor", iColor)
+            UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setEditModeCurrentValueColor", iColor)
         else
             WC.aiWidget_TC[iSelectedElement] = iColor
             int[] args = new int[2]
@@ -475,7 +475,7 @@ function ToggleCycleRange()
         iLastElement = 5
     endIf
     
-    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iSelectedElement)
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setCurrentClip", iSelectedElement)
     HighlightElement(true)
     UpdateEditModeGuide()
 endFunction
@@ -502,7 +502,7 @@ function CycleElements(int iNextPrev)
         endIf
     endIf
     
-    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iSelectedElement)
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setCurrentClip", iSelectedElement)
     HighlightElement(true)
     UpdateEditModeGuide()
 endFunction
@@ -536,7 +536,7 @@ function UpdateElementText(int[] iArgs, int iNewColor)
         iArgs[1] = 2
     endIf
     
-    UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", iArgs)
+    UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.setTextAlignment", iArgs)
     iArgs[1] = iNewColor
     UI.InvokeIntA(HUD_MENU, WidgetRoot + ".SetTextColor", iArgs)
 endFunction
@@ -733,7 +733,7 @@ function ToggleTextAlignment()
             tmpStr = "$iEquip_EM_rightAligned"
         endIf
     
-        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", iArgs)
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.setTextAlignment", iArgs)
         WC.asWidget_TA[iSelectedElement] = sTextAlignment[iArgs[1]]
         
         TweenElement(5, WC.afWidget_A[iSelectedElement], 0.15)   ; Fade back in
