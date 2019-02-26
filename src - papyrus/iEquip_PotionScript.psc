@@ -998,7 +998,7 @@ function selectAndConsumePotion(int potionGroup)
             endIf
             form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
             if potionToConsume
-                debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is a " + potionToConsume.GetName())
+                debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is " + potionToConsume + ", " + potionToConsume.GetName())
                 ; Consume the potion
                 PlayerRef.EquipItemEx(potionToConsume)
                 debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
@@ -1020,7 +1020,7 @@ endFunction
 
 int function smartSelectRestorePotion(int Q, float currAVDamage)
     int targetPotion
-    debug.trace("iEquip_PotionScript selectAndConsumePotion - looking for the strongest restore potion in Q " + Q + ", current stat damage is " + currAVDamage)
+    debug.trace("iEquip_PotionScript smartSelectRestorePotion - looking for the strongest restore potion in Q " + Q + ", current stat damage is " + currAVDamage)
     if jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrength") > currAVDamage ;If the strongest potion in the queue has a greater strength than required to fully restore the target AV then check through the array until we find the best fit 
         int i = 1
         int queueLength = jArray.Count(aiPotionQ[Q])
@@ -1033,7 +1033,7 @@ int function smartSelectRestorePotion(int Q, float currAVDamage)
             endIf
         endWhile
     endIf
-    debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is a " + jMap.getStr(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipName") + " with a strength of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipStrength"))
+    debug.trace("iEquip_PotionScript smartSelectRestorePotion - selected potion in index " + targetPotion + " is a " + jMap.getStr(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipName") + " with a strength of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipStrength"))
     return targetPotion
 endFunction
 
