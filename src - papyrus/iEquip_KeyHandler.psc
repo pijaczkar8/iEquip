@@ -573,7 +573,7 @@ function updateKeyMaps()
         keys[16] = iEditSavePresetKey
         keys[17] = iEditDiscardKey
         
-        InvokeIntA(WC.HUD_MENU, WC.WidgetRoot + ".setEditModeButtons", keys)       
+        InvokeIntA(WC.HUD_MENU, WC.WidgetRoot + ".EditModeGuide.setEditModeButtons", keys)       
         RegisterForEditModeKeys()
     else
         RegisterForGameplayKeys()
