@@ -450,7 +450,7 @@ function ApplyElementColor (int iType, int iColor)
             int[] args = new int[2]
             args[0] = iSelectedElement
             args[1] = iColor
-            UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
+            UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.setTextColor", args)
         endIf
     endIf
 endFunction
@@ -536,7 +536,7 @@ function UpdateElementText(int[] iArgs, int iNewColor)
     
     UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.setTextAlignment", iArgs)
     iArgs[1] = iNewColor
-    UI.InvokeIntA(HUD_MENU, WidgetRoot + ".SetTextColor", iArgs)
+    UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.setTextColor", iArgs)
 endFunction
 
 function UpdateEditModeGuide()
