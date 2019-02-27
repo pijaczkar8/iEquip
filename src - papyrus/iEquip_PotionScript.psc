@@ -75,6 +75,7 @@ int[] aiActorValues
 
 int property iPotionSelectChoice = 1 auto hidden ; 0 = Always use strongest, 1 = Smart Select, 2 = Always Use Weakest
 float property fSmartConsumeThreshold = 0.4 auto hidden
+int property iQuickBuffsToApply = 3 auto hidden
 
 bool bIsCACOLoaded = false
 MagicEffect[] aCACO_RestoreEffects
@@ -1037,34 +1038,36 @@ int function smartSelectRestorePotion(int Q, float currAVDamage)
     return targetPotion
 endFunction
 
-bool function quickRestoreFindAndConsumePotion(int potionGroup, bool quickBuffRequested = false)
+bool function quickRestoreFindAndConsumePotion(int potionGroup)
     debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion start")
     ;Check we've actually still got entries in the first and second choice health potion queues
     int Q = potionGroup*3
     int count = jArray.count(aiPotionQ[Q])
     bool found
-    if quickBuffRequested
-        Q = Q + iPotionsSecondChoice
-        count = jArray.count(aiPotionQ[Q])
-    endIf
+    
     if count > 0
         found = true
         int targetPotion
-        if !quickBuffRequested && count > 1 ;If we're selecting from a restore queue then Smart Select only the strongest potion required to fully restore the stat, not necessarily the strongest overall
+        if count > 1 ;If we're selecting from a restore queue then Smart Select only the strongest potion required to fully restore the stat, not necessarily the strongest overall
             targetPotion = smartSelectRestorePotion(Q, iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[Q/3]))
         endIf
         form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
         PlayerRef.EquipItemEx(potionToConsume)
         debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
-        if !quickBuffRequested
-        	int restoreCount = getRestoreCount(potionGroup)
-        	if restoreCount < 6
-        		warnOnLowRestorePotionCount(restoreCount, potionGroup)
-        	endIf
-        endIf
+    	int restoreCount = getRestoreCount(potionGroup)
+    	if restoreCount < 6
+    		warnOnLowRestorePotionCount(restoreCount, potionGroup)
+    	endIf
     endIf
+
     debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion end")
     return found
+endFunction
+
+function quickBuffFindAndConsumePotions(int potionGroup)
+    debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions start")
+    
+    debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions end")
 endFunction
 
 function warnOnLowRestorePotionCount(int restoreCount, int potionGroup)

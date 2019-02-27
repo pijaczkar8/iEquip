@@ -846,9 +846,13 @@ function resetWidgetsToPreviousState()
     	i += 1
     endWhile
 	;Reset Preselect Mode
-	if EM.preselectEnabledOnEnter && bPreselectMode
-        PM.togglePreselectMode(true)
-		EM.preselectEnabledOnEnter = false
+	if bPreselectMode
+		if EM.preselectEnabledOnEnter
+	        PM.togglePreselectMode(true)
+			EM.preselectEnabledOnEnter = false
+		else
+			PM.updateAnimationTargetValues()
+		endIf
 	endIf
 	;Reset enchantment meters and soulgems
 	CM.updateChargeMeters(true)
@@ -1978,6 +1982,10 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 		debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading in")
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
 		bLeftIconFaded = false
+	endIf
+	if bPreselectMode
+		Utility.WaitMenuMode(0.3)
+		UI.Invoke(HUD_MENU, WidgetRoot + ".updateLeftTargetAlphaValues")
 	endIf
 	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon end")
 endFunction
@@ -3299,7 +3307,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				args[1] = aiWidget_TC[22] ;rightCount text colour
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
-			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.setTextColor", args)
+			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
 			abPoisonInfoDisplayed[Q] = false
 		endIf
 	;Otherwise update the poison name, count and icon
@@ -3355,7 +3363,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				args[1] = aiWidget_TC[24] ;rightPoisonName text colour
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
-			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".EditModeGuide.setTextColor", args)
+			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
 			setSlotCount(Q, charges)
 			;Re-show the counter
 			setCounterVisibility(Q, true)
