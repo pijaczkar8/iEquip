@@ -158,7 +158,9 @@ function DisableEditMode()
         UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false)
     endIf
 
-    UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", false)    
+    if !WC.bPermanentPositionIndicators
+        UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", false)
+    endIf 
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
     
     ; Reset Vanity Camera delay back to previous value on leaving Edit Mode
