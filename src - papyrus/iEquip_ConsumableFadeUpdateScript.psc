@@ -2,7 +2,7 @@ ScriptName iEquip_ConsumableFadeUpdateScript Extends Quest Hidden
 
 iEquip_WidgetCore Property WC Auto
 
-bool bWaitingForFadeUpdate = false
+bool bWaitingForFadeUpdate
 int potionGroupIndex
 
 function registerForConsumableFadeUpdate(float fDelay, int iPotionGroupIndex)

@@ -3,9 +3,9 @@ ScriptName iEquip_LeftHandEquipUpdateScript Extends Quest
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
 
-bool bReverse = false
-bool bWaitingForEquipOnPauseUpdate = false
-bool bCyclingAmmo = false
+bool bReverse
+bool bWaitingForEquipOnPauseUpdate
+bool bCyclingAmmo
 
 function registerForEquipOnPauseUpdate(bool Reverse, bool CyclingAmmo = false)
 	debug.trace("iEquip_LeftHandEquipUpdateScript registerForEquipOnPauseUpdate called")

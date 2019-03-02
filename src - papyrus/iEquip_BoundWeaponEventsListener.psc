@@ -4,19 +4,15 @@ Import iEquip_FormExt
 
 iEquip_WidgetCore Property WC Auto
 
-bool property bIsBoundSpellEquipped = false auto hidden
+bool property bIsBoundSpellEquipped auto hidden
 
-function OniEquipEnabled()
-	iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(Self)
-	iEquip_FormExt.RegisterForBoundWeaponUnequippedEvent(Self)
-EndFunction
-
-function onGameLoaded()
+function initialise()
 	iEquip_FormExt.RegisterForBoundWeaponEquippedEvent(Self)
 	iEquip_FormExt.RegisterForBoundWeaponUnequippedEvent(Self)
 endFunction
 
 Event OnBoundWeaponEquipped(Int a_weaponType, Int a_equipSlot)
+	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped start")
 	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped event received - weapon type: " + a_weaponType + ", slot: " + a_equipSlot)
 	if bIsBoundSpellEquipped && a_equipSlot != 0
 		int otherHand = 1
@@ -32,9 +28,11 @@ Event OnBoundWeaponEquipped(Int a_weaponType, Int a_equipSlot)
 			WC.onBoundWeaponEquipped(a_weaponType, otherHand)
 		endIf
 	endIf
+	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped end")
 EndEvent
 
 Event OnBoundWeaponUnequipped(Weapon a_weap, Int a_unequipSlot)
+	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponUnequipped start")
 	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponUnequipped event received - weapon: " + a_weap.GetName() + ", slot: " + a_unequipSlot)
 	if bIsBoundSpellEquipped && a_unequipSlot != 0
 		if a_unequipSlot == 2
@@ -44,4 +42,5 @@ Event OnBoundWeaponUnequipped(Weapon a_weap, Int a_unequipSlot)
 		endIf
 		WC.onBoundWeaponUnequipped(a_unequipSlot)
 	endIf
+	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponUnequipped end")
 EndEvent

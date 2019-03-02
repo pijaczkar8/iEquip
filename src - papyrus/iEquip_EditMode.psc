@@ -34,8 +34,8 @@ bool[] abWidget_CurV
 ; - Bools -
 
 bool[] property abWasCounterShown auto hidden
-bool property isEditMode = false auto hidden
-bool property preselectEnabledOnEnter = false auto hidden
+bool property isEditMode auto hidden
+bool property preselectEnabledOnEnter auto hidden
 bool bFirstCycleKeyPressed = true
 bool bringToFrontFirstTime = true
 
@@ -47,7 +47,7 @@ float CurrentVanityModeDelay
 
 int[] property aiPreviousCount auto hidden
 int property iSelectedElement = -1 auto hidden
-int property iEnabledPotionGroupCount = 0 auto hidden
+int property iEnabledPotionGroupCount auto hidden
 int property previousLeftCount auto hidden
 int property previousRightCount auto hidden
 int[] iCustomColors
@@ -81,7 +81,6 @@ string sRotation
 
 function OnInit()
     WidgetGroups = new String[6]
-    WidgetGroups[0] = ""
     WidgetGroups[1] = "Left"
     WidgetGroups[2] = "Right"
     WidgetGroups[3] = "Shout"
@@ -94,17 +93,10 @@ function OnInit()
 
     abWasCounterShown = new bool[5]
     aiPreviousCount = new int[5]
-    int i = 0
-    while i < 5
-        abWasCounterShown[i] = false
-        aiPreviousCount[i] = 0
-        i += 1
-    endWhile
 
     asCounterTextPath = new string[5]
     asCounterTextPath[0] = ".widgetMaster.LeftHandWidget.leftCount_mc.leftCount.text"
     asCounterTextPath[1] = ".widgetMaster.RightHandWidget.rightCount_mc.rightCount.text"
-    asCounterTextPath[2] = ""
     asCounterTextPath[3] = ".widgetMaster.ConsumableWidget.consumableCount_mc.consumableCount.text"
     asCounterTextPath[4] = ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text"
 
@@ -186,7 +178,7 @@ function EnableEditmode()
     SetINIFloat("fAutoVanityModeDelay:Camera", 9999999)
 
     ; StoreOpeningValues
-    int iIndex = 0    
+    int iIndex   
     While iIndex < WC.asWidgetDescriptions.Length
         afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
         afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
@@ -313,7 +305,7 @@ function SetElementDepthOrder(int DepthIndexA, bool bSet = true)
     else          ; RESET
         ; Check that value is not default already
         if WC.aiWidget_D[DepthIndexA] != WC.aiWidget_DefD[DepthIndexA]
-            int iIndex = 0
+            int iIndex
             
             ; Find iIndex with default value for DepthIndexA
             while WC.aiWidget_D[iIndex] != WC.aiWidget_DefD[DepthIndexA]
@@ -493,7 +485,9 @@ endFunction
 function CycleElements(int iNextPrev)    
     if bFirstCycleKeyPressed
         bFirstCycleKeyPressed = false
-        showCyclingHelp()   
+        if WC.bShowTooltips
+            showCyclingHelp()
+        endIf 
     endIf
     HighlightElement(false)
     
@@ -586,7 +580,7 @@ endFunction
 
 function UpdateElementsAll()
     int[] iArgs = new int[2]
-    int iIndex = 0
+    int iIndex
     
     while iIndex < WC.asWidgetDescriptions.Length  
         if WC.abWidget_isText[iIndex]
@@ -971,7 +965,7 @@ endFunction
 function DiscardChanges()
     ; Confirmation messagebox
     if iEquip_ConfirmDiscardChanges.Show()
-        Int iIndex = 0
+        Int iIndex
         
         WC.updateWidgetVisibility(false)
         Wait(0.2)
@@ -1090,14 +1084,14 @@ endFunction
 ; - HexToInt -
 
 int function HexStringToInt(string sHex)
-    int iDec = 0
+    int iDec
     int iPlace = 1
     int iIndex = 6
     
     while iIndex > 0
         iIndex -= 1
         string sChar = SubString(sHex, iIndex, 1)
-        int iSubNumber = 0
+        int iSubNumber
         
         If IsDigit(sChar)
             iSubNumber = sChar as int

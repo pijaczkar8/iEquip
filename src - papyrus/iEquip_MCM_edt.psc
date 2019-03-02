@@ -6,6 +6,7 @@ GlobalVariable Property iEquip_EditModeSlowTimeStrength Auto
 
 string[] EMKeysChoice
 int mcmUnmapFLAG
+int iCurrentEMKeysChoice
 
 ; #############
 ; ### SETUP ###
@@ -25,9 +26,9 @@ function drawPage()
                 
         MCM.SetCursorPosition(1)               
         MCM.AddHeaderOption("")
-        MCM.AddMenuOptionST("edt_men_chooseHtKey", "$iEquip_MCM_edt_lbl_chooseHtKey", EMKeysChoice[MCM.iCurrentEMKeysChoice])
+        MCM.AddMenuOptionST("edt_men_chooseHtKey", "$iEquip_MCM_edt_lbl_chooseHtKey", EMKeysChoice[iCurrentEMKeysChoice])
                 
-        if(MCM.iCurrentEMKeysChoice == 1)
+        if(iCurrentEMKeysChoice == 1)
             MCM.AddEmptyOption()
             MCM.AddKeyMapOptionST("edt_key_nextElem", "$iEquip_MCM_edt_lbl_nextElem", KH.iEditNextKey, mcmUnmapFLAG)
             MCM.AddKeyMapOptionST("edt_key_prevElem", "$iEquip_MCM_edt_lbl_prevElem", KH.iEditPrevKey, mcmUnmapFLAG)
@@ -76,16 +77,16 @@ State edt_men_chooseHtKey
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_edt_txt_chooseHtKey")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(MCM.iCurrentEMKeysChoice, EMKeysChoice, 0)
+            MCM.fillMenu(iCurrentEMKeysChoice, EMKeysChoice, 0)
         elseIf currentEvent == "Accept"
-            MCM.iCurrentEMKeysChoice = currentVar as int
+            iCurrentEMKeysChoice = currentVar as int
             
-            if MCM.iCurrentEMKeysChoice == 0
+            if iCurrentEMKeysChoice == 0
                 KH.resetEditModeKeys()
                 MCM.bUpdateKeyMaps = true
             endIf
             
-            MCM.SetMenuOptionValueST(EMKeysChoice[MCM.iCurrentEMKeysChoice])
+            MCM.SetMenuOptionValueST(EMKeysChoice[iCurrentEMKeysChoice])
         endIf 
     endEvent
 endState

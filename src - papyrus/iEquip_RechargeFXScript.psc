@@ -4,7 +4,7 @@ Scriptname iEquip_RechargeFXScript extends ReferenceAlias Hidden
 Actor Property PlayerRef Auto
 SPELL Property iEquip_RechargeFXSpell  Auto
 
-bool bIsSpellEquipped = false
+bool bIsSpellEquipped
  
 function showRechargeFX()
 	debug.trace("iEquip_RechargeFXScript showRechargeFX called")

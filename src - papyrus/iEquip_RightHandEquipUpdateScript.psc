@@ -2,8 +2,8 @@ ScriptName iEquip_RightHandEquipUpdateScript Extends Quest
 
 iEquip_WidgetCore Property WC Auto
 
-bool bReverse = false
-bool bWaitingForEquipOnPauseUpdate = false
+bool bReverse
+bool bWaitingForEquipOnPauseUpdate
 
 function registerForEquipOnPauseUpdate(bool Reverse)
 	debug.trace("iEquip_RightHandEquipUpdateScript registerForEquipOnPauseUpdate called")

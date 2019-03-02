@@ -4,6 +4,7 @@ iEquip_PotionScript Property PO Auto
 
 string[] potionEffects
 string[] emptyPotionQueueOptions
+string[] potionSelectOptions
 
 ; #############
 ; ### SETUP ###
@@ -17,6 +18,11 @@ function initData()
     emptyPotionQueueOptions = new String[2]
     emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
     emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
+
+    potionSelectOptions = new String[3]
+    potionSelectOptions[0] = "$iEquip_MCM_pot_opt_alwaysStrongest"
+    potionSelectOptions[1] = "$iEquip_MCM_pot_opt_smartSelect"
+    potionSelectOptions[2] = "$iEquip_MCM_pot_opt_alwaysWeakest"
 endFunction
 
 function drawPage()
@@ -28,16 +34,19 @@ function drawPage()
             MCM.AddMenuOptionST("pot_men_PrefEffect", "$iEquip_MCM_pot_lbl_PrefEffect", potionEffects[PO.iPotionsFirstChoice])
             MCM.AddMenuOptionST("pot_men_PrefEffect2", "$iEquip_MCM_pot_lbl_PrefEffect2", potionEffects[PO.iPotionsSecondChoice])
             MCM.AddTextOptionST("pot_txt_PrefEffect3", "$iEquip_MCM_pot_lbl_PrefEffect3", potionEffects[PO.iPotionsThirdChoice])
-            MCM.AddToggleOptionST("pot_tgl_alwaysUse", "$iEquip_MCM_pot_lbl_alwaysUse", PO.bUseStrongestPotion)
+            MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
+            if PO.iPotionSelectChoice == 1 ; Smart Select
+                MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartConsumeThreshold*100, "{0} %")
+            endIf
             MCM.AddEmptyOption()
             if !WC.abPotionGroupEnabled[0]
                 MCM.AddTextOptionST("pot_txt_addHealthGroup", "$iEquip_MCM_gen_lbl_addHealthGroup", "")
             endIf
             if !WC.abPotionGroupEnabled[1]
-                MCM.AddTextOptionST("pot_txt_addStaminaGroup", "$iEquip_MCM_gen_lbl_addStaminaGroup", "")
+                MCM.AddTextOptionST("pot_txt_addMagickaGroup", "$iEquip_MCM_gen_lbl_addMagickaGroup", "")
             endIf
             if !WC.abPotionGroupEnabled[2]
-                MCM.AddTextOptionST("pot_txt_addMagickaGroup", "$iEquip_MCM_gen_lbl_addMagickaGroup", "")
+                MCM.AddTextOptionST("pot_txt_addStaminaGroup", "$iEquip_MCM_gen_lbl_addStaminaGroup", "")
             endIf
         endIf
         
@@ -113,16 +122,28 @@ endState
 State pot_txt_PrefEffect3
 endState
 
-State pot_tgl_alwaysUse
+State pot_men_PotionSelect
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_alwaysUse")
-        elseIf currentEvent == "Select"
-            PO.bUseStrongestPotion = !PO.bUseStrongestPotion
-            MCM.SetToggleOptionValueST(PO.bUseStrongestPotion)
-        elseIf currentEvent == "Default"
-            PO.bUseStrongestPotion = true 
-            MCM.SetToggleOptionValueST(PO.bUseStrongestPotion)
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_PotionSelect")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(PO.iPotionSelectChoice, potionSelectOptions, 1)
+        elseIf currentEvent == "Accept"
+            PO.iPotionSelectChoice = currentVar as int
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_sld_StatThreshold
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_StatThreshold")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(PO.fSmartConsumeThreshold*100, 5.0, 100.0, 5.0, 40.0)
+        elseIf currentEvent == "Accept"
+            PO.fSmartConsumeThreshold = currentVar/100
+            MCM.SetSliderOptionValueST(PO.fSmartConsumeThreshold*100, "{0} %")
         endIf
     endEvent
 endState
@@ -138,10 +159,10 @@ State pot_txt_addHealthGroup
     endEvent
 endState
 
-State pot_txt_addStaminaGroup
+State pot_txt_addMagickaGroup
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_addStaminaGroup")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_addMagickaGroup")
         elseIf currentEvent == "Select"
             WC.addPotionGroups(1)
             MCM.forcePageReset()
@@ -149,10 +170,10 @@ State pot_txt_addStaminaGroup
     endEvent
 endState
 
-State pot_txt_addMagickaGroup
+State pot_txt_addStaminaGroup
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_addMagickaGroup")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_addStaminaGroup")
         elseIf currentEvent == "Select"
             WC.addPotionGroups(2)
             MCM.forcePageReset()
