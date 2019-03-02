@@ -14,6 +14,7 @@ string[] preselectQuickFunctionOptions
 string[] QHEquipOptions
 string[] QRPreferredWeaponType
 string[] QRSwitchOutOptions
+string[] QBuffOptions
 
 int iCurrentQSPreferredMagicSchoolChoice = 2
 int iCurrentQRPreferredMagicSchoolChoice = 2
@@ -54,6 +55,12 @@ function initData()
     QRSwitchOutOptions[2] = "$iEquip_MCM_pro_opt_2h"
     QRSwitchOutOptions[3] = "$iEquip_MCM_pro_opt_1h"
     QRSwitchOutOptions[4] = "$iEquip_MCM_pro_opt_spell"
+
+    QBuffOptions = new string[4]
+    QBuffOptions[0] = "$iEquip_MCM_pro_opt_eitherBuff"
+    QBuffOptions[1] = "$iEquip_MCM_pro_opt_fortifyOnly"
+    QBuffOptions[2] = "$iEquip_MCM_pro_opt_regenOnly"
+    QBuffOptions[3] = "$iEquip_MCM_pro_opt_bothBuffs"
 endFunction
 
 function drawPage()
@@ -108,6 +115,9 @@ function drawPage()
                 ;Core settings
                 MCM.AddSliderOptionST("pro_sld_QuickRestoreThreshold", "$iEquip_MCM_pro_lbl_QuickRestoreThreshold", PM.fQuickRestoreThreshold*100, "{0} %")
                 MCM.AddToggleOptionST("pro_tgl_quickBuff", "$iEquip_MCM_pro_lbl_quickBuff", PM.bQuickBuffEnabled)
+                if PM.bQuickBuffEnabled
+                    MCM.AddMenuOptionST("pro_men_buffsToApply", "$iEquip_MCM_pro_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
+                endIf
                 ;QuickHeal Options
                 if PM.bQuickHealEnabled
                     MCM.AddHeaderOption("$iEquip_MCM_pro_lbl_quickHealOpts")
@@ -496,6 +506,19 @@ State pro_tgl_quickBuff
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickBuffEnabled)
             PM.bQuickBuffEnabled = !PM.bQuickBuffEnabled
             MCM.SetToggleOptionValueST(PM.bQuickBuffEnabled)
+        endIf
+    endEvent
+endState
+
+State pro_men_buffsToApply
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_buffsToApply")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(PO.iQuickBuffsToApply, QBuffOptions, 3)
+        elseIf currentEvent == "Accept"
+            PO.iQuickBuffsToApply = currentVar as int
+            MCM.SetMenuOptionValueST(QBuffOptions[PO.iQuickBuffsToApply])
         endIf
     endEvent
 endState

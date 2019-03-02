@@ -98,6 +98,7 @@ function togglePreselectMode(bool togglingEditMode = false)
 		WC.bPreselectMode = bPreselectMode
 		bool[] args = new bool[5]
 		if bPreselectMode
+			bReadyForPreselectAnim = false
 			Self.RegisterForModEvent("iEquip_ReadyForPreselectAnimation", "ReadyForPreselectAnimation")
 			int Q
 			if AM.bAmmoMode
@@ -154,6 +155,7 @@ function togglePreselectMode(bool togglingEditMode = false)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			debug.trace("iEquip_ProMode togglePreselectMode, left slot enabled: " + args[0] + ", right slot enabled: " + args[1] + ", shout slot enabled: " + args[2] + ", ammo mode: " + AM.bAmmoMode)
 			PreselectModeAnimateIn()
+
 			if bPreselectModeFirstLook && !WC.bRefreshingWidget && !WC.EM.isEditMode
 				if WC.bShowTooltips
 					Utility.WaitMenuMode(1.0)
@@ -295,16 +297,13 @@ function equipPreselectedItem(int Q)
 	debug.trace("iEquip_ProMode equipPreselectedItem start")
 	debug.trace("iEquip_ProMode equipPreselectedItem - Q: " + Q + ", bEquippingAllPreselectedItems: " + bEquippingAllPreselectedItems)
 
-	if !bEquippingAllPreselectedItems
-		bReadyForPreselectAnim = false
-		UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
-	endIf
     int iHandle
 	int itemToEquip = WC.aiCurrentlyPreselected[Q]
 	int targetArray = WC.aiTargetQ[Q]
 	int targetObject = jArray.getObj(targetArray, itemToEquip)
 	form targetItem = jMap.getForm(targetObject, "iEquipForm")
 	int itemType = jMap.getInt(targetObject, "iEquipType")
+	
 	if (itemType == 7 || itemType == 9)
 		AM.checkAndRemoveBoundAmmo(itemType)
 		if (!(WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2) || AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3)
@@ -539,25 +538,25 @@ event ReadyForPreselectAnimation(string sEventName, string sStringArg, Float fNu
 	debug.trace("iEquip_ProMode ReadyForPreselectAnimation end")
 endEvent
 
+function updateAnimationTargetValues()
+	bReadyForPreselectAnim = false
+	UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
+endFunction
+
 function equipAllPreselectedItems()
 	debug.trace("iEquip_ProMode equipAllPreselectedItems start")
 	bEquippingAllPreselectedItems = true
-	bReadyForPreselectAnim = false
-	UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
-	form leftTargetItem = jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0]), "iEquipForm")
-	int targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentlyPreselected[1])
-	int targetArray
-	form rightTargetItem = jMap.getForm(targetObject, "iEquipForm")
-	int rightHandItemType = jMap.getInt(targetObject, "iEquipType")
-	if !(rightHandItemType == 5 || rightHandItemType == 6)
-		WC.checkAndFadeLeftIcon(1, rightHandItemType)
-	endIf
-	Utility.WaitMenuMode(0.3)
-	UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
-	int itemCount = PlayerRef.GetItemCount(leftTargetItem)
+	
 	string[] leftData
 	string[] rightData
 	string[] shoutData
+	int targetArray
+	form leftTargetItem = jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0]), "iEquipForm")
+	int itemCount = PlayerRef.GetItemCount(leftTargetItem)
+	int targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentlyPreselected[1])
+	form rightTargetItem = jMap.getForm(targetObject, "iEquipForm")
+	int rightHandItemType = jMap.getInt(targetObject, "iEquipType")
+		
 	if bTogglePreselectOnEquipAll
 		leftData = new string[3]
 		rightData = new string[3]
@@ -567,7 +566,8 @@ function equipAllPreselectedItems()
 		rightData = new string[5]
 		shoutData = new string[5]
 	endIf
-	;Equip preselected shout first unless !bShoutPreselectEnabled
+
+	;Equip preselected shout unless !bShoutPreselectEnabled
 	if abPreselectSlotEnabled[2]
 		targetArray = WC.aiTargetQ[2]
 		;Store currently equipped item icons and preselected item icons and names for each slot if enabled
@@ -584,6 +584,7 @@ function equipAllPreselectedItems()
 			Utility.WaitMenuMode(0.2)
 		endIf
 	endIf
+
 	;Equip right hand first so any 2H/Ranged weapons take priority and equipping left hand can be blocked
 	if abPreselectSlotEnabled[1]
 		targetArray = WC.aiTargetQ[1]
@@ -601,16 +602,7 @@ function equipAllPreselectedItems()
 	endIf
 	targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1])
 	rightHandItemType = jMap.getInt(targetObject, "iEquipType")
-	;ToDo - Delete the next 9 lines of debug only
-	debug.trace("iEquip_ProMode equipAllPreselectedItems - pre left checks - abPreselectSlotEnabled[1]: " + abPreselectSlotEnabled[1] + ", rightHandItemType: " + rightHandItemType)
-	if rightHandItemType == 22
-		debug.trace("iEquip_ProMode equipAllPreselectedItems - pre left checks - " + jMap.getStr(targetObject, "iEquipName") + " is a spell, iEquipSlot: " + jMap.getInt(targetObject, "iEquipSlot"))
-	else
-		bool LRMatch = (leftTargetItem == rightTargetItem)
-		bool is2HWeapon = (WC.ai2HWeaponTypes.Find(rightHandItemType) > -1)
-		debug.trace("iEquip_ProMode equipAllPreselectedItems - pre left checks - " + jMap.getStr(targetObject, "iEquipName") + " is not a spell, is a 2H weapon: " + is2HWeapon)
-		debug.trace("iEquip_ProMode equipAllPreselectedItems - pre left checks - leftTargetItem == rightTargetItem: " + LRMatch + ", itemCount: " + itemCount)
-	endIf
+
 	bool equipLeft
 	if abPreselectSlotEnabled[0] && !(abPreselectSlotEnabled[1] && ((WC.ai2HWeaponTypes.Find(rightHandItemType) > -1) || rightHandItemType == 0 || (rightHandItemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3) || (leftTargetItem == rightTargetItem && itemCount < 2 && rightHandItemType != 22)))
 		equipLeft = true
@@ -1326,14 +1318,26 @@ function quickRestore()
 	        endIf
 	    endIf
 
-	    if bQuickStaminaEnabled && ((!bPlayerIsInCombat && bQuickBuffEnabled) || (bPlayerIsInCombat && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26))) <= fQuickRestoreThreshold))
-	    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Stamina")
-	    	PO.quickRestoreFindAndConsumePotion(2, !bPlayerIsInCombat) ;Stamina
+	    bool actionTaken
+	    
+	    if bQuickStaminaEnabled
+    		if (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
+		    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Stamina")
+		    	actionTaken = PO.quickRestoreFindAndConsumePotion(2) ;Stamina
+		    endIf
+			if !bPlayerIsInCombat && bQuickBuffEnabled
+				PO.quickBuffFindAndConsumePotions(2)
+			endIf
 	    endIf
 
-	    if bQuickMagickaEnabled && ((!bPlayerIsInCombat && bQuickBuffEnabled) || (bPlayerIsInCombat && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25))) <= fQuickRestoreThreshold))
-	    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Magicka")
-	    	PO.quickRestoreFindAndConsumePotion(1, !bPlayerIsInCombat) ;Magicka
+	    if bQuickMagickaEnabled
+	    	if (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
+		    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Magicka")
+		    	actionTaken = PO.quickRestoreFindAndConsumePotion(1) ;Stamina
+		    endIf
+			if !bPlayerIsInCombat && bQuickBuffEnabled
+				PO.quickBuffFindAndConsumePotions(1)
+			endIf
 	    endIf
 	endIf
     debug.trace("iEquip_ProMode quickRestore end")
@@ -1344,16 +1348,17 @@ function quickHeal(bool bPlayerIsInCombat)
     bool actionTaken
     if bQuickHealPreferMagic
         actionTaken = quickHealFindAndEquipSpell()
-    elseIf ((!bPlayerIsInCombat && bQuickBuffEnabled) || (bPlayerIsInCombat && (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24))) <= fQuickRestoreThreshold))
-        actionTaken = PO.quickRestoreFindAndConsumePotion(0, !bPlayerIsInCombat)
-    else
-    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
-    	actionTaken = true
+    elseIf (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
+    	actionTaken = PO.quickRestoreFindAndConsumePotion(0)
+   	else
+		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
+		actionTaken = true
     endIf
+    	
     if !actionTaken && bQuickHealUseFallback
         if bQuickHealPreferMagic
-        	if ((!bPlayerIsInCombat && bQuickBuffEnabled) || (bPlayerIsInCombat && (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24))) <= fQuickRestoreThreshold))
-            	actionTaken = PO.quickRestoreFindAndConsumePotion(0, !bPlayerIsInCombat)
+        	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
+            	actionTaken = PO.quickRestoreFindAndConsumePotion(0)
             else
             	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
     			actionTaken = true
@@ -1362,6 +1367,11 @@ function quickHeal(bool bPlayerIsInCombat)
             actionTaken = quickHealFindAndEquipSpell()
         endIf
     endIf
+
+    if !bPlayerIsInCombat && bQuickBuffEnabled
+		PO.quickBuffFindAndConsumePotions(0)
+	endIf
+
     if !actionTaken
         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QHNotFound"))
     endIf
