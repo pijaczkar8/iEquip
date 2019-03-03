@@ -139,6 +139,8 @@ Form boots
 float property fEquipOnPauseDelay = 2.0 auto hidden
 
 bool property bPotionGrouping = true auto hidden
+int property iPotionSelectorChoice = 2 auto hidden
+float property fPotionSelectorFadeoutDelay = 5.0 auto hidden
 
 bool property bProModeEnabled auto hidden
 bool property bPreselectMode auto hidden
@@ -160,7 +162,7 @@ bool property bHardLimitQueueSize = true auto hidden
 bool property bHardLimitEnabledPending auto hidden
 bool property bAllowWeaponSwitchHands auto hidden
 bool property bAllowSingleItemsInBothQueues auto hidden
-bool property bAutoAddNewItems = true auto hidden
+bool property bSkipAutoAddedItems auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
 int property iMaxCachedItems = 60 auto hidden
 bool property bBlacklistEnabled = true auto hidden
@@ -552,9 +554,9 @@ function refreshWidgetOnLoad()
 	initQueuePositionIndicators()
 	int count
 	while Q < 8
-		count = jArray.count(aiTargetQ[Q])
 		abIsNameShown[Q] = true
 		if Q < 5
+			count = jArray.count(aiTargetQ[Q])
 			if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
 				setSlotToEmpty(Q, true, (count > 0))
 			else
@@ -586,8 +588,8 @@ function refreshWidgetOnLoad()
 						if count < 1
 							handleEmptyPoisonQueue()
 						else
-							setSlotCount(4, PlayerRef.GetItemCount(fItem))
-							if bConsumableIconFaded
+							setSlotCount(4, PlayerRef.GetItemCount(fItem)) ;line 589
+							if bPoisonIconFaded
 								checkAndFadePoisonIcon(false)
 							endIf
 						endIf
@@ -597,7 +599,7 @@ function refreshWidgetOnLoad()
 				endIf
 			endIf
 		else
-			updateWidget(Q, aiCurrentlyPreselected[Q - 5])
+			updateWidget(Q, aiCurrentlyPreselected[Q - 5]) ;line 600
 		endIf
 		Q += 1
 	endwhile
@@ -1361,24 +1363,24 @@ endFunction
 
 function PopulateWidgetArrays()
 	debug.trace("iEquip_WidgetCore PopulateWidgetArrays start")
-	asWidgetDescriptions = new string[46]
-	asWidgetElements = new string[46]
-	asWidget_TA = new string[46]
-	asWidgetGroup = new string[46]
+	asWidgetDescriptions = new string[50]
+	asWidgetElements = new string[50]
+	asWidget_TA = new string[50]
+	asWidgetGroup = new string[50]
 	
-	afWidget_X = new float[46]
-	afWidget_Y = new float[46]
-	afWidget_S = new float[46]
-	afWidget_R = new float[46]
-	afWidget_A = new float[46]
+	afWidget_X = new float[50]
+	afWidget_Y = new float[50]
+	afWidget_S = new float[50]
+	afWidget_R = new float[50]
+	afWidget_A = new float[50]
 	
-	aiWidget_D = new int[46] ;Stored the index value of any Bring To Front target element ie the element to be sent behind
-	aiWidget_TC = new int[46]
+	aiWidget_D = new int[50] ;Stored the index value of any Bring To Front target element ie the element to be sent behind
+	aiWidget_TC = new int[50]
 	
-	abWidget_V = new bool[46]
-	abWidget_isParent = new bool[46]
-	abWidget_isText = new bool[46]
-	abWidget_isBg = new bool[46]
+	abWidget_V = new bool[50]
+	abWidget_isParent = new bool[50]
+	abWidget_isText = new bool[50]
+	abWidget_isBg = new bool[50]
 
 	;AddWidget arguments - Description, Full Path, X position, Y position, Scale, Rotation, Alpha, Depth, Text Colour, Text Alignment, Visibility, isParent, isText, isBackground, Widget Group
 	;Master widget
@@ -1399,44 +1401,48 @@ function PopulateWidgetArrays()
 	AddWidget("$iEquip_WC_lbl_LeftAttIcon", ".widgetMaster.LeftHandWidget.leftAttributeIcons_mc", 0, 0, 0, 0, 0, 11, 0, None, true, false, false, false, "Left")
 	AddWidget("$iEquip_WC_lbl_LeftMeter", ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc", 0, 0, 0, 0, 0, 12, 0, None, true, false, false, false, "Left")
 	AddWidget("$iEquip_WC_lbl_LeftGem", ".widgetMaster.LeftHandWidget.leftSoulgem_mc", 0, 0, 0, 0, 0, 13, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPosInd", ".widgetMaster.LeftHandWidget.leftPositionIndicator_mc", 0, 0, 0, 0, 0, 14, 0, None, true, false, false, false, "Left")
 	;Left Hand Preselect widget components
 	AddWidget("$iEquip_WC_lbl_LeftPreBg", ".widgetMaster.LeftHandWidget.leftPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftPreIcon", ".widgetMaster.LeftHandWidget.leftPreselectIcon_mc", 0, 0, 0, 0, 0, 15, 0, None, true, false, false, false, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftPreName", ".widgetMaster.LeftHandWidget.leftPreselectName_mc", 0, 0, 0, 0, 0, 16, 16777215, "Right", true, false, true, false, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftPreAtt", ".widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 17, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreIcon", ".widgetMaster.LeftHandWidget.leftPreselectIcon_mc", 0, 0, 0, 0, 0, 16, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreName", ".widgetMaster.LeftHandWidget.leftPreselectName_mc", 0, 0, 0, 0, 0, 17, 16777215, "Right", true, false, true, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreAtt", ".widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 18, 0, None, true, false, false, false, "Left")
 	;Right Hand widget components
 	AddWidget("$iEquip_WC_lbl_RightBg", ".widgetMaster.RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
-	AddWidget("$iEquip_WC_lbl_RightIcon", ".widgetMaster.RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 19, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightName", ".widgetMaster.RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 20, 16777215, "Left", true, false, true, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightCount", ".widgetMaster.RightHandWidget.rightCount_mc", 0, 0, 0, 0, 0, 21, 16777215, "Center", true, false, true, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPoisIcon", ".widgetMaster.RightHandWidget.rightPoisonIcon_mc", 0, 0, 0, 0, 0, 22, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPoisName", ".widgetMaster.RightHandWidget.rightPoisonName_mc", 0, 0, 0, 0, 0, 23, 12646509, "Left", true, false, true, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightAttIcon", ".widgetMaster.RightHandWidget.rightAttributeIcons_mc", 0, 0, 0, 0, 0, 24, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightMeter", ".widgetMaster.RightHandWidget.rightEnchantmentMeter_mc", 0, 0, 0, 0, 0, 25, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightGem", ".widgetMaster.RightHandWidget.rightSoulgem_mc", 0, 0, 0, 0, 0, 26, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightIcon", ".widgetMaster.RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 20, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightName", ".widgetMaster.RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 21, 16777215, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightCount", ".widgetMaster.RightHandWidget.rightCount_mc", 0, 0, 0, 0, 0, 22, 16777215, "Center", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPoisIcon", ".widgetMaster.RightHandWidget.rightPoisonIcon_mc", 0, 0, 0, 0, 0, 23, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPoisName", ".widgetMaster.RightHandWidget.rightPoisonName_mc", 0, 0, 0, 0, 0, 24, 12646509, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightAttIcon", ".widgetMaster.RightHandWidget.rightAttributeIcons_mc", 0, 0, 0, 0, 0, 25, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightMeter", ".widgetMaster.RightHandWidget.rightEnchantmentMeter_mc", 0, 0, 0, 0, 0, 26, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightGem", ".widgetMaster.RightHandWidget.rightSoulgem_mc", 0, 0, 0, 0, 0, 27, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPosInd", ".widgetMaster.RightHandWidget.rightPositionIndicator_mc", 0, 0, 0, 0, 0, 28, 0, None, true, false, false, false, "Right")
 	;Right Hand Preselect widget components
 	AddWidget("$iEquip_WC_lbl_RightPreBg", ".widgetMaster.RightHandWidget.rightPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPreIcon", ".widgetMaster.RightHandWidget.rightPreselectIcon_mc", 0, 0, 0, 0, 0, 28, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPreName", ".widgetMaster.RightHandWidget.rightPreselectName_mc", 0, 0, 0, 0, 0, 29, 16777215, "Left", true, false, true, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPreAtt", ".widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 30, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreIcon", ".widgetMaster.RightHandWidget.rightPreselectIcon_mc", 0, 0, 0, 0, 0, 30, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreName", ".widgetMaster.RightHandWidget.rightPreselectName_mc", 0, 0, 0, 0, 0, 31, 16777215, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreAtt", ".widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 32, 0, None, true, false, false, false, "Right")
 	;Shout widget components
 	AddWidget("$iEquip_WC_lbl_ShoutBg", ".widgetMaster.ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutIcon", ".widgetMaster.ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 32, 0, None, true, false, false, false, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutName", ".widgetMaster.ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 33, 16777215, "Center", true, false, true, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutIcon", ".widgetMaster.ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 34, 0, None, true, false, false, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutName", ".widgetMaster.ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 35, 16777215, "Center", true, false, true, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPosInd", ".widgetMaster.ShoutWidget.shoutPositionIndicator_mc", 0, 0, 0, 0, 0, 36, 0, None, true, false, false, false, "Shout")
 	;Shout Preselect widget components
 	AddWidget("$iEquip_WC_lbl_ShoutPreBg", ".widgetMaster.ShoutWidget.shoutPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutPreIcon", ".widgetMaster.ShoutWidget.shoutPreselectIcon_mc", 0, 0, 0, 0, 0, 35, 0, None, true, false, false, false, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutPreName", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 36, 16777215, "Center", true, false, true, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPreIcon", ".widgetMaster.ShoutWidget.shoutPreselectIcon_mc", 0, 0, 0, 0, 0, 38, 0, None, true, false, false, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPreName", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 39, 16777215, "Center", true, false, true, false, "Shout")
 	;Consumable widget components
 	AddWidget("$iEquip_WC_lbl_ConsBg", ".widgetMaster.ConsumableWidget.consumableBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Consumable")
-	AddWidget("$iEquip_WC_lbl_ConsIcon", ".widgetMaster.ConsumableWidget.consumableIcon_mc", 0, 0, 0, 0, 0, 38, 0, None, true, false, false, false, "Consumable")
-	AddWidget("$iEquip_WC_lbl_ConsName", ".widgetMaster.ConsumableWidget.consumableName_mc", 0, 0, 0, 0, 0, 39, 16777215, "Right", true, false, true, false, "Consumable")
-	AddWidget("$iEquip_WC_lbl_ConsCount", ".widgetMaster.ConsumableWidget.consumableCount_mc", 0, 0, 0, 0, 0, 40, 16777215, "Center", true, false, true, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsIcon", ".widgetMaster.ConsumableWidget.consumableIcon_mc", 0, 0, 0, 0, 0, 41, 0, None, true, false, false, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsName", ".widgetMaster.ConsumableWidget.consumableName_mc", 0, 0, 0, 0, 0, 42, 16777215, "Right", true, false, true, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsCount", ".widgetMaster.ConsumableWidget.consumableCount_mc", 0, 0, 0, 0, 0, 43, 16777215, "Center", true, false, true, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_potSelector", ".widgetMaster.ConsumableWidget.potionSelector_mc", 0, 0, 0, 0, 0, 44, 16777215, None, true, false, false, false, "Consumable")
 	;Poison widget components
 	AddWidget("$iEquip_WC_lbl_PoisonBg", ".widgetMaster.PoisonWidget.poisonBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Poison")
-	AddWidget("$iEquip_WC_lbl_PoisonIcon", ".widgetMaster.PoisonWidget.poisonIcon_mc", 0, 0, 0, 0, 0, 42, 0, None, true, false, false, false, "Poison")
-	AddWidget("$iEquip_WC_lbl_PoisonName", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 43, 16777215, "Left", true, false, true, false, "Poison")
-	AddWidget("$iEquip_WC_lbl_PoisonCount", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 44, 16777215, "Center", true, false, true, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonIcon", ".widgetMaster.PoisonWidget.poisonIcon_mc", 0, 0, 0, 0, 0, 46, 0, None, true, false, false, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonName", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 47, 16777215, "Left", true, false, true, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonCount", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 48, 16777215, "Center", true, false, true, false, "Poison")
 	debug.trace("iEquip_WidgetCore PopulateWidgetArrays end")
 endFunction
 
@@ -1470,15 +1476,15 @@ endFunction
 
 function getAndStoreDefaultWidgetValues()
 	debug.trace("iEquip_WidgetCore getAndStoreDefaultWidgetValues start")
-	afWidget_DefX = new float[46]
-	afWidget_DefY = new float[46]
-	afWidget_DefS = new float[46]
-	afWidget_DefR = new float[46]
-	afWidget_DefA = new float[46]
-	aiWidget_DefD = new int[46]
-	asWidget_DefTA = new string[46]
-	aiWidget_DefTC = new int[46]
-	abWidget_DefV = new bool[46]
+	afWidget_DefX = new float[50]
+	afWidget_DefY = new float[50]
+	afWidget_DefS = new float[50]
+	afWidget_DefR = new float[50]
+	afWidget_DefA = new float[50]
+	aiWidget_DefD = new int[50]
+	asWidget_DefTA = new string[50]
+	aiWidget_DefTC = new int[50]
+	abWidget_DefV = new bool[50]
 	int iIndex
 	string Element
 	while iIndex < asWidgetDescriptions.Length

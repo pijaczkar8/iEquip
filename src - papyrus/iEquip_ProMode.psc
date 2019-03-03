@@ -46,6 +46,7 @@ bool property bQuickHealUseFallback = true auto hidden
 bool property bQuickStaminaEnabled = true auto hidden
 bool property bQuickMagickaEnabled = true auto hidden
 bool property bQuickBuffEnabled = true auto hidden
+int property iQuickBuffControl = 1 auto hidden
 bool property bPreselectEnabled auto hidden
 bool property bShoutPreselectEnabled = true auto hidden
 bool property bPreselectSwapItemsOnEquip auto hidden

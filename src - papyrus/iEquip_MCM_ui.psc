@@ -60,6 +60,7 @@ function drawPage()
             MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
             MCM.AddSliderOptionST("ui_sld_currPosIndAlpha", "$iEquip_MCM_ui_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
         endIf
+
         MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
                 
         if WC.bFadeLeftIconWhen2HEquipped
@@ -226,7 +227,7 @@ State ui_sld_leftIcoFade
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_leftIcoFade")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fLeftIconFadeAmount, 10.0, 80.0, 10.0, 70.0)
+            MCM.fillSlider(WC.fLeftIconFadeAmount, 0.0, 80.0, 10.0, 70.0)
         elseIf currentEvent == "Accept"
             WC.fLeftIconFadeAmount = currentVar
             MCM.SetSliderOptionValueST(WC.fLeftIconFadeAmount, "{0}%")
@@ -352,7 +353,7 @@ State ui_sld_dropShadowStrength
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowStrength")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fDropShadowStrength*100, 25.0, 300.0, 25.0, 100.0)
+            MCM.fillSlider(WC.fDropShadowStrength*100, 25.0, 500.0, 25.0, 100.0)
         elseIf currentEvent == "Accept"
             WC.fDropShadowStrength = currentVar/100
             MCM.SetSliderOptionValueST(WC.fDropShadowStrength*100, "{0}%")

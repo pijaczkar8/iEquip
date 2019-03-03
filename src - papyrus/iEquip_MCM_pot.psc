@@ -2,22 +2,28 @@ Scriptname iEquip_MCM_pot extends iEquip_MCM_Page
 
 iEquip_PotionScript Property PO Auto
 
-string[] potionEffects
+;string[] potionEffects
 string[] emptyPotionQueueOptions
 string[] potionSelectOptions
+string[] showSelectorOptions
 
 ; #############
 ; ### SETUP ###
 
 function initData()
-    potionEffects = new String[3]
+    ;/potionEffects = new String[3]
     potionEffects[0] = "$iEquip_MCM_pot_opt_restore"
     potionEffects[1] = "$iEquip_MCM_pot_opt_fortify"
-    potionEffects[2] = "$iEquip_MCM_pot_opt_regen"
+    potionEffects[2] = "$iEquip_MCM_pot_opt_regen"/;
     
     emptyPotionQueueOptions = new String[2]
     emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
     emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
+
+    showSelectorOptions = new String[3]
+    showSelectorOptions[0] = "$iEquip_MCM_pot_opt_alwaysShowSelector"
+    showSelectorOptions[1] = "$iEquip_MCM_pot_opt_showAboveThreshold"
+    showSelectorOptions[2] = "$iEquip_MCM_pot_opt_hybridShow"
 
     potionSelectOptions = new String[3]
     potionSelectOptions[0] = "$iEquip_MCM_pot_opt_alwaysStrongest"
@@ -31,17 +37,16 @@ function drawPage()
         MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)
                 
         if WC.bPotionGrouping
-            MCM.AddMenuOptionST("pot_men_PrefEffect", "$iEquip_MCM_pot_lbl_PrefEffect", potionEffects[PO.iPotionsFirstChoice])
-            MCM.AddMenuOptionST("pot_men_PrefEffect2", "$iEquip_MCM_pot_lbl_PrefEffect2", potionEffects[PO.iPotionsSecondChoice])
-            MCM.AddTextOptionST("pot_txt_PrefEffect3", "$iEquip_MCM_pot_lbl_PrefEffect3", potionEffects[PO.iPotionsThirdChoice])
+            ;MCM.AddMenuOptionST("pot_men_PrefEffect", "$iEquip_MCM_pot_lbl_PrefEffect", potionEffects[PO.iPotionsFirstChoice])
+            ;MCM.AddMenuOptionST("pot_men_PrefEffect2", "$iEquip_MCM_pot_lbl_PrefEffect2", potionEffects[PO.iPotionsSecondChoice])
+            ;MCM.AddTextOptionST("pot_txt_PrefEffect3", "$iEquip_MCM_pot_lbl_PrefEffect3", potionEffects[PO.iPotionsThirdChoice])
+            MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
+            MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1}")
             MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
             if PO.iPotionSelectChoice == 1 ; Smart Select
                 MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartConsumeThreshold*100, "{0} %")
             endIf
-            MCM.AddToggleOptionST("pot_tgl_enblRestPotWarn", "$iEquip_MCM_pot_lbl_enblRestPotWarn", PO.bEnableRestorePotionWarnings)
-            if PO.bEnableRestorePotionWarnings
-                MCM.AddToggleOptionST("pot_tgl_lowRestPotNot", "$iEquip_MCM_pot_lbl_lowRestPotNot", PO.bNotificationOnLowRestorePotions)
-            endIf
+            
             MCM.AddEmptyOption()
             if !WC.abPotionGroupEnabled[0]
                 MCM.AddTextOptionST("pot_txt_addHealthGroup", "$iEquip_MCM_gen_lbl_addHealthGroup", "")
@@ -58,6 +63,10 @@ function drawPage()
         MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
         MCM.AddMenuOptionST("pot_men_whenNoPotions", "$iEquip_MCM_pot_lbl_whenNoPotions", emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
         MCM.AddToggleOptionST("pot_tgl_warningOnLastPotion", "$iEquip_MCM_pot_lbl_warningOnLastPotion", PO.bFlashPotionWarning)
+        MCM.AddToggleOptionST("pot_tgl_enblRestPotWarn", "$iEquip_MCM_pot_lbl_enblRestPotWarn", PO.bEnableRestorePotionWarnings)
+        if PO.bEnableRestorePotionWarnings
+            MCM.AddToggleOptionST("pot_tgl_lowRestPotNot", "$iEquip_MCM_pot_lbl_lowRestPotNot", PO.bNotificationOnLowRestorePotions)
+        endIf
     endIf
 endFunction
 
@@ -85,7 +94,7 @@ State pot_tgl_enblPotionGroup
     endEvent
 endState
 
-State pot_men_PrefEffect
+;/State pot_men_PrefEffect
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_pot_txt_PrefEffect")
@@ -124,6 +133,32 @@ State pot_men_PrefEffect2
 endState
 
 State pot_txt_PrefEffect3
+endState/;
+
+State pot_men_showSelector
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_showSelector")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iPotionSelectorChoice, showSelectorOptions, 2)
+        elseIf currentEvent == "Accept"
+            WC.iPotionSelectorChoice = currentVar as int
+            MCM.SetMenuOptionValueST(showSelectorOptions[WC.iPotionSelectorChoice])
+        endIf
+    endEvent
+endState
+
+State pot_sld_selectorFadeDelay
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_selectorFadeDelay")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fPotionSelectorFadeoutDelay, 0.0, 30.0, 0.5, 4.0)
+        elseIf currentEvent == "Accept"
+            WC.fPotionSelectorFadeoutDelay = currentVar
+            MCM.SetSliderOptionValueST(WC.fPotionSelectorFadeoutDelay, "{0}")
+        endIf 
+    endEvent
 endState
 
 State pot_men_PotionSelect

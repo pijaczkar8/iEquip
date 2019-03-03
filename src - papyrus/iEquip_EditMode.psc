@@ -35,6 +35,7 @@ bool property isEditMode auto hidden
 bool property preselectEnabledOnEnter auto hidden
 bool bFirstCycleKeyPressed = true
 bool bringToFrontFirstTime = true
+bool bPotionSelectorOnLeft = true
 
 ; - Floats -
 
@@ -109,15 +110,15 @@ function OnInit()
     iFirstElementInGroup[4] = 38 ; consumableBg_mc
     iFirstElementInGroup[5] = 42 ; poisonBg_mc
 
-    afWidget_CurX = new Float[46]
-    afWidget_CurY = new Float[46]
-    afWidget_CurS = new Float[46]
-    afWidget_CurR = new Float[46]
-    afWidget_CurA = new Float[46]
-    aiWidget_CurD = new Int[46]
-    asWidget_CurTA = new string[46]
-    aiWidget_CurTC = new int[46]
-    abWidget_CurV = new bool[46]
+    afWidget_CurX = new Float[50]
+    afWidget_CurY = new Float[50]
+    afWidget_CurS = new Float[50]
+    afWidget_CurR = new Float[50]
+    afWidget_CurA = new Float[50]
+    aiWidget_CurD = new Int[50]
+    asWidget_CurTA = new string[50]
+    aiWidget_CurTC = new int[50]
+    abWidget_CurV = new bool[50]
     
     iCustomColors = new int[14]
     int iIndex = iCustomColors.length
@@ -158,9 +159,7 @@ function DisableEditMode()
         UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false)
     endIf
 
-    if !WC.bPermanentPositionIndicators
-        UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", false)
-    endIf 
+    UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", false)    
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
     
     ; Reset Vanity Camera delay back to previous value on leaving Edit Mode
@@ -250,6 +249,7 @@ function HighlightElement(bool bAdd)
         UI.InvokeIntA(HUD_MENU, WidgetRoot + ".highlightSelectedElement", iArgs)
     else
         UI.InvokeIntA(HUD_MENU, WidgetRoot + ".removeCurrentHighlight", iArgs)
+        TweenElement(4, WC.afWidget_A[iSelectedElement], 0.01)
     endIf
 endFunction
 
@@ -468,7 +468,7 @@ function ToggleCycleRange()
     if 0 <= iSelectedElement && iSelectedElement  <= 5           ; If group is selected, find first child
         iSelectedElement = iFirstElementInGroup[iSelectedElement]
         iFirstElement = 6
-        iLastElement = 45
+        iLastElement = 49
     else                                    ; Else find parent group
         iSelectedElement = WidgetGroups.Find(WC.asWidgetGroup[iSelectedElement])
         iFirstElement = 0
@@ -508,7 +508,7 @@ function CycleElements(int iNextPrev)
 endFunction
 
 function showCyclingHelp()
-    debug.MessageBox("$iEquip_EM_msg_cycleHelp")
+    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_EM_msg_cycleHelp"))
 endFunction
 
 ; - Update Data -
@@ -528,21 +528,30 @@ function UpdateElementData(int iIndex, bool bVisible, bool bUpdateAlpha = true)
 endFunction
 
 function UpdateElementText(int[] iArgs, int iNewColor) 
-    If WC.asWidget_TA[iArgs[0]] == "Left"
-        iArgs[1] = 0
-    elseIf WC.asWidget_TA[iArgs[0]] == "Center"
-        iArgs[1] = 1
-    else
-        iArgs[1] = 2
+    if !iArgs[0] == 45 ;potionSelector_mc
+        if WC.asWidget_TA[iArgs[0]] == "Left"
+            iArgs[1] = 0
+        elseIf WC.asWidget_TA[iArgs[0]] == "Center"
+            iArgs[1] = 1
+        else
+            iArgs[1] = 2
+        endIf
+        
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", iArgs)
     endIf
-    
-    UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", iArgs)
     iArgs[1] = iNewColor
     UI.InvokeIntA(HUD_MENU, WidgetRoot + ".SetTextColor", iArgs)
 endFunction
 
 function UpdateEditModeGuide()
     if iSelectedElement != -1
+        
+        if iSelectedElement == 45 ;potionSelector_mc
+            UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentInstructionText.text", iEquip_StringExt.LocalizeString("$iEquip_swf_potSelAlignInstTxt"))
+        else
+            UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentInstructionText.text", iEquip_StringExt.LocalizeString("$iEquip_swf_AlignmentInstructionText"))
+        endIf
+        
         string tmpStr
     
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.SelectedElementText.text", WC.asWidgetDescriptions[iSelectedElement])
@@ -561,6 +570,12 @@ function UpdateEditModeGuide()
                 tmpStr = "$iEquip_EM_rightAligned"
             else
                 tmpStr = "$iEquip_EM_centreAligned"
+            endIf
+        elseif iSelectedElement == 45 ;potionSelector_mc
+            if bPotionSelectorOnLeft
+                tmpStr = "$iEquip_EM_potSelLeft"
+            else
+                tmpStr = "$iEquip_EM_potSelRight"
             endIf
         else
             tmpStr = ""
@@ -583,7 +598,7 @@ function UpdateElementsAll()
     int iIndex
     
     while iIndex < WC.asWidgetDescriptions.Length  
-        if WC.abWidget_isText[iIndex]
+        if WC.abWidget_isText[iIndex] || iSelectedElement == 45 ;potionSelector_mc
             iArgs[0] = iIndex
             UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
         endIf
@@ -717,7 +732,9 @@ endFunction
 ; ### Edit Toggles ###
 
 function ToggleTextAlignment()
-    if WC.abWidget_isText[iSelectedElement]
+    if iSelectedElement == 45 ;potionSelector_mc
+        togglePotionSelectorAlignment()
+    elseIf WC.abWidget_isText[iSelectedElement]
         string tmpStr
         int[] iArgs = new int[2]
         iArgs[0] = iSelectedElement
@@ -742,6 +759,20 @@ function ToggleTextAlignment()
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", tmpStr)
     endIf
 endfunction
+
+function togglePotionSelectorAlignment()
+    bPotionSelectorOnLeft = !bPotionSelectorOnLeft
+    TweenElement(5, 0, 0.15)                                 ; Fade out before changing alignment
+    UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
+    TweenElement(5, WC.afWidget_A[iSelectedElement], 0.15)   ; Fade back in
+    string tmpStr
+    if bPotionSelectorOnLeft
+        tmpStr = "$iEquip_EM_potSelLeft"
+    else
+        tmpStr = "$iEquip_EM_potSelRight"
+    endIf
+    UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", tmpStr)
+endFunction
 
 function ToggleRulers()
     RulersShown += 1
@@ -864,7 +895,7 @@ function ShowColorSelection(int iType)
         iDefColor = 0xEAAB00
     else                ; Selected text colour
         ; Make sure element is text
-        if WC.abWidget_isText[iSelectedElement]
+        if WC.abWidget_isText[iSelectedElement] || iSelectedElement == 45 ;potionSelector_mc
             sText = "$iEquip_EM_lbl_showColorTitle3"
             iColor = WC.aiWidget_TC[iSelectedElement]
             iDefColor = 0xFFFFFF
@@ -934,7 +965,7 @@ endFunction
 ; - Load -
 
 function LoadPreset(int jPreset)
-    int[] abWidget_V_temp = new int[46]
+    int[] abWidget_V_temp = new int[50]
 
     JArray.writeToFloatPArray(JMap.getObj(jPreset, "_X"), WC.afWidget_X, 0, -1, 0, 0)
     JArray.writeToFloatPArray(JMap.getObj(jPreset, "_Y"), WC.afWidget_Y, 0, -1, 0, 0)

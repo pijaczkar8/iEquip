@@ -23,11 +23,17 @@ function drawPage()
         endIf
 
         MCM.SetCursorPosition(1)
+
         MCM.AddHeaderOption("$iEquip_MCM_que_lbl_autoAddOpts")
-        MCM.AddToggleOptionST("que_tgl_autoAddItmQue", "$iEquip_MCM_que_lbl_autoAddItmQue", WC.bAutoAddNewItems)
+        MCM.AddToggleOptionST("que_tgl_autoAddHandItems", "$iEquip_MCM_que_lbl_autoAddHandItems", EH.bAutoAddNewItems)
+        MCM.AddToggleOptionST("que_tgl_autoAddShouts", "$iEquip_MCM_que_lbl_autoAddShouts", EH.bAutoAddShouts)
+        MCM.AddToggleOptionST("que_tgl_autoAddPowers", "$iEquip_MCM_que_lbl_autoAddPowers", EH.bAutoAddPowers)
         MCM.AddToggleOptionST("que_tgl_autoAddPotions", "$iEquip_MCM_que_lbl_autoAddPotions", PO.bAutoAddPotions)
         MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "$iEquip_MCM_que_lbl_autoAddPoisons", PO.bAutoAddPoisons)
         MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
+
+        MCM.AddToggleOptionST("que_tgl_skipAutoAddedItems", "$iEquip_MCM_que_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
+
         MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "$iEquip_MCM_que_lbl_allowCacheRmvItm", WC.bEnableRemovedItemCaching)
                 
         if WC.bEnableRemovedItemCaching
@@ -147,16 +153,47 @@ endState
 ; - Auto Add Options -
 ; --------------------
 
-State que_tgl_autoAddItmQue
+State que_tgl_autoAddHandItems
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddItmQue")
-        elseIf currentEvent == "Select"
-            WC.bAutoAddNewItems = !WC.bAutoAddNewItems
-            MCM.SetToggleOptionValueST(WC.bAutoAddNewItems)
-        elseIf currentEvent == "Default"
-            WC.bAutoAddNewItems = true 
-            MCM.SetToggleOptionValueST(WC.bAutoAddNewItems)
+            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddHandItems")
+        else
+            If currentEvent == "Select"
+                EH.bAutoAddNewItems = !EH.bAutoAddNewItems
+            elseIf currentEvent == "Default"
+                EH.bAutoAddNewItems = true
+            endIf
+            MCM.SetToggleOptionValueST(EH.bAutoAddNewItems)
+        endIf
+    endEvent
+endState
+
+State que_tgl_autoAddShouts
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddShouts")
+        else
+            If currentEvent == "Select"
+                EH.bAutoAddShouts = !EH.bAutoAddShouts
+            elseIf currentEvent == "Default"
+                EH.bAutoAddShouts = true
+            endIf
+            MCM.SetToggleOptionValueST(EH.bAutoAddShouts)
+        endIf
+    endEvent
+endState
+
+State que_tgl_autoAddPowers
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddPowers")
+        else
+            If currentEvent == "Select"
+                EH.bAutoAddPowers = !EH.bAutoAddPowers
+            elseIf currentEvent == "Default"
+                EH.bAutoAddPowers = true
+            endIf
+            MCM.SetToggleOptionValueST(EH.bAutoAddPowers)
         endIf
     endEvent
 endState
@@ -168,7 +205,6 @@ State que_tgl_autoAddPotions
         else
             If currentEvent == "Select"
                 PO.bAutoAddPotions = !PO.bAutoAddPotions
-                MCM.SetToggleOptionValueST(PO.bAutoAddPotions)
             elseIf currentEvent == "Default"
                 PO.bAutoAddPotions = true
             endIf
@@ -184,7 +220,6 @@ State que_tgl_autoAddPoisons
         else
             If currentEvent == "Select"
                 PO.bAutoAddPoisons = !PO.bAutoAddPoisons
-                MCM.SetToggleOptionValueST(PO.bAutoAddPoisons)
             elseIf currentEvent == "Default"
                 PO.bAutoAddPoisons = true
             endIf
@@ -200,11 +235,25 @@ State que_tgl_autoAddConsumables
         else
             If currentEvent == "Select"
                 PO.bAutoAddConsumables = !PO.bAutoAddConsumables
-                MCM.SetToggleOptionValueST(PO.bAutoAddConsumables)
             elseIf currentEvent == "Default"
                 PO.bAutoAddConsumables = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddConsumables)
+        endIf 
+    endEvent
+endState
+
+State que_tgl_skipAutoAddedItems
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_skipAutoAddedItems")
+        else
+            If currentEvent == "Select"
+                WC.bSkipAutoAddedItems = !WC.bSkipAutoAddedItems
+            elseIf currentEvent == "Default"
+                WC.bSkipAutoAddedItems = false
+            endIf
+            MCM.SetToggleOptionValueST(WC.bSkipAutoAddedItems)
         endIf 
     endEvent
 endState

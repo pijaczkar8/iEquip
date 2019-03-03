@@ -82,6 +82,10 @@ bool property bDualCasting auto hidden
 bool property bGoingUnarmed auto hidden
 int dualCastCounter
 
+bool property bAutoAddNewItems = true auto hidden
+bool property bAutoAddShouts = true auto hidden
+bool property bAutoAddPowers = true auto hidden
+
 bool property bPlayerIsABeast auto hidden
 bool property bPlayerIsAVampire auto hidden
 bool property bWaitingForTransform auto hidden
@@ -609,7 +613,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	;Check that the queuedForm isn't blacklisted for the slot it's been equipped to
 	if !blackListFLSTs[equippedSlot].HasForm(queuedForm)
 		;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
-		if !actionTaken && WC.bAutoAddNewItems
+		if !actionTaken && (equippedSlot < 2 && bAutoAddNewItems) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers)))
 			;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
 			bool freeSpace = true
 			targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
@@ -632,6 +636,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 				jMap.setInt(iEquipItem, "iEquipType", itemType)
 				jMap.setStr(iEquipItem, "iEquipName", itemName)
 				jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+				jMap.setInt(iEquipItem, "iEquipAutoAdded", 1)
 				if equippedSlot < 2
 					if itemType == 22
 						if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
