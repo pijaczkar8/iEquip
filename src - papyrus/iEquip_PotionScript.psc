@@ -599,21 +599,81 @@ endFunction
 
 int function getPotionQueue(potion potionToCheck)
     debug.trace("iEquip_PotionScript getPotionQueue start")
-    int index = potionToCheck.GetCostliestEffectIndex()
-    magicEffect strongestEffect = potionToCheck.GetNthEffectMagicEffect(index)
-    debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + index + ", strongest magic effect: " + strongestEffect as string)
+    int strongestEffectIndex = potionToCheck.GetCostliestEffectIndex()
+    magicEffect effectToCheck = potionToCheck.GetNthEffectMagicEffect(effectToCheck)
+    debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + effectToCheck + ", strongest magic effect: " + effectToCheck as string)
     ;Decide which potion queue it should be added to
-    int Q = aStrongestEffects.find(strongestEffect) ;Returns -1 if not found
+    int Q = checkEffects(effectToCheck)
+    ;If the strongest effect isn't a restore/fortify/regen effect then if the potion has more than one effect check if any of the other effects are
+    if Q < 0
+        int numEffects = potionToCheck.GetNumEffects()
+        if numEffects > 1
+            int i
+            int selectedEffectIndex ;Will be used later so I can save the correct effect and magnitude on the queue object
+            while i < numEffects && Q < 0
+                if i != strongestEffectIndex
+                    effectToCheck = potionToCheck.GetNthEffectMagicEffect(i)
+                    if numEffects == 2
+                        ;If potion has two effects then check the other for any of restore/fortify/regen effect
+                        Q = checkEffects(effectToCheck)
+                        if Q > -1
+                            selectedEffectIndex = i
+                        endIf
+                        i += 1
+                    else
+                        ;If potion has 3 or more effects we need to check all the others first for a restore effect, and if none found recheck for a fortify/regen effect
+                        int j
+                        bool firstPass = true
+                        while j < numEffects && Q < 0
+                            if j != strongestEffectIndex
+                                effectToCheck = potionToCheck.GetNthEffectMagicEffect(j)
+                                if firstPass
+                                    ;First pass checks for restore effects first
+                                    Q = checkEffects(effectToCheck, true)
+                                else
+                                    ;If no restore effects found 2nd pass to check for fortify/regen effects
+                                    Q = checkEffects(effectToCheck)
+                                endIf
+                                if Q > -1
+                                    selectedEffectIndex = j
+                                endIf
+                            endIf
+                            j += 1
+                            if firstPass && j == numEffects
+                                firstPass = false
+                                j = 0
+                            endIf
+                        endWhile
+                    endIf
+                else
+                    i += 1
+                endIf
+            endWhile
+        endIf
+    endIf
+    ;If it doesn't have a health, magicka or stamina restore/fortify/regen effect then there's nothing to do here
+    if Q < 0
+        debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
+    else
+        ;ToDo - Store selected effect and magnitude in temp variables ready to feed in to queue object when created
+    endIf
+    debug.trace("iEquip_PotionScript getPotionQueue - returning: Q = " + Q)
+    debug.trace("iEquip_PotionScript getPotionQueue end")
+    return Q
+endFunction
+
+int function checkEffects(magicEffect effectToCheck, bool restoreOnly = false)
+    int Q = aStrongestEffects.find(effectToCheck) ;Returns -1 if not found
     ;If it's not a regular effect check for a consummate effect
     if Q < 0
-        Q = aConsummateEffects.find(strongestEffect) ;Puts ultimate/consummate potions into the Restore queues (0,3,6)
+        Q = aConsummateEffects.find(effectToCheck) ;Puts ultimate/consummate potions into the Restore queues (0,3,6)
         if Q != -1
             Q = Q * 3
         endIf
     endIf
     ;If we've not found a vanilla effect check if CACO is loaded and if so check for a CACO restore effect
     if Q < 0 && bIsCACOLoaded
-        Q = aCACO_RestoreEffects.find(strongestEffect) ;Returns -1 if not found
+        Q = aCACO_RestoreEffects.find(effectToCheck) ;Returns -1 if not found
         debug.trace("iEquip_PotionScript getPotionQueue - checking for a CACO restore effect, Q = " + Q)
         if Q != -1
             if Q < 3 ;AlchRestoreHealth_1sec, AlchRestoreHealth_5sec, AlchRestoreHealth_10sec
@@ -628,7 +688,7 @@ int function getPotionQueue(potion potionToCheck)
     endIf
     ;Finally check if PotionAnimatedFix is loaded and check for one of its DUPLICATE restore effects
     if Q < 0 && bIsPAFLoaded
-        Q = aPAF_RestoreEffects.find(strongestEffect)
+        Q = aPAF_RestoreEffects.find(effectToCheck)
         debug.trace("iEquip_PotionScript getPotionQueue - checking for a PAF restore effect, Q = " + Q)
         if Q != -1
             if Q < 2 ;AlchRestoreHealthDUPLICATE001 or AlchRestoreHealthAllDUPLICATE001
@@ -641,12 +701,9 @@ int function getPotionQueue(potion potionToCheck)
         endIf
         debug.trace("iEquip_PotionScript getPotionQueue - PAF restore effect, final Q value = " + Q)
     endIf
-    ;If it's not a health, magicka or stamina potion then there's nothing to do here
-    if Q < 0
-        debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
+    if restoreOnly && !(Q == 0 || Q == 3 || Q == 6)
+        Q = -1
     endIf
-    debug.trace("iEquip_PotionScript getPotionQueue - returning: Q = " + Q)
-    debug.trace("iEquip_PotionScript getPotionQueue end")
     return Q
 endFunction
 
