@@ -339,14 +339,14 @@ Event OnWidgetInit()
 	asQueueName[4] = "$iEquip_WC_common_poisonQ"
 
 	aiNameElements = new int[8]
-	aiNameElements[0] = 8
-	aiNameElements[1] = 21
-	aiNameElements[2] = 34
-	aiNameElements[3] = 40
-	aiNameElements[4] = 44
-	aiNameElements[5] = 17
-	aiNameElements[6] = 30
-	aiNameElements[7] = 37
+	aiNameElements[0] = 8 ;leftName_mc
+	aiNameElements[1] = 22 ;rightName_mc
+	aiNameElements[2] = 36 ;shoutName_mc
+	aiNameElements[3] = 43 ;consumableName_mc
+	aiNameElements[4] = 48 ;poisonName_mc
+	aiNameElements[5] = 18 ;leftPreselectName_mc
+	aiNameElements[6] = 32 ;rightPreselectName_mc
+	aiNameElements[7] = 40 ;shoutPreselectName_mc
 
 	asWeaponTypeNames = new string[10]
 	asWeaponTypeNames[0] = "Fist"
@@ -380,11 +380,11 @@ Event OnWidgetInit()
 	ai2HWeaponTypesAlt[3] = 12 ;Crossbow
 
 	aiCounterClips = new int[5]
-	aiCounterClips[0] = 9
-	aiCounterClips[1] = 22
-	aiCounterClips[2] = -1
-	aiCounterClips[3] = 41
-	aiCounterClips[4] = 45
+	aiCounterClips[0] = 9 ;leftCount_mc
+	aiCounterClips[1] = 23 ;rightCount_mc
+	aiCounterClips[2] = -1 ;No shout count
+	aiCounterClips[3] = 44 ;consumableCount_mc
+	aiCounterClips[4] = 49 ;poisonCount_mc
 
 	aiPoisonNameElements = new int[2]
 	aiPoisonNameElements[0] = 11
