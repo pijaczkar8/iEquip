@@ -2,7 +2,6 @@ Scriptname iEquip_MCM_pot extends iEquip_MCM_Page
 
 iEquip_PotionScript Property PO Auto
 
-;string[] potionEffects
 string[] emptyPotionQueueOptions
 string[] potionSelectOptions
 string[] showSelectorOptions
@@ -11,10 +10,6 @@ string[] showSelectorOptions
 ; ### SETUP ###
 
 function initData()
-    ;/potionEffects = new String[3]
-    potionEffects[0] = "$iEquip_MCM_pot_opt_restore"
-    potionEffects[1] = "$iEquip_MCM_pot_opt_fortify"
-    potionEffects[2] = "$iEquip_MCM_pot_opt_regen"/;
     
     emptyPotionQueueOptions = new String[2]
     emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
@@ -37,9 +32,7 @@ function drawPage()
         MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)
                 
         if WC.bPotionGrouping
-            ;MCM.AddMenuOptionST("pot_men_PrefEffect", "$iEquip_MCM_pot_lbl_PrefEffect", potionEffects[PO.iPotionsFirstChoice])
-            ;MCM.AddMenuOptionST("pot_men_PrefEffect2", "$iEquip_MCM_pot_lbl_PrefEffect2", potionEffects[PO.iPotionsSecondChoice])
-            ;MCM.AddTextOptionST("pot_txt_PrefEffect3", "$iEquip_MCM_pot_lbl_PrefEffect3", potionEffects[PO.iPotionsThirdChoice])
+            MCM.AddToggleOptionST("pot_tgl_checkAllEffects", "$iEquip_MCM_pot_lbl_checkAllEffects", PO.bCheckOtherEffects)
             MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
             MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1}")
             MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
@@ -94,46 +87,16 @@ State pot_tgl_enblPotionGroup
     endEvent
 endState
 
-;/State pot_men_PrefEffect
+State pot_tgl_checkAllEffects
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_PrefEffect")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(PO.iPotionsFirstChoice, potionEffects, 0)
-        elseIf currentEvent == "Accept"
-            if PO.iPotionsFirstChoice != currentVar as int
-                if PO.iPotionsSecondChoice == currentVar as int
-                    PO.iPotionsSecondChoice = PO.iPotionsFirstChoice
-                else
-                    PO.iPotionsThirdChoice = PO.iPotionsFirstChoice
-                endif
-                
-                PO.iPotionsFirstChoice = currentVar as int
-                MCM.forcePageReset()
-            endIf
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_checkAllEffects")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bCheckOtherEffects)
+            PO.bCheckOtherEffects = !PO.bCheckOtherEffects
+            MCM.SetToggleOptionValueST(PO.bCheckOtherEffects)
         endIf
     endEvent
 endState
-
-State pot_men_PrefEffect2
-    event OnBeginState()
-        if currentEvent == "Open"
-            string[] potionOptions = MCM.cutStrArray(potionEffects, PO.iPotionsFirstChoice)
-            MCM.fillMenu(potionOptions.find(potionEffects[PO.iPotionsSecondChoice]), potionOptions, potionOptions.find(potionEffects[1]))
-        elseIf currentEvent == "Accept"
-            string[] potionOptions = MCM.cutStrArray(potionEffects, PO.iPotionsFirstChoice)
-        
-            PO.iPotionsSecondChoice = potionEffects.find(potionOptions[currentVar as int])
-            potionOptions = MCM.cutStrArray(potionOptions, currentVar as int)
-            PO.iPotionsThirdChoice = potionEffects.find(potionOptions[0])
-            
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State pot_txt_PrefEffect3
-endState/;
 
 State pot_men_showSelector
     event OnBeginState()

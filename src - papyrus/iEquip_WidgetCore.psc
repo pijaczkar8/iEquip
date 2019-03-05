@@ -13,6 +13,7 @@ import WornObject
 import iEquip_FormExt
 import iEquip_StringExt
 import iEquip_SpellExt
+import iEquip_ActorExt
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto
@@ -43,6 +44,7 @@ iEquip_ShoutNameUpdateScript property SNUpdate auto
 iEquip_ShoutPreselectNameUpdateScript property SPNUpdate auto
 iEquip_ConsumableNameUpdateScript property CNUpdate auto
 iEquip_ConsumableFadeUpdateScript property CFUpdate auto
+iEquip_PotionSelectorUpdateScript property PSUpdate auto
 iEquip_PoisonNameUpdateScript property PNUpdate auto
 iEquip_ApplyPoisonLeftFXScript property PLFX auto
 iEquip_ApplyPoisonRightFXScript property PRFX auto
@@ -257,9 +259,13 @@ bool[] property abPoisonInfoDisplayed auto hidden
 
 bool[] property abPotionGroupEnabled auto hidden
 string[] asPotionGroups
+string[] asActorValues
+int[] aiActorValues
 bool[] property abPotionGroupEmpty auto hidden
 bool property bConsumableIconFaded auto hidden
 bool bFirstAttemptToDeletePotionGroup = true
+bool property bPotionSelectorShown auto hidden
+int property iPotionTypeChoice = 1 auto hidden
 
 bool property bPoisonIconFaded auto hidden
 
@@ -407,6 +413,16 @@ Event OnWidgetInit()
 	EquipSlots[2] = Game.GetForm(0x00013F44) As EquipSlot ; EitherHand
 	EquipSlots[3] = Game.GetForm(0x00013F45) As EquipSlot ; BothHands
 	EquipSlots[4] = Game.GetForm(0x00025BEE) As EquipSlot ; Voice
+
+	asActorValues = new string[3]
+    asActorValues[0] = "Health"
+    asActorValues[1] = "Magicka"
+    asActorValues[2] = "Stamina"
+
+    aiActorValues = new int[3]
+    aiActorValues[0] = 24 ;Health
+    aiActorValues[1] = 25 ;Magicka
+    aiActorValues[2] = 26 ;Stamina
 
 	bLoadedbyOnWidgetInit = true
 	initDataObjects()
@@ -1610,6 +1626,9 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
 	if queueLength == 0
 		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}"))
+	;If we're cycling the consumable slot and the potion type selector is currently shown cycle the selector instead of the main slot
+	elseIf Q == 3 && bPotionSelectorShown
+		cyclePotionSelector(Reverse)
 	;if Preselect Mode is enabled then left/right/shout needs to cycle the preselect slot not the main widget. if shout preselect is disabled cycle main shout slot
 	elseif (bPreselectMode && !bPreselectSwitchingHands && (Q < 2 || (Q == 2 && PM.bShoutPreselectEnabled))) || (Q == 0 && bAmmoMode)
 		;if preselect name not shown then first cycle press shows name without advancing the queue
@@ -2135,6 +2154,32 @@ function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
 		UICallback.Send(iHandle)
 	endIf
 	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator end")
+endFunction
+
+function updatePotionSelector(bool bHide = false)
+	debug.trace("iEquip_WidgetCore updatePotionSelector start")
+	;If we've just received the fadeout update then hide the selector and reset the currently selected type to fortify
+	if bHide
+		UI.InvokeBool(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", false)
+		bPotionSelectorShown = false
+		iPotionTypeChoice = 1
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".cyclePotionSelector", iPotionTypeChoice)
+	;Otherwise update the counts as required
+	else
+		;Update the potion type counts
+		string textPath = asWidgetElements[45] ;potionSelector_mc
+		int potionGroup = asPotionGroups.Find(asCurrentlyEquipped(3))
+		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".restoreText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_restore{" + PO.getCountForSelector(potionGroup, 0) + "}"))
+		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".fortifyText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_fortify{" + PO.getCountForSelector(potionGroup, 1) + "}"))
+		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".regenText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_regen{" + PO.getCountForSelector(potionGroup, 2) + "}"))
+		;If the selector isn't already shown then show it now
+		if !bPotionSelectorShown
+			UI.InvokeBool(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", true)
+			bPotionSelectorShown = true
+			PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
+		endIf
+	endIf
+	debug.trace("iEquip_WidgetCore updatePotionSelector end")
 endFunction
 
 function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cycling = false)
@@ -3047,6 +3092,28 @@ function cycleShout(int Q, int targetIndex, form targetItem)
     debug.trace("iEquip_WidgetCore cycleShout end")
 endFunction
 
+function cyclePotionSelector(bool reverse)
+	debug.trace("iEquip_WidgetCore cyclePotionSelector start")
+	
+	if !reverse
+		iPotionTypeChoice += 1
+		if iPotionTypeChoice == 3
+			iPotionTypeChoice = 0
+		endIf
+	else
+		iPotionTypeChoice -= 1
+		if iPotionTypeChoice < 0
+			iPotionTypeChoice = 2
+		endIf
+	endIf
+
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".cyclePotionSelector", iPotionTypeChoice)
+
+	PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
+
+	debug.trace("iEquip_WidgetCore cyclePotionSelector end")
+endFunction
+
 function cycleConsumable(form targetItem, int targetIndex, bool isPotionGroup)
 	debug.trace("iEquip_WidgetCore cycleConsumable start")
     int potionGroupIndex
@@ -3108,7 +3175,17 @@ function consumeItem()
     if bConsumablesEnabled
         int potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
         if potionGroupIndex != -1
-            PO.selectAndConsumePotion(potionGroupIndex)
+        	;If the potion selector is currently shown then select and consume a potion of the selected type
+        	if bPotionSelectorShown
+        		PO.selectAndConsumePotion(potionGroupIndex, iPotionTypeChoice)
+        		PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
+        	;If the selector isn't currently shown and conditions to show selector are met then show it now
+        	elseIf iPotionSelectorChoice == 0 || (iPotionSelectorChoice == 2 && PlayerRef.IsInCombat()) || (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) > PO.fSmartConsumeThreshold
+        		updatePotionSelector()
+        	;Otherwise carry on and select and consume a restore potion
+        	else
+            	PO.selectAndConsumePotion(potionGroupIndex, 0)
+            endIf
         else
             form itemForm = jMap.getForm(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipForm")
             if itemForm
