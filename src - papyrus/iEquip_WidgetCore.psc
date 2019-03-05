@@ -2160,7 +2160,7 @@ function updatePotionSelector(bool bHide = false)
 	debug.trace("iEquip_WidgetCore updatePotionSelector start")
 	;If we've just received the fadeout update then hide the selector and reset the currently selected type to fortify
 	if bHide
-		UI.InvokeBool(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", false)
+		UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", 0.0)
 		bPotionSelectorShown = false
 		iPotionTypeChoice = 1
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".cyclePotionSelector", iPotionTypeChoice)
@@ -2174,7 +2174,7 @@ function updatePotionSelector(bool bHide = false)
 		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".regenText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_regen{" + PO.getCountForSelector(potionGroup, 2) + "}"))
 		;If the selector isn't already shown then show it now
 		if !bPotionSelectorShown
-			UI.InvokeBool(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", true)
+			UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", afWidget_A[45])
 			bPotionSelectorShown = true
 			PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
 		endIf

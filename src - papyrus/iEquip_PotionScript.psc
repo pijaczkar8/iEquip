@@ -441,6 +441,9 @@ function onPotionRemoved(form removedPotion)
                 string potionGroup = asPotionGroups[group]
 	            if WC.asCurrentlyEquipped[3] == potionGroup
 	                WC.setSlotCount(3, getPotionGroupCount(group))
+                    if WC.bPotionSelectorShown
+                        WC.updatePotionSelector()
+                    endIf
 	            endIf
 	        endIf
 	        if itemCount < 1
