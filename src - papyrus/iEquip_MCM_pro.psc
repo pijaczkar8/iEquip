@@ -121,8 +121,13 @@ function drawPage()
                 ;Core settings
                 MCM.AddSliderOptionST("pro_sld_QuickRestoreThreshold", "$iEquip_MCM_pro_lbl_QuickRestoreThreshold", PM.fQuickRestoreThreshold*100, "{0} %")
                 MCM.AddToggleOptionST("pro_tgl_quickBuff", "$iEquip_MCM_pro_lbl_quickBuff", PM.bQuickBuffEnabled)
+                
                 if PM.bQuickBuffEnabled
                     MCM.AddMenuOptionST("pro_men_quickBuffControl", "$iEquip_MCM_pro_lbl_quickBuffControl", QBuffControlOptions[PM.iQuickBuffControl])
+                    
+                    if PM.iQuickBuffControl > 0
+                        MCM.AddSliderOptionST("pro_sld_quickBuffDelay", "$iEquip_MCM_pro_lbl_quickBuffDelay", PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+                    endIf
                     MCM.AddMenuOptionST("pro_men_buffsToApply", "$iEquip_MCM_pro_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
                 endIf
                 ;QuickHeal Options
@@ -525,8 +530,21 @@ State pro_men_quickBuffControl
             MCM.fillMenu(PM.iQuickBuffControl, QBuffControlOptions, 1)
         elseIf currentEvent == "Accept"
             PM.iQuickBuffControl = currentVar as int
-            MCM.SetMenuOptionValueST(QBuffControlOptions[PM.iQuickBuffControl])
+            MCM.forcePageReset()
         endIf
+    endEvent
+endState
+
+State pro_sld_quickBuffDelay
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_quickBuffDelay")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(PM.fQuickBuff2ndPressDelay, 0.0, 20.0, 0.5, 4.0)
+        elseIf currentEvent == "Accept"
+            PM.fQuickBuff2ndPressDelay = currentVar
+            MCM.SetSliderOptionValueST(PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        endIf 
     endEvent
 endState
 

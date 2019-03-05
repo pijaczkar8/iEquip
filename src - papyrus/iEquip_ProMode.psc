@@ -47,6 +47,7 @@ bool property bQuickStaminaEnabled = true auto hidden
 bool property bQuickMagickaEnabled = true auto hidden
 bool property bQuickBuffEnabled = true auto hidden
 int property iQuickBuffControl = 1 auto hidden
+float property fQuickBuff2ndPressDelay = 4.0 auto hidden
 bool property bPreselectEnabled auto hidden
 bool property bShoutPreselectEnabled = true auto hidden
 bool property bPreselectSwapItemsOnEquip auto hidden
@@ -67,6 +68,8 @@ bool property bQuickHealSwitchBackEnabled = true auto hidden
 bool property bQuickHealSwitchBackAndRestore = true auto hidden
 
 actor property PlayerRef auto
+
+float fTimeOfLastQuickRestore
 
 int[] aiNameElements
 
@@ -89,6 +92,7 @@ function OnWidgetLoad()
 	WidgetRoot = WC.WidgetRoot
 	bPreselectMode = false
 	bTogglingPreselectOnEquipAll = false
+	fTimeOfLastQuickRestore = 0.0
 	debug.trace("iEquip_ProMode OnWidgetLoad end")
 endFunction
 
@@ -1309,6 +1313,9 @@ function quickRestore()
 	debug.trace("iEquip_ProMode quickRestore start")
 	if bQuickRestoreEnabled
 		bool bPlayerIsInCombat = PlayerRef.IsInCombat()
+
+		if !(iQuickBuffControl == 1 || (iEquipBuffControl == 2 && bPlayerIsInCombat) && ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay))
+
 		if bQuickHealEnabled
 	        if bCurrentlyQuickHealing
 	        	debug.trace("iEquip_ProMode quickRestore - bCurrentlyQuickHealing, switching back")
@@ -1334,7 +1341,7 @@ function quickRestore()
 	    if bQuickMagickaEnabled
 	    	if (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Magicka")
-		    	actionTaken = PO.quickRestoreFindAndConsumePotion(1) ;Stamina
+		    	actionTaken = PO.quickRestoreFindAndConsumePotion(1) ;Magicka
 		    endIf
 			if !bPlayerIsInCombat && bQuickBuffEnabled
 				PO.quickBuffFindAndConsumePotions(1)
