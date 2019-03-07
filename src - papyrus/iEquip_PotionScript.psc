@@ -93,6 +93,7 @@ bool property bFlashPotionWarning = true auto hidden
 int property iEmptyPotionQueueChoice = 0 auto hidden
 bool property bEnableRestorePotionWarnings = true auto hidden
 bool property bNotificationOnLowRestorePotions = true auto hidden
+bool property bBlockIfEffectActive = true auto hidden
 
 bool bInitialised = false
 
@@ -618,7 +619,7 @@ int function getPotionQueue(potion potionToCheck, bool bAdding = false)
     if Q < 0
         int numEffects = potionToCheck.GetNumEffects()
     
-        if numEffects == 2      ; If potion has two effects then check the other for any of restore/fortify/regen effect
+        if numEffects == 2      ; If potion has two effects then check the other for any restore/fortify/regen effect
             selectedEffIndx = (selectedEffIndx + 1) % 1
             effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
             Q = checkEffects(effectToCheck)
@@ -1024,21 +1025,28 @@ endFunction
 function selectAndConsumePotion(int potionGroup, int potionType)
     debug.trace("iEquip_PotionScript selectAndConsumePotion start")
     debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup: " + potionGroup + ", potionType: " + potionType)
-    if 0 <= potionGroup && potionGroup <= 2
-        int iTargetAV = aiActorValues[potionGroup]
-        string sTargetAV = asActorValues[potionGroup]
-        float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)
-        debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup received: " + potionGroup + ", targetAV: " + sTargetAV)
-        
-        int Q = (potionGroup * 3) + potionType
-        
-        if Q != -1
-            debug.trace("iEquip_PotionScript selectAndConsumePotion - potionQ selected: " + Q + ", iPotionSelectChoice: " + iPotionSelectChoice + ", in combat: " + PlayerRef.IsInCombat())
-            int targetPotion ; Default value is 0 which is the array index for the strongest potion of the type requested
-            bool isRestore = (Q == 0 || Q == 3 || Q == 6)
+    int iTargetAV = aiActorValues[potionGroup]
+    string sTargetAV = asActorValues[potionGroup]
+    float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)
+    debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup received: " + potionGroup + ", targetAV: " + sTargetAV)
+    
+    int Q = (potionGroup * 3) + potionType
+    
+    elseIf currAVDamage == 0
+        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_AVFull{"+sTargetAV+"}"))
+
+    elseIf bBlockIfEffectActive && isEffectAlreadyActive(Q)
+        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive"))
+
+    else
+        debug.trace("iEquip_PotionScript selectAndConsumePotion - potionQ selected: " + Q + ", iPotionSelectChoice: " + iPotionSelectChoice + ", in combat: " + PlayerRef.IsInCombat())
+        int targetPotion ; Default value is 0 which is the array index for the strongest potion of the type requested
+        bool isRestore = (Q == 0 || Q == 3 || Q == 6)
+        int count = jArray.count(aiPotionQ[Q])
+        if count > 0
             ; If MCM setting is Use Weakest First, or MCM setting is Smart Select then check for weapons not drawn and current stat value as percent of current max including buffs against threshold set, then set the target to the last potion in the queue
             if iPotionSelectChoice == 2 || (iPotionSelectChoice == 1 && !(PlayerRef.IsInCombat() || (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV))) <= fSmartConsumeThreshold))    
-                targetPotion = jArray.count(aiPotionQ[Q]) - 1
+                targetPotion = count - 1
             elseIf isRestore ;Restore queues only - select strongest potion needed to fill current damage
                 targetPotion = smartSelectRestorePotion(Q, currAVDamage)
             endIf
@@ -1055,8 +1063,6 @@ function selectAndConsumePotion(int potionGroup, int potionType)
                 	endIf
                 endIf
             endIf
-        elseIf currAVDamage == 0
-            debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_AVFull{"+sTargetAV+"}"))
         else
             debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+sTargetAV+"}"))
         endIf
@@ -1085,24 +1091,30 @@ endFunction
 
 bool function quickRestoreFindAndConsumePotion(int potionGroup)
     debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion start")
-    ;Check we've actually still got entries in the first and second choice health potion queues
+
     int Q = potionGroup*3
-    int count = jArray.count(aiPotionQ[Q])
     bool found
-    
-    if count > 0
+
+    ;If we're blocking consumption because a restore over time effect is already active on the player then set found to true to block equipping a healing spell as well 
+    if bBlockIfEffectActive && isEffectAlreadyActive(Q)
         found = true
-        int targetPotion
-        if count > 1 ;If we're selecting from a restore queue then Smart Select only the strongest potion required to fully restore the stat, not necessarily the strongest overall
-            targetPotion = smartSelectRestorePotion(Q, iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[Q/3]))
+    ;Otherwise carry on and find and consume a potion if we have one
+    else
+        int count = jArray.count(aiPotionQ[Q])
+        if count > 0
+            found = true
+            int targetPotion
+            if count > 1 ;If we're selecting from a restore queue then Smart Select only the strongest potion required to fully restore the stat, not necessarily the strongest overall
+                targetPotion = smartSelectRestorePotion(Q, iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[Q/3]))
+            endIf
+            form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
+            PlayerRef.EquipItemEx(potionToConsume)
+            debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
+        	int restoreCount = getRestoreCount(potionGroup)
+        	if restoreCount < 6
+        		warnOnLowRestorePotionCount(restoreCount, potionGroup)
+        	endIf
         endIf
-        form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
-        PlayerRef.EquipItemEx(potionToConsume)
-        debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
-    	int restoreCount = getRestoreCount(potionGroup)
-    	if restoreCount < 6
-    		warnOnLowRestorePotionCount(restoreCount, potionGroup)
-    	endIf
     endIf
 
     debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion end")
@@ -1111,8 +1123,19 @@ endFunction
 
 function quickBuffFindAndConsumePotions(int potionGroup)
     debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions start")
+
+    if !(bBlockIfEffectActive && isEffectAlreadyActive(Q))
+
+    endIf
     
     debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions end")
+endFunction
+
+bool function isEffectAlreadyActive(int Q)
+    bool isActive
+
+
+    return isActive
 endFunction
 
 function warnOnLowRestorePotionCount(int restoreCount, int potionGroup)

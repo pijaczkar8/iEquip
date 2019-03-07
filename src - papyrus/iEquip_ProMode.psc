@@ -1312,38 +1312,51 @@ endFunction
 function quickRestore()
 	debug.trace("iEquip_ProMode quickRestore start")
 	if bQuickRestoreEnabled
-		bool bPlayerIsInCombat = PlayerRef.IsInCombat()
 
-		if !(iQuickBuffControl == 1 || (iEquipBuffControl == 2 && bPlayerIsInCombat) && ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay))
+		bool bPlayerIsInCombat = PlayerRef.IsInCombat()
+		bool bIn2ndPressWindow = (Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay
+		bool bDoBoth = iQuickBuffControl == 0 || (iQuickBuffControl == 2 && !bPlayerIsInCombat)
+		bool bQuickBuff = bDoBoth || ((iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bPlayerIsInCombat)) && bIn2ndPressWindow)
+		bool bQuickRestore = bDoBoth || !bQuickBuff
 
 		if bQuickHealEnabled
+	        
 	        if bCurrentlyQuickHealing
 	        	debug.trace("iEquip_ProMode quickRestore - bCurrentlyQuickHealing, switching back")
 	            quickHealSwitchBack(bPlayerIsInCombat)
-	        else
+	        
+	        elseIf bQuickRestore
 	        	debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
-	        	quickHeal(bPlayerIsInCombat)
+	        	quickHeal()
 	        endIf
+
+	        if bQuickBuff
+				PO.quickBuffFindAndConsumePotions(0)
+			endIf
 	    endIf
 
 	    bool actionTaken
 	    
 	    if bQuickStaminaEnabled
-    		if (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
+    		
+    		if bQuickRestore && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Stamina")
 		    	actionTaken = PO.quickRestoreFindAndConsumePotion(2) ;Stamina
 		    endIf
-			if !bPlayerIsInCombat && bQuickBuffEnabled
+			
+			if bQuickBuff
 				PO.quickBuffFindAndConsumePotions(2)
 			endIf
 	    endIf
 
 	    if bQuickMagickaEnabled
-	    	if (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
+	    	
+	    	if bQuickRestore && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Magicka")
 		    	actionTaken = PO.quickRestoreFindAndConsumePotion(1) ;Magicka
 		    endIf
-			if !bPlayerIsInCombat && bQuickBuffEnabled
+			
+			if bQuickBuff
 				PO.quickBuffFindAndConsumePotions(1)
 			endIf
 	    endIf
@@ -1351,7 +1364,7 @@ function quickRestore()
     debug.trace("iEquip_ProMode quickRestore end")
 endFunction
 
-function quickHeal(bool bPlayerIsInCombat)
+function quickHeal()
 	debug.trace("iEquip_ProMode quickHeal start")
     bool actionTaken
     if bQuickHealPreferMagic
@@ -1375,10 +1388,6 @@ function quickHeal(bool bPlayerIsInCombat)
             actionTaken = quickHealFindAndEquipSpell()
         endIf
     endIf
-
-    if !bPlayerIsInCombat && bQuickBuffEnabled
-		PO.quickBuffFindAndConsumePotions(0)
-	endIf
 
     if !actionTaken
         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QHNotFound"))

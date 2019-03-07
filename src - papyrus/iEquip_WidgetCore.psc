@@ -2851,8 +2851,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	elseif !bGoneUnarmed && !equippingOnAutoAdd
 		UnequipHand(Q)
 	endIf
-	;if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place
-    if (Q == 0 && ((equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) > -1) || (!equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) > -1))) || (targetObjectIs2hOrRanged || (bGoneUnarmed || b2HSpellEquipped))
+	;if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place, or we're about to equip a 2H/ranged item and we're currently unarmed or have a 2H spell equipped
+    if (Q == 0 && ((equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) > -1) || (!equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) > -1))) || (targetObjectIs2hOrRanged && (bGoneUnarmed || b2HSpellEquipped))
     	if !targetObjectIs2hOrRanged
     		bSwitchingHands = true
     	endIf
@@ -2941,16 +2941,19 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		cycleHand(0, aiCurrentQueuePosition[0], jMap.getForm(targetObject, "iEquipForm"))
     ;if we unequipped the other hand now equip the next item
     elseif bSwitchingHands
-    	debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands = " + bSwitchingHands + ", calling cycleSlot(" + otherHand + ", false)")
-    	if bPreselectMode
-    		bSwitchingHands = false
-    		bPreselectSwitchingHands = true
-    	endIf
-    	Utility.WaitMenuMode(0.1)
-    	if Q == 1 && previouslyUnarmedOr2HSpell
-    		reequipOtherHand(0)
+    	if equippingOnAutoAdd && !PlayerRef.GetEquippedObject(otherHand)
+    		setSlotToEmpty(otherHand)
     	else
-			cycleSlot(otherHand, false, true)
+    		if bPreselectMode
+	    		bSwitchingHands = false
+	    		bPreselectSwitchingHands = true
+	    	endIf
+	    	Utility.WaitMenuMode(0.1)
+	    	if Q == 1 && previouslyUnarmedOr2HSpell
+	    		reequipOtherHand(0)
+	    	else
+				cycleSlot(otherHand, false, true)
+			endIf
 		endIf
 	endIf
 	if bEnableGearedUp && !previouslyUnarmedOr2HSpell ;This will be actioned on the second pass when re-equipping a previous otherHand item

@@ -39,6 +39,7 @@ function drawPage()
             if PO.iPotionSelectChoice == 1 ; Smart Select
                 MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartConsumeThreshold*100, "{0} %")
             endIf
+            MCM.AddToggleOptionST("pot_tgl_blockIfEffect", "$iEquip_MCM_pot_lbl_blockIfEffect", PO.bBlockIfEffectActive)
             
             MCM.AddEmptyOption()
             if !WC.abPotionGroupEnabled[0]
@@ -150,26 +151,13 @@ State pot_sld_StatThreshold
     endEvent
 endState
 
-State pot_tgl_enblRestPotWarn
+State pot_tgl_blockIfEffect
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblRestPotWarn")
-        elseIf currentEvent == "Select"
-            PO.bEnableRestorePotionWarnings = !PO.bEnableRestorePotionWarnings
-            MCM.SetToggleOptionValueST(PO.bEnableRestorePotionWarnings)
-            WC.bRestorePotionWarningSettingChanged = true
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State pot_tgl_lowRestPotNot
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_lowRestPotNot")
-        elseIf currentEvent == "Select"
-            PO.bNotificationOnLowRestorePotions = !PO.bNotificationOnLowRestorePotions
-            MCM.SetToggleOptionValueST(PO.bNotificationOnLowRestorePotions)
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_blockIfEffect")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bBlockIfEffectActive)
+            PO.bBlockIfEffectActive = !PO.bBlockIfEffectActive
+            MCM.SetToggleOptionValueST(PO.bBlockIfEffectActive)
         endIf
     endEvent
 endState
@@ -241,6 +229,30 @@ State pot_tgl_warningOnLastPotion
         elseIf currentEvent == "Default"
             PO.bFlashPotionWarning = true 
             MCM.SetToggleOptionValueST(PO.bFlashPotionWarning)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_enblRestPotWarn
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblRestPotWarn")
+        elseIf currentEvent == "Select"
+            PO.bEnableRestorePotionWarnings = !PO.bEnableRestorePotionWarnings
+            MCM.SetToggleOptionValueST(PO.bEnableRestorePotionWarnings)
+            WC.bRestorePotionWarningSettingChanged = true
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_tgl_lowRestPotNot
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_lowRestPotNot")
+        elseIf currentEvent == "Select"
+            PO.bNotificationOnLowRestorePotions = !PO.bNotificationOnLowRestorePotions
+            MCM.SetToggleOptionValueST(PO.bNotificationOnLowRestorePotions)
         endIf
     endEvent
 endState
