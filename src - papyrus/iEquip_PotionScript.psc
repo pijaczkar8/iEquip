@@ -589,7 +589,7 @@ int function getCountForSelector(int potionGroup, int potionType)
     debug.trace("iEquip_PotionScript getCountForSelector - potionGroup: " + potionGroup + ", potionType: " + potionType + ", count: " + count)
     debug.trace("iEquip_PotionScript getCountForSelector end")
     return count
-endIf
+endFunction
 
 int function getRestoreCount(int potionGroup)
     debug.trace("iEquip_PotionScript getRestoreCount start")
@@ -609,65 +609,57 @@ endFunction
 
 int function getPotionQueue(potion potionToCheck, bool bAdding = false)
     debug.trace("iEquip_PotionScript getPotionQueue start")
-    int strongestEffectIndex = potionToCheck.GetCostliestEffectIndex()
-    magicEffect effectToCheck = potionToCheck.GetNthEffectMagicEffect(effectToCheck)
-    debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + effectToCheck + ", strongest magic effect: " + effectToCheck as string)
-    ;Decide which potion queue it should be added to
+    int selectedEffIndx = potionToCheck.GetCostliestEffectIndex()
+    magicEffect effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
     int Q = checkEffects(effectToCheck)
-    ;If the strongest effect isn't a restore/fortify/regen effect then if the potion has more than one effect check if any of the other effects are
+    debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + effectToCheck + ", strongest magic effect: " + effectToCheck as string)
+    
+    ; If the strongest effect isn't a restore/fortify/regen effect then if the potion has more than one effect check if any of the other effects are
     if Q < 0
         int numEffects = potionToCheck.GetNumEffects()
-        if numEffects > 1 && bCheckOtherEffects
-            int i
-            int selectedEffectIndex ;Will be used later so I can save the correct effect and magnitude on the queue object
-            while i < numEffects && Q < 0
-                if i != strongestEffectIndex
-                    effectToCheck = potionToCheck.GetNthEffectMagicEffect(i)
-                    if numEffects == 2
-                        ;If potion has two effects then check the other for any of restore/fortify/regen effect
-                        Q = checkEffects(effectToCheck)
-                        if Q > -1
-                            selectedEffectIndex = i
-                        endIf
-                        i += 1
+    
+        if numEffects == 2      ; If potion has two effects then check the other for any of restore/fortify/regen effect
+            selectedEffIndx = (selectedEffIndx + 1) % 1
+            effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
+            Q = checkEffects(effectToCheck)
+            
+        elseIf numEffects > 2   ; If potion has > 2 effects we need to check all the others first for a restore effect, and if none found recheck for a fortify/regen effect
+            bool bFirstRun = true
+            int strongestEffIndx = selectedEffIndx
+            selectedEffIndx = 0
+            
+            while selectedEffIndx < numEffects
+                if selectedEffIndx != strongestEffIndx
+                    effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
+                    
+                    Q = checkEffects(effectToCheck, bFirstRun)  ; Checking for restore
+                    if Q != -1  ; If found exit loop
+                        numEffects = -1
                     else
-                        ;If potion has 3 or more effects we need to check all the others first for a restore effect, and if none found recheck for a fortify/regen effect
-                        int j
-                        bool firstPass = true
-                        while j < numEffects && Q < 0
-                            if j != strongestEffectIndex
-                                effectToCheck = potionToCheck.GetNthEffectMagicEffect(j)
-                                if firstPass
-                                    ;First pass checks for restore effects first
-                                    Q = checkEffects(effectToCheck, true)
-                                else
-                                    ;If no restore effects found 2nd pass to check for fortify/regen effects
-                                    Q = checkEffects(effectToCheck)
-                                endIf
-                                if Q > -1
-                                    selectedEffectIndex = j
-                                endIf
-                            endIf
-                            j += 1
-                            if firstPass && j == numEffects
-                                firstPass = false
-                                j = 0
-                            endIf
-                        endWhile
+                        selectedEffIndx += 1
                     endIf
                 else
-                    i += 1
+                    selectedEffIndx += 1
+                endIf
+                
+                ;If we haven't found a restore effect on first run, reset the while loop and run again to check for fortify or regen effects
+                if bFirstRun && selectedEffIndx == numEffects
+                    bFirstRun = false
+                    selectedEffIndx = 0
                 endIf
             endWhile
         endIf
-    endIf
-    ;If it doesn't have a health, magicka or stamina restore/fortify/regen effect then there's nothing to do here
-    if Q < 0
-        debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
+        
+        ;If it doesn't have a health, magicka or stamina restore/fortify/regen effect then there's nothing to do here
+        if Q < 0
+            debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
+        elseIf bAdding
+            fTempStrength = potionToCheck.GetNthEffectMagnitude(selectedEffIndx)
+        endIf
     elseIf bAdding
-        ;Store selected effect magnitude in temp variable ready to feed in to queue object when created
-        fTempStrength = potionToCheck.GetNthEffectMagnitude(j)
+        fTempStrength = potionToCheck.GetNthEffectMagnitude(selectedEffIndx)
     endIf
+    
     debug.trace("iEquip_PotionScript getPotionQueue - returning: Q = " + Q)
     debug.trace("iEquip_PotionScript getPotionQueue end")
     return Q

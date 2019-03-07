@@ -483,7 +483,7 @@ endFunction
 Event OnWidgetLoad()
 	debug.trace("iEquip_WidgetCore OnWidgetLoad start")
 
-	fPositionIndicatorAlpha = 60.0
+	;fPositionIndicatorAlpha = 60.0
 	EM.isEditMode = false
 	bPreselectMode = false
 	bCyclingLHPreselectInAmmoMode = false
@@ -564,7 +564,9 @@ function refreshWidgetOnLoad()
 	form fItem
 	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
-	if !bDropShadowEnabled
+	if bDropShadowEnabled
+		updateTextFieldDropShadow()
+	else
 		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
 	endIf
 	initQueuePositionIndicators()
@@ -1183,6 +1185,19 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 		bFadingWidgetOut = false
 	endIf
 	debug.trace("iEquip_WidgetCore updateWidgetVisibility end")
+endFunction
+
+function updateTextFieldDropShadow()
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateTextFieldDropShadow")
+	If(iHandle)
+		UICallback.PushFloat(iHandle, fDropShadowAlpha)
+		UICallback.PushInt(iHandle, fDropShadowAngle as int)
+		UICallback.PushInt(iHandle, iDropShadowBlur)
+		UICallback.PushInt(iHandle, fDropShadowDistance as int)
+		UICallback.PushInt(iHandle, fDropShadowStrength as int)
+		UICallback.PushBool(iHandle, bDropShadowEnabled)
+		UICallback.Send(iHandle)
+	endIf
 endFunction
 
 bool property isEnabled
@@ -2168,7 +2183,7 @@ function updatePotionSelector(bool bHide = false)
 	else
 		;Update the potion type counts
 		string textPath = asWidgetElements[45] ;potionSelector_mc
-		int potionGroup = asPotionGroups.Find(asCurrentlyEquipped(3))
+		int potionGroup = asPotionGroups.Find(asCurrentlyEquipped[3])
 		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".restoreText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_restore{" + PO.getCountForSelector(potionGroup, 0) + "}"))
 		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".fortifyText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_fortify{" + PO.getCountForSelector(potionGroup, 1) + "}"))
 		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".regenText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_regen{" + PO.getCountForSelector(potionGroup, 2) + "}"))
@@ -4195,16 +4210,7 @@ function ApplyChanges()
         bBackgroundStyleChanged = false
 	endIf
 	if bDropShadowSettingChanged && !EM.isEditMode
-		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateTextFieldDropShadow")
-		If(iHandle)
-			UICallback.PushFloat(iHandle, fDropShadowAlpha)
-			UICallback.PushInt(iHandle, fDropShadowAngle as int)
-			UICallback.PushInt(iHandle, iDropShadowBlur)
-			UICallback.PushInt(iHandle, fDropShadowDistance as int)
-			UICallback.PushInt(iHandle, fDropShadowStrength as int)
-			UICallback.PushBool(iHandle, bDropShadowEnabled)
-			UICallback.Send(iHandle)
-		endIf
+		updateTextFieldDropShadow()
         bDropShadowSettingChanged = false
 	endIf
 	if bFadeOptionsChanged
