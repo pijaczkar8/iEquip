@@ -1025,13 +1025,12 @@ endFunction
 function selectAndConsumePotion(int potionGroup, int potionType)
     debug.trace("iEquip_PotionScript selectAndConsumePotion start")
     debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup: " + potionGroup + ", potionType: " + potionType)
-    int iTargetAV = aiActorValues[potionGroup]
-    string sTargetAV = asActorValues[potionGroup]
-    float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)
-    debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup received: " + potionGroup + ", targetAV: " + sTargetAV)
     
+    string sTargetAV = asActorValues[potionGroup]
     int Q = (potionGroup * 3) + potionType
     bool isRestore = (Q == 0 || Q == 3 || Q == 6)
+    
+    debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup received: " + potionGroup + ", targetAV: " + sTargetAV)
     
     if isRestore && currAVDamage == 0
         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_AVFull{"+sTargetAV+"}"))
@@ -1043,6 +1042,8 @@ function selectAndConsumePotion(int potionGroup, int potionType)
         	int targetPotion ;Default value is 0 which is the array index for the strongest potion of the type requested
         	;If we're looking for a restore potion we need to check the MCM setting for SmartSelect/Strongest/Weakest, otherwise default to strongest for fortify/regen
         	if isRestore
+                int iTargetAV = aiActorValues[potionGroup]
+                float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)
 	            ; If MCM setting is Use Weakest First, or MCM setting is Smart Select then check for weapons not drawn and current stat value as percent of current max including buffs against threshold set, then set the target to the last potion in the queue
 	            if iPotionSelectChoice == 2 || (iPotionSelectChoice == 1 && !(PlayerRef.IsInCombat() || (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV))) <= fSmartConsumeThreshold))    
 	                targetPotion = count - 1
@@ -1089,20 +1090,23 @@ int function smartSelectRestorePotion(int Q, float currAVDamage)
     return targetPotion
 endFunction
 
-bool function quickRestoreFindAndConsumePotion(int potionGroup)
+function quickRestoreFindAndConsumePotion(int potionGroup)
     debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion start")
 
     int Q = potionGroup*3
-    bool found
 
     ;If we're blocking consumption because a restore over time effect is already active on the player then set found to true to block equipping a healing spell as well 
     if bBlockIfEffectActive && isEffectAlreadyActive(Q)
-        found = true
+        if Q == 0
+            PM.bQuickHealActionTaken = true
+        endIf
     ;Otherwise carry on and find and consume a potion if we have one
     else
         int count = jArray.count(aiPotionQ[Q])
         if count > 0
-            found = true
+            if Q == 0
+                PM.bQuickHealActionTaken = true
+            endIf
             int targetPotion
             if count > 1 ;If we're selecting from a restore queue then Smart Select only the strongest potion required to fully restore the stat, not necessarily the strongest overall
                 targetPotion = smartSelectRestorePotion(Q, iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[Q/3]))
@@ -1118,7 +1122,6 @@ bool function quickRestoreFindAndConsumePotion(int potionGroup)
     endIf
 
     debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion end")
-    return found
 endFunction
 
 function quickBuffFindAndConsumePotions(int potionGroup)

@@ -32,6 +32,7 @@ bool property bBlockQuickDualCast auto hidden
 
 bool property bCurrentlyQuickRanged auto hidden
 bool property bCurrentlyQuickHealing auto hidden
+bool property bQuickHealActionTaken auto hidden
 int iQuickHealSlotsEquipped = -1
 int iPreviousLeftHandIndex
 int iPreviousRightHandIndex
@@ -1366,38 +1367,37 @@ endFunction
 
 function quickHeal()
 	debug.trace("iEquip_ProMode quickHeal start")
-    bool actionTaken
+    bQuickHealActionTaken = false
     if bQuickHealPreferMagic
-        actionTaken = quickHealFindAndEquipSpell()
+        quickHealFindAndEquipSpell()
     elseIf (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
-    	actionTaken = PO.quickRestoreFindAndConsumePotion(0)
+    	PO.quickRestoreFindAndConsumePotion(0)
    	else
 		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
-		actionTaken = true
+		bQuickHealActionTaken = true
     endIf
     	
-    if !actionTaken && bQuickHealUseFallback
+    if !bQuickHealActionTaken && bQuickHealUseFallback
         if bQuickHealPreferMagic
         	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
-            	actionTaken = PO.quickRestoreFindAndConsumePotion(0)
+            	PO.quickRestoreFindAndConsumePotion(0)
             else
             	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
-    			actionTaken = true
+    			bQuickHealActionTaken = true
             endIf
         else
-            actionTaken = quickHealFindAndEquipSpell()
+            quickHealFindAndEquipSpell()
         endIf
     endIf
 
-    if !actionTaken
+    if !bQuickHealActionTaken
         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QHNotFound"))
     endIf
     debug.trace("iEquip_ProMode quickHeal end")
 endFunction
 
-bool function quickHealFindAndEquipSpell()
+function quickHealFindAndEquipSpell()
 	debug.trace("iEquip_ProMode quickHealFindAndEquipSpell start")
-	bool actionTaken
 	int i
 	int Q
 	int count
@@ -1441,10 +1441,9 @@ bool function quickHealFindAndEquipSpell()
 			quickHealEquipSpell(containingQ, containingQ, targetIndex)
 			quickHealEquipSpell(otherHand, containingQ, targetIndex, true)
 		endIf
-		actionTaken = true
+		bQuickHealActionTaken = true
 	endIf
 	debug.trace("iEquip_ProMode quickHealFindAndEquipSpell end")
-	return actionTaken
 endFunction
 
 function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting = false, bool equippingOtherHand = false)
