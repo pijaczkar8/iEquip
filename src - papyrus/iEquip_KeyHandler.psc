@@ -221,8 +221,6 @@ function runUpdate()
                     WC.consumeItem()
                 endIf
             elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
-                ;if PM.bPreselectMode && bIsUtilityKeyHeld
-                    ;PM.equipAllPreselectedItems()
                 if PM.bPreselectMode
                     if bIsUtilityKeyHeld
                         RC.rechargeWeapon((iWaitingKeyCode == iRightKey) as int)
@@ -295,13 +293,6 @@ function runUpdate()
             if iWaitingKeyCode == iLeftKey
                 int RHItemType = PlayerRef.GetEquippedItemType(1)
                 
-                ;/if bIsUtilityKeyHeld
-                    PM.equipPreselectedItem(0)
-                elseIf AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
-                    AM.cycleAmmo(bIsUtilityKeyHeld)
-                else
-                    WC.applyPoison(0)
-                endIf/;
                 if bIsUtilityKeyHeld
                     if AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
                         AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
@@ -317,17 +308,6 @@ function runUpdate()
                     WC.bPreselectSwitchingHands = false
                 endIf
             else
-                ;/if bIsUtilityKeyHeld
-                    if iWaitingKeyCode == iRightKey
-                        PM.equipPreselectedItem(1)
-                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && PM.bShoutPreselectEnabled && WC.bShoutEnabled
-                        PM.equipPreselectedItem(2)
-                    endIf
-                else
-                    if iWaitingKeyCode == iRightKey
-                        WC.applyPoison(1)
-                    endIf
-                endIf/;
                 if bIsUtilityKeyHeld
                     if iWaitingKeyCode == iRightKey
                         WC.applyPoison(1)

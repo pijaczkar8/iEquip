@@ -264,6 +264,7 @@ State gen_txt_posIndBehaviour
             MCM.SetInfoText("$iEquip_MCM_gen_txt_posIndBehaviour")
         elseIf currentEvent == "Select"
             WC.bPermanentPositionIndicators = !WC.bPermanentPositionIndicators
+            WC.bPositionIndicatorSettingsChanged = true
             MCM.SetTextOptionValueST(posIndBehaviour[WC.bPermanentPositionIndicators as int])
         endIf
     endEvent

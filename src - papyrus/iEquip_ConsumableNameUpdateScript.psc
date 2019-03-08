@@ -32,7 +32,7 @@ event OnUpdate()
 		WC.abIsNameShown[3] = false
 		Int iHandle = UICallback.Create("HUD Menu", WidgetRoot + ".tweenWidgetNameAlpha")
 		If(iHandle)
-			UICallback.PushInt(iHandle, 40) ;Which _mc we're fading out
+			UICallback.PushInt(iHandle, 43) ;consumableName_mc
 			UICallback.PushFloat(iHandle, 0) ;Target alpha which for FadeOut is 0
 			UICallback.PushFloat(iHandle, fDuration) ;FadeOut duration
 			UICallback.Send(iHandle)

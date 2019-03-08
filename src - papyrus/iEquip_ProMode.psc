@@ -77,9 +77,9 @@ int[] aiNameElements
 event OnInit()
 	debug.trace("iEquip_ProMode OnInit start")
 	aiNameElements = new int[3]
-	aiNameElements[0] = 17
-	aiNameElements[1] = 30
-	aiNameElements[2] = 37
+	aiNameElements[0] = 18 ;leftPreselectName_mc
+	aiNameElements[1] = 32 ;rightPreselectName_mc
+	aiNameElements[2] = 40 ;shoutPreselectName_mc
 
 	abPreselectSlotEnabled = new bool[3]
 	abPreselectSlotEnabled[0] = true
@@ -1262,9 +1262,9 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 		return false
 	else
 		int otherHand = (Q + 1) % 2
-		int nameElement = 21
+		int nameElement = 2 ;rightName_mc
 		if Q == 0
-			nameElement = 8
+			nameElement = 8 ;leftName_mc
 		endIf
 		int otherHandIndex = -1
 		bool dualCastAllowed = true
@@ -1319,6 +1319,10 @@ function quickRestore()
 		bool bDoBoth = iQuickBuffControl == 0 || (iQuickBuffControl == 2 && !bPlayerIsInCombat)
 		bool bQuickBuff = bDoBoth || ((iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bPlayerIsInCombat)) && bIn2ndPressWindow)
 		bool bQuickRestore = bDoBoth || !bQuickBuff
+
+		if bQuickRestore
+			fTimeOfLastQuickRestore = Utility.GetCurrentRealTime()
+		endIf
 
 		if bQuickHealEnabled
 	        
@@ -1478,9 +1482,9 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting
 		WC.bBlockSwitchBackToBoundSpell = true
 		int foundIndex = WC.findInQueue(iEquipSlot, spellName)
 		PlayerRef.EquipSpell(jMap.getForm(spellObject, "iEquipForm") as Spell, iEquipSlot)
-		int nameElement = 21
+		int nameElement = 22 ;rightName_mc
 		if iEquipSlot == 0
-			nameElement = 8
+			nameElement = 8 ;leftName_mc
 		endIf
 		Float fNameAlpha = WC.afWidget_A[nameElement]
 		if fNameAlpha < 1

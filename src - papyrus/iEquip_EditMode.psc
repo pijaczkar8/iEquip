@@ -105,10 +105,10 @@ function OnInit()
     iFirstElementInGroup = new int[6]
     iFirstElementInGroup[0] = 6  ; leftBg_mc
     iFirstElementInGroup[1] = 6  ; leftBg_mc
-    iFirstElementInGroup[2] = 19 ; rightBg_mc
-    iFirstElementInGroup[3] = 32 ; shoutBg_mc
-    iFirstElementInGroup[4] = 38 ; consumableBg_mc
-    iFirstElementInGroup[5] = 42 ; poisonBg_mc
+    iFirstElementInGroup[2] = 20 ; rightBg_mc
+    iFirstElementInGroup[3] = 34 ; shoutBg_mc
+    iFirstElementInGroup[4] = 41 ; consumableBg_mc
+    iFirstElementInGroup[5] = 46 ; poisonBg_mc
 
     afWidget_CurX = new Float[50]
     afWidget_CurY = new Float[50]

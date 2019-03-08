@@ -393,8 +393,8 @@ Event OnWidgetInit()
 	aiCounterClips[4] = 49 ;poisonCount_mc
 
 	aiPoisonNameElements = new int[2]
-	aiPoisonNameElements[0] = 11
-	aiPoisonNameElements[1] = 24
+	aiPoisonNameElements[0] = 11 ;leftPoisonName_mc
+	aiPoisonNameElements[1] = 25 ;rightPoisonName_mc
 
 	asPotionGroups = new string[3]
 	asPotionGroups[0] = "$iEquip_common_HealthPotions"
@@ -575,8 +575,13 @@ function refreshWidgetOnLoad()
 		abIsNameShown[Q] = true
 		if Q < 5
 			count = jArray.count(aiTargetQ[Q])
-			if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
-				setSlotToEmpty(Q, true, (count > 0))
+			if Q < 3
+				if (count < 1 || !PlayerRef.GetEquippedObject(Q))
+					setSlotToEmpty(Q, true, (count > 0))
+				endIf
+				if bPermanentPositionIndicators
+					updateQueuePositionIndicator(Q, count, aiCurrentQueuePosition[Q], aiCurrentQueuePosition[Q])
+				endIf
 			else
 				if Q < 2
 					checkAndUpdatePoisonInfo(Q)
@@ -1595,10 +1600,6 @@ endFunction
 function setSlotCount(int Q, int count)
 	debug.trace("iEquip_WidgetCore setSlotCount start")
 	debug.trace("iEquip_WidgetCore setSlotCount - Q: " + Q + ", count: " + count)
-	;int[] widgetData = new int[2]
-	;widgetData[0] = Q
-	;widgetData[1] = count
-	;UI.invokeIntA(HUD_MENU, WidgetRoot + ".updateCounter", widgetData)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateCounter")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q) ;Which slot we're updating
@@ -1611,7 +1612,7 @@ function setSlotCount(int Q, int count)
 			else
 				UICallback.PushInt(iHandle, 0)
 			endIf
-			UICallback.PushInt(iHandle, aiWidget_TC[41]) ;Consumable Count text colour, used to reset to white/Edit Mode set colour if count is above 5, otherwise colour is handled by ActionScript
+			UICallback.PushInt(iHandle, aiWidget_TC[44]) ;consumableCount_mc text colour, used to reset to white/Edit Mode set colour if count is above 5, otherwise colour is handled by ActionScript
 		else
 			UICallback.PushBool(iHandle, false) ;Default to false for anything other than a Potion Group in Q == 3
 			UICallback.PushInt(iHandle, 0) ;Not needed if Q != 3
@@ -2066,22 +2067,22 @@ function checkAndFadeConsumableIcon(bool fadeOut)
 	float[] widgetData = new float[4]
 	if fadeOut
 		float adjustment = (1 - (fLeftIconFadeAmount * 0.01)) ;Use same value as left icon fade for consistency
-		widgetData[0] = afWidget_A[38] * adjustment ;consumableBg_mc
-		widgetData[1] = afWidget_A[39] * adjustment ;consumableIcon_mc
+		widgetData[0] = afWidget_A[41] * adjustment ;consumableBg_mc
+		widgetData[1] = afWidget_A[42] * adjustment ;consumableIcon_mc
 		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[40] * adjustment ;consumableName_mc
+			widgetData[2] = afWidget_A[43] * adjustment ;consumableName_mc
 		endIf
-		widgetData[3] = afWidget_A[41]  * adjustment ;consumableCount_mc
+		widgetData[3] = afWidget_A[44]  * adjustment ;consumableCount_mc
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenConsumableIconAlpha", widgetData)
 		bConsumableIconFaded = true
 	;For anything else fade it back in (we've already checked if it needs fading or not before calling this function)
 	else
-		widgetData[0] = afWidget_A[38]
-		widgetData[1] = afWidget_A[39]
+		widgetData[0] = afWidget_A[41]
+		widgetData[1] = afWidget_A[42]
 		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[40]
+			widgetData[2] = afWidget_A[43]
 		endIf
-		widgetData[3] = afWidget_A[41]
+		widgetData[3] = afWidget_A[44]
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenConsumableIconAlpha", widgetData)
 		bConsumableIconFaded = false
 	endIf
@@ -2094,22 +2095,22 @@ function checkAndFadePoisonIcon(bool fadeOut)
 	float[] widgetData = new float[4]
 	if fadeOut
 		float adjustment = (1 - (fLeftIconFadeAmount * 0.01)) ;Use same value as left icon fade for consistency
-		widgetData[0] = afWidget_A[42] * adjustment ;poisonBg_mc
-		widgetData[1] = afWidget_A[43] * adjustment ;poisonIcon_mc
+		widgetData[0] = afWidget_A[46] * adjustment ;poisonBg_mc
+		widgetData[1] = afWidget_A[47] * adjustment ;poisonIcon_mc
 		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[44] * adjustment ;poisonName_mc
+			widgetData[2] = afWidget_A[48] * adjustment ;poisonName_mc
 		endIf
-		widgetData[3] = afWidget_A[45]  * adjustment ;poisonCount_mc
+		widgetData[3] = afWidget_A[49]  * adjustment ;poisonCount_mc
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenPoisonIconAlpha", widgetData)
 		bPoisonIconFaded = true
 	;For anything else fade it back in (we've already checked if it needs fading or not before calling this function)
 	else
-		widgetData[0] = afWidget_A[42]
-		widgetData[1] = afWidget_A[43]
+		widgetData[0] = afWidget_A[46]
+		widgetData[1] = afWidget_A[47]
 		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[44]
+			widgetData[2] = afWidget_A[48]
 		endIf
-		widgetData[3] = afWidget_A[45]
+		widgetData[3] = afWidget_A[49]
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenPoisonIconAlpha", widgetData)
 		bPoisonIconFaded = false
 	endIf
@@ -2475,9 +2476,9 @@ function showName(int Q, bool fadeIn = true, bool targetingPoisonName = false, f
 		endIf
 		if Q == 0 && bLeftIconFaded
 			if targetingPoisonName
-				fNameAlpha = afWidget_A[11] * (1 - (fLeftIconFadeAmount * 0.01))
+				fNameAlpha = afWidget_A[11] * (1 - (fLeftIconFadeAmount * 0.01)) ;leftPoisonName_mc
 			else
-				fNameAlpha = afWidget_A[8] * (1 - (fLeftIconFadeAmount * 0.01))
+				fNameAlpha = afWidget_A[8] * (1 - (fLeftIconFadeAmount * 0.01)) ;leftName_mc
 			endIf
 		endIf
 		if targetingPoisonName
@@ -3404,8 +3405,8 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				args[0] = 9 ;leftCount
 				args[1] = aiWidget_TC[9] ;leftCount text colour
 			else
-				args[0] = 22 ;rightCount
-				args[1] = aiWidget_TC[22] ;rightCount text colour
+				args[0] = 23 ;rightCount
+				args[1] = aiWidget_TC[23] ;rightCount text colour
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
@@ -3460,8 +3461,8 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				args[0] = 9 ;leftCount
 				args[1] = aiWidget_TC[11] ;leftPoisonName text colour
 			else
-				args[0] = 22 ;rightCount
-				args[1] = aiWidget_TC[24] ;rightPoisonName text colour
+				args[0] = 23 ;rightCount
+				args[1] = aiWidget_TC[25] ;rightPoisonName text colour
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
@@ -4233,6 +4234,19 @@ function ApplyChanges()
 			UICallback.PushInt(iHandle, iCurrPositionIndicatorColor)
 			UICallback.PushFloat(iHandle, fCurrPositionIndicatorAlpha)
 			UICallback.Send(iHandle)
+		endIf
+		if bPermanentPositionIndicators
+			i = 0
+			int newPos
+			while i < 3
+				if bPreselectMode
+					newPos = aiCurrentlyPreselected[i]
+				else
+					newPos = aiCurrentQueuePosition[i]
+				endIf
+				updateQueuePositionIndicator(i, jArray.count(aiTargetQ[i]), aiCurrentQueuePosition[i], newPos)
+				i += 1
+			endWhile
 		endIf
     	bPositionIndicatorSettingsChanged = false
     endIf

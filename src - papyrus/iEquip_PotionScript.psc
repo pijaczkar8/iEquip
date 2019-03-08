@@ -8,14 +8,15 @@ import iEquip_FormExt
 import iEquip_ActorExt
 import UI
 
-iEquip_WidgetCore Property WC Auto
-iEquip_PlayerEventHandler Property EH Auto
+iEquip_WidgetCore property WC auto
+iEquip_ProMode property PM auto
+iEquip_PlayerEventHandler property EH auto
 
 actor property PlayerRef auto
 
-FormList Property iEquip_AllCurrentItemsFLST Auto
-FormList Property iEquip_PotionItemsFLST Auto
-Formlist Property iEquip_GeneralBlacklistFLST Auto ;To block individual potions and poisons previously manually removed through the queue menus from being auto-added again. Does not affect Potion Groups
+FormList property iEquip_AllCurrentItemsFLST auto
+FormList property iEquip_PotionItemsFLST auto
+Formlist property iEquip_GeneralBlacklistFLST auto ;To block individual potions and poisons previously manually removed through the queue menus from being auto-added again. Does not affect Potion Groups
 
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
@@ -25,44 +26,44 @@ int iConsumableQ
 int iPoisonQ
 
 MagicEffect[] aStrongestEffects
-MagicEffect Property AlchRestoreHealth Auto ;0003eb15
-MagicEffect Property AlchFortifyHealth Auto ;0003eaf3
-MagicEffect Property AlchFortifyHealRate Auto ;0003eb06
-MagicEffect Property AlchRestoreMagicka Auto ;0003eb17
-MagicEffect Property AlchFortifyMagicka Auto ;0003eaf8
-MagicEffect Property AlchFortifyMagickaRate Auto ;0003eb07
-MagicEffect Property AlchRestoreStamina Auto ;0003eb16
-MagicEffect Property AlchFortifyStamina Auto ;0003eaf9
-MagicEffect Property AlchFortifyStaminaRate Auto ;0003eb08
+MagicEffect property AlchRestoreHealth auto ;0003eb15
+MagicEffect property AlchFortifyHealth auto ;0003eaf3
+MagicEffect property AlchFortifyHealRate auto ;0003eb06
+MagicEffect property AlchRestoreMagicka auto ;0003eb17
+MagicEffect property AlchFortifyMagicka auto ;0003eaf8
+MagicEffect property AlchFortifyMagickaRate auto ;0003eb07
+MagicEffect property AlchRestoreStamina auto ;0003eb16
+MagicEffect property AlchFortifyStamina auto ;0003eaf9
+MagicEffect property AlchFortifyStaminaRate auto ;0003eb08
 
 MagicEffect[] aConsummateEffects
-MagicEffect Property AlchRestoreHealthAll Auto ;000ffa03
-MagicEffect Property AlchRestoreMagickaAll Auto ;000ffa04
-MagicEffect Property AlchRestoreStaminaAll Auto ;000ffa05
+MagicEffect property AlchRestoreHealthAll auto ;000ffa03
+MagicEffect property AlchRestoreMagickaAll auto ;000ffa04
+MagicEffect property AlchRestoreStaminaAll auto ;000ffa05
 
 MagicEffect[] aPoisonEffects
-MagicEffect Property AlchDamageHealth Auto ;0003eb42
-MagicEffect Property AlchDamageHealthDuration Auto ;0010aa4a
-MagicEffect Property AlchDamageHealthRavage Auto ;00073f26
-MagicEffect Property AlchDamageMagicka Auto ;0003a2b6
-MagicEffect Property AlchDamageMagickaDuration Auto ;0010de5f
-MagicEffect Property AlchDamageMagickaRate Auto ;00073f2B
-MagicEffect Property AlchDamageMagickaRavage Auto ;00073f27
-MagicEffect Property AlchDamageSpeed Auto ;00073f25
-MagicEffect Property AlchDamageStamina Auto ;0003a2b6
-MagicEffect Property AlchDamageStaminaDuration Auto ;0010de5f
-MagicEffect Property AlchDamageStaminaRate Auto ;00073f2B
-MagicEffect Property AlchDamageStaminaRavage Auto ;00073f27
-MagicEffect Property AlchInfluenceAggUp Auto ;00073f29
-MagicEffect Property AlchInfluenceAggUpCombo Auto ;000ff9f8
-MagicEffect Property AlchInfluenceAggUpComboCOPY0000 Auto ;0010fdd4
-MagicEffect Property AlchInfluenceConfDown Auto ;00073f20
-MagicEffect Property AlchParalysis Auto ;00073f30
-MagicEffect Property AlchWeaknessFire Auto ;00073f2D
-MagicEffect Property AlchWeaknessFrost Auto ;00073f2E
-MagicEffect Property AlchWeaknessMagic Auto ;00073f51
-MagicEffect Property AlchWeaknessPoison Auto ;00090042
-MagicEffect Property AlchWeaknessShock Auto ;00073f2F
+MagicEffect property AlchDamageHealth auto ;0003eb42
+MagicEffect property AlchDamageHealthDuration auto ;0010aa4a
+MagicEffect property AlchDamageHealthRavage auto ;00073f26
+MagicEffect property AlchDamageMagicka auto ;0003a2b6
+MagicEffect property AlchDamageMagickaDuration auto ;0010de5f
+MagicEffect property AlchDamageMagickaRate auto ;00073f2B
+MagicEffect property AlchDamageMagickaRavage auto ;00073f27
+MagicEffect property AlchDamageSpeed auto ;00073f25
+MagicEffect property AlchDamageStamina auto ;0003a2b6
+MagicEffect property AlchDamageStaminaDuration auto ;0010de5f
+MagicEffect property AlchDamageStaminaRate auto ;00073f2B
+MagicEffect property AlchDamageStaminaRavage auto ;00073f27
+MagicEffect property AlchInfluenceAggUp auto ;00073f29
+MagicEffect property AlchInfluenceAggUpCombo auto ;000ff9f8
+MagicEffect property AlchInfluenceAggUpComboCOPY0000 auto ;0010fdd4
+MagicEffect property AlchInfluenceConfDown auto ;00073f20
+MagicEffect property AlchParalysis auto ;00073f30
+MagicEffect property AlchWeaknessFire auto ;00073f2D
+MagicEffect property AlchWeaknessFrost auto ;00073f2E
+MagicEffect property AlchWeaknessMagic auto ;00073f51
+MagicEffect property AlchWeaknessPoison auto ;00090042
+MagicEffect property AlchWeaknessShock auto ;00073f2F
 
 string[] asPotionGroups
 String[] asPoisonIconNames
@@ -77,6 +78,7 @@ bool bIsCACOLoaded = false
 MagicEffect[] aCACO_RestoreEffects
 bool bIsPAFLoaded
 MagicEffect[] aPAF_RestoreEffects
+string[] asEffectNames
 
 bool bMoreHUDLoaded = false
 
@@ -84,11 +86,11 @@ bool bAddedToQueue = false
 int iQueueToSort = -1 ;Only used if potion added by onPotionAdded
 float fTempStrength
 
-bool property bAutoAddPoisons = true auto hidden
-bool property bAutoAddPotions = true auto hidden
+bool property bautoAddPoisons = true auto hidden
+bool property bautoAddPotions = true auto hidden
 bool property bCheckOtherEffects = true auto hidden
-bool property bAutoAddConsumables = true auto hidden
-bool Property bQuickRestoreUseSecondChoice = true Auto Hidden
+bool property bautoAddConsumables = true auto hidden
+bool property bQuickRestoreUseSecondChoice = true auto Hidden
 bool property bFlashPotionWarning = true auto hidden
 int property iEmptyPotionQueueChoice = 0 auto hidden
 bool property bEnableRestorePotionWarnings = true auto hidden
@@ -181,6 +183,17 @@ event OnInit()
     asPotionGroups[0] = "$iEquip_common_HealthPotions"
     asPotionGroups[1] = "$iEquip_common_MagickaPotions"
     asPotionGroups[2] = "$iEquip_common_StaminaPotions"
+
+    asEffectNames = new string[9]
+    asEffectNames[0] = "$iEquip_PO_restoreHealth"
+    asEffectNames[1] = "$iEquip_PO_fortifyHealth"
+    asEffectNames[2] = "$iEquip_PO_regenHealth"
+    asEffectNames[3] = "$iEquip_PO_restoreMagicka"
+    asEffectNames[4] = "$iEquip_PO_fortifyMagicka"
+    asEffectNames[5] = "$iEquip_PO_regenMagicka"
+    asEffectNames[6] = "$iEquip_PO_restoreStamina"
+    asEffectNames[7] = "$iEquip_PO_fortifyStamina"
+    asEffectNames[8] = "$iEquip_PO_regenStamina"
     
     bInitialised = true
     debug.trace("iEquip_PotionScript OnInit end")
@@ -715,10 +728,10 @@ function checkAndAddToPotionQueue(potion foundPotion)
     debug.trace("iEquip_PotionScript checkAndAddToPotionQueue start")
     ;Check if the nth potion is a poison or a food and switch functions if required
     bAddedToQueue = false
-    if foundPotion.isPoison() && bAutoAddPoisons && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
+    if foundPotion.isPoison() && bautoAddPoisons && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
         checkAndAddToPoisonQueue(foundPotion)
 
-    elseIf foundPotion.isFood() && bAutoAddConsumables && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
+    elseIf foundPotion.isFood() && bautoAddConsumables && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
         checkAndAddToConsumableQueue(foundPotion)
 
     else
@@ -762,8 +775,8 @@ function checkAndAddToPotionQueue(potion foundPotion)
             iQueueToSort = Q
             WC.abPotionGroupEmpty[group] = false
         endIf
-        ;If it isn't a grouped potion, or if potion grouping is disabled then if bAutoAddPotions is enabled add it directly to the consumable queue
-        if bAutoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group]) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
+        ;If it isn't a grouped potion, or if potion grouping is disabled then if bautoAddPotions is enabled add it directly to the consumable queue
+        if bautoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group]) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
 	        checkAndAddToConsumableQueue(foundPotion, true)
         elseIf WC.asCurrentlyEquipped[3] == potionGroup
             WC.setSlotCount(3, getPotionGroupCount(group))
@@ -1027,6 +1040,8 @@ function selectAndConsumePotion(int potionGroup, int potionType)
     debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup: " + potionGroup + ", potionType: " + potionType)
     
     string sTargetAV = asActorValues[potionGroup]
+    int iTargetAV = aiActorValues[potionGroup]
+    float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)
     int Q = (potionGroup * 3) + potionType
     bool isRestore = (Q == 0 || Q == 3 || Q == 6)
     
@@ -1035,15 +1050,13 @@ function selectAndConsumePotion(int potionGroup, int potionType)
     if isRestore && currAVDamage == 0
         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_AVFull{"+sTargetAV+"}"))
 
-    elseIf !(bBlockIfEffectActive && isEffectAlreadyActive(Q))
+    elseIf !(bBlockIfEffectActive && isEffectAlreadyActive(Q, isRestore))
         debug.trace("iEquip_PotionScript selectAndConsumePotion - potionQ selected: " + Q + ", iPotionSelectChoice: " + iPotionSelectChoice + ", in combat: " + PlayerRef.IsInCombat())
         int count = jArray.count(aiPotionQ[Q])
         if count > 0
         	int targetPotion ;Default value is 0 which is the array index for the strongest potion of the type requested
         	;If we're looking for a restore potion we need to check the MCM setting for SmartSelect/Strongest/Weakest, otherwise default to strongest for fortify/regen
         	if isRestore
-                int iTargetAV = aiActorValues[potionGroup]
-                float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)
 	            ; If MCM setting is Use Weakest First, or MCM setting is Smart Select then check for weapons not drawn and current stat value as percent of current max including buffs against threshold set, then set the target to the last potion in the queue
 	            if iPotionSelectChoice == 2 || (iPotionSelectChoice == 1 && !(PlayerRef.IsInCombat() || (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV))) <= fSmartConsumeThreshold))    
 	                targetPotion = count - 1
@@ -1096,7 +1109,7 @@ function quickRestoreFindAndConsumePotion(int potionGroup)
     int Q = potionGroup*3
 
     ;If we're blocking consumption because a restore over time effect is already active on the player then set found to true to block equipping a healing spell as well 
-    if bBlockIfEffectActive && isEffectAlreadyActive(Q)
+    if bBlockIfEffectActive && isEffectAlreadyActive(Q, true)
         if Q == 0
             PM.bQuickHealActionTaken = true
         endIf
@@ -1133,7 +1146,7 @@ function quickBuffFindAndConsumePotions(int potionGroup)
     bool bFortifyConsumed
 
     ;Fortify first if MCM conditions are met, we have at least one fortify potion for the given group, and we don't currently have the effect active
-    if iQuickBuffsToApply != 2 && count > 0 && !(bBlockIfEffectActive && isEffectAlreadyActive(Q))
+    if iQuickBuffsToApply != 2 && count > 0 && !(bBlockIfEffectActive && isEffectAlreadyActive(Q, false))
 		potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], 0), "iEquipForm")
         if potionToConsume
             ; Consume the potion
@@ -1147,7 +1160,7 @@ function quickBuffFindAndConsumePotions(int potionGroup)
     count = jArray.count(aiPotionQ[Q])
 
     ;Now do the same checks for regen remembering if iQuickBuffsToApply is set to Either to check if we've already found and consumed a fortify potion
-    if !(iQuickBuffsToApply == 1 || (iQuickBuffsToApply == 0 && bFortifyConsumed)) && count > 0 && !(bBlockIfEffectActive && isEffectAlreadyActive(Q))
+    if !(iQuickBuffsToApply == 1 || (iQuickBuffsToApply == 0 && bFortifyConsumed)) && count > 0 && !(bBlockIfEffectActive && isEffectAlreadyActive(Q, false))
 		potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], 0), "iEquipForm")
         if potionToConsume
             ; Consume the potion
@@ -1159,11 +1172,39 @@ function quickBuffFindAndConsumePotions(int potionGroup)
     debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions end")
 endFunction
 
-bool function isEffectAlreadyActive(int Q)
-    bool isActive
+bool function isEffectAlreadyActive(int Q, bool bIsRestore)
+	debug.trace("iEquip_PotionScript isEffectAlreadyActive start")
+    ;Check for the main potion effect corresponding to the queue from which the potion is being selected
+    bool bIsActive = PlayerRef.HasMagicEffect(aStrongestEffects[Q])
+    ;If it's a restore potion then if we haven't found one of the main restore effects we now need to check for the alternative supported effects
+    if !bIsActive && bIsRestore
+    	;Check for the consummate effects first
+    	bIsActive = PlayerRef.HasMagicEffect(aConsummateEffects[Q/3])
+    	;If we've still not found one check if CACO is loaded and check against the CACO restore over time effects - three possible effects
+    	if !bIsActive && bIsCACOLoaded
+    		int currQ = Q
+    		int maxQ = Q + 3
+    		while currQ < maxQ && !bIsActive
+    			bIsActive = PlayerRef.HasMagicEffect(aCACO_RestoreEffects[Q])
+    			currQ += 1
+    		endWhile
+    	endIf
+    	;Finally if still no match check if Potions Animated Fix is loaded and check against the PAF restore effects - two possible effects
+    	if !bIsActive && bIsPAFLoaded
+    		bIsActive = PlayerRef.HasMagicEffect(aPAF_RestoreEffects[Q])
+    		if !bIsActive
+    			bIsActive = PlayerRef.HasMagicEffect(aPAF_RestoreEffects[Q+1])
+    		endIf
+    	endIf
+    endIf
 
-    debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive"))
-    return isActive
+    if bIsActive
+    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive{"+asEffectNames[Q]+"}"))
+    endIf
+
+    debug.trace("iEquip_PotionScript isEffectAlreadyActive - returning: " + bIsActive)
+    debug.trace("iEquip_PotionScript isEffectAlreadyActive end")
+    return bIsActive
 endFunction
 
 function warnOnLowRestorePotionCount(int restoreCount, int potionGroup)
