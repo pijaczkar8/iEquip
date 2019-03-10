@@ -96,7 +96,7 @@ int[] itemTypesToProcess
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
     PlayerRace = PlayerRef.GetRace()
-    PlayerBaseRace = PlayerRace
+    ;PlayerBaseRace = PlayerRace
     ;PlayerBaseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
     
     aPlayerBaseRaces = new race [10]
@@ -152,6 +152,9 @@ function initialise(bool enabled)
 	debug.trace("iEquip_PlayerEventHandler initialise start")	
 	if enabled
 		gotoState("")
+		PlayerRace = PlayerRef.GetRace()
+		PlayerBaseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
+		bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
 		Utility.SetINIBool("bDisableGearedUp:General", True)
 		WC.refreshVisibleItems()
 		If WC.bEnableGearedUp
@@ -160,9 +163,9 @@ function initialise(bool enabled)
 		EndIf
 		if bPlayerIsABeast
 			registerForBMEvents()
-		;elseIf PlayerRace == PlayerBaseRace ;Use this once ActorExt function is fixed
-		else
-			PlayerBaseRace = PlayerRace ;Remove once ActorExt function is fixed
+		elseIf PlayerRace == PlayerBaseRace ;Use this once ActorExt function is fixed
+		;else
+			;PlayerBaseRace = PlayerRace ;Remove once ActorExt function is fixed
 			registerForCoreAnimationEvents()
 			registerForCoreActorActions()
 		endIf

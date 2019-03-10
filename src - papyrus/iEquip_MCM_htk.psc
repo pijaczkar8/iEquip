@@ -23,6 +23,7 @@ function drawPage()
         MCM.AddKeyMapOptionST("htk_key_rightHand", "$iEquip_MCM_htk_lbl_rightHand", KH.iRightKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("htk_key_shout", "$iEquip_MCM_htk_lbl_shout", KH.iShoutKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("htk_key_consumPoison", "$iEquip_MCM_htk_lbl_consumPoison", KH.iConsumableKey, mcmUnmapFLAG)
+        MCM.AddEmptyOption()
                 
         MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_UtHtkOpts")
         MCM.AddKeyMapOptionST("htk_key_util", "$iEquip_MCM_htk_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
@@ -36,6 +37,8 @@ function drawPage()
         MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_KeyPressOpts")
         MCM.AddSliderOptionST("htk_sld_multiTapDelay", "$iEquip_MCM_htk_lbl_multiTapDelay", KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         MCM.AddSliderOptionST("htk_sld_longPrsDelay", "$iEquip_MCM_htk_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        MCM.AddEmptyOption()
+        
         MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_OptAddHtks")
         MCM.AddToggleOptionST("htk_tgl_optConsumeHotkey", "$iEquip_MCM_htk_lbl_optConsumeHotkey", KH.bConsumeItemHotkeyEnabled)
         if KH.bConsumeItemHotkeyEnabled

@@ -332,8 +332,8 @@ Event OnWidgetInit()
 				aiCurrentlyPreselected[i] = -1
 				abQueueWasEmpty[i] = true
 				abPotionGroupEmpty[i] = true
-			else
-				abIsCounterShown[i] = true
+			;else
+				;abIsCounterShown[i] = true
 			endIf
 		endIf
 		i += 1

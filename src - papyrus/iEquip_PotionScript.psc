@@ -499,13 +499,16 @@ function removePotionFromQueue(int Q, int targetPotion)
         Q = 2
     endIf
     string potionGroup = asPotionGroups[Q]
+    int count = getPotionGroupCount(Q)
     ;If all three arrays in the group are empty then we need to update the widget accordingly
-    if getPotionGroupCount(Q) < 1
+    if count < 1
         ;Flag the group as empty in WidgetCore for cycling
         WC.abPotionGroupEmpty[Q] = true
-        ;Check if it's the currently shown item in the consumable slot
-        if WC.asCurrentlyEquipped[3] == potionGroup
-            debug.trace("iEquip_PotionScript removePotionFromQueue - potion group is currently shown")
+    endIf
+    ;Check if it's the currently shown item in the consumable slot
+    if WC.asCurrentlyEquipped[3] == potionGroup
+        debug.trace("iEquip_PotionScript removePotionFromQueue - potion group is currently shown")
+        if WC.abPotionGroupEmpty[Q]
             ;Check and flash empty warning if enabled
             if bFlashPotionWarning
                 debug.trace("iEquip_PotionScript removePotionFromQueue - should be flashing empty warning now - Q: " + Q)
@@ -520,6 +523,8 @@ function removePotionFromQueue(int Q, int targetPotion)
                 debug.trace("iEquip_PotionScript removePotionFromQueue - should be cycling forward now")
                 WC.cycleSlot(3)
             endIf
+        else
+            WC.setSlotCount(3, count)
         endIf
     endIf
     debug.trace("iEquip_PotionScript removePotionFromQueue end")
@@ -530,7 +535,7 @@ function removeRestoreAllPotionsFromGroups()
     int Q
     while Q < 7
         int count = jArray.count(aiPotionQ[Q])
-        int i
+        int i = 0
         while i < count
             if jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal") > 9000
                 if bautoAddPotions && findInQueue(iConsumableQ, jMap.getForm(jArray.getObj(aiPotionQ[Q], i), "iEquipForm")) == -1
@@ -782,6 +787,7 @@ function checkAndAddToPotionQueue(potion foundPotion)
         form potionForm = foundPotion as form
         bool bIsRestoreAllPotion        
         if Q > -1 && findInQueue(aiPotionQ[Q], potionForm) == -1
+            bool isRestore = (Q == 0 || Q == 3 || Q == 6)
             string potionName = foundPotion.GetName()
             int itemID = WC.createItemID(potionName, potionForm.GetFormID())
             int potionObj = jMap.object()
@@ -800,10 +806,11 @@ function checkAndAddToPotionQueue(potion foundPotion)
                 effectStrength = foundPotion.GetNthEffectMagnitude(i)
                 effectDuration = foundPotion.GetNthEffectDuration(i)
             endIf
-            if effectDuration > 1
+            if isRestore && effectDuration > 1
                 effectStrengthTotal = effectStrength * effectDuration
                 effectStrength3s = effectStrength * 3
             else
+                effectStrengthTotal = effectStrength
                 effectStrength3s = effectStrength
             endIf
             if effectStrengthTotal > 9000
@@ -1097,7 +1104,7 @@ endFunction
 
 function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHealing = false)
     debug.trace("iEquip_PotionScript selectAndConsumePotion start")
-    debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup: " + potionGroup + ", potionType: " + potionType)
+    debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup: " + potionGroup + ", potionType: " + potionType + ", bQuickHealing: " + bQuickHealing)
     
     string sTargetAV = asActorValues[potionGroup]
     int iTargetAV = aiActorValues[potionGroup]
@@ -1219,50 +1226,17 @@ int function selectRestorePotionBy3sMag(int Q, bool bFastActing)
     return targetPotion
 endFunction
 
-;/function quickRestoreFindAndConsumePotion(int potionGroup)
-    debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion start")
-
-    int Q = potionGroup*3
-
-    ;If we're blocking consumption because a restore over time effect is already active on the player then set found to true to block equipping a healing spell as well 
-    if bBlockIfRestEffectActive && isEffectAlreadyActive(Q, true)
-        if Q == 0
-            PM.bQuickHealActionTaken = true
-        endIf
-    ;Otherwise carry on and find and consume a potion if we have one
-    else
-        int count = jArray.count(aiPotionQ[Q])
-        if count > 0
-            if Q == 0
-                PM.bQuickHealActionTaken = true
-            endIf
-            int targetPotion
-            if count > 1 ;If we're selecting from a restore queue then Smart Select only the strongest potion required to fully restore the stat, not necessarily the strongest overall
-                targetPotion = smartSelectRestorePotion(Q, iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[Q/3]))
-            endIf
-            form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
-            PlayerRef.EquipItemEx(potionToConsume)
-            debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
-        	int restoreCount = getRestoreCount(potionGroup)
-        	if restoreCount < 6
-        		warnOnLowRestorePotionCount(restoreCount, potionGroup)
-        	endIf
-        endIf
-    endIf
-
-    debug.trace("iEquip_PotionScript quickHealFindAndConsumePotion end")
-endFunction/;
-
 function quickBuffFindAndConsumePotions(int potionGroup)
     debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions start")
 
-    int Q = potionGroup + 1 ;Fortify
+    int Q = (potionGroup * 3) + 1 ;Fortify
     int count = jArray.count(aiPotionQ[Q])
     form potionToConsume
     bool bFortifyConsumed
 
     ;Fortify first if MCM conditions are met, we have at least one fortify potion for the given group, and we don't currently have the effect active
     if iQuickBuffsToApply != 2 && count > 0 && !(bBlockIfBuffEffectActive && isEffectAlreadyActive(Q, false))
+        debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions - about to consume a fortify potion")
 		potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], 0), "iEquipForm")
         if potionToConsume
             ; Consume the potion
@@ -1272,11 +1246,12 @@ function quickBuffFindAndConsumePotions(int potionGroup)
         endIf
     endIf
 
-    Q = potionGroup + 2 ;Regen
+    Q = (potionGroup * 3) + 2 ;Regen
     count = jArray.count(aiPotionQ[Q])
 
     ;Now do the same checks for regen remembering if iQuickBuffsToApply is set to Either to check if we've already found and consumed a fortify potion
     if !(iQuickBuffsToApply == 1 || (iQuickBuffsToApply == 0 && bFortifyConsumed)) && count > 0 && !(bBlockIfBuffEffectActive && isEffectAlreadyActive(Q, false))
+        debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions - about to consume a regen potion")
 		potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], 0), "iEquipForm")
         if potionToConsume
             ; Consume the potion

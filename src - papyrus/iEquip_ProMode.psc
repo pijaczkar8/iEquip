@@ -1320,12 +1320,14 @@ function quickRestore()
 		bool bQuickBuff = bDoBoth || ((iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bPlayerIsInCombat)) && bIn2ndPressWindow)
 		bool bQuickRestore = bDoBoth || !bQuickBuff
 
+		debug.trace("iEquip_ProMode quickRestore - bPlayerIsInCombat: " + bPlayerIsInCombat + ", bIn2ndPressWindow: " + bIn2ndPressWindow + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore)
+
 		if bQuickRestore
 			fTimeOfLastQuickRestore = Utility.GetCurrentRealTime()
 		endIf
 
 		if bQuickHealEnabled
-	        
+	        debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled)
 	        if bCurrentlyQuickHealing
 	        	debug.trace("iEquip_ProMode quickRestore - bCurrentlyQuickHealing, switching back")
 	            quickHealSwitchBack(bPlayerIsInCombat)
@@ -1336,32 +1338,33 @@ function quickRestore()
 	        endIf
 
 	        if bQuickBuff
+	        	debug.trace("iEquip_ProMode quickRestore - calling quickBuff health")
 				PO.quickBuffFindAndConsumePotions(0)
 			endIf
 	    endIf
 
-	    bool actionTaken
-	    
 	    if bQuickStaminaEnabled
-    		
+    		debug.trace("iEquip_ProMode quickRestore - bQuickStaminaEnabled: " + bQuickStaminaEnabled)
     		if bQuickRestore && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
-		    	actionTaken = PO.selectAndConsumePotion(2, 0) ;Stamina
+		    	PO.selectAndConsumePotion(2, 0) ;Stamina
 		    endIf
 			
 			if bQuickBuff
+				debug.trace("iEquip_ProMode quickRestore - calling quickBuff stamina")
 				PO.quickBuffFindAndConsumePotions(2)
 			endIf
 	    endIf
 
 	    if bQuickMagickaEnabled
-	    	
+	    	debug.trace("iEquip_ProMode quickRestore - bQuickMagickaEnabled: " + bQuickMagickaEnabled)
 	    	if bQuickRestore && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
-		    	actionTaken = PO.selectAndConsumePotion(1, 0) ;Magicka
+		    	PO.selectAndConsumePotion(1, 0) ;Magicka
 		    endIf
 			
 			if bQuickBuff
+				debug.trace("iEquip_ProMode quickRestore - calling quickBuff magicka")
 				PO.quickBuffFindAndConsumePotions(1)
 			endIf
 	    endIf
