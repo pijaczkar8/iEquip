@@ -251,9 +251,13 @@ State gen_tgl_showPosInd
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_showPosInd")
         elseIf currentEvent == "Select"
-            WC.bShowPositionIndicators = !WC.bShowPositionIndicators
-            MCM.SetToggleOptionValueST(WC.bShowPositionIndicators)
-            MCM.ForcePageReset()
+            if WC.bSkipAutoAddedItems
+                MCM.ShowMessage(iEquip_StringExt.LocalizeString("$iEquip_MCM_gen_msg_skipBlocksPosInd"), false, "$OK")
+            else
+                WC.bShowPositionIndicators = !WC.bShowPositionIndicators
+                MCM.SetToggleOptionValueST(WC.bShowPositionIndicators)
+                MCM.ForcePageReset()
+            endIf
         endIf
     endEvent
 endState

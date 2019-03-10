@@ -1,14 +1,5 @@
 import skyui.widgets.iEquip.iEquipWidget;
 
-import com.greensock.TimelineLite;
-import com.greensock.TweenLite;
-import com.greensock.easing.*;
-import com.greensock.plugins.TweenPlugin;
-import com.greensock.plugins.DirectionalRotationPlugin;
-
-import flash.geom.ColorTransform;
-import flash.geom.Transform;
-
 class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 {	
   /* STAGE ELEMENTS */
@@ -66,27 +57,12 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 	public var SaveButton: MovieClip;
 	public var DiscardButton: MovieClip;
 	public var ExitButton: MovieClip;
-
-	//public var clip: MovieClip;
-	//public var clipArray: Array;
-	//public var selectedText: TextField;
-	//public static var textElementArray: Array;
-
-	//public var colorTrans: ColorTransform;
-	//public var highlightColor: Number;
 	
   /* INITIALIZATION */
 
 	public function iEquipEditMode()
 	{
 		super();
-
-		//highlightColor = 0x00A1FF;
-
-		//colorTrans = new ColorTransform;
-		//colorTrans.rgb = highlightColor;
-
-		//TweenPlugin.activate([DirectionalRotationPlugin]);
 
 		//Set up the button icon paths
 		NextButton = NextButton;
@@ -141,9 +117,6 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 		AlphaIncrementText = AlphaIncrementText;
 		RulersText = RulersText;
 
-		//Set up arrays of MovieClips and text elements ready for use in Edit Mode etc
-		//clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
-		//textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, leftPreselectName, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, rightPreselectName, null, null, null, shoutName, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, poisonName, poisonCount);
 	}
 
 	function setEditModeButtons(Exit: Number, Nxt: Number, Prv: Number, Up: Number, Down: Number, Left: Number, Right: Number, ScaleUp: Number, ScaleDown: Number, Rot: Number, Alpha: Number, Align: Number, Dep: Number, Rul: Number, Res: Number, Load: Number, Save: Number, Disc: Number): Void
@@ -195,14 +168,6 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 		DiscardChangesText._x = DiscardButton._x + DiscardButton._width + 8;
 	}
 	
-	/*function setEditModeHighlightColor(_color: Number): Void
-	{
-		skyui.util.Debug.log("iEquipEditMode setEditModeHighlightColor - _color: " + _color)
-		highlightColor = _color;
-		colorTrans.rgb = highlightColor;
-		SelectedElementText.textColor = highlightColor;
-	}*/
-	
 	function setEditModeCurrentValueColor(_color: Number): Void
 	{
 		skyui.util.Debug.log("iEquipEditMode setEditModeCurrentValueColor - _color: " + _color)
@@ -216,96 +181,4 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 		AlphaIncrementText.textColor = _color;
 		RulersText.textColor = _color;
 	}
-
-	/*public function setCurrentClip(a_clip: Number): Void
-	{
-		skyui.util.Debug.log("iEquipEditMode setCurrentClip - a_clip: " + a_clip)
-		clip = clipArray[a_clip];
-	}
-
-	public function tweenIt(tweenType: Number, endValue: Number, secs: Number): Void
-	{
-		skyui.util.Debug.log("iEquipEditMode tweenIt - tweenType: " + tweenType)
-		//tweenType = Attribute to change: 0 = _x, 1 = _y, 2 = _xscale/_yscale, 3 =  _rotation, 4 = _alpha
-		switch(tweenType) {
-			case 0:
-				TweenLite.to(clip, secs, {_x:endValue, ease:Quad.easeOut});
-				break;
-			case 1:
-				TweenLite.to(clip, secs, {_y:endValue, ease:Quad.easeOut});
-				break;
-			case 2:
-				TweenLite.to(clip, secs, {_xscale:endValue, _yscale:endValue, ease:Quad.easeOut});
-				break;
-			case 3:
-				TweenLite.to(clip, secs, {directionalRotation:{_rotation: endValue + "_short"}, ease:Quad.easeOut});
-				break;
-			case 4:
-				TweenLite.to(clip, secs, {_alpha:endValue, ease:Quad.easeOut});
-				break;
-			}
-	}
-
-	public function tweenWidgetNameAlpha(clipIndex: Number, endValue: Number, secs: Number): Void
-	{
-		var nameClip: MovieClip = clipArray[clipIndex];
-		TweenLite.to(nameClip, secs, {_alpha:endValue, ease:Quad.easeOut});
-	}
-
-		public function swapItemDepths(iItemToMoveToFront: Number, iItemToSendToBack: Number): Void
-	{
-		var clip1: MovieClip = clipArray[iItemToMoveToFront];
-		var clip2: MovieClip = clipArray[iItemToSendToBack];
-		clip1.swapDepths(clip2);
-	}
-
-	public function highlightSelectedElement(isText:Number, arrayIndex:Number, currentColor:Number): Void
-	{
-		skyui.util.Debug.log("iEquipEditMode highlightSelectedElement - arrayIndex: " + arrayIndex)
-		if (isText == 1){
-			selectedText = textElementArray[arrayIndex];
-			selectedText.textColor = highlightColor;
-		}
-		else {
-			colorTrans.rgb = highlightColor;
-			var trans:Transform = new Transform(clip);
-			trans.colorTransform = colorTrans;
-		}
-	}
-
-	public function removeCurrentHighlight(isText:Number, textElement:Number, currentColor:Number): Void
-	{
-		skyui.util.Debug.log("iEquipEditMode removeCurrentHighlight - textElement: " + textElement)
-		if (isText == 1){
-			selectedText = textElementArray[textElement];
-			selectedText.textColor = currentColor;
-		} else {
-			colorTrans = new ColorTransform(1,1,1,1,0,0,0,0);
-			var trans:Transform = new Transform(clip);
-			trans.colorTransform = colorTrans;
-		}
-	}
-	
-	public function setTextColor(textElement: Number, currentColor: Number): Void
-	{
-		selectedText = textElementArray[textElement];
-		selectedText.textColor = currentColor;
-	}
-
-	public function setTextAlignment(textElement: Number, a_align: Number): Void
-	{
-		skyui.util.Debug.log("iEquipEditMode setTextAlignment - textElement: " + textElement)
-		var format:TextFormat = new TextFormat();
-		if (a_align == 0){
-			format.align = "left";
-		}
-		else if (a_align == 1){
-			format.align = "center";
-		}
-		else {
-			format.align = "right";
-		}
-		selectedText = textElementArray[textElement];
-		selectedText.setTextFormat(format);
-	}*/
 }

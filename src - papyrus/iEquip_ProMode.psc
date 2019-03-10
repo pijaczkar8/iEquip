@@ -1345,8 +1345,8 @@ function quickRestore()
 	    if bQuickStaminaEnabled
     		
     		if bQuickRestore && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
-		    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Stamina")
-		    	actionTaken = PO.quickRestoreFindAndConsumePotion(2) ;Stamina
+		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
+		    	actionTaken = PO.selectAndConsumePotion(2, 0) ;Stamina
 		    endIf
 			
 			if bQuickBuff
@@ -1357,8 +1357,8 @@ function quickRestore()
 	    if bQuickMagickaEnabled
 	    	
 	    	if bQuickRestore && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
-		    	debug.trace("iEquip_ProMode quickRestore - calling quickRestoreFindAndConsumePotion for Magicka")
-		    	actionTaken = PO.quickRestoreFindAndConsumePotion(1) ;Magicka
+		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
+		    	actionTaken = PO.selectAndConsumePotion(1, 0) ;Magicka
 		    endIf
 			
 			if bQuickBuff
@@ -1375,7 +1375,7 @@ function quickHeal()
     if bQuickHealPreferMagic
         quickHealFindAndEquipSpell()
     elseIf (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
-    	PO.quickRestoreFindAndConsumePotion(0)
+    	PO.selectAndConsumePotion(0, 0, true)
    	else
 		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
 		bQuickHealActionTaken = true
@@ -1384,7 +1384,7 @@ function quickHeal()
     if !bQuickHealActionTaken && bQuickHealUseFallback
         if bQuickHealPreferMagic
         	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
-            	PO.quickRestoreFindAndConsumePotion(0)
+            	PO.selectAndConsumePotion(0, 0, true)
             else
             	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
     			bQuickHealActionTaken = true
@@ -1534,7 +1534,7 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 		debug.trace("iEquip_ProMode quickHealSwitchBack - Something went wrong!")
 	endIf
 	if bQuickHealSwitchBackAndRestore && bPlayerIsInCombat
-		bool actionTaken = PO.quickRestoreFindAndConsumePotion(1) ;Magicka potions
+		PO.selectAndConsumePotion(1, 0) ;Magicka potions
 	endIf
 	iQuickHealSlotsEquipped = -1 ;Reset
 	debug.trace("iEquip_ProMode quickHealSwitchBack end")

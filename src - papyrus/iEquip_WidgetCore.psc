@@ -142,7 +142,7 @@ float property fEquipOnPauseDelay = 2.0 auto hidden
 
 bool property bPotionGrouping = true auto hidden
 int property iPotionSelectorChoice = 2 auto hidden
-float property fPotionSelectorFadeoutDelay = 5.0 auto hidden
+float property fPotionSelectorFadeoutDelay = 3.0 auto hidden
 
 bool property bProModeEnabled auto hidden
 bool property bPreselectMode auto hidden
@@ -332,6 +332,8 @@ Event OnWidgetInit()
 				aiCurrentlyPreselected[i] = -1
 				abQueueWasEmpty[i] = true
 				abPotionGroupEmpty[i] = true
+			else
+				abIsCounterShown[i] = true
 			endIf
 		endIf
 		i += 1
@@ -564,6 +566,7 @@ function refreshWidgetOnLoad()
 	form fItem
 	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+	updatePotionSelector(true) ;Hide the potion selector
 	if bDropShadowEnabled
 		updateTextFieldDropShadow()
 	else
@@ -575,14 +578,12 @@ function refreshWidgetOnLoad()
 		abIsNameShown[Q] = true
 		if Q < 5
 			count = jArray.count(aiTargetQ[Q])
-			if Q < 3
-				if (count < 1 || !PlayerRef.GetEquippedObject(Q))
-					setSlotToEmpty(Q, true, (count > 0))
-				endIf
-				if bPermanentPositionIndicators
+			if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
+				setSlotToEmpty(Q, true, (count > 0))
+			else
+				if Q < 3 && bPermanentPositionIndicators
 					updateQueuePositionIndicator(Q, count, aiCurrentQueuePosition[Q], aiCurrentQueuePosition[Q])
 				endIf
-			else
 				if Q < 2
 					checkAndUpdatePoisonInfo(Q)
 					CM.initChargeMeter(Q)
@@ -779,18 +780,16 @@ function refreshWidget()
 	else
 		setCounterVisibility(0, true)
 		;And hide the right hand counter unless the current ranged weapon is poisoned
-		if !abPoisonInfoDisplayed[1]
-			setCounterVisibility(1, false)
-		elseIf abPoisonInfoDisplayed[1]
-			setCounterVisibility(1, true)
-		endIf
+		setCounterVisibility(1, abPoisonInfoDisplayed[1])
 	endIf
-	;Make sure that any slots which whould be hidden are hidden
+	;Make sure that any slots which should be hidden are hidden
 	updateSlotsEnabled()
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 	if !bDropShadowEnabled
 		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
 	endIf
+	;Hide the potion selector
+	UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", 0.0)
 	;Show the widget
 	updateWidgetVisibility()
 	;And finally re-register for fadeouts if required
@@ -1077,6 +1076,7 @@ function addFists()
 		jMap.setInt(Fists, "iEquipType", 0)
 		jMap.setStr(Fists, "iEquipName", "$iEquip_common_Unarmed")
 		jMap.setStr(Fists, "iEquipIcon", "Fist")
+		jMap.setInt(Fists, "iEquipAutoAdded", 0)
 		jArray.addObj(aiTargetQ[1], Fists)
 	endIf
 	debug.trace("iEquip_WidgetCore addFists end")
@@ -1266,6 +1266,7 @@ bool property isEnabled
                     endIf
 				endIf
                 initQueuePositionIndicators()
+                updatePotionSelector(true) ;Hide the potion selector
 				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 				UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 				UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
@@ -1699,7 +1700,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			elseif targetIndex == queueLength && !Reverse
 				targetIndex = 0
 			endIf
-			;Check we're not trying to select the currently equipped item - only becomes relevant if we cycle through the entire queue or change direction and cycle back past where we started from (excludes potion and poison queues), or equip the same 1H item which is currently equipped in the other hand and 1H switchign disallowed, or we're in the consumables queue and we're checking for empty potion groups
+			;Check if we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues, or we're in the consumables queue and we're checking for empty potion groups
 			if Q < 4
 		    	targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
 			    if Q == 3
@@ -1713,21 +1714,20 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
                         targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
                     endWhile
 			    else
+			    	;If we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues we need to cycle until we find one that hasn't been Auto-Added 
 			    	if !(Q == 1 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed")
 			    		targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
-			    		if Q < 2 && !jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipType") == 22 && !bAllowWeaponSwitchHands
-			    			int otherHand = (Q + 1) % 2
-					        while targetItem == PlayerRef.GetEquippedObject(otherHand) && (PlayerRef.GetItemCount(targetItem) < 2)
-					            targetIndex = targetIndex + move
-					            if targetIndex < 0 && Reverse
-					                targetIndex = queueLength - 1
-					            elseif targetIndex == queueLength && !Reverse
-					                targetIndex = 0
-					            endIf
-					            targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
-					            targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
-					        endWhile
-					    endIf
+			    		int countdown = queueLength
+				        while !(Q == 1 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed") && ((Q < 2 && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipType") != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)) || (bSkipAutoAddedItems && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipAutoAdded") == 1)) && countdown > 0
+				            targetIndex = targetIndex + move
+				            if targetIndex < 0 && Reverse
+				                targetIndex = queueLength - 1
+				            elseif targetIndex == queueLength && !Reverse
+				                targetIndex = 0
+				            endIf
+				            targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
+				            countdown -= 1
+				        endWhile
 				    endIf
 			    endIf
 		    endIf
@@ -2173,7 +2173,7 @@ function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
 endFunction
 
 function updatePotionSelector(bool bHide = false)
-	debug.trace("iEquip_WidgetCore updatePotionSelector start")
+	debug.trace("iEquip_WidgetCore updatePotionSelector start - bHide: " + bHide + ", bPotionSelectorShown: " + bPotionSelectorShown)
 	;If we've just received the fadeout update then hide the selector and reset the currently selected type to fortify
 	if bHide
 		UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", 0.0)
@@ -3629,6 +3629,7 @@ function addToQueue(int Q)
 							jMap.setInt(iEquipItem, "isEnchanted", isEnchanted as int)
 							jMap.setInt(iEquipItem, "isPoisoned", isPoisoned as int)
 						endIf
+						jMap.setInt(iEquipItem, "iEquipAutoAdded", 0)
 					endIf
 					;Add any other info required for each item here - spell school, costliest effect, etc
 					jArray.addObj(aiTargetQ[Q], iEquipItem)

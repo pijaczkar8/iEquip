@@ -53,14 +53,17 @@ endFunction
 
 function drawPage()
     if MCM.bEnabled && !MCM.bFirstEnabled
-        MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+        
         if WC.bShowPositionIndicators
+            MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_posIndOpts")
             MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
             MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
             MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
             MCM.AddSliderOptionST("ui_sld_currPosIndAlpha", "$iEquip_MCM_ui_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
+            MCM.AddEmptyOption()
         endIf
 
+        MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_iconBgOpts")
         MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
                 
         if WC.bFadeLeftIconWhen2HEquipped
@@ -73,9 +76,11 @@ function drawPage()
 
         MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
         
-       ;We don't want drop shadow settings being messed around with while we are in Edit Mode
-       if !WC.EM.isEditMode
-           MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
+        MCM.SetCursorPosition(1)
+        ;We don't want drop shadow settings being messed around with while we are in Edit Mode
+        if !WC.EM.isEditMode
+            MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_txtShadOpts")
+            MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
             
             if WC.bDropShadowEnabled
                 MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha*100, "{0}%")
@@ -84,9 +89,10 @@ function drawPage()
                 MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
                 MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength*100, "{0}%")
             endIf
+
+            MCM.AddEmptyOption()
         endIf
 
-        MCM.SetCursorPosition(1)
         MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_fadeoutopts")
         MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
                 

@@ -159,7 +159,10 @@ function DisableEditMode()
         UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false)
     endIf
 
-    UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", false)    
+    UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", 0.0)
+    if !WC.bPermanentPositionIndicators
+        UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", false)
+    endIf
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
     
     ; Reset Vanity Camera delay back to previous value on leaving Edit Mode
@@ -213,7 +216,9 @@ function EnableEditmode()
         preselectEnabledOnEnter = true
         PM.togglePreselectMode(true)
     endIf
-    
+
+    UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", WC.afWidget_A[45])
+
     LoadAllElements()
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0)
     HighlightElement(true)

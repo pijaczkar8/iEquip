@@ -160,7 +160,9 @@ function initialise(bool enabled)
 		EndIf
 		if bPlayerIsABeast
 			registerForBMEvents()
-		elseIf PlayerRace == PlayerBaseRace
+		;elseIf PlayerRace == PlayerBaseRace ;Use this once ActorExt function is fixed
+		else
+			PlayerBaseRace = PlayerRace ;Remove once ActorExt function is fixed
 			registerForCoreAnimationEvents()
 			registerForCoreActorActions()
 		endIf

@@ -33,13 +33,25 @@ function drawPage()
                 
         if WC.bPotionGrouping
             MCM.AddToggleOptionST("pot_tgl_checkAllEffects", "$iEquip_MCM_pot_lbl_checkAllEffects", PO.bCheckOtherEffects)
-            MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
-            MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1}")
+            MCM.AddToggleOptionST("pot_tgl_exclRestAllEffects", "$iEquip_MCM_pot_lbl_exclRestAllEffects", PO.bExcludeRestoreAllEffects)
             MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
+            
+            MCM.AddEmptyOption()
+            MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potSelOpts")
+            MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
+            MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+            
+            MCM.AddEmptyOption()
+            MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_thrshldFX")
             if PO.iPotionSelectChoice == 1 ; Smart Select
                 MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartConsumeThreshold*100, "{0} %")
             endIf
-            MCM.AddToggleOptionST("pot_tgl_blockIfEffect", "$iEquip_MCM_pot_lbl_blockIfEffect", PO.bBlockIfEffectActive)
+            MCM.AddToggleOptionST("pot_tgl_blockIfRestEffect", "$iEquip_MCM_pot_lbl_blockIfRestEffect", PO.bBlockIfRestEffectActive)
+            if PO.bBlockIfRestEffectActive
+                MCM.AddToggleOptionST("pot_tgl_addCombatException", "$iEquip_MCM_pot_lbl_addCombatException", PO.bSuspendChecksInCombat)
+            endIf
+            MCM.AddToggleOptionST("pot_tgl_blockIfBuffEffect", "$iEquip_MCM_pot_lbl_blockIfBuffEffect", PO.bBlockIfBuffEffectActive)
+
             
             MCM.AddEmptyOption()
             if !WC.abPotionGroupEnabled[0]
@@ -99,6 +111,22 @@ State pot_tgl_checkAllEffects
     endEvent
 endState
 
+State pot_tgl_exclRestAllEffects
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_exclRestAllEffects")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && PO.bExcludeRestoreAllEffects)
+            PO.bExcludeRestoreAllEffects = !PO.bExcludeRestoreAllEffects
+            MCM.SetToggleOptionValueST(PO.bExcludeRestoreAllEffects)
+            if PO.bExcludeRestoreAllEffects
+                PO.removeRestoreAllPotionsFromGroups()
+            else
+                MCM.ShowMessage(iEquip_StringExt.LocalizeString("$iEquip_pot_msg_addRestAllToGroups"), false, "$OK")
+            endIf
+        endIf
+    endEvent
+endState
+
 State pot_men_showSelector
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -120,7 +148,7 @@ State pot_sld_selectorFadeDelay
             MCM.fillSlider(WC.fPotionSelectorFadeoutDelay, 0.0, 30.0, 0.5, 4.0)
         elseIf currentEvent == "Accept"
             WC.fPotionSelectorFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(WC.fPotionSelectorFadeoutDelay, "{0}")
+            MCM.SetSliderOptionValueST(WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         endIf 
     endEvent
 endState
@@ -151,13 +179,35 @@ State pot_sld_StatThreshold
     endEvent
 endState
 
-State pot_tgl_blockIfEffect
+State pot_tgl_blockIfRestEffect
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_blockIfEffect")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bBlockIfEffectActive)
-            PO.bBlockIfEffectActive = !PO.bBlockIfEffectActive
-            MCM.SetToggleOptionValueST(PO.bBlockIfEffectActive)
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_blockIfRestEffect")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bBlockIfRestEffectActive)
+            PO.bBlockIfRestEffectActive = !PO.bBlockIfRestEffectActive
+            MCM.SetToggleOptionValueST(PO.bBlockIfRestEffectActive)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_addCombatException
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_addCombatException")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bSuspendChecksInCombat)
+            PO.bSuspendChecksInCombat = !PO.bSuspendChecksInCombat
+            MCM.SetToggleOptionValueST(PO.bSuspendChecksInCombat)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_blockIfBuffEffect
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_blockIfBuffEffect")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bBlockIfBuffEffectActive)
+            PO.bBlockIfBuffEffectActive = !PO.bBlockIfBuffEffectActive
+            MCM.SetToggleOptionValueST(PO.bBlockIfBuffEffectActive)
         endIf
     endEvent
 endState
