@@ -1124,9 +1124,13 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
             int targetPotion ;Default value is 0 which is the array index for the strongest potion of the type requested. If iPotionSelectChoice is 0 (Use Strongest) this will stay at 0 unless we fail the active effects checks below
         	
         	if isRestore ;If we're looking for a restore potion we need to check the MCM setting for SmartSelect/Strongest/Weakest, otherwise default to strongest for fortify/regen
-                
+                ;ToDo - remove the next few lines of debug
+                float currAV = PlayerRef.GetActorValue(sTargetAV)
+                float currAVMax = currAV + currAVDamage
+                debug.trace("iEquip_PotionScript selectAndConsumePotion - current AV: " + currAV + ", current max: " + currAVMax + ", current %: " + (currAV/currAVMax) + ", threshold: " + fSmartConsumeThreshold + ", in combat: " + PlayerRef.IsInCombat())
                 bool bInCombat = PlayerRef.IsInCombat()
-                bool bBelowThreshold = (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)) <= fSmartConsumeThreshold)
+                bool bBelowThreshold = ((currAV/currAVMax) <= fSmartConsumeThreshold)
+                ;bool bBelowThreshold = (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)) <= fSmartConsumeThreshold)
                 bool bEffectActive = bBlockIfRestEffectActive && isEffectAlreadyActive(Q, isRestore)
                 bool bSkipEffectCheck = bInCombat && bSuspendChecksInCombat && bBelowThreshold
                 
@@ -1227,7 +1231,7 @@ int function selectRestorePotionBy3sMag(int Q, bool bFastActing)
 endFunction
 
 function quickBuffFindAndConsumePotions(int potionGroup)
-    debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions start")
+    debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions start - potionGroup: " + potionGroup + ", iQuickBuffsToApply: " + iQuickBuffsToApply)
 
     int Q = (potionGroup * 3) + 1 ;Fortify
     int count = jArray.count(aiPotionQ[Q])

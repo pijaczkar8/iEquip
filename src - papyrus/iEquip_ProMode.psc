@@ -1320,7 +1320,7 @@ function quickRestore()
 		bool bQuickBuff = bDoBoth || ((iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bPlayerIsInCombat)) && bIn2ndPressWindow)
 		bool bQuickRestore = bDoBoth || !bQuickBuff
 
-		debug.trace("iEquip_ProMode quickRestore - bPlayerIsInCombat: " + bPlayerIsInCombat + ", bIn2ndPressWindow: " + bIn2ndPressWindow + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore)
+		debug.trace("iEquip_ProMode quickRestore - bPlayerIsInCombat: " + bPlayerIsInCombat + ", bIn2ndPressWindow: " + bIn2ndPressWindow + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore + ", fQuickRestoreThreshold: " + fQuickRestoreThreshold)
 
 		if bQuickRestore
 			fTimeOfLastQuickRestore = Utility.GetCurrentRealTime()
@@ -1333,6 +1333,11 @@ function quickRestore()
 	            quickHealSwitchBack(bPlayerIsInCombat)
 	        
 	        elseIf bQuickRestore
+	        	;ToDo - remove the next few lines of debug code
+		    	float currHAV = PlayerRef.GetActorValue("Health")
+		    	float currHAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 24)
+		    	float currHAVMax = currHAV + currHAVDamage
+	    		debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled + ", current health: " + currHAV + ", current max: " + currHAVMax + ", current %: " + (currHAV / currHAVMax))
 	        	debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
 	        	quickHeal()
 	        endIf
@@ -1344,8 +1349,13 @@ function quickRestore()
 	    endIf
 
 	    if bQuickStaminaEnabled
-    		debug.trace("iEquip_ProMode quickRestore - bQuickStaminaEnabled: " + bQuickStaminaEnabled)
-    		if bQuickRestore && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
+	    	;ToDo - remove the next few lines of debug code
+	    	float currSAV = PlayerRef.GetActorValue("Stamina")
+	    	float currSAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 26)
+	    	float currSAVMax = currSAV + currSAVDamage
+    		debug.trace("iEquip_ProMode quickRestore - bQuickStaminaEnabled: " + bQuickStaminaEnabled + ", current stamina: " + currSAV + ", current max: " + currSAVMax + ", current %: " + (currSAV / currSAVMax))
+    		if bQuickRestore && ((currSAV / currSAVMax) <= fQuickRestoreThreshold)
+    		;if bQuickRestore && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
 		    	PO.selectAndConsumePotion(2, 0) ;Stamina
 		    endIf
@@ -1357,8 +1367,13 @@ function quickRestore()
 	    endIf
 
 	    if bQuickMagickaEnabled
-	    	debug.trace("iEquip_ProMode quickRestore - bQuickMagickaEnabled: " + bQuickMagickaEnabled)
-	    	if bQuickRestore && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
+	    	;ToDo - remove the next few lines of debug code
+	    	float currMAV = PlayerRef.GetActorValue("Magicka")
+	    	float currMAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 25)
+	    	float currMAVMax = currMAV + currMAVDamage
+    		debug.trace("iEquip_ProMode quickRestore - bQuickMagickaEnabled: " + bQuickMagickaEnabled + ", current magicka: " + currMAV + ", current max: " + currMAVMax + ", current %: " + (currMAV / currMAVMax))
+    		if bQuickRestore && ((currMAV / currMAVMax) <= fQuickRestoreThreshold)
+	    	;if bQuickRestore && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
 		    	PO.selectAndConsumePotion(1, 0) ;Magicka
 		    endIf
