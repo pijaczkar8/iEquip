@@ -233,7 +233,7 @@ State ui_sld_leftIcoFade
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_leftIcoFade")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fLeftIconFadeAmount, 0.0, 80.0, 10.0, 70.0)
+            MCM.fillSlider(WC.fLeftIconFadeAmount, 0.0, 100.0, 10.0, 70.0)
         elseIf currentEvent == "Accept"
             WC.fLeftIconFadeAmount = currentVar
             MCM.SetSliderOptionValueST(WC.fLeftIconFadeAmount, "{0}%")

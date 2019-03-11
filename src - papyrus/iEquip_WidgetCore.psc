@@ -2942,8 +2942,10 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		cycleHand(0, aiCurrentQueuePosition[0], jMap.getForm(targetObject, "iEquipForm"))
     ;if we unequipped the other hand now equip the next item
     elseif bSwitchingHands
-    	if equippingOnAutoAdd && !PlayerRef.GetEquippedObject(otherHand)
-    		setSlotToEmpty(otherHand)
+    	if equippingOnAutoAdd
+    		if !PlayerRef.GetEquippedObject(otherHand)
+    			setSlotToEmpty(otherHand)
+    		endIf
     	else
     		if bPreselectMode
 	    		bSwitchingHands = false

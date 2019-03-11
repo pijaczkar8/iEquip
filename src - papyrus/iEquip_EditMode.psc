@@ -1098,6 +1098,8 @@ function ResetDefaults()
         iSelectedElement = 0
         LoadAllElements()
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
+    else
+        HighlightElement(false)
     endIf
     
     WC.updateWidgetVisibility()
