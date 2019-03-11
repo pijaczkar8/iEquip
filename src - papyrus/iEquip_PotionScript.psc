@@ -376,7 +376,9 @@ function findAndSortPotions()
         ;Add each potion to the relevant queue
         while i < numFound
             foundPotion = GetNthFormOfType(PlayerRef, 46, i) as potion
-            checkAndAddToPotionQueue(foundPotion)
+            if foundPotion
+                checkAndAddToPotionQueue(foundPotion)
+            endIf
             i += 1
         endWhile
         ;Now check if anything has been added to each potion queue and resort each if required
