@@ -359,12 +359,17 @@ function findAndSortPotions()
             count = jArray.count(aiPotionQ[i])
             ;Check and remove any potions which are no longer in the players inventory (fallback as there shouldn't be any!)
             while iIndex < count
-                if PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "iEquipForm")) < 1
-                    iEquip_PotionItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "iEquipForm"))
-                    EH.updateEventFilter(iEquip_PotionItemsFLST)
+                form potionForm = jMap.getForm(jArray.getObj(aiPotionQ[i], iIndex), "iEquipForm")
+                if !potionForm || PlayerRef.GetItemCount(potionForm) < 1
+                    if potionForm
+                        iEquip_PotionItemsFLST.RemoveAddedForm(potionForm)
+                        EH.updateEventFilter(iEquip_PotionItemsFLST)
+                    endIf
                     removePotionFromQueue(i, iIndex)
+                    count -= 1
+                else
+                    iIndex += 1
                 endIf
-                iIndex += 1
             endWhile
             ;Store the opening potion queue lengths for comparison later
             openingQSizes[i] = jArray.count(aiPotionQ[i])
@@ -659,12 +664,16 @@ int function getRestoreCount(int potionGroup)
     return count
 endFunction
 
+int function getRestoreHealthCount()
+    return jArray.count(aiPotionQ[0])
+endFunction
+
 int function getPotionQueue(potion potionToCheck, bool bAdding = false)
     debug.trace("iEquip_PotionScript getPotionQueue start")
     int selectedEffIndx = potionToCheck.GetCostliestEffectIndex()
     magicEffect effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
     int Q = checkEffects(effectToCheck)
-    debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + effectToCheck + ", strongest magic effect: " + effectToCheck as string)
+    debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + selectedEffIndx + ", strongest magic effect: " + effectToCheck as string)
     
     ; If the strongest effect isn't a restore/fortify/regen effect then if the potion has more than one effect check if any of the other effects are
     if Q < 0
@@ -1208,6 +1217,8 @@ int function smartSelectRestorePotion(int Q, float currAVDamage)
             if jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal") < currAVDamage
                 if (currAVDamage - jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal")) > (jMap.getFlt(jArray.getObj(aiPotionQ[Q], i - 1), "iEquipStrengthTotal") - currAVDamage)
                     targetPotion = i - 1
+                else
+                    targetPotion = i
                 endIf
                 i = queueLength
             else

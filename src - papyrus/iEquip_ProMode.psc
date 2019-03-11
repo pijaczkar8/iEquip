@@ -1392,12 +1392,14 @@ function quickHeal()
     bQuickHealActionTaken = false
     if bQuickHealPreferMagic
         quickHealFindAndEquipSpell()
-    elseIf (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
-    	PO.selectAndConsumePotion(0, 0, true)
-   	else
-		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
-		bQuickHealActionTaken = true
-    endIf
+    elseIf PO.getRestoreHealthCount() > 0
+    	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
+	    	PO.selectAndConsumePotion(0, 0, true)
+	   	else
+			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
+			bQuickHealActionTaken = true
+	    endIf
+	endIf
     	
     if !bQuickHealActionTaken && bQuickHealUseFallback
         if bQuickHealPreferMagic
@@ -1405,15 +1407,10 @@ function quickHeal()
             	PO.selectAndConsumePotion(0, 0, true)
             else
             	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
-    			bQuickHealActionTaken = true
             endIf
         else
             quickHealFindAndEquipSpell()
         endIf
-    endIf
-
-    if !bQuickHealActionTaken
-        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QHNotFound"))
     endIf
     debug.trace("iEquip_ProMode quickHeal end")
 endFunction
