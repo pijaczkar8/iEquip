@@ -1682,7 +1682,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		endIf
 		
 		;Make sure we're starting from the correct index, in case somehow the queue has been amended without the aiCurrentQueuePosition array being updated
-		if asCurrentlyEquipped[Q] != ""
+		if asCurrentlyEquipped[Q] != "" && asCurrentlyEquipped[Q] != jMap.getStr(jArray.getObj(targetArray, aiCurrentQueuePosition[Q]), "iEquipName")
 			aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q])
 		endIf
 		
@@ -3571,6 +3571,7 @@ function addToQueue(int Q)
 		if itemName == ""
 			itemName = itemForm.getName()
 		endIf
+		int iButton
 		if isItemValidForSlot(Q, itemForm, itemType, itemName)
 			if Q == 3 && (itemForm as Potion).isPoison()
 				Q = 4
@@ -3602,7 +3603,6 @@ function addToQueue(int Q)
 				int iEquipItem = jMap.object()
 				if jArray.count(aiTargetQ[Q]) < iMaxQueueLength
 					if bShowQueueConfirmationMessages
-						int iButton
 						if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
 							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToBoth{" + itemName + "}{" + asQueueName[Q] + "}"))
 						else
@@ -3651,7 +3651,16 @@ function addToQueue(int Q)
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AddedToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
 				endIf
 			else
-				debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AlreadyAdded{" + itemName + "}{" + asQueueName[Q] + "}"))
+				int i = findInQueue(Q, itemName)
+				if jMap.getInt(jarray.getObj(aiTargetQ[Q], i), "iEquipAutoAdded") == 1
+					iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_RemoveAAFlag{" + itemName + "}{" + asQueueName[Q] + "}"))
+					if iButton == 0
+						jMap.setInt(jarray.getObj(aiTargetQ[Q], i), "iEquipAutoAdded", 0)
+						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AAFlagRemoved"))
+					endIf
+				else	
+					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AlreadyAdded{" + itemName + "}{" + asQueueName[Q] + "}"))
+				endIf
 			endIf
 		else
 			if bIsFirstFailedToAdd
@@ -4004,9 +4013,14 @@ function initQueueMenu(int Q, int queueLength, bool update = false, int iIndex =
 	bool[] enchFlags = Utility.CreateBoolArray(queueLength)
 	bool[] poisonFlags = Utility.CreateBoolArray(queueLength)
 	int i
+	string itemName
 	while i < queueLength
 		iconNames[i] = JMap.getStr(jArray.getObj(targetArray, i), "iEquipIcon")
-		itemNames[i] = JMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
+		itemName = JMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
+		if bShowAutoAddedFlag && JMap.getInt(jArray.getObj(targetArray, i), "iEquipAutoAdded") == 1
+			itemName = "(A) " + itemName
+		endIf
+		itemNames[i] = itemName
 		enchFlags[i] = (JMap.getInt(jArray.getObj(targetArray, i), "isEnchanted") == 1)
 		poisonFlags[i] = (JMap.getInt(jArray.getObj(targetArray, i), "isPoisoned") == 1)
 		i += 1

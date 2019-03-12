@@ -776,11 +776,15 @@ function checkAndAddToPotionQueue(potion foundPotion)
     debug.trace("iEquip_PotionScript checkAndAddToPotionQueue start")
     ;Check if the nth potion is a poison or a food and switch functions if required
     bAddedToQueue = false
-    if foundPotion.isPoison() && bautoAddPoisons && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
-        checkAndAddToPoisonQueue(foundPotion)
+    if foundPotion.isPoison()
+        if bautoAddPoisons && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
+            checkAndAddToPoisonQueue(foundPotion)
+        endIf
 
-    elseIf foundPotion.isFood() && bautoAddConsumables && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
-        checkAndAddToConsumableQueue(foundPotion)
+    elseIf foundPotion.isFood()
+        if bautoAddConsumables && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form)
+            checkAndAddToConsumableQueue(foundPotion)
+        endIf
 
     else
         debug.trace("iEquip_PotionScript checkAndAddToPotionQueue - foundPotion: " + foundPotion.GetName())
