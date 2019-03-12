@@ -1144,7 +1144,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                 ;bool bBelowThreshold = (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)) <= fSmartConsumeThreshold)
                 bool bEffectActive = bBlockIfRestEffectActive && isEffectAlreadyActive(Q, isRestore)
                 bool bSkipEffectCheck = bInCombat && bSuspendChecksInCombat && bBelowThreshold
-                
+                debug.trace("iEquip_PotionScript selectAndConsumePotion - bBelowThreshold: " + bBelowThreshold + ", bEffectActive: " + bEffectActive + ", bSkipEffectCheck: " + bSkipEffectCheck)
                 if bEffectActive && !bSkipEffectCheck
                     targetPotion = -1
 
@@ -1209,11 +1209,13 @@ endFunction
 
 int function smartSelectRestorePotion(int Q, float currAVDamage)
     int targetPotion
-    debug.trace("iEquip_PotionScript smartSelectRestorePotion - looking for the strongest restore potion in Q " + Q + ", current stat damage is " + currAVDamage)
+    debug.trace("iEquip_PotionScript smartSelectRestorePotion - looking for the best fit restore potion in Q " + Q + ", current stat damage is " + currAVDamage + ", strongest potion has a magnitude of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrengthTotal"))
     if jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrengthTotal") > currAVDamage ;If the strongest potion in the queue has a greater strength than required to fully restore the target AV then check through the array until we find the best fit 
         int i = 1
         int queueLength = jArray.Count(aiPotionQ[Q])
+        debug.trace("iEquip_PotionScript smartSelectRestorePotion - queueLength: " + queueLength + ", strongest potion magnitude is greater than currAVDamage, looking for a better fit")
         while i < queueLength
+            debug.trace("iEquip_PotionScript smartSelectRestorePotion - magnitude of potion in index " + i + ": " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal"))
             if jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal") < currAVDamage
                 if (currAVDamage - jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal")) > (jMap.getFlt(jArray.getObj(aiPotionQ[Q], i - 1), "iEquipStrengthTotal") - currAVDamage)
                     targetPotion = i - 1
