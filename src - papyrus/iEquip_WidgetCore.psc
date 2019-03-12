@@ -168,6 +168,7 @@ bool property bSkipAutoAddedItems auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
 int property iMaxCachedItems = 60 auto hidden
 bool property bBlacklistEnabled = true auto hidden
+bool property bShowAutoAddedFlag auto hidden
 
 float property fWidgetFadeoutDelay = 20.0 auto hidden
 float property fWidgetFadeoutDuration = 1.5 auto hidden

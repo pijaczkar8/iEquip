@@ -47,6 +47,7 @@ function drawPage()
         MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "$iEquip_MCM_que_lbl_autoAddPoisons", PO.bAutoAddPoisons)
         MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
         MCM.AddEmptyOption()
+        MCM.AddToggleOptionST("que_tgl_queueMenuAAFlags", "$iEquip_MCM_que_lbl_queueMenuAAFlags", WC.bShowAutoAddedFlag)
         MCM.AddToggleOptionST("que_tgl_skipAutoAddedItems", "$iEquip_MCM_que_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
 
     endIf
@@ -243,6 +244,19 @@ State que_tgl_autoAddConsumables
                 PO.bAutoAddConsumables = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddConsumables)
+        endIf 
+    endEvent
+endState
+
+State que_tgl_queueMenuAAFlags
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_queueMenuAAFlags")
+        else
+            If currentEvent == "Select" || (currentEvent == "Default" && WC.bShowAutoAddedFlag)
+                WC.bShowAutoAddedFlag = !WC.bShowAutoAddedFlag
+            endIf
+            MCM.SetToggleOptionValueST(WC.bShowAutoAddedFlag)
         endIf 
     endEvent
 endState
