@@ -1335,52 +1335,68 @@ function quickRestore()
 	        elseIf bQuickRestore
 	        	;ToDo - remove the next few lines of debug code
 		    	float currHAV = PlayerRef.GetActorValue("Health")
-		    	float currHAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 24)
+		    	float currHAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 24)*-1
 		    	float currHAVMax = currHAV + currHAVDamage
-	    		debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled + ", current health: " + currHAV + ", current max: " + currHAVMax + ", current %: " + (currHAV / currHAVMax))
+	    		debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled + ", current health: " + currHAV + ", current damage: " + currHAVDamage + ", current max: " + currHAVMax + ", current %: " + (currHAV / currHAVMax))
 	        	debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
 	        	quickHeal()
 	        endIf
 
 	        if bQuickBuff
-	        	debug.trace("iEquip_ProMode quickRestore - calling quickBuff health")
-				PO.quickBuffFindAndConsumePotions(0)
+	        	If PO.getPotionTypeCount(1) > 0 || PO.getPotionTypeCount(2) > 0
+		        	debug.trace("iEquip_ProMode quickRestore - calling quickBuff health")
+					PO.quickBuffFindAndConsumePotions(0)
+				else
+					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noHealthBuffPotions"))
+				endIf
 			endIf
 	    endIf
 
 	    if bQuickStaminaEnabled
 	    	;ToDo - remove the next few lines of debug code
 	    	float currSAV = PlayerRef.GetActorValue("Stamina")
-	    	float currSAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 26)
+	    	float currSAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 26)*-1
 	    	float currSAVMax = currSAV + currSAVDamage
-    		debug.trace("iEquip_ProMode quickRestore - bQuickStaminaEnabled: " + bQuickStaminaEnabled + ", current stamina: " + currSAV + ", current max: " + currSAVMax + ", current %: " + (currSAV / currSAVMax))
+    		debug.trace("iEquip_ProMode quickRestore - bQuickStaminaEnabled: " + bQuickStaminaEnabled + ", current stamina: " + currSAV + ", current damage: " + currSAVDamage + ", current max: " + currSAVMax + ", current %: " + (currSAV / currSAVMax))
     		if bQuickRestore && ((currSAV / currSAVMax) <= fQuickRestoreThreshold)
     		;if bQuickRestore && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
 		    	PO.selectAndConsumePotion(2, 0) ;Stamina
+		    else
+		    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_StaminaFull"))
 		    endIf
 			
 			if bQuickBuff
-				debug.trace("iEquip_ProMode quickRestore - calling quickBuff stamina")
-				PO.quickBuffFindAndConsumePotions(2)
+				If PO.getPotionTypeCount(7) > 0 || PO.getPotionTypeCount(8) > 0
+					debug.trace("iEquip_ProMode quickRestore - calling quickBuff stamina")
+					PO.quickBuffFindAndConsumePotions(2)
+				else
+					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noStaminaBuffPotions"))
+				endIf
 			endIf
 	    endIf
 
 	    if bQuickMagickaEnabled
 	    	;ToDo - remove the next few lines of debug code
 	    	float currMAV = PlayerRef.GetActorValue("Magicka")
-	    	float currMAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 25)
+	    	float currMAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 25)*-1
 	    	float currMAVMax = currMAV + currMAVDamage
-    		debug.trace("iEquip_ProMode quickRestore - bQuickMagickaEnabled: " + bQuickMagickaEnabled + ", current magicka: " + currMAV + ", current max: " + currMAVMax + ", current %: " + (currMAV / currMAVMax))
+    		debug.trace("iEquip_ProMode quickRestore - bQuickMagickaEnabled: " + bQuickMagickaEnabled + ", current magicka: " + currMAV + ", current damage: " + currMAVDamage + ", current max: " + currMAVMax + ", current %: " + (currMAV / currMAVMax))
     		if bQuickRestore && ((currMAV / currMAVMax) <= fQuickRestoreThreshold)
 	    	;if bQuickRestore && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
 		    	PO.selectAndConsumePotion(1, 0) ;Magicka
+		    else
+		    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_MagickaFull"))
 		    endIf
 			
 			if bQuickBuff
-				debug.trace("iEquip_ProMode quickRestore - calling quickBuff magicka")
-				PO.quickBuffFindAndConsumePotions(1)
+				If PO.getPotionTypeCount(4) > 0 || PO.getPotionTypeCount(5) > 0
+					debug.trace("iEquip_ProMode quickRestore - calling quickBuff magicka")
+					PO.quickBuffFindAndConsumePotions(1)
+				else
+					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noMagickaBuffPotions"))
+				endIf
 			endIf
 	    endIf
 	endIf
@@ -1392,8 +1408,8 @@ function quickHeal()
     bQuickHealActionTaken = false
     if bQuickHealPreferMagic
         quickHealFindAndEquipSpell()
-    elseIf PO.getRestoreHealthCount() > 0
-    	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
+    elseIf PO.getPotionTypeCount(0) > 0
+    	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + (iEquip_ActorExt.GetAVDamage(PlayerRef, 24)*-1)) <= fQuickRestoreThreshold)
 	    	PO.selectAndConsumePotion(0, 0, true)
 	   	else
 			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
@@ -1403,11 +1419,13 @@ function quickHeal()
     	
     if !bQuickHealActionTaken && bQuickHealUseFallback
         if bQuickHealPreferMagic
-        	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
-            	PO.selectAndConsumePotion(0, 0, true)
-            else
-            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
-            endIf
+        	If PO.getPotionTypeCount(0) > 0
+	        	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + (iEquip_ActorExt.GetAVDamage(PlayerRef, 24)*-1)) <= fQuickRestoreThreshold)
+	            	PO.selectAndConsumePotion(0, 0, true)
+	            else
+	            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
+	            endIf
+	        endIf
         else
             quickHealFindAndEquipSpell()
         endIf

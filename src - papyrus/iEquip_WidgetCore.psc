@@ -1718,7 +1718,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			    	;If we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues we need to cycle until we find one that hasn't been Auto-Added 
 			    	if !(Q == 1 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed")
 			    		targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
-			    		int countdown = queueLength
+			    		int countdown = queueLength - 1
 				        while !(Q == 1 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed") && ((Q < 2 && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipType") != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)) || (bSkipAutoAddedItems && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipAutoAdded") == 1)) && countdown > 0
 				            targetIndex = targetIndex + move
 				            if targetIndex < 0 && Reverse
@@ -3202,7 +3202,7 @@ function consumeItem()
         		PO.selectAndConsumePotion(potionGroupIndex, iPotionTypeChoice)
         		PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
         	;If the selector isn't currently shown and conditions to show selector are met then show it now
-        	elseIf iPotionSelectorChoice == 0 || (iPotionSelectorChoice == 2 && PlayerRef.IsInCombat()) || (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) > PO.fSmartConsumeThreshold
+        	elseIf iPotionSelectorChoice == 0 || (iPotionSelectorChoice == 2 && PlayerRef.IsInCombat()) || (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + (iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])*-1))) > PO.fSmartConsumeThreshold
         		updatePotionSelector()
         	;Otherwise carry on and select and consume a restore potion
         	else
@@ -3542,6 +3542,7 @@ function addToQueue(int Q)
 	string itemName
 	
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
+		debug.trace("iEquip_WidgetCore addToQueue - attempting to retrieve selected entry index: " + UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.selectedIndex"))
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.formId")
 		itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
 		itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")

@@ -95,9 +95,6 @@ int[] itemTypesToProcess
 
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
-    PlayerRace = PlayerRef.GetRace()
-    ;PlayerBaseRace = PlayerRace
-    ;PlayerBaseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
     
     aPlayerBaseRaces = new race [10]
     aPlayerBaseRaces[0] = ArgonianRace
@@ -143,7 +140,6 @@ endEvent
 
 Event OnPlayerLoadGame()
 	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")
-	PlayerRace = PlayerRef.GetRace()
 	initialise(WC.isEnabled)
 	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame end")
 endEvent
@@ -164,8 +160,6 @@ function initialise(bool enabled)
 		if bPlayerIsABeast
 			registerForBMEvents()
 		elseIf PlayerRace == PlayerBaseRace ;Use this once ActorExt function is fixed
-		;else
-			;PlayerBaseRace = PlayerRace ;Remove once ActorExt function is fixed
 			registerForCoreAnimationEvents()
 			registerForCoreActorActions()
 		endIf
