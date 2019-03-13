@@ -598,17 +598,16 @@ function UpdateEditModeGuide()
     endIf
 endFunction
 
-function UpdateElementsAll()
+function UpdateElementsAll(bool bUpdateAlpha = true)
     int[] iArgs = new int[2]
     int iIndex
     
     while iIndex < WC.asWidgetDescriptions.Length  
-        if WC.abWidget_isText[iIndex] || iSelectedElement == 45 ;potionSelector_mc
+        if WC.abWidget_isText[iIndex] || iIndex == 45 ;potionSelector_mc
             iArgs[0] = iIndex
             UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
         endIf
-        
-        UpdateElementData(iIndex, WC.abWidget_V[iIndex])
+        UpdateElementData(iIndex, WC.abWidget_V[iIndex], bUpdateAlpha)
         iIndex += 1
     endWhile
     
@@ -619,8 +618,9 @@ function UpdateElementsAll()
             SetElementDepthOrder(iIndex)
             iIndex += 1
         endWhile
-
-        HighlightElement(true)
+        if isEditMode
+            HighlightElement(true)
+        endIf
     endIf
 
 endFunction
@@ -683,13 +683,13 @@ function LoadAllElements()
                     if WC.bPotionGrouping
                         ; Check if there are any potion groups shown...
                         iEnabledPotionGroupCount = 0
-                        if !(WC.abPotionGroupEmpty[0] && WC.PO.iEmptyPotionQueueChoice == 1)
+                        if WC.findInQueue(3, "$iEquip_common_HealthPotions") > -1 && !(WC.abPotionGroupEmpty[0] && WC.PO.iEmptyPotionQueueChoice == 1)
                             iEnabledPotionGroupCount += 1
                         endIf
-                        if !(WC.abPotionGroupEmpty[1] && WC.PO.iEmptyPotionQueueChoice == 1)
+                        if WC.findInQueue(3, "$iEquip_common_MagickaPotions") > -1 && !(WC.abPotionGroupEmpty[1] && WC.PO.iEmptyPotionQueueChoice == 1)
                             iEnabledPotionGroupCount += 1
                         endIf
-                        if !(WC.abPotionGroupEmpty[2] && WC.PO.iEmptyPotionQueueChoice == 1)
+                        if WC.findInQueue(3, "$iEquip_common_StaminaPotions") > -1 && !(WC.abPotionGroupEmpty[2] && WC.PO.iEmptyPotionQueueChoice == 1)
                             iEnabledPotionGroupCount += 1
                         endIf
                         if iEnabledPotionGroupCount > 0
@@ -1087,23 +1087,26 @@ function ResetElement()
 endFunction
 
 function ResetDefaults()
+    debug.trace("iEquip_EditMode ResetDefaults start")
     ; Resets all widget data
     debug.Notification("$iEquip_EM_not_resetting")
     WC.updateWidgetVisibility(false)
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
     WC.ResetWidgetArrays()
-    UpdateElementsAll()
+    UpdateElementsAll(false)
     
     if isEditMode
         iSelectedElement = 0
         LoadAllElements()
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
-    else
-        HighlightElement(false)
+        HighlightElement(true)
+    ;else
+        ;WC.refreshWidgetOnLoad()
     endIf
     
     WC.updateWidgetVisibility()
     debug.Notification("$iEquip_EM_not_doneResetting")
+    debug.trace("iEquip_EditMode ResetDefaults end")
 endFunction
 
 ; #####################
