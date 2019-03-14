@@ -5,12 +5,20 @@ import iEquip_StringExt
 iEquip_KeyHandler Property KH Auto
 
 int mcmUnmapFLAG
+string[] optHotKeyActions
 
 ; #############
 ; ### SETUP ###
 
 function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
+
+    optHotKeyActions = new string[5]
+    optHotKeyActions[0] = "$iEquip_MCM_htk_opt_consItem"
+    optHotKeyActions[1] = "$iEquip_MCM_htk_opt_cycPois"
+    optHotKeyActions[2] = "$iEquip_MCM_htk_opt_qckRest"
+    optHotKeyActions[3] = "$iEquip_MCM_htk_opt_qckRng"
+    optHotKeyActions[4] = "$iEquip_MCM_htk_opt_qckShld"
 endFunction
 
 function drawPage()
@@ -40,9 +48,10 @@ function drawPage()
         MCM.AddEmptyOption()
         
         MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_OptAddHtks")
-        MCM.AddToggleOptionST("htk_tgl_optConsumeHotkey", "$iEquip_MCM_htk_lbl_optConsumeHotkey", KH.bConsumeItemHotkeyEnabled)
-        if KH.bConsumeItemHotkeyEnabled
-            MCM.AddKeyMapOptionST("htk_key_optional_consumeItem", "$iEquip_MCM_htk_lbl_consumeItem", KH.iOptConsumeKey, mcmUnmapFLAG)
+        MCM.AddToggleOptionST("htk_tgl_enblOptHotkey", "$iEquip_MCM_htk_lbl_enblOptHotkey", KH.bOptionalHotkeyEnabled)
+        if KH.bOptionalHotkeyEnabled
+            MCM.AddKeyMapOptionST("htk_key_optHotKey", "$iEquip_MCM_htk_lbl_optHotKey", KH.iOptHtKey, mcmUnmapFLAG)
+            MCM.AddMenuOptionST("htk_men_optHotKeyAction", "$iEquip_MCM_htk_lbl_optHotKeyAction", optHotKeyActions[KH.iOptHotKeyAction])
         endIf
     endIf
 endFunction
@@ -197,34 +206,47 @@ endState
 ; - Optional Hotkeys -
 ; --------------------
 
-State htk_tgl_optConsumeHotkey
+State htk_tgl_enblOptHotkey
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_htk_txt_optConsumeHotkey")
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_enblOptHotkey")
         elseIf currentEvent == "Select" || "Default"
             If currentEvent == "Select"
-                KH.bConsumeItemHotkeyEnabled = !KH.bConsumeItemHotkeyEnabled
+                KH.bOptionalHotkeyEnabled = !KH.bOptionalHotkeyEnabled
             else
-                KH.bConsumeItemHotkeyEnabled = false
+                KH.bOptionalHotkeyEnabled = false
             endIf
             MCM.forcePageReset()
         endIf
     endEvent
 endState
 
-State htk_key_optional_consumeItem
+State htk_key_optHotKey
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_htk_txt_consumeItem")
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
         elseIf currentEvent == "Change" || "Default"
             if currentEvent == "Change"
-                KH.iOptConsumeKey = currentVar as int
+                KH.iOptHtKey = currentVar as int
             else
-                KH.iOptConsumeKey = -1
+                KH.iOptHtKey = -1
             endIf
             
             MCM.bUpdateKeyMaps = true
-            MCM.SetKeyMapOptionValueST(KH.iOptConsumeKey)        
+            MCM.SetKeyMapOptionValueST(KH.iOptHtKey)        
         endIf
+    endEvent
+endState
+
+State htk_men_optHotKeyAction
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKeyAction")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(KH.iOptHotKeyAction, optHotKeyActions, 0)
+        elseIf currentEvent == "Accept"
+            KH.iOptHotKeyAction = currentVar as int
+            MCM.SetMenuOptionValueST(optHotKeyActions[KH.iOptHotKeyAction])
+        endIf 
     endEvent
 endState

@@ -1211,10 +1211,10 @@ endFunction
 
 int function smartSelectRestorePotion(int Q, float currAVDamage)
     int targetPotion
+    int queueLength = jArray.Count(aiPotionQ[Q])
     debug.trace("iEquip_PotionScript smartSelectRestorePotion - looking for the best fit restore potion in Q " + Q + ", current stat damage is " + currAVDamage + ", strongest potion has a magnitude of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrengthTotal"))
-    if jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrengthTotal") > currAVDamage ;If the strongest potion in the queue has a greater strength than required to fully restore the target AV then check through the array until we find the best fit 
+    if jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrengthTotal") > currAVDamage && queueLength > 1 ;If the strongest potion in the queue has a greater strength than required to fully restore the target AV then check through the array until we find the best fit 
         int i = 1
-        int queueLength = jArray.Count(aiPotionQ[Q])
         debug.trace("iEquip_PotionScript smartSelectRestorePotion - queueLength: " + queueLength + ", strongest potion magnitude is greater than currAVDamage, looking for a better fit")
         while i < queueLength
             debug.trace("iEquip_PotionScript smartSelectRestorePotion - magnitude of potion in index " + i + ": " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal"))
@@ -1224,6 +1224,9 @@ int function smartSelectRestorePotion(int Q, float currAVDamage)
                 else
                     targetPotion = i
                 endIf
+                i = queueLength
+            elseIf i == queueLength - 1
+                targetPotion = i
                 i = queueLength
             else
                 i += 1

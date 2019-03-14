@@ -23,7 +23,8 @@ int property iConsumableKey = 48 auto hidden ;B
 int property iUtilityKey = 37 auto hidden ;K - Active in all modes
 
 ; Optional hotkeys
-int property iOptConsumeKey = -1 auto hidden
+int property iOptHtKey = -1 auto hidden
+int property iOptHotKeyAction auto hidden
 
 ; Edit Mode Keys
 int property iEditNextKey = 55 auto hidden ;Num *
@@ -49,7 +50,7 @@ float property fMultiTapDelay = 0.3 auto hidden
 float property fLongPressDelay = 0.6 auto hidden
 
 ; Bools
-bool property bConsumeItemHotkeyEnabled auto hidden
+bool property bOptionalHotkeyEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
@@ -217,7 +218,7 @@ function runUpdate()
     
     if iMultiTap == 0 ; Long press
             if iWaitingKeyCode == iConsumableKey
-                if bNotInLootMenu && !bConsumeItemHotkeyEnabled
+                if bNotInLootMenu && !bOptionalHotkeyEnabled
                     WC.consumeItem()
                 endIf
             elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
@@ -277,9 +278,17 @@ function runUpdate()
                 elseIf WC.bPoisonsEnabled
                     WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
                 endIf
-            elseIf iWaitingKeyCode == iOptConsumeKey 
-                if bConsumeItemHotkeyEnabled && WC.bConsumablesEnabled
+            elseIf iWaitingKeyCode == iOptHtKey && bOptionalHotkeyEnabled
+                if iOptHotKeyAction == 0 && WC.bConsumablesEnabled
                     WC.consumeItem()
+                elseIf iOptHotKeyAction == 1 && WC.bPoisonsEnabled
+                    WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
+                elseIf iOptHotKeyAction == 2
+                    PM.quickRestore()
+                elseIf iOptHotKeyAction == 3
+                    PM.quickRanged()
+                elseIf iOptHotKeyAction == 4
+                    PM.quickShield()
                 endIf
             endIf
         endIf
@@ -370,7 +379,7 @@ state BEASTMODE
         debug.trace("iEquip_KeyHandler runUpdate BEASTMODE start")
         ;Handle widget visibility update on any registered key press
         WC.updateWidgetVisibility()
-        ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptConsumeKey/poison key presses
+        ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptHtKey/poison key presses
         if iWaitingKeyCode == iLeftKey
             BM.cycleSlot(0, bIsUtilityKeyHeld, true)
         
@@ -590,8 +599,8 @@ function RegisterForGameplayKeys()
     RegisterForKey(iRightKey)
     RegisterForKey(iConsumableKey)
     RegisterForKey(iUtilityKey)
-    if bConsumeItemHotkeyEnabled
-        RegisterForKey(iOptConsumeKey)
+    if bOptionalHotkeyEnabled
+        RegisterForKey(iOptHtKey)
     endIf
     debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
 endFunction
