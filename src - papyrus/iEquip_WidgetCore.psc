@@ -851,21 +851,16 @@ function resetWidgetsToPreviousState()
 					updateAttributeIcons(i, 0)
 				endIf
             ; Handle empty shout,consumable and poison queues to ensure all temporary elements are removed
-            elseIf jArray.count(aiTargetQ[i]) < 1 || i == 3 && jArray.count(aiTargetQ[i]) == 3
-                if i == 2
+            elseIf jArray.count(aiTargetQ[i]) < 1
+                if i < 4
                     setSlotToEmpty(i)
-                elseIf i == 3
-                    ; Check if there are any potion groups shown...
-                    if EM.iEnabledPotionGroupCount > 0
-                        ;...and handle fade if required
-                        checkAndFadeConsumableIcon(true)
-                    ; Otherwise set temp info in the widget    
-                    else
-                        setSlotToEmpty(i)
-                    endIf
-                elseIf i == 4
-                    handleEmptyPoisonQueue()
-                endIf                
+                else
+                	handleEmptyPoisonQueue()
+                endIf
+            ; Check if there are any potion groups shown...
+            elseIf i == 3 && jArray.count(aiTargetQ[i]) >= EM.iEnabledPotionGroupCount && asPotionGroups.Find(asCurrentlyEquipped[3]) > -1 && PO.getPotionGroupCount(asPotionGroups.Find(asCurrentlyEquipped[3])) == 0
+                ;...and handle fade if required
+                checkAndFadeConsumableIcon(true)
             endIf
         endIf
     	i += 1
@@ -1260,7 +1255,7 @@ bool property isEnabled
 						Q += 1
 					endWhile
                     
-                    ResetWidgetArrays()
+                    ;ResetWidgetArrays()
                     Utility.WaitMenuMode(1.5)
                     if bShowTooltips
                     	debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
@@ -1555,11 +1550,11 @@ function ResetWidgetArrays()
 		afWidget_Y[iIndex] = afWidget_DefY[iIndex]
 		afWidget_S[iIndex] = afWidget_DefS[iIndex]
 		afWidget_R[iIndex] = afWidget_DefR[iIndex]
-		afWidget_A[iIndex] = afWidget_DefA[iIndex]
+		;afWidget_A[iIndex] = afWidget_DefA[iIndex]
 		aiWidget_D[iIndex] = aiWidget_DefD[iIndex]
 
 		asWidget_TA[iIndex] = asWidget_DefTA[iIndex]
-		abWidget_V[iIndex] = abWidget_DefV[iIndex]
+		;abWidget_V[iIndex] = abWidget_DefV[iIndex]
 		iIndex += 1
 	endWhile
 	debug.trace("iEquip_WidgetCore ResetWidgetArrays end")
@@ -2119,7 +2114,7 @@ function setCounterVisibility(int Q, bool show)
 	debug.trace("iEquip_WidgetCore setCounterVisibility start")
 	debug.trace("iEquip_WidgetCore setCounterVisibility - Q: " + Q + ", show: " + show)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenWidgetCounterAlpha")
-	if iHandle && (show || abIsCounterShown[Q])
+	if iHandle && (show || abIsCounterShown[Q] || bRefreshingWidget)
 		UICallback.PushInt(iHandle, Q) ;Which counter _mc we're fading out
 		if show && !abIsCounterShown[Q]
 			float targetAlpha = afWidget_A[aiCounterClips[Q]] ;Left count alpha

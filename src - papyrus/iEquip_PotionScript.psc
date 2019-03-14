@@ -711,13 +711,11 @@ int function getPotionQueue(potion potionToCheck, bool bAdding = false)
                 endIf
             endWhile
         endIf
-        
-        ;If it doesn't have a health, magicka or stamina restore/fortify/regen effect then there's nothing to do here
-        if Q < 0
-            debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
-        elseIf bAdding
-            fTempStrength = potionToCheck.GetNthEffectMagnitude(selectedEffIndx)
-        endIf
+    endIf
+    ;If it doesn't have a health, magicka or stamina restore/fortify/regen effect then there's nothing to do here
+    if Q < 0
+        debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
+    ;Otherwise store the strength and duration in the temp variables
     elseIf bAdding
         fTempStrength = potionToCheck.GetNthEffectMagnitude(selectedEffIndx)
         iTempDuration = potionToCheck.GetNthEffectDuration(selectedEffIndx)
