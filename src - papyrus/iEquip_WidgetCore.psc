@@ -1242,10 +1242,9 @@ bool property isEnabled
 							updateWidget(Q, 0, false, true)
 							if Q == 3
 						    	setSlotCount(3, PO.getPotionGroupCount(0))
+						    	setCounterVisibility(3, true)
 						    	if abPotionGroupEmpty[0]
 						    		checkAndFadeConsumableIcon(true)
-						    	else
-						    		setCounterVisibility(3, true)
 						    	endIf
 						    else
 						        setSlotCount(4, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[4], 0), "iEquipForm")))
