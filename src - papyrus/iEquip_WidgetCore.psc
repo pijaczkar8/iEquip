@@ -1583,16 +1583,13 @@ bool function itemRequiresCounter(int Q, int itemType = -1, string itemName = ""
 	if itemType == -1
 		itemType = jMap.getInt(itemObject, "iEquipType")
 	endIf
+	;ToDo - itemName is only for debug, remove when done
 	if itemName == ""
 		itemName = jMap.getStr(itemObject, "iEquipName")
 	endIf
 	debug.trace("iEquip_WidgetCore itemRequiresCounter itemType: " + itemType + ", itemName: " + itemName)
-	if itemType == 42 || itemType == 23 || itemType == 31 ;Ammo (which takes in Throwing Weapons), scroll, torch
+	if asCurrentlyEquipped[Q] != "" && ((itemType == 42 || itemType == 23 || itemType == 31) || (itemType == 4 && iEquip_FormExt.isGrenade(jMap.getForm(itemObject, "iEquipForm")))) ;Ammo (which takes in Throwing Weapons), scroll, torch, or CACO grenades here which are classed as maces
 		requiresCounter = true
-    elseif itemType == 4 && iEquip_FormExt.isGrenade(jMap.getForm(itemObject, "iEquipForm")) ;Looking for CACO grenades here which are classed as maces
-    	requiresCounter = true
-    else
-    	requiresCounter = false
     endIf
     debug.trace("iEquip_WidgetCore itemRequiresCounter returning " + requiresCounter)
     debug.trace("iEquip_WidgetCore itemRequiresCounter end")
