@@ -151,6 +151,7 @@ function initialise(bool enabled)
 		BM.initialise()
 		BM.PlayerBaseRace = PlayerBaseRace
 		bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
+		debug.trace("iEquip_PlayerEventHandler initialise - current PlayerRace: " + PlayerRace.GetName() + ", original race: " + PlayerBaseRace.GetName() + ", bPlayerIsABeast: " + bPlayerIsABeast)
 		Utility.SetINIBool("bDisableGearedUp:General", True)
 		WC.refreshVisibleItems()
 		If WC.bEnableGearedUp
@@ -195,6 +196,8 @@ function registerForCoreAnimationEvents()
 endFunction
 
 function registerForCoreActorActions()
+	;RegisterForActorAction(1) ;Spell cast - spells and staves
+	RegisterForActorAction(2) ;Spell fire - spells and staves
 	RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
 	RegisterForActorAction(8) ;Draw End - weapons and spells
 	RegisterForActorAction(10) ;Sheathe End - weapons and spells
@@ -277,6 +280,7 @@ function unregisterForAllEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
 	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
    	;Actor actions
+   	;UnregisterForActorAction(1)
    	UnregisterForActorAction(2)
    	UnregisterForActorAction(7)
 	UnregisterForActorAction(8)
@@ -294,11 +298,11 @@ bool Property boundSpellEquipped
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set start")	
 		bIsBoundSpellEquipped = equipped
 		BW.bIsBoundSpellEquipped = equipped
-		if bIsBoundSpellEquipped
+		;/if bIsBoundSpellEquipped
 			RegisterForActorAction(2) ;Spell fire
 		else
 			UnregisterForActorAction(2)
-		endIf
+		endIf/;
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - bIsBoundSpellEquipped: " + equipped)
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set end")
 	endFunction
@@ -386,12 +390,20 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	debug.trace("iEquip_PlayerEventHandler OnActorAction start")	
 	debug.trace("iEquip_PlayerEventHandler OnActorAction - actionType: " + actionType + ", slot: " + slot)
 	if akActor == PlayerRef
-		if actionType == 2 ;Spell Fire, only received if bound spell equipped, and we're only looking for bound shield here, weapons are handled in BoundWeaponEventsListener
-			Utility.WaitMenuMode(0.3)
-			if PlayerRef.GetEquippedShield() && PlayerRef.GetEquippedShield().GetName() == WC.asCurrentlyEquipped[0]
-				WC.onBoundWeaponEquipped(26, 0)
-				iEquip_AllCurrentItemsFLST.AddForm(PlayerRef.GetEquippedShield() as form)
-				updateEventFilter(iEquip_AllCurrentItemsFLST)
+		if actionType == 2 ;Spell Cast/Spell Fire
+			;Check if the action has come from a hand with a staff currently equipped
+			if PlayerRef.GetEquippedItemType(slot) == 8
+				if RC.bRechargingEnabled && CM.iChargeDisplayType > 0 && CM.abIsChargeMeterShown[iSlotToUpdate]
+					CM.updateMeterPercent(iSlotToUpdate)
+				endIf
+			else
+				;Otherwise check if we've just cast Bound Shield (weapons are handled in BoundWeaponEventsListener)
+				Utility.WaitMenuMode(0.3)
+				if PlayerRef.GetEquippedShield() && PlayerRef.GetEquippedShield().GetName() == WC.asCurrentlyEquipped[0]
+					WC.onBoundWeaponEquipped(26, 0)
+					iEquip_AllCurrentItemsFLST.AddForm(PlayerRef.GetEquippedShield() as form)
+					updateEventFilter(iEquip_AllCurrentItemsFLST)
+				endIf
 			endIf
 		elseIf actionType == 7 ;Draw Begin
 			debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
@@ -492,10 +504,8 @@ function updateWidgetOnWeaponSwing()
 		If bPoisonSlotEnabled
 			WC.checkAndUpdatePoisonInfo(iSlotToUpdate)
 		endIf
-		if RC.bRechargingEnabled && CM.abIsChargeMeterShown[iSlotToUpdate]
-			if CM.iChargeDisplayType > 0
-				CM.updateMeterPercent(iSlotToUpdate)
-			endIf
+		if RC.bRechargingEnabled && CM.iChargeDisplayType > 0 && CM.abIsChargeMeterShown[iSlotToUpdate]
+			CM.updateMeterPercent(iSlotToUpdate)
 		endIf
 	else
 		If bPoisonSlotEnabled

@@ -3262,12 +3262,19 @@ function applyPoison(int Q)
         endIf
         Weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
         string weaponName
+        int tempWeapType = -1
         if currentWeapon
             weaponName = currentWeapon.GetName()
+            tempWeapType = currentWeapon.GetWeaponType()
         endIf
-        if (!currentWeapon)
+
+        if (!currentWeapon) || tempWeapType == 0 || tempWeapType == 8
         	if iShowPoisonMessages == 0
-            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noWeapon{" + handName + "}"))
+        		if tempWeapType == 8
+        			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noStaffPoisoning"))
+        		else
+            		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noWeapon{" + handName + "}"))
+            	endIf
             endIf
             return
         elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon
