@@ -120,8 +120,6 @@ Event OnInit()
     aPlayerBaseVampireRaces[8] = RedguardRaceVampire
     aPlayerBaseVampireRaces[9] = WoodElfRaceVampire
 
-    bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
-
     itemTypesToProcess = new int[6]
 	itemTypesToProcess[0] = 22 ;Spells or shouts
 	itemTypesToProcess[1] = 23 ;Scrolls
@@ -150,6 +148,8 @@ function initialise(bool enabled)
 		gotoState("")
 		PlayerRace = PlayerRef.GetRace()
 		PlayerBaseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
+		BM.initialise()
+		BM.PlayerBaseRace = PlayerBaseRace
 		bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
 		Utility.SetINIBool("bDisableGearedUp:General", True)
 		WC.refreshVisibleItems()
@@ -159,14 +159,12 @@ function initialise(bool enabled)
 		EndIf
 		if bPlayerIsABeast
 			registerForBMEvents()
-		elseIf PlayerRace == PlayerBaseRace ;Use this once ActorExt function is fixed
+		elseIf PlayerRace == PlayerBaseRace || aPlayerBaseVampireRaces.Find(PlayerRace) == aPlayerBaseRaces.Find(PlayerBaseRace) ;Use this once ActorExt function is fixed
 			registerForCoreAnimationEvents()
 			registerForCoreActorActions()
 		endIf
 		BW.initialise()
 		PO.initialise()
-		BM.initialise()
-		BM.PlayerBaseRace = PlayerBaseRace
 		updateAllEventFilters()
 	else
 		gotoState("DISABLED")

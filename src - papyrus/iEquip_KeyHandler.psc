@@ -218,7 +218,7 @@ function runUpdate()
     
     if iMultiTap == 0 ; Long press
             if iWaitingKeyCode == iConsumableKey
-                if bNotInLootMenu && !bOptionalHotkeyEnabled
+                if bNotInLootMenu
                     WC.consumeItem()
                 endIf
             elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey

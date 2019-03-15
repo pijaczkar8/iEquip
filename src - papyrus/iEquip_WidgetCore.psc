@@ -3193,7 +3193,7 @@ function consumeItem()
         		PO.selectAndConsumePotion(potionGroupIndex, iPotionTypeChoice)
         		PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
         	;If the selector isn't currently shown and conditions to show selector are met then show it now
-        	elseIf iPotionSelectorChoice == 0 || (iPotionSelectorChoice == 2 && PlayerRef.IsInCombat()) || (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + (iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])*-1))) > PO.fSmartConsumeThreshold
+        	elseIf (iPotionSelectorChoice == 0 || (iPotionSelectorChoice == 2 && PlayerRef.IsInCombat()) || (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + (iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])*-1))) > PO.fSmartConsumeThreshold)
         		updatePotionSelector()
         	;Otherwise carry on and select and consume a restore potion
         	else

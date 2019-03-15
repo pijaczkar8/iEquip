@@ -21,6 +21,8 @@ Formlist property iEquip_GeneralBlacklistFLST auto ;To block individual potions 
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
 
+bool bIsFirstRun = true
+
 int[] aiPotionQ
 int iConsumableQ
 int iPoisonQ
@@ -410,6 +412,7 @@ function findAndSortPotions()
     else
         debug.trace("iEquip_PotionScript findAndSortPotions - No health, stamina or magicka potions found in players inventory")
     endIf
+    bIsFirstRun = false
     debug.trace("iEquip_PotionScript findAndSortPotions end")
 endFunction
 
@@ -776,12 +779,12 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
     ;Check if the nth potion is a poison or a food and switch functions if required
     bAddedToQueue = false
     if foundPotion.isPoison()
-        if bautoAddPoisons && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && !bOnLoad
+        if bautoAddPoisons && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || !bOnLoad)
             checkAndAddToPoisonQueue(foundPotion)
         endIf
 
     elseIf foundPotion.isFood()
-        if bautoAddConsumables && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && !bOnLoad
+        if bautoAddConsumables && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || !bOnLoad)
             checkAndAddToConsumableQueue(foundPotion)
         endIf
 
@@ -853,7 +856,7 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
             WC.abPotionGroupEmpty[group] = false
         endIf
         ;If it isn't a grouped potion, or if potion grouping is disabled then if bautoAddPotions is enabled add it directly to the consumable queue
-        if bautoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group] || (bIsRestoreAllPotion && bExcludeRestoreAllEffects)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && !bOnLoad
+        if bautoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group] || (bIsRestoreAllPotion && bExcludeRestoreAllEffects)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || !bOnLoad)
 	        checkAndAddToConsumableQueue(foundPotion, true)
         elseIf WC.asCurrentlyEquipped[3] == potionGroup
             WC.setSlotCount(3, getPotionGroupCount(group))

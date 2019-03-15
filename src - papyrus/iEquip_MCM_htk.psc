@@ -13,15 +13,22 @@ string[] optHotKeyActions
 function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
 
+    ;/optHotKeyActions = new string[5]
+    optHotKeyActions[0] = "$iEquip_MCM_htk_opt_consItem"
+    optHotKeyActions[1] = "$iEquip_MCM_htk_opt_cycPois"
+    optHotKeyActions[2] = "$iEquip_MCM_htk_opt_qckRest"
+    optHotKeyActions[3] = "$iEquip_MCM_htk_opt_qckRng"
+    optHotKeyActions[4] = "$iEquip_MCM_htk_opt_qckShld"/;
+endFunction
+
+function drawPage()
     optHotKeyActions = new string[5]
     optHotKeyActions[0] = "$iEquip_MCM_htk_opt_consItem"
     optHotKeyActions[1] = "$iEquip_MCM_htk_opt_cycPois"
     optHotKeyActions[2] = "$iEquip_MCM_htk_opt_qckRest"
     optHotKeyActions[3] = "$iEquip_MCM_htk_opt_qckRng"
     optHotKeyActions[4] = "$iEquip_MCM_htk_opt_qckShld"
-endFunction
 
-function drawPage()
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddTextOptionST("htk_txt_htkHelp", "$iEquip_MCM_htk_lbl_htkHelp", "")
             
