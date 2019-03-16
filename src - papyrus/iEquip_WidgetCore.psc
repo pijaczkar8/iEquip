@@ -3602,8 +3602,9 @@ function addToQueue(int Q)
 				debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + iEquip_StringExt.LocalizeString(asQueueName[Q]) + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
 				int iEquipItem = jMap.object()
 				if jArray.count(aiTargetQ[Q]) < iMaxQueueLength
-					if bShowQueueConfirmationMessages
-						if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
+					if foundInOtherHandQueue
+						jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName)), "iEquipAutoAdded", 0)
+						if bShowQueueConfirmationMessages && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
 							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToBoth{" + itemName + "}{" + asQueueName[Q] + "}"))
 						else
 							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
@@ -3656,6 +3657,9 @@ function addToQueue(int Q)
 					iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_RemoveAAFlag{" + itemName + "}{" + asQueueName[Q] + "}"))
 					if iButton == 0
 						jMap.setInt(jarray.getObj(aiTargetQ[Q], i), "iEquipAutoAdded", 0)
+						if Q < 2 && isAlreadyInQueue((Q + 1) % 2, itemForm, itemID)
+							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName)), "iEquipAutoAdded", 0)
+						endIf
 						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AAFlagRemoved"))
 					endIf
 				else	
