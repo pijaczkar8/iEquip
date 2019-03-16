@@ -8,6 +8,7 @@ iEquip_PlayerEventHandler property EH auto
 
 string[] ammoSortingOptions
 string[] whenNoAmmoLeftOptions
+string[] ammoModeOptions
 string[] posIndBehaviour
 
 bool bFirstTimeDisablingTooltips = true
@@ -16,19 +17,23 @@ bool bFirstTimeDisablingTooltips = true
 ; ### SETUP ###
 
 function initData()
-    ammoSortingOptions = new String[4]
+    ammoSortingOptions = new string[4]
     ammoSortingOptions[0] = "$iEquip_MCM_gen_opt_Unsorted"
     ammoSortingOptions[1] = "$iEquip_MCM_gen_opt_ByDamage"
     ammoSortingOptions[2] = "$iEquip_MCM_gen_opt_Alphabetically"
     ammoSortingOptions[3] = "$iEquip_MCM_gen_opt_ByQuantity"
 
-    whenNoAmmoLeftOptions = new String[4]
+    whenNoAmmoLeftOptions = new string[4]
     whenNoAmmoLeftOptions[0] = "$iEquip_MCM_gen_opt_DoNothing"
     whenNoAmmoLeftOptions[1] = "$iEquip_MCM_gen_opt_SwitchNothing"
     whenNoAmmoLeftOptions[2] = "$iEquip_MCM_gen_opt_SwitchCycle"
     whenNoAmmoLeftOptions[3] = "$iEquip_MCM_gen_opt_Cycle"
 
-    posIndBehaviour = new String[2]
+    ammoModeOptions = new string[2]
+    ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
+    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"
+
+    posIndBehaviour = new string[2]
     posIndBehaviour[0] = "$iEquip_MCM_gen_opt_onlyCycling"
     posIndBehaviour[1] = "$iEquip_MCM_gen_opt_alwaysVisible"
 
@@ -74,6 +79,7 @@ function drawPage()
 	        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
 	        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
 	        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+            MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
 	        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
 	            MCM.AddTextOptionST("gen_txt_addFists", "$iEquip_MCM_gen_lbl_AddUnarmed", "")
 	        endIf
@@ -309,6 +315,17 @@ State gen_men_whenNoAmmoLeft
         elseIf currentEvent == "Accept"
             AM.iActionOnLastAmmoUsed = currentVar as int
             MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+        endIf
+    endEvent
+endState
+
+State gen_txt_AmmoModeChoice
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_simpleAmmoMode")
+        elseIf currentEvent == "Select"
+            AM.bSimpleAmmoMode = !AM.bSimpleAmmoMode
+            MCM.SetTextOptionValueST(ammoModeOptions[AM.bSimpleAmmoMode as int])
         endIf
     endEvent
 endState
