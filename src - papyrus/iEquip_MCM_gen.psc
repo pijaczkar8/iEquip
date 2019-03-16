@@ -101,12 +101,12 @@ State gen_tgl_onOff
             MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff")
         elseIf currentEvent == "Select"
             ;Block enabling if player is currently a werewolf, vampire lord or lich.  iEquip will handle any subsequent player transformations once enabled.
-            if !MCM.bEnabled && EH.bPlayerIsABeast
-                MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
-            else
+            ;if !MCM.bEnabled && EH.bPlayerIsABeast
+                ;MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
+            ;else
                 MCM.bEnabled = !MCM.bEnabled
                 MCM.forcePageReset()
-            endIf
+            ;endIf
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
             MCM.forcePageReset()
