@@ -2926,8 +2926,13 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		endIf
 		bAmmoModeFirstLook = false
 	endIf
-	;if we've just equipped a 1H item in RH forcing left hand to reequip, now we can re-equip the left hand making sure to block QuickDualCast
-	if Q == 1 && jArray.count(aiTargetQ[0]) > 0 && ((bJustLeftAmmoMode && !equippingOnAutoAdd) || previously2H) && (ai2HWeaponTypes.Find(itemType) == -1) && !b2HSpellEquipped
+	;If we've just left ammo mode as a result of equipping on auto-add, check the other hand and if it's empty set the other hand slot to unarmed
+	if bJustLeftAmmoMode && equippingOnAutoAdd
+		if !PlayerRef.GetEquippedObject(otherHand)
+    		setSlotToEmpty(otherHand)
+    	endIf
+    ;if we've just equipped a 1H item in RH forcing left hand to reequip, now we can re-equip the left hand making sure to block QuickDualCast
+	elseIf Q == 1 && jArray.count(aiTargetQ[0]) > 0 && (bJustLeftAmmoMode || previously2H) && (ai2HWeaponTypes.Find(itemType) == -1) && !b2HSpellEquipped
 		targetObject = jArray.getObj(aiTargetQ[0], aiCurrentQueuePosition[0])
 		PM.bBlockQuickDualCast = (jMap.getInt(targetObject, "iEquipType") == 22)
 		debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", bJustLeftAmmoMode: " + bJustLeftAmmoMode + ", about to equip left hand item of type: " + jMap.getInt(targetObject, "iEquipType") + ", blockQuickDualCast: " + PM.bBlockQuickDualCast)
