@@ -29,9 +29,9 @@ function initData()
     whenNoAmmoLeftOptions[2] = "$iEquip_MCM_gen_opt_SwitchCycle"
     whenNoAmmoLeftOptions[3] = "$iEquip_MCM_gen_opt_Cycle"
 
-    ammoModeOptions = new string[2]
+    ;/ammoModeOptions = new string[2]
     ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
-    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"
+    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"/;
 
     posIndBehaviour = new string[2]
     posIndBehaviour[0] = "$iEquip_MCM_gen_opt_onlyCycling"
@@ -40,6 +40,11 @@ function initData()
 endFunction
 
 function drawPage()
+	;ToDo - remove and uncomment same above
+	ammoModeOptions = new string[2]
+    ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
+    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"
+
     MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
     MCM.AddToggleOptionST("gen_tgl_showTooltips", "$iEquip_MCM_gen_lbl_showTooltips", WC.bShowTooltips)
            
@@ -322,7 +327,7 @@ endState
 State gen_txt_AmmoModeChoice
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_simpleAmmoMode")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_AmmoModeChoice")
         elseIf currentEvent == "Select"
             AM.bSimpleAmmoMode = !AM.bSimpleAmmoMode
             MCM.SetTextOptionValueST(ammoModeOptions[AM.bSimpleAmmoMode as int])

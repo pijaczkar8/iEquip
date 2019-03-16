@@ -1335,7 +1335,7 @@ function quickRestore()
 	        elseIf bQuickRestore
 	        	;ToDo - remove the next few lines of debug code
 		    	float currHAV = PlayerRef.GetActorValue("Health")
-		    	float currHAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 24)*-1
+		    	float currHAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 24)
 		    	float currHAVMax = currHAV + currHAVDamage
 	    		debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled + ", current health: " + currHAV + ", current damage: " + currHAVDamage + ", current max: " + currHAVMax + ", current %: " + (currHAV / currHAVMax))
 	        	debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
@@ -1355,7 +1355,7 @@ function quickRestore()
 	    if bQuickStaminaEnabled
 	    	;ToDo - remove the next few lines of debug code
 	    	float currSAV = PlayerRef.GetActorValue("Stamina")
-	    	float currSAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 26)*-1
+	    	float currSAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 26)
 	    	float currSAVMax = currSAV + currSAVDamage
     		debug.trace("iEquip_ProMode quickRestore - bQuickStaminaEnabled: " + bQuickStaminaEnabled + ", current stamina: " + currSAV + ", current damage: " + currSAVDamage + ", current max: " + currSAVMax + ", current %: " + (currSAV / currSAVMax))
     		if bQuickRestore && ((currSAV / currSAVMax) <= fQuickRestoreThreshold)
@@ -1379,7 +1379,7 @@ function quickRestore()
 	    if bQuickMagickaEnabled
 	    	;ToDo - remove the next few lines of debug code
 	    	float currMAV = PlayerRef.GetActorValue("Magicka")
-	    	float currMAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 25)*-1
+	    	float currMAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 25)
 	    	float currMAVMax = currMAV + currMAVDamage
     		debug.trace("iEquip_ProMode quickRestore - bQuickMagickaEnabled: " + bQuickMagickaEnabled + ", current magicka: " + currMAV + ", current damage: " + currMAVDamage + ", current max: " + currMAVMax + ", current %: " + (currMAV / currMAVMax))
     		if bQuickRestore && ((currMAV / currMAVMax) <= fQuickRestoreThreshold)
@@ -1409,7 +1409,7 @@ function quickHeal()
     if bQuickHealPreferMagic
         quickHealFindAndEquipSpell()
     elseIf PO.getPotionTypeCount(0) > 0
-    	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + (iEquip_ActorExt.GetAVDamage(PlayerRef, 24)*-1)) <= fQuickRestoreThreshold)
+    	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
 	    	PO.selectAndConsumePotion(0, 0, true)
 	   	else
 			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
@@ -1420,7 +1420,7 @@ function quickHeal()
     if !bQuickHealActionTaken && bQuickHealUseFallback
         if bQuickHealPreferMagic
         	If PO.getPotionTypeCount(0) > 0
-	        	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + (iEquip_ActorExt.GetAVDamage(PlayerRef, 24)*-1)) <= fQuickRestoreThreshold)
+	        	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
 	            	PO.selectAndConsumePotion(0, 0, true)
 	            else
 	            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))

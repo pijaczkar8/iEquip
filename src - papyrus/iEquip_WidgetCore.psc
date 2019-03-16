@@ -14,6 +14,7 @@ import iEquip_FormExt
 import iEquip_StringExt
 import iEquip_SpellExt
 import iEquip_ActorExt
+import iEquip_UIExt
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto
@@ -3541,16 +3542,20 @@ function addToQueue(int Q)
 	;Q - 0 = Left Hand, 1 = Right Hand, 2 = Shout, 3 = Consumable/Poison
 	int itemFormID
 	int itemID
+	int listIndex = -1
 	form itemForm
 	string itemName
 	
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
-		debug.trace("iEquip_WidgetCore addToQueue - attempting to retrieve selected entry index: " + UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.selectedIndex"))
+		listIndex = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.selectedIndex")
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.formId")
 		itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
 		itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
 		itemForm = game.GetFormEx(itemFormID)
 	endIf
+
+	ObjectReference itemObjRef = iEquip_UIExt.GetObjectReferenceAtInventoryIndex(listIndex)
+	debug.trace("iEquip_WidgetCore addToQueue - listIndex: " + listIndex + ", itemObjRef: " + itemObjRef + ", getDisplayName returns: " + itemObjRef.GetDisplayName())
 	
 	if itemForm
 		int itemType
@@ -3607,15 +3612,17 @@ function addToQueue(int Q)
 				debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + iEquip_StringExt.LocalizeString(asQueueName[Q]) + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
 				int iEquipItem = jMap.object()
 				if jArray.count(aiTargetQ[Q]) < iMaxQueueLength
-					if foundInOtherHandQueue
-						jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName)), "iEquipAutoAdded", 0)
-						if bShowQueueConfirmationMessages && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
+					if bShowQueueConfirmationMessages && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
+						if foundInOtherHandQueue
 							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToBoth{" + itemName + "}{" + asQueueName[Q] + "}"))
 						else
 							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
 						endIf
 						if iButton != 0
 							return
+						endIf
+						if foundInOtherHandQueue
+							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName)), "iEquipAutoAdded", 0)
 						endIf
 					endIf
 					jMap.setForm(iEquipItem, "iEquipForm", itemForm)

@@ -242,10 +242,10 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			if bBoundAmmoAdded
 				bBoundAmmoAdded = false ;Reset
 			else
-				checkAndEquipAmmo(false, true, false)
+				checkAndEquipAmmo(false, true, (WC.bPreselectMode || bSimpleAmmoMode))
 			endIf
 			;Update the left hand counter
-			WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(ammoObject, "iEquipForm")))
+			WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipForm")))
 			;If queue position indicators are on and permanent update the left indicator
 			if WC.bShowPositionIndicators && WC.bPermanentPositionIndicators
 				WC.updateQueuePositionIndicator(0, jArray.count(aiTargetQ[Q]), aiCurrentAmmoIndex[Q], aiCurrentAmmoIndex[Q])
@@ -264,50 +264,62 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				endIf
 			endIf
 		;Toggle out
-		elseIf !toggleWithoutAnimation && !(bSimpleAmmoMode && bSimpleAmmoModeOnEnter)
-			UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", false)
-			while !bReadyForAmmoModeAnim
-				Utility.WaitMenuMode(0.01)
-			endwhile
-			;AmmoModeAnimateOut(toggleWithoutEquipping)
-			AmmoModeAnimateOut()
-		endIf
-		bool mainQueueIsEmpty = (jArray.count(WC.aiTargetQ[0]) < 1)
-		if mainQueueIsEmpty
-			if (jArray.count(WC.aiTargetQ[1]) < 2)
-				WC.UnequipHand(1)
-				WC.setSlotToEmpty(1, true, true)
+		else
+			if !toggleWithoutAnimation
+				
+				if bSimpleAmmoMode && bSimpleAmmoModeOnEnter
+					WC.reequipOtherHand(0, false)
+
+				else
+					UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", false)
+					while !bReadyForAmmoModeAnim
+						Utility.WaitMenuMode(0.01)
+					endwhile
+					;AmmoModeAnimateOut(toggleWithoutEquipping)
+					AmmoModeAnimateOut()
+				endIf
+			endIf
+			bool mainQueueIsEmpty = (jArray.count(WC.aiTargetQ[0]) < 1)
+			if mainQueueIsEmpty
+				if (jArray.count(WC.aiTargetQ[1]) < 2)
+					WC.UnequipHand(1)
+					WC.setSlotToEmpty(1, true, true)
+				else
+					WC.cycleSlot(1, false, true)
+				endIf
 			else
-				WC.cycleSlot(1, false, true)
+				;Update the main slot index
+				if !WC.bPreselectMode
+					WC.aiCurrentQueuePosition[0] = WC.aiCurrentlyPreselected[0]
+					WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipName")
+				endIf
+				;And re-equip the left hand item, which should in turn force a re-equip on the right hand to a 1H item, as long as we've not just toggled out of ammo mode as a result of us equipping a 2H weapon in the right hand
+				if !toggleWithoutEquipping
+					WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
+				endIf
 			endIf
-		else
-			;Update the main slot index
-			if !WC.bPreselectMode
-				WC.aiCurrentQueuePosition[0] = WC.aiCurrentlyPreselected[0]
-				WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipName")
+			;Show the left name if previously faded out on timer
+			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[0] ;Left Name
+				WC.showName(0)
 			endIf
-			;And re-equip the left hand item, which should in turn force a re-equip on the right hand to a 1H item, as long as we've not just toggled out of ammo mode as a result of us equipping a 2H weapon in the right hand
-			if !toggleWithoutEquipping
-				WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
+			;Hide the left hand counter again if the new left hand item doesn't need it
+			if mainQueueIsEmpty || (!WC.itemRequiresCounter(0) && !WC.isWeaponPoisoned(0, WC.aiCurrentQueuePosition[0], true))
+				WC.setCounterVisibility(0, false)
+			;Otherwise update the counter for the new left hand item
+			else
+				int leftPreselectObject = -1
+				if jArray.count(WC.aiTargetQ[0]) > 0
+					leftPreselectObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0])
+				endIf
+				if WC.itemRequiresCounter(0) && leftPreselectObject != -1
+					WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(leftPreselectObject, "iEquipForm")))
+				elseif WC.isWeaponPoisoned(0, WC.aiCurrentQueuePosition[0], true)
+					WC.checkAndUpdatePoisonInfo(0)
+				endIf
 			endIf
-		endIf
-		;Show the left name if previously faded out on timer
-		if WC.bNameFadeoutEnabled && !WC.abIsNameShown[0] ;Left Name
-			WC.showName(0)
-		endIf
-		;Hide the left hand counter again if the new left hand item doesn't need it
-		if mainQueueIsEmpty || (!WC.itemRequiresCounter(0) && !WC.isWeaponPoisoned(0, WC.aiCurrentQueuePosition[0], true))
-			WC.setCounterVisibility(0, false)
-		;Otherwise update the counter for the new left hand item
-		else
-			if WC.itemRequiresCounter(0) && leftPreselectObject != -1
-				WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(leftPreselectObject, "iEquipForm")))
-			elseif WC.isWeaponPoisoned(0, WC.aiCurrentQueuePosition[0], true)
-				WC.checkAndUpdatePoisonInfo(0)
+			if !mainQueueIsEmpty
+				WC.CM.checkAndUpdateChargeMeter(0)
 			endIf
-		endIf
-		if !mainQueueIsEmpty
-			WC.CM.checkAndUpdateChargeMeter(0)
 		endIf
 		Self.UnregisterForModEvent("iEquip_ReadyForAmmoModeAnimation")
 	endIf
@@ -325,7 +337,7 @@ endEvent
 function AmmoModeAnimateIn()
 	debug.trace("iEquip_AmmoMode AmmoModeAnimateIn start")		
 	;Get icon name and item name data for the item currently showing in the left hand slot and the ammo to be equipped
-	int ammoObject = jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
+	;int ammoObject = jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
 	string[] widgetData = new string[4]
 	if jArray.count(WC.aiTargetQ[0]) > 0
 		widgetData[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipIcon")
@@ -334,7 +346,8 @@ function AmmoModeAnimateIn()
 		widgetData[0] = "Fist"
 		widgetData[1] = "$iEquip_common_Unarmed"
 	endIf
-	widgetData[2] = jMap.getStr(ammoObject, "iEquipIcon") + sAmmoIconSuffix
+	;widgetData[2] = jMap.getStr(ammoObject, "iEquipIcon") + sAmmoIconSuffix
+	widgetData[2] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipIcon") + sAmmoIconSuffix
 	widgetData[3] = asCurrentAmmo[Q]
 	;Set the left preselect index to whatever is currently equipped in the left hand ready for cycling the preselect slot in ammo mode
 	WC.aiCurrentlyPreselected[0] = WC.aiCurrentQueuePosition[0]

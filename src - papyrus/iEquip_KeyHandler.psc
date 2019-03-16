@@ -255,22 +255,26 @@ function runUpdate()
             endIf
             
     elseIf iMultiTap == 1   ; Single tap
-        if iWaitingKeyCode == iUtilityKey && !PlayerRef.IsWeaponDrawn()
-            int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
-            
-            if iAction != 0             ; Exit
-                if iAction == 1         ; Queue Menu
-                    WC.openQueueManagerMenu()
-                elseif iAction == 2     ; Edit Mode
-                    toggleEditMode()
-                elseif iAction == 3     ; Help Menu
-                    HM.showHelpMenuMain()
-                elseif iAction == 4     ; Refresh Widget
-                    WC.refreshWidget()
-                elseif iAction == 5     ; Debug option
-                    jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")
+        if iWaitingKeyCode == iUtilityKey
+            if PlayerRef.IsWeaponDrawn()
+                debug.notification(iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_notWithWeaponsDrawn"))
+            else
+                int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
+                
+                if iAction != 0             ; Exit
+                    if iAction == 1         ; Queue Menu
+                        WC.openQueueManagerMenu()
+                    elseif iAction == 2     ; Edit Mode
+                        toggleEditMode()
+                    elseif iAction == 3     ; Help Menu
+                        HM.showHelpMenuMain()
+                    elseif iAction == 4     ; Refresh Widget
+                        WC.refreshWidget()
+                    elseif iAction == 5     ; Debug option
+                        jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")
+                    endIf
                 endIf
-            endIf          
+            endIf         
         elseIf iWaitingKeyCode == iLeftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
             if AM.bAmmoMode || (PM.bPreselectMode && (RHItemType == 7 || RHItemType == 12))
@@ -346,10 +350,10 @@ function runUpdate()
             if iWaitingKeyCode == iLeftKey
                 if bIsUtilityKeyHeld
                     WC.openQueueManagerMenu(1)
-                elseIf AM.bAmmoMode
-                    WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
-                else
+                elseIf !AM.bAmmoMode
                     WC.applyPoison(0)
+                elseIf !AM.bSimpleAmmoMode ;We're in ammo mode, so cycle the left preselect slot unless Simple Ammo Mode is enabled
+                    WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
                 endIf
             else
                 if bIsUtilityKeyHeld
