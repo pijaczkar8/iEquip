@@ -10,6 +10,7 @@ string[] ammoSortingOptions
 string[] whenNoAmmoLeftOptions
 string[] ammoModeOptions
 string[] posIndBehaviour
+int iPosIndChoice = 1
 
 bool bFirstTimeDisablingTooltips = true
 
@@ -33,9 +34,10 @@ function initData()
     ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
     ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"/;
 
-    posIndBehaviour = new string[2]
-    posIndBehaviour[0] = "$iEquip_MCM_gen_opt_onlyCycling"
-    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_alwaysVisible"
+    posIndBehaviour = new string[3]
+    posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
+    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
+    posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
 
 endFunction
 
@@ -45,12 +47,17 @@ function drawPage()
     ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
     ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"
 
+    posIndBehaviour = new string[3]
+    posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
+    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
+    posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
+
     MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
     MCM.AddToggleOptionST("gen_tgl_showTooltips", "$iEquip_MCM_gen_lbl_showTooltips", WC.bShowTooltips)
            
     if MCM.bEnabled
+    	MCM.AddEmptyOption()
     	if MCM.bFirstEnabled
-    		MCM.AddEmptyOption()
     		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
     		MCM.AddTextOptionST("gen_txt_firstEnabled2", "$iEquip_MCM_common_lbl_firstEnabled2", "")
     		MCM.AddTextOptionST("gen_txt_firstEnabled3", "$iEquip_MCM_common_lbl_firstEnabled3", "")
@@ -64,9 +71,10 @@ function drawPage()
 	        MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
 	                
 	        MCM.AddEmptyOption()
-	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_VisGear")
-	        MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
-	        MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
+	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_AmmoMode")
+	        MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
+	        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
+	        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
 
 	        MCM.SetCursorPosition(1)
 	                
@@ -77,17 +85,21 @@ function drawPage()
 	            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 	        endIf
 
-	        MCM.AddToggleOptionST("gen_tgl_showPosInd", "$iEquip_MCM_gen_lbl_showshowPosInd", WC.bShowPositionIndicators)
+	        MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[iPosIndChoice])
+	        ;/MCM.AddToggleOptionST("gen_tgl_showPosInd", "$iEquip_MCM_gen_lbl_showshowPosInd", WC.bShowPositionIndicators)
             if WC.bShowPositionIndicators
                 MCM.AddTextOptionST("gen_txt_posIndBehaviour", "", posIndBehaviour[WC.bPermanentPositionIndicators as int])
-            endIf
+            endIf/;
 	        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
-	        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
-	        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
-            MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
+
 	        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
 	            MCM.AddTextOptionST("gen_txt_addFists", "$iEquip_MCM_gen_lbl_AddUnarmed", "")
 	        endIf
+
+	        MCM.AddEmptyOption()
+	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_VisGear")
+	        MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
+	        MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
 
             MCM.AddEmptyOption()
             MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_BeastMode")
@@ -257,30 +269,25 @@ State gen_sld_eqpPausDelay
     endEvent
 endState
 
-State gen_tgl_showPosInd
+State gen_men_showPosInd
     event OnBeginState()
-        if currentEvent == "Highlight"
+    	if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_showPosInd")
-        elseIf currentEvent == "Select"
-            if WC.bSkipAutoAddedItems
-                MCM.ShowMessage(iEquip_StringExt.LocalizeString("$iEquip_MCM_gen_msg_skipBlocksPosInd"), false, "$OK")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(iPosIndChoice, posIndBehaviour, 1)
+        elseIf currentEvent == "Accept"
+            iPosIndChoice = currentVar as int
+            MCM.SetMenuOptionValueST(posIndBehaviour[iPosIndChoice])
+            if iPosIndChoice == 0
+            	WC.bShowPositionIndicators = false
             else
-                WC.bShowPositionIndicators = !WC.bShowPositionIndicators
-                MCM.SetToggleOptionValueST(WC.bShowPositionIndicators)
-                MCM.ForcePageReset()
+            	WC.bShowPositionIndicators = true
             endIf
-        endIf
-    endEvent
-endState
-
-State gen_txt_posIndBehaviour
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_posIndBehaviour")
-        elseIf currentEvent == "Select"
-            WC.bPermanentPositionIndicators = !WC.bPermanentPositionIndicators
-            WC.bPositionIndicatorSettingsChanged = true
-            MCM.SetTextOptionValueST(posIndBehaviour[WC.bPermanentPositionIndicators as int])
+            if iPosIndChoice == 2
+            	WC.bPermanentPositionIndicators = true
+            else
+            	WC.bPermanentPositionIndicators = false
+            endIf
         endIf
     endEvent
 endState

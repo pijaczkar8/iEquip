@@ -34,7 +34,7 @@ function initData()
     QSPreferredMagicSchool[4] = "$iEquip_common_restoration"
     
     preselectQuickFunctionOptions = new String[3]
-    preselectQuickFunctionOptions[0] = "$iEquip_MCM_pro_opt_disabled"
+    preselectQuickFunctionOptions[0] = "$iEquip_MCM_common_opt_disabled"
     preselectQuickFunctionOptions[1] = "$iEquip_MCM_pro_opt_preselect"
     preselectQuickFunctionOptions[2] = "$iEquip_MCM_pro_opt_equip"
     
@@ -51,7 +51,7 @@ function initData()
     QRPreferredWeaponType[3] = "$iEquip_MCM_pro_opt_boundCrossbow"
 
     QRSwitchOutOptions = new String[5]
-    QRSwitchOutOptions[0] = "$iEquip_MCM_pro_opt_disabled"
+    QRSwitchOutOptions[0] = "$iEquip_MCM_common_opt_disabled"
     QRSwitchOutOptions[1] = "$iEquip_MCM_pro_opt_switch"
     QRSwitchOutOptions[2] = "$iEquip_MCM_pro_opt_2h"
     QRSwitchOutOptions[3] = "$iEquip_MCM_pro_opt_1h"
