@@ -3657,7 +3657,7 @@ function addToQueue(int Q)
 					iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_RemoveAAFlag{" + itemName + "}{" + asQueueName[Q] + "}"))
 					if iButton == 0
 						jMap.setInt(jarray.getObj(aiTargetQ[Q], i), "iEquipAutoAdded", 0)
-						if isAlreadyInQueue((Q + 1) % 2, itemForm, itemID)
+						if Q < 2 && isAlreadyInQueue((Q + 1) % 2, itemForm, itemID)
 							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName)), "iEquipAutoAdded", 0)
 						endIf
 						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AAFlagRemoved"))
