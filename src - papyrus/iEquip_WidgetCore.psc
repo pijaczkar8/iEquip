@@ -267,7 +267,7 @@ bool[] property abPotionGroupEmpty auto hidden
 bool property bConsumableIconFaded auto hidden
 bool bFirstAttemptToDeletePotionGroup = true
 bool property bPotionSelectorShown auto hidden
-int property iPotionTypeChoice = 1 auto hidden
+int property iPotionTypeChoice auto hidden
 
 bool property bPoisonIconFaded auto hidden
 
@@ -2167,11 +2167,11 @@ endFunction
 
 function updatePotionSelector(bool bHide = false)
 	debug.trace("iEquip_WidgetCore updatePotionSelector start - bHide: " + bHide + ", bPotionSelectorShown: " + bPotionSelectorShown)
-	;If we've just received the fadeout update then hide the selector and reset the currently selected type to fortify
+	;If we've just received the fadeout update then hide the selector and reset the currently selected type to restore
 	if bHide
 		UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", 0.0)
 		bPotionSelectorShown = false
-		iPotionTypeChoice = 1
+		iPotionTypeChoice = 0
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".cyclePotionSelector", iPotionTypeChoice)
 	;Otherwise update the counts as required
 	else
@@ -3343,6 +3343,7 @@ function applyPoison(int Q)
         PlayerRef.RemoveItem(poisonToApply, 1, true)
         ;Flag the item as poisoned
         jMap.setInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "isPoisoned", 1)
+        jMap.setForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "lastKnownPoison", poisonToApply as Form)
         if !ApplyWithoutUpdatingWidget
             checkAndUpdatePoisonInfo(Q)
         endIf
