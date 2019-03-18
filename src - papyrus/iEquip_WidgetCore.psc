@@ -3558,6 +3558,7 @@ function addToQueue(int Q)
 	form testItemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
 	int listLength = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.entryList.length")
 	debug.trace("iEquip_WidgetCore addToQueue - listLength: " + listLength + ", listIndex: " + listIndex + ", testItemForm: " + testItemForm + ", getName returns: " + testItemForm.GetName())
+	debug.trace("iEquip_WidgetCore addToQueue - testing GetTemperStringAtInventoryIndex: " + GetTemperStringAtInventoryIndex(listIndex, listLength))
 	
 	if itemForm
 		int itemType
@@ -3619,7 +3620,7 @@ function addToQueue(int Q)
 						if foundInOtherHandQueue
 							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToBoth{" + itemName + "}{" + asQueueName[Q] + "}"))
 						else
-							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
+							iButton = showTranslatedMessage(1, LocalizeString("$iEquip_WC_msg_AddToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
 						endIf
 						if iButton != 0
 							return

@@ -220,7 +220,7 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 				isEnchanted = 1
 			endIf
 		endIf
-		debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - currentWeapon: " + currentWeapon.GetName() + ", isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", abIsChargeMeterShown[" + Q + "]: " + abIsChargeMeterShown[Q])
+		debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", abIsChargeMeterShown[" + Q + "]: " + abIsChargeMeterShown[Q])
 		;Hide first
 		if abIsChargeMeterShown[Q]
 			updateChargeMeterVisibility(Q, false) ;Hide
