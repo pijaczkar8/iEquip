@@ -225,7 +225,6 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 		if abIsChargeMeterShown[Q]
 			updateChargeMeterVisibility(Q, false) ;Hide
 		endIf
-		
 		;Now as long as meters aren't disabled, and the item is enchanted, and it's not an infinite charge item carry on and update the meters
 		if iChargeDisplayType > 0 && isEnchanted == 1 && WornObject.GetItemMaxCharge(PlayerRef, Q, 0) > 0.0
 			;Update values

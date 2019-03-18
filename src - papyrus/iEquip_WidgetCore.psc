@@ -3555,8 +3555,9 @@ function addToQueue(int Q)
 		itemForm = game.GetFormEx(itemFormID)
 	endIf
 
-	ObjectReference itemObjRef = iEquip_UIExt.GetObjectReferenceAtInventoryIndex(listIndex)
-	debug.trace("iEquip_WidgetCore addToQueue - listIndex: " + listIndex + ", itemObjRef: " + itemObjRef + ", getDisplayName returns: " + itemObjRef.GetDisplayName())
+	form testItemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
+	int listLength = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.entryList.length")
+	debug.trace("iEquip_WidgetCore addToQueue - listLength: " + listLength + ", listIndex: " + listIndex + ", testItemForm: " + testItemForm + ", getName returns: " + testItemForm.GetName())
 	
 	if itemForm
 		int itemType
@@ -3603,6 +3604,7 @@ function addToQueue(int Q)
 					return
 				endIf
 				if itemID == 0 && !isLightForm ;itemID hashes won't work for light formIDs
+					debug.trace("iEquip_WidgetCore addToQueue - testing CalcCRC32Hash with itemName: " + itemName + ", itemFormID: " + itemFormID + ", returned itemID: " + CalcCRC32Hash(itemName, itemFormID))
 					queueItemForIDGenerationOnMenuClose(Q, jArray.count(aiTargetQ[Q]), itemName, itemFormID)
 				endIf
 				bool success
