@@ -549,6 +549,17 @@ Event OnWidgetLoad()
 		KH.RegisterForGameplayKeys()
 		debug.notification("$iEquip_WC_not_controlsUnlocked")
 	endIf
+	;ToDo - remove
+	int i = 1
+	string sValue
+	string sName
+	while i < 7
+		sValue = "fHealthDataValue" + i as string
+		sName = "sHealthDataPrefix" + i as string
+		debug.trace("iEquip_WidgetCore OnWidgetLoad - checking temper levels, Level " + i + ", maxValue: " + GetGameSettingFloat(sValue) + ", level name: " + GetGameSettingString(sName))
+		i += 1
+	endWhile
+
 	bLoading = False
 	debug.trace("iEquip_WidgetCore OnWidgetLoad end")
 endEvent
@@ -2058,7 +2069,7 @@ function checkAndFadeConsumableIcon(bool fadeOut)
 	debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon start")
 	debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon - fadeOut: " + fadeOut + ", bConsumableIconFaded: " + bConsumableIconFaded)
 	float[] widgetData = new float[4]
-	if fadeOut
+	if fadeOut && iEmptyPotionQueueChoice == 0 ;Fade
 		float adjustment = (1 - (fLeftIconFadeAmount * 0.01)) ;Use same value as left icon fade for consistency
 		widgetData[0] = afWidget_A[41] * adjustment ;consumableBg_mc
 		widgetData[1] = afWidget_A[42] * adjustment ;consumableIcon_mc
@@ -3605,7 +3616,7 @@ function addToQueue(int Q)
 					return
 				endIf
 				if itemID == 0 && !isLightForm ;itemID hashes won't work for light formIDs
-					debug.trace("iEquip_WidgetCore addToQueue - testing CalcCRC32Hash with itemName: " + itemName + ", itemFormID: " + itemFormID + ", returned itemID: " + CalcCRC32Hash(itemName, itemFormID))
+					debug.trace("iEquip_WidgetCore addToQueue - testing CalcCRC32Hash with itemName: " + itemName + ", itemFormID: " + itemFormID + ", returned itemID: " + CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF)))
 					queueItemForIDGenerationOnMenuClose(Q, jArray.count(aiTargetQ[Q]), itemName, itemFormID)
 				endIf
 				bool success
