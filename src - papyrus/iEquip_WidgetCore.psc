@@ -552,11 +552,13 @@ Event OnWidgetLoad()
 	;ToDo - remove
 	int i = 1
 	string sValue
-	string sName
+	string sNameWeap
+	string sNameArmo
 	while i < 7
 		sValue = "fHealthDataValue" + i as string
-		sName = "sHealthDataPrefix" + i as string
-		debug.trace("iEquip_WidgetCore OnWidgetLoad - checking temper levels, Level " + i + ", maxValue: " + GetGameSettingFloat(sValue) + ", level name: " + GetGameSettingString(sName))
+		sNameWeap = "sHealthDataPrefixWeap" + i as string
+		sNameArmo = "sHealthDataPrefixArmo" + i as string
+		debug.trace("iEquip_WidgetCore OnWidgetLoad - checking temper levels, Level " + i + ", maxValue: " + Game.GetGameSettingFloat(sValue) + ", weapon level name: " + Game.GetGameSettingString(sNameWeap) + ", armour level name: " + Game.GetGameSettingString(sNameArmo))
 		i += 1
 	endWhile
 
@@ -2069,7 +2071,7 @@ function checkAndFadeConsumableIcon(bool fadeOut)
 	debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon start")
 	debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon - fadeOut: " + fadeOut + ", bConsumableIconFaded: " + bConsumableIconFaded)
 	float[] widgetData = new float[4]
-	if fadeOut && iEmptyPotionQueueChoice == 0 ;Fade
+	if fadeOut && PO.iEmptyPotionQueueChoice == 0 ;Fade
 		float adjustment = (1 - (fLeftIconFadeAmount * 0.01)) ;Use same value as left icon fade for consistency
 		widgetData[0] = afWidget_A[41] * adjustment ;consumableBg_mc
 		widgetData[1] = afWidget_A[42] * adjustment ;consumableIcon_mc
@@ -3569,7 +3571,7 @@ function addToQueue(int Q)
 	form testItemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
 	int listLength = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.entryList.length")
 	debug.trace("iEquip_WidgetCore addToQueue - listLength: " + listLength + ", listIndex: " + listIndex + ", testItemForm: " + testItemForm + ", getName returns: " + testItemForm.GetName())
-	debug.trace("iEquip_WidgetCore addToQueue - testing GetTemperStringAtInventoryIndex: " + GetTemperStringAtInventoryIndex(listIndex, listLength))
+	;debug.trace("iEquip_WidgetCore addToQueue - testing GetTemperStringAtInventoryIndex: " + GetTemperStringAtInventoryIndex(listIndex, listLength))
 	
 	if itemForm
 		int itemType
