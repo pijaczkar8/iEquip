@@ -2229,10 +2229,19 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		debug.trace("iEquip_WidgetCore updateWidget - 4th option")
 		targetObject = jArray.getObj(aiTargetQ[Q], iIndex)
 	endIf
+
 	sIcon = jMap.getStr(targetObject, "iEquipIcon")
-	sName = jMap.getStr(targetObject, "iEquipName")
 	if Q == 0 && bAmmoMode && !bCyclingLHPreselectInAmmoMode && AM.sAmmoIconSuffix != ""
 		sIcon += AM.sAmmoIconSuffix
+	endIf
+
+	int temperVal
+	if ((Q == 0 && (!bAmmoMode || bCyclingLHPreselectInAmmoMode)) || Q == 1 || Q == 5 || Q == 6)
+		sName = jMap.getStr(targetObject, "lastDisplayedName")
+		temperVal = jMap.getInt(targetObject, "lastKnownItemHealth")
+	else
+		sName = jMap.getStr(targetObject, "iEquipName")
+		temperVal = 100
 	endIf
 
 	float fNameAlpha = afWidget_A[aiNameElements[Slot]]
@@ -2243,10 +2252,11 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	debug.trace("iEquip_WidgetCore updateWidget about to call .updateWidget - Slot: " + Slot + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
-		UICallback.PushInt(iHandle, Slot) ;Which slot we're updating
-		UICallback.PushString(iHandle, sIcon) ;New icon
-		UICallback.PushString(iHandle, sName) ;New name
-		UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
+		UICallback.PushInt(iHandle, Slot) 			;Which slot we're updating
+		UICallback.PushString(iHandle, sIcon) 		;New icon
+		UICallback.PushString(iHandle, sName) 		;New name, or last displayed name including any temper level suffix
+		UICallback.PushFloat(iHandle, fNameAlpha) 	;Current item name alpha value
+		UICallback.PushInt(iHandle, temperVal) 		;Last known item health
 		UICallback.Send(iHandle)
 	endIf
 
@@ -2313,27 +2323,28 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
-	; Set icon and name to empty
-	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+																		
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")	; Set icon and name to empty
 	If(iHandle)
-		UICallback.PushInt(iHandle, Q) ;Which slot we're updating
+		UICallback.PushInt(iHandle, Q) 										; Which slot we're updating
 		if (Q == 0 && !bAmmoMode) || Q == 1
 			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Unarmed")
-			UICallback.PushString(iHandle, "Fist") ;New icon
-			UICallback.PushString(iHandle, "$iEquip_common_Unarmed") ;New name
+			UICallback.PushString(iHandle, "Fist") 							; New icon
+			UICallback.PushString(iHandle, "$iEquip_common_Unarmed") 		; New name
 		else
 			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Empty")
-			UICallback.PushString(iHandle, "Empty") ;New icon
-			UICallback.PushString(iHandle, "") ;New name
+			UICallback.PushString(iHandle, "Empty") 						; New icon
+			UICallback.PushString(iHandle, "") 								; New name
 		endIf
-		UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
+		UICallback.PushFloat(iHandle, fNameAlpha) 							; Current item name alpha value
 		UICallback.Send(iHandle)
 	endIf
+	
 	if (Q != 3 || !bPotionGrouping)
 		asCurrentlyEquipped[Q] = ""
 	endIf
-	; Hide any additional elements currently displayed
-	if Q < 2
+
+	if Q < 2																; Hide any additional elements currently displayed
 		hidePoisonInfo(Q, true)
 		if CM.abIsChargeMeterShown[Q]
 			CM.updateChargeMeterVisibility(Q, false)
@@ -3566,8 +3577,10 @@ function addToQueue(int Q)
 		listIndex = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.selectedIndex")
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.formId")
 		itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
-		itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
-		itemForm = game.GetFormEx(itemFormID)
+		;itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
+		itemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
+		itemName = itemForm.GetName()
+		;itemForm = game.GetFormEx(itemFormID)
 	endIf
 
 	form testItemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
@@ -3660,6 +3673,8 @@ function addToQueue(int Q)
 							endIf
 							jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
 						else
+							jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
+							jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)
 							jMap.setInt(iEquipItem, "isEnchanted", isEnchanted as int)
 							jMap.setInt(iEquipItem, "isPoisoned", isPoisoned as int)
 						endIf
