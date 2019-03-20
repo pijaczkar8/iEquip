@@ -20,6 +20,9 @@ iEquip_WidgetVisUpdateScript property WVis auto
 Actor Property PlayerRef Auto
 Race property PlayerRace auto hidden
 
+Keyword Property CraftingSmithingSharpeningWheel Auto
+Keyword Property CraftingSmithingArmorTable Auto
+
 Race PlayerBaseRace
 
 Race Property ArgonianRace auto

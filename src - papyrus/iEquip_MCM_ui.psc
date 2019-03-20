@@ -69,6 +69,7 @@ function initData()
 endFunction
 
 function drawPage()
+
     if MCM.bEnabled && !MCM.bFirstEnabled
         
         if WC.bShowPositionIndicators
@@ -105,7 +106,7 @@ function drawPage()
                 MCM.AddSliderOptionST("ui_sld_dropShadowAngle", "$iEquip_MCM_ui_lbl_dropShadowAngle", WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
                 MCM.AddTextOptionST("ui_txt_dropShadowBlur", "$iEquip_MCM_ui_lbl_dropShadowBlur", WC.iDropShadowBlur as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
                 MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
-                MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength*100, "{0}%")
+                MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength, "{0}")
             endIf
 
             MCM.AddEmptyOption()
@@ -386,7 +387,7 @@ State ui_sld_dropShadowDistance
     endEvent
 endState
 
-State ui_sld_dropShadowStrength
+;/State ui_sld_dropShadowStrength
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowStrength")
@@ -395,6 +396,20 @@ State ui_sld_dropShadowStrength
         elseIf currentEvent == "Accept"
             WC.fDropShadowStrength = currentVar/100
             MCM.SetSliderOptionValueST(WC.fDropShadowStrength*100, "{0}%")
+            WC.bDropShadowSettingChanged = true
+        endIf 
+    endEvent
+endState/;
+
+State ui_sld_dropShadowStrength
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowStrength")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fDropShadowStrength, 0.25, 255.0, 0.25, 1.0)
+        elseIf currentEvent == "Accept"
+            WC.fDropShadowStrength = currentVar
+            MCM.SetSliderOptionValueST(WC.fDropShadowStrength, "{0}")
             WC.bDropShadowSettingChanged = true
         endIf 
     endEvent

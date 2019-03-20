@@ -603,6 +603,7 @@ function refreshWidgetOnLoad()
 				endIf
 				if Q < 2
 					checkAndUpdatePoisonInfo(Q)
+					TI.checkAndUpdateTemperLevelInfo(Q)
 					CM.initChargeMeter(Q)
 					CM.initSoulGem(Q)
 				endIf
@@ -744,6 +745,9 @@ function refreshWidget()
 		abIsNameShown[i] = true
 		if i < 2
 			checkAndUpdatePoisonInfo(i)
+			if i == 1 || !bAmmoMode
+				TI.checkAndUpdateTemperLevelInfo(i)
+			endIf
 		endIf
 		if i == 0 && bAmmoMode
 			updateWidget(i, AM.aiCurrentAmmoIndex[AM.Q])
@@ -860,6 +864,9 @@ function resetWidgetsToPreviousState()
 					hidePoisonInfo(i, true)
 				else
 					checkAndUpdatePoisonInfo(i)
+					if !(i == 0 && bAmmoMode)
+						TI.checkAndUpdateTemperLevelInfo(i)
+					endIf
 				endIf
 				;Reset attribute icons
 				hideAttributeIcons(i)
@@ -3583,9 +3590,9 @@ function addToQueue(int Q)
 		;itemForm = game.GetFormEx(itemFormID)
 	endIf
 
-	form testItemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
+	;form testItemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
 	int listLength = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.entryList.length")
-	debug.trace("iEquip_WidgetCore addToQueue - listLength: " + listLength + ", listIndex: " + listIndex + ", testItemForm: " + testItemForm + ", getName returns: " + testItemForm.GetName())
+	debug.trace("iEquip_WidgetCore addToQueue - listLength: " + listLength + ", listIndex: " + listIndex + ", GetFormAtInventoryIndex returns: " + itemForm + ", getName returns: " + itemName)
 	;debug.trace("iEquip_WidgetCore addToQueue - testing GetTemperStringAtInventoryIndex: " + GetTemperStringAtInventoryIndex(listIndex, listLength))
 	
 	if itemForm
