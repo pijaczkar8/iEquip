@@ -1,11 +1,13 @@
 Scriptname iEquip_MCM_ui extends iEquip_MCM_Page
 
 iEquip_AmmoMode Property AM Auto
+iEquip_TemperedItemHandler Property TI Auto
 
 string[] ammoIconOptions
 string[] backgroundStyleOptions
 string[] fadeoutOptions
 string[] firstPressIfNameHiddenOptions
+string[] temperLevelTextOptions
 
 int[] aiDropShadowBlurValues
 
@@ -49,6 +51,21 @@ function initData()
     aiDropShadowBlurValues[4] = 16
     aiDropShadowBlurValues[5] = 32
 
+    temperLevelTextOptions = new string[13]
+    temperLevelTextOptions[0] = "$iEquip_MCM_ui_opt_tmpLvlTxt0"
+    temperLevelTextOptions[1] = "$iEquip_MCM_ui_opt_tmpLvlTxt1"
+    temperLevelTextOptions[2] = "$iEquip_MCM_ui_opt_tmpLvlTxt2"
+    temperLevelTextOptions[3] = "$iEquip_MCM_ui_opt_tmpLvlTxt3"
+    temperLevelTextOptions[4] = "$iEquip_MCM_ui_opt_tmpLvlTxt4"
+    temperLevelTextOptions[5] = "$iEquip_MCM_ui_opt_tmpLvlTxt5"
+    temperLevelTextOptions[6] = "$iEquip_MCM_ui_opt_tmpLvlTxt6"
+    temperLevelTextOptions[7] = "$iEquip_MCM_ui_opt_tmpLvlTxt7"
+    temperLevelTextOptions[8] = "$iEquip_MCM_ui_opt_tmpLvlTxt8"
+    temperLevelTextOptions[9] = "$iEquip_MCM_ui_opt_tmpLvlTxt9"
+    temperLevelTextOptions[10] = "$iEquip_MCM_ui_opt_tmpLvlTxt10"
+    temperLevelTextOptions[11] = "$iEquip_MCM_ui_opt_tmpLvlTxt11"
+    temperLevelTextOptions[12] = "$iEquip_MCM_ui_opt_tmpLvlTxt12"
+
 endFunction
 
 function drawPage()
@@ -71,6 +88,7 @@ function drawPage()
         endIf
 
         MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", WC.bFadeIconOnDegrade)
+        MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
 
         MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
 
@@ -210,6 +228,20 @@ State ui_tgl_tempLvlFade
         elseIf currentEvent == "Select"
             WC.bFadeIconOnDegrade = !WC.bFadeIconOnDegrade
             WC.bTemperFadeSettingChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_men_tmpLvlTxt
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tmpLvlTxt")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(TI.iTemperNameFormat, temperLevelTextOptions, 1)
+        elseIf currentEvent == "Accept"
+            TI.iTemperNameFormat = currentVar as int
+            MCM.SetMenuOptionValueST(temperLevelTextOptions[TI.iTemperNameFormat])
+            WC.bTemperLevelTextStyleChanged = true
         endIf 
     endEvent
 endState

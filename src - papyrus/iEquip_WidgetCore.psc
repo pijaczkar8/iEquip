@@ -28,6 +28,7 @@ iEquip_PotionScript property PO auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_BoundWeaponEventsListener property BW auto
 iEquip_AddedItemHandler property AD auto
+iEquip_TemperedItemHandler Property TI Auto
 iEquip_MCM property MCM auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
@@ -187,6 +188,7 @@ bool property bFadeLeftIconWhen2HEquipped = true auto hidden
 float property fLeftIconFadeAmount = 70.0 auto hidden
 bool property bFadeIconOnDegrade = true auto hidden
 bool property bTemperFadeSettingChanged auto hidden
+bool property bTemperLevelTextStyleChanged auto hidden
 
 bool property bDropShadowEnabled = true auto hidden
 bool property bDropShadowSettingChanged auto hidden

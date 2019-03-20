@@ -13,6 +13,7 @@ iEquip_KeyHandler Property KH Auto
 iEquip_PotionScript Property PO Auto
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
+iEquip_TemperedItemHandler Property TI Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_WidgetVisUpdateScript property WVis auto
 
@@ -166,6 +167,7 @@ function initialise(bool enabled)
 		endIf
 		BW.initialise()
 		PO.initialise()
+		TI.initialise()
 		updateAllEventFilters()
 	else
 		gotoState("DISABLED")
@@ -742,6 +744,14 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
 
+Event OnGetUp(ObjectReference akFurniture)
+	debug.trace("iEquip_PlayerEventHandler OnGetUp start")
+	If akFurniture.HasKeyword(CraftingSmithingSharpeningWheel) || akFurniture.HasKeyword(CraftingSmithingArmorTable)
+		;Check to see if the equipped hand items have been improved
+	EndIf
+	debug.trace("iEquip_PlayerEventHandler OnGetUp end")
+EndEvent
+
 state BEASTMODE
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE start")	
@@ -773,8 +783,8 @@ state BEASTMODE
 	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE end")
 	endEvent
 
-	;event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
-	;endEvent
+	event OnGetUp(ObjectReference akFurniture)
+	endEvent
 endState
 
 auto state DISABLED
@@ -791,5 +801,8 @@ auto state DISABLED
 	endEvent
 
 	event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
+	endEvent
+
+	event OnGetUp(ObjectReference akFurniture)
 	endEvent
 endState
