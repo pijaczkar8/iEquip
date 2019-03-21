@@ -15,7 +15,7 @@ string[] asTemperLevelNames
 float[] afTemperLevelMax
 int[] property aiTemperedItemTypes auto hidden
 
-string[] asNamePaths
+string[] property asNamePaths auto hidden
 
 ; MCM Properties
 bool property bFadeIconOnDegrade = true auto hidden

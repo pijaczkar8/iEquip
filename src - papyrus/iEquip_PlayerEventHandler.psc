@@ -5,6 +5,7 @@ Import iEquip_FormExt
 import iEquip_ActorExt
 import iEquip_StringExt
 Import Utility
+import UI
 import AhzMoreHudIE
 
 iEquip_WidgetCore Property WC Auto
@@ -621,16 +622,17 @@ function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjR
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName = queuedObjRef.GetDisplayName()
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
-	;Check if we've just manually equipped an item that is already in an iEquip queue
+																										; Check if we've just manually equipped an item that is already in an iEquip queue
 	if formFound
-		;If it's been found in the queue for the equippedSlot it's been equipped to
+																										; If it's been found in the queue for the equippedSlot it's been equipped to
 		targetIndex = WC.findInQueue(equippedSlot, "", queuedForm)
 		if targetIndex != -1
-			;Update the item name in case the display name differs from the base item name, and store the new itemID
+																										; Update the item name in case the display name differs from the base item name, and store the new itemID
 			jMap.setStr(jArray.GetObj(WC.aiTargetQ[Q], targetIndex), "iEquipName", itemName)
+			jMap.setStr(jArray.GetObj(WC.aiTargetQ[Q], targetIndex), "lastDisplayedName", itemName)
 			jMap.setInt(jArray.GetObj(WC.aiTargetQ[Q], targetIndex), "iEquipItemID", itemID)
-			;Send to moreHUD if loaded
-			if bMoreHUDLoaded
+			
+			if bMoreHUDLoaded																			; Send to moreHUD if loaded
 				string moreHUDIcon
 				if equippedSlot < 2
 					AhzMoreHudIE.RemoveIconItem(itemID)
@@ -644,11 +646,17 @@ function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjR
 	            endIf
 	            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
 	        endIf
-			;If it's already shown in the widget do nothing
-			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex
+			
+			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex									; If it's somehow already shown in the widget
+				if equippedSlot < 2
+					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0								; Update the name and temper level if required
+						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
+					else
+						UI.SetString(HUD_MENU, WidgetRoot + TI.asNamePaths[equippedSlot], itemName)		; Or just update the display name
+					endIf
 				blockCall = true
-			;Otherwise update the position and name, then update the widget
-			else
+			
+			else 																						; Otherwise update the position and name, then update the widget
 				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
 				WC.asCurrentlyEquipped[equippedSlot] = itemName
 				if equippedSlot < 2 || WC.bShoutEnabled
@@ -659,11 +667,11 @@ function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjR
 		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
-	;Check that the queuedForm isn't blacklisted for the slot it's been equipped to
+																										; Check that the queuedForm isn't blacklisted for the slot it's been equipped to
 	if !blackListFLSTs[equippedSlot].HasForm(queuedForm)
-		;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
+																										; If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
 		if !actionTaken && ((equippedSlot < 2 && bAutoAddNewItems) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers))))
-			;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
+																										; First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
 			bool freeSpace = true
 			targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
 			if targetIndex >= WC.iMaxQueueLength
@@ -675,7 +683,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjR
 				endIf
 			endIf
 			if freeSpace
-				;If there is space in the target queue create a new jMap object and add it to the queue
+																										; If there is space in the target queue create a new jMap object and add it to the queue
 				debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
 				int iEquipItem = jMap.object()
 				string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
@@ -694,26 +702,26 @@ function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjR
 						endIf
 						jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
 					endIf
-					;These will be set correctly by WC.CycleHand() and associated functions
+																										; These will be set correctly by WC.CycleHand() and associated functions
 					jMap.setInt(iEquipItem, "isEnchanted", 0)
 					jMap.setInt(iEquipItem, "isPoisoned", 0)
 				endIf
 				jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
-				;If it's not already in the AllItems formlist because it's in the other hand queue add it now
+																										; If it's not already in the AllItems formlist because it's in the other hand queue add it now
 				if !formFound
 					iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
 					updateEventFilter(iEquip_AllCurrentItemsFLST)
 				endIf
-				;Send to moreHUD if loaded
+																										; Send to moreHUD if loaded
 				if WC.bMoreHUDLoaded
 					if formFound
 						AhzMoreHudIE.RemoveIconItem(itemID)
-						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) ;Both queues
+						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) 							; Both queues
 					else
 						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
 					endIf
 				endIf
-				;Now update the widget to show the equipped item
+																										; Now update the widget to show the equipped item
 				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
 				WC.asCurrentlyEquipped[equippedSlot] = itemName
 				if equippedSlot < 2 || WC.bShoutEnabled
@@ -721,7 +729,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjR
 				endIf
 			endIf
 		endIf
-		;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
+																										; And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
 		if !blockCall && equippedSlot < 2
 			WC.checkAndEquipShownHandItem(equippedSlot, false, true)
 		endIf
