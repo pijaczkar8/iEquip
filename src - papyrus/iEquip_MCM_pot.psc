@@ -11,9 +11,10 @@ string[] showSelectorOptions
 
 function initData()
     
-    emptyPotionQueueOptions = new String[2]
+    emptyPotionQueueOptions = new String[3]
     emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
     emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
+    emptyPotionQueueOptions[2] = "$iEquip_MCM_pot_opt_leaveIcon"
 
     showSelectorOptions = new String[3]
     showSelectorOptions[0] = "$iEquip_MCM_pot_opt_alwaysShowSelector"
@@ -27,6 +28,11 @@ function initData()
 endFunction
 
 function drawPage()
+    ;ToDo - remove after testing
+    emptyPotionQueueOptions = new String[3]
+    emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
+    emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
+    emptyPotionQueueOptions[2] = "$iEquip_MCM_pot_opt_leaveIcon"
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potOpts")
         MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)
@@ -69,6 +75,9 @@ function drawPage()
         
         MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
         MCM.AddMenuOptionST("pot_men_whenNoPotions", "$iEquip_MCM_pot_lbl_whenNoPotions", emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
+        if PO.iEmptyPotionQueueChoice == 0
+            MCM.AddSliderOptionST("pot_sld_consIcoFade", "$iEquip_MCM_pot_lbl_consIcoFade", WC.fconsIconFadeAmount, "{0}%")
+        endIf
         MCM.AddToggleOptionST("pot_tgl_warningOnLastPotion", "$iEquip_MCM_pot_lbl_warningOnLastPotion", PO.bFlashPotionWarning)
         MCM.AddToggleOptionST("pot_tgl_enblRestPotWarn", "$iEquip_MCM_pot_lbl_enblRestPotWarn", PO.bEnableRestorePotionWarnings)
         if PO.bEnableRestorePotionWarnings
@@ -265,8 +274,21 @@ State pot_men_whenNoPotions
         elseIf currentEvent == "Accept"
             PO.iEmptyPotionQueueChoice = currentVar as int
             MCM.SetMenuOptionValueST(emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
-            WC.bEmptyPotionQueueChoiceChanged = true
+            MCM.ForcePageReset()
         endIf
+    endEvent
+endState
+
+State pot_sld_consIcoFade
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_consIcoFade")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fconsIconFadeAmount, 0.0, 100.0, 10.0, 70.0)
+        elseIf currentEvent == "Accept"
+            WC.fconsIconFadeAmount = currentVar
+            MCM.SetSliderOptionValueST(WC.fconsIconFadeAmount, "{0}%")
+        endIf 
     endEvent
 endState
 

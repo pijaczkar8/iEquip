@@ -198,7 +198,6 @@ int property iDropShadowBlur = 2 auto hidden
 float property fDropShadowDistance = 2.0 auto hidden
 float property fDropShadowStrength = 1.0 auto hidden
 
-bool property bEmptyPotionQueueChoiceChanged auto hidden
 bool[] property abPotionGroupAddedBack auto hidden
 bool property bPotionGroupingOptionsChanged auto hidden
 bool property bRestorePotionWarningSettingChanged auto hidden
@@ -266,6 +265,7 @@ string[] asPotionGroups
 string[] asActorValues
 int[] aiActorValues
 bool[] property abPotionGroupEmpty auto hidden
+float property fconsIconFadeAmount = 70.0 auto hidden
 bool property bConsumableIconFaded auto hidden
 bool bFirstAttemptToDeletePotionGroup = true
 bool property bPotionSelectorShown auto hidden
@@ -2080,18 +2080,19 @@ function checkAndFadeConsumableIcon(bool fadeOut)
 	debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon start")
 	debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon - fadeOut: " + fadeOut + ", bConsumableIconFaded: " + bConsumableIconFaded)
 	float[] widgetData = new float[4]
-	if fadeOut && PO.iEmptyPotionQueueChoice == 0 ;Fade
-		float adjustment = (1 - (fLeftIconFadeAmount * 0.01)) ;Use same value as left icon fade for consistency
-		widgetData[0] = afWidget_A[41] * adjustment ;consumableBg_mc
-		widgetData[1] = afWidget_A[42] * adjustment ;consumableIcon_mc
-		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[43] * adjustment ;consumableName_mc
+	if fadeOut
+		if PO.iEmptyPotionQueueChoice == 0 									; Fade
+			float adjustment = (1 - (fconsIconFadeAmount * 0.01)) 			
+			widgetData[0] = afWidget_A[41] * adjustment 					; consumableBg_mc
+			widgetData[1] = afWidget_A[42] * adjustment 					; consumableIcon_mc
+			if abIsNameShown[3]
+				widgetData[2] = afWidget_A[43] * adjustment 				; consumableName_mc
+			endIf
+			widgetData[3] = afWidget_A[44]  * adjustment 					; consumableCount_mc
+			UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenConsumableIconAlpha", widgetData)
+			bConsumableIconFaded = true
 		endIf
-		widgetData[3] = afWidget_A[44]  * adjustment ;consumableCount_mc
-		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenConsumableIconAlpha", widgetData)
-		bConsumableIconFaded = true
-	;For anything else fade it back in (we've already checked if it needs fading or not before calling this function)
-	else
+	else 																	; For anything else fade it back in (we've already checked if it needs fading or not before calling this function)
 		widgetData[0] = afWidget_A[41]
 		widgetData[1] = afWidget_A[42]
 		if abIsNameShown[3]
@@ -2109,7 +2110,7 @@ function checkAndFadePoisonIcon(bool fadeOut)
 	debug.trace("iEquip_WidgetCore checkAndFadePoisonIcon - fadeOut: " + fadeOut + ", bPoisonIconFaded: " + bPoisonIconFaded)
 	float[] widgetData = new float[4]
 	if fadeOut
-		float adjustment = (1 - (fLeftIconFadeAmount * 0.01)) ;Use same value as left icon fade for consistency
+		float adjustment = (1 - (fconsIconFadeAmount * 0.01)) ;Use same value as consumable icon fade for consistency
 		widgetData[0] = afWidget_A[46] * adjustment ;poisonBg_mc
 		widgetData[1] = afWidget_A[47] * adjustment ;poisonIcon_mc
 		if abIsNameShown[3]
@@ -3180,7 +3181,7 @@ function cycleConsumable(form targetItem, int targetIndex, bool isPotionGroup)
         count = PlayerRef.GetItemCount(targetItem)
     endIf
     setSlotCount(3, count)
-    If bConsumableIconFaded && (!isPotionGroup || !abPotionGroupEmpty[potionGroupIndex])
+    If bConsumableIconFaded && (!isPotionGroup || !(abPotionGroupEmpty[potionGroupIndex] && PO.iEmptyPotionQueueChoice == 0))
     	Utility.WaitMenuMode(0.3)
     	checkAndFadeConsumableIcon(false)
     endIf
