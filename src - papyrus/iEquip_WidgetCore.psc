@@ -281,7 +281,7 @@ int iRemovedItemsCacheObj
 int iItemsForIDGenerationObj
 int property iEquipQHolderObj auto hidden
 
-bool bReverse ;Used if bEquipOnPause is enabled
+bool bReverse
 bool bWaitingForEquipOnPauseUpdate
 bool property bCyclingLHPreselectInAmmoMode auto hidden
 
@@ -744,7 +744,7 @@ function refreshWidget()
 		abIsNameShown[i] = true
 		if i < 2
 			checkAndUpdatePoisonInfo(i)
-			if i == 1 || !bAmmoMode
+			if i == 1 || !bAmmoMode && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0)
 				TI.checkAndUpdateTemperLevelInfo(i)
 			endIf
 		endIf
@@ -863,7 +863,7 @@ function resetWidgetsToPreviousState()
 					hidePoisonInfo(i, true)
 				else
 					checkAndUpdatePoisonInfo(i)
-					if !(i == 0 && bAmmoMode)
+					if !(i == 0 && bAmmoMode) && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0)
 						TI.checkAndUpdateTemperLevelInfo(i)
 					endIf
 				endIf
@@ -1145,6 +1145,9 @@ event OnMenuClose(string _sCurrentMenu)
 		if PlayerRef.GetEquippedObject(i) as Weapon
 			checkAndUpdatePoisonInfo(i)
 			CM.checkAndUpdateChargeMeter(i)
+			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+				TI.checkAndUpdateTemperLevelInfo(i)
+			endIf
 		endIf
 		i += 1
 	endWhile
@@ -1876,6 +1879,9 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	    	hideAttributeIcons(Q)
 	    	checkAndUpdatePoisonInfo(Q)
 			CM.checkAndUpdateChargeMeter(Q)
+			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+				TI.checkAndUpdateTemperLevelInfo(Q)
+			endIf
 			if itemRequiresCounter(Q, itemType)
 				setCounterVisibility(Q, true)
 			endIf
@@ -2948,6 +2954,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	checkIfBoundSpellEquipped()
 	checkAndUpdatePoisonInfo(Q)
 	CM.checkAndUpdateChargeMeter(Q, true)
+	if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+		TI.checkAndUpdateTemperLevelInfo(Q)
+	endIf
 	if (itemType == 7 || itemType == 9) && bAmmoModeFirstLook
 		if bShowTooltips
 			Utility.WaitMenuMode(0.5)
@@ -4417,6 +4426,27 @@ function ApplyChanges()
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
 			endIf
+		endIf
+		if bTemperFadeSettingChanged
+			if !TI.bFadeIconOnDegrade
+				UI.Invoke(HUD_MENU, WidgetRoot + ".removeTemperFade")
+			else
+				i = 0
+				while i < 2
+					TI.checkAndUpdateTemperLevelInfo(i)
+					i += 1
+				endWhile
+				bTemperLevelTextStyleChanged = false
+			endIf
+			bTemperFadeSettingChanged = false
+		endIf
+		if bTemperLevelTextStyleChanged ; Blocked if we've already updated above
+			i = 0
+			while i < 2
+				TI.checkAndUpdateTemperLevelInfo(i)
+				i += 1
+			endWhile
+			bTemperLevelTextStyleChanged = false
 		endIf
 		if bPotionGroupingOptionsChanged
 		    if !bPotionGrouping

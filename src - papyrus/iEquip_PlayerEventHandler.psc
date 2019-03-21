@@ -520,6 +520,9 @@ function updateWidgetOnWeaponSwing()
 		if RC.bRechargingEnabled && CM.iChargeDisplayType > 0 && CM.abIsChargeMeterShown[iSlotToUpdate]
 			CM.updateMeterPercent(iSlotToUpdate)
 		endIf
+		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			TI.checkAndUpdateTemperLevelInfo(iSlotToUpdate)
+		endIf
 	else
 		If bPoisonSlotEnabled
 			WC.checkAndUpdatePoisonInfo(0)
@@ -534,6 +537,10 @@ function updateWidgetOnWeaponSwing()
 					CM.updateMeterPercent(1)
 				endIf
 			endIf
+		endIf
+		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			TI.checkAndUpdateTemperLevelInfo(0)
+			TI.checkAndUpdateTemperLevelInfo(1)
 		endIf
 	endIf
 	iSlotToUpdate = -1

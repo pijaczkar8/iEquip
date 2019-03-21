@@ -13,6 +13,7 @@ import iEquip_StringExt
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
 iEquip_PotionScript Property PO Auto
+iEquip_TemperedItemHandler Property TI Auto
 
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
@@ -512,6 +513,9 @@ function equipPreselectedItem(int Q)
 		endIf
 		WC.checkAndUpdatePoisonInfo(Q)
 		WC.CM.checkAndUpdateChargeMeter(Q)
+		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			TI.checkAndUpdateTemperLevelInfo(Q)
+		endIf
 		WC.checkIfBoundSpellEquipped()
 		if !bEquippingAllPreselectedItems
 			WC.checkAndFadeLeftIcon(Q, itemType)
@@ -902,6 +906,9 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 			endIf
 			WC.checkAndUpdatePoisonInfo(1)
 			WC.CM.checkAndUpdateChargeMeter(1)
+			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+				TI.checkAndUpdateTemperLevelInfo(1)
+			endIf
 			itemType = jMap.getInt(targetObject, "iEquipType")
 			form formToEquip = jMap.getForm(jArray.getObj(WC.aiTargetQ[1], found), "iEquipForm")
 			if itemType == 22
@@ -1047,6 +1054,9 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 					WC.setCounterVisibility(1, false)
 				endIf
 				WC.CM.checkAndUpdateChargeMeter(1)
+				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+					TI.checkAndUpdateTemperLevelInfo(1)
+				endIf
 				if WC.bEnableGearedUp
 					WC.refreshGearedUp()
 				endIf
@@ -1235,6 +1245,9 @@ function quickRangedSwitchOut(bool force1H = false)
 		PlayerRef.EquipItemEx(formToEquip, 1, false, false)
 		WC.checkAndUpdatePoisonInfo(1)
 		WC.CM.checkAndUpdateChargeMeter(1)
+		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			TI.checkAndUpdateTemperLevelInfo(1)
+		endIf
 		if WC.aiCurrentlyPreselected[1] == targetIndex
 			cyclePreselectSlot(1, jArray.count(targetArray), false)
 		endIf
@@ -1243,6 +1256,9 @@ function quickRangedSwitchOut(bool force1H = false)
 			PlayerRef.EquipItemEx(jMap.getForm(jArray.getObj(targetArray, WC.aiCurrentQueuePosition[0]), "iEquipForm"), 2, false, false)
 			WC.checkAndUpdatePoisonInfo(0)
 			WC.CM.checkAndUpdateChargeMeter(0)
+			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+				TI.checkAndUpdateTemperLevelInfo(0)
+			endIf
 			if WC.aiCurrentlyPreselected[0] == WC.aiCurrentQueuePosition[0]
 				cyclePreselectSlot(0, jArray.count(targetArray), false)
 			endIf
@@ -1293,6 +1309,9 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 			endIf
 			WC.checkAndUpdatePoisonInfo(otherHand)
 			WC.CM.checkAndUpdateChargeMeter(otherHand)
+			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+				TI.checkAndUpdateTemperLevelInfo(otherHand)
+			endIf
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[otherHand]
 				WC.showName(otherHand)
 			endIf
