@@ -3,6 +3,7 @@ Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 
 Import iEquip_FormExt
 import iEquip_ActorExt
+import iEquip_StringExt
 Import Utility
 import AhzMoreHudIE
 
@@ -69,6 +70,7 @@ Formlist Property iEquip_RightHandBlacklistFLST Auto
 Formlist Property iEquip_GeneralBlacklistFLST Auto ;Shout, Consumable and Poison Queues
 
 FormList Property iEquip_OnObjectEquippedFLST Auto
+FormList property iEquip_OnObjectEquippedObjRefFLST Auto
 
 bool property bPoisonSlotEnabled = true auto hidden
 bool bIsBoundSpellEquipped
@@ -96,6 +98,8 @@ bool property bWaitingForTransform auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
+ObjectReference[] objectReferencesToProcess
+int nextFreeIndexInObjRefArray
 
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
@@ -125,17 +129,19 @@ Event OnInit()
     aPlayerBaseVampireRaces[9] = WoodElfRaceVampire
 
     itemTypesToProcess = new int[6]
-	itemTypesToProcess[0] = 22 ;Spells or shouts
-	itemTypesToProcess[1] = 23 ;Scrolls
-	itemTypesToProcess[2] = 31 ;Torches
-	itemTypesToProcess[3] = 41 ;Weapons
-	itemTypesToProcess[4] = 42 ;Ammo
-	itemTypesToProcess[5] = 119 ;Powers
+	itemTypesToProcess[0] = 22 			; Spells or shouts
+	itemTypesToProcess[1] = 23 			; Scrolls
+	itemTypesToProcess[2] = 31 			; Torches
+	itemTypesToProcess[3] = 41 			; Weapons
+	itemTypesToProcess[4] = 42 			; Ammo
+	itemTypesToProcess[5] = 119 		; Powers
 
 	blackListFLSTs = new formlist[3]
 	blackListFLSTs[0] = iEquip_LeftHandBlacklistFLST
 	blackListFLSTs[1] = iEquip_RightHandBlacklistFLST
 	blackListFLSTs[2] = iEquip_GeneralBlacklistFLST
+
+	objectReferencesToProcess = new ObjectReference[12]		; Shouldn't ever need more than 12
 
 	debug.trace("iEquip_PlayerEventHandler OnInit end")
 endEvent
@@ -477,6 +483,8 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 			int itemType = akBaseObject.GetType()
 			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
 				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
+				iEquip_OnObjectEquippedObjRefFLST.AddForm(akReference)
+				nextFreeIndexInObjRefArray += 1
 				if !bWaitingForTransform
 					bWaitingForOnObjectEquippedUpdate = true
 					registerForSingleUpdate(0.5)
@@ -539,8 +547,10 @@ function processQueuedForms()
 	processingQueuedForms = true
 	int i
 	form queuedForm
+	objectReference queuedObjRef
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
+		queuedObjRef = iEquip_OnObjectEquippedObjRefFLST.GetAt(i) as ObjectReference
 		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
 		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
 		if !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
@@ -579,34 +589,54 @@ function processQueuedForms()
 						BM.updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
 					endIf
 				elseIf equippedSlot == 3
-					updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
-					updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
+					updateSlotOnObjectEquipped(0, queuedForm, queuedObjRef, itemType, iEquipSlot)
+					updateSlotOnObjectEquipped(1, queuedForm, queuedObjRef, itemType, iEquipSlot)
 				else
-					updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
+					updateSlotOnObjectEquipped(equippedSlot, queuedForm, queuedObjRef, itemType, iEquipSlot)
 				endIf
 			endIf
 		endIf
 		i += 1
 	endWhile
 	iEquip_OnObjectEquippedFLST.Revert()
+	iEquip_OnObjectEquippedObjRefFLST.Revert()
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
 	processingQueuedForms = false
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms end")
 endFunction
 
-function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
+function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjRef, form queuedForm, int itemType, int iEquipSlot)
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start")
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot)
 	bool actionTaken
 	int targetIndex
 	bool blockCall
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
-	string itemName = queuedForm.GetName()
+	string itemName = queuedObjRef.GetDisplayName()
+	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 	;Check if we've just manually equipped an item that is already in an iEquip queue
 	if formFound
 		;If it's been found in the queue for the equippedSlot it's been equipped to
-		targetIndex = WC.findInQueue(equippedSlot, itemName)
+		targetIndex = WC.findInQueue(equippedSlot, "", queuedForm)
 		if targetIndex != -1
+			;Update the item name in case the display name differs from the base item name, and store the new itemID
+			jMap.setStr(jArray.GetObj(WC.aiTargetQ[Q], targetIndex), "iEquipName", itemName)
+			jMap.setInt(jArray.GetObj(WC.aiTargetQ[Q], targetIndex), "iEquipItemID", itemID)
+			;Send to moreHUD if loaded
+			if bMoreHUDLoaded
+				string moreHUDIcon
+				if equippedSlot < 2
+					AhzMoreHudIE.RemoveIconItem(itemID)
+					if WC.isAlreadyInQueue((equippedSlot + 1) % 2, queuedForm, itemID)
+						moreHUDIcon = asMoreHUDIcons[3]
+					else
+	            		moreHUDIcon = asMoreHUDIcons[equippedSlot]
+	            	endIf
+	            else
+	            	moreHUDIcon = asMoreHUDIcons[2]
+	            endIf
+	            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
+	        endIf
 			;If it's already shown in the widget do nothing
 			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex
 				blockCall = true
@@ -640,7 +670,6 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			if freeSpace
 				;If there is space in the target queue create a new jMap object and add it to the queue
 				debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
-				int itemID = WC.createItemID(itemName, queuedForm.GetFormID())
 				int iEquipItem = jMap.object()
 				string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
 				jMap.setForm(iEquipItem, "iEquipForm", queuedForm)

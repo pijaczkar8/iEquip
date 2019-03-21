@@ -88,7 +88,7 @@ function drawPage()
             MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
         endIf
 
-        MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", WC.bFadeIconOnDegrade)
+        MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", TI.bFadeIconOnDegrade)
         MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
 
         MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
@@ -227,7 +227,8 @@ State ui_tgl_tempLvlFade
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_tempLvlFade")
         elseIf currentEvent == "Select"
-            WC.bFadeIconOnDegrade = !WC.bFadeIconOnDegrade
+            TI.bFadeIconOnDegrade = !TI.bFadeIconOnDegrade
+            MCM.SetToggleOptionValueST(TI.bFadeIconOnDegrade)
             WC.bTemperFadeSettingChanged = true
         endIf 
     endEvent

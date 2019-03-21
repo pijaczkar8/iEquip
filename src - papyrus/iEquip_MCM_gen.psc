@@ -142,7 +142,7 @@ State gen_tgl_showTooltips
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_showTooltips")
         elseIf currentEvent == "Select"
-            if !WC.bShowTooltips || (bFirstTimeDisablingTooltips && MCM.ShowMessage("$iEquip_MCM_gen_msg_showTooltips",  true, "$Yes", "$No"))
+            if !WC.bShowTooltips || (!bFirstTimeDisablingTooltips || MCM.ShowMessage("$iEquip_MCM_gen_msg_showTooltips",  true, "$Yes", "$No"))
                 bFirstTimeDisablingTooltips = false
                 WC.bShowTooltips = !WC.bShowTooltips
             endIf

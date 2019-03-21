@@ -13,10 +13,12 @@ string property WidgetRoot auto hidden
 
 string[] asTemperLevelNames
 float[] afTemperLevelMax
-int[] aiTemperedItemTypes
+int[] property aiTemperedItemTypes auto hidden
 
 string[] asNamePaths
 
+; MCM Properties
+bool property bFadeIconOnDegrade = true auto hidden
 int property iTemperNameFormat = 1 auto hidden
 
 bool bFirstRun = true
@@ -27,12 +29,15 @@ function initialise()
 	if bFirstRun
 		afTemperLevelMax = new float[7]
 		afTemperLevelMax[0] = 1.0					; Untempered - same value in vanilla and Requiem, no reason to think any other mod would change it from 1.0 (100% of normal base health)
+		
 		asTemperLevelNames = new string[7]
+		
 		asNamePaths = new string[7]
 		asNamePaths[0] = ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text"
 		asNamePaths[1] = ".widgetMaster.LeftHandWidget.leftPreselectName_mc.leftPreselectName.text"
 		asNamePaths[5] = ".widgetMaster.RightHandWidget.rightName_mc.rightName.text"
 		asNamePaths[6] = ".widgetMaster.RightHandWidget.rightPreselectName_mc.rightPreselectName.text"
+		
 		aiTemperedItemTypes = new int[9]
 		aiTemperedItemTypes[0] = 1		; Swords
 		aiTemperedItemTypes[1] = 2		; Daggers
@@ -43,6 +48,7 @@ function initialise()
 		aiTemperedItemTypes[6] = 7		; Bows
 		aiTemperedItemTypes[7] = 9		; Crossbows
 		aiTemperedItemTypes[8] = 26		; Shields
+		
 		bFirstRun = false
 	endIf
 	
@@ -91,9 +97,9 @@ endFunction
 	return currentTemperLevelPercent
 endFunction
 
-string function getTemperLevelName(int Q, float fItemHealth)
-	debug.trace("iEquip_TemperedItemHandler getTemperLevelName start - Q: " + Q)
-	string temperedLevelSuffix
+string function gettemperLevelName(int Q, float fItemHealth)
+	debug.trace("iEquip_TemperedItemHandler gettemperLevelName start - Q: " + Q)
+	string temperLevelName
 	
 	if fItemHealth > afTemperLevelMax[0] 	; First check if the item has been improved
 
@@ -103,16 +109,16 @@ string function getTemperLevelName(int Q, float fItemHealth)
 		endWhile
 		
 		if i == 7 							; If it has been tempered past Legendary suffix it Legendary+ (or whatever the upper level name happens to be)
-			temperedLevelSuffix = asTemperLevelNames[5] + "+"
+			temperLevelName = asTemperLevelNames[5] + "+"
 		else 								; Otherwise retrieve the temper level string
-			temperedLevelSuffix = asTemperLevelNames[i]
+			temperLevelName = asTemperLevelNames[i]
 		endIf
 	
 	else									; Untempered
-		temperedLevelSuffix = ""
+		temperLevelName = ""
 	endIf
-	debug.trace("iEquip_TemperedItemHandler getTemperLevelName - returning: " + temperedLevelSuffix)
-	return temperedLevelSuffix
+	debug.trace("iEquip_TemperedItemHandler gettemperLevelName - returning: " + temperLevelName)
+	return temperLevelName
 endFunction/;
 
 function checkAndUpdateTemperLevelInfo(int Q)
@@ -120,7 +126,7 @@ function checkAndUpdateTemperLevelInfo(int Q)
 
 	if aiTemperedItemTypes.Find(jMap.getInt(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipType")) != -1
 		
-		string temperedLevelSuffix
+		string temperLevelName
 		int currentTemperLevelPercent
 		float fItemHealth = WornObject.GetItemHealthPercent(PlayerRef, Q, 0)
 		
@@ -132,22 +138,22 @@ function checkAndUpdateTemperLevelInfo(int Q)
 			endWhile
 			
 			if i == 7 							; If it has been tempered past Legendary set it to full and suffix it Legendary+
-				temperedLevelSuffix = asTemperLevelNames[5] + "+"
+				temperLevelName = asTemperLevelNames[5] + "+"
 				currentTemperLevelPercent = 100
 			else 								; Otherwise calculate the current % value within the level range and retrieve the temper level string
 				int j = i - 1
 				currentTemperLevelPercent = Round((fItemHealth - afTemperLevelMax[j]) / (afTemperLevelMax[i] - afTemperLevelMax[j]) * 100)
-				temperedLevelSuffix = asTemperLevelNames[i]
+				temperLevelName = asTemperLevelNames[i]
 			endIf
 		
 		else									; Untempered
-			temperedLevelSuffix = ""
+			temperLevelName = ""
 			currentTemperLevelPercent = 100
 		endIf
 		if WC.bFadeIconOnDegrade
 			setTemperLevelFade(Q, currentTemperLevelPercent)
 		endIf
-		setTemperLevelName(Q, temperedLevelSuffix, currentTemperLevelPercent)
+		setTemperLevelName(Q, temperLevelName, currentTemperLevelPercent)
 		jMap.setInt(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastKnownItemHealth", currentTemperLevelPercent)
 	
 	endIf
@@ -210,13 +216,13 @@ function setTemperLevelName(int Q, string temperLevelName, int temperLevelPercen
 	debug.trace("iEquip_TemperedItemHandler setTemperLevelName end")
 endFunction
 
-Int Function Round(Float i)
-	If (i - (i as Int)) < 0.5
-		Return (i as Int)
-	Else
-		Return (Math.Ceiling(i) as Int)
-	EndIf
-EndFunction
+int function Round(float i)
+	if (i - (i as int)) < 0.5
+		return (i as int)
+	else
+		return (Math.Ceiling(i) as int)
+	endIf
+endFunction
 
 ;/ Code snippets from Loot & Degradation _edquestscript.psc
 
@@ -225,14 +231,6 @@ If ArmorSlot == 0
 Else
 	CurrentItem = targ.GetWornForm(ArmorSlot)
 EndIf
-
-Event OnGetUp(ObjectReference akFurniture)
-	If akFurniture.HasKeyword(CraftingSmithingSharpeningWheel) || akFurniture.HasKeyword(CraftingSmithingArmorTable)
-		Whetstone = False
-		UpdateAllGearHealth()
-		_EDSKConfigQuest.SetContextual()
-	EndIf
-EndEvent
 
 Float Function RoundToTens(Float Value)
 	Float Rounded = ((Value * 10.0) as Int / 10.0)
