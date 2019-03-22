@@ -1244,9 +1244,7 @@ int function selectRestorePotionBy3sMag(int Q, bool bFastActing)
     debug.trace("iEquip_PotionScript selectRestorePotionBy3sMag - Q " + Q + ", bFastActing: " + bFastActing)
     sortPotionQueue(Q, "iEquipStrength3s")
     int targetPotion
-    if bFastActing
-        targetPotion = 0
-    else
+    if !bFastActing
         targetPotion = jArray.count(aiPotionQ[Q]) - 1
     endIf
     debug.trace("iEquip_PotionScript selectRestorePotionBy3sMag - selected potion in index " + targetPotion + " is a " + jMap.getStr(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipName") + " with a 3s magnitude of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipStrength3s"))
