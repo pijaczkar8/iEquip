@@ -2647,22 +2647,31 @@ function hideAttributeIcons(int Q)
 endFunction
 
 int function findInQueue(int Q, string itemToFind, form formToFind = none)
-	debug.trace("iEquip_WidgetCore findInQueue start")
+	debug.trace("iEquip_WidgetCore findInQueue start - formToFind: " + formToFind + ", itemToFind: " + itemToFind)
 	int iIndex
 	bool found
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
-		if (formToFind && (formToFind != jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm"))) || itemToFind != jMap.getStr(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipName")
-			iIndex += 1
+		if formToFind
+			debug.trace("iEquip_WidgetCore findInQueue - searching by form")
+			if formToFind != jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm")
+				iIndex += 1
+			else
+				found = true
+			endIf
 		else
-			found = true
+			debug.trace("iEquip_WidgetCore findInQueue - searching by name")
+			if itemToFind != jMap.getStr(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipName")
+				iIndex += 1
+			else
+				found = true
+			endIf
 		endIf
 	endwhile
-	debug.trace("iEquip_WidgetCore findInQueue end")
-	if found
-		return iIndex
-	else
-		return -1
+	if !found
+		iIndex = -1
 	endIf
+	debug.trace("iEquip_WidgetCore findInQueue end - returning index: " + iIndex)
+	return iIndex
 endFunction
 
 function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cyclingAmmo = false, bool onItemRemoved = false, bool addToCache = true)

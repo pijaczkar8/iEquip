@@ -130,7 +130,13 @@ function checkAndUpdateTemperLevelInfo(int Q)
 		
 		string temperLevelName
 		int currentTemperLevelPercent
-		float fItemHealth = WornObject.GetItemHealthPercent(PlayerRef, Q, 0)
+		float fItemHealth
+		
+		if Q == 0 && PlayerRef.GetEquippedShield()
+			fItemHealth = WornObject.GetItemHealthPercent(PlayerRef, Q, 512)
+		else
+			fItemHealth = WornObject.GetItemHealthPercent(PlayerRef, Q, 0)
+		endIf
 
 		debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo - fItemHealth: " + fItemHealth)
 		

@@ -558,7 +558,6 @@ function processQueuedForms()
 	objectReference queuedObjRef
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
-		queuedObjRef = iEquip_OnObjectEquippedObjRefFLST.GetAt(i) as ObjectReference
 		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
 		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
 		if !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
@@ -597,10 +596,10 @@ function processQueuedForms()
 						BM.updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
 					endIf
 				elseIf equippedSlot == 3
-					updateSlotOnObjectEquipped(0, queuedForm, queuedObjRef, itemType, iEquipSlot)
-					updateSlotOnObjectEquipped(1, queuedForm, queuedObjRef, itemType, iEquipSlot)
+					updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
+					updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
 				else
-					updateSlotOnObjectEquipped(equippedSlot, queuedForm, queuedObjRef, itemType, iEquipSlot)
+					updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
 				endIf
 			endIf
 		endIf
@@ -613,7 +612,7 @@ function processQueuedForms()
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms end")
 endFunction
 
-function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, objectReference queuedObjRef,  int itemType, int iEquipSlot)
+function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start")
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot)
 	bool actionTaken
@@ -621,9 +620,12 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, objectRef
 	bool blockCall
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName
-	if queuedObjRef
-		itemName = queuedObjRef.GetDisplayName()
+	if itemType == 26
+		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 512)
 	else
+		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
+	endIf
+	if itemName == ""
 		itemName = queuedForm.GetName()
 	endIf
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
@@ -637,7 +639,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, objectRef
 			jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
 			jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
 			
-			if WC.bMoreHUDLoaded																			; Send to moreHUD if loaded
+			if WC.bMoreHUDLoaded																		; Send to moreHUD if loaded
 				string moreHUDIcon
 				if equippedSlot < 2
 					AhzMoreHudIE.RemoveIconItem(itemID)
