@@ -1,0 +1,1 @@
+ScriptName iEquip_ShoutPosIndUpdateScript Extends iEquip_PosIndFadeUpdateScript Hidden

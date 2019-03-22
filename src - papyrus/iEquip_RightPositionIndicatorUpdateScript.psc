@@ -1,0 +1,1 @@
+ScriptName iEquip_RightPositionIndicatorUpdateScript Extends iEquip_PositionIndicatorFadeoutUpdateScript Hidden

@@ -279,6 +279,10 @@ function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, 
 	endIf
 	float targetAlpha
 	if show
+		;Just in case the charge meter and the queue position indicator occupy the same screen space hide the position indicator first (does nothing if not currently shown)
+		if iChargeDisplayType == 1
+			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
+		endIf
 		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[element] + "._visible", true)
 		targetAlpha = WC.afWidget_A[element]
 		abIsChargeMeterShown[Q] = true

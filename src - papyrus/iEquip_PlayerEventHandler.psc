@@ -2,6 +2,7 @@
 Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 
 Import iEquip_FormExt
+import iEquip_ActorExt
 Import Utility
 import AhzMoreHudIE
 
@@ -18,6 +19,34 @@ iEquip_WidgetVisUpdateScript property WVis auto
 Actor Property PlayerRef Auto
 Race property PlayerRace auto hidden
 
+Race PlayerBaseRace
+
+Race Property ArgonianRace auto
+Race Property ArgonianRaceVampire auto
+Race Property BretonRace auto
+Race Property BretonRaceVampire auto
+Race Property DarkElfRace auto
+Race Property DarkElfRaceVampire auto
+Race Property HighElfRace auto
+Race Property HighElfRaceVampire auto
+Race Property ImperialRace auto
+Race Property ImperialRaceVampire auto
+Race Property KhajiitRace auto
+Race Property KhajiitRaceVampire auto
+Race Property NordRace auto
+Race Property NordRaceVampire auto
+Race Property OrcRace auto
+Race Property OrcRaceVampire auto
+Race Property RedguardRace auto
+Race Property RedguardRaceVampire auto
+Race Property WoodElfRace auto
+Race Property WoodElfRaceVampire auto
+
+Race[] Property aPlayerBaseRaces auto Hidden
+Race[] Property aPlayerBaseVampireRaces auto Hidden
+
+bool bPlayerRaceConfirmed
+
 ; Werewolf reference - Vanilla - populated in CK
 race property WerewolfBeastRace auto
 ; Vampire Lord reference - Dawnguard - populated in OnInit or OnPlayerLoadGame
@@ -28,6 +57,12 @@ race property NecroLichRace auto hidden
 FormList property iEquip_AllCurrentItemsFLST Auto
 FormList property iEquip_AmmoItemsFLST Auto
 FormList property iEquip_PotionItemsFLST Auto
+
+Formlist[] property blackListFLSTs auto hidden
+
+Formlist Property iEquip_LeftHandBlacklistFLST Auto
+Formlist Property iEquip_RightHandBlacklistFLST Auto
+Formlist Property iEquip_GeneralBlacklistFLST Auto ;Shout, Consumable and Poison Queues
 
 FormList Property iEquip_OnObjectEquippedFLST Auto
 
@@ -48,6 +83,8 @@ bool property bGoingUnarmed auto hidden
 int dualCastCounter
 
 bool property bPlayerIsABeast auto hidden
+bool property bPlayerIsAVampire auto hidden
+bool property bWaitingForTransform auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
@@ -55,7 +92,35 @@ int[] itemTypesToProcess
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
     PlayerRace = PlayerRef.GetRace()
+    PlayerBaseRace = PlayerRace
+    ;PlayerBaseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
+    
+    aPlayerBaseRaces = new race [10]
+    aPlayerBaseRaces[0] = ArgonianRace
+    aPlayerBaseRaces[1] = BretonRace
+    aPlayerBaseRaces[2] = DarkElfRace
+    aPlayerBaseRaces[3] = HighElfRace
+    aPlayerBaseRaces[4] = ImperialRace
+    aPlayerBaseRaces[5] = KhajiitRace
+    aPlayerBaseRaces[6] = NordRace
+    aPlayerBaseRaces[7] = OrcRace
+    aPlayerBaseRaces[8] = RedguardRace
+    aPlayerBaseRaces[9] = WoodElfRace
+
+    aPlayerBaseVampireRaces = new race [10]
+    aPlayerBaseVampireRaces[0] = ArgonianRaceVampire
+    aPlayerBaseVampireRaces[1] = BretonRaceVampire
+    aPlayerBaseVampireRaces[2] = DarkElfRaceVampire
+    aPlayerBaseVampireRaces[3] = HighElfRaceVampire
+    aPlayerBaseVampireRaces[4] = ImperialRaceVampire
+    aPlayerBaseVampireRaces[5] = KhajiitRaceVampire
+    aPlayerBaseVampireRaces[6] = NordRaceVampire
+    aPlayerBaseVampireRaces[7] = OrcRaceVampire
+    aPlayerBaseVampireRaces[8] = RedguardRaceVampire
+    aPlayerBaseVampireRaces[9] = WoodElfRaceVampire
+
     bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
+
     itemTypesToProcess = new int[6]
 	itemTypesToProcess[0] = 22 ;Spells or shouts
 	itemTypesToProcess[1] = 23 ;Scrolls
@@ -63,11 +128,18 @@ Event OnInit()
 	itemTypesToProcess[3] = 41 ;Weapons
 	itemTypesToProcess[4] = 42 ;Ammo
 	itemTypesToProcess[5] = 119 ;Powers
+
+	blackListFLSTs = new formlist[3]
+	blackListFLSTs[0] = iEquip_LeftHandBlacklistFLST
+	blackListFLSTs[1] = iEquip_RightHandBlacklistFLST
+	blackListFLSTs[2] = iEquip_GeneralBlacklistFLST
+
 	debug.trace("iEquip_PlayerEventHandler OnInit end")
 endEvent
 
 Event OnPlayerLoadGame()
-	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")	
+	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")
+	PlayerRace = PlayerRef.GetRace()
 	initialise(WC.isEnabled)
 	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame end")
 endEvent
@@ -82,27 +154,132 @@ function initialise(bool enabled)
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
-		if bIsThunderchildLoaded || bIsWintersunLoaded
-			RegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
-			RegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
-			;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+		if bPlayerIsABeast
+			registerForBMEvents()
+		elseIf PlayerRace == PlayerBaseRace
+			registerForCoreAnimationEvents()
+			registerForCoreActorActions()
 		endIf
-		RegisterForAnimationEvent(PlayerRef, "weaponSwing")
-		RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
-		RegisterForAnimationEvent(PlayerRef, "arrowRelease")
-		RegisterForAnimationEvent(PlayerRef, "bashStop")
-		RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
-		RegisterForActorAction(8) ;Draw End - weapons and spells
-		RegisterForActorAction(10) ;Sheathe End - weapons and spells
 		BW.initialise()
 		PO.initialise()
+		BM.initialise()
+		BM.PlayerBaseRace = PlayerBaseRace
 		updateAllEventFilters()
 	else
 		gotoState("DISABLED")
+		UnregisterForAllEvents()
 	endIf
 	debug.trace("iEquip_PlayerEventHandler initialise end")
+endFunction
+
+function registerForCoreAnimationEvents()
+	if bIsThunderchildLoaded || bIsWintersunLoaded
+		RegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
+		RegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
+		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
+		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
+		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+	endIf
+	RegisterForAnimationEvent(PlayerRef, "weaponSwing")
+	RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
+	RegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	RegisterForAnimationEvent(PlayerRef, "bashStop")
+	;Listeners for the beast form transformation sAttributes
+	RegisterForAnimationEvent(PlayerRef, "SetRace")
+	RegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+	RegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	RegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	RegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	RegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
+endFunction
+
+function registerForCoreActorActions()
+	RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
+	RegisterForActorAction(8) ;Draw End - weapons and spells
+	RegisterForActorAction(10) ;Sheathe End - weapons and spells
+endFunction
+
+function unregisterForCoreAnimationEvents()
+	if bIsThunderchildLoaded || bIsWintersunLoaded
+		UnRegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
+		UnRegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+	endIf
+	UnRegisterForAnimationEvent(PlayerRef, "weaponSwing")
+	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
+	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+	;Listeners for the beast form transformation sAttributes
+	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
+	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+	UnRegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
+endFunction
+
+; Register for all of the animation events we care about for beast mode
+Function registerForBMEvents()
+	RegisterForAnimationEvent(PlayerRef, "SetRace")
+    RegisterForAnimationEvent(PlayerRef, "GroundStart")
+    RegisterForAnimationEvent(PlayerRef, "LevitateStart")
+    RegisterForAnimationEvent(PlayerRef, "LiftoffStart")
+    RegisterForAnimationEvent(PlayerRef, "LandStart")
+    RegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+    RegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+    RegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	RegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	RegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	RegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
+EndFunction
+
+; Unregister for the beast mode animation events we registered for.
+Function unregisterForBMEvents()
+	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
+   	UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
+   	UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LiftoffStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LandStart")
+   	UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+   	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+   	UnRegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
+EndFunction
+
+function unregisterForAllEvents()
+	;Core animation events
+	if bIsThunderchildLoaded || bIsWintersunLoaded
+		UnRegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
+		UnRegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
+		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
+	endIf
+	UnRegisterForAnimationEvent(PlayerRef, "weaponSwing")
+	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
+	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+	;Beast Mode animation events
+	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
+	UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
+   	UnRegisterForAnimationEvent(PlayerRef, "LevitateStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LiftoffStart")
+    UnRegisterForAnimationEvent(PlayerRef, "LandStart")
+   	UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
+   	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+   	UnRegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
+	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
+	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
+	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
+   	;Actor actions
+   	UnregisterForActorAction(2)
+   	UnregisterForActorAction(7)
+	UnregisterForActorAction(8)
+	UnregisterForActorAction(10)
 endFunction
 
 bool Property boundSpellEquipped
@@ -162,25 +339,45 @@ function updateEventFilter(formlist listToUpdate)
 endFunction
 
 Event OnRaceSwitchComplete()
-	debug.trace("iEquip_WidgetCore OnRaceSwitchComplete start")
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start")
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current state: " + GetState())
 	if UI.IsMenuOpen("RaceSex Menu")
 		PlayerRace = PlayerRef.GetRace()
 	else
 		race newRace = PlayerRef.GetRace()
+		debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current PlayerRace: " + PlayerRace.GetName() + ", newRace: " + newRace.GetName() + ", original race: " + PlayerBaseRace.GetName())
+		race baseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
+		debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - baseRace: " + baseRace.GetName())
 		if WC.isEnabled && WC.bEnableGearedUp
 			Utility.SetINIbool("bDisableGearedUp:General", !(newRace == PlayerRace))
 			WC.refreshVisibleItems()
 		endIf
 		if PlayerRace != newRace
 			PlayerRace = newRace
-			if bPlayerIsABeast || PlayerRace == WerewolfBeastRace || (bIsDawnguardLoaded && PlayerRace == DLC1VampireBeastRace) || (bIsUndeathLoaded && PlayerRace == NecroLichRace)
-				bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
-				if WC.isEnabled
-					BM.onPlayerTransform(PlayerRace)
-				endIf
+			bPlayerIsAVampire = (aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBaseVampireRaces.Find(PlayerRace))
+			bPlayerIsABeast = BM.arBeastRaces.Find(PlayerRace) > -1
+			KH.bPlayerIsABeast = bPlayerIsABeast
+			if bPlayerIsABeast
+				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsABeast: " + bPlayerIsABeast)
+				gotoState("BEASTMODE")
+				unregisterForCoreAnimationEvents()
+				registerForBMEvents()
+			elseIf (PlayerRace == PlayerBaseRace) || bPlayerIsAVampire
+				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsAVampire: " + bPlayerIsAVampire)
+				unregisterForBMEvents()
+				registerForCoreAnimationEvents()
+				gotoState("")
+			else ;If we're not one of the supported beast races, and we're not in our original form then we must be an unsupported transformation so unregister for all events and block all relevant OnXxx events
+				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - player is in an unsupported form")
+				unregisterForAllEvents()
+				gotoState("DISABLED")
+			endIf
+			if WC.isEnabled
+				BM.onPlayerTransform(PlayerRace, bPlayerIsAVampire)
 			endIf
 		endIf
 	endIf
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - new state: " + GetState())
 	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete end")
 EndEvent
 
@@ -196,10 +393,14 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 				updateEventFilter(iEquip_AllCurrentItemsFLST)
 			endIf
 		elseIf actionType == 7 ;Draw Begin
+			debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
+			WVis.unregisterForWidgetFadeoutUpdate() ;Unregister first in case it's just about to fade out
 			if !WC.bIsWidgetShown
 				WC.updateWidgetVisibility()
 			endIf
 		elseIf actionType == 8 ;Draw End
+			debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
+			WVis.unregisterForWidgetFadeoutUpdate()
 			if !WC.bIsWidgetShown ;In case we're drawing a spell which won't have been caught by Draw Begin
 				WC.updateWidgetVisibility()
 			endIf
@@ -217,9 +418,11 @@ endEvent
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent start")	
     debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
+    if EventName == "Soundplay.NPCWerewolfTransformation"
+    	BM.OnWerewolfTransformationStart()
     ;ToDo - update meditation animation event names
     ;if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
-    if (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
+    elseIf (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
     	bPlayerIsMeditating = true
     	debug.trace("Look Ma, I'm meditating!")
     	KH.bAllowKeyPress = false
@@ -255,9 +458,11 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		else
 			int itemType = akBaseObject.GetType()
 			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
-				bWaitingForOnObjectEquippedUpdate = true
 				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
-				registerForSingleUpdate(0.5)
+				if !bWaitingForTransform
+					bWaitingForOnObjectEquippedUpdate = true
+					registerForSingleUpdate(0.5)
+				endIf
 			endIf
 		endIf
 	endIf
@@ -266,14 +471,16 @@ endEvent
 
 Event OnUpdate()
 	debug.trace("iEquip_PlayerEventHandler OnUpdate start")	
-	debug.trace("iEquip_PlayerEventHandler OnUpdate - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate)
+	debug.trace("iEquip_PlayerEventHandler OnUpdate - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate + ", bWaitingForTransform: " + bWaitingForTransform)
 	if bWaitingForAnimationUpdate
 		bWaitingForAnimationUpdate = false
 		updateWidgetOnWeaponSwing()
 	endIf
 	if bWaitingForOnObjectEquippedUpdate
 		bWaitingForOnObjectEquippedUpdate = false
-		processQueuedForms()
+		if !bWaitingForTransform
+			processQueuedForms()
+		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler OnUpdate end")	
 EndEvent
@@ -348,7 +555,14 @@ function processQueuedForms()
 				if (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
 					equippedSlot = 1
 				endIf
-				if equippedSlot == 3
+				if bPlayerIsABeast
+					if equippedSlot == 3
+						BM.updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
+						BM.updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
+					else
+						BM.updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
+					endIf
+				elseIf equippedSlot == 3
 					updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
 					updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
 				else
@@ -392,69 +606,72 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
-	;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
-	if !actionTaken && WC.bAutoAddNewItems
-		;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
-		bool freeSpace = true
-		targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
-		if targetIndex >= WC.iMaxQueueLength
-			if WC.bHardLimitQueueSize
-				freeSpace = false
-				blockCall = true
-			else
-				WC.iMaxQueueLength += 1
-			endIf
-		endIf
-		if freeSpace
-			;If there is space in the target queue create a new jMap object and add it to the queue
-			debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
-			int itemID = WC.createItemID(itemName, queuedForm.GetFormID())
-			int iEquipItem = jMap.object()
-			string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
-			jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
-			jMap.setInt(iEquipItem, "iEquipItemID", itemID)
-			jMap.setInt(iEquipItem, "iEquipType", itemType)
-			jMap.setStr(iEquipItem, "iEquipName", itemName)
-			jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
-			if equippedSlot < 2
-				if itemType == 22
-					if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
-						jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
-					else
-						jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
-					endIf
-					jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
-				endIf
-				;These will be set correctly by WC.CycleHand() and associated functions
-				jMap.setInt(iEquipItem, "isEnchanted", 0)
-				jMap.setInt(iEquipItem, "isPoisoned", 0)
-			endIf
-			jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
-			;If it's not already in the AllItems formlist because it's in the other hand queue add it now
-			if !formFound
-				iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
-				updateEventFilter(iEquip_AllCurrentItemsFLST)
-			endIf
-			;Send to moreHUD if loaded
-			if WC.bMoreHUDLoaded
-				if formFound
-					AhzMoreHudIE.RemoveIconItem(itemID)
-					AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) ;Both queues
+	;Check that the queuedForm isn't blacklisted for the slot it's been equipped to
+	if !blackListFLSTs[equippedSlot].HasForm(queuedForm)
+		;If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
+		if !actionTaken && WC.bAutoAddNewItems
+			;First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
+			bool freeSpace = true
+			targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
+			if targetIndex >= WC.iMaxQueueLength
+				if WC.bHardLimitQueueSize
+					freeSpace = false
+					blockCall = true
 				else
-					AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
+					WC.iMaxQueueLength += 1
 				endIf
 			endIf
-			;Now update the widget to show the equipped item
-			WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
-			WC.asCurrentlyEquipped[equippedSlot] = itemName
-			if equippedSlot < 2 || WC.bShoutEnabled
-				WC.updateWidget(equippedSlot, targetIndex, false, true)
+			if freeSpace
+				;If there is space in the target queue create a new jMap object and add it to the queue
+				debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
+				int itemID = WC.createItemID(itemName, queuedForm.GetFormID())
+				int iEquipItem = jMap.object()
+				string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
+				jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
+				jMap.setInt(iEquipItem, "iEquipItemID", itemID)
+				jMap.setInt(iEquipItem, "iEquipType", itemType)
+				jMap.setStr(iEquipItem, "iEquipName", itemName)
+				jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+				if equippedSlot < 2
+					if itemType == 22
+						if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
+							jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
+						else
+							jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
+						endIf
+						jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
+					endIf
+					;These will be set correctly by WC.CycleHand() and associated functions
+					jMap.setInt(iEquipItem, "isEnchanted", 0)
+					jMap.setInt(iEquipItem, "isPoisoned", 0)
+				endIf
+				jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
+				;If it's not already in the AllItems formlist because it's in the other hand queue add it now
+				if !formFound
+					iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
+					updateEventFilter(iEquip_AllCurrentItemsFLST)
+				endIf
+				;Send to moreHUD if loaded
+				if WC.bMoreHUDLoaded
+					if formFound
+						AhzMoreHudIE.RemoveIconItem(itemID)
+						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) ;Both queues
+					else
+						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
+					endIf
+				endIf
+				;Now update the widget to show the equipped item
+				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
+				WC.asCurrentlyEquipped[equippedSlot] = itemName
+				if equippedSlot < 2 || WC.bShoutEnabled
+					WC.updateWidget(equippedSlot, targetIndex, false, true)
+				endIf
 			endIf
 		endIf
-	endIf
-	;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
-	if !blockCall && equippedSlot < 2
-		WC.checkAndEquipShownHandItem(equippedSlot, false, true)
+		;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
+		if !blockCall && equippedSlot < 2
+			WC.checkAndEquipShownHandItem(equippedSlot, false, true)
+		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
 endFunction
@@ -513,11 +730,43 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
 
+state BEASTMODE
+	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE start")	
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE - actionType: " + actionType + ", slot: " + slot)
+		if akActor == PlayerRef
+			if actionType == 7 ;Draw Begin
+				if !WC.bIsWidgetShown && !bWaitingForTransform
+					WC.updateWidgetVisibility()
+				endIf
+			elseIf actionType == 8 ;Draw End
+				if !WC.bIsWidgetShown && !bWaitingForTransform ;In case we're drawing a spell which won't have been caught by Draw Begin
+					WC.updateWidgetVisibility()
+				endIf
+			elseIf actionType == 10 && WC.bIsWidgetShown && WC.bWidgetFadeoutEnabled ;Sheathe End
+				WVis.registerForWidgetFadeoutUpdate()
+			endIf
+		endIf
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE end")
+	endEvent
+
+	event OnAnimationEvent(ObjectReference aktarg, string EventName)
+		debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE start")
+	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE received - EventName: " + EventName)
+	    if EventName == "LandStart"
+	    	BM.showClaws()
+	    elseIf EventName == "LiftoffStart"
+	    	BM.showPreviousItems()
+	    endIf
+	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE end")
+	endEvent
+
+	;event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
+	;endEvent
+endState
+
 auto state DISABLED
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
-	endEvent
-	
-	event OnPlayerBowShot(Weapon akWeapon, Ammo akAmmo, float afPower, bool abSunGazing)
 	endEvent
 
 	event OnAnimationEvent(ObjectReference aktarg, string EventName)

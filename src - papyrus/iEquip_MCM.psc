@@ -212,6 +212,41 @@ endEvent
 ; #################
 ; ### MCM TOOLS ###
 
+function savePreset(string presetName)	; Save data to JContainer file
+	int jMCMPreset = jMap.object()
+	
+	jMap.setObj(jSavePreset, "General", gen.saveData())
+	jMap.setObj(jSavePreset, "Hotkey", htk.saveData())
+	jMap.setObj(jSavePreset, "Queue", que.saveData())
+	jMap.setObj(jSavePreset, "Potions", pot.saveData())
+	jMap.setObj(jSavePreset, "Potions&", poi.saveData())
+	jMap.setObj(jSavePreset, "Ui", uii.saveData())
+	jMap.setObj(jSavePreset, "Pro", pro.saveData())
+	jMap.setObj(jSavePreset, "Editmode", edt.saveData())
+	jMap.setObj(jSavePreset, "Info", inf.saveData())	
+	
+	jValue.writeTofile(jMCMPreset, MCMSettingsPath + presetName + FileExtMCM)
+endFunction
+
+function loadPreset(string presetName)	; Load MCM data
+	int jMCMPreset = jValue.readFromFile(MCMSettingsPath + presetName + FileExtMCM)
+
+    gen.loadData(jMCMPreset)
+    htk.loadData(jMCMPreset)
+    que.loadData(jMCMPreset)
+    pot.loadData(jMCMPreset)
+    poi.loadData(jMCMPreset)
+    uii.loadData(jMCMPreset)
+    pro.loadData(jMCMPreset)
+    edt.loadData(jMCMPreset)
+    inf.loadData(jMCMPreset)
+
+endFunction
+
+function deletePreset(string presetName)
+	JContainers.removeFileAtPath(MCMSettingsPath + presetName + FileExtMCM)
+endFunction
+
 ; -----------
 ; - Sliders -
 ; -----------
