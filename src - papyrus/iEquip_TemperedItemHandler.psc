@@ -9,7 +9,7 @@ iEquip_WidgetCore Property WC Auto
 Actor Property PlayerRef Auto
 
 string HUD_MENU = "HUD Menu"
-string property WidgetRoot auto hidden
+string WidgetRoot
 
 string[] asTemperLevelNames
 float[] afTemperLevelMax
@@ -25,6 +25,8 @@ bool bFirstRun = true
 
 function initialise()
 	debug.trace("iEquip_TemperedItemHandler OnInit start")
+
+	WidgetRoot = WC.WidgetRoot
 
 	if bFirstRun
 		afTemperLevelMax = new float[7]
@@ -62,7 +64,7 @@ function updateTemperLevelArrays()
 	int i = 1
 	string sValue
 	string sName
-	while i < 8
+	while i < 7
 		sValue = "fHealthDataValue" + i as string
 		sName = "sHealthDataPrefixWeap" + i as string
 		afTemperLevelMax[i] = Game.GetGameSettingFloat(sValue)
@@ -129,6 +131,8 @@ function checkAndUpdateTemperLevelInfo(int Q)
 		string temperLevelName
 		int currentTemperLevelPercent
 		float fItemHealth = WornObject.GetItemHealthPercent(PlayerRef, Q, 0)
+
+		debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo - fItemHealth: " + fItemHealth)
 		
 		if fItemHealth > afTemperLevelMax[0] 	; First check if the item has been improved
 
@@ -150,7 +154,10 @@ function checkAndUpdateTemperLevelInfo(int Q)
 			temperLevelName = ""
 			currentTemperLevelPercent = 100
 		endIf
-		if WC.bFadeIconOnDegrade
+
+		debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - temperLevelName: " + temperLevelName + ", currentTemperLevelPercent: " + currentTemperLevelPercent + "%")
+
+		if bFadeIconOnDegrade
 			setTemperLevelFade(Q, currentTemperLevelPercent)
 		endIf
 		setTemperLevelName(Q, temperLevelName, currentTemperLevelPercent)
@@ -183,7 +190,7 @@ function setTemperLevelName(int Q, string temperLevelName, int temperLevelPercen
 		jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "temperedNameForQueueMenu", tempName + " (" + temperLevelName + ")")
 	endIf
 	
-	if iTemperNameFormat > 0																	; Iron Sword
+	if iTemperNameFormat > 0 && temperLevelName != ""											; Iron Sword
 		if iTemperNameFormat == 1
 			tempName = tempName + " (" + temperLevelName + ")"									; Iron Sword (Fine)
 		elseIf iTemperNameFormat == 2

@@ -98,7 +98,7 @@ bool property bExcludeRestoreAllEffects auto hidden
 bool property bautoAddConsumables = true auto hidden
 bool property bQuickRestoreUseSecondChoice = true auto Hidden
 bool property bFlashPotionWarning = true auto hidden
-int property iEmptyPotionQueueChoice = 0 auto hidden
+int property iEmptyPotionQueueChoice auto hidden
 bool property bEnableRestorePotionWarnings = true auto hidden
 bool property bNotificationOnLowRestorePotions = true auto hidden
 bool property bBlockIfRestEffectActive = true auto hidden
@@ -530,7 +530,7 @@ function removePotionFromQueue(int Q, int targetPotion)
             if iEmptyPotionQueueChoice == 0 ;Fade icon
                 debug.trace("iEquip_PotionScript removePotionFromQueue - should be fading now")
                 WC.checkAndFadeConsumableIcon(true)
-            else
+            elseIf iEmptyPotionQueueChoice == 1 ;Hide icon
                 debug.trace("iEquip_PotionScript removePotionFromQueue - should be cycling forward now")
                 WC.cycleSlot(3)
             endIf

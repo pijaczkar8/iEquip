@@ -19,6 +19,9 @@ iEquip_TemperedItemHandler Property TI Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_WidgetVisUpdateScript property WVis auto
 
+string HUD_MENU = "HUD Menu"
+string WidgetRoot
+
 Actor Property PlayerRef Auto
 Race property PlayerRace auto hidden
 
@@ -99,8 +102,6 @@ bool property bWaitingForTransform auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
-ObjectReference[] objectReferencesToProcess
-int nextFreeIndexInObjRefArray
 
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
@@ -142,8 +143,6 @@ Event OnInit()
 	blackListFLSTs[1] = iEquip_RightHandBlacklistFLST
 	blackListFLSTs[2] = iEquip_GeneralBlacklistFLST
 
-	objectReferencesToProcess = new ObjectReference[12]		; Shouldn't ever need more than 12
-
 	debug.trace("iEquip_PlayerEventHandler OnInit end")
 endEvent
 
@@ -157,6 +156,7 @@ function initialise(bool enabled)
 	debug.trace("iEquip_PlayerEventHandler initialise start")	
 	if enabled
 		gotoState("")
+		WidgetRoot = WC.WidgetRoot
 		PlayerRace = PlayerRef.GetRace()
 		PlayerBaseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
 		BM.initialise()
@@ -473,7 +473,7 @@ EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
-	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
 	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
@@ -485,7 +485,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
 				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
 				iEquip_OnObjectEquippedObjRefFLST.AddForm(akReference)
-				nextFreeIndexInObjRefArray += 1
+				debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_OnObjectEquippedFLST contains " + iEquip_OnObjectEquippedFLST.GetSize() + " entries, iEquip_OnObjectEquippedObjRefFLST contains " + iEquip_OnObjectEquippedObjRefFLST.GetSize() + " entries")
 				if !bWaitingForTransform
 					bWaitingForOnObjectEquippedUpdate = true
 					registerForSingleUpdate(0.5)
@@ -613,14 +613,19 @@ function processQueuedForms()
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms end")
 endFunction
 
-function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjRef, form queuedForm, int itemType, int iEquipSlot)
+function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, objectReference queuedObjRef,  int itemType, int iEquipSlot)
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start")
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot)
 	bool actionTaken
 	int targetIndex
 	bool blockCall
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
-	string itemName = queuedObjRef.GetDisplayName()
+	string itemName
+	if queuedObjRef
+		itemName = queuedObjRef.GetDisplayName()
+	else
+		itemName = queuedForm.GetName()
+	endIf
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 																										; Check if we've just manually equipped an item that is already in an iEquip queue
 	if formFound
@@ -628,21 +633,21 @@ function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjR
 		targetIndex = WC.findInQueue(equippedSlot, "", queuedForm)
 		if targetIndex != -1
 																										; Update the item name in case the display name differs from the base item name, and store the new itemID
-			jMap.setStr(jArray.GetObj(WC.aiTargetQ[Q], targetIndex), "iEquipName", itemName)
-			jMap.setStr(jArray.GetObj(WC.aiTargetQ[Q], targetIndex), "lastDisplayedName", itemName)
-			jMap.setInt(jArray.GetObj(WC.aiTargetQ[Q], targetIndex), "iEquipItemID", itemID)
+			jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
+			jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
+			jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
 			
-			if bMoreHUDLoaded																			; Send to moreHUD if loaded
+			if WC.bMoreHUDLoaded																			; Send to moreHUD if loaded
 				string moreHUDIcon
 				if equippedSlot < 2
 					AhzMoreHudIE.RemoveIconItem(itemID)
 					if WC.isAlreadyInQueue((equippedSlot + 1) % 2, queuedForm, itemID)
-						moreHUDIcon = asMoreHUDIcons[3]
+						moreHUDIcon = WC.asMoreHUDIcons[3]
 					else
-	            		moreHUDIcon = asMoreHUDIcons[equippedSlot]
+	            		moreHUDIcon = WC.asMoreHUDIcons[equippedSlot]
 	            	endIf
 	            else
-	            	moreHUDIcon = asMoreHUDIcons[2]
+	            	moreHUDIcon = WC.asMoreHUDIcons[2]
 	            endIf
 	            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
 	        endIf
@@ -654,6 +659,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, objectReference queuedObjR
 					else
 						UI.SetString(HUD_MENU, WidgetRoot + TI.asNamePaths[equippedSlot], itemName)		; Or just update the display name
 					endIf
+				endIf
 				blockCall = true
 			
 			else 																						; Otherwise update the position and name, then update the widget

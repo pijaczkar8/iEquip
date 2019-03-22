@@ -550,18 +550,6 @@ Event OnWidgetLoad()
 		KH.RegisterForGameplayKeys()
 		debug.notification("$iEquip_WC_not_controlsUnlocked")
 	endIf
-	;ToDo - remove
-	int i = 1
-	string sValue
-	string sNameWeap
-	string sNameArmo
-	while i < 7
-		sValue = "fHealthDataValue" + i as string
-		sNameWeap = "sHealthDataPrefixWeap" + i as string
-		sNameArmo = "sHealthDataPrefixArmo" + i as string
-		debug.trace("iEquip_WidgetCore OnWidgetLoad - checking temper levels, Level " + i + ", maxValue: " + Game.GetGameSettingFloat(sValue) + ", weapon level name: " + Game.GetGameSettingString(sNameWeap) + ", armour level name: " + Game.GetGameSettingString(sNameArmo))
-		i += 1
-	endWhile
 
 	bLoading = False
 	debug.trace("iEquip_WidgetCore OnWidgetLoad end")
@@ -1135,10 +1123,10 @@ endEvent
 event OnMenuClose(string _sCurrentMenu)
 	debug.trace("iEquip_WidgetCore OnMenuClose start")
 	debug.trace("iEquip_WidgetCore OnMenuClose - current menu: " + _sCurrentMenu + ", bItemsWaitingForID: " + bItemsWaitingForID)
-	if bItemsWaitingForID ;&& !utility.IsInMenuMode()
-		findAndFillMissingItemIDs()
-		bItemsWaitingForID = false
-	endIf
+	;if bItemsWaitingForID ;&& !utility.IsInMenuMode()
+	;	findAndFillMissingItemIDs()
+	;	bItemsWaitingForID = false
+	;endIf
 	int i
 	;Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
 	while i < 2
@@ -2254,17 +2242,20 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	endIf
 
 	bool bShowTemperInfo = ((Slot < 2 || Slot == 5 || Slot == 6) && TI.aiTemperedItemTypes.Find(jMap.getInt(targetObject, "iEquipType")) != -1)
+	if bShowTemperInfo
+		sName =  jMap.getStr(targetObject, "lastDisplayedName")								; Last displayed name - includes renames and temper level if applicable
+	endIf
+
+	if sName == ""
+		sName =  jMap.getStr(targetObject, "iEquipName")									; New name
+	endIf
 
 	debug.trace("iEquip_WidgetCore updateWidget about to call .updateWidget - Slot: " + Slot + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Slot) 													; Which slot we're updating
 		UICallback.PushString(iHandle, sIcon) 												; New icon
-		if bShowTemperInfo
-			UICallback.PushString(iHandle, jMap.getStr(targetObject, "lastDisplayedName")) 	; Last displayed name including any temper level suffix
-		else
-			UICallback.PushString(iHandle, sName) 											; New name
-		endIf
+		UICallback.PushString(iHandle, sName)
 		UICallback.PushFloat(iHandle, fNameAlpha) 											; Current item name alpha value
 		if bShowTemperInfo
 			UICallback.PushInt(iHandle, jMap.getInt(targetObject, "lastKnownItemHealth")) 	; Last known item health. If no value sent the .as updateWidget function will default to 100% and remove the fade
@@ -3588,13 +3579,21 @@ function addToQueue(int Q)
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
 		listIndex = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.selectedIndex")
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.formId")
-		if UI.IsMenuOpen("FavoritesMenu")
-			itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
+		if UI.IsMenuOpen("FavoritesMenu") || UI.IsMenuOpen("MagicMenu")
+			itemForm = game.GetFormEx(itemFormID)
+			itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
+			if UI.IsMenuOpen("FavoritesMenu")
+				itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
+			endIf
+		elseIf UI.IsMenuOpen("InventoryMenu")
+			;itemForm = game.GetFormEx(itemFormID)
+			;itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
+			itemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
+			itemName = itemForm.GetName()
+		else
+			debug.trace("iEquip_WidgetCore addToQueue something went wrong...")
+			return
 		endIf
-		;itemForm = game.GetFormEx(itemFormID)
-		;itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
-		itemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
-		itemName = itemForm.GetName()
 	endIf
 
 	;form testItemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
@@ -3643,8 +3642,8 @@ function addToQueue(int Q)
 					return
 				endIf
 				if itemID == 0 && !isLightForm && TI.aiTemperedItemTypes.Find(itemType) == -1 ; itemID hashes won't work for light formIDs, and we'll generate one the first time we equip an item that may be tempered, enchanted or renamed
-					;debug.trace("iEquip_WidgetCore addToQueue - testing CalcCRC32Hash with itemName: " + itemName + ", itemFormID: " + itemFormID + ", returned itemID: " + CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF)))
-					;queueItemForIDGenerationOnMenuClose(Q, jArray.count(aiTargetQ[Q]), itemName, itemFormID)
+					debug.trace("iEquip_WidgetCore addToQueue - testing CalcCRC32Hash with itemName: " + itemName + ", itemFormID: " + itemFormID + ", returned itemID: " + CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF)))
+					queueItemForIDGenerationOnMenuClose(Q, jArray.count(aiTargetQ[Q]), itemName, itemFormID)
 					itemID = CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF))
 				endIf
 				bool success
@@ -3749,7 +3748,7 @@ function addToQueue(int Q)
 	debug.trace("iEquip_WidgetCore addToQueue end")
 endFunction
 
-;/function queueItemForIDGenerationOnMenuClose(int Q, int iIndex, string itemName, int itemFormID)
+function queueItemForIDGenerationOnMenuClose(int Q, int iIndex, string itemName, int itemFormID)
 	debug.trace("iEquip_WidgetCore queueItemForIDGenerationOnMenuClose start")
 	debug.trace("iEquip_WidgetCore queueItemForIDGenerationOnMenuClose - Q: " + Q + ", iIndex: " + iIndex + ", itemFormID: " + itemFormID + ", itemName: " + itemName)
 	int queuedItem = jMap.object()
@@ -3803,11 +3802,11 @@ function findAndFillMissingItemIDs()
 	jArray.clear(iItemsForIDGenerationObj)
 	debug.trace("iEquip_WidgetCore findAndFillMissingItemIDs - final check (count should be 0) - count: " + jArray.count(iItemsForIDGenerationObj))
 	debug.trace("iEquip_WidgetCore findAndFillMissingItemIDs end")
-endFunction/;
+endFunction
 
 int function createItemID(string itemName, int itemFormID)
 	debug.trace("iEquip_WidgetCore createItemID start - itemFormID: " + itemFormID + ", itemName: " + itemName)
-	;/RegisterForModEvent("iEquip_GotItemID", "itemIDReceivedFromFlash")
+	RegisterForModEvent("iEquip_GotItemID", "itemIDReceivedFromFlash")
 	;Reset
 	bGotID = false
 	iReceivedID = 0
@@ -3823,14 +3822,14 @@ int function createItemID(string itemName, int itemFormID)
 		breakout -= 1
 	endwhile
 	UnregisterForModEvent("iEquip_GotItemID")
-	debug.trace("iEquip_WidgetCore createItemID end")
-	return iReceivedID/;
+	debug.trace("iEquip_WidgetCore createItemID - old method of ID generation returned itemID as: " + iReceivedID)
+
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF))
 	debug.trace("iEquip_WidgetCore createItemID end - returning itemID: " + itemID)
 	return itemID
 endFunction
 
-;/event itemIDReceivedFromFlash(string sEventName, string sStringArg, float fNumArg, Form kSender)
+event itemIDReceivedFromFlash(string sEventName, string sStringArg, float fNumArg, Form kSender)
 	debug.trace("iEquip_WidgetCore itemIDReceivedFromFlash start")
 	debug.trace("iEquip_WidgetCore itemIDReceivedFromFlash - sStringArg: " + sStringArg + ", fNumArg" + fNumArg)
 	If(sEventName == "iEquip_GotItemID")
@@ -3838,7 +3837,7 @@ endFunction
 		bGotID = true
 	endIf
 	debug.trace("iEquip_WidgetCore itemIDReceivedFromFlash end")
-endEvent/;
+endEvent
 
 bool function isItemValidForSlot(int Q, form itemForm, int itemType, string itemName)
 	debug.trace("iEquip_WidgetCore isItemValidForSlot start")
@@ -4093,7 +4092,7 @@ function initQueueMenu(int Q, int queueLength, bool update = false, int iIndex =
 	string itemName
 	while i < queueLength
 		iconNames[i] = JMap.getStr(jArray.getObj(targetArray, i), "iEquipIcon")
-		if Q < 2 && TI.aiTemperedItemTypes.Find(JMap.getInt(jArray.getObj(targetArray, i), "iEquipType") != -1)
+		if Q < 2 && TI.aiTemperedItemTypes.Find(JMap.getInt(jArray.getObj(targetArray, i), "iEquipType")) != -1
 			itemName = JMap.getStr(jArray.getObj(targetArray, i), "temperedNameForQueueMenu")
 		else
 			itemName = JMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
