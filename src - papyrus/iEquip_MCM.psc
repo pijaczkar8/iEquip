@@ -76,6 +76,7 @@ function updateSettings()
         debug.Notification("$iEquip_MCM_not_ApplyingSettings")
         if bUpdateKeyMaps
             KH.updateKeyMaps()
+			bUpdateKeyMaps = false
         endIf        
         WC.ApplyChanges()
     endIf
@@ -209,6 +210,16 @@ event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
     endIf
 endEvent
 
+; INPUT
+
+event OnInputOpenST()
+	jumpToPage("Open")
+endEvent
+
+event OnInputAcceptST(string input)
+    jumpToPage("Accept", -1.0, input)
+endEvent
+
 ; #################
 ; ### MCM TOOLS ###
 
@@ -226,21 +237,24 @@ function savePreset(string presetName)	; Save data to JContainer file
 	jMap.setObj(jSavePreset, "Info", inf.saveData())	
 	
 	jValue.writeTofile(jMCMPreset, MCMSettingsPath + presetName + FileExtMCM)
+	jValue.zeroLifetime(jMCMPreset)
 endFunction
 
 function loadPreset(string presetName)	; Load MCM data
 	int jMCMPreset = jValue.readFromFile(MCMSettingsPath + presetName + FileExtMCM)
-
-    gen.loadData(jMCMPreset)
-    htk.loadData(jMCMPreset)
-    que.loadData(jMCMPreset)
-    pot.loadData(jMCMPreset)
-    poi.loadData(jMCMPreset)
-    uii.loadData(jMCMPreset)
-    pro.loadData(jMCMPreset)
-    edt.loadData(jMCMPreset)
-    inf.loadData(jMCMPreset)
-
+	
+    gen.loadData(jMap.getObj(jMCMPreset, "General"))
+    htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"))
+    que.loadData(jMap.getObj(jMCMPreset, "Queue"))
+    pot.loadData(jMap.getObj(jMCMPreset, "Potions"))
+    poi.loadData(jMap.getObj(jMCMPreset, "Potions&"))
+    uii.loadData(jMap.getObj(jMCMPreset, "Ui"))
+    pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
+    edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
+    inf.loadData(jMap.getObj(jMCMPreset, "Info"))
+	bUpdateKeyMaps = true
+	
+	jValue.zeroLifetime(jMCMPreset)
 endFunction
 
 function deletePreset(string presetName)

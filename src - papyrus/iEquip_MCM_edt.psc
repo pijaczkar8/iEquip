@@ -19,6 +19,54 @@ function initData()
     EMKeysChoice[1] = "$iEquip_common_Custom"
 endFunction
 
+int function saveData()             ; Save page data and return jObject
+	int jPageObj = jArray.object()
+	
+	jArray.addInt(jPageObj, iEquip_EditModeSlowTimeStrength.GetValueint())
+	
+	jArray.addInt(jPageObj, iCurrentEMKeysChoice)
+	jArray.addInt(jPageObj, KH.iEditNextKey)
+	jArray.addInt(jPageObj, KH.iEditPrevKey)
+	jArray.addInt(jPageObj, KH.iEditUpKey)
+	jArray.addInt(jPageObj, KH.iEditDownKey)
+	jArray.addInt(jPageObj, KH.iEditLeftKey)
+	jArray.addInt(jPageObj, KH.iEditRightKey)
+	jArray.addInt(jPageObj, KH.iEditScaleUpKey)
+	jArray.addInt(jPageObj, KH.iEditScaleDownKey)
+	jArray.addInt(jPageObj, KH.iEditRotateKey)
+	jArray.addInt(jPageObj, KH.iEditAlphaKey)
+	jArray.addInt(jPageObj, KH.iEditDepthKey)
+	jArray.addInt(jPageObj, KH.iEditTextKey)
+	jArray.addInt(jPageObj, KH.iEditRulersKey)
+	jArray.addInt(jPageObj, KH.iEditLoadPresetKey)
+	jArray.addInt(jPageObj, KH.iEditSavePresetKey)
+	jArray.addInt(jPageObj, KH.iEditDiscardKey)	
+
+    return jPageObj
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+	iEquip_EditModeSlowTimeStrength.SetValueInt(jArray.getInt(jPageObj, 0))
+
+	iCurrentEMKeysChoice = jArray.getInt(jPageObj, 1)
+	KH.iEditNextKey = jArray.getInt(jPageObj, 2)
+	KH.iEditPrevKey = jArray.getInt(jPageObj, 3)
+	KH.iEditUpKey = jArray.getInt(jPageObj, 4)
+	KH.iEditDownKey = jArray.getInt(jPageObj, 5)
+	KH.iEditLeftKey = jArray.getInt(jPageObj, 6)
+	KH.iEditRightKey = jArray.getInt(jPageObj, 7)
+	KH.iEditScaleUpKey = jArray.getInt(jPageObj, 8)
+	KH.iEditScaleDownKey = jArray.getInt(jPageObj, 9)
+	KH.iEditRotateKey = jArray.getInt(jPageObj, 10)	
+	KH.iEditAlphaKey = jArray.getInt(jPageObj, 11)
+	KH.iEditDepthKey = jArray.getInt(jPageObj, 12)
+	KH.iEditTextKey = jArray.getInt(jPageObj, 13)
+	KH.iEditRulersKey = jArray.getInt(jPageObj, 14)
+	KH.iEditLoadPresetKey = jArray.getInt(jPageObj, 15)
+	KH.iEditSavePresetKey = jArray.getInt(jPageObj, 16)
+	KH.iEditDiscardKey = jArray.getInt(jPageObj, 17)
+endFunction
+
 function drawPage()
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddHeaderOption("$iEquip_MCM_edt_lbl_EMOptions")

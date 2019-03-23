@@ -14,12 +14,11 @@ string[] preselectQuickFunctionOptions
 string[] QHEquipOptions
 string[] QRPreferredWeaponType
 string[] QRSwitchOutOptions
+string[] QBuffControlOptions
 string[] QBuffOptions
 
 int iCurrentQSPreferredMagicSchoolChoice = 2
 int iCurrentQRPreferredMagicSchoolChoice = 2
-
-bool bQuickRestoreAdvancedSettings
 
 ; #############
 ; ### SETUP ###
@@ -33,7 +32,7 @@ function initData()
     QSPreferredMagicSchool[4] = "$iEquip_common_restoration"
     
     preselectQuickFunctionOptions = new String[3]
-    preselectQuickFunctionOptions[0] = "$iEquip_MCM_pro_opt_disabled"
+    preselectQuickFunctionOptions[0] = "$iEquip_MCM_common_opt_disabled"
     preselectQuickFunctionOptions[1] = "$iEquip_MCM_pro_opt_preselect"
     preselectQuickFunctionOptions[2] = "$iEquip_MCM_pro_opt_equip"
     
@@ -50,7 +49,7 @@ function initData()
     QRPreferredWeaponType[3] = "$iEquip_MCM_pro_opt_boundCrossbow"
 
     QRSwitchOutOptions = new String[5]
-    QRSwitchOutOptions[0] = "$iEquip_MCM_pro_opt_disabled"
+    QRSwitchOutOptions[0] = "$iEquip_MCM_common_opt_disabled"
     QRSwitchOutOptions[1] = "$iEquip_MCM_pro_opt_switch"
     QRSwitchOutOptions[2] = "$iEquip_MCM_pro_opt_2h"
     QRSwitchOutOptions[3] = "$iEquip_MCM_pro_opt_1h"
@@ -61,6 +60,105 @@ function initData()
     QBuffOptions[1] = "$iEquip_MCM_pro_opt_fortifyOnly"
     QBuffOptions[2] = "$iEquip_MCM_pro_opt_regenOnly"
     QBuffOptions[3] = "$iEquip_MCM_pro_opt_bothBuffs"
+
+    QBuffControlOptions = new string[3]
+    QBuffControlOptions[0] = "$iEquip_MCM_pro_opt_alwaysQB"
+    QBuffControlOptions[1] = "$iEquip_MCM_pro_opt_QBOn2ndPress"
+    QBuffControlOptions[2] = "$iEquip_MCM_pro_opt_2ndPressInCombat"
+endFunction
+
+int function saveData()             ; Save page data and return jObject
+	int jPageObj = jArray.object()
+	
+	jArray.addInt(jPageObj, bStillToEnableProMode)
+	jArray.addInt(jPageObj, iProModeEasterEggCounter)
+	jArray.addInt(jPageObj, WC.bProModeEnabled)
+	
+	jArray.addInt(jPageObj, PM.bPreselectEnabled)
+	jArray.addInt(jPageObj, PM.bShoutPreselectEnabled)
+	jArray.addInt(jPageObj, PM.bPreselectSwapItemsOnEquip)
+	jArray.addInt(jPageObj, PM.bTogglePreselectOnEquipAll)
+	
+	jArray.addInt(jPageObj, PM.bQuickShieldEnabled)
+	jArray.addInt(jPageObj, PM.bQuickShield2HSwitchAllowed)
+	jArray.addInt(jPageObj, PM.bQuickShieldPreferMagic)
+	jArray.addInt(jPageObj, iCurrentQSPreferredMagicSchoolChoice)
+	jArray.addInt(jPageObj, PM.bQuickShieldUnequipLeftIfNotFound)
+	jArray.addInt(jPageObj, PM.iPreselectQuickShield)
+	
+	jArray.addInt(jPageObj, PM.bQuickRestoreEnabled)
+	jArray.addInt(jPageObj, PM.bQuickHealEnabled)
+	jArray.addInt(jPageObj, PM.bQuickMagickaEnabled)
+	jArray.addInt(jPageObj, PM.bQuickStaminaEnabled)
+	jArray.addFlt(jPageObj, PM.fQuickRestoreThreshold)
+	jArray.addInt(jPageObj, PM.bQuickBuffEnabled)
+	jArray.addInt(jPageObj, PM.iQuickBuffControl)
+	jArray.addFlt(jPageObj, PM.fQuickBuff2ndPressDelay)
+	jArray.addInt(jPageObj, PO.iQuickBuffsToApply)
+	jArray.addInt(jPageObj, PM.bQuickHealPreferMagic)
+	jArray.addInt(jPageObj, PM.bQuickHealUseFallback)
+	jArray.addInt(jPageObj, PM.iQuickHealEquipChoice)
+	jArray.addInt(jPageObj, PM.bQuickHealSwitchBackEnabled)
+	jArray.addInt(jPageObj, PM.bQuickHealSwitchBackAndRestore)	
+	
+	jArray.addInt(jPageObj, PM.bQuickRangedEnabled)
+	jArray.addInt(jPageObj, PM.iQuickRangedPreferredWeaponType)
+	jArray.addInt(jPageObj, PM.iQuickRangedSwitchOutAction)
+	jArray.addInt(jPageObj, iCurrentQRPreferredMagicSchoolChoice)
+	jArray.addInt(jPageObj, PM.iPreselectQuickRanged)
+	
+	jArray.addInt(jPageObj, WC.bQuickDualCastEnabled)
+	jArray.addFromArray(jPageObj, WC.abQuickDualCastSchoolAllowed)
+	jArray.addInt(jPageObj, PM.bQuickDualCastMustBeInBothQueues)
+	
+    return jPageObj
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+	bStillToEnableProMode = jArray.getInt(jPageObj, 0)
+	iProModeEasterEggCounter = jArray.getInt(jPageObj, 1)
+	WC.bProModeEnabled = jArray.getInt(jPageObj, 2)
+	
+	PM.bPreselectEnabled = jArray.getInt(jPageObj, 3)
+	PM.bShoutPreselectEnabled = jArray.getInt(jPageObj, 4)
+	PM.bPreselectSwapItemsOnEquip = jArray.getInt(jPageObj, 5)
+	PM.bTogglePreselectOnEquipAll = jArray.getInt(jPageObj, 6)
+	
+	PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 7)
+	PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 8)
+	PM.bQuickShieldPreferMagic = jArray.getInt(jPageObj, 9)
+	iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 10)
+	PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 11)
+	PM.iPreselectQuickShield = jArray.getInt(jPageObj, 12)
+	
+	PM.bQuickRestoreEnabled = jArray.getInt(jPageObj, 13)
+	PM.bQuickHealEnabled = jArray.getInt(jPageObj, 14)
+	PM.bQuickMagickaEnabled = jArray.getInt(jPageObj, 15)
+	PM.bQuickStaminaEnabled = jArray.getInt(jPageObj, 16)
+	PM.fQuickRestoreThreshold = jArray.getFlt(jPageObj, 17)
+	PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 18)
+	PM.iQuickBuffControl = jArray.getInt(jPageObj, 19)
+	PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 20)
+	PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 21)
+	PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 22)
+	PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 23)
+	PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 24)
+	PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 25)
+	PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 26)
+	
+	PM.bQuickRangedEnabled = jArray.getInt(jPageObj, 27)
+	PM.iQuickRangedPreferredWeaponType = jArray.getInt(jPageObj, 28)
+	PM.iQuickRangedSwitchOutAction = jArray.getInt(jPageObj, 29)
+	iCurrentQRPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 30)
+	PM.iPreselectQuickRanged = jArray.getInt(jPageObj, 31)
+	
+	WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 32)
+	WC.abQuickDualCastSchoolAllowed[0] = jArray.getInt(jPageObj, 33)
+	WC.abQuickDualCastSchoolAllowed[1] = jArray.getInt(jPageObj, 34)
+	WC.abQuickDualCastSchoolAllowed[2] = jArray.getInt(jPageObj, 35)
+	WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 36)
+	WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 37)
+	PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 38)
 endFunction
 
 function drawPage()
@@ -115,7 +213,13 @@ function drawPage()
                 ;Core settings
                 MCM.AddSliderOptionST("pro_sld_QuickRestoreThreshold", "$iEquip_MCM_pro_lbl_QuickRestoreThreshold", PM.fQuickRestoreThreshold*100, "{0} %")
                 MCM.AddToggleOptionST("pro_tgl_quickBuff", "$iEquip_MCM_pro_lbl_quickBuff", PM.bQuickBuffEnabled)
+                
                 if PM.bQuickBuffEnabled
+                    MCM.AddMenuOptionST("pro_men_quickBuffControl", "$iEquip_MCM_pro_lbl_quickBuffControl", QBuffControlOptions[PM.iQuickBuffControl])
+                    
+                    if PM.iQuickBuffControl > 0
+                        MCM.AddSliderOptionST("pro_sld_quickBuffDelay", "$iEquip_MCM_pro_lbl_quickBuffDelay", PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+                    endIf
                     MCM.AddMenuOptionST("pro_men_buffsToApply", "$iEquip_MCM_pro_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
                 endIf
                 ;QuickHeal Options
@@ -506,6 +610,32 @@ State pro_tgl_quickBuff
             PM.bQuickBuffEnabled = !PM.bQuickBuffEnabled
             MCM.SetToggleOptionValueST(PM.bQuickBuffEnabled)
         endIf
+    endEvent
+endState
+
+State pro_men_quickBuffControl
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_quickBuffControl")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(PM.iQuickBuffControl, QBuffControlOptions, 1)
+        elseIf currentEvent == "Accept"
+            PM.iQuickBuffControl = currentVar as int
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pro_sld_quickBuffDelay
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_quickBuffDelay")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(PM.fQuickBuff2ndPressDelay, 0.0, 20.0, 0.5, 4.0)
+        elseIf currentEvent == "Accept"
+            PM.fQuickBuff2ndPressDelay = currentVar
+            MCM.SetSliderOptionValueST(PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        endIf 
     endEvent
 endState
 

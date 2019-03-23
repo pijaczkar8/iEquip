@@ -2,22 +2,24 @@ Scriptname iEquip_MCM_pot extends iEquip_MCM_Page
 
 iEquip_PotionScript Property PO Auto
 
-string[] potionEffects
 string[] emptyPotionQueueOptions
 string[] potionSelectOptions
+string[] showSelectorOptions
 
 ; #############
 ; ### SETUP ###
 
 function initData()
-    potionEffects = new String[3]
-    potionEffects[0] = "$iEquip_MCM_pot_opt_restore"
-    potionEffects[1] = "$iEquip_MCM_pot_opt_fortify"
-    potionEffects[2] = "$iEquip_MCM_pot_opt_regen"
     
-    emptyPotionQueueOptions = new String[2]
+    emptyPotionQueueOptions = new String[3]
     emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
     emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
+    emptyPotionQueueOptions[2] = "$iEquip_MCM_pot_opt_leaveIcon"
+
+    showSelectorOptions = new String[3]
+    showSelectorOptions[0] = "$iEquip_MCM_pot_opt_alwaysShowSelector"
+    showSelectorOptions[1] = "$iEquip_MCM_pot_opt_showAboveThreshold"
+    showSelectorOptions[2] = "$iEquip_MCM_pot_opt_hybridShow"
 
     potionSelectOptions = new String[3]
     potionSelectOptions[0] = "$iEquip_MCM_pot_opt_alwaysStrongest"
@@ -25,23 +27,79 @@ function initData()
     potionSelectOptions[2] = "$iEquip_MCM_pot_opt_alwaysWeakest"
 endFunction
 
+int function saveData()             ; Save page data and return jObject
+	int jPageObj = jArray.object()
+	
+	jArray.addInt(jPageObj, WC.bPotionGrouping)
+	
+	jArray.addInt(jPageObj, PO.bCheckOtherEffects)
+	jArray.addInt(jPageObj, PO.bExcludeRestoreAllEffects)
+	jArray.addInt(jPageObj, PO.iPotionSelectChoice)
+	
+	jArray.addFlt(jPageObj, PO.fSmartConsumeThreshold)
+	jArray.addInt(jPageObj, PO.bBlockIfRestEffectActive)
+	jArray.addInt(jPageObj, PO.bSuspendChecksInCombat)
+	jArray.addInt(jPageObj, PO.bBlockIfBuffEffectActive)
+	
+	jArray.addInt(jPageObj, WC.iPotionSelectorChoice)
+	jArray.addFlt(jPageObj, WC.fPotionSelectorFadeoutDelay)
+	jArray.addInt(jPageObj, PO.iEmptyPotionQueueChoice)
+	jArray.addFlt(jPageObj, WC.fconsIconFadeAmount)
+	jArray.addInt(jPageObj, PO.bFlashPotionWarning)
+	jArray.addInt(jPageObj, PO.bEnableRestorePotionWarnings)
+	jArray.addInt(jPageObj, PO.bNotificationOnLowRestorePotions)
+    
+	return jPageObj
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+	WC.bPotionGrouping = jArray.getInt(jPageObj, 0)
+	
+	PO.bCheckOtherEffects = jArray.getInt(jPageObj, 1)
+	PO.bExcludeRestoreAllEffects = jArray.getInt(jPageObj, 2)
+	PO.iPotionSelectChoice = jArray.getInt(jPageObj, 3)
+	
+	PO.fSmartConsumeThreshold = jArray.getFlt(jPageObj, 4)
+	PO.bBlockIfRestEffectActive = jArray.getInt(jPageObj, 5)
+	PO.bSuspendChecksInCombat = jArray.getInt(jPageObj, 6)
+	PO.bBlockIfBuffEffectActive = jArray.getInt(jPageObj, 7)
+
+	WC.iPotionSelectorChoice = jArray.getInt(jPageObj, 8)
+	WC.fPotionSelectorFadeoutDelay = jArray.getFlt(jPageObj, 9)
+	PO.iEmptyPotionQueueChoice = jArray.getInt(jPageObj, 10)
+	WC.fconsIconFadeAmount = jArray.getFlt(jPageObj, 11)
+	PO.bFlashPotionWarning = jArray.getInt(jPageObj, 12)
+	PO.bEnableRestorePotionWarnings = jArray.getInt(jPageObj, 13)
+	PO.bNotificationOnLowRestorePotions = jArray.getInt(jPageObj, 14)
+endFunction
+
 function drawPage()
+    ;ToDo - remove after testing
+    emptyPotionQueueOptions = new String[3]
+    emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
+    emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
+    emptyPotionQueueOptions[2] = "$iEquip_MCM_pot_opt_leaveIcon"
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potOpts")
         MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)
                 
         if WC.bPotionGrouping
-            MCM.AddMenuOptionST("pot_men_PrefEffect", "$iEquip_MCM_pot_lbl_PrefEffect", potionEffects[PO.iPotionsFirstChoice])
-            MCM.AddMenuOptionST("pot_men_PrefEffect2", "$iEquip_MCM_pot_lbl_PrefEffect2", potionEffects[PO.iPotionsSecondChoice])
-            MCM.AddTextOptionST("pot_txt_PrefEffect3", "$iEquip_MCM_pot_lbl_PrefEffect3", potionEffects[PO.iPotionsThirdChoice])
+            MCM.AddToggleOptionST("pot_tgl_checkAllEffects", "$iEquip_MCM_pot_lbl_checkAllEffects", PO.bCheckOtherEffects)
+            MCM.AddToggleOptionST("pot_tgl_exclRestAllEffects", "$iEquip_MCM_pot_lbl_exclRestAllEffects", PO.bExcludeRestoreAllEffects)
             MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
+            
+            MCM.AddEmptyOption()
+            MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_thrshldFX")
             if PO.iPotionSelectChoice == 1 ; Smart Select
                 MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartConsumeThreshold*100, "{0} %")
             endIf
-            MCM.AddToggleOptionST("pot_tgl_enblRestPotWarn", "$iEquip_MCM_pot_lbl_enblRestPotWarn", PO.bEnableRestorePotionWarnings)
-            if PO.bEnableRestorePotionWarnings
-                MCM.AddToggleOptionST("pot_tgl_lowRestPotNot", "$iEquip_MCM_pot_lbl_lowRestPotNot", PO.bNotificationOnLowRestorePotions)
+            MCM.AddToggleOptionST("pot_tgl_blockIfRestEffect", "$iEquip_MCM_pot_lbl_blockIfRestEffect", PO.bBlockIfRestEffectActive)
+            if PO.bBlockIfRestEffectActive
+                MCM.AddToggleOptionST("pot_tgl_addCombatException", "$iEquip_MCM_pot_lbl_addCombatException", PO.bSuspendChecksInCombat)
             endIf
+            MCM.AddToggleOptionST("pot_tgl_blockIfBuffEffect", "$iEquip_MCM_pot_lbl_blockIfBuffEffect", PO.bBlockIfBuffEffectActive)
+
+            
             MCM.AddEmptyOption()
             if !WC.abPotionGroupEnabled[0]
                 MCM.AddTextOptionST("pot_txt_addHealthGroup", "$iEquip_MCM_gen_lbl_addHealthGroup", "")
@@ -55,9 +113,22 @@ function drawPage()
         endIf
         
         MCM.SetCursorPosition(1)
+
+        MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potSelOpts")
+        MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
+        MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        MCM.AddEmptyOption()
+        
         MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
         MCM.AddMenuOptionST("pot_men_whenNoPotions", "$iEquip_MCM_pot_lbl_whenNoPotions", emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
+        if PO.iEmptyPotionQueueChoice == 0
+            MCM.AddSliderOptionST("pot_sld_consIcoFade", "$iEquip_MCM_pot_lbl_consIcoFade", WC.fconsIconFadeAmount, "{0}%")
+        endIf
         MCM.AddToggleOptionST("pot_tgl_warningOnLastPotion", "$iEquip_MCM_pot_lbl_warningOnLastPotion", PO.bFlashPotionWarning)
+        MCM.AddToggleOptionST("pot_tgl_enblRestPotWarn", "$iEquip_MCM_pot_lbl_enblRestPotWarn", PO.bEnableRestorePotionWarnings)
+        if PO.bEnableRestorePotionWarnings
+            MCM.AddToggleOptionST("pot_tgl_lowRestPotNot", "$iEquip_MCM_pot_lbl_lowRestPotNot", PO.bNotificationOnLowRestorePotions)
+        endIf
     endIf
 endFunction
 
@@ -85,45 +156,57 @@ State pot_tgl_enblPotionGroup
     endEvent
 endState
 
-State pot_men_PrefEffect
+State pot_tgl_checkAllEffects
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_PrefEffect")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(PO.iPotionsFirstChoice, potionEffects, 0)
-        elseIf currentEvent == "Accept"
-            if PO.iPotionsFirstChoice != currentVar as int
-                if PO.iPotionsSecondChoice == currentVar as int
-                    PO.iPotionsSecondChoice = PO.iPotionsFirstChoice
-                else
-                    PO.iPotionsThirdChoice = PO.iPotionsFirstChoice
-                endif
-                
-                PO.iPotionsFirstChoice = currentVar as int
-                MCM.forcePageReset()
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_checkAllEffects")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bCheckOtherEffects)
+            PO.bCheckOtherEffects = !PO.bCheckOtherEffects
+            MCM.SetToggleOptionValueST(PO.bCheckOtherEffects)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_exclRestAllEffects
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_exclRestAllEffects")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && PO.bExcludeRestoreAllEffects)
+            PO.bExcludeRestoreAllEffects = !PO.bExcludeRestoreAllEffects
+            MCM.SetToggleOptionValueST(PO.bExcludeRestoreAllEffects)
+            if PO.bExcludeRestoreAllEffects
+                PO.removeRestoreAllPotionsFromGroups()
+            else
+                MCM.ShowMessage(iEquip_StringExt.LocalizeString("$iEquip_pot_msg_addRestAllToGroups"), false, "$OK")
             endIf
         endIf
     endEvent
 endState
 
-State pot_men_PrefEffect2
+State pot_men_showSelector
     event OnBeginState()
-        if currentEvent == "Open"
-            string[] potionOptions = MCM.cutStrArray(potionEffects, PO.iPotionsFirstChoice)
-            MCM.fillMenu(potionOptions.find(potionEffects[PO.iPotionsSecondChoice]), potionOptions, potionOptions.find(potionEffects[1]))
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_showSelector")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iPotionSelectorChoice, showSelectorOptions, 2)
         elseIf currentEvent == "Accept"
-            string[] potionOptions = MCM.cutStrArray(potionEffects, PO.iPotionsFirstChoice)
-        
-            PO.iPotionsSecondChoice = potionEffects.find(potionOptions[currentVar as int])
-            potionOptions = MCM.cutStrArray(potionOptions, currentVar as int)
-            PO.iPotionsThirdChoice = potionEffects.find(potionOptions[0])
-            
-            MCM.forcePageReset()
+            WC.iPotionSelectorChoice = currentVar as int
+            MCM.SetMenuOptionValueST(showSelectorOptions[WC.iPotionSelectorChoice])
         endIf
     endEvent
 endState
 
-State pot_txt_PrefEffect3
+State pot_sld_selectorFadeDelay
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_selectorFadeDelay")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fPotionSelectorFadeoutDelay, 0.0, 30.0, 0.5, 4.0)
+        elseIf currentEvent == "Accept"
+            WC.fPotionSelectorFadeoutDelay = currentVar
+            MCM.SetSliderOptionValueST(WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        endIf 
+    endEvent
 endState
 
 State pot_men_PotionSelect
@@ -152,26 +235,35 @@ State pot_sld_StatThreshold
     endEvent
 endState
 
-State pot_tgl_enblRestPotWarn
+State pot_tgl_blockIfRestEffect
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblRestPotWarn")
-        elseIf currentEvent == "Select"
-            PO.bEnableRestorePotionWarnings = !PO.bEnableRestorePotionWarnings
-            MCM.SetToggleOptionValueST(PO.bEnableRestorePotionWarnings)
-            WC.bRestorePotionWarningSettingChanged = true
-            MCM.forcePageReset()
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_blockIfRestEffect")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bBlockIfRestEffectActive)
+            PO.bBlockIfRestEffectActive = !PO.bBlockIfRestEffectActive
+            MCM.SetToggleOptionValueST(PO.bBlockIfRestEffectActive)
         endIf
     endEvent
 endState
 
-State pot_tgl_lowRestPotNot
+State pot_tgl_addCombatException
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_lowRestPotNot")
-        elseIf currentEvent == "Select"
-            PO.bNotificationOnLowRestorePotions = !PO.bNotificationOnLowRestorePotions
-            MCM.SetToggleOptionValueST(PO.bNotificationOnLowRestorePotions)
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_addCombatException")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bSuspendChecksInCombat)
+            PO.bSuspendChecksInCombat = !PO.bSuspendChecksInCombat
+            MCM.SetToggleOptionValueST(PO.bSuspendChecksInCombat)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_blockIfBuffEffect
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_blockIfBuffEffect")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bBlockIfBuffEffectActive)
+            PO.bBlockIfBuffEffectActive = !PO.bBlockIfBuffEffectActive
+            MCM.SetToggleOptionValueST(PO.bBlockIfBuffEffectActive)
         endIf
     endEvent
 endState
@@ -228,8 +320,21 @@ State pot_men_whenNoPotions
         elseIf currentEvent == "Accept"
             PO.iEmptyPotionQueueChoice = currentVar as int
             MCM.SetMenuOptionValueST(emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
-            WC.bEmptyPotionQueueChoiceChanged = true
+            MCM.ForcePageReset()
         endIf
+    endEvent
+endState
+
+State pot_sld_consIcoFade
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_consIcoFade")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fconsIconFadeAmount, 0.0, 100.0, 10.0, 70.0)
+        elseIf currentEvent == "Accept"
+            WC.fconsIconFadeAmount = currentVar
+            MCM.SetSliderOptionValueST(WC.fconsIconFadeAmount, "{0}%")
+        endIf 
     endEvent
 endState
 
@@ -243,6 +348,30 @@ State pot_tgl_warningOnLastPotion
         elseIf currentEvent == "Default"
             PO.bFlashPotionWarning = true 
             MCM.SetToggleOptionValueST(PO.bFlashPotionWarning)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_enblRestPotWarn
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblRestPotWarn")
+        elseIf currentEvent == "Select"
+            PO.bEnableRestorePotionWarnings = !PO.bEnableRestorePotionWarnings
+            MCM.SetToggleOptionValueST(PO.bEnableRestorePotionWarnings)
+            WC.bRestorePotionWarningSettingChanged = true
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_tgl_lowRestPotNot
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_lowRestPotNot")
+        elseIf currentEvent == "Select"
+            PO.bNotificationOnLowRestorePotions = !PO.bNotificationOnLowRestorePotions
+            MCM.SetToggleOptionValueST(PO.bNotificationOnLowRestorePotions)
         endIf
     endEvent
 endState

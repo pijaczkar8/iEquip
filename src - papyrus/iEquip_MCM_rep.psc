@@ -46,6 +46,71 @@ function initData()
     poisonIndicatorOptions[3] = "$iEquip_MCM_rep_opt_Drops"
 endFunction
 
+int function saveData()             ; Save page data and return jObject
+	int jPageObj = jArray.object()
+	
+	jArray.addInt(jPageObj, RC.bRechargingEnabled)
+	
+	jArray.addInt(jPageObj, RC.bUseLargestSoul)
+	jArray.addInt(jPageObj, RC.bAllowOversizedSouls)
+	jArray.addInt(jPageObj, RC.bUsePartFilledGems)
+	
+	jArray.addInt(jPageObj, CM.iChargeDisplayType)
+	jArray.addInt(jPageObj, CM.bChargeFadeoutEnabled)
+	jArray.addFlt(jPageObj, CM.fChargeFadeoutDelay)
+	jArray.addInt(jPageObj, CM.iPrimaryFillColor)
+	jArray.addInt(jPageObj, CM.bCustomFlashColor))
+	jArray.addInt(jPageObj, CM.iFlashColor)
+	jArray.addInt(jPageObj, CM.bEnableLowCharge)
+	jArray.addFlt(jPageObj, CM.fLowChargeThreshold)
+	jArray.addInt(jPageObj, CM.iLowChargeFillColor)
+	jArray.addInt(jPageObj, CM.bEnableGradientFill)
+	jArray.addInt(jPageObj, CM.iSecondaryFillColor)
+	jArray.addFromArray(jPageObj, meterFillDirection)
+
+	jArray.addInt(jPageObj, WC.iShowPoisonMessages))
+	jArray.addInt(jPageObj, WC.bAllowPoisonSwitching)
+	jArray.addInt(jPageObj, WC.bAllowPoisonTopUp)
+	
+	jArray.addInt(jPageObj, WC.iPoisonChargesPerVial))
+	jArray.addInt(jPageObj, WC.iPoisonChargeMultiplier)
+	
+	jArray.addInt(jPageObj, WC.iPoisonIndicatorStyle)
+	
+	return jPageObj
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+	RC.bRechargingEnabled = jArray.getInt(jPageObj, 0)
+	
+	RC.bUseLargestSoul = jArray.getInt(jPageObj, 1)
+	RC.bAllowOversizedSouls = jArray.getInt(jPageObj, 2)
+	RC.bUsePartFilledGems = jArray.getInt(jPageObj, 3)
+	
+	CM.iChargeDisplayType = jArray.getInt(jPageObj, 4)
+	CM.bChargeFadeoutEnabled = jArray.getInt(jPageObj, 5)
+	CM.fChargeFadeoutDelay = jArray.getFlt(jPageObj, 6)
+	CM.iPrimaryFillColor = jArray.getInt(jPageObj, 7)
+	CM.bCustomFlashColor = jArray.getInt(jPageObj, 8)
+	CM.iFlashColor = jArray.getInt(jPageObj, 9)
+	CM.bEnableLowCharge = jArray.getInt(jPageObj, 10)
+	CM.fLowChargeThreshold = jArray.getFlt(jPageObj, 11)
+	CM.iLowChargeFillColor = jArray.getInt(jPageObj, 12)
+	CM.bEnableGradientFill = jArray.getInt(jPageObj, 13)
+	CM.iSecondaryFillColor = jArray.getInt(jPageObj, 14)
+	meterFillDirection[0] = jArray.getInt(jPageObj, 15)
+	meterFillDirection[1] = jArray.getInt(jPageObj, 16)
+	
+	WC.iShowPoisonMessages = jArray.getInt(jPageObj, 17)
+	WC.bAllowPoisonSwitching = jArray.getInt(jPageObj, 18)
+	WC.bAllowPoisonTopUp = jArray.getInt(jPageObj, 19)
+	
+	WC.iPoisonChargesPerVial = jArray.getInt(jPageObj, 20)
+	WC.iPoisonChargeMultiplier = jArray.getInt(jPageObj, 21)
+	
+	WC.iPoisonIndicatorStyle = jArray.getInt(jPageObj, 22)
+endFunction
+
 function drawPage()
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "$iEquip_MCM_rep_lbl_showEnchRechHelp", "")
@@ -57,7 +122,8 @@ function drawPage()
             MCM.AddToggleOptionST("rep_tgl_useLargSoul", "$iEquip_MCM_rep_lbl_useLargSoul", RC.bUseLargestSoul)
             MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "$iEquip_MCM_rep_lbl_useOvrsizSoul", RC.bAllowOversizedSouls)
             MCM.AddToggleOptionST("rep_tgl_usePartGem", "$iEquip_MCM_rep_lbl_usePartGem", RC.bUsePartFilledGems)
-                    
+           
+            MCM.AddEmptyOption()        
             MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
             MCM.AddMenuOptionST("rep_men_showEnchCharge", "$iEquip_MCM_rep_lbl_showEnchCharge", chargeDisplayOptions[CM.iChargeDisplayType])
             if CM.iChargeDisplayType > 0
@@ -107,10 +173,12 @@ function drawPage()
             MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "$iEquip_MCM_rep_lbl_allowPoisonSwitch", WC.bAllowPoisonSwitching)
             MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "$iEquip_MCM_rep_lbl_allowPoisonTopup", WC.bAllowPoisonTopUp)
                     
+            MCM.AddEmptyOption()
             MCM.AddHeaderOption("$iEquip_MCM_rep_lbl_poisonChargeOpts")
             MCM.AddSliderOptionST("rep_sld_chargePerVial", "$iEquip_MCM_rep_lbl_chargePerVial", WC.iPoisonChargesPerVial, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_chrgs"))
             MCM.AddSliderOptionST("rep_sld_chargeMult", "$iEquip_MCM_rep_lbl_chargeMult", WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseChrgs"))
                     
+            MCM.AddEmptyOption()
             MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
             MCM.AddMenuOptionST("rep_men_poisonIndStyle", "$iEquip_MCM_rep_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
         endIf

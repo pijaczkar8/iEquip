@@ -1,11 +1,13 @@
 Scriptname iEquip_MCM_ui extends iEquip_MCM_Page
 
 iEquip_AmmoMode Property AM Auto
+iEquip_TemperedItemHandler Property TI Auto
 
 string[] ammoIconOptions
 string[] backgroundStyleOptions
 string[] fadeoutOptions
 string[] firstPressIfNameHiddenOptions
+string[] temperLevelTextOptions
 
 int[] aiDropShadowBlurValues
 
@@ -49,32 +51,129 @@ function initData()
     aiDropShadowBlurValues[4] = 16
     aiDropShadowBlurValues[5] = 32
 
+    temperLevelTextOptions = new string[13]
+    temperLevelTextOptions[0] = "$iEquip_MCM_ui_opt_tmpLvlTxt0"
+    temperLevelTextOptions[1] = "$iEquip_MCM_ui_opt_tmpLvlTxt1"
+    temperLevelTextOptions[2] = "$iEquip_MCM_ui_opt_tmpLvlTxt2"
+    temperLevelTextOptions[3] = "$iEquip_MCM_ui_opt_tmpLvlTxt3"
+    temperLevelTextOptions[4] = "$iEquip_MCM_ui_opt_tmpLvlTxt4"
+    temperLevelTextOptions[5] = "$iEquip_MCM_ui_opt_tmpLvlTxt5"
+    temperLevelTextOptions[6] = "$iEquip_MCM_ui_opt_tmpLvlTxt6"
+    temperLevelTextOptions[7] = "$iEquip_MCM_ui_opt_tmpLvlTxt7"
+    temperLevelTextOptions[8] = "$iEquip_MCM_ui_opt_tmpLvlTxt8"
+    temperLevelTextOptions[9] = "$iEquip_MCM_ui_opt_tmpLvlTxt9"
+    temperLevelTextOptions[10] = "$iEquip_MCM_ui_opt_tmpLvlTxt10"
+    temperLevelTextOptions[11] = "$iEquip_MCM_ui_opt_tmpLvlTxt11"
+    temperLevelTextOptions[12] = "$iEquip_MCM_ui_opt_tmpLvlTxt12"
+
+endFunction
+
+int function saveData()             ; Save page data and return jObject
+	int jPageObj = jArray.object()
+	
+	jArray.addInt(jPageObj, WC.iPositionIndicatorColor)
+	jArray.addFlt(jPageObj, WC.fPositionIndicatorAlpha)
+	jArray.addInt(jPageObj, WC.iCurrPositionIndicatorColor)
+	jArray.addInt(jPageObj, WC.fCurrPositionIndicatorAlpha)
+	
+	jArray.addInt(jPageObj, WC.bFadeLeftIconWhen2HEquipped)
+	jArray.addFlt(jPageObj, WC.fLeftIconFadeAmount)
+	jArray.addInt(jPageObj, TI.bFadeIconOnDegrade)
+	jArray.addInt(jPageObj, TI.iTemperNameFormat)
+	jArray.addInt(jPageObj, iAmmoIconStyle)
+	jArray.addInt(jPageObj, WC.iBackgroundStyle) ; Save in preset also
+	
+	jArray.addInt(jPageObj, WC.bDropShadowEnabled)
+	jArray.addFlt(jPageObj, WC.fDropShadowAlpha)
+	jArray.addFlt(jPageObj, WC.fDropShadowAngle)
+	jArray.addInt(jPageObj, WC.iDropShadowBlur)
+	jArray.addFlt(jPageObj, WC.fDropShadowDistance)
+	jArray.addFlt(jPageObj, WC.fDropShadowStrength)
+	
+	jArray.addInt(jPageObj, WC.bWidgetFadeoutEnabled)
+	jArray.addFlt(jPageObj, WC.fWidgetFadeoutDelay)
+	jArray.addInt(jPageObj, iCurrentWidgetFadeoutChoice)
+	jArray.addFlt(jPageObj, WC.fWidgetFadeoutDuration)
+	jArray.addInt(jPageObj, WC.bAlwaysVisibleWhenWeaponsDrawn)
+	
+	jArray.addInt(jPageObj, WC.bNameFadeoutEnabled)
+	jArray.addFlt(jPageObj, WC.fMainNameFadeoutDelay)
+	jArray.addFlt(jPageObj, WC.fPoisonNameFadeoutDelay)
+	jArray.addFlt(jPageObj, WC.fPreselectNameFadeoutDelay)
+	jArray.addInt(jPageObj, iCurrentNameFadeoutChoice)
+	jArray.addFlt(jPageObj, WC.fNameFadeoutDuration)
+	jArray.addInt(jPageObj, WC.bFirstPressShowsName)
+    
+	return jPageObj
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+	WC.iPositionIndicatorColor = jArray.getInt(jPageObj, 0)
+	WC.fPositionIndicatorAlpha = jArray.getFlt(jPageObj, 1)
+	WC.iCurrPositionIndicatorColor = jArray.getInt(jPageObj, 2)
+	WC.fCurrPositionIndicatorAlpha = jArray.getFlt(jPageObj, 3)
+	
+	WC.bFadeLeftIconWhen2HEquipped = jArray.getInt(jPageObj, 4)
+	WC.fLeftIconFadeAmount = jArray.getFlt(jPageObj, 5)
+	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 6)
+	TI.iTemperNameFormat = jArray.getInt(jPageObj, 7)
+	iAmmoIconStyle = jArray.getInt(jPageObj, 8)
+	WC.iBackgroundStyle = jArray.getInt(jPageObj, 9)
+	
+	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 10)
+	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 11)
+	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 12)
+	WC.iDropShadowBlur = jArray.getInt(jPageObj, 13)
+	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 14)
+	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 15)
+	
+	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 16)
+	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 17)
+	iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 18)
+	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 19)
+	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 20)
+	
+	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 21)
+	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 22)
+	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 23)
+	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 24)
+	iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 25)
+	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 26)
+	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 27)
 endFunction
 
 function drawPage()
+
     if MCM.bEnabled && !MCM.bFirstEnabled
-        MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+        
         if WC.bShowPositionIndicators
+            MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_posIndOpts")
             MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
             MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
             MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
             MCM.AddSliderOptionST("ui_sld_currPosIndAlpha", "$iEquip_MCM_ui_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
+            MCM.AddEmptyOption()
         endIf
+
+        MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_iconBgOpts")
         MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
                 
         if WC.bFadeLeftIconWhen2HEquipped
             MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
         endIf
 
-        MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", WC.bFadeIconOnDegrade)
+        MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", TI.bFadeIconOnDegrade)
+        MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
 
         MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
 
         MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
         
-       ;We don't want drop shadow settings being messed around with while we are in Edit Mode
-       if !WC.EM.isEditMode
-           MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
+        MCM.SetCursorPosition(1)
+        ;We don't want drop shadow settings being messed around with while we are in Edit Mode
+        if !WC.EM.isEditMode
+            MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_txtShadOpts")
+            MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
             
             if WC.bDropShadowEnabled
                 MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha*100, "{0}%")
@@ -83,9 +182,10 @@ function drawPage()
                 MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
                 MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength*100, "{0}%")
             endIf
+
+            MCM.AddEmptyOption()
         endIf
 
-        MCM.SetCursorPosition(1)
         MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_fadeoutopts")
         MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
                 
@@ -201,8 +301,23 @@ State ui_tgl_tempLvlFade
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_tempLvlFade")
         elseIf currentEvent == "Select"
-            WC.bFadeIconOnDegrade = !WC.bFadeIconOnDegrade
+            TI.bFadeIconOnDegrade = !TI.bFadeIconOnDegrade
+            MCM.SetToggleOptionValueST(TI.bFadeIconOnDegrade)
             WC.bTemperFadeSettingChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_men_tmpLvlTxt
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tmpLvlTxt")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(TI.iTemperNameFormat, temperLevelTextOptions, 1)
+        elseIf currentEvent == "Accept"
+            TI.iTemperNameFormat = currentVar as int
+            MCM.SetMenuOptionValueST(temperLevelTextOptions[TI.iTemperNameFormat])
+            WC.bTemperLevelTextStyleChanged = true
         endIf 
     endEvent
 endState
@@ -226,7 +341,7 @@ State ui_sld_leftIcoFade
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_leftIcoFade")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fLeftIconFadeAmount, 10.0, 80.0, 10.0, 70.0)
+            MCM.fillSlider(WC.fLeftIconFadeAmount, 0.0, 100.0, 10.0, 70.0)
         elseIf currentEvent == "Accept"
             WC.fLeftIconFadeAmount = currentVar
             MCM.SetSliderOptionValueST(WC.fLeftIconFadeAmount, "{0}%")
@@ -352,7 +467,7 @@ State ui_sld_dropShadowStrength
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_dropShadowStrength")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fDropShadowStrength*100, 25.0, 300.0, 25.0, 100.0)
+            MCM.fillSlider(WC.fDropShadowStrength*100, 25.0, 2000.0, 25.0, 100.0)
         elseIf currentEvent == "Accept"
             WC.fDropShadowStrength = currentVar/100
             MCM.SetSliderOptionValueST(WC.fDropShadowStrength*100, "{0}%")

@@ -1,5 +1,7 @@
 Scriptname iEquip_MCM_inf extends iEquip_MCM_Page
 
+import StringUtil
+
 iEquip_KeyHandler Property KH Auto
 iEquip_EditMode Property EM Auto
 
@@ -10,19 +12,19 @@ string[] saPresets
 
 function drawPage()
     MCM.AddHeaderOption("$iEquip_MCM_lbl_Info")
-	MCM.AddTextOptionST("", "$iEquip_MCM_inf_lbl_version" + " " + MCM.GetVersion(), "")
+	MCM.AddTextOptionST("", "$iEquip_MCM_inf_lbl_version" + " " + (MCM.GetVersion() as string), "")
     ;+++Dependency checks
     ;+++Supported mods detected
 
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.SetCursorPosition(1)
 		MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_presets")
-		MCM.AddEmptyOption()
+		MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "SAVE")
 		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "LOAD")
 		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "DELETE")
-
+		MCM.AddEmptyOption()
+		
         MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")
-        MCM.AddEmptyOption()
         MCM.AddTextOptionST("inf_txt_rstLayout", "$iEquip_MCM_inf_lbl_rstLayout", "")
     endIf
 endFunction
@@ -37,17 +39,37 @@ endFunction
 
 ; Nothing here yet
 
+State inf_inp_savepreset
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_savepreset")
+        elseIf currentEvent == "Open"
+			MCM.SetInputDialogStartText("PRESETNAME")
+        elseIf currentEvent == "Accept"
+			MCM.savePreset(currentStrVar)
+        endIf 
+    endEvent
+endState
+
 State inf_men_loadpreset
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_loadpreset")
         elseIf currentEvent == "Open"
-			saPresets = JMap.allKeysPArray(JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM))
+			int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)
+			saPresets = jMap.allKeysPArray(jObj)
+			jValue.zeroLifetime(jObj)
 			
 			if saPresets.length > 0
+				int i = 0
+			    while(i < saPresets.length)
+					saPresets[i] = Substring(saPresets[i], 0, Find(saPresets[i], "."))
+					i += 1
+				EndWhile
+			
 				MCM.fillMenu(0, saPresets, 0)
 			else
-				; Add showmessage here
+				MCM.ShowMessage("$iEquip_MCM_inf_msg_errnopresets")
 			endIf
         elseIf currentEvent == "Accept"
 			MCM.loadPreset(saPresets[currentVar as int])
@@ -60,12 +82,20 @@ State inf_men_deletepreset
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_deletepreset")
         elseIf currentEvent == "Open"
-			saPresets = JMap.allKeysPArray(JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM))
+			int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)
+			saPresets = jMap.allKeysPArray(jObj)
+			jValue.zeroLifetime(jObj)
 			
 			if saPresets.length > 0
+				int i = 0
+			    while(i < saPresets.length)
+					saPresets[i] = Substring(saPresets[i], 0, Find(saPresets[i], "."))
+					i += 1
+				EndWhile
+			
 				MCM.fillMenu(0, saPresets, 0)
 			else
-				; Add showmessage here
+				MCM.ShowMessage("$iEquip_MCM_inf_msg_errnopresets")
 			endIf
         elseIf currentEvent == "Accept"
 			MCM.deletePreset(saPresets[currentVar as int])

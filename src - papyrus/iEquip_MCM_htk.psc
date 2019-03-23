@@ -5,15 +5,64 @@ import iEquip_StringExt
 iEquip_KeyHandler Property KH Auto
 
 int mcmUnmapFLAG
+string[] optHotKeyActions
 
 ; #############
 ; ### SETUP ###
 
 function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
+
+    ;/optHotKeyActions = new string[5]
+    optHotKeyActions[0] = "$iEquip_MCM_htk_opt_consItem"
+    optHotKeyActions[1] = "$iEquip_MCM_htk_opt_cycPois"
+    optHotKeyActions[2] = "$iEquip_MCM_htk_opt_qckRest"
+    optHotKeyActions[3] = "$iEquip_MCM_htk_opt_qckRng"
+    optHotKeyActions[4] = "$iEquip_MCM_htk_opt_qckShld"/;
+endFunction
+
+int function saveData()             ; Save page data and return jObject
+	int jPageObj = jArray.object()
+	
+	jArray.addInt(jPageObj, KH.iLeftKey)
+	jArray.addInt(jPageObj, KH.iRightKey)
+	jArray.addInt(jPageObj, KH.iShoutKey)
+	jArray.addInt(jPageObj, KH.iConsumableKey)
+	jArray.addInt(jPageObj, KH.iUtilityKey)
+	
+	jArray.addFlt(jPageObj, KH.fMultiTapDelay)
+	jArray.addFlt(jPageObj, KH.fLongPressDelay)
+	
+	jArray.addInt(jPageObj, KH.bOptionalHotkeyEnabled)
+	jArray.addInt(jPageObj, KH.iOptHtKey)
+	jArray.addInt(jPageObj, KH.iOptHotKeyAction)
+
+    return jPageObj
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+	KH.iLeftKey = jArray.getInt(jPageObj, 0)
+	KH.iRightKey = jArray.getInt(jPageObj, 1)
+	KH.iShoutKey = jArray.getInt(jPageObj, 2)
+	KH.iConsumableKey = jArray.getInt(jPageObj, 3)
+	KH.iUtilityKey = jArray.getInt(jPageObj, 4)
+	
+	KH.fMultiTapDelay = jArray.getFlt(jPageObj, 5)
+	KH.fLongPressDelay = jArray.getFlt(jPageObj, 6)
+	
+	KH.bOptionalHotkeyEnabled = jArray.getInt(jPageObj, 7)
+	KH.iOptHtKey = jArray.getInt(jPageObj, 8)
+	KH.iOptHotKeyAction = jArray.getInt(jPageObj, 9)	
 endFunction
 
 function drawPage()
+    optHotKeyActions = new string[5]
+    optHotKeyActions[0] = "$iEquip_MCM_htk_opt_consItem"
+    optHotKeyActions[1] = "$iEquip_MCM_htk_opt_cycPois"
+    optHotKeyActions[2] = "$iEquip_MCM_htk_opt_qckRest"
+    optHotKeyActions[3] = "$iEquip_MCM_htk_opt_qckRng"
+    optHotKeyActions[4] = "$iEquip_MCM_htk_opt_qckShld"
+
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddTextOptionST("htk_txt_htkHelp", "$iEquip_MCM_htk_lbl_htkHelp", "")
             
@@ -23,6 +72,7 @@ function drawPage()
         MCM.AddKeyMapOptionST("htk_key_rightHand", "$iEquip_MCM_htk_lbl_rightHand", KH.iRightKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("htk_key_shout", "$iEquip_MCM_htk_lbl_shout", KH.iShoutKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("htk_key_consumPoison", "$iEquip_MCM_htk_lbl_consumPoison", KH.iConsumableKey, mcmUnmapFLAG)
+        MCM.AddEmptyOption()
                 
         MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_UtHtkOpts")
         MCM.AddKeyMapOptionST("htk_key_util", "$iEquip_MCM_htk_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
@@ -36,10 +86,13 @@ function drawPage()
         MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_KeyPressOpts")
         MCM.AddSliderOptionST("htk_sld_multiTapDelay", "$iEquip_MCM_htk_lbl_multiTapDelay", KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         MCM.AddSliderOptionST("htk_sld_longPrsDelay", "$iEquip_MCM_htk_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        MCM.AddEmptyOption()
+        
         MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_OptAddHtks")
-        MCM.AddToggleOptionST("htk_tgl_optConsumeHotkey", "$iEquip_MCM_htk_lbl_optConsumeHotkey", KH.bConsumeItemHotkeyEnabled)
-        if KH.bConsumeItemHotkeyEnabled
-            MCM.AddKeyMapOptionST("htk_key_optional_consumeItem", "$iEquip_MCM_htk_lbl_consumeItem", KH.iOptConsumeKey, mcmUnmapFLAG)
+        MCM.AddToggleOptionST("htk_tgl_enblOptHotkey", "$iEquip_MCM_htk_lbl_enblOptHotkey", KH.bOptionalHotkeyEnabled)
+        if KH.bOptionalHotkeyEnabled
+            MCM.AddKeyMapOptionST("htk_key_optHotKey", "$iEquip_MCM_htk_lbl_optHotKey", KH.iOptHtKey, mcmUnmapFLAG)
+            MCM.AddMenuOptionST("htk_men_optHotKeyAction", "$iEquip_MCM_htk_lbl_optHotKeyAction", optHotKeyActions[KH.iOptHotKeyAction])
         endIf
     endIf
 endFunction
@@ -194,34 +247,47 @@ endState
 ; - Optional Hotkeys -
 ; --------------------
 
-State htk_tgl_optConsumeHotkey
+State htk_tgl_enblOptHotkey
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_htk_txt_optConsumeHotkey")
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_enblOptHotkey")
         elseIf currentEvent == "Select" || "Default"
             If currentEvent == "Select"
-                KH.bConsumeItemHotkeyEnabled = !KH.bConsumeItemHotkeyEnabled
+                KH.bOptionalHotkeyEnabled = !KH.bOptionalHotkeyEnabled
             else
-                KH.bConsumeItemHotkeyEnabled = false
+                KH.bOptionalHotkeyEnabled = false
             endIf
             MCM.forcePageReset()
         endIf
     endEvent
 endState
 
-State htk_key_optional_consumeItem
+State htk_key_optHotKey
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_htk_txt_consumeItem")
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
         elseIf currentEvent == "Change" || "Default"
             if currentEvent == "Change"
-                KH.iOptConsumeKey = currentVar as int
+                KH.iOptHtKey = currentVar as int
             else
-                KH.iOptConsumeKey = -1
+                KH.iOptHtKey = -1
             endIf
             
             MCM.bUpdateKeyMaps = true
-            MCM.SetKeyMapOptionValueST(KH.iOptConsumeKey)        
+            MCM.SetKeyMapOptionValueST(KH.iOptHtKey)        
         endIf
+    endEvent
+endState
+
+State htk_men_optHotKeyAction
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKeyAction")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(KH.iOptHotKeyAction, optHotKeyActions, 0)
+        elseIf currentEvent == "Accept"
+            KH.iOptHotKeyAction = currentVar as int
+            MCM.SetMenuOptionValueST(optHotKeyActions[KH.iOptHotKeyAction])
+        endIf 
     endEvent
 endState

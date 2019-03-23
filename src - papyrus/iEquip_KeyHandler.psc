@@ -23,7 +23,8 @@ int property iConsumableKey = 48 auto hidden ;B
 int property iUtilityKey = 37 auto hidden ;K - Active in all modes
 
 ; Optional hotkeys
-int property iOptConsumeKey = -1 auto hidden
+int property iOptHtKey = -1 auto hidden
+int property iOptHotKeyAction auto hidden
 
 ; Edit Mode Keys
 int property iEditNextKey = 55 auto hidden ;Num *
@@ -49,7 +50,7 @@ float property fMultiTapDelay = 0.3 auto hidden
 float property fLongPressDelay = 0.6 auto hidden
 
 ; Bools
-bool property bConsumeItemHotkeyEnabled auto hidden
+bool property bOptionalHotkeyEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
@@ -70,13 +71,26 @@ function GameLoaded()
     debug.trace("iEquip_KeyHandler GameLoaded start")
     GotoState("")
     
-    self.RegisterForMenu("InventoryMenu")
-    self.RegisterForMenu("MagicMenu")
-    self.RegisterForMenu("FavoritesMenu")
-    self.RegisterForMenu("LootMenu")
-    self.RegisterForMenu("CustomMenu")
-    self.RegisterForMenu("Journal Menu")
-    self.RegisterForMenu("Console")
+    RegisterForMenu("InventoryMenu")
+    RegisterForMenu("MagicMenu")
+    RegisterForMenu("FavoritesMenu")
+    RegisterForMenu("ContainerMenu")
+    RegisterForMenu("BarterMenu")
+    RegisterForMenu("Crafting Menu")
+    RegisterForMenu("Dialogue Menu")
+    RegisterForMenu("LootMenu")
+    RegisterForMenu("CustomMenu")
+    RegisterForMenu("Journal Menu")
+    RegisterForMenu("Console")
+    RegisterForMenu("GiftMenu")
+    RegisterForMenu("Lockpicking Menu")
+    RegisterForMenu("MapMenu")
+    RegisterForMenu("RaceSex Menu")
+    RegisterForMenu("Sleep/Wait Menu")
+    RegisterForMenu("StatsMenu")
+    RegisterForMenu("Training Menu")
+    RegisterForMenu("TweenMenu")
+    RegisterForMenu("Quantity Menu")
     
     UnregisterForAllKeys() ;Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
     
@@ -217,12 +231,10 @@ function runUpdate()
     
     if iMultiTap == 0 ; Long press
             if iWaitingKeyCode == iConsumableKey
-                if bNotInLootMenu && !bConsumeItemHotkeyEnabled
+                if bNotInLootMenu
                     WC.consumeItem()
                 endIf
             elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
-                ;if PM.bPreselectMode && bIsUtilityKeyHeld
-                    ;PM.equipAllPreselectedItems()
                 if PM.bPreselectMode
                     if bIsUtilityKeyHeld
                         RC.rechargeWeapon((iWaitingKeyCode == iRightKey) as int)
@@ -232,7 +244,9 @@ function runUpdate()
                 else
                     if iWaitingKeyCode == iLeftKey
                         if AM.bAmmoMode
-                            AM.toggleAmmoMode()
+                            if !AM.bSimpleAmmoMode
+                                AM.toggleAmmoMode()
+                            endIf
                         else
                             RC.rechargeWeapon(0)
                         endIf
@@ -243,22 +257,26 @@ function runUpdate()
             endIf
             
     elseIf iMultiTap == 1   ; Single tap
-        if iWaitingKeyCode == iUtilityKey && !PlayerRef.IsWeaponDrawn()
-            int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
-            
-            if iAction != 0             ; Exit
-                if iAction == 1         ; Queue Menu
-                    WC.openQueueManagerMenu()
-                elseif iAction == 2     ; Edit Mode
-                    toggleEditMode()
-                elseif iAction == 3     ; Help Menu
-                    HM.showHelpMenuMain()
-                elseif iAction == 4     ; Refresh Widget
-                    WC.refreshWidget()
-                elseif iAction == 5     ; Debug option
-                    jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")
+        if iWaitingKeyCode == iUtilityKey
+            if PlayerRef.IsWeaponDrawn()
+                debug.notification(iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_notWithWeaponsDrawn"))
+            else
+                int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
+                
+                if iAction != 0             ; Exit
+                    if iAction == 1         ; Queue Menu
+                        WC.openQueueManagerMenu()
+                    elseif iAction == 2     ; Edit Mode
+                        toggleEditMode()
+                    elseif iAction == 3     ; Help Menu
+                        HM.showHelpMenuMain()
+                    elseif iAction == 4     ; Refresh Widget
+                        WC.refreshWidget()
+                    elseif iAction == 5     ; Debug option
+                        jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")
+                    endIf
                 endIf
-            endIf          
+            endIf         
         elseIf iWaitingKeyCode == iLeftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
             if AM.bAmmoMode || (PM.bPreselectMode && (RHItemType == 7 || RHItemType == 12))
@@ -279,9 +297,17 @@ function runUpdate()
                 elseIf WC.bPoisonsEnabled
                     WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
                 endIf
-            elseIf iWaitingKeyCode == iOptConsumeKey 
-                if bConsumeItemHotkeyEnabled && WC.bConsumablesEnabled
+            elseIf iWaitingKeyCode == iOptHtKey && bOptionalHotkeyEnabled
+                if iOptHotKeyAction == 0 && WC.bConsumablesEnabled
                     WC.consumeItem()
+                elseIf iOptHotKeyAction == 1 && WC.bPoisonsEnabled
+                    WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
+                elseIf iOptHotKeyAction == 2
+                    PM.quickRestore()
+                elseIf iOptHotKeyAction == 3
+                    PM.quickRanged()
+                elseIf iOptHotKeyAction == 4
+                    PM.quickShield()
                 endIf
             endIf
         endIf
@@ -295,13 +321,6 @@ function runUpdate()
             if iWaitingKeyCode == iLeftKey
                 int RHItemType = PlayerRef.GetEquippedItemType(1)
                 
-                ;/if bIsUtilityKeyHeld
-                    PM.equipPreselectedItem(0)
-                elseIf AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
-                    AM.cycleAmmo(bIsUtilityKeyHeld)
-                else
-                    WC.applyPoison(0)
-                endIf/;
                 if bIsUtilityKeyHeld
                     if AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
                         AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
@@ -317,17 +336,6 @@ function runUpdate()
                     WC.bPreselectSwitchingHands = false
                 endIf
             else
-                ;/if bIsUtilityKeyHeld
-                    if iWaitingKeyCode == iRightKey
-                        PM.equipPreselectedItem(1)
-                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && PM.bShoutPreselectEnabled && WC.bShoutEnabled
-                        PM.equipPreselectedItem(2)
-                    endIf
-                else
-                    if iWaitingKeyCode == iRightKey
-                        WC.applyPoison(1)
-                    endIf
-                endIf/;
                 if bIsUtilityKeyHeld
                     if iWaitingKeyCode == iRightKey
                         WC.applyPoison(1)
@@ -344,10 +352,10 @@ function runUpdate()
             if iWaitingKeyCode == iLeftKey
                 if bIsUtilityKeyHeld
                     WC.openQueueManagerMenu(1)
-                elseIf AM.bAmmoMode
-                    WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
-                else
+                elseIf !AM.bAmmoMode
                     WC.applyPoison(0)
+                elseIf !AM.bSimpleAmmoMode ;We're in ammo mode, so cycle the left preselect slot unless Simple Ammo Mode is enabled
+                    WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
                 endIf
             else
                 if bIsUtilityKeyHeld
@@ -390,7 +398,7 @@ state BEASTMODE
         debug.trace("iEquip_KeyHandler runUpdate BEASTMODE start")
         ;Handle widget visibility update on any registered key press
         WC.updateWidgetVisibility()
-        ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptConsumeKey/poison key presses
+        ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptHtKey/poison key presses
         if iWaitingKeyCode == iLeftKey
             BM.cycleSlot(0, bIsUtilityKeyHeld, true)
         
@@ -610,8 +618,8 @@ function RegisterForGameplayKeys()
     RegisterForKey(iRightKey)
     RegisterForKey(iConsumableKey)
     RegisterForKey(iUtilityKey)
-    if bConsumeItemHotkeyEnabled
-        RegisterForKey(iOptConsumeKey)
+    if bOptionalHotkeyEnabled
+        RegisterForKey(iOptHtKey)
     endIf
     debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
 endFunction

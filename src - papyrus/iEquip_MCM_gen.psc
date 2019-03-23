@@ -8,7 +8,9 @@ iEquip_PlayerEventHandler property EH auto
 
 string[] ammoSortingOptions
 string[] whenNoAmmoLeftOptions
+string[] ammoModeOptions
 string[] posIndBehaviour
+int iPosIndChoice = 1
 
 bool bFirstTimeDisablingTooltips = true
 
@@ -16,31 +18,96 @@ bool bFirstTimeDisablingTooltips = true
 ; ### SETUP ###
 
 function initData()
-    ammoSortingOptions = new String[4]
+    ammoSortingOptions = new string[4]
     ammoSortingOptions[0] = "$iEquip_MCM_gen_opt_Unsorted"
     ammoSortingOptions[1] = "$iEquip_MCM_gen_opt_ByDamage"
     ammoSortingOptions[2] = "$iEquip_MCM_gen_opt_Alphabetically"
     ammoSortingOptions[3] = "$iEquip_MCM_gen_opt_ByQuantity"
 
-    whenNoAmmoLeftOptions = new String[4]
+    whenNoAmmoLeftOptions = new string[4]
     whenNoAmmoLeftOptions[0] = "$iEquip_MCM_gen_opt_DoNothing"
     whenNoAmmoLeftOptions[1] = "$iEquip_MCM_gen_opt_SwitchNothing"
     whenNoAmmoLeftOptions[2] = "$iEquip_MCM_gen_opt_SwitchCycle"
     whenNoAmmoLeftOptions[3] = "$iEquip_MCM_gen_opt_Cycle"
 
-    posIndBehaviour = new String[2]
-    posIndBehaviour[0] = "$iEquip_MCM_gen_opt_onlyCycling"
-    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_alwaysVisible"
+    ;/ammoModeOptions = new string[2]
+    ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
+    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"/;
+
+    posIndBehaviour = new string[3]
+    posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
+    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
+    posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
 
 endFunction
 
+int function saveData()             ; Save page data and return jObject
+	int jPageObj = jArray.object()
+	
+	jArray.addInt(jPageObj, WC.bShowTooltips)
+	jArray.addInt(jPageObj, WC.bShoutEnabled)
+	jArray.addInt(jPageObj, WC.bConsumablesEnabled)
+	jArray.addInt(jPageObj, WC.bPoisonsEnabled)
+	
+	jArray.addInt(jPageObj, AM.bSimpleAmmoMode)
+	jArray.addInt(jPageObj, AM.iAmmoListSorting)
+	jArray.addInt(jPageObj, AM.iActionOnLastAmmoUsed)
+	
+	jArray.addInt(jPageObj, WC.bEquipOnPause)
+	jArray.addFlt(jPageObj, WC.fEquipOnPauseDelay)
+	
+	jArray.addInt(jPageObj, iPosIndChoice)
+	jArray.addInt(jPageObj, WC.bShowAttributeIcons)
+	
+	jArray.addInt(jPageObj, WC.bEnableGearedUp)
+	jArray.addInt(jPageObj, WC.bUnequipAmmo)
+	jArray.addInt(jPageObj, WC.bEnableGearedUp)
+	jArray.addFromArray(jPageObj, BM.abShowInTransformedState)
+    
+	return jPageObj
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+	WC.bShowTooltips = jArray.getInt(jPageObj, 0)
+	WC.bShoutEnabled = jArray.getInt(jPageObj, 1)
+	WC.bConsumablesEnabled = jArray.getInt(jPageObj, 2)
+	WC.bPoisonsEnabled = jArray.getInt(jPageObj, 3)
+	
+	AM.bSimpleAmmoMode = jArray.getInt(jPageObj, 4)
+	AM.iAmmoListSorting = jArray.getInt(jPageObj, 5)
+	AM.iActionOnLastAmmoUsed = jArray.getInt(jPageObj, 6)
+	
+	WC.bEquipOnPause = jArray.getInt(jPageObj, 7)
+	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 8)
+	
+	iPosIndChoice = jArray.getInt(jPageObj, 9)
+	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 10)
+	
+	WC.bEnableGearedUp = jArray.getInt(jPageObj, 11)
+	WC.bUnequipAmmo = jArray.getInt(jPageObj, 12)
+	WC.bEnableGearedUp = jArray.getInt(jPageObj, 13)
+	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 14)
+	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 15)
+	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 16)
+endFunction
+
 function drawPage()
+	;ToDo - remove and uncomment same above
+	ammoModeOptions = new string[2]
+    ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
+    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"
+
+    posIndBehaviour = new string[3]
+    posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
+    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
+    posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
+
     MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
     MCM.AddToggleOptionST("gen_tgl_showTooltips", "$iEquip_MCM_gen_lbl_showTooltips", WC.bShowTooltips)
            
     if MCM.bEnabled
+    	MCM.AddEmptyOption()
     	if MCM.bFirstEnabled
-    		MCM.AddEmptyOption()
     		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
     		MCM.AddTextOptionST("gen_txt_firstEnabled2", "$iEquip_MCM_common_lbl_firstEnabled2", "")
     		MCM.AddTextOptionST("gen_txt_firstEnabled3", "$iEquip_MCM_common_lbl_firstEnabled3", "")
@@ -54,9 +121,10 @@ function drawPage()
 	        MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
 
 	        MCM.AddEmptyOption()
-	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_VisGear")
-	        MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
-	        MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
+	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_AmmoMode")
+	        MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
+	        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
+	        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
 
 	        MCM.SetCursorPosition(1)
 	                
@@ -67,16 +135,21 @@ function drawPage()
 	            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 	        endIf
 
-	        MCM.AddToggleOptionST("gen_tgl_showPosInd", "$iEquip_MCM_gen_lbl_showshowPosInd", WC.bShowPositionIndicators)
+	        MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[iPosIndChoice])
+	        ;/MCM.AddToggleOptionST("gen_tgl_showPosInd", "$iEquip_MCM_gen_lbl_showshowPosInd", WC.bShowPositionIndicators)
             if WC.bShowPositionIndicators
                 MCM.AddTextOptionST("gen_txt_posIndBehaviour", "", posIndBehaviour[WC.bPermanentPositionIndicators as int])
-            endIf
+            endIf/;
 	        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
-	        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
-	        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+
 	        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
 	            MCM.AddTextOptionST("gen_txt_addFists", "$iEquip_MCM_gen_lbl_AddUnarmed", "")
 	        endIf
+
+	        MCM.AddEmptyOption()
+	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_VisGear")
+	        MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
+	        MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
 
             MCM.AddEmptyOption()
             MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_BeastMode")
@@ -101,12 +174,12 @@ State gen_tgl_onOff
             MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff")
         elseIf currentEvent == "Select"
             ;Block enabling if player is currently a werewolf, vampire lord or lich.  iEquip will handle any subsequent player transformations once enabled.
-            if !MCM.bEnabled && EH.bPlayerIsABeast
-                MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
-            else
+            ;if !MCM.bEnabled && EH.bPlayerIsABeast
+                ;MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
+            ;else
                 MCM.bEnabled = !MCM.bEnabled
                 MCM.forcePageReset()
-            endIf
+            ;endIf
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
             MCM.forcePageReset()
@@ -119,7 +192,7 @@ State gen_tgl_showTooltips
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_showTooltips")
         elseIf currentEvent == "Select"
-            if !WC.bShowTooltips || (bFirstTimeDisablingTooltips && MCM.ShowMessage("$iEquip_MCM_gen_msg_showTooltips",  true, "$Yes", "$No"))
+            if !WC.bShowTooltips || (!bFirstTimeDisablingTooltips || MCM.ShowMessage("$iEquip_MCM_gen_msg_showTooltips",  true, "$Yes", "$No"))
                 bFirstTimeDisablingTooltips = false
                 WC.bShowTooltips = !WC.bShowTooltips
             endIf
@@ -246,25 +319,25 @@ State gen_sld_eqpPausDelay
     endEvent
 endState
 
-State gen_tgl_showPosInd
+State gen_men_showPosInd
     event OnBeginState()
-        if currentEvent == "Highlight"
+    	if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_showPosInd")
-        elseIf currentEvent == "Select"
-            WC.bShowPositionIndicators = !WC.bShowPositionIndicators
-            MCM.SetToggleOptionValueST(WC.bShowPositionIndicators)
-            MCM.ForcePageReset()
-        endIf
-    endEvent
-endState
-
-State gen_txt_posIndBehaviour
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_posIndBehaviour")
-        elseIf currentEvent == "Select"
-            WC.bPermanentPositionIndicators = !WC.bPermanentPositionIndicators
-            MCM.SetTextOptionValueST(posIndBehaviour[WC.bPermanentPositionIndicators as int])
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(iPosIndChoice, posIndBehaviour, 1)
+        elseIf currentEvent == "Accept"
+            iPosIndChoice = currentVar as int
+            MCM.SetMenuOptionValueST(posIndBehaviour[iPosIndChoice])
+            if iPosIndChoice == 0
+            	WC.bShowPositionIndicators = false
+            else
+            	WC.bShowPositionIndicators = true
+            endIf
+            if iPosIndChoice == 2
+            	WC.bPermanentPositionIndicators = true
+            else
+            	WC.bPermanentPositionIndicators = false
+            endIf
         endIf
     endEvent
 endState
@@ -304,6 +377,17 @@ State gen_men_whenNoAmmoLeft
         elseIf currentEvent == "Accept"
             AM.iActionOnLastAmmoUsed = currentVar as int
             MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+        endIf
+    endEvent
+endState
+
+State gen_txt_AmmoModeChoice
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_AmmoModeChoice")
+        elseIf currentEvent == "Select"
+            AM.bSimpleAmmoMode = !AM.bSimpleAmmoMode
+            MCM.SetTextOptionValueST(ammoModeOptions[AM.bSimpleAmmoMode as int])
         endIf
     endEvent
 endState

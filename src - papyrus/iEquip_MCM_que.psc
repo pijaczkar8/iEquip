@@ -8,12 +8,61 @@ iEquip_PlayerEventHandler property EH auto
 ; #############
 ; ### SETUP ###
 
+int function saveData()             ; Save page data and return jObject
+	int jPageObj = jArray.object()
+	
+	jArray.addInt(jPageObj, WC.iMaxQueueLength)
+	jArray.addInt(jPageObj, WC.bHardLimitQueueSize)
+	
+	jArray.addInt(jPageObj, WC.bShowQueueConfirmationMessages)
+	jArray.addInt(jPageObj, WC.bAllowSingleItemsInBothQueues)
+	jArray.addInt(jPageObj, WC.bAllowWeaponSwitchHands)
+	
+	jArray.addInt(jPageObj, WC.bEnableRemovedItemCaching)
+	jArray.addInt(jPageObj, WC.iMaxCachedItems)
+	jArray.addInt(jPageObj, WC.bBlacklistEnabled)
+	
+	jArray.addInt(jPageObj, EH.bAutoAddNewItems)
+	jArray.addInt(jPageObj, EH.bAutoAddShouts)
+	jArray.addInt(jPageObj, EH.bAutoAddPowers)
+	jArray.addInt(jPageObj, PO.bAutoAddPotions)
+	jArray.addInt(jPageObj, PO.bAutoAddPoisons)
+	jArray.addInt(jPageObj, PO.bAutoAddConsumables)
+	jArray.addInt(jPageObj, WC.bShowAutoAddedFlag)
+	jArray.addInt(jPageObj, WC.bSkipAutoAddedItems)
+    
+	return jPageObj
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+	WC.iMaxQueueLength = jArray.getInt(jPageObj, 0)
+	WC.bHardLimitQueueSize = jArray.getInt(jPageObj, 1)
+	
+	WC.bShowQueueConfirmationMessages = jArray.getInt(jPageObj, 2)
+	WC.bAllowSingleItemsInBothQueues = jArray.getInt(jPageObj, 3)
+	WC.bAllowWeaponSwitchHands = jArray.getInt(jPageObj, 4)
+	
+	WC.bEnableRemovedItemCaching = jArray.getInt(jPageObj, 5)
+	WC.iMaxCachedItems = jArray.getInt(jPageObj, 6)
+	WC.bBlacklistEnabled = jArray.getInt(jPageObj, 7)
+	
+	EH.bAutoAddNewItems = jArray.getInt(jPageObj, 8)
+	EH.bAutoAddShouts = jArray.getInt(jPageObj, 9)
+	EH.bAutoAddPowers = jArray.getInt(jPageObj, 10)
+	PO.bAutoAddPotions = jArray.getInt(jPageObj, 11)
+	PO.bAutoAddPoisons = jArray.getInt(jPageObj, 12)
+	PO.bAutoAddConsumables = jArray.getInt(jPageObj, 13)
+	WC.bShowAutoAddedFlag = jArray.getInt(jPageObj, 14)
+	WC.bSkipAutoAddedItems = jArray.getInt(jPageObj, 15)
+endFunction
+
 function drawPage()
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.AddHeaderOption("$iEquip_MCM_que_lbl_queLenOpts")
         MCM.AddSliderOptionST("que_sld_maxItmQue", "$iEquip_MCM_que_lbl_maxItmQue", WC.iMaxQueueLength, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
         MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "$iEquip_MCM_que_lbl_hrdLimQueSize", WC.bHardLimitQueueSize)
-                
+        
+        MCM.AddEmptyOption()      
         MCM.AddHeaderOption("$iEquip_MCM_que_lbl_addToQueOpts")
         MCM.AddToggleOptionST("que_tgl_showConfMsg", "$iEquip_MCM_que_lbl_showConfMsg", WC.bShowQueueConfirmationMessages)
         MCM.AddToggleOptionST("que_tgl_signlBothQue", "$iEquip_MCM_que_lbl_signlBothQue", WC.bAllowSingleItemsInBothQueues)
@@ -22,12 +71,8 @@ function drawPage()
             MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "$iEquip_MCM_que_lbl_allow1hSwitch", WC.bAllowWeaponSwitchHands)
         endIf
 
-        MCM.SetCursorPosition(1)
-        MCM.AddHeaderOption("$iEquip_MCM_que_lbl_autoAddOpts")
-        MCM.AddToggleOptionST("que_tgl_autoAddItmQue", "$iEquip_MCM_que_lbl_autoAddItmQue", WC.bAutoAddNewItems)
-        MCM.AddToggleOptionST("que_tgl_autoAddPotions", "$iEquip_MCM_que_lbl_autoAddPotions", PO.bAutoAddPotions)
-        MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "$iEquip_MCM_que_lbl_autoAddPoisons", PO.bAutoAddPoisons)
-        MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("$iEquip_MCM_que_lbl_cacheBlkLst")
         MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "$iEquip_MCM_que_lbl_allowCacheRmvItm", WC.bEnableRemovedItemCaching)
                 
         if WC.bEnableRemovedItemCaching
@@ -39,6 +84,19 @@ function drawPage()
         if WC.bBlacklistEnabled && (EH.iEquip_LeftHandBlacklistFLST.GetSize() > 0 || EH.iEquip_RightHandBlacklistFLST.GetSize() > 0 || EH.iEquip_GeneralBlacklistFLST.GetSize() > 0)
             MCM.AddTextOptionST("que_txt_clearBlacklist", "", "$iEquip_MCM_que_lbl_clearBlacklist")
         endIf
+
+        MCM.SetCursorPosition(1)
+
+        MCM.AddHeaderOption("$iEquip_MCM_que_lbl_autoAddOpts")
+        MCM.AddToggleOptionST("que_tgl_autoAddHandItems", "$iEquip_MCM_que_lbl_autoAddHandItems", EH.bAutoAddNewItems)
+        MCM.AddToggleOptionST("que_tgl_autoAddShouts", "$iEquip_MCM_que_lbl_autoAddShouts", EH.bAutoAddShouts)
+        MCM.AddToggleOptionST("que_tgl_autoAddPowers", "$iEquip_MCM_que_lbl_autoAddPowers", EH.bAutoAddPowers)
+        MCM.AddToggleOptionST("que_tgl_autoAddPotions", "$iEquip_MCM_que_lbl_autoAddPotions", PO.bAutoAddPotions)
+        MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "$iEquip_MCM_que_lbl_autoAddPoisons", PO.bAutoAddPoisons)
+        MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
+        MCM.AddEmptyOption()
+        MCM.AddToggleOptionST("que_tgl_queueMenuAAFlags", "$iEquip_MCM_que_lbl_queueMenuAAFlags", WC.bShowAutoAddedFlag)
+        MCM.AddToggleOptionST("que_tgl_skipAutoAddedItems", "$iEquip_MCM_que_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
     endIf
 endFunction
 
@@ -147,16 +205,47 @@ endState
 ; - Auto Add Options -
 ; --------------------
 
-State que_tgl_autoAddItmQue
+State que_tgl_autoAddHandItems
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddItmQue")
-        elseIf currentEvent == "Select"
-            WC.bAutoAddNewItems = !WC.bAutoAddNewItems
-            MCM.SetToggleOptionValueST(WC.bAutoAddNewItems)
-        elseIf currentEvent == "Default"
-            WC.bAutoAddNewItems = true 
-            MCM.SetToggleOptionValueST(WC.bAutoAddNewItems)
+            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddHandItems")
+        else
+            If currentEvent == "Select"
+                EH.bAutoAddNewItems = !EH.bAutoAddNewItems
+            elseIf currentEvent == "Default"
+                EH.bAutoAddNewItems = true
+            endIf
+            MCM.SetToggleOptionValueST(EH.bAutoAddNewItems)
+        endIf
+    endEvent
+endState
+
+State que_tgl_autoAddShouts
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddShouts")
+        else
+            If currentEvent == "Select"
+                EH.bAutoAddShouts = !EH.bAutoAddShouts
+            elseIf currentEvent == "Default"
+                EH.bAutoAddShouts = true
+            endIf
+            MCM.SetToggleOptionValueST(EH.bAutoAddShouts)
+        endIf
+    endEvent
+endState
+
+State que_tgl_autoAddPowers
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_autoAddPowers")
+        else
+            If currentEvent == "Select"
+                EH.bAutoAddPowers = !EH.bAutoAddPowers
+            elseIf currentEvent == "Default"
+                EH.bAutoAddPowers = true
+            endIf
+            MCM.SetToggleOptionValueST(EH.bAutoAddPowers)
         endIf
     endEvent
 endState
@@ -168,7 +257,6 @@ State que_tgl_autoAddPotions
         else
             If currentEvent == "Select"
                 PO.bAutoAddPotions = !PO.bAutoAddPotions
-                MCM.SetToggleOptionValueST(PO.bAutoAddPotions)
             elseIf currentEvent == "Default"
                 PO.bAutoAddPotions = true
             endIf
@@ -184,7 +272,6 @@ State que_tgl_autoAddPoisons
         else
             If currentEvent == "Select"
                 PO.bAutoAddPoisons = !PO.bAutoAddPoisons
-                MCM.SetToggleOptionValueST(PO.bAutoAddPoisons)
             elseIf currentEvent == "Default"
                 PO.bAutoAddPoisons = true
             endIf
@@ -200,11 +287,44 @@ State que_tgl_autoAddConsumables
         else
             If currentEvent == "Select"
                 PO.bAutoAddConsumables = !PO.bAutoAddConsumables
-                MCM.SetToggleOptionValueST(PO.bAutoAddConsumables)
             elseIf currentEvent == "Default"
                 PO.bAutoAddConsumables = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddConsumables)
+        endIf 
+    endEvent
+endState
+
+State que_tgl_queueMenuAAFlags
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_queueMenuAAFlags")
+        else
+            If currentEvent == "Select" || (currentEvent == "Default" && WC.bShowAutoAddedFlag)
+                WC.bShowAutoAddedFlag = !WC.bShowAutoAddedFlag
+            endIf
+            MCM.SetToggleOptionValueST(WC.bShowAutoAddedFlag)
+        endIf 
+    endEvent
+endState
+
+State que_tgl_skipAutoAddedItems
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_skipAutoAddedItems")
+        else
+            If currentEvent == "Select"
+                WC.bSkipAutoAddedItems = !WC.bSkipAutoAddedItems
+            elseIf currentEvent == "Default"
+                WC.bSkipAutoAddedItems = false
+            endIf
+            MCM.SetToggleOptionValueST(WC.bSkipAutoAddedItems)
+            if WC.bSkipAutoAddedItems
+                WC.bShowPositionIndicators = false
+                if WC.bPermanentPositionIndicators
+                    WC.bPositionIndicatorSettingsChanged = true
+                endIf
+            endIf
         endIf 
     endEvent
 endState

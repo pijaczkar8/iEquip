@@ -57,3 +57,10 @@ Float Function GetAVDamage(Actor a_actor, Int a_actorValue) Native Global
 ; @param a_actor The actor to fetch the base race from
 ; @return Returns NONE on error, else returns the base race of the specified actor
 Race Function GetBaseRace(Actor a_actor) Native Global
+
+
+; @brief Returns the magnitude of the active magic effect on the specified actor
+; @param a_actor The actor the magic effect is applied to
+; @param a_mgef The magic effect to retrieve the magnitude of
+; @return Returns 0.0 on error, else returns the magnitude of the specified magic effect
+Float Function GetMagicEffectMagnitude(Actor a_actor, MagicEffect a_mgef) Native Global

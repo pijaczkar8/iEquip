@@ -175,10 +175,10 @@ function updateChargeMeters(bool forceUpdate = false)
 			Q += 1
 		endWhile
 	else
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[13] + "._visible", false)
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[14] + "._visible", false)
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[26] + "._visible", false)
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[27] + "._visible", false)
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[13] + "._visible", false) ;leftEnchantmentMeter_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[14] + "._visible", false) ;leftSoulgem_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[27] + "._visible", false) ;rightEnchantmentMeter_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[28] + "._visible", false) ;rightSoulgem_mc
 	endIf
 	debug.trace("iEquip_ChargeMeters updateChargeMeters end")
 endFunction
@@ -195,7 +195,7 @@ endFunction
 
 function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter start")
-	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", forceUpdate: " + forceUpdate)
+	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", forceUpdate: " + forceUpdate + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
 	if !PlayerRef.IsWeaponDrawn()
 		Utility.WaitMenuMode(0.2)
 	endIf
@@ -218,37 +218,34 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 			if currentEnchantment
 				debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", currentEnchantment: " + currentEnchantment.GetName())
 				isEnchanted = 1
-				if iChargeDisplayType > 0
-					;Hide first
-					if abIsChargeMeterShown[Q]
-						updateChargeMeterVisibility(Q, false) ;Hide
-					endIf
-					;Update values
-					updateMeterPercent(Q, forceUpdate, true)
-					if iChargeDisplayType == 1
-						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
-						if(iHandle)
-							debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection, Q: " + Q + ", fill direction: " + asMeterFillDirection[Q])
-							UICallback.PushInt(iHandle, Q)
-							UICallback.PushString(iHandle, asMeterFillDirection[Q])
-							UICallback.Send(iHandle)
-						endIf
-					endIf
-					;Show meter
-					updateChargeMeterVisibility(Q, true)
-					;Flash if empty
-					if PlayerRef.GetActorValue(asItemCharge[Q]) < 1
-						startMeterFlash(Q, true)
-					endIf
-				endIf
 			endIf
 		endIf
-		if (!currentWeapon || isEnchanted == 0 || isBound)
-			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - not a weapon or not enchanted. currentWeapon: " + currentWeapon + ", isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", abIsChargeMeterShown[" + Q + "]: " + abIsChargeMeterShown[Q])
+		debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", abIsChargeMeterShown[" + Q + "]: " + abIsChargeMeterShown[Q])
+		;Hide first
+		if abIsChargeMeterShown[Q]
 			updateChargeMeterVisibility(Q, false) ;Hide
 		endIf
+		;Now as long as meters aren't disabled, and the item is enchanted, and it's not an infinite charge item carry on and update the meters
+		if iChargeDisplayType > 0 && isEnchanted == 1 && WornObject.GetItemMaxCharge(PlayerRef, Q, 0) > 0.0
+			;Update values
+			updateMeterPercent(Q, forceUpdate, true)
+			if iChargeDisplayType == 1
+				int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
+				if(iHandle)
+					debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection, Q: " + Q + ", fill direction: " + asMeterFillDirection[Q])
+					UICallback.PushInt(iHandle, Q)
+					UICallback.PushString(iHandle, asMeterFillDirection[Q])
+					UICallback.Send(iHandle)
+				endIf
+			endIf
+			;Show meter
+			updateChargeMeterVisibility(Q, true)
+			;Flash if empty
+			if PlayerRef.GetActorValue(asItemCharge[Q]) < 1
+				startMeterFlash(Q, true)
+			endIf
+		endIf
 		;Now update the object keys for the currently equipped item in case anything has changed since we last equipped it
-		;ToDo - do the same in the poison functions
 		if currentEnchantment
 			jMap.setForm(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastKnownEnchantment", currentEnchantment as Form)
 		endIf
@@ -268,13 +265,13 @@ function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, 
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
 		element = 13 ;leftEnchantmentMeter_mc
 		if Q == 1
-			element = 26 ;rightEnchantmentMeter_mc
+			element = 27 ;rightEnchantmentMeter_mc
 		endIf
 	else
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenSoulGemAlpha")	
 		element = 14 ;leftSoulgem_mc
 		if Q == 1
-			element = 27 ;rightSoulgem_mc
+			element = 28 ;rightSoulgem_mc
 		endIf
 	endIf
 	float targetAlpha
