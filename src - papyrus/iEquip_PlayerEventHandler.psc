@@ -627,6 +627,9 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	endIf
 	if itemName == ""
 		itemName = queuedForm.GetName()
+		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemName set from queuedForm.GetName(): " + itemName)
+	else
+		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemName set from WornObject.GetDisplayName(): " + itemName)
 	endIf
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 																										; Check if we've just manually equipped an item that is already in an iEquip queue
