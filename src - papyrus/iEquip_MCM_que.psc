@@ -12,24 +12,24 @@ int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 	
 	jArray.addInt(jPageObj, WC.iMaxQueueLength)
-	jArray.addInt(jPageObj, WC.bHardLimitQueueSize)
+	jArray.addInt(jPageObj, WC.bHardLimitQueueSize as int)
 	
-	jArray.addInt(jPageObj, WC.bShowQueueConfirmationMessages)
-	jArray.addInt(jPageObj, WC.bAllowSingleItemsInBothQueues)
-	jArray.addInt(jPageObj, WC.bAllowWeaponSwitchHands)
+	jArray.addInt(jPageObj, WC.bShowQueueConfirmationMessages as int)
+	jArray.addInt(jPageObj, WC.bAllowSingleItemsInBothQueues as int)
+	jArray.addInt(jPageObj, WC.bAllowWeaponSwitchHands as int)
 	
-	jArray.addInt(jPageObj, WC.bEnableRemovedItemCaching)
+	jArray.addInt(jPageObj, WC.bEnableRemovedItemCaching as int)
 	jArray.addInt(jPageObj, WC.iMaxCachedItems)
-	jArray.addInt(jPageObj, WC.bBlacklistEnabled)
+	jArray.addInt(jPageObj, WC.bBlacklistEnabled as int)
 	
-	jArray.addInt(jPageObj, EH.bAutoAddNewItems)
-	jArray.addInt(jPageObj, EH.bAutoAddShouts)
-	jArray.addInt(jPageObj, EH.bAutoAddPowers)
-	jArray.addInt(jPageObj, PO.bAutoAddPotions)
-	jArray.addInt(jPageObj, PO.bAutoAddPoisons)
-	jArray.addInt(jPageObj, PO.bAutoAddConsumables)
-	jArray.addInt(jPageObj, WC.bShowAutoAddedFlag)
-	jArray.addInt(jPageObj, WC.bSkipAutoAddedItems)
+	jArray.addInt(jPageObj, EH.bAutoAddNewItems as int)
+	jArray.addInt(jPageObj, EH.bAutoAddShouts as int)
+	jArray.addInt(jPageObj, EH.bAutoAddPowers as int)
+	jArray.addInt(jPageObj, PO.bAutoAddPotions as int)
+	jArray.addInt(jPageObj, PO.bAutoAddPoisons as int)
+	jArray.addInt(jPageObj, PO.bAutoAddConsumables as int)
+	jArray.addInt(jPageObj, WC.bShowAutoAddedFlag as int)
+	jArray.addInt(jPageObj, WC.bSkipAutoAddedItems as int)
     
 	return jPageObj
 endFunction

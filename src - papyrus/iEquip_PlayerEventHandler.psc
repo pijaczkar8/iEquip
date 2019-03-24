@@ -4,6 +4,7 @@ Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 Import iEquip_FormExt
 import iEquip_ActorExt
 import iEquip_StringExt
+import iEquip_ObjectReferenceExt
 Import Utility
 import UI
 import AhzMoreHudIE
@@ -74,7 +75,6 @@ Formlist Property iEquip_RightHandBlacklistFLST Auto
 Formlist Property iEquip_GeneralBlacklistFLST Auto ;Shout, Consumable and Poison Queues
 
 FormList Property iEquip_OnObjectEquippedFLST Auto
-FormList property iEquip_OnObjectEquippedObjRefFLST Auto
 
 bool property bPoisonSlotEnabled = true auto hidden
 bool bIsBoundSpellEquipped
@@ -99,6 +99,8 @@ bool property bAutoAddPowers = true auto hidden
 bool property bPlayerIsABeast auto hidden
 bool property bPlayerIsAVampire auto hidden
 bool property bWaitingForTransform auto hidden
+
+bool[] property abSkipQueueObjectUpdate auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
@@ -142,6 +144,8 @@ Event OnInit()
 	blackListFLSTs[0] = iEquip_LeftHandBlacklistFLST
 	blackListFLSTs[1] = iEquip_RightHandBlacklistFLST
 	blackListFLSTs[2] = iEquip_GeneralBlacklistFLST
+
+	abSkipQueueObjectUpdate = new bool[2]
 
 	debug.trace("iEquip_PlayerEventHandler OnInit end")
 endEvent
@@ -484,8 +488,10 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 			int itemType = akBaseObject.GetType()
 			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
 				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
-				iEquip_OnObjectEquippedObjRefFLST.AddForm(akReference)
-				debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_OnObjectEquippedFLST contains " + iEquip_OnObjectEquippedFLST.GetSize() + " entries, iEquip_OnObjectEquippedObjRefFLST contains " + iEquip_OnObjectEquippedObjRefFLST.GetSize() + " entries")
+				debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_OnObjectEquippedFLST contains " + iEquip_OnObjectEquippedFLST.GetSize() + " entries")
+				if akReference
+					debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_ObjectReferenceExt.GetDisplayName returns: " + iEquip_ObjectReferenceExt.GetDisplayName(akReference))
+				endIf
 				if !bWaitingForTransform
 					bWaitingForOnObjectEquippedUpdate = true
 					registerForSingleUpdate(0.5)
@@ -606,7 +612,6 @@ function processQueuedForms()
 		i += 1
 	endWhile
 	iEquip_OnObjectEquippedFLST.Revert()
-	iEquip_OnObjectEquippedObjRefFLST.Revert()
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
 	processingQueuedForms = false
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms end")
@@ -631,16 +636,22 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	else
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemName set from WornObject.GetDisplayName(): " + itemName)
 	endIf
+	;string itemName = queuedForm.GetName()
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
 																										; Check if we've just manually equipped an item that is already in an iEquip queue
 	if formFound
 																										; If it's been found in the queue for the equippedSlot it's been equipped to
 		targetIndex = WC.findInQueue(equippedSlot, "", queuedForm)
 		if targetIndex != -1
-																										; Update the item name in case the display name differs from the base item name, and store the new itemID
-			jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
-			jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
-			jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
+			
+			if !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
+				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
+				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
+				jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
+			else
+				abSkipQueueObjectUpdate[equippedSlot] = false
+			endIf
 			
 			if WC.bMoreHUDLoaded																		; Send to moreHUD if loaded
 				string moreHUDIcon
@@ -702,6 +713,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 				jMap.setInt(iEquipItem, "iEquipItemID", itemID)
 				jMap.setInt(iEquipItem, "iEquipType", itemType)
 				jMap.setStr(iEquipItem, "iEquipName", itemName)
+				jMap.setStr(iEquipItem, "iEquipBaseName", queuedForm.GetName())
 				jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
 				jMap.setInt(iEquipItem, "iEquipAutoAdded", 1)
 				if equippedSlot < 2
@@ -712,10 +724,13 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 							jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
 						endIf
 						jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
+					else
+						jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
+						jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
+						jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)																				; These will be set correctly by WC.CycleHand() and associated functions
+						jMap.setInt(iEquipItem, "isEnchanted", 0)
+						jMap.setInt(iEquipItem, "isPoisoned", 0)
 					endIf
-																										; These will be set correctly by WC.CycleHand() and associated functions
-					jMap.setInt(iEquipItem, "isEnchanted", 0)
-					jMap.setInt(iEquipItem, "isPoisoned", 0)
 				endIf
 				jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
 																										; If it's not already in the AllItems formlist because it's in the other hand queue add it now

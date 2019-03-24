@@ -20,11 +20,13 @@ string[] property asNamePaths auto hidden
 ; MCM Properties
 bool property bFadeIconOnDegrade = true auto hidden
 int property iTemperNameFormat = 1 auto hidden
+int property iColoredIconStyle = 1 auto Hidden
+int property iColoredIconLevels = 1 auto hidden
 
 bool bFirstRun = true
 
 function initialise()
-	debug.trace("iEquip_TemperedItemHandler OnInit start")
+	debug.trace("iEquip_TemperedItemHandler initialise start")
 
 	WidgetRoot = WC.WidgetRoot
 
@@ -36,8 +38,8 @@ function initialise()
 		
 		asNamePaths = new string[7]
 		asNamePaths[0] = ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text"
-		asNamePaths[1] = ".widgetMaster.LeftHandWidget.leftPreselectName_mc.leftPreselectName.text"
-		asNamePaths[5] = ".widgetMaster.RightHandWidget.rightName_mc.rightName.text"
+		asNamePaths[1] = ".widgetMaster.RightHandWidget.rightName_mc.rightName.text"
+		asNamePaths[5] = ".widgetMaster.LeftHandWidget.leftPreselectName_mc.leftPreselectName.text"
 		asNamePaths[6] = ".widgetMaster.RightHandWidget.rightPreselectName_mc.rightPreselectName.text"
 		
 		aiTemperedItemTypes = new int[9]
@@ -56,7 +58,7 @@ function initialise()
 	
 	updateTemperLevelArrays()
 	
-	debug.trace("iEquip_TemperedItemHandler OnInit end")
+	debug.trace("iEquip_TemperedItemHandler initialise end")
 endFunction
 
 function updateTemperLevelArrays()
@@ -72,11 +74,11 @@ function updateTemperLevelArrays()
 
 		if i > 1
 			j = i - 1
-			sValue = "fHealthDataValue" + (i) as string
+			sValue = "fHealthDataValue" + i as string
 			afTemperLevelMax[j] = Game.GetGameSettingFloat(sValue)
 		endIf
 
-		debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays - checking temper levels, Level " + i + ", maxValue: " + afTemperLevelMax[i] + ", level name: " + asTemperLevelNames[i])
+		debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays - checking temper levels, Level " + i + ", maxValue: " + afTemperLevelMax[j] + ", level name: " + asTemperLevelNames[i])
 		i += 1
 	endWhile
 	debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays end")
@@ -174,9 +176,7 @@ function checkAndUpdateTemperLevelInfo(int Q)
 
 		debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - temperLevelName: " + temperLevelName + ", currentTemperLevelPercent: " + currentTemperLevelPercent + "%")
 
-		if bFadeIconOnDegrade
-			setTemperLevelFade(Q, currentTemperLevelPercent)
-		endIf
+		updateIcon(Q, currentTemperLevelPercent)
 		setTemperLevelName(Q, fItemHealth, temperLevelName, currentTemperLevelPercent)
 		jMap.setInt(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastKnownItemHealth", currentTemperLevelPercent)
 	
@@ -184,13 +184,39 @@ function checkAndUpdateTemperLevelInfo(int Q)
 	debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo end")
 endFunction
 
-function setTemperLevelFade(int Q, int temperLevelPercent, bool force = false)
-	debug.trace("iEquip_TemperedItemHandler setTemperLevelFade start - Q: " + Q + ", " + temperLevelPercent + "%")
-	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setTemperFade")
+function updateIcon(int Q, int temperLevelPercent)
+	debug.trace("iEquip_TemperedItemHandler updateIcon start - Q: " + Q + ", " + temperLevelPercent + "%")
+	
+	string newIcon = jMap.getStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipBaseIcon")	; Retrieve the original base icon name
+	int temperLvl = RoundToTens(temperLevelPercent)
+
+	debug.trace("iEquip_TemperedItemHandler updateIcon - checking we've got a value rounded to the nearest 10, temperLvl: " + temperLvl)
+
+	if bFadeIconOnDegrade																							; If we have enabled icon fade on degrade
+		newIcon += temperLvl as string																				; First append the current item percent rounded to the nearest 10%
+
+		if iColoredIconStyle > 0 && temperLvl < 50																	; Now if we've enabled coloured icons and item health rounded to tens is 40% or below
+
+			if (temperLvl == 40 && iColoredIconLevels == 0) || (temperLvl == 30 &&  iColoredIconLevels < 3) || (temperLvl == 20 &&  iColoredIconLevels == 3)	; Check the level setting and append the 'a' for amber level
+				newIcon += "a"
+			elseIf (temperLvl < 30 && iColoredIconLevels < 2) || (temperLvl < 20 && iColoredIconLevels > 1)			; Or 'r' for red level
+				newIcon += "r"
+			endIf
+
+			if iColoredIconStyle == 2																				; And finally if we've selected to colour the full icon and not just the unfaded lower section append 'f' for full
+				newIcon += "f"
+			endIf
+
+		endIf
+	endIf
+
+	jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipIcon", newIcon)				; Update the icon name in the queue object so it shows correctly while cycling (it'll be updated again at next equip)
+
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIcon")											; And update the widget
 	if(iHandle)
+		debug.trace("iEquip_TemperedItemHandler updateIcon - got iHandle")
 		UICallback.PushInt(iHandle, Q)
-		UICallback.PushInt(iHandle, temperLevelPercent)
-		UICallback.PushBool(iHandle, force)
+		UICallback.PushString(iHandle, newIcon)
 		UICallback.Send(iHandle)
 	endIf
 	debug.trace("iEquip_TemperedItemHandler setTemperLevelFade end")
@@ -199,7 +225,7 @@ endFunction
 function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, int temperLevelPercent)
 	debug.trace("iEquip_TemperedItemHandler setTemperLevelName start - Q: " + Q + ", " + temperLevelName)
 	
-	string tempName = jMap.getStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipName")
+	string tempName = jMap.getStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipBaseName")
 	
 	if temperLevelName == ""
 		jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "temperedNameForQueueMenu", tempName)
@@ -248,19 +274,11 @@ int function Round(float i)
 	endIf
 endFunction
 
-;/ Code snippets from Loot & Degradation _edquestscript.psc
-
-If ArmorSlot == 0
-	CurrentItem = targ.GetEquippedObject(WeaponSlot)
-Else
-	CurrentItem = targ.GetWornForm(ArmorSlot)
-EndIf
-
-Float Function RoundToTens(Float Value)
-	Float Rounded = ((Value * 10.0) as Int / 10.0)
-	If Rounded < 1.0
-		Rounded = 1.0
-	EndIf
-	Return Rounded
+int Function RoundToTens(int i)
+	float j = i / 10
+	if (j - (j as int)) < 0.5
+		return (j as int) * 10
+	else
+		return (Math.Ceiling(j) as int) * 10
+	endIf
 EndFunction
-/;

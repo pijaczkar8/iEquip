@@ -19,9 +19,9 @@ function drawPage()
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.SetCursorPosition(1)
 		MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_presets")
-		MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "SAVE")
-		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "LOAD")
-		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "DELETE")
+		MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "$iEquip_common_SavePreset")
+		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "$iEquip_common_LoadPreset")
+		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "$iEquip_btn_delPreset")
 		MCM.AddEmptyOption()
 		
         MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")
@@ -69,7 +69,7 @@ State inf_men_loadpreset
 			
 				MCM.fillMenu(0, saPresets, 0)
 			else
-				MCM.ShowMessage("$iEquip_MCM_inf_msg_errnopresets")
+				MCM.ShowMessage("$iEquip_EM_not_noPresets")
 			endIf
         elseIf currentEvent == "Accept"
 			MCM.loadPreset(saPresets[currentVar as int])
@@ -95,7 +95,7 @@ State inf_men_deletepreset
 			
 				MCM.fillMenu(0, saPresets, 0)
 			else
-				MCM.ShowMessage("$iEquip_MCM_inf_msg_errnopresets")
+				MCM.ShowMessage("$iEquip_EM_not_noPresets")
 			endIf
         elseIf currentEvent == "Accept"
 			MCM.deletePreset(saPresets[currentVar as int])

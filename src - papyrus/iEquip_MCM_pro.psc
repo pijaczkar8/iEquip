@@ -70,46 +70,50 @@ endFunction
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 	
-	jArray.addInt(jPageObj, bStillToEnableProMode)
+	jArray.addInt(jPageObj, bStillToEnableProMode as int)
 	jArray.addInt(jPageObj, iProModeEasterEggCounter)
-	jArray.addInt(jPageObj, WC.bProModeEnabled)
+	jArray.addInt(jPageObj, WC.bProModeEnabled as int)
 	
-	jArray.addInt(jPageObj, PM.bPreselectEnabled)
-	jArray.addInt(jPageObj, PM.bShoutPreselectEnabled)
-	jArray.addInt(jPageObj, PM.bPreselectSwapItemsOnEquip)
-	jArray.addInt(jPageObj, PM.bTogglePreselectOnEquipAll)
+	jArray.addInt(jPageObj, PM.bPreselectEnabled as int)
+	jArray.addInt(jPageObj, PM.bShoutPreselectEnabled as int)
+	jArray.addInt(jPageObj, PM.bPreselectSwapItemsOnEquip as int)
+	jArray.addInt(jPageObj, PM.bTogglePreselectOnEquipAll as int)
 	
-	jArray.addInt(jPageObj, PM.bQuickShieldEnabled)
-	jArray.addInt(jPageObj, PM.bQuickShield2HSwitchAllowed)
-	jArray.addInt(jPageObj, PM.bQuickShieldPreferMagic)
+	jArray.addInt(jPageObj, PM.bQuickShieldEnabled as int)
+	jArray.addInt(jPageObj, PM.bQuickShield2HSwitchAllowed as int)
+	jArray.addInt(jPageObj, PM.bQuickShieldPreferMagic as int)
 	jArray.addInt(jPageObj, iCurrentQSPreferredMagicSchoolChoice)
-	jArray.addInt(jPageObj, PM.bQuickShieldUnequipLeftIfNotFound)
+	jArray.addInt(jPageObj, PM.bQuickShieldUnequipLeftIfNotFound as int)
 	jArray.addInt(jPageObj, PM.iPreselectQuickShield)
 	
-	jArray.addInt(jPageObj, PM.bQuickRestoreEnabled)
-	jArray.addInt(jPageObj, PM.bQuickHealEnabled)
-	jArray.addInt(jPageObj, PM.bQuickMagickaEnabled)
-	jArray.addInt(jPageObj, PM.bQuickStaminaEnabled)
+	jArray.addInt(jPageObj, PM.bQuickRestoreEnabled as int)
+	jArray.addInt(jPageObj, PM.bQuickHealEnabled as int)
+	jArray.addInt(jPageObj, PM.bQuickMagickaEnabled as int)
+	jArray.addInt(jPageObj, PM.bQuickStaminaEnabled as int)
 	jArray.addFlt(jPageObj, PM.fQuickRestoreThreshold)
-	jArray.addInt(jPageObj, PM.bQuickBuffEnabled)
+	jArray.addInt(jPageObj, PM.bQuickBuffEnabled as int)
 	jArray.addInt(jPageObj, PM.iQuickBuffControl)
 	jArray.addFlt(jPageObj, PM.fQuickBuff2ndPressDelay)
 	jArray.addInt(jPageObj, PO.iQuickBuffsToApply)
-	jArray.addInt(jPageObj, PM.bQuickHealPreferMagic)
-	jArray.addInt(jPageObj, PM.bQuickHealUseFallback)
+	jArray.addInt(jPageObj, PM.bQuickHealPreferMagic as int)
+	jArray.addInt(jPageObj, PM.bQuickHealUseFallback as int)
 	jArray.addInt(jPageObj, PM.iQuickHealEquipChoice)
-	jArray.addInt(jPageObj, PM.bQuickHealSwitchBackEnabled)
-	jArray.addInt(jPageObj, PM.bQuickHealSwitchBackAndRestore)	
+	jArray.addInt(jPageObj, PM.bQuickHealSwitchBackEnabled as int)
+	jArray.addInt(jPageObj, PM.bQuickHealSwitchBackAndRestore as int)	
 	
-	jArray.addInt(jPageObj, PM.bQuickRangedEnabled)
+	jArray.addInt(jPageObj, PM.bQuickRangedEnabled as int)
 	jArray.addInt(jPageObj, PM.iQuickRangedPreferredWeaponType)
 	jArray.addInt(jPageObj, PM.iQuickRangedSwitchOutAction)
 	jArray.addInt(jPageObj, iCurrentQRPreferredMagicSchoolChoice)
 	jArray.addInt(jPageObj, PM.iPreselectQuickRanged)
 	
-	jArray.addInt(jPageObj, WC.bQuickDualCastEnabled)
-	jArray.addFromArray(jPageObj, WC.abQuickDualCastSchoolAllowed)
-	jArray.addInt(jPageObj, PM.bQuickDualCastMustBeInBothQueues)
+	jArray.addInt(jPageObj, WC.bQuickDualCastEnabled as int)
+	jArray.addInt(jPageObj, WC.abQuickDualCastSchoolAllowed[0] as int)
+    jArray.addInt(jPageObj, WC.abQuickDualCastSchoolAllowed[1] as int)
+    jArray.addInt(jPageObj, WC.abQuickDualCastSchoolAllowed[2] as int)
+    jArray.addInt(jPageObj, WC.abQuickDualCastSchoolAllowed[3] as int)
+    jArray.addInt(jPageObj, WC.abQuickDualCastSchoolAllowed[4] as int)
+	jArray.addInt(jPageObj, PM.bQuickDualCastMustBeInBothQueues as int)
 	
     return jPageObj
 endFunction
@@ -501,11 +505,12 @@ State pro_tgl_ifNotFound
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_pro_txt_ifNotFound")
-        elseIf currentEvent == "Select"
-			PM.bQuickShieldUnequipLeftIfNotFound = !PM.bQuickShieldUnequipLeftIfNotFound
-			MCM.SetToggleOptionValueST(PM.bQuickShieldUnequipLeftIfNotFound)
-		elseIf currentEvent == "Default"
-            PM.bQuickShieldUnequipLeftIfNotFound = false
+        else
+            if currentEvent == "Select"
+                PM.bQuickShieldUnequipLeftIfNotFound = !PM.bQuickShieldUnequipLeftIfNotFound
+            elseIf currentEvent == "Default"
+                PM.bQuickShieldUnequipLeftIfNotFound = false
+            endIf
             MCM.SetToggleOptionValueST(PM.bQuickShieldUnequipLeftIfNotFound)
         endIf
     endEvent
@@ -820,11 +825,13 @@ endState
 
 State pro_tgl_altSpll
     event OnBeginState()
-    	if currentEvent == "Select"
-			WC.abQuickDualCastSchoolAllowed[0] = !WC.abQuickDualCastSchoolAllowed[0] 
-			MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[0])
-		elseIf currentEvent == "Default"
-            WC.abQuickDualCastSchoolAllowed[0] = false
+    	If (currentEvent == "Select") || currentEvent == "Default"
+            if currentEvent == "Select"
+                WC.abQuickDualCastSchoolAllowed[0] = !WC.abQuickDualCastSchoolAllowed[0] 
+            else
+                WC.abQuickDualCastSchoolAllowed[0] = false
+            endIf
+            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[0])
         endIf
     endEvent
@@ -832,11 +839,13 @@ endState
 
 State pro_tgl_conjSpll
     event OnBeginState()
-        if currentEvent == "Select"
-			WC.abQuickDualCastSchoolAllowed[1] = !WC.abQuickDualCastSchoolAllowed[1] 
-			MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[1])
-		elseIf currentEvent == "Default"
-            WC.abQuickDualCastSchoolAllowed[1] = false
+        If (currentEvent == "Select") || currentEvent == "Default"
+            if currentEvent == "Select"
+                WC.abQuickDualCastSchoolAllowed[1] = !WC.abQuickDualCastSchoolAllowed[1] 
+            else
+                WC.abQuickDualCastSchoolAllowed[1] = false
+            endIf
+            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[1])
         endIf
     endEvent
@@ -844,11 +853,13 @@ endState
 
 State pro_tgl_destSpll
     event OnBeginState()
-        if currentEvent == "Select"
-			WC.abQuickDualCastSchoolAllowed[2] = !WC.abQuickDualCastSchoolAllowed[2] 
-			MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[2])
-		elseIf currentEvent == "Default"
-            WC.abQuickDualCastSchoolAllowed[2] = false
+        If (currentEvent == "Select") || currentEvent == "Default"
+            if currentEvent == "Select"
+                WC.abQuickDualCastSchoolAllowed[2] = !WC.abQuickDualCastSchoolAllowed[2] 
+            else
+                WC.abQuickDualCastSchoolAllowed[2] = false
+            endIf
+            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[2])
         endIf
     endEvent
@@ -856,11 +867,13 @@ endState
 
 State pro_tgl_illSpll
     event OnBeginState()
-        if currentEvent == "Select"
-			WC.abQuickDualCastSchoolAllowed[3] = !WC.abQuickDualCastSchoolAllowed[3]
-			MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[3])
-		elseIf currentEvent == "Default"
-            WC.abQuickDualCastSchoolAllowed[3] = false
+        If (currentEvent == "Select") || currentEvent == "Default"
+            if currentEvent == "Select"
+                WC.abQuickDualCastSchoolAllowed[3] = !WC.abQuickDualCastSchoolAllowed[3] 
+            else
+                WC.abQuickDualCastSchoolAllowed[3] = false
+            endIf
+            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[3])
         endIf
     endEvent
@@ -868,11 +881,13 @@ endState
 
 State pro_tgl_restSpll
     event OnBeginState()
-        if currentEvent == "Select"
-			WC.abQuickDualCastSchoolAllowed[4] = !WC.abQuickDualCastSchoolAllowed[4] 
-			MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[4])
-		elseIf currentEvent == "Default"
-            WC.abQuickDualCastSchoolAllowed[4] = false
+        If (currentEvent == "Select") || currentEvent == "Default"
+            if currentEvent == "Select"
+                WC.abQuickDualCastSchoolAllowed[4] = !WC.abQuickDualCastSchoolAllowed[4] 
+            else
+                WC.abQuickDualCastSchoolAllowed[4] = false
+            endIf
+            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[4])
         endIf
     endEvent

@@ -251,19 +251,28 @@ function initialise()
     findAndSortPotions()
 endFunction
 
-<<<<<<< HEAD
 function InitialisePotionQueueArrays(int jHolderObj, int consQ, int poisQ)
-    debug.trace("iEquip_PotionScript InitialisePotionQArrays called")
+    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays start")
     iConsumableQ = consQ
     iPoisonQ = poisQ
-	
-    int i = 0
-    while i < 9
-		aiPotionQ[i] = JArray.object()
-		JArray.addObj(jHolderObj, aiPotionQ[i])
-        debug.trace("iEquip_PotionScript InitialisePotionQArrays - aiPotionQ["+i+"] contains " + aiPotionQ[i])
-        i += 1
-    endWhile
+    aiPotionQ[0] = JArray.object()
+    JMap.setObj(jHolderObj, "healthRestoreQ", aiPotionQ[0])
+    aiPotionQ[1] = JArray.object()
+    JMap.setObj(jHolderObj, "healthFortifyQ", aiPotionQ[1])
+    aiPotionQ[2] = JArray.object()
+    JMap.setObj(jHolderObj, "healthRegenQ", aiPotionQ[2])
+    aiPotionQ[3] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaRestoreQ", aiPotionQ[3])
+    aiPotionQ[4] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaFortifyQ", aiPotionQ[4])
+    aiPotionQ[5] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaRegenQ", aiPotionQ[5])
+    aiPotionQ[6] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaRestoreQ", aiPotionQ[6])
+    aiPotionQ[7] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaFortifyQ", aiPotionQ[7])
+    aiPotionQ[8] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaRegenQ", aiPotionQ[8])
     debug.trace("iEquip_PotionScript InitialisePotionQueueArrays end")
 endfunction
 

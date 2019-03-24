@@ -611,7 +611,7 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
         iIndex += 1
     endWhile
     
-    if !WC.bIsFirstLoad && !WC.bLoading && !WC.bRefreshingWidget
+    if !WC.bRefreshingWidget
         iIndex = 1
     
         while iIndex < WC.asWidgetDescriptions.Length
@@ -961,7 +961,7 @@ function SavePreset()
         jMap.setObj(jSavePreset, "_TC", jArray.objectWithInts(WC.aiWidget_TC))
         jMap.setObj(jSavePreset, "_TA", jArray.objectWithStrings(WC.asWidget_TA))
         jMap.setObj(jSavePreset, "_V", jArray.objectWithBooleans(WC.abWidget_V))
-		jMap.setObj(jSavePreset, "_X", jArray.objectWithFloats(WC.afWidget_X))
+		;jMap.setObj(jSavePreset, "_X", jArray.objectWithFloats(WC.afWidget_X))
 		;jMap.setInt(jSavePreset, "_X", jArray.objectWithFloats(WC.afWidget_X))
 
         jValue.writeTofile(jSavePreset, WidgetPresetPath + textInput + FileExtWP)
@@ -1106,6 +1106,7 @@ function ResetDefaults()
         ;WC.refreshWidgetOnLoad()
     endIf
     
+    PM.updateAnimationTargetValues()
     WC.updateWidgetVisibility()
     debug.Notification("$iEquip_EM_not_doneResetting")
     debug.trace("iEquip_EditMode ResetDefaults end")

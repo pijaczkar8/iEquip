@@ -30,24 +30,24 @@ endFunction
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 	
-	jArray.addInt(jPageObj, WC.bPotionGrouping)
+	jArray.addInt(jPageObj, WC.bPotionGrouping as int)
 	
-	jArray.addInt(jPageObj, PO.bCheckOtherEffects)
-	jArray.addInt(jPageObj, PO.bExcludeRestoreAllEffects)
+	jArray.addInt(jPageObj, PO.bCheckOtherEffects as int)
+	jArray.addInt(jPageObj, PO.bExcludeRestoreAllEffects as int)
 	jArray.addInt(jPageObj, PO.iPotionSelectChoice)
 	
 	jArray.addFlt(jPageObj, PO.fSmartConsumeThreshold)
-	jArray.addInt(jPageObj, PO.bBlockIfRestEffectActive)
-	jArray.addInt(jPageObj, PO.bSuspendChecksInCombat)
-	jArray.addInt(jPageObj, PO.bBlockIfBuffEffectActive)
+	jArray.addInt(jPageObj, PO.bBlockIfRestEffectActive as int)
+	jArray.addInt(jPageObj, PO.bSuspendChecksInCombat as int)
+	jArray.addInt(jPageObj, PO.bBlockIfBuffEffectActive as int)
 	
 	jArray.addInt(jPageObj, WC.iPotionSelectorChoice)
 	jArray.addFlt(jPageObj, WC.fPotionSelectorFadeoutDelay)
 	jArray.addInt(jPageObj, PO.iEmptyPotionQueueChoice)
 	jArray.addFlt(jPageObj, WC.fconsIconFadeAmount)
-	jArray.addInt(jPageObj, PO.bFlashPotionWarning)
-	jArray.addInt(jPageObj, PO.bEnableRestorePotionWarnings)
-	jArray.addInt(jPageObj, PO.bNotificationOnLowRestorePotions)
+	jArray.addInt(jPageObj, PO.bFlashPotionWarning as int)
+	jArray.addInt(jPageObj, PO.bEnableRestorePotionWarnings as int)
+	jArray.addInt(jPageObj, PO.bNotificationOnLowRestorePotions as int)
     
 	return jPageObj
 endFunction

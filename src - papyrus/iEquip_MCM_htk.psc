@@ -33,7 +33,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addFlt(jPageObj, KH.fMultiTapDelay)
 	jArray.addFlt(jPageObj, KH.fLongPressDelay)
 	
-	jArray.addInt(jPageObj, KH.bOptionalHotkeyEnabled)
+	jArray.addInt(jPageObj, KH.bOptionalHotkeyEnabled as int)
 	jArray.addInt(jPageObj, KH.iOptHtKey)
 	jArray.addInt(jPageObj, KH.iOptHotKeyAction)
 

@@ -44,25 +44,27 @@ endFunction
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 	
-	jArray.addInt(jPageObj, WC.bShowTooltips)
-	jArray.addInt(jPageObj, WC.bShoutEnabled)
-	jArray.addInt(jPageObj, WC.bConsumablesEnabled)
-	jArray.addInt(jPageObj, WC.bPoisonsEnabled)
+	jArray.addInt(jPageObj, WC.bShowTooltips as int)
+	jArray.addInt(jPageObj, WC.bShoutEnabled as int)
+	jArray.addInt(jPageObj, WC.bConsumablesEnabled as int)
+	jArray.addInt(jPageObj, WC.bPoisonsEnabled as int)
 	
-	jArray.addInt(jPageObj, AM.bSimpleAmmoMode)
+	jArray.addInt(jPageObj, AM.bSimpleAmmoMode as int)
 	jArray.addInt(jPageObj, AM.iAmmoListSorting)
 	jArray.addInt(jPageObj, AM.iActionOnLastAmmoUsed)
 	
-	jArray.addInt(jPageObj, WC.bEquipOnPause)
+	jArray.addInt(jPageObj, WC.bEquipOnPause as int)
 	jArray.addFlt(jPageObj, WC.fEquipOnPauseDelay)
 	
 	jArray.addInt(jPageObj, iPosIndChoice)
-	jArray.addInt(jPageObj, WC.bShowAttributeIcons)
+	jArray.addInt(jPageObj, WC.bShowAttributeIcons as int)
 	
-	jArray.addInt(jPageObj, WC.bEnableGearedUp)
-	jArray.addInt(jPageObj, WC.bUnequipAmmo)
-	jArray.addInt(jPageObj, WC.bEnableGearedUp)
-	jArray.addFromArray(jPageObj, BM.abShowInTransformedState)
+	jArray.addInt(jPageObj, WC.bEnableGearedUp as int)
+	jArray.addInt(jPageObj, WC.bUnequipAmmo as int)
+	jArray.addInt(jPageObj, WC.bEnableGearedUp as int)
+	jArray.addInt(jPageObj, BM.abShowInTransformedState[0] as int)
+    jArray.addInt(jPageObj, BM.abShowInTransformedState[1] as int)
+    jArray.addInt(jPageObj, BM.abShowInTransformedState[2] as int)
     
 	return jPageObj
 endFunction
@@ -136,10 +138,7 @@ function drawPage()
 	        endIf
 
 	        MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[iPosIndChoice])
-	        ;/MCM.AddToggleOptionST("gen_tgl_showPosInd", "$iEquip_MCM_gen_lbl_showshowPosInd", WC.bShowPositionIndicators)
-            if WC.bShowPositionIndicators
-                MCM.AddTextOptionST("gen_txt_posIndBehaviour", "", posIndBehaviour[WC.bPermanentPositionIndicators as int])
-            endIf/;
+
 	        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
 
 	        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
@@ -174,12 +173,12 @@ State gen_tgl_onOff
             MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff")
         elseIf currentEvent == "Select"
             ;Block enabling if player is currently a werewolf, vampire lord or lich.  iEquip will handle any subsequent player transformations once enabled.
-            ;if !MCM.bEnabled && EH.bPlayerIsABeast
-                ;MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
-            ;else
+            if !MCM.bEnabled && EH.bPlayerIsABeast
+                MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
+            else
                 MCM.bEnabled = !MCM.bEnabled
                 MCM.forcePageReset()
-            ;endIf
+            endIf
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
             MCM.forcePageReset()

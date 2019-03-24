@@ -8,6 +8,8 @@ string[] backgroundStyleOptions
 string[] fadeoutOptions
 string[] firstPressIfNameHiddenOptions
 string[] temperLevelTextOptions
+string[] coloredIconOptions
+string[] tempLvlThresholdOptions
 
 int[] aiDropShadowBlurValues
 
@@ -66,6 +68,17 @@ function initData()
     temperLevelTextOptions[11] = "$iEquip_MCM_ui_opt_tmpLvlTxt11"
     temperLevelTextOptions[12] = "$iEquip_MCM_ui_opt_tmpLvlTxt12"
 
+    coloredIconOptions = new string[3]
+    coloredIconOptions[0] = "$iEquip_MCM_ui_opt_noColor"
+    coloredIconOptions[1] = "$iEquip_MCM_ui_opt_colorLower"
+    coloredIconOptions[2] = "$iEquip_MCM_ui_opt_colorFull"
+
+    tempLvlThresholdOptions = new string[4]
+    tempLvlThresholdOptions[0] = "$iEquip_MCM_ui_opt_tmpLvl4020"
+    tempLvlThresholdOptions[1] = "$iEquip_MCM_ui_opt_tmpLvl3020"
+    tempLvlThresholdOptions[2] = "$iEquip_MCM_ui_opt_tmpLvl3010"
+    tempLvlThresholdOptions[3] = "$iEquip_MCM_ui_opt_tmpLvl2010"
+
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -74,35 +87,37 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, WC.iPositionIndicatorColor)
 	jArray.addFlt(jPageObj, WC.fPositionIndicatorAlpha)
 	jArray.addInt(jPageObj, WC.iCurrPositionIndicatorColor)
-	jArray.addInt(jPageObj, WC.fCurrPositionIndicatorAlpha)
+	jArray.addFlt(jPageObj, WC.fCurrPositionIndicatorAlpha)
 	
-	jArray.addInt(jPageObj, WC.bFadeLeftIconWhen2HEquipped)
+	jArray.addInt(jPageObj, WC.bFadeLeftIconWhen2HEquipped as int)
 	jArray.addFlt(jPageObj, WC.fLeftIconFadeAmount)
-	jArray.addInt(jPageObj, TI.bFadeIconOnDegrade)
-	jArray.addInt(jPageObj, TI.iTemperNameFormat)
+    jArray.addInt(jPageObj, TI.iTemperNameFormat)
+	jArray.addInt(jPageObj, TI.bFadeIconOnDegrade as int)
+	jArray.addInt(jPageObj, TI.iColoredIconStyle)
+    jArray.addInt(jPageObj, TI.iColoredIconLevels)
 	jArray.addInt(jPageObj, iAmmoIconStyle)
 	jArray.addInt(jPageObj, WC.iBackgroundStyle) ; Save in preset also
 	
-	jArray.addInt(jPageObj, WC.bDropShadowEnabled)
+	jArray.addInt(jPageObj, WC.bDropShadowEnabled as int)
 	jArray.addFlt(jPageObj, WC.fDropShadowAlpha)
 	jArray.addFlt(jPageObj, WC.fDropShadowAngle)
 	jArray.addInt(jPageObj, WC.iDropShadowBlur)
 	jArray.addFlt(jPageObj, WC.fDropShadowDistance)
 	jArray.addFlt(jPageObj, WC.fDropShadowStrength)
 	
-	jArray.addInt(jPageObj, WC.bWidgetFadeoutEnabled)
+	jArray.addInt(jPageObj, WC.bWidgetFadeoutEnabled as int)
 	jArray.addFlt(jPageObj, WC.fWidgetFadeoutDelay)
 	jArray.addInt(jPageObj, iCurrentWidgetFadeoutChoice)
 	jArray.addFlt(jPageObj, WC.fWidgetFadeoutDuration)
-	jArray.addInt(jPageObj, WC.bAlwaysVisibleWhenWeaponsDrawn)
+	jArray.addInt(jPageObj, WC.bAlwaysVisibleWhenWeaponsDrawn as int)
 	
-	jArray.addInt(jPageObj, WC.bNameFadeoutEnabled)
+	jArray.addInt(jPageObj, WC.bNameFadeoutEnabled as int)
 	jArray.addFlt(jPageObj, WC.fMainNameFadeoutDelay)
 	jArray.addFlt(jPageObj, WC.fPoisonNameFadeoutDelay)
 	jArray.addFlt(jPageObj, WC.fPreselectNameFadeoutDelay)
 	jArray.addInt(jPageObj, iCurrentNameFadeoutChoice)
 	jArray.addFlt(jPageObj, WC.fNameFadeoutDuration)
-	jArray.addInt(jPageObj, WC.bFirstPressShowsName)
+	jArray.addInt(jPageObj, WC.bFirstPressShowsName as int)
     
 	return jPageObj
 endFunction
@@ -115,31 +130,33 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	
 	WC.bFadeLeftIconWhen2HEquipped = jArray.getInt(jPageObj, 4)
 	WC.fLeftIconFadeAmount = jArray.getFlt(jPageObj, 5)
-	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 6)
-	TI.iTemperNameFormat = jArray.getInt(jPageObj, 7)
-	iAmmoIconStyle = jArray.getInt(jPageObj, 8)
-	WC.iBackgroundStyle = jArray.getInt(jPageObj, 9)
+    TI.iTemperNameFormat = jArray.getInt(jPageObj, 6)
+	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 7)
+	TI.iColoredIconStyle = jArray.getInt(jPageObj, 8)
+    TI.iColoredIconLevels = jArray.getInt(jPageObj, 9)
+	iAmmoIconStyle = jArray.getInt(jPageObj, 10)
+	WC.iBackgroundStyle = jArray.getInt(jPageObj, 11)
 	
-	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 10)
-	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 11)
-	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 12)
-	WC.iDropShadowBlur = jArray.getInt(jPageObj, 13)
-	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 14)
-	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 15)
+	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 12)
+	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 13)
+	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 14)
+	WC.iDropShadowBlur = jArray.getInt(jPageObj, 15)
+	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 16)
+	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 17)
 	
-	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 16)
-	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 17)
-	iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 18)
-	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 19)
-	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 20)
+	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 18)
+	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 19)
+	iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 20)
+	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 21)
+	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 22)
 	
-	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 21)
-	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 22)
-	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 23)
-	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 24)
-	iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 25)
-	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 26)
-	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 27)
+	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 23)
+	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 24)
+	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 25)
+	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 26)
+	iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 27)
+	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 28)
+	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 29)
 endFunction
 
 function drawPage()
@@ -155,6 +172,19 @@ function drawPage()
             MCM.AddEmptyOption()
         endIf
 
+        MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_temperedItemOpts")
+        MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
+        MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", TI.bFadeIconOnDegrade)
+        
+        if TI.bFadeIconOnDegrade
+            MCM.AddMenuOptionST("ui_men_tempLvlColorIcon", "$iEquip_MCM_ui_lbl_tempLvlColorIcon", coloredIconOptions[TI.iColoredIconStyle])
+
+            if TI.iColoredIconStyle > 0
+                MCM.AddMenuOptionST("ui_men_tempLvlThresholds", "$iEquip_MCM_ui_lbl_tempLvlThresholds", tempLvlThresholdOptions[TI.iColoredIconLevels])
+            endIf
+        endIf
+        MCM.AddEmptyOption()
+
         MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_iconBgOpts")
         MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
                 
@@ -162,11 +192,7 @@ function drawPage()
             MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
         endIf
 
-        MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", TI.bFadeIconOnDegrade)
-        MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
-
         MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
-
         MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
         
         MCM.SetCursorPosition(1)
@@ -296,18 +322,6 @@ State ui_sld_currPosIndAlpha
     endEvent
 endState
 
-State ui_tgl_tempLvlFade
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_ui_txt_tempLvlFade")
-        elseIf currentEvent == "Select"
-            TI.bFadeIconOnDegrade = !TI.bFadeIconOnDegrade
-            MCM.SetToggleOptionValueST(TI.bFadeIconOnDegrade)
-            WC.bTemperFadeSettingChanged = true
-        endIf 
-    endEvent
-endState
-
 State ui_men_tmpLvlTxt
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -317,7 +331,49 @@ State ui_men_tmpLvlTxt
         elseIf currentEvent == "Accept"
             TI.iTemperNameFormat = currentVar as int
             MCM.SetMenuOptionValueST(temperLevelTextOptions[TI.iTemperNameFormat])
-            WC.bTemperLevelTextStyleChanged = true
+            WC.bTemperDisplaySettingChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_tempLvlFade
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tempLvlFade")
+        elseIf currentEvent == "Select"
+            TI.bFadeIconOnDegrade = !TI.bFadeIconOnDegrade
+            MCM.SetToggleOptionValueST(TI.bFadeIconOnDegrade)
+            WC.bTemperDisplaySettingChanged = true
+            MCM.ForcePageReset()
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_tempLvlColorIcon
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tempLvlColorIcon")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(TI.iColoredIconStyle, coloredIconOptions, 1)
+        elseIf currentEvent == "Accept"
+            TI.iColoredIconStyle = currentVar as int
+            MCM.SetMenuOptionValueST(coloredIconOptions[TI.iColoredIconStyle])
+            WC.bTemperDisplaySettingChanged = true
+            MCM.ForcePageReset()
+        endIf 
+    endEvent
+endState
+
+State ui_men_tempLvlThresholds
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tempLvlThresholds")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(TI.iColoredIconLevels, tempLvlThresholdOptions, 1)
+        elseIf currentEvent == "Accept"
+            TI.iColoredIconLevels = currentVar as int
+            MCM.SetMenuOptionValueST(tempLvlThresholdOptions[TI.iColoredIconLevels])
+            WC.bTemperDisplaySettingChanged = true
         endIf 
     endEvent
 endState

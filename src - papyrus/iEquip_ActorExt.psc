@@ -1,6 +1,21 @@
 ScriptName iEquip_ActorExt
 
 
+; @brief Registers the passes script to be notified when an item enters the player's inventory
+; @param a_thisForm The form to register for the event (i.e. Self).
+Function RegisterForPlayerItemAddedEvent(Form a_thisForm) Global Native
+
+
+; @brief Fires whenever an item is added to the player's inventory
+; @param a_baseItem The base form of the item added
+; @param a_itemCount The number of items added
+; @param a_itemReference The object reference of the item added (may be NONE)
+; @param a_sourceContainer The container the item was obtained from (may be NONE)
+; @param a_name The name of the item added
+Event OnPlayerItemAdded(Form a_baseItem, Int a_itemCount, ObjectReference a_itemReference, ObjectReference a_sourceContainer, String a_name)
+EndEvent
+
+
 ; @brief Retrieves the ammo the actor has equipped.
 ; @param a_actor The actor to check for ammo.
 ; @return Returns the equipped ammo if the actor has any. Returns NONE if no ammo is equipped.

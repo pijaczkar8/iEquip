@@ -190,7 +190,7 @@ endFunction
 
 function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutEquipping = false)
 	debug.trace("iEquip_AmmoMode toggleAmmoMode start")
-	debug.trace("iEquip_AmmoMode toggleAmmoMode - toggleWithoutAnimation: " + toggleWithoutAnimation + ", toggleWithoutEquipping: " + toggleWithoutEquipping + ", bAmmoModePending: " + bAmmoModePending)
+	debug.trace("iEquip_AmmoMode toggleAmmoMode - toggleWithoutAnimation: " + toggleWithoutAnimation + ", toggleWithoutEquipping: " + toggleWithoutEquipping + ", bAmmoModePending: " + bAmmoModePending + ", bSimpleAmmoMode: " + bSimpleAmmoMode)
 	if !bAmmoMode && jArray.count(aiTargetQ[Q]) < 1
 		debug.trace("iEquip_AmmoMode toggleAmmoMode - no ammo for the selected weapon, setting bAmmoModePending to true")
 		debug.Notification("$iEquip_AM_not_noAmmo")

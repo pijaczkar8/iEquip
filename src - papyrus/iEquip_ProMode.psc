@@ -22,7 +22,7 @@ bool property bPreselectMode auto hidden
 bool bPreselectModeFirstLook = true
 bool bEquippingAllPreselectedItems
 bool bTogglingPreselectOnEquipAll
-bool bReadyForPreselectAnim
+;bool bReadyForPreselectAnim
 bool bAllEquipped
 bool[] property abPreselectSlotEnabled auto hidden
 bool bAmmoModePreselectModeFirstLook = true
@@ -105,7 +105,7 @@ function togglePreselectMode(bool togglingEditMode = false)
 		WC.bPreselectMode = bPreselectMode
 		bool[] args = new bool[5]
 		if bPreselectMode
-			bReadyForPreselectAnim = false
+			;bReadyForPreselectAnim = false
 			Self.RegisterForModEvent("iEquip_ReadyForPreselectAnimation", "ReadyForPreselectAnimation")
 			int Q
 			if AM.bAmmoMode
@@ -333,9 +333,9 @@ function equipPreselectedItem(int Q)
     ;Do widget animation here if not bEquippingAllPreselectedItems
     if !bEquippingAllPreselectedItems
 		targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[Q])
-		while !bReadyForPreselectAnim
-			Utility.WaitMenuMode(0.01)
-		endwhile
+		;while !bReadyForPreselectAnim
+		;	Utility.WaitMenuMode(0.01)
+		;endwhile
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".equipPreselectedItem")
 		if(iHandle)
 			UICallback.PushInt(iHandle, Q) ;Which slot we're updating
@@ -540,16 +540,16 @@ function equipPreselectedItem(int Q)
 	debug.trace("iEquip_ProMode equipPreselectedItem end")
 endFunction
 
-event ReadyForPreselectAnimation(string sEventName, string sStringArg, Float fNumArg, Form kSender)
+;/event ReadyForPreselectAnimation(string sEventName, string sStringArg, Float fNumArg, Form kSender)
 	debug.trace("iEquip_ProMode ReadyForPreselectAnimation start")
 	If(sEventName == "iEquip_ReadyForPreselectAnimation")
 		bReadyForPreselectAnim = true
 	endIf
 	debug.trace("iEquip_ProMode ReadyForPreselectAnimation end")
-endEvent
+endEvent/;
 
 function updateAnimationTargetValues()
-	bReadyForPreselectAnim = false
+	;bReadyForPreselectAnim = false
 	UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
 endFunction
 
@@ -629,9 +629,9 @@ function equipAllPreselectedItems()
 		endIf
 	endIf
     
-	while !bReadyForPreselectAnim
-		Utility.WaitMenuMode(0.01)
-	endwhile
+	;while !bReadyForPreselectAnim
+	;	Utility.WaitMenuMode(0.01)
+	;endwhile
 
 	bAllEquipped = false
 	Self.RegisterForModEvent("iEquip_EquipAllComplete", "EquipAllComplete")

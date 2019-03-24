@@ -116,7 +116,7 @@ event OnPageReset(string page)
     endif
 endEvent
 
-function jumpToPage(string eventName, float tmpVar = -1.0)
+function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
     string sCurrentState = GetState()
     
     if sCurrentPage == "$iEquip_MCM_lbl_General"
@@ -136,7 +136,7 @@ function jumpToPage(string eventName, float tmpVar = -1.0)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Edit"
         edt.jumpToState(sCurrentState, eventName, tmpVar)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Info"
-        inf.jumpToState(sCurrentState, eventName, tmpVar)
+        inf.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     endIf
 endFunction
 
@@ -216,8 +216,8 @@ event OnInputOpenST()
 	jumpToPage("Open")
 endEvent
 
-event OnInputAcceptST(string input)
-    jumpToPage("Accept", -1.0, input)
+event OnInputAcceptST(string sInput)
+    jumpToPage("Accept", -1.0, sInput)
 endEvent
 
 ; #################
@@ -226,15 +226,15 @@ endEvent
 function savePreset(string presetName)	; Save data to JContainer file
 	int jMCMPreset = jMap.object()
 	
-	jMap.setObj(jSavePreset, "General", gen.saveData())
-	jMap.setObj(jSavePreset, "Hotkey", htk.saveData())
-	jMap.setObj(jSavePreset, "Queue", que.saveData())
-	jMap.setObj(jSavePreset, "Potions", pot.saveData())
-	jMap.setObj(jSavePreset, "Potions&", poi.saveData())
-	jMap.setObj(jSavePreset, "Ui", uii.saveData())
-	jMap.setObj(jSavePreset, "Pro", pro.saveData())
-	jMap.setObj(jSavePreset, "Editmode", edt.saveData())
-	jMap.setObj(jSavePreset, "Info", inf.saveData())	
+	jMap.setObj(jMCMPreset, "General", gen.saveData())
+	jMap.setObj(jMCMPreset, "Hotkey", htk.saveData())
+	jMap.setObj(jMCMPreset, "Queue", que.saveData())
+	jMap.setObj(jMCMPreset, "Potions", pot.saveData())
+	jMap.setObj(jMCMPreset, "Potions&", poi.saveData())
+	jMap.setObj(jMCMPreset, "Ui", uii.saveData())
+	jMap.setObj(jMCMPreset, "Pro", pro.saveData())
+	jMap.setObj(jMCMPreset, "Editmode", edt.saveData())
+	jMap.setObj(jMCMPreset, "Info", inf.saveData())	
 	
 	jValue.writeTofile(jMCMPreset, MCMSettingsPath + presetName + FileExtMCM)
 	jValue.zeroLifetime(jMCMPreset)
@@ -253,6 +253,7 @@ function loadPreset(string presetName)	; Load MCM data
     edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
     inf.loadData(jMap.getObj(jMCMPreset, "Info"))
 	bUpdateKeyMaps = true
+    WC.bMCMPresetLoaded = true
 	
 	jValue.zeroLifetime(jMCMPreset)
 endFunction
