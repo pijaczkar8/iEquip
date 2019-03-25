@@ -297,7 +297,7 @@ function initialisemoreHUDArray()
             int itemID = jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID")
             debug.trace("iEquip_PotionScript initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiPotionQ[Q], i), "iEquipName"))
             if itemID == 0
-                itemID = WC.createItemID(itemForm.GetName(), itemForm.GetFormID())
+                itemID = CalcCRC32Hash(itemForm.GetName(), Math.LogicalAND(itemForm.GetFormID(), 0x00FFFFFF))
                 jMap.setInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID", itemID)
             endIf
             if itemID != 0
@@ -784,7 +784,7 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
         if Q > -1 && findInQueue(aiPotionQ[Q], potionForm) == -1
             bool isRestore = (Q == 0 || Q == 3 || Q == 6)
             string potionName = foundPotion.GetName()
-            int itemID = WC.createItemID(potionName, potionForm.GetFormID())
+            int itemID = CalcCRC32Hash(potionName, Math.LogicalAND(potionForm.GetFormID(), 0x00FFFFFF))
             int potionObj = jMap.object()
             ;Calculate the various strengths for comparison during selection
             float effectStrength
@@ -859,7 +859,7 @@ function checkAndAddToPoisonQueue(potion foundPoison)
         endIf
     elseIf !(jArray.count(iPoisonQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
         int poisonFormID = poisonForm.GetFormID()
-        int itemID = WC.createItemID(poisonName, poisonFormID)
+        int itemID = CalcCRC32Hash(poisonName, Math.LogicalAND(poisonFormID, 0x00FFFFFF))
         int poisonObj = jMap.object()
         jMap.setForm(poisonObj, "iEquipForm", poisonForm)
         jMap.setInt(poisonObj, "iEquipFormID", poisonFormID)
@@ -902,7 +902,7 @@ function checkAndAddToConsumableQueue(potion foundConsumable, bool isPotion = fa
         endIf
     elseIf !(jArray.count(iConsumableQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
         int consumableFormID = consumableForm.GetFormID()
-        int itemID = WC.createItemID(consumableName, consumableFormID)
+        int itemID = CalcCRC32Hash(consumableName, Math.LogicalAND(consumableFormID, 0x00FFFFFF))
         int consumableObj = jMap.object()
         jMap.setForm(consumableObj, "iEquipForm", consumableForm)
         jMap.setInt(consumableObj, "iEquipFormID", consumableFormID)
