@@ -79,7 +79,7 @@ State inf_men_loadpreset
 			
 				MCM.fillMenu(0, saPresets, 0)
 			else
-				MCM.ShowMessage("$iEquip_EM_not_noPresets")
+				MCM.ShowMessage("$iEquip_EM_not_noPresets", false, "$OK")
 			endIf
         elseIf currentEvent == "Accept"
 			MCM.loadPreset(saPresets[currentVar as int])
@@ -105,7 +105,7 @@ State inf_men_deletepreset
 			
 				MCM.fillMenu(0, saPresets, 0)
 			else
-				MCM.ShowMessage("$iEquip_EM_not_noPresets")
+				MCM.ShowMessage("$iEquip_EM_not_noPresets", false, "$OK")
 			endIf
         elseIf currentEvent == "Accept"
 			MCM.deletePreset(saPresets[currentVar as int])
