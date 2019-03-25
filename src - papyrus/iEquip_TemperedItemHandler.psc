@@ -192,7 +192,7 @@ function updateIcon(int Q, int temperLevelPercent)
 
 	debug.trace("iEquip_TemperedItemHandler updateIcon - checking we've got a value rounded to the nearest 10, temperLvl: " + temperLvl)
 
-	if bFadeIconOnDegrade																							; If we have enabled icon fade on degrade
+	if bFadeIconOnDegrade && temperLvl < 100																		; If we have enabled icon fade on degrade
 		newIcon += temperLvl as string																				; First append the current item percent rounded to the nearest 10%
 
 		if iColoredIconStyle > 0 && temperLvl < 50																	; Now if we've enabled coloured icons and item health rounded to tens is 40% or below
