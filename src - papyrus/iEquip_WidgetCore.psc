@@ -477,9 +477,6 @@ bool property isEnabled
 	function Set(bool enabled)
 		if (Ready)
             bEnabled = enabled
-			
-            EH.initialise(bEnabled)
-            AD.initialise(bEnabled)
             
 			if bEnabled
 				GoToState("ENABLED")
@@ -508,6 +505,8 @@ state ENABLED
 		
 		PO.InitialisePotionQueueArrays(iEquipQHolderObj, aiTargetQ[3], aiTargetQ[4])
 		addPotionGroups()
+		EH.initialise(bEnabled)
+        AD.initialise(bEnabled)
 		
 		self.RegisterForMenu("InventoryMenu")
 		self.RegisterForMenu("MagicMenu")
@@ -604,6 +603,8 @@ Auto state DISABLED
 	event OnBeginState()
 		jValue.release(iEquipQHolderObj)
 		bIsFirstEnabled = true
+		EH.initialise(bEnabled)
+        AD.initialise(bEnabled)
 	
 		self.UnregisterForAllMenus()
 		KH.UnregisterForAllKeys()
