@@ -349,7 +349,7 @@ State ui_tgl_tempLvlFade
     endEvent
 endState
 
-State ui_tgl_tempLvlColorIcon
+State ui_men_tempLvlColorIcon
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_tempLvlColorIcon")
