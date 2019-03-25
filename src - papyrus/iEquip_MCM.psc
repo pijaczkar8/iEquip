@@ -66,8 +66,9 @@ endEvent
 Event OnConfigClose()
     if WC.isEnabled != bEnabled
         WC.isEnabled = bEnabled
-	else
-		updateSettings()
+        bFirstEnabled = false
+    else
+        updateSettings()
     endIf
 endEvent
 
