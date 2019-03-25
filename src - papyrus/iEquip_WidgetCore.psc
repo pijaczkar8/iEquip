@@ -329,7 +329,7 @@ EndProperty
 
 state ENABLED
 	event OnBeginState()
-		iEquipQHolderObj = JValue.retain(JArray.object())
+		iEquipQHolderObj = JValue.retain(JMap.object())
 		aiTargetQ[0] = JArray.object()
 		JMap.setObj(iEquipQHolderObj, "leftQ", aiTargetQ[0])
 		aiTargetQ[1] = JArray.object()
@@ -407,7 +407,7 @@ state ENABLED
 		form fItem
 		int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
-		updatePotionSelector(true) ;Hide the potion selector
+		updatePotionSelector(true) ;Hide the potion selectors
 		if bDropShadowEnabled
 			updateTextFieldDropShadow()
 		else
