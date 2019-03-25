@@ -368,7 +368,7 @@ Auto state DISABLED
 	
 	; Disabling
 	event OnBeginState()
-		; TODO: Release jObjects to avoid memory leak
+		jValue.release(iEquipQHolderObj)
 	
 		self.UnregisterForAllMenus()
 		KH.UnregisterForAllKeys()
