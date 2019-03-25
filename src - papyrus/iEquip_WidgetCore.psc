@@ -117,6 +117,7 @@ int iPoisonCount
 int iCurrentlyUpdating
 
 bool bEnabled = false
+bool bIsFirstEnabled = true
 bool property bAddingItemsOnFirstEnable = false auto hidden
 bool bIsFirstInventoryMenu = true
 bool bIsFirstMagicMenu = true
@@ -302,240 +303,9 @@ string function GetWidgetSource()
 	Return "iEquip/iEquipWidget.swf"
 endFunction
 
-; ##########################
-; ### ENABLING/DISABLING ###
 
-bool property isEnabled
-	bool function Get()
-		Return bEnabled
-	endFunction
-	
-	function Set(bool enabled)
-		if (Ready)
-            bEnabled = enabled
-			
-            EH.initialise(bEnabled)
-            AD.initialise(bEnabled)
-            
-			if bEnabled
-				GoToState("ENABLED")
-			else
-				GoToState("DISABLED")
-			endIf
-		endIf
-	endFunction
-EndProperty
-
-state ENABLED
-	event OnBeginState()
-		iEquipQHolderObj = JValue.retain(JMap.object())
-		aiTargetQ[0] = JArray.object()
-		JMap.setObj(iEquipQHolderObj, "leftQ", aiTargetQ[0])
-		aiTargetQ[1] = JArray.object()
-		JMap.setObj(iEquipQHolderObj, "rightQ", aiTargetQ[1])
-		aiTargetQ[2] = JArray.object()
-		JMap.setObj(iEquipQHolderObj, "shoutQ", aiTargetQ[2])
-		aiTargetQ[3] = JArray.object()
-		JMap.setObj(iEquipQHolderObj, "consumableQ", aiTargetQ[3])
-		aiTargetQ[4] = JArray.object()
-		JMap.setObj(iEquipQHolderObj, "poisonQ", aiTargetQ[4])
-		iRemovedItemsCacheObj = JArray.object()
-		JMap.setObj(iEquipQHolderObj, "lastRemovedCache", iRemovedItemsCacheObj )
-		
-		PO.InitialisePotionQueueArrays(iEquipQHolderObj, aiTargetQ[3], aiTargetQ[4])
-		
-		self.RegisterForMenu("InventoryMenu")
-		self.RegisterForMenu("MagicMenu")
-		self.RegisterForMenu("FavoritesMenu")
-		self.RegisterForMenu("ContainerMenu")
-		self.RegisterForMenu("Journal Menu")
-		ResetWidgetArrays()
-	
-		addFists()
-		addPotionGroups()
-		PO.findAndSortPotions()
-		AM.updateAmmoLists()
-		OnWidgetLoad()
-		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
-		addCurrentItemsOnFirstEnable()
-		
-		iEquip_MessageQuest.Start()
-		
-		if bShowTooltips
-			Utility.Wait(1.5)
-			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
-		endIf
-	endEvent
-	
-	; Enabled events
-	Event OnWidgetLoad()
-		debug.trace("iEquip_WidgetCore OnWidgetLoad start")
-
-		;fPositionIndicatorAlpha = 60.0
-		EM.isEditMode = false
-		bPreselectMode = false
-		bRefreshingWidget = true
-		bCyclingLHPreselectInAmmoMode = false
-		bSwitchingHands = false
-		bPreselectSwitchingHands = false
-		bFadingWidgetOut = false
-		PM.bBlockQuickDualCast = false
-		KH.GameLoaded()
-		PM.OnWidgetLoad()
-		AM.OnWidgetLoad()
-		CM.OnWidgetLoad()
-		
-		CheckDependencies()
-		
-		OnWidgetReset()
-		EM.UpdateElementsAll()
-		PM.updateAnimationTargetValues()
-		; Determine if the widget should be displayed
-		UpdateWidgetModes()
-		;Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
-		UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-		bool[] args = new bool[5]
-		if bAmmoMode
-			args[0] = true
-		endIf
-		args[3] = bAmmoMode
-		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-		
-		bLeftIconFaded = false
-		int Q
-		form fItem
-		int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
-		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
-		updatePotionSelector(true) ;Hide the potion selectors
-		if bDropShadowEnabled
-			updateTextFieldDropShadow()
-		else
-			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
-		endIf
-		initQueuePositionIndicators()
-		int count
-		while Q < 8
-			abIsNameShown[Q] = true
-			if Q < 5
-				count = jArray.count(aiTargetQ[Q])
-				if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
-					setSlotToEmpty(Q, true, (count > 0))
-				else
-					if Q < 3 && bPermanentPositionIndicators
-						updateQueuePositionIndicator(Q, count, aiCurrentQueuePosition[Q], aiCurrentQueuePosition[Q])
-					endIf
-					if Q < 2
-						checkAndUpdatePoisonInfo(Q)
-						TI.checkAndUpdateTemperLevelInfo(Q)
-						CM.initChargeMeter(Q)
-						CM.initSoulGem(Q)
-					endIf
-					if Q == 0 && bAmmoMode
-						updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
-					else
-						updateWidget(Q, aiCurrentQueuePosition[Q])
-					endIf
-					if abIsCounterShown[Q]
-						if Q == 0 && bAmmoMode
-							fItem = AM.currentAmmoForm
-						else
-							fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")
-						endIf
-						if Q == 3 && potionGroup != -1
-							count = PO.getPotionGroupCount(potionGroup)
-							setSlotCount(3, count)
-							if count < 1
-								checkAndFadeConsumableIcon(true)
-							elseIf bConsumableIconFaded
-								checkAndFadeConsumableIcon(false)
-							endIf
-						elseIf Q == 4
-							if count < 1
-								handleEmptyPoisonQueue()
-							else
-								setSlotCount(4, PlayerRef.GetItemCount(fItem)) ;line 589
-								if bPoisonIconFaded
-									checkAndFadePoisonIcon(false)
-								endIf
-							endIf
-						elseIf fItem && !(Q < 2 && abPoisonInfoDisplayed[Q])
-							setSlotCount(Q, PlayerRef.GetItemCount(fItem))
-						endIf
-					endIf
-				endIf
-			else
-				updateWidget(Q, aiCurrentlyPreselected[Q - 5]) ;line 600
-			endIf
-			Q += 1
-		endwhile
-
-		CM.updateChargeMeters(true)
-		;And finally if we've loaded a save where the player is in beast form toggle the widget now
-		if EH.bPlayerIsABeast
-			BM.onPlayerTransform(PlayerRef.GetRace(), EH.bPlayerIsAVampire, true)
-		else
-			updateSlotsEnabled()
-		endIf
-		;just to make sure!
-		bRefreshingWidget = false
-		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
-		updateWidgetVisibility() ;Show the widget
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
-		if CM.iChargeDisplayType > 0
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD alt charge meter
-		endIf
-		Utility.Wait(0.5)
-		checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
-
-		KH.RegisterForGameplayKeys()
-		debug.notification("$iEquip_WC_not_controlsUnlocked")
-		
-		debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
-	endEvent
-
-	Event OnWidgetReset()
-		debug.trace("iEquip_WidgetCore OnWidgetReset called")
-		RequireExtend = false
-		parent.OnWidgetReset()
-		debug.trace("iEquip_WidgetCore OnWidgetReset finished")
-	EndEvent
-endState
-
-Auto state DISABLED
-	event OnBeginState()
-		jValue.release(iEquipQHolderObj)
-	
-		self.UnregisterForAllMenus()
-		KH.UnregisterForAllKeys()
-		
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 100)
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 100)
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100) ;SkyHUD alt charge meter
-		
-		if EM.isEditMode
-			updateWidgetVisibility(false)
-			Wait(0.2)
-			EM.DisableEditMode()
-		endIf
-		
-		iEquip_MessageQuest.Stop()
-		updateWidgetVisibility()
-		UI.setbool(HUD_MENU, WidgetRoot + "._visible", false)
-	endEvent
-
-	; Disabled Events
-	event OnWidgetLoad()
-	endEvent
-	
-	event OnWidgetReset()
-	endEvent
-endState
-
-; #####################
-; ### WIDGET EVENTS ###
+; ###############################
+; ### Initialization & Checks ###
 
 Event OnWidgetInit()
 	debug.trace("iEquip_WidgetCore OnWidgetInit start")
@@ -694,6 +464,253 @@ function CheckDependencies()
     else
         EH.bIsWintersunLoaded = false
     endIf
+endFunction
+
+; ##########################
+; ### ENABLING/DISABLING ###
+
+bool property isEnabled
+	bool function Get()
+		Return bEnabled
+	endFunction
+	
+	function Set(bool enabled)
+		if (Ready)
+            bEnabled = enabled
+			
+            EH.initialise(bEnabled)
+            AD.initialise(bEnabled)
+            
+			if bEnabled
+				GoToState("ENABLED")
+			else
+				GoToState("DISABLED")
+			endIf
+		endIf
+	endFunction
+EndProperty
+
+state ENABLED
+	event OnBeginState()
+		iEquipQHolderObj = JValue.retain(JMap.object())
+		aiTargetQ[0] = JArray.object()
+		JMap.setObj(iEquipQHolderObj, "leftQ", aiTargetQ[0])
+		aiTargetQ[1] = JArray.object()
+		JMap.setObj(iEquipQHolderObj, "rightQ", aiTargetQ[1])
+		aiTargetQ[2] = JArray.object()
+		JMap.setObj(iEquipQHolderObj, "shoutQ", aiTargetQ[2])
+		aiTargetQ[3] = JArray.object()
+		JMap.setObj(iEquipQHolderObj, "consumableQ", aiTargetQ[3])
+		aiTargetQ[4] = JArray.object()
+		JMap.setObj(iEquipQHolderObj, "poisonQ", aiTargetQ[4])
+		iRemovedItemsCacheObj = JArray.object()
+		JMap.setObj(iEquipQHolderObj, "lastRemovedCache", iRemovedItemsCacheObj )
+		
+		PO.InitialisePotionQueueArrays(iEquipQHolderObj, aiTargetQ[3], aiTargetQ[4])
+		addPotionGroups()
+		
+		self.RegisterForMenu("InventoryMenu")
+		self.RegisterForMenu("MagicMenu")
+		self.RegisterForMenu("FavoritesMenu")
+		self.RegisterForMenu("ContainerMenu")
+		self.RegisterForMenu("Journal Menu")
+		
+		ResetWidgetArrays()
+		OnWidgetLoad()
+		
+		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
+		AM.updateAmmoLists()
+		addFists()
+		addCurrentItemsOnFirstEnable()
+		
+		bIsFirstEnabled = false
+		
+		iEquip_MessageQuest.Start()
+		if bShowTooltips
+			Utility.Wait(1.5)
+			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
+		endIf
+	endEvent
+	
+	; Enabled events
+	Event OnWidgetLoad()
+		debug.trace("iEquip_WidgetCore OnWidgetLoad start")
+
+		;fPositionIndicatorAlpha = 60.0
+		EM.isEditMode = false
+		bPreselectMode = false
+		bRefreshingWidget = true
+		bCyclingLHPreselectInAmmoMode = false
+		bSwitchingHands = false
+		bPreselectSwitchingHands = false
+		bFadingWidgetOut = false
+		PM.bBlockQuickDualCast = false
+		KH.GameLoaded()
+		PM.OnWidgetLoad()
+		AM.OnWidgetLoad()
+		CM.OnWidgetLoad()
+		
+		CheckDependencies()
+		
+		OnWidgetReset()
+		EM.UpdateElementsAll()
+		PM.updateAnimationTargetValues()
+		; Determine if the widget should be displayed
+		UpdateWidgetModes()
+		;Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
+		UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
+		bool[] args = new bool[5]
+		if bAmmoMode
+			args[0] = true
+		endIf
+		args[3] = bAmmoMode
+		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+		
+		if !bIsFirstEnabled
+			refreshWidgetOnLoad()
+		endIf
+		bRefreshingWidget = false
+		
+		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
+		updateWidgetVisibility() ;Show the widget
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
+		if CM.iChargeDisplayType > 0
+			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
+			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
+			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD alt charge meter
+		endIf
+		
+		Utility.WaitMenuMode(0.5)
+		
+		if !EH.bPlayerIsABeast
+			checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+		endIf
+
+		KH.RegisterForGameplayKeys()
+		debug.notification("$iEquip_WC_not_controlsUnlocked")
+		
+		debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
+	endEvent
+
+	Event OnWidgetReset()
+		debug.trace("iEquip_WidgetCore OnWidgetReset called")
+		RequireExtend = false
+		parent.OnWidgetReset()
+		debug.trace("iEquip_WidgetCore OnWidgetReset finished")
+	EndEvent
+endState
+
+Auto state DISABLED
+	event OnBeginState()
+		jValue.release(iEquipQHolderObj)
+		bIsFirstEnabled = true
+	
+		self.UnregisterForAllMenus()
+		KH.UnregisterForAllKeys()
+		
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 100)
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 100)
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100) ;SkyHUD alt charge meter
+		
+		if EM.isEditMode
+			updateWidgetVisibility(false)
+			Wait(0.2)
+			EM.DisableEditMode()
+		endIf
+		
+		iEquip_MessageQuest.Stop()
+		updateWidgetVisibility()
+		UI.setbool(HUD_MENU, WidgetRoot + "._visible", false)
+	endEvent
+
+	; Disabled Events
+	event OnWidgetLoad()
+	endEvent
+	
+	event OnWidgetReset()
+	endEvent
+endState
+
+function refreshWidgetOnLoad()
+	debug.trace("iEquip_WidgetCore refreshWidgetOnLoad start")
+	
+	bLeftIconFaded = false
+	int Q
+	form fItem
+	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+	updatePotionSelector(true) ;Hide the potion selectors
+	if bDropShadowEnabled
+		updateTextFieldDropShadow()
+	else
+		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
+	endIf
+	initQueuePositionIndicators()
+	int count
+	while Q < 8
+		abIsNameShown[Q] = true
+		if Q < 5
+			count = jArray.count(aiTargetQ[Q])
+			if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
+				setSlotToEmpty(Q, true, (count > 0))
+			else
+				if Q < 3 && bPermanentPositionIndicators
+					updateQueuePositionIndicator(Q, count, aiCurrentQueuePosition[Q], aiCurrentQueuePosition[Q])
+				endIf
+				if Q < 2
+					checkAndUpdatePoisonInfo(Q)
+					TI.checkAndUpdateTemperLevelInfo(Q)
+					CM.initChargeMeter(Q)
+					CM.initSoulGem(Q)
+				endIf
+				if Q == 0 && bAmmoMode
+					updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
+				else
+					updateWidget(Q, aiCurrentQueuePosition[Q])
+				endIf
+				if abIsCounterShown[Q]
+					if Q == 0 && bAmmoMode
+						fItem = AM.currentAmmoForm
+					else
+						fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")
+					endIf
+					if Q == 3 && potionGroup != -1
+						count = PO.getPotionGroupCount(potionGroup)
+						setSlotCount(3, count)
+						if count < 1
+							checkAndFadeConsumableIcon(true)
+						elseIf bConsumableIconFaded
+							checkAndFadeConsumableIcon(false)
+						endIf
+					elseIf Q == 4
+						if count < 1
+							handleEmptyPoisonQueue()
+						else
+							setSlotCount(4, PlayerRef.GetItemCount(fItem)) ;line 589
+							if bPoisonIconFaded
+								checkAndFadePoisonIcon(false)
+							endIf
+						endIf
+					elseIf fItem && !(Q < 2 && abPoisonInfoDisplayed[Q])
+						setSlotCount(Q, PlayerRef.GetItemCount(fItem))
+					endIf
+				endIf
+			endIf
+		else
+			updateWidget(Q, aiCurrentlyPreselected[Q - 5]) ;line 600
+		endIf
+		Q += 1
+	endwhile
+	
+	CM.updateChargeMeters(true)
+	if EH.bPlayerIsABeast
+		BM.onPlayerTransform(PlayerRef.GetRace(), EH.bPlayerIsAVampire, true)
+	else
+		updateSlotsEnabled()
+	endIf
+	
+	debug.trace("iEquip_WidgetCore refreshWidgetOnLoad end")
 endFunction
 
 ;ToDo - This function is still to finish/review
@@ -1042,28 +1059,30 @@ endFunction
 function addPotionGroups(int groupToAdd = -1)
 	debug.trace("iEquip_WidgetCore addPotionGroups start")
 	debug.trace("iEquip_WidgetCore addPotionGroups - groupToAdd: " + groupToAdd)
+	int potionGroup
+	
 	if groupToAdd == -1 || (groupToAdd == 0 && !abPotionGroupEnabled[0])
-		int healthPotionGroup = jMap.object()
-		jMap.setInt(healthPotionGroup, "iEquipType", 46)
-		jMap.setStr(healthPotionGroup, "iEquipName", "$iEquip_common_HealthPotions")
-		jMap.setStr(healthPotionGroup, "iEquipIcon", "HealthPotion")
-		jArray.addObj(aiTargetQ[3], healthPotionGroup)
+		potionGroup = jMap.object()
+		jMap.setInt(potionGroup, "iEquipType", 46)
+		jMap.setStr(potionGroup, "iEquipName", "$iEquip_common_HealthPotions")
+		jMap.setStr(potionGroup, "iEquipIcon", "HealthPotion")
+		jArray.addObj(aiTargetQ[3], potionGroup)
 		abPotionGroupEnabled[0] = true
 	endIf
 	if groupToAdd == -1 || (groupToAdd == 1 && !abPotionGroupEnabled[1])
-		int magickaPotionGroup = jMap.object()
-		jMap.setInt(magickaPotionGroup, "iEquipType", 46)
-		jMap.setStr(magickaPotionGroup, "iEquipName", "$iEquip_common_MagickaPotions")
-		jMap.setStr(magickaPotionGroup, "iEquipIcon", "MagickaPotion")
-		jArray.addObj(aiTargetQ[3], magickaPotionGroup)
+		potionGroup = jMap.object()
+		jMap.setInt(potionGroup, "iEquipType", 46)
+		jMap.setStr(potionGroup, "iEquipName", "$iEquip_common_MagickaPotions")
+		jMap.setStr(potionGroup, "iEquipIcon", "MagickaPotion")
+		jArray.addObj(aiTargetQ[3], potionGroup)
 		abPotionGroupEnabled[1] = true
 	endIf
 	if groupToAdd == -1 || (groupToAdd == 2 && !abPotionGroupEnabled[2])
-		int staminaPotionGroup = jMap.object()
-		jMap.setInt(staminaPotionGroup, "iEquipType", 46)
-		jMap.setStr(staminaPotionGroup, "iEquipName", "$iEquip_common_StaminaPotions")
-		jMap.setStr(staminaPotionGroup, "iEquipIcon", "StaminaPotion")
-		jArray.addObj(aiTargetQ[3], staminaPotionGroup)
+		potionGroup = jMap.object()
+		jMap.setInt(potionGroup, "iEquipType", 46)
+		jMap.setStr(potionGroup, "iEquipName", "$iEquip_common_StaminaPotions")
+		jMap.setStr(potionGroup, "iEquipIcon", "StaminaPotion")
+		jArray.addObj(aiTargetQ[3], potionGroup)
 		abPotionGroupEnabled[2] = true
 	endIf
 	debug.trace("iEquip_WidgetCore addPotionGroups end")
@@ -2187,7 +2206,10 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		sIcon += AM.sAmmoIconSuffix
 	endIf
 
-	float fNameAlpha = (afWidget_A[aiNameElements[Slot]] - 1) as int % 100
+	float fNameAlpha = afWidget_A[aiNameElements[Slot]]
+	if fNameAlpha < 1
+		fNameAlpha = 100
+	endIf
 
 	bool bShowTemperInfo = ((Slot < 2 || Slot == 5 || Slot == 6) && TI.aiTemperedItemTypes.Find(jMap.getInt(targetObject, "iEquipType")) != -1)
 	if bShowTemperInfo
@@ -2239,8 +2261,11 @@ endFunction
 
 function updateWidgetBM(int Q, string sIcon, string sName)
 	debug.trace("iEquip_WidgetCore updateWidgetBM start")
-
-	float fNameAlpha = (afWidget_A[aiNameElements[Q]] - 1) as int % 100
+	
+	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	if fNameAlpha < 1
+		fNameAlpha = 100
+	endIf
 
 	debug.trace("iEquip_WidgetCore updateWidgetBM about to call .updateWidget - Slot: " + Q + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
@@ -2266,7 +2291,10 @@ endFunction
 
 function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = false)
 	debug.trace("iEquip_WidgetCore setSlotToEmpty start")
-	float fNameAlpha = (afWidget_A[aiNameElements[Q]] - 1) as int % 100
+	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	if fNameAlpha < 1
+		fNameAlpha = 100
+	endIf
 
 	; Set icon and name to empty
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
@@ -2317,7 +2345,10 @@ endFunction
 
 function handleEmptyPoisonQueue()
 	debug.trace("iEquip_WidgetCore handleEmptyPoisonQueue called")
-	float fNameAlpha = (afWidget_A[aiNameElements[4]] - 1) as int % 100
+	float fNameAlpha = afWidget_A[aiNameElements[4] - 1]
+	if fNameAlpha < 1
+		fNameAlpha = 100
+	endIf
 	
 	;Hide the count by setting it to an empty string
 
@@ -2980,7 +3011,10 @@ function goUnarmed()
 		UnequipHand(0)
 	endIf
 	;And now we need to update the left hand widget
-	float fNameAlpha = (afWidget_A[aiNameElements[0]] - 1) as int % 100
+	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	if fNameAlpha < 1
+		fNameAlpha = 100
+	endIf
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
@@ -3031,7 +3065,10 @@ function updateLeftSlotOn2HSpellEquipped()
 	debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped start")
 	bBlockSwitchBackToBoundSpell = true
 	;And now we need to update the left hand widget
-	float fNameAlpha = (afWidget_A[aiNameElements[0]] - 1) as int % 100
+	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	if fNameAlpha < 1
+		fNameAlpha = 100
+	endIf
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
@@ -3073,7 +3110,10 @@ endFunction
 function reequipOtherHand(int Q, bool equip = true)
 	debug.trace("iEquip_WidgetCore reequipOtherHand start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
-	float fNameAlpha = (afWidget_A[aiNameElements[Q]] - 1) as int % 100
+	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	if fNameAlpha < 1
+		fNameAlpha = 100
+	endIf
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q)
