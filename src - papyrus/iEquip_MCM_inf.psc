@@ -1,6 +1,7 @@
 Scriptname iEquip_MCM_inf extends iEquip_MCM_Page
 
 import StringUtil
+import iEquip_StringExt
 
 iEquip_KeyHandler Property KH Auto
 iEquip_EditMode Property EM Auto
@@ -22,16 +23,16 @@ endFunction
 
 function drawPage()
     MCM.AddHeaderOption("$iEquip_MCM_lbl_Info")
-	MCM.AddTextOptionST("", "$iEquip_MCM_inf_lbl_version" + " " + (MCM.GetVersion() as string), "")
+	MCM.AddTextOptionST("$iEquip_MCM_inf_lbl_version", MCM.GetVersion() as string)
     ;+++Dependency checks
     ;+++Supported mods detected
 
     if MCM.bEnabled && !MCM.bFirstEnabled
         MCM.SetCursorPosition(1)
 		MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_presets")
-		MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "$iEquip_common_SavePreset")
-		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "$iEquip_common_LoadPreset")
-		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "$iEquip_btn_delPreset")
+		MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "")
+		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
+		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "")
 		MCM.AddEmptyOption()
 		
         MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")
@@ -54,7 +55,7 @@ State inf_inp_savepreset
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_savepreset")
         elseIf currentEvent == "Open"
-			MCM.SetInputDialogStartText("PRESETNAME")
+			MCM.SetInputDialogStartText("$iEquip_MCM_inf_lbl_PresetName")
         elseIf currentEvent == "Accept"
 			MCM.savePreset(currentStrVar)
         endIf 
