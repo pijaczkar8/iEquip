@@ -1,5 +1,6 @@
 Scriptname iEquip_MCM_inf extends iEquip_MCM_Page
 
+import Utility
 import StringUtil
 import iEquip_StringExt
 
@@ -68,22 +69,20 @@ State inf_men_loadpreset
             MCM.SetInfoText("$iEquip_MCM_inf_txt_loadpreset")
         elseIf currentEvent == "Open"
 			int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)
-			saPresets = jMap.allKeysPArray(jObj)
+			string[] tmpStrArr = jMap.allKeysPArray(jObj)
 			jValue.zeroLifetime(jObj)
 			
-			if saPresets.length > 0
-				int i = 0
-			    while(i < saPresets.length)
-					saPresets[i] = Substring(saPresets[i], 0, Find(saPresets[i], "."))
-					i += 1
-				EndWhile
+			saPresets = CreateStringArray(tmpStrArr.length + 1, String fill = "NONE")
+			while(i < tmpStrArr.length)
+				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], "."))
+				i += 1
+			EndWhile
 			
-				MCM.fillMenu(0, saPresets, 0)
-			else
-				MCM.ShowMessage("$iEquip_EM_not_noPresets", false, "$OK")
-			endIf
+			MCM.fillMenu(0, saPresets, 0)
         elseIf currentEvent == "Accept"
-			MCM.loadPreset(saPresets[currentVar as int])
+			if (currentVar as int != 0)
+				MCM.loadPreset(saPresets[currentVar as int])
+			endIf
         endIf 
     endEvent
 endState
@@ -94,22 +93,20 @@ State inf_men_deletepreset
             MCM.SetInfoText("$iEquip_MCM_inf_txt_deletepreset")
         elseIf currentEvent == "Open"
 			int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)
-			saPresets = jMap.allKeysPArray(jObj)
+			string[] tmpStrArr = jMap.allKeysPArray(jObj)
 			jValue.zeroLifetime(jObj)
 			
-			if saPresets.length > 0
-				int i = 0
-			    while(i < saPresets.length)
-					saPresets[i] = Substring(saPresets[i], 0, Find(saPresets[i], "."))
-					i += 1
-				EndWhile
+			saPresets = CreateStringArray(tmpStrArr.length + 1, String fill = "NONE")
+			while(i < tmpStrArr.length)
+				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], "."))
+				i += 1
+			EndWhile
 			
-				MCM.fillMenu(0, saPresets, 0)
-			else
-				MCM.ShowMessage("$iEquip_EM_not_noPresets", false, "$OK")
-			endIf
+			MCM.fillMenu(0, saPresets, 0)
         elseIf currentEvent == "Accept"
-			MCM.deletePreset(saPresets[currentVar as int])
+			if (currentVar as int != 0)
+				MCM.deletePreset(saPresets[currentVar as int])
+			endIf
         endIf 
     endEvent
 endState
