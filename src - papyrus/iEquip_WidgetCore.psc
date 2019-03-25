@@ -375,6 +375,7 @@ state ENABLED
 		;fPositionIndicatorAlpha = 60.0
 		EM.isEditMode = false
 		bPreselectMode = false
+		bRefreshingWidgetOnLoad = true
 		bCyclingLHPreselectInAmmoMode = false
 		bSwitchingHands = false
 		bPreselectSwitchingHands = false
@@ -401,7 +402,6 @@ state ENABLED
 		args[3] = bAmmoMode
 		
 		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-		bRefreshingWidgetOnLoad = true
 		bLeftIconFaded = false
 		int Q
 		form fItem
