@@ -362,8 +362,11 @@ Auto state DISABLED
 		OnWidgetLoad()
 		
 		iEquip_MessageQuest.Start()
-		Utility.Wait(1.5)
-		debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
+		
+		if bShowTooltips
+			Utility.Wait(1.5)
+			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
+		endIf
 	endEvent
 	
 	; Disabling
