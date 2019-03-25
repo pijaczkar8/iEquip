@@ -319,7 +319,7 @@ bool property isEnabled
             AD.initialise(bEnabled)
             
 			if bEnabled
-				GoToState("")
+				GoToState("ENABLED")
 			else
 				GoToState("DISABLED")
 			endIf
@@ -327,9 +327,8 @@ bool property isEnabled
 	endFunction
 EndProperty
 
-Auto state DISABLED
-	; Enabling
-	event OnEndState()
+state ENABLED
+	event OnBeginState()
 		iEquipQHolderObj = JValue.retain(JArray.object())
 		aiTargetQ[0] = JArray.object()
 		JMap.setObj(iEquipQHolderObj, "leftQ", aiTargetQ[0])
@@ -369,7 +368,143 @@ Auto state DISABLED
 		endIf
 	endEvent
 	
-	; Disabling
+	; Enabled events
+	Event OnWidgetLoad()
+		debug.trace("iEquip_WidgetCore OnWidgetLoad start")
+
+		;fPositionIndicatorAlpha = 60.0
+		EM.isEditMode = false
+		bPreselectMode = false
+		bCyclingLHPreselectInAmmoMode = false
+		bSwitchingHands = false
+		bPreselectSwitchingHands = false
+		bFadingWidgetOut = false
+		PM.bBlockQuickDualCast = false
+		KH.GameLoaded()
+		PM.OnWidgetLoad()
+		AM.OnWidgetLoad()
+		CM.OnWidgetLoad()
+		
+		CheckDependencies()
+		
+		OnWidgetReset()
+		EM.UpdateElementsAll()
+		PM.updateAnimationTargetValues()
+		; Determine if the widget should be displayed
+		UpdateWidgetModes()
+		;Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
+		UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
+		bool[] args = new bool[5]
+		if bAmmoMode
+			args[0] = true
+		endIf
+		args[3] = bAmmoMode
+		
+		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+		bRefreshingWidgetOnLoad = true
+		bLeftIconFaded = false
+		int Q
+		form fItem
+		int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+		updatePotionSelector(true) ;Hide the potion selector
+		if bDropShadowEnabled
+			updateTextFieldDropShadow()
+		else
+			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
+		endIf
+		initQueuePositionIndicators()
+		int count
+		while Q < 8
+			abIsNameShown[Q] = true
+			if Q < 5
+				count = jArray.count(aiTargetQ[Q])
+				if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
+					setSlotToEmpty(Q, true, (count > 0))
+				else
+					if Q < 3 && bPermanentPositionIndicators
+						updateQueuePositionIndicator(Q, count, aiCurrentQueuePosition[Q], aiCurrentQueuePosition[Q])
+					endIf
+					if Q < 2
+						checkAndUpdatePoisonInfo(Q)
+						TI.checkAndUpdateTemperLevelInfo(Q)
+						CM.initChargeMeter(Q)
+						CM.initSoulGem(Q)
+					endIf
+					if Q == 0 && bAmmoMode
+						updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
+					else
+						updateWidget(Q, aiCurrentQueuePosition[Q])
+					endIf
+					if abIsCounterShown[Q]
+						if Q == 0 && bAmmoMode
+							fItem = AM.currentAmmoForm
+						else
+							fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")
+						endIf
+						if Q == 3 && potionGroup != -1
+							count = PO.getPotionGroupCount(potionGroup)
+							setSlotCount(3, count)
+							if count < 1
+								checkAndFadeConsumableIcon(true)
+							elseIf bConsumableIconFaded
+								checkAndFadeConsumableIcon(false)
+							endIf
+						elseIf Q == 4
+							if count < 1
+								handleEmptyPoisonQueue()
+							else
+								setSlotCount(4, PlayerRef.GetItemCount(fItem)) ;line 589
+								if bPoisonIconFaded
+									checkAndFadePoisonIcon(false)
+								endIf
+							endIf
+						elseIf fItem && !(Q < 2 && abPoisonInfoDisplayed[Q])
+							setSlotCount(Q, PlayerRef.GetItemCount(fItem))
+						endIf
+					endIf
+				endIf
+			else
+				updateWidget(Q, aiCurrentlyPreselected[Q - 5]) ;line 600
+			endIf
+			Q += 1
+		endwhile
+
+		CM.updateChargeMeters(true)
+		;And finally if we've loaded a save where the player is in beast form toggle the widget now
+		if EH.bPlayerIsABeast
+			BM.onPlayerTransform(PlayerRef.GetRace(), EH.bPlayerIsAVampire, true)
+		else
+			updateSlotsEnabled()
+		endIf
+		;just to make sure!
+		bRefreshingWidgetOnLoad = false
+		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
+		updateWidgetVisibility() ;Show the widget
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
+		if CM.iChargeDisplayType > 0
+			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
+			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
+			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD alt charge meter
+		endIf
+		Utility.Wait(0.5)
+		checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+
+		KH.RegisterForGameplayKeys()
+		debug.notification("$iEquip_WC_not_controlsUnlocked")
+		
+		debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
+	endEvent
+
+	Event OnWidgetReset()
+		debug.trace("iEquip_WidgetCore OnWidgetReset called")
+		RequireExtend = false
+		parent.OnWidgetReset()
+		debug.trace("iEquip_WidgetCore OnWidgetReset finished")
+	EndEvent
+endState
+
+Auto state DISABLED
 	event OnBeginState()
 		jValue.release(iEquipQHolderObj)
 	
@@ -526,140 +661,6 @@ Event OnWidgetInit()
     aiActorValues[2] = 26 ;Stamina
 
 	debug.trace("iEquip_WidgetCore OnWidgetInit end")
-EndEvent
-
-Event OnWidgetLoad()
-	debug.trace("iEquip_WidgetCore OnWidgetLoad start")
-
-	;fPositionIndicatorAlpha = 60.0
-	EM.isEditMode = false
-	bPreselectMode = false
-	bCyclingLHPreselectInAmmoMode = false
-	bSwitchingHands = false
-	bPreselectSwitchingHands = false
-	bFadingWidgetOut = false
-	PM.bBlockQuickDualCast = false
-	KH.GameLoaded()
-	PM.OnWidgetLoad()
-	AM.OnWidgetLoad()
-	CM.OnWidgetLoad()
-	
-	CheckDependencies()
-	
-    OnWidgetReset()
-    EM.UpdateElementsAll()
-    PM.updateAnimationTargetValues()
-    ; Determine if the widget should be displayed
-    UpdateWidgetModes()
-    ;Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
-	UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-	bool[] args = new bool[5]
-	if bAmmoMode
-		args[0] = true
-	endIf
-	args[3] = bAmmoMode
-	
-	UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-	bRefreshingWidgetOnLoad = true
-	bLeftIconFaded = false
-	int Q
-	form fItem
-	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
-	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
-	updatePotionSelector(true) ;Hide the potion selector
-	if bDropShadowEnabled
-		updateTextFieldDropShadow()
-	else
-		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
-	endIf
-	initQueuePositionIndicators()
-	int count
-	while Q < 8
-		abIsNameShown[Q] = true
-		if Q < 5
-			count = jArray.count(aiTargetQ[Q])
-			if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
-				setSlotToEmpty(Q, true, (count > 0))
-			else
-				if Q < 3 && bPermanentPositionIndicators
-					updateQueuePositionIndicator(Q, count, aiCurrentQueuePosition[Q], aiCurrentQueuePosition[Q])
-				endIf
-				if Q < 2
-					checkAndUpdatePoisonInfo(Q)
-					TI.checkAndUpdateTemperLevelInfo(Q)
-					CM.initChargeMeter(Q)
-					CM.initSoulGem(Q)
-				endIf
-				if Q == 0 && bAmmoMode
-					updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
-				else
-					updateWidget(Q, aiCurrentQueuePosition[Q])
-				endIf
-				if abIsCounterShown[Q]
-					if Q == 0 && bAmmoMode
-						fItem = AM.currentAmmoForm
-					else
-						fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")
-					endIf
-					if Q == 3 && potionGroup != -1
-						count = PO.getPotionGroupCount(potionGroup)
-						setSlotCount(3, count)
-						if count < 1
-							checkAndFadeConsumableIcon(true)
-						elseIf bConsumableIconFaded
-							checkAndFadeConsumableIcon(false)
-						endIf
-					elseIf Q == 4
-						if count < 1
-							handleEmptyPoisonQueue()
-						else
-							setSlotCount(4, PlayerRef.GetItemCount(fItem)) ;line 589
-							if bPoisonIconFaded
-								checkAndFadePoisonIcon(false)
-							endIf
-						endIf
-					elseIf fItem && !(Q < 2 && abPoisonInfoDisplayed[Q])
-						setSlotCount(Q, PlayerRef.GetItemCount(fItem))
-					endIf
-				endIf
-			endIf
-		else
-			updateWidget(Q, aiCurrentlyPreselected[Q - 5]) ;line 600
-		endIf
-		Q += 1
-	endwhile
-
-	CM.updateChargeMeters(true)
-	;And finally if we've loaded a save where the player is in beast form toggle the widget now
-	if EH.bPlayerIsABeast
-		BM.onPlayerTransform(PlayerRef.GetRace(), EH.bPlayerIsAVampire, true)
-	else
-		updateSlotsEnabled()
-	endIf
-	;just to make sure!
-	bRefreshingWidgetOnLoad = false
-	UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
-	updateWidgetVisibility() ;Show the widget
-	UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
-	if CM.iChargeDisplayType > 0
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD alt charge meter
-	endIf
-	Utility.Wait(0.5)
-	checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
-
-	KH.RegisterForGameplayKeys()
-	debug.notification("$iEquip_WC_not_controlsUnlocked")
-	
-	debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
-endEvent
-
-Event OnWidgetReset()
-	debug.trace("iEquip_WidgetCore OnWidgetReset called")
-    RequireExtend = false
-	parent.OnWidgetReset()
-	debug.trace("iEquip_WidgetCore OnWidgetReset finished")
 EndEvent
 
 function CheckDependencies()
