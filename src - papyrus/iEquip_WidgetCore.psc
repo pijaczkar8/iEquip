@@ -138,7 +138,7 @@ bool property bUnequipAmmo = true auto hidden
 ;Geared Up properties and variables
 bool property bEnableGearedUp auto hidden
 Form boots
-float property fEquipOnPauseDelay = 2.0 auto hidden
+float property fEquipOnPauseDelay = 1.6 auto hidden
 
 bool property bPotionGrouping = true auto hidden
 int property iPotionSelectorChoice = 2 auto hidden
@@ -2263,7 +2263,7 @@ endFunction
 function updateWidgetBM(int Q, string sIcon, string sName)
 	debug.trace("iEquip_WidgetCore updateWidgetBM start")
 	
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -2292,7 +2292,7 @@ endFunction
 
 function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = false)
 	debug.trace("iEquip_WidgetCore setSlotToEmpty start")
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -2346,7 +2346,7 @@ endFunction
 
 function handleEmptyPoisonQueue()
 	debug.trace("iEquip_WidgetCore handleEmptyPoisonQueue called")
-	float fNameAlpha = afWidget_A[aiNameElements[4] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[4]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -3012,7 +3012,7 @@ function goUnarmed()
 		UnequipHand(0)
 	endIf
 	;And now we need to update the left hand widget
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -3066,7 +3066,7 @@ function updateLeftSlotOn2HSpellEquipped()
 	debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped start")
 	bBlockSwitchBackToBoundSpell = true
 	;And now we need to update the left hand widget
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -3111,7 +3111,7 @@ endFunction
 function reequipOtherHand(int Q, bool equip = true)
 	debug.trace("iEquip_WidgetCore reequipOtherHand start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
