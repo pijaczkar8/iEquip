@@ -105,13 +105,12 @@ bool property bBlockIfRestEffectActive = true auto hidden
 bool property bSuspendChecksInCombat = true auto hidden
 bool property bBlockIfBuffEffectActive = true auto hidden
 
-bool bInitialised = false
+bool bInitialised
 
 event OnInit()
     debug.trace("iEquip_PotionScript OnInit start")
     GotoState("")
-    bInitialised = false
-    WidgetRoot = WC.WidgetRoot
+    
     aiPotionQ = new int[9]
     aStrongestEffects = new MagicEffect[9]
     aStrongestEffects[0] = AlchRestoreHealth
@@ -208,7 +207,33 @@ event OnInit()
     debug.trace("iEquip_PotionScript OnInit end")
 endEvent
 
-;Called from OnPlayerLoadGame on the PlayerEventHandler script
+; Called from WidgetCore ENABLED OnBeginState
+function InitialisePotionQueueArrays(int jHolderObj, int consQ, int poisQ)
+    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays start")
+    iConsumableQ = consQ
+    iPoisonQ = poisQ
+    aiPotionQ[0] = JArray.object()
+    JMap.setObj(jHolderObj, "healthRestoreQ", aiPotionQ[0])
+    aiPotionQ[1] = JArray.object()
+    JMap.setObj(jHolderObj, "healthFortifyQ", aiPotionQ[1])
+    aiPotionQ[2] = JArray.object()
+    JMap.setObj(jHolderObj, "healthRegenQ", aiPotionQ[2])
+    aiPotionQ[3] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaRestoreQ", aiPotionQ[3])
+    aiPotionQ[4] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaFortifyQ", aiPotionQ[4])
+    aiPotionQ[5] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaRegenQ", aiPotionQ[5])
+    aiPotionQ[6] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaRestoreQ", aiPotionQ[6])
+    aiPotionQ[7] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaFortifyQ", aiPotionQ[7])
+    aiPotionQ[8] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaRegenQ", aiPotionQ[8])
+    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays end")
+endfunction
+
+; Called from PlayerEventHandler OnPlayerLoadGame
 function initialise()
     debug.trace("iEquip_PotionScript initialise start")
     while !bInitialised
@@ -251,31 +276,7 @@ function initialise()
     findAndSortPotions()
 endFunction
 
-function InitialisePotionQueueArrays(int jHolderObj, int consQ, int poisQ)
-    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays start")
-    iConsumableQ = consQ
-    iPoisonQ = poisQ
-    aiPotionQ[0] = JArray.object()
-    JMap.setObj(jHolderObj, "healthRestoreQ", aiPotionQ[0])
-    aiPotionQ[1] = JArray.object()
-    JMap.setObj(jHolderObj, "healthFortifyQ", aiPotionQ[1])
-    aiPotionQ[2] = JArray.object()
-    JMap.setObj(jHolderObj, "healthRegenQ", aiPotionQ[2])
-    aiPotionQ[3] = JArray.object()
-    JMap.setObj(jHolderObj, "magickaRestoreQ", aiPotionQ[3])
-    aiPotionQ[4] = JArray.object()
-    JMap.setObj(jHolderObj, "magickaFortifyQ", aiPotionQ[4])
-    aiPotionQ[5] = JArray.object()
-    JMap.setObj(jHolderObj, "magickaRegenQ", aiPotionQ[5])
-    aiPotionQ[6] = JArray.object()
-    JMap.setObj(jHolderObj, "staminaRestoreQ", aiPotionQ[6])
-    aiPotionQ[7] = JArray.object()
-    JMap.setObj(jHolderObj, "staminaFortifyQ", aiPotionQ[7])
-    aiPotionQ[8] = JArray.object()
-    JMap.setObj(jHolderObj, "staminaRegenQ", aiPotionQ[8])
-    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays end")
-endfunction
-
+; Called from WidgetCore initialisemoreHUDArray
 function initialisemoreHUDArray()
     debug.trace("iEquip_PotionScript initialisemoreHUDArray start")
     int jItemIDs = jArray.object()
@@ -296,7 +297,7 @@ function initialisemoreHUDArray()
             int itemID = jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID")
             debug.trace("iEquip_PotionScript initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiPotionQ[Q], i), "iEquipName"))
             if itemID == 0
-                itemID = WC.createItemID(itemForm.GetName(), itemForm.GetFormID())
+                itemID = CalcCRC32Hash(itemForm.GetName(), Math.LogicalAND(itemForm.GetFormID(), 0x00FFFFFF))
                 jMap.setInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID", itemID)
             endIf
             if itemID != 0
@@ -783,7 +784,7 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
         if Q > -1 && findInQueue(aiPotionQ[Q], potionForm) == -1
             bool isRestore = (Q == 0 || Q == 3 || Q == 6)
             string potionName = foundPotion.GetName()
-            int itemID = WC.createItemID(potionName, potionForm.GetFormID())
+            int itemID = CalcCRC32Hash(potionName, Math.LogicalAND(potionForm.GetFormID(), 0x00FFFFFF))
             int potionObj = jMap.object()
             ;Calculate the various strengths for comparison during selection
             float effectStrength
@@ -858,7 +859,7 @@ function checkAndAddToPoisonQueue(potion foundPoison)
         endIf
     elseIf !(jArray.count(iPoisonQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
         int poisonFormID = poisonForm.GetFormID()
-        int itemID = WC.createItemID(poisonName, poisonFormID)
+        int itemID = CalcCRC32Hash(poisonName, Math.LogicalAND(poisonFormID, 0x00FFFFFF))
         int poisonObj = jMap.object()
         jMap.setForm(poisonObj, "iEquipForm", poisonForm)
         jMap.setInt(poisonObj, "iEquipFormID", poisonFormID)
@@ -901,7 +902,7 @@ function checkAndAddToConsumableQueue(potion foundConsumable, bool isPotion = fa
         endIf
     elseIf !(jArray.count(iConsumableQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
         int consumableFormID = consumableForm.GetFormID()
-        int itemID = WC.createItemID(consumableName, consumableFormID)
+        int itemID = CalcCRC32Hash(consumableName, Math.LogicalAND(consumableFormID, 0x00FFFFFF))
         int consumableObj = jMap.object()
         jMap.setForm(consumableObj, "iEquipForm", consumableForm)
         jMap.setInt(consumableObj, "iEquipFormID", consumableFormID)

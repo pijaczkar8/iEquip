@@ -116,15 +116,15 @@ int iConsumableCount
 int iPoisonCount
 int iCurrentlyUpdating
 
-bool bEnabled = false
+bool bEnabled
 bool bIsFirstEnabled = true
-bool property bAddingItemsOnFirstEnable = false auto hidden
+bool property bAddingItemsOnFirstEnable auto hidden
 bool bIsFirstInventoryMenu = true
 bool bIsFirstMagicMenu = true
 bool bIsFirstFailedToAdd = true
 bool property bShowTooltips = true auto hidden
 bool property bShowQueueConfirmationMessages = true auto hidden
-bool property bRefreshingWidget = false auto hidden
+bool property bRefreshingWidget auto hidden
 bool property bMCMPresetLoaded auto hidden
 
 ;Ammo Mode properties and variables
@@ -136,9 +136,9 @@ bool bAmmoModeFirstLook = true
 bool property bUnequipAmmo = true auto hidden
 
 ;Geared Up properties and variables
-bool property bEnableGearedUp = false auto hidden
+bool property bEnableGearedUp auto hidden
 Form boots
-float property fEquipOnPauseDelay = 2.0 auto hidden
+float property fEquipOnPauseDelay = 1.6 auto hidden
 
 bool property bPotionGrouping = true auto hidden
 int property iPotionSelectorChoice = 2 auto hidden
@@ -210,9 +210,9 @@ bool property bBeastModeOptionsChanged auto hidden
 bool property bShowPositionIndicators = true auto hidden
 bool property bPermanentPositionIndicators auto hidden
 int property iPositionIndicatorColor = 0xFFFFFF auto hidden
-float property fPositionIndicatorAlpha = 60.0 auto hidden
+float property fPositionIndicatorAlpha = 100.0 auto hidden
 int property iCurrPositionIndicatorColor = 0xCCCCCC auto hidden
-float property fCurrPositionIndicatorAlpha = 40.0 auto hidden
+float property fCurrPositionIndicatorAlpha = 100.0 auto hidden
 bool property bPositionIndicatorSettingsChanged auto hidden
 bool[] property abCyclingQueue auto hidden
 
@@ -275,7 +275,6 @@ bool property bMoreHUDLoaded auto hidden
 string[] property asMoreHUDIcons auto hidden
 
 int iRemovedItemsCacheObj
-int iItemsForIDGenerationObj
 int property iEquipQHolderObj auto hidden
 
 bool bReverse
@@ -289,7 +288,6 @@ bool property bGoneUnarmed auto hidden
 bool property b2HSpellEquipped auto hidden
 
 bool bWaitingForFlash
-bool bItemsWaitingForID
 bool bGotID
 int iReceivedID
 
@@ -505,7 +503,7 @@ state ENABLED
 		
 		PO.InitialisePotionQueueArrays(iEquipQHolderObj, aiTargetQ[3], aiTargetQ[4])
 		addPotionGroups()
-		EH.initialise(bEnabled)
+		EH.initialise(bEnabled)					; This then also initialises BeastMode, BoundWeaponEventsListener, PotionScript, and TemperedItemHandler
         AD.initialise(bEnabled)
 		
 		self.RegisterForMenu("InventoryMenu")
@@ -1013,7 +1011,7 @@ function initialisemoreHUDArray()
 	            int itemID = jMap.getInt(jArray.getObj(aiTargetQ[Q], i), "iEquipItemID")
 	            debug.trace("iEquip_WidgetCore initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName"))
 	            if itemID == 0
-	            	itemID = createItemID(jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName"), (jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm")).GetFormID())
+	            	itemID = CalcCRC32Hash(jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName"), Math.LogicalAND((jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm").GetFormID()), 0x00FFFFFF))
 	            	jMap.setInt(jArray.getObj(aiTargetQ[Q], i), "iEquipItemID", itemID)
 	            endIf
 	            if itemID as bool
@@ -1154,8 +1152,8 @@ event OnMenuOpen(string _sCurrentMenu)
 endEvent
 
 event OnMenuClose(string _sCurrentMenu)
-	debug.trace("iEquip_WidgetCore OnMenuClose start")
-	debug.trace("iEquip_WidgetCore OnMenuClose - current menu: " + _sCurrentMenu + ", bItemsWaitingForID: " + bItemsWaitingForID)
+	debug.trace("iEquip_WidgetCore OnMenuClose start - current menu: " + _sCurrentMenu)
+	;debug.trace("iEquip_WidgetCore OnMenuClose - current menu: " + _sCurrentMenu + ", bItemsWaitingForID: " + bItemsWaitingForID)
 	;if bItemsWaitingForID ;&& !utility.IsInMenuMode()
 	;	findAndFillMissingItemIDs()
 	;	bItemsWaitingForID = false
@@ -1268,7 +1266,7 @@ function addCurrentItemsOnFirstEnable()
 				itemName = WornObject.GetDisplayName(PlayerRef, Q, 0)
 			endIf
 			itemBaseName = equippedItem.getName()
-			itemID = createItemID(itemName, equippedItem.GetFormID())
+			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(equippedItem.GetFormID(), 0x00FFFFFF))
 			
 			if itemType == 22
 				iEquipSlot = EquipSlots.Find((equippedItem as spell).GetEquipType())
@@ -2263,7 +2261,7 @@ endFunction
 function updateWidgetBM(int Q, string sIcon, string sName)
 	debug.trace("iEquip_WidgetCore updateWidgetBM start")
 	
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -2292,7 +2290,7 @@ endFunction
 
 function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = false)
 	debug.trace("iEquip_WidgetCore setSlotToEmpty start")
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -2346,7 +2344,7 @@ endFunction
 
 function handleEmptyPoisonQueue()
 	debug.trace("iEquip_WidgetCore handleEmptyPoisonQueue called")
-	float fNameAlpha = afWidget_A[aiNameElements[4] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[4]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -3012,7 +3010,7 @@ function goUnarmed()
 		UnequipHand(0)
 	endIf
 	;And now we need to update the left hand widget
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -3066,7 +3064,7 @@ function updateLeftSlotOn2HSpellEquipped()
 	debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped start")
 	bBlockSwitchBackToBoundSpell = true
 	;And now we need to update the left hand widget
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -3111,7 +3109,7 @@ endFunction
 function reequipOtherHand(int Q, bool equip = true)
 	debug.trace("iEquip_WidgetCore reequipOtherHand start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
-	float fNameAlpha = afWidget_A[aiNameElements[Q] - 1]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -3646,7 +3644,7 @@ function addToQueue(int Q)
 				endIf
 				if itemID == 0 && !isLightForm && TI.aiTemperedItemTypes.Find(itemType) == -1 ; itemID hashes won't work for light formIDs, and we'll generate one the first time we equip an item that may be tempered, enchanted or renamed
 					debug.trace("iEquip_WidgetCore addToQueue - testing CalcCRC32Hash with itemName: " + itemName + ", itemFormID: " + itemFormID + ", returned itemID: " + CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF)))
-					queueItemForIDGenerationOnMenuClose(Q, jArray.count(aiTargetQ[Q]), itemName, itemFormID)
+					;queueItemForIDGenerationOnMenuClose(Q, jArray.count(aiTargetQ[Q]), itemName, itemFormID)
 					itemID = CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF))
 				endIf
 				bool success
@@ -3753,97 +3751,6 @@ function addToQueue(int Q)
 	endIf
 	debug.trace("iEquip_WidgetCore addToQueue end")
 endFunction
-
-function queueItemForIDGenerationOnMenuClose(int Q, int iIndex, string itemName, int itemFormID)
-	debug.trace("iEquip_WidgetCore queueItemForIDGenerationOnMenuClose start")
-	debug.trace("iEquip_WidgetCore queueItemForIDGenerationOnMenuClose - Q: " + Q + ", iIndex: " + iIndex + ", itemFormID: " + itemFormID + ", itemName: " + itemName)
-	int queuedItem = jMap.object()
-	jMap.setInt(queuedItem, "iEquipQ", Q)
-	jMap.setInt(queuedItem, "iEquipIndex", iIndex)
-	jMap.setStr(queuedItem, "iEquipName", itemName)
-	jMap.setInt(queuedItem, "iEquipFormID", itemFormID)
-	jArray.addObj(iItemsForIDGenerationObj, queuedItem)
-	bItemsWaitingForID = true
-	debug.trace("iEquip_WidgetCore queueItemForIDGenerationOnMenuClose end")
-endFunction
-
-function findAndFillMissingItemIDs()
-	debug.trace("iEquip_WidgetCore findAndFillMissingItemIDs start")
-	int count = jArray.count(iItemsForIDGenerationObj)
-	debug.trace("iEquip_WidgetCore findAndFillMissingItemIDs - number of items to generate IDs for: " + count)
-	int i
-	int itemID
-	int Q
-	int iIndex
-	int targetObject
-	while i < count
-		targetObject = jArray.getObj(iItemsForIDGenerationObj, i)
-		itemID = createItemID(jMap.getStr(targetObject, "iEquipName"), jMap.getInt(targetObject, "iEquipFormID"))
-		if itemID as bool
-			Q = jMap.getInt(targetObject, "iEquipQ")
-			iIndex = jMap.getInt(targetObject, "iEquipIndex")
-			jMap.setInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipItemID", itemID)
-			if bMoreHUDLoaded
-				string moreHUDIcon
-				if Q < 2
-					int otherHand = (Q + 1) % 2
-					if isAlreadyInQueue(otherHand, jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm"), itemID)
-						moreHUDIcon = asMoreHUDIcons[3]
-					else
-	            		moreHUDIcon = asMoreHUDIcons[Q]
-	            	endIf
-	            else
-	            	moreHUDIcon = asMoreHUDIcons[2]
-	            endIf
-	            if Q < 2 ;&& AhzMoreHudIE.IsIconItemRegistered(itemID)
-	            	AhzMoreHudIE.RemoveIconItem(itemID) ;Does nothing if the itemID isn't registered so no need for the IsIconItemRegistered check
-	            endIf
-	            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
-	        endIf
-		endIf
-		Utility.WaitMenuMode(0.05)
-		i += 1
-	endwhile
-	bItemsWaitingForID = false
-	jArray.clear(iItemsForIDGenerationObj)
-	debug.trace("iEquip_WidgetCore findAndFillMissingItemIDs - final check (count should be 0) - count: " + jArray.count(iItemsForIDGenerationObj))
-	debug.trace("iEquip_WidgetCore findAndFillMissingItemIDs end")
-endFunction
-
-int function createItemID(string itemName, int itemFormID)
-	debug.trace("iEquip_WidgetCore createItemID start - itemFormID: " + itemFormID + ", itemName: " + itemName)
-	RegisterForModEvent("iEquip_GotItemID", "itemIDReceivedFromFlash")
-	;Reset
-	bGotID = false
-	iReceivedID = 0
-	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".generateItemID")
-	If(iHandle)
-		UICallback.PushString(iHandle, itemName) ;Display name
-		UICallback.PushInt(iHandle, itemFormID) ;formID
-		UICallback.Send(iHandle)
-	endIf
-	int breakout = 1000 ;Wait up to 1 sec for return from flash, if not return -1
-	while !bGotID && breakout > 0
-		Utility.WaitMenuMode(0.001)
-		breakout -= 1
-	endwhile
-	UnregisterForModEvent("iEquip_GotItemID")
-	debug.trace("iEquip_WidgetCore createItemID - old method of ID generation returned itemID as: " + iReceivedID)
-
-	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF))
-	debug.trace("iEquip_WidgetCore createItemID end - returning itemID: " + itemID)
-	return itemID
-endFunction
-
-event itemIDReceivedFromFlash(string sEventName, string sStringArg, float fNumArg, Form kSender)
-	debug.trace("iEquip_WidgetCore itemIDReceivedFromFlash start")
-	debug.trace("iEquip_WidgetCore itemIDReceivedFromFlash - sStringArg: " + sStringArg + ", fNumArg" + fNumArg)
-	If(sEventName == "iEquip_GotItemID")
-		iReceivedID = sStringArg as Int
-		bGotID = true
-	endIf
-	debug.trace("iEquip_WidgetCore itemIDReceivedFromFlash end")
-endEvent
 
 bool function isItemValidForSlot(int Q, form itemForm, int itemType, string itemName)
 	debug.trace("iEquip_WidgetCore isItemValidForSlot start")
