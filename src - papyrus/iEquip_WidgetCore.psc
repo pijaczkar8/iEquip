@@ -123,7 +123,6 @@ bool bIsFirstMagicMenu = true
 bool bIsFirstFailedToAdd = true
 bool property bShowTooltips = true auto hidden
 bool property bShowQueueConfirmationMessages = true auto hidden
-bool bRefreshingWidgetOnLoad = false
 bool property bRefreshingWidget = false auto hidden
 bool property bMCMPresetLoaded auto hidden
 
@@ -349,16 +348,16 @@ state ENABLED
 		self.RegisterForMenu("MagicMenu")
 		self.RegisterForMenu("FavoritesMenu")
 		self.RegisterForMenu("ContainerMenu")
-		self.RegisterForMenu("Journal Menu")    
+		self.RegisterForMenu("Journal Menu")
+		ResetWidgetArrays()
 	
 		addFists()
 		addPotionGroups()
 		PO.findAndSortPotions()
 		AM.updateAmmoLists()
-		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
-		addCurrentItemsOnFirstEnable()		
-		ResetWidgetArrays()
 		OnWidgetLoad()
+		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
+		addCurrentItemsOnFirstEnable()
 		
 		iEquip_MessageQuest.Start()
 		
@@ -375,7 +374,7 @@ state ENABLED
 		;fPositionIndicatorAlpha = 60.0
 		EM.isEditMode = false
 		bPreselectMode = false
-		bRefreshingWidgetOnLoad = true
+		bRefreshingWidget = true
 		bCyclingLHPreselectInAmmoMode = false
 		bSwitchingHands = false
 		bPreselectSwitchingHands = false
@@ -400,8 +399,8 @@ state ENABLED
 			args[0] = true
 		endIf
 		args[3] = bAmmoMode
-		
 		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+		
 		bLeftIconFaded = false
 		int Q
 		form fItem
@@ -478,7 +477,7 @@ state ENABLED
 			updateSlotsEnabled()
 		endIf
 		;just to make sure!
-		bRefreshingWidgetOnLoad = false
+		bRefreshingWidget = false
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
 		updateWidgetVisibility() ;Show the widget
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
@@ -2168,7 +2167,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	int targetObject
 	int Slot = Q
 
-	if bRefreshingWidgetOnLoad && Q > 4
+	if bRefreshingWidget && Q > 4
 		debug.trace("iEquip_WidgetCore updateWidget - 1st option")
 		targetObject = jArray.getObj(aiTargetQ[Q - 5], iIndex)
 	elseif (bPreselectMode && !overridePreselect && !bPreselectSwitchingHands && (Q < 2 || Q == 2 && PM.bShoutPreselectEnabled)) || bCyclingLHPreselectInAmmoMode
@@ -2529,7 +2528,7 @@ function updateAttributeIcons(int Q, int iIndex, bool overridePreselect = false,
 		bool isEnchanted
 		int targetObject = -1
 		int Slot = Q
-		if bRefreshingWidgetOnLoad && Q > 4 && Q < 7
+		if bRefreshingWidget && Q > 4 && Q < 7
 			if bPreselectMode
 				targetObject = jArray.getObj(aiTargetQ[Q - 5], iIndex)
 			endIf

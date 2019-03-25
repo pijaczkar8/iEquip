@@ -10,6 +10,16 @@ string[] saPresets
 ; #############
 ; ### SETUP ###
 
+function initData()                  ; Initialize page specific data
+endFunction
+
+int function saveData()             ; Save page data and return jObject
+    return -1
+endFunction
+
+function loadData(int jPageObj)     ; Load page data from jPageObj
+endFunction
+
 function drawPage()
     MCM.AddHeaderOption("$iEquip_MCM_lbl_Info")
 	MCM.AddTextOptionST("", "$iEquip_MCM_inf_lbl_version" + " " + (MCM.GetVersion() as string), "")
