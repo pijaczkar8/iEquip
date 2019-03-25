@@ -116,15 +116,15 @@ int iConsumableCount
 int iPoisonCount
 int iCurrentlyUpdating
 
-bool bEnabled = false
+bool bEnabled
 bool bIsFirstEnabled = true
-bool property bAddingItemsOnFirstEnable = false auto hidden
+bool property bAddingItemsOnFirstEnable auto hidden
 bool bIsFirstInventoryMenu = true
 bool bIsFirstMagicMenu = true
 bool bIsFirstFailedToAdd = true
 bool property bShowTooltips = true auto hidden
 bool property bShowQueueConfirmationMessages = true auto hidden
-bool property bRefreshingWidget = false auto hidden
+bool property bRefreshingWidget auto hidden
 bool property bMCMPresetLoaded auto hidden
 
 ;Ammo Mode properties and variables
@@ -136,7 +136,7 @@ bool bAmmoModeFirstLook = true
 bool property bUnequipAmmo = true auto hidden
 
 ;Geared Up properties and variables
-bool property bEnableGearedUp = false auto hidden
+bool property bEnableGearedUp auto hidden
 Form boots
 float property fEquipOnPauseDelay = 2.0 auto hidden
 
@@ -210,9 +210,9 @@ bool property bBeastModeOptionsChanged auto hidden
 bool property bShowPositionIndicators = true auto hidden
 bool property bPermanentPositionIndicators auto hidden
 int property iPositionIndicatorColor = 0xFFFFFF auto hidden
-float property fPositionIndicatorAlpha = 60.0 auto hidden
+float property fPositionIndicatorAlpha = 100.0 auto hidden
 int property iCurrPositionIndicatorColor = 0xCCCCCC auto hidden
-float property fCurrPositionIndicatorAlpha = 40.0 auto hidden
+float property fCurrPositionIndicatorAlpha = 100.0 auto hidden
 bool property bPositionIndicatorSettingsChanged auto hidden
 bool[] property abCyclingQueue auto hidden
 
