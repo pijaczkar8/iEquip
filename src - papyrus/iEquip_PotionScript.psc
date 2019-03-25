@@ -105,13 +105,12 @@ bool property bBlockIfRestEffectActive = true auto hidden
 bool property bSuspendChecksInCombat = true auto hidden
 bool property bBlockIfBuffEffectActive = true auto hidden
 
-bool bInitialised = false
+bool bInitialised
 
 event OnInit()
     debug.trace("iEquip_PotionScript OnInit start")
     GotoState("")
-    bInitialised = false
-    WidgetRoot = WC.WidgetRoot
+    
     aiPotionQ = new int[9]
     aStrongestEffects = new MagicEffect[9]
     aStrongestEffects[0] = AlchRestoreHealth
@@ -208,7 +207,33 @@ event OnInit()
     debug.trace("iEquip_PotionScript OnInit end")
 endEvent
 
-;Called from OnPlayerLoadGame on the PlayerEventHandler script
+; Called from WidgetCore ENABLED OnBeginState
+function InitialisePotionQueueArrays(int jHolderObj, int consQ, int poisQ)
+    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays start")
+    iConsumableQ = consQ
+    iPoisonQ = poisQ
+    aiPotionQ[0] = JArray.object()
+    JMap.setObj(jHolderObj, "healthRestoreQ", aiPotionQ[0])
+    aiPotionQ[1] = JArray.object()
+    JMap.setObj(jHolderObj, "healthFortifyQ", aiPotionQ[1])
+    aiPotionQ[2] = JArray.object()
+    JMap.setObj(jHolderObj, "healthRegenQ", aiPotionQ[2])
+    aiPotionQ[3] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaRestoreQ", aiPotionQ[3])
+    aiPotionQ[4] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaFortifyQ", aiPotionQ[4])
+    aiPotionQ[5] = JArray.object()
+    JMap.setObj(jHolderObj, "magickaRegenQ", aiPotionQ[5])
+    aiPotionQ[6] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaRestoreQ", aiPotionQ[6])
+    aiPotionQ[7] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaFortifyQ", aiPotionQ[7])
+    aiPotionQ[8] = JArray.object()
+    JMap.setObj(jHolderObj, "staminaRegenQ", aiPotionQ[8])
+    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays end")
+endfunction
+
+; Called from PlayerEventHandler OnPlayerLoadGame
 function initialise()
     debug.trace("iEquip_PotionScript initialise start")
     while !bInitialised
@@ -251,31 +276,7 @@ function initialise()
     findAndSortPotions()
 endFunction
 
-function InitialisePotionQueueArrays(int jHolderObj, int consQ, int poisQ)
-    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays start")
-    iConsumableQ = consQ
-    iPoisonQ = poisQ
-    aiPotionQ[0] = JArray.object()
-    JMap.setObj(jHolderObj, "healthRestoreQ", aiPotionQ[0])
-    aiPotionQ[1] = JArray.object()
-    JMap.setObj(jHolderObj, "healthFortifyQ", aiPotionQ[1])
-    aiPotionQ[2] = JArray.object()
-    JMap.setObj(jHolderObj, "healthRegenQ", aiPotionQ[2])
-    aiPotionQ[3] = JArray.object()
-    JMap.setObj(jHolderObj, "magickaRestoreQ", aiPotionQ[3])
-    aiPotionQ[4] = JArray.object()
-    JMap.setObj(jHolderObj, "magickaFortifyQ", aiPotionQ[4])
-    aiPotionQ[5] = JArray.object()
-    JMap.setObj(jHolderObj, "magickaRegenQ", aiPotionQ[5])
-    aiPotionQ[6] = JArray.object()
-    JMap.setObj(jHolderObj, "staminaRestoreQ", aiPotionQ[6])
-    aiPotionQ[7] = JArray.object()
-    JMap.setObj(jHolderObj, "staminaFortifyQ", aiPotionQ[7])
-    aiPotionQ[8] = JArray.object()
-    JMap.setObj(jHolderObj, "staminaRegenQ", aiPotionQ[8])
-    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays end")
-endfunction
-
+; Called from WidgetCore initialisemoreHUDArray
 function initialisemoreHUDArray()
     debug.trace("iEquip_PotionScript initialisemoreHUDArray start")
     int jItemIDs = jArray.object()

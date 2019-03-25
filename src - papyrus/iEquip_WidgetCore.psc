@@ -505,7 +505,7 @@ state ENABLED
 		
 		PO.InitialisePotionQueueArrays(iEquipQHolderObj, aiTargetQ[3], aiTargetQ[4])
 		addPotionGroups()
-		EH.initialise(bEnabled)
+		EH.initialise(bEnabled)					; This then also initialises BeastMode, BoundWeaponEventsListener, PotionScript, and TemperedItemHandler
         AD.initialise(bEnabled)
 		
 		self.RegisterForMenu("InventoryMenu")
