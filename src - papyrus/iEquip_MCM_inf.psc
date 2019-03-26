@@ -24,7 +24,7 @@ endFunction
 
 function drawPage()
     MCM.AddHeaderOption("$iEquip_MCM_lbl_Info")
-	MCM.AddTextOptionST("$iEquip_MCM_inf_lbl_version", MCM.GetVersion() as string)
+	MCM.AddTextOptionST("inf_txt_iEquipVersion", "$iEquip_MCM_inf_lbl_version", MCM.GetVersion() as string)
     ;+++Dependency checks
     ;+++Supported mods detected
 
@@ -32,8 +32,10 @@ function drawPage()
         MCM.SetCursorPosition(1)
 		MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_presets")
 		MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "")
-		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
-		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "")
+		if jMap.count(JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)) > 0
+			MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
+			MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "")
+		endIf
 		MCM.AddEmptyOption()
 		
         MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")
@@ -56,9 +58,10 @@ State inf_inp_savepreset
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_savepreset")
         elseIf currentEvent == "Open"
-			MCM.SetInputDialogStartText("$iEquip_MCM_inf_lbl_PresetName")
+			MCM.SetInputDialogStartText(iEquip_StringExt.LocalizeString("$iEquip_MCM_inf_lbl_PresetName"))
         elseIf currentEvent == "Accept"
 			MCM.savePreset(currentStrVar)
+			MCM.ForcePageReset()
         endIf 
     endEvent
 endState
@@ -71,8 +74,8 @@ State inf_men_loadpreset
 			int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)
 			string[] tmpStrArr = jMap.allKeysPArray(jObj)
 			jValue.zeroLifetime(jObj)
-			
-			saPresets = CreateStringArray(tmpStrArr.length + 1, String fill = "NONE")
+			int i
+			saPresets = Utility.CreateStringArray(tmpStrArr.length + 1, "$iEquip_MCM_inf_lbl_noLoad")
 			while(i < tmpStrArr.length)
 				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], "."))
 				i += 1
@@ -95,8 +98,8 @@ State inf_men_deletepreset
 			int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)
 			string[] tmpStrArr = jMap.allKeysPArray(jObj)
 			jValue.zeroLifetime(jObj)
-			
-			saPresets = CreateStringArray(tmpStrArr.length + 1, String fill = "NONE")
+			int i
+			saPresets = Utility.CreateStringArray(tmpStrArr.length + 1, "$iEquip_MCM_inf_lbl_noDelete")
 			while(i < tmpStrArr.length)
 				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], "."))
 				i += 1
@@ -106,6 +109,7 @@ State inf_men_deletepreset
         elseIf currentEvent == "Accept"
 			if (currentVar as int != 0)
 				MCM.deletePreset(saPresets[currentVar as int])
+				MCM.ForcePageReset()
 			endIf
         endIf 
     endEvent

@@ -307,13 +307,14 @@ endFunction
 
 Event OnWidgetInit()
 	debug.trace("iEquip_WidgetCore OnWidgetInit start")
+	debug.trace("iEquip_WidgetCore OnWidgetInit - current state: " + GetState())
 	PopulateWidgetArrays()
 
 	abIsNameShown = new bool[8]
 	aiTargetQ = new int[5]
-	aiCurrentQueuePosition = new int[5] ;Array containing the current index for each queue - left, right, shout, potion, poison, arrow, bolt
-	asCurrentlyEquipped = new string[5] ;Array containing the itemName for whatever is currently equipped in each queue
-	aiCurrentlyPreselected = new int[3] ;Array containing current preselect queue positions
+	aiCurrentQueuePosition = new int[5] ; Array containing the current index for each queue - left, right, shout, potion, poison, arrow, bolt
+	asCurrentlyEquipped = new string[5] ; Array containing the itemName for whatever is currently equipped in each queue
+	aiCurrentlyPreselected = new int[3] ; Array containing current preselect queue positions
 	abQueueWasEmpty = new bool[3]
 	abPotionGroupEmpty = new bool[3]
 	abIsCounterShown = new bool[5]
@@ -348,14 +349,14 @@ Event OnWidgetInit()
 	asQueueName[4] = "$iEquip_WC_common_poisonQ"
 
 	aiNameElements = new int[8]
-	aiNameElements[0] = 8 ;leftName_mc
-	aiNameElements[1] = 22 ;rightName_mc
-	aiNameElements[2] = 36 ;shoutName_mc
-	aiNameElements[3] = 43 ;consumableName_mc
-	aiNameElements[4] = 48 ;poisonName_mc
-	aiNameElements[5] = 18 ;leftPreselectName_mc
-	aiNameElements[6] = 32 ;rightPreselectName_mc
-	aiNameElements[7] = 40 ;shoutPreselectName_mc
+	aiNameElements[0] = 8 	; leftName_mc
+	aiNameElements[1] = 22 	; rightName_mc
+	aiNameElements[2] = 36 	; shoutName_mc
+	aiNameElements[3] = 43 	; consumableName_mc
+	aiNameElements[4] = 48 	; poisonName_mc
+	aiNameElements[5] = 18 	; leftPreselectName_mc
+	aiNameElements[6] = 32 	; rightPreselectName_mc
+	aiNameElements[7] = 40 	; shoutPreselectName_mc
 
 	asWeaponTypeNames = new string[10]
 	asWeaponTypeNames[0] = "Fist"
@@ -377,27 +378,27 @@ Event OnWidgetInit()
 	asSpellSchools[4] = "Restoration"
 
 	ai2HWeaponTypes = new int[4]
-	ai2HWeaponTypes[0] = 5 ;Greatsword
-	ai2HWeaponTypes[1] = 6 ;Waraxe/Warhammer
-	ai2HWeaponTypes[2] = 7 ;Bow
-	ai2HWeaponTypes[3] = 9 ;Crossbow
+	ai2HWeaponTypes[0] = 5 ; Greatsword
+	ai2HWeaponTypes[1] = 6 ; Waraxe/Warhammer
+	ai2HWeaponTypes[2] = 7 ; Bow
+	ai2HWeaponTypes[3] = 9 ; Crossbow
 
 	ai2HWeaponTypesAlt = new int[4]
-	ai2HWeaponTypesAlt[0] = 5 ;Greatsword
-	ai2HWeaponTypesAlt[1] = 6 ;Waraxe/Warhammer
-	ai2HWeaponTypesAlt[2] = 7 ;Bow
-	ai2HWeaponTypesAlt[3] = 12 ;Crossbow
+	ai2HWeaponTypesAlt[0] = 5 	; Greatsword
+	ai2HWeaponTypesAlt[1] = 6 	; Waraxe/Warhammer
+	ai2HWeaponTypesAlt[2] = 7 	; Bow
+	ai2HWeaponTypesAlt[3] = 12 	; Crossbow
 
 	aiCounterClips = new int[5]
-	aiCounterClips[0] = 9 ;leftCount_mc
-	aiCounterClips[1] = 23 ;rightCount_mc
-	aiCounterClips[2] = -1 ;No shout count
-	aiCounterClips[3] = 44 ;consumableCount_mc
-	aiCounterClips[4] = 49 ;poisonCount_mc
+	aiCounterClips[0] = 9 	; leftCount_mc
+	aiCounterClips[1] = 23 	; rightCount_mc
+	aiCounterClips[2] = -1 	; No shout count
+	aiCounterClips[3] = 44 	; consumableCount_mc
+	aiCounterClips[4] = 49 	; poisonCount_mc
 
 	aiPoisonNameElements = new int[2]
-	aiPoisonNameElements[0] = 11 ;leftPoisonName_mc
-	aiPoisonNameElements[1] = 25 ;rightPoisonName_mc
+	aiPoisonNameElements[0] = 11 ; leftPoisonName_mc
+	aiPoisonNameElements[1] = 25 ; rightPoisonName_mc
 
 	asPotionGroups = new string[3]
 	asPotionGroups[0] = "$iEquip_common_HealthPotions"
@@ -405,10 +406,10 @@ Event OnWidgetInit()
 	asPotionGroups[2] = "$iEquip_common_StaminaPotions"
 
 	asMoreHUDIcons = new string[4]
-	asMoreHUDIcons[0] = "iEquipQL.png" ;Left
-	asMoreHUDIcons[1] = "iEquipQR.png" ;Right
-	asMoreHUDIcons[2] = "iEquipQ.png" ;Q - for shout/consumable/poison queues
-	asMoreHUDIcons[3] = "iEquipQB.png" ;Both - for items in both left and right queues
+	asMoreHUDIcons[0] = "iEquipQL.png" 	; Left
+	asMoreHUDIcons[1] = "iEquipQR.png" 	; Right
+	asMoreHUDIcons[2] = "iEquipQ.png" 	; Q - for shout/consumable/poison queues
+	asMoreHUDIcons[3] = "iEquipQB.png" 	; Both - for items in both left and right queues
 
 	EquipSlots = new EquipSlot[5]
 	EquipSlots[0] = Game.GetForm(0x00013F42) As EquipSlot ; LeftHand
@@ -423,9 +424,9 @@ Event OnWidgetInit()
     asActorValues[2] = "Stamina"
 
     aiActorValues = new int[3]
-    aiActorValues[0] = 24 ;Health
-    aiActorValues[1] = 25 ;Magicka
-    aiActorValues[2] = 26 ;Stamina
+    aiActorValues[0] = 24 ; Health
+    aiActorValues[1] = 25 ; Magicka
+    aiActorValues[2] = 26 ; Stamina
 
 	debug.trace("iEquip_WidgetCore OnWidgetInit end")
 EndEvent
@@ -473,6 +474,7 @@ bool property isEnabled
 	endFunction
 	
 	function Set(bool enabled)
+		debug.trace("iEquip_WidgetCore isEnabled Set start - enabled: " + enabled)
 		if (Ready)
             bEnabled = enabled
             
@@ -487,6 +489,7 @@ EndProperty
 
 state ENABLED
 	event OnBeginState()
+		debug.trace("iEquip_WidgetCore ENABLED OnBeginState start")
 		iEquipQHolderObj = JValue.retain(JMap.object())
 		aiTargetQ[0] = JArray.object()
 		JMap.setObj(iEquipQHolderObj, "leftQ", aiTargetQ[0])
@@ -512,13 +515,13 @@ state ENABLED
 		self.RegisterForMenu("ContainerMenu")
 		self.RegisterForMenu("Journal Menu")
 		
-		ResetWidgetArrays()
-		OnWidgetLoad()
-		
 		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
 		AM.updateAmmoLists()
 		addFists()
 		addCurrentItemsOnFirstEnable()
+
+		;ResetWidgetArrays()
+		OnWidgetLoad()
 		
 		bIsFirstEnabled = false
 		
@@ -527,11 +530,12 @@ state ENABLED
 			Utility.Wait(1.5)
 			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
 		endIf
+		debug.trace("iEquip_WidgetCore ENABLED OnBeginState end")
 	endEvent
 	
 	; Enabled events
 	Event OnWidgetLoad()
-		debug.trace("iEquip_WidgetCore OnWidgetLoad start")
+		debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
 
 		;fPositionIndicatorAlpha = 60.0
 		EM.isEditMode = false
@@ -565,6 +569,21 @@ state ENABLED
 		
 		if !bIsFirstEnabled
 			refreshWidgetOnLoad()
+		else
+			getAndStoreDefaultWidgetValues()
+			int i
+			while i < 2
+				CM.initChargeMeter(i)
+				CM.initSoulGem(i)
+				i += 1
+			endWhile
+			initQueuePositionIndicators()
+			debug.trace("iEquip_WidgetCore OnWidgetLoad - checking values for Potion Selector, visible: " + abWidget_V[45] + ", alpha: " + afWidget_A[45] + ", defV: " + abWidget_DefV[45] + ", defA: " + afWidget_DefA[45])
+            updatePotionSelector(true) ;Hide the potion selector
+			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+			UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+			UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
+			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", !bDropShadowEnabled)
 		endIf
 		bRefreshingWidget = false
 		
@@ -625,6 +644,8 @@ Auto state DISABLED
 
 	; Disabled Events
 	event OnWidgetLoad()
+		debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
+		debug.trace("iEquip_WidgetCore OnWidgetLoad end")
 	endEvent
 	
 	event OnWidgetReset()
@@ -1265,6 +1286,9 @@ function addCurrentItemsOnFirstEnable()
 			else
 				itemName = WornObject.GetDisplayName(PlayerRef, Q, 0)
 			endIf
+			if itemName == ""
+				itemName = equippedItem.GetName()
+			endIf
 			itemBaseName = equippedItem.getName()
 			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(equippedItem.GetFormID(), 0x00FFFFFF))
 			
@@ -1456,7 +1480,7 @@ function PopulateWidgetArrays()
 	AddWidget("$iEquip_WC_lbl_PoisonName", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 47, 16777215, "Left", true, false, true, false, "Poison")
 	AddWidget("$iEquip_WC_lbl_PoisonCount", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 48, 16777215, "Center", true, false, true, false, "Poison")
 
-	getAndStoreDefaultWidgetValues()
+	;getAndStoreDefaultWidgetValues()
 	debug.trace("iEquip_WidgetCore PopulateWidgetArrays end")
 endFunction
 
@@ -3010,7 +3034,7 @@ function goUnarmed()
 		UnequipHand(0)
 	endIf
 	;And now we need to update the left hand widget
-	float fNameAlpha = afWidget_A[aiNameElements[Q]]
+	float fNameAlpha = afWidget_A[aiNameElements[0]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
@@ -3064,7 +3088,7 @@ function updateLeftSlotOn2HSpellEquipped()
 	debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped start")
 	bBlockSwitchBackToBoundSpell = true
 	;And now we need to update the left hand widget
-	float fNameAlpha = afWidget_A[aiNameElements[Q]]
+	float fNameAlpha = afWidget_A[aiNameElements[0]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
