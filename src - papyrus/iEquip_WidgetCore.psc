@@ -2647,14 +2647,12 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none)
 	bool found
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
 		if formToFind
-			debug.trace("iEquip_WidgetCore findInQueue - searching by form")
 			if formToFind != jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm")
 				iIndex += 1
 			else
 				found = true
 			endIf
 		else
-			debug.trace("iEquip_WidgetCore findInQueue - searching by name")
 			if itemToFind != jMap.getStr(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipName")
 				iIndex += 1
 			else

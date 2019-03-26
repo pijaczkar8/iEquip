@@ -210,6 +210,8 @@ function updateIcon(int Q, int temperLevelPercent)
 		endIf
 	endIf
 
+	debug.trace("iEquip_TemperedItemHandler updateIcon - about to update the icon to: " + newIcon)
+
 	jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipIcon", newIcon)				; Update the icon name in the queue object so it shows correctly while cycling (it'll be updated again at next equip)
 
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIcon")											; And update the widget
@@ -276,7 +278,13 @@ endFunction
 
 int Function RoundToTens(int i)
 	float j = i / 10
-	if (j - (j as int)) < 0.5
+	if j < 1.0
+		if j < 0.5
+			return 0
+		else
+			return 10
+		endIf
+	elseIf (j - (j as int)) < 0.5
 		return (j as int) * 10
 	else
 		return (Math.Ceiling(j) as int) * 10
