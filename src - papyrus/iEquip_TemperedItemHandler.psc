@@ -277,16 +277,16 @@ int function Round(float i)
 endFunction
 
 int Function RoundToTens(int i)
+	int rounded
 	float j = i / 10
-	if j < 1.0
-		if j < 0.5
-			return 0
-		else
-			return 10
-		endIf
+	if j < 0.5
+		rounded = 0
+	elseIf j < 1.5
+		rounded = 10
 	elseIf (j - (j as int)) < 0.5
-		return (j as int) * 10
+		rounded = (j as int) * 10
 	else
-		return (Math.Ceiling(j) as int) * 10
+		rounded = (Math.Ceiling(j) as int) * 10
 	endIf
+	return rounded
 EndFunction
