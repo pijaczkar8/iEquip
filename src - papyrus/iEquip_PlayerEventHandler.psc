@@ -4,7 +4,6 @@ Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 Import iEquip_FormExt
 import iEquip_ActorExt
 import iEquip_StringExt
-import iEquip_ObjectReferenceExt
 Import Utility
 import UI
 import AhzMoreHudIE
@@ -489,9 +488,6 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
 				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
 				debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_OnObjectEquippedFLST contains " + iEquip_OnObjectEquippedFLST.GetSize() + " entries")
-				if akReference
-					debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_ObjectReferenceExt.GetDisplayName returns: " + iEquip_ObjectReferenceExt.GetDisplayName(akReference))
-				endIf
 				if !bWaitingForTransform
 					bWaitingForOnObjectEquippedUpdate = true
 					registerForSingleUpdate(0.5)

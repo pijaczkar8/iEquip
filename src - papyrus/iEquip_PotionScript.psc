@@ -1046,12 +1046,12 @@ function sortPotionQueue(int Q, string theKey)
         EndWhile
         jArray.swapItems(targetArray, 0, n)
     EndWhile
-    i = 0
+    ;/i = 0
     n = jArray.count(targetArray)
     while i < n
         debug.trace("iEquip_PotionScript - sortPotionQueue, sorted " + aStrongestEffects[Q].GetName() + " array - i: " + i + ", " + jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm").GetName() + ", "+theKey+": " + jMap.getFlt(jArray.getObj(targetArray, i), theKey))
         i += 1
-    endWhile
+    endWhile/;
     iQueueToSort = -1 ;Reset
     if theKey == "iEquipStrength3s"
         bQueueSortedBy3sStrength = true

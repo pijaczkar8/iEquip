@@ -3251,7 +3251,7 @@ function consumeItem()
         		PO.selectAndConsumePotion(potionGroupIndex, iPotionTypeChoice)
         		PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
         	;If the selector isn't currently shown and conditions to show selector are met then show it now
-        	elseIf (iPotionSelectorChoice == 0 || (iPotionSelectorChoice == 2 && PlayerRef.IsInCombat()) || (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + (iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])*-1))) > PO.fSmartConsumeThreshold)
+        	elseIf (iPotionSelectorChoice == 0 || (iPotionSelectorChoice == 2 && PlayerRef.IsInCombat()) || (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) > PO.fSmartConsumeThreshold)
         		updatePotionSelector()
         	;Otherwise carry on and select and consume a restore potion
         	else
@@ -3620,9 +3620,7 @@ function addToQueue(int Q)
 		endIf
 	endIf
 
-	int listLength = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.entryList.length")
-	debug.trace("iEquip_WidgetCore addToQueue - listLength: " + listLength + ", listIndex: " + listIndex + ", GetFormAtInventoryIndex returns: " + itemForm + ", getName returns: " + itemName)
-	debug.trace("iEquip_WidgetCore addToQueue - testing GetTemperStringAtInventoryIndex: " + GetTemperStringAtInventoryIndex(listIndex, listLength))
+	;int listLength = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.entryList.length")
 	
 	if itemForm
 		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check, itemForm: " + itemForm + ", " + itemName + ", itemID: " + itemID)

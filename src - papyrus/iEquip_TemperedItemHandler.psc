@@ -197,9 +197,9 @@ function updateIcon(int Q, int temperLevelPercent)
 
 		if iColoredIconStyle > 0 && temperLvl < 50																	; Now if we've enabled coloured icons and item health rounded to tens is 40% or below
 
-			if (temperLvl == 40 && iColoredIconLevels == 0) || (temperLvl == 30 &&  iColoredIconLevels < 3) || (temperLvl == 20 &&  iColoredIconLevels == 3)	; Check the level setting and append the 'a' for amber level
+			if (iColoredIconLevels == 0 && temperLvl > 20 && temperLevelPercent < 41) || ((iColoredIconLevels == 1 || iColoredIconLevels == 2) && temperLvl == 30 && temperLevelPercent < 31) || (iColoredIconLevels == 3 && temperLvl == 20 &&  temperLevelPercent < 21)	; Check the level setting and append the 'a' for amber level
 				newIcon += "a"
-			elseIf (temperLvl < 30 && iColoredIconLevels < 2) || (temperLvl < 20 && iColoredIconLevels > 1)			; Or 'r' for red level
+			elseIf (temperLvl < 30 && iColoredIconLevels < 2 && temperLevelPercent < 21) || (temperLvl < 20 && iColoredIconLevels > 1 && temperLevelPercent < 11)			; Or 'r' for red level
 				newIcon += "r"
 			endIf
 

@@ -41,30 +41,32 @@ event OnUpdate()
 	while i < numForms
 		formToAdd = iEquip_ItemsToAddFLST.GetAt(i)
 		;Handle Potions, Ammo and bound ammo first
-		if formToAdd as potion
-			PO.onPotionAdded(formToAdd)
-		elseIf formToAdd as ammo && (Game.GetModName(formToAdd.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
-			if WC.BW.bIsBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
-				AM.addBoundAmmoToQueue(formToAdd, formToAdd.GetName())
+		if formToAdd
+			if formToAdd as potion
+				PO.onPotionAdded(formToAdd)
+			elseIf formToAdd as ammo && (Game.GetModName(formToAdd.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")
+				if WC.BW.bIsBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
+					AM.addBoundAmmoToQueue(formToAdd, formToAdd.GetName())
+				else
+					AM.onAmmoAdded(formToAdd)
+				endIf
+		    ;Otherwise check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
+		    elseIf WC.bEnableRemovedItemCaching && iEquip_RemovedItemsFLST.HasForm(formToAdd)
+		    	WC.addBackCachedItem(formToAdd)
+		    ;Or finally check if we've just added one of a currently equipped item which requires a counter update
 			else
-				AM.onAmmoAdded(formToAdd)
+				j = 0
+				int itemType = formToAdd.GetType()
+				while j < 2
+					if WC.asCurrentlyEquipped[j] == formToAdd.GetName()
+						;Ammo, scrolls, torch or other throwing weapons
+						if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(formToAdd))	
+			    			WC.setSlotCount(j, PlayerRef.GetItemCount(formToAdd))
+			    		endIf
+		        	endIf
+		        	j += 1
+		        endWhile
 			endIf
-	    ;Otherwise check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
-	    elseIf WC.bEnableRemovedItemCaching && iEquip_RemovedItemsFLST.HasForm(formToAdd)
-	    	WC.addBackCachedItem(formToAdd)
-	    ;Or finally check if we've just added one of a currently equipped item which requires a counter update
-		else
-			j = 0
-			int itemType = formToAdd.GetType()
-			while j < 2
-				if WC.asCurrentlyEquipped[j] == formToAdd.GetName()
-					;Ammo, scrolls, torch or other throwing weapons
-					if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(formToAdd))	
-		    			WC.setSlotCount(j, PlayerRef.GetItemCount(formToAdd))
-		    		endIf
-	        	endIf
-	        	j += 1
-	        endWhile
 		endIf
 		i += 1
 	endWhile
