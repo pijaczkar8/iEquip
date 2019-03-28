@@ -2933,30 +2933,27 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    elseIf itemCount == 1																				; If we only have one of it there's no risk of equipping the wrong one so safe to use EquipItemEx
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 		    else
-		    	int itemID = jMap.getInt(targetObject, "iEquipItemID")
-		    	bool doneHere
-		    	if itemID as bool 																				; If we have an itemID then try equipping by that first.  This will fail if the display name has changed since we last equipped it,
-		    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)									; for example if the item has been renamed or a temper level has changed
-		    		Utility.WaitMenuMode(0.1)
-		    		if PlayerRef.GetEquippedObject(iEquipSlotID)												; Now check if we actually have something equipped.  If EquipItemByID has failed we will be empty handed at this point
-		    			doneHere = true
-		    		endIf
-		    	endIf
-	    		if !doneHere																					; If nothing has been equipped check if the queue object is enchanted or poisoned and attempt to equip the correct item using that information
-	    			Enchantment tempEnchantment = jMap.getForm(targetObject, "lastKnownEnchantment") as Enchantment
-	    			Potion tempPoison = jMap.getForm(targetObject, "lastKnownPoison") as Potion
-	    			if tempEnchantment
-	    				if tempPoison
-	    					iEquip_ActorExt.EquipEnchantedAndPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment, tempPoison)		; Enchanted and poisoned
-	    				else
-	    					iEquip_ActorExt.EquipEnchantedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment)								; Enchanted only
-	    				endIf
-	    			elseIf tempPoison
-	    				iEquip_ActorExt.EquipPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempPoison)										; Poisoned only
-	    			else
-	    				PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; Finally if all that has failed fall back on EquipItemEX and take pot luck as to which one is equipped
-	    				EH.abSkipQueueObjectUpdate[iEquipSlotId] = true 										; And block EH from updating the name and itemID just in case we're equipped the wrong one!
-	    			endIf
+				; If we have more than one of the item check if the queue object is enchanted or poisoned and attempt to equip the correct item using that information
+    			Enchantment tempEnchantment = jMap.getForm(targetObject, "lastKnownEnchantment") as Enchantment
+    			Potion tempPoison = jMap.getForm(targetObject, "lastKnownPoison") as Potion
+    			if tempEnchantment
+    				if tempPoison
+    					iEquip_ActorExt.EquipEnchantedAndPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment, tempPoison)		; Enchanted and poisoned
+    				else
+    					iEquip_ActorExt.EquipEnchantedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment)								; Enchanted only
+    				endIf
+    			elseIf tempPoison
+    				iEquip_ActorExt.EquipPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempPoison)										; Poisoned only
+    			else 																															; If it's not enchanted or poisoned then if we have an itemID for it try equipping it that way
+    				int itemID = jMap.getInt(targetObject, "iEquipItemID")
+			    	if itemID as bool 																				; If we have an itemID then try equipping by that first.  This will fail if the display name has changed since we last equipped it,
+			    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)									; for example if the item has been renamed or a temper level has changed
+			    	endIf
+    			endIf
+    			Utility.WaitMenuMode(0.1)
+	    		if !PlayerRef.GetEquippedObject(iEquipSlotID)												; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
+	    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; So fall back on EquipItemEX and take pot luck as to which one is equipped
+    				EH.abSkipQueueObjectUpdate[iEquipSlotId] = true 	
 	    		endIf
 		    endIf
 		endIf
