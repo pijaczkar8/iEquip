@@ -474,6 +474,18 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent end")
 EndEvent
 
+Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
+	If !bWaitingForAnimationUpdate && akAggressor && akSource as Weapon
+		If abHitBlocked
+			If PlayerRef.GetEquippedShield()
+				
+			EndIf
+		EndIf
+		bWaitingForAnimationUpdate = True
+		RegisterForSingleUpdate(0.5)
+	EndIf
+EndEvent
+
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
