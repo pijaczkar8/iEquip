@@ -475,15 +475,21 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 EndEvent
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
-	If !bWaitingForAnimationUpdate && akAggressor && akSource as Weapon
-		If abHitBlocked
-			If PlayerRef.GetEquippedShield()
-				
-			EndIf
-		EndIf
-		bWaitingForAnimationUpdate = True
-		RegisterForSingleUpdate(0.5)
-	EndIf
+	debug.trace("iEquip_PlayerEventHandler OnHit start")
+	If akAggressor && akSource as Weapon && abHitBlocked
+		int iTmp = 2
+		if PlayerRef.GetEquippedShield()	; We're tracking blocking events here, so if we've got a shield equipped we need to update the left hand, if we don't we must have blocked with out right hand/2H weapon so update right
+			iTmp = 1
+		endIf
+		if (iSlotToUpdate == -1 || (iSlotToUpdate + iTmp == 2))
+	        iSlotToUpdate += iTmp
+	        if !bWaitingForAnimationUpdate
+	            bWaitingForAnimationUpdate = true
+	            RegisterForSingleUpdate(0.8)
+	        endIf
+	    endIf
+	endIf
+	debug.trace("iEquip_PlayerEventHandler OnHit end")
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
@@ -872,6 +878,9 @@ auto state DISABLED
 	endEvent
 
 	event OnAnimationEvent(ObjectReference aktarg, string EventName)
+	endEvent
+
+	event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 	endEvent
 
 	event OnUpdate()
