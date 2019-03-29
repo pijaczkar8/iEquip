@@ -83,6 +83,8 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 8)
 	
 	iPosIndChoice = jArray.getInt(jPageObj, 9)
+    updatePositionIndicatorSettings()
+
 	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 10)
 	
 	WC.bEnableGearedUp = jArray.getInt(jPageObj, 11)
@@ -327,16 +329,7 @@ State gen_men_showPosInd
         elseIf currentEvent == "Accept"
             iPosIndChoice = currentVar as int
             MCM.SetMenuOptionValueST(posIndBehaviour[iPosIndChoice])
-            if iPosIndChoice == 0
-            	WC.bShowPositionIndicators = false
-            else
-            	WC.bShowPositionIndicators = true
-            endIf
-            if iPosIndChoice == 2
-            	WC.bPermanentPositionIndicators = true
-            else
-            	WC.bPermanentPositionIndicators = false
-            endIf
+            updatePositionIndicatorSettings()
         endIf
     endEvent
 endState
@@ -435,3 +428,16 @@ State gen_tgl_BM_lich
         endIf
     endEvent
 endState
+
+function updatePositionIndicatorSettings()
+    if iPosIndChoice == 0
+        WC.bShowPositionIndicators = false
+    else
+        WC.bShowPositionIndicators = true
+    endIf
+    if iPosIndChoice == 2
+        WC.bPermanentPositionIndicators = true
+    else
+        WC.bPermanentPositionIndicators = false
+    endIf
+endFunction

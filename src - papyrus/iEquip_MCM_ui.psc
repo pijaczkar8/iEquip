@@ -135,6 +135,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	TI.iColoredIconStyle = jArray.getInt(jPageObj, 8)
     TI.iColoredIconLevels = jArray.getInt(jPageObj, 9)
 	iAmmoIconStyle = jArray.getInt(jPageObj, 10)
+    setAmmoStyle()
 	WC.iBackgroundStyle = jArray.getInt(jPageObj, 11)
 	
 	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 12)
@@ -147,6 +148,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 18)
 	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 19)
 	iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 20)
+    setWidgetFadeout()
 	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 21)
 	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 22)
 	
@@ -155,6 +157,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 25)
 	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 26)
 	iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 27)
+    setNameFadeout()
 	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 28)
 	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 29)
 endFunction
@@ -413,14 +416,7 @@ State ui_men_ammoIcoStyle
             MCM.fillMenu(iAmmoIconStyle, ammoIconOptions, 0)
         elseIf currentEvent == "Accept"
             iAmmoIconStyle = currentVar as int
-        
-            if iAmmoIconStyle == 0
-                AM.sAmmoIconSuffix = ""
-            elseIf iAmmoIconStyle == 1
-                AM.sAmmoIconSuffix = "Triple"
-            elseIf iAmmoIconStyle == 2
-                AM.sAmmoIconSuffix = "Quiver"
-            endIf
+            setAmmoStyle()
             
             MCM.SetMenuOptionValueST(ammoIconOptions[iAmmoIconStyle])
             WC.bAmmoIconChanged = true
@@ -571,15 +567,7 @@ State ui_men_wdgetFadeSpeed
             MCM.fillMenu(iCurrentWidgetFadeoutChoice, fadeoutOptions, 1)
         elseIf currentEvent == "Accept"
             iCurrentWidgetFadeoutChoice = currentVar as int
-        
-            if iCurrentWidgetFadeoutChoice == 0
-                WC.fWidgetFadeoutDuration = 3.0 ;Slow
-            elseIf iCurrentWidgetFadeoutChoice == 1
-                WC.fWidgetFadeoutDuration = 1.5 ;Normal
-            elseIf iCurrentWidgetFadeoutChoice == 2
-                WC.fWidgetFadeoutDuration = 0.5 ;Fast
-            endIf
-            
+            setWidgetFadeout()
             MCM.SetMenuOptionValueST(fadeoutOptions[iCurrentWidgetFadeoutChoice])
         endIf 
     endEvent
@@ -677,15 +665,7 @@ State ui_men_nameFadeSpeed
             MCM.fillMenu(iCurrentNameFadeoutChoice, fadeoutOptions, 1)
         elseIf currentEvent == "Accept"
             iCurrentNameFadeoutChoice = currentVar as int
-        
-            if iCurrentNameFadeoutChoice == 0
-                WC.fNameFadeoutDuration = 3.0 ;Slow
-            elseIf iCurrentNameFadeoutChoice == 1
-                WC.fNameFadeoutDuration = 1.5 ;Normal
-            elseIf iCurrentNameFadeoutChoice == 2
-                WC.fNameFadeoutDuration = 0.5 ;Fast
-            endIf
-            
+            setNameFadeout()
             MCM.SetMenuOptionValueST(fadeoutOptions[iCurrentNameFadeoutChoice])
         endIf 
     endEvent
@@ -714,3 +694,33 @@ State ui_men_firstPressNameHidn
         endIf 
     endEvent
 endState
+
+function setAmmoStyle()
+    if iAmmoIconStyle == 0
+        AM.sAmmoIconSuffix = ""
+    elseIf iAmmoIconStyle == 1
+        AM.sAmmoIconSuffix = "Triple"
+    elseIf iAmmoIconStyle == 2
+        AM.sAmmoIconSuffix = "Quiver"
+    endIf
+endFunction
+
+function setWidgetFadeout()
+    if iCurrentWidgetFadeoutChoice == 0
+        WC.fWidgetFadeoutDuration = 3.0 ;Slow
+    elseIf iCurrentWidgetFadeoutChoice == 1
+        WC.fWidgetFadeoutDuration = 1.5 ;Normal
+    elseIf iCurrentWidgetFadeoutChoice == 2
+        WC.fWidgetFadeoutDuration = 0.5 ;Fast
+    endIf
+endFunction
+
+function setNameFadeout()
+    if iCurrentNameFadeoutChoice == 0
+        WC.fNameFadeoutDuration = 3.0 ;Slow
+    elseIf iCurrentNameFadeoutChoice == 1
+        WC.fNameFadeoutDuration = 1.5 ;Normal
+    elseIf iCurrentNameFadeoutChoice == 2
+        WC.fNameFadeoutDuration = 0.5 ;Fast
+    endIf
+endFunction
