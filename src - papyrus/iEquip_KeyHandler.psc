@@ -595,18 +595,18 @@ function resetEditModeKeys()
     iEditPrevKey = 181
     iEditUpKey = 200
     iEditDownKey = 208
-    iEditLeftKey = 203
     iEditRightKey = 205
+    iEditLeftKey = 203
     iEditScaleUpKey = 78
     iEditScaleDownKey = 74
-    iEditRotateKey = 80
-    iEditAlphaKey = 81
     iEditDepthKey = 72
-    iEditTextKey = 79
-    iEditRulersKey = 77
+    iEditRotateKey = 79
+    iEditTextKey = 80
+    iEditAlphaKey = 81
+    iEditRulersKey = 75
     iEditResetKey = 82
-    iEditLoadPresetKey = 75
-    iEditSavePresetKey = 76
+    iEditLoadPresetKey = 76
+    iEditSavePresetKey = 77
     iEditDiscardKey = 83
     debug.trace("iEquip_KeyHandler resetEditModeKeys end")
 endFunction

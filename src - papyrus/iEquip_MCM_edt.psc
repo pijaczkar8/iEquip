@@ -134,7 +134,7 @@ State edt_men_chooseHtKey
                 MCM.bUpdateKeyMaps = true
             endIf
             
-            MCM.SetMenuOptionValueST(EMKeysChoice[iCurrentEMKeysChoice])
+            MCM.ForcePageReset()
         endIf 
     endEvent
 endState

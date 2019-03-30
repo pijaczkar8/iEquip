@@ -16,6 +16,7 @@ string[] QRPreferredWeaponType
 string[] QRSwitchOutOptions
 string[] QBuffControlOptions
 string[] QBuffOptions
+string[] asMagicSchools
 
 int iCurrentQSPreferredMagicSchoolChoice = 2
 int iCurrentQRPreferredMagicSchoolChoice = 2
@@ -65,6 +66,13 @@ function initData()
     QBuffControlOptions[0] = "$iEquip_MCM_pro_opt_alwaysQB"
     QBuffControlOptions[1] = "$iEquip_MCM_pro_opt_QBOn2ndPress"
     QBuffControlOptions[2] = "$iEquip_MCM_pro_opt_2ndPressInCombat"
+
+    asMagicSchools = new string[5]
+    asMagicSchools[0] = "Alteration"
+    asMagicSchools[1] = "Conjuration"
+    asMagicSchools[2] = "Destruction"
+    asMagicSchools[3] = "Illusion"
+    asMagicSchools[4] = "Restoration"
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -132,6 +140,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 8)
 	PM.bQuickShieldPreferMagic = jArray.getInt(jPageObj, 9)
 	iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 10)
+    PM.sQuickShieldPreferredMagicSchool = asMagicSchools[iCurrentQSPreferredMagicSchoolChoice]
 	PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 11)
 	PM.iPreselectQuickShield = jArray.getInt(jPageObj, 12)
 	
@@ -154,6 +163,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	PM.iQuickRangedPreferredWeaponType = jArray.getInt(jPageObj, 28)
 	PM.iQuickRangedSwitchOutAction = jArray.getInt(jPageObj, 29)
 	iCurrentQRPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 30)
+    PM.sQuickRangedPreferredMagicSchool = asMagicSchools[iCurrentQRPreferredMagicSchoolChoice]
 	PM.iPreselectQuickRanged = jArray.getInt(jPageObj, 31)
 	
 	WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 32)
@@ -483,18 +493,7 @@ State pro_men_rightHandspllTyp
             MCM.fillMenu(iCurrentQSPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
         elseIf currentEvent == "Accept"
             iCurrentQSPreferredMagicSchoolChoice = currentVar as int
-        
-            if iCurrentQSPreferredMagicSchoolChoice == 0
-                PM.sQuickShieldPreferredMagicSchool = "Alteration"
-            elseIf iCurrentQSPreferredMagicSchoolChoice == 1
-                PM.sQuickShieldPreferredMagicSchool = "Conjuration"
-            elseIf iCurrentQSPreferredMagicSchoolChoice == 2
-                PM.sQuickShieldPreferredMagicSchool = "Destruction"
-            elseIf iCurrentQSPreferredMagicSchoolChoice == 3
-                PM.sQuickShieldPreferredMagicSchool = "Illusion"
-            elseIf iCurrentQSPreferredMagicSchoolChoice == 4
-                PM.sQuickShieldPreferredMagicSchool = "Restoration"
-            endIf
+            PM.sQuickShieldPreferredMagicSchool = asMagicSchools[iCurrentQSPreferredMagicSchoolChoice]
             
             MCM.SetMenuOptionValueST(QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])
         endIf
@@ -768,18 +767,7 @@ State pro_men_prefMagSchl
             MCM.fillMenu(iCurrentQRPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
         elseIf currentEvent == "Accept"
             iCurrentQRPreferredMagicSchoolChoice = currentVar as int
-        
-            if iCurrentQRPreferredMagicSchoolChoice == 0
-                PM.sQuickRangedPreferredMagicSchool = "Alteration"
-            elseIf iCurrentQRPreferredMagicSchoolChoice == 1
-                PM.sQuickRangedPreferredMagicSchool = "Conjuration"
-            elseIf iCurrentQRPreferredMagicSchoolChoice == 2
-                PM.sQuickRangedPreferredMagicSchool = "Destruction"
-            elseIf iCurrentQRPreferredMagicSchoolChoice == 3
-                PM.sQuickRangedPreferredMagicSchool = "Illusion"
-            elseIf iCurrentQRPreferredMagicSchoolChoice == 4
-                PM.sQuickRangedPreferredMagicSchool = "Restoration"
-            endIf
+            PM.sQuickRangedPreferredMagicSchool = asMagicSchools[iCurrentQRPreferredMagicSchoolChoice]
             
             MCM.SetMenuOptionValueST(QSPreferredMagicSchool[iCurrentQRPreferredMagicSchoolChoice])
         endIf
@@ -906,3 +894,4 @@ State pro_tgl_reqBothQue
         endIf
     endEvent
 endState
+

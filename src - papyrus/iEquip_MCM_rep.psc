@@ -100,8 +100,9 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	CM.bEnableGradientFill = jArray.getInt(jPageObj, 13)
 	CM.iSecondaryFillColor = jArray.getInt(jPageObj, 14)
 	meterFillDirection[0] = jArray.getInt(jPageObj, 15)
+    CM.asMeterFillDirection[0] = rawMeterFillDirectionOptions[meterFillDirection[0]]
 	meterFillDirection[1] = jArray.getInt(jPageObj, 16)
-	
+	CM.asMeterFillDirection[1] = rawMeterFillDirectionOptions[meterFillDirection[1]]
 	WC.iShowPoisonMessages = jArray.getInt(jPageObj, 17)
 	WC.bAllowPoisonSwitching = jArray.getInt(jPageObj, 18)
 	WC.bAllowPoisonTopUp = jArray.getInt(jPageObj, 19)
