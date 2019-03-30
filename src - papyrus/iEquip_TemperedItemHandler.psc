@@ -197,7 +197,7 @@ function updateIcon(int Q, int temperLevelPercent)
 
 		if iColoredIconStyle > 0 && temperLvl < 50																	; Now if we've enabled coloured icons and item health rounded to tens is 40% or below
 
-			if (iColoredIconLevels == 0 && temperLvl > 20 && temperLevelPercent < 41) || ((iColoredIconLevels == 1 || iColoredIconLevels == 2) && temperLvl == 30 && temperLevelPercent < 31) || (iColoredIconLevels == 3 && temperLvl == 20 &&  temperLevelPercent < 21)	; Check the level setting and append the 'a' for amber level
+			if (iColoredIconLevels == 0 && temperLevelPercent < 41 && temperLevelPercent > 20) || (iColoredIconLevels == 1  && temperLevelPercent < 31 && temperLevelPercent > 20) || (iColoredIconLevels == 2  && temperLevelPercent < 31 && temperLevelPercent > 10) || (iColoredIconLevels == 3 && temperLevelPercent < 21 && temperLevelPercent > 10)	; Check the level setting and append the 'a' for amber level
 				newIcon += "a"
 			elseIf (temperLvl < 30 && iColoredIconLevels < 2 && temperLevelPercent < 21) || (temperLvl < 20 && iColoredIconLevels > 1 && temperLevelPercent < 11)			; Or 'r' for red level
 				newIcon += "r"
@@ -271,22 +271,15 @@ endFunction
 int function Round(float i)
 	if (i - (i as int)) < 0.5
 		return (i as int)
-	else
-		return (Math.Ceiling(i) as int)
 	endIf
+	return Math.Ceiling(i)
 endFunction
 
 int Function RoundToTens(int i)
-	int rounded
-	float j = i / 10
-	if j < 0.5
-		rounded = 0
-	elseIf j < 1.5
-		rounded = 10
-	elseIf (j - (j as int)) < 0.5
-		rounded = (j as int) * 10
-	else
-		rounded = (Math.Ceiling(j) as int) * 10
-	endIf
-	return rounded
-EndFunction
+    int rounded = i % 10
+    
+    if rounded >= 5
+        return (i + 10 - rounded)
+    endIf
+    return (i - rounded)
+endFunction

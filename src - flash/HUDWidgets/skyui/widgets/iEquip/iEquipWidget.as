@@ -108,7 +108,6 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public var rightIcon: MovieClip;
 	public var rightPoisonIcon: MovieClip;
 	public var rightAttributeIcons: MovieClip;
-
 	public var shoutIcon: MovieClip;
 	public var leftPreselectIcon: MovieClip;
 	public var leftPreselectAttributeIcons: MovieClip;
@@ -218,7 +217,6 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		restoreText = widgetMaster.ConsumableWidget.potionSelector_mc.restoreText;
 		fortifyText = widgetMaster.ConsumableWidget.potionSelector_mc.fortifyText;
 		regenText = widgetMaster.ConsumableWidget.potionSelector_mc.regenText;
-		//potionSelector_mc._alpha = 0.0;
 		potionSelector_mc.gotoAndStop("right");
 
 		//Set up the preselect icon and text field holder MovieClips
@@ -284,20 +282,20 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		consumableCount.text = "";
 		poisonName.text = "";
 		poisonCount.text = "";
-		leftName.textAutoSize = "shrink";
-		leftPoisonName.textAutoSize = "shrink";
-		leftCount.textAutoSize = "shrink";
-		leftPreselectName.textAutoSize = "shrink";
-		rightName.textAutoSize = "shrink";
-		rightPoisonName.textAutoSize = "shrink";
-		rightCount.textAutoSize = "shrink";
-		rightPreselectName.textAutoSize = "shrink";
-		shoutName.textAutoSize = "shrink";
-		shoutPreselectName.textAutoSize = "shrink";
-		consumableName.textAutoSize = "shrink";
-		consumableCount.textAutoSize = "shrink";
-		poisonName.textAutoSize = "shrink";
-		poisonCount.textAutoSize = "shrink";
+		leftName.verticalAutoSize = "top";
+		leftPoisonName.verticalAutoSize = "top";
+		leftCount.verticalAutoSize = "top";
+		leftPreselectName.verticalAutoSize = "top";
+		rightName.verticalAutoSize = "top";
+		rightPoisonName.verticalAutoSize = "top";
+		rightCount.verticalAutoSize = "top";
+		rightPreselectName.verticalAutoSize = "top";
+		shoutName.verticalAutoSize = "top";
+		shoutPreselectName.verticalAutoSize = "top";
+		consumableName.verticalAutoSize = "top";
+		consumableCount.verticalAutoSize = "top";
+		poisonName.verticalAutoSize = "top";
+		poisonCount.verticalAutoSize = "top";
 		leftIcon.gotoAndStop("Empty");
 		leftPoisonIcon.gotoAndStop("Hidden");
 		leftAttributeIcons.gotoAndStop("Hidden");
@@ -471,7 +469,14 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		itemIcon.gotoAndStop(sIcon);
 	}
 
-	//Used when a bound weapon is equipped to switch from the spell school icon to the bound weapon icon
+	// Called from TemperedItemHandler updateIcon()
+	public function updateIcon(iSlot: Number, sIcon: String): Void
+	{
+		var itemIcon: MovieClip = iSlot == 0 ? leftIcon : rightIcon;
+		itemIcon.gotoAndStop(sIcon);
+	}
+
+	// Used when a bound weapon is equipped to switch from the spell school icon to the bound weapon icon
 	public function updateIconOnly(iSlot: Number, sIcon: String): Void
 	{
 		var iconClip: MovieClip = iSlot == 0 ? leftIcon_mc : rightIcon_mc;
@@ -1035,16 +1040,16 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 		if (!animateIn){
 			if (leftIconLTG.x > leftPreselectIconLTG.x){
-				leftTargetX = (leftIcon_mc._width) //If preselect icon is to the left of the main widget animate main widget out to right
+				leftTargetX = (leftIcon_mc._width); //If preselect icon is to the left of the main widget animate main widget out to right
 			} else {
-				leftTargetX = -(leftIcon_mc._width) //If preselect icon is to the right of the main widget animate main widget out to left
+				leftTargetX = -(leftIcon_mc._width); //If preselect icon is to the right of the main widget animate main widget out to left
 			}
 		} else {
 			leftTargetX = leftIconTarget.x;
 			leftTargetY = leftIconTarget.y;
 		}
 				
-		leftPTargetX = leftPIconTarget.x;
+		leftPTargetX = -leftPIconTarget.x;
 		leftPTargetY = leftPIconTarget.y;
 
 		//Reset the preselect icon scale
@@ -1118,7 +1123,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		.to(leftPreselectName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
 		.call(updateNamesForEquipPreselect, [leftName, leftPreselectName, newName, ""])
 		.to(tempIcon, 0.6, {_x:leftTargetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
-		.to(tempPIcon, 0.6, {_x:leftPTargetX, _y:leftPTargetY, _rotation:targetRotation, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
+		//.to(tempPIcon, 0.6, {_x:leftPTargetX, _y:leftPTargetY, _rotation:targetRotation, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
+		.to(tempPIcon, 0.6, {_x:leftPTargetX, _y:leftPTargetY, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
 		.to(leftPreselectBg_mc, 0.4, {_rotation:"-=120", _alpha:0, ease:Back.easeOut}, 0)
 		.to(leftIcon, 0, {_alpha:leftIconAlpha, ease:Linear.easeNone})
 		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})

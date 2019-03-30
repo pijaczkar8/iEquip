@@ -381,8 +381,8 @@ function ScaleElement(int iScale)
             WC.afWidget_S[iSelectedElement] = WC.afWidget_S[iSelectedElement] + MoveStep
         else                ; Down
             WC.afWidget_S[iSelectedElement] = WC.afWidget_S[iSelectedElement] - MoveStep
-            if WC.afWidget_S[iSelectedElement] <= 30
-                WC.afWidget_S[iSelectedElement] = 30
+            if WC.afWidget_S[iSelectedElement] <= 10
+                WC.afWidget_S[iSelectedElement] = 10
             endIf
         endIf
     
@@ -632,7 +632,8 @@ function LoadAllElements()
     int i = WC.asWidgetDescriptions.Length - 1
     
     While i >= 0
-        UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._visible", true) ;Everything else other than the backgrounds needs to be visible in Edit Mode
+        UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._visible", true)               ; Everything else other than the backgrounds needs to be visible in Edit Mode
+        UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._alpha", WC.afWidget_A[i])
         i -= 1
     EndWhile
 

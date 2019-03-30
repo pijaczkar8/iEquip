@@ -91,7 +91,7 @@ class skyui.widgets.iEquip.iEquipWidgetBase extends WidgetBase
 
 	//Function utilising the SkyUI scaleform hash function to generate itemIDs for WidgetCore addToQueue
 	
-	public function generateItemID(displayName: String, formID: Number): Void
+	/*public function generateItemID(displayName: String, formID: Number): Void
 	{
 		if (displayName == "CrossBow") {
 			displayName = "Crossbow"
@@ -99,5 +99,5 @@ class skyui.widgets.iEquip.iEquipWidgetBase extends WidgetBase
 		var itemID: Number = skyui.util.Hash.crc32(displayName, formID & 0x00FFFFFF);
 		var IDString: String = itemID.toString()
 		skse.SendModEvent("iEquip_GotItemID", IDString, itemID);
-	}
+	}*/
 }
