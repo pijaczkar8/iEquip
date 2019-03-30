@@ -142,6 +142,7 @@ float property fEquipOnPauseDelay = 1.6 auto hidden
 
 bool property bPotionGrouping = true auto hidden
 int property iPotionSelectorChoice = 2 auto hidden
+float property fSmartConsumeThreshold = 0.8 auto hidden
 float property fPotionSelectorFadeoutDelay = 3.0 auto hidden
 
 bool property bProModeEnabled auto hidden

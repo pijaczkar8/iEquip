@@ -16,10 +16,11 @@ function initData()
     emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
     emptyPotionQueueOptions[2] = "$iEquip_MCM_pot_opt_leaveIcon"
 
-    showSelectorOptions = new String[3]
+    showSelectorOptions = new String[4]
     showSelectorOptions[0] = "$iEquip_MCM_pot_opt_alwaysShowSelector"
-    showSelectorOptions[1] = "$iEquip_MCM_pot_opt_showAboveThreshold"
-    showSelectorOptions[2] = "$iEquip_MCM_pot_opt_hybridShow"
+    showSelectorOptions[1] = "$iEquip_MCM_pot_opt_consOrShowSelector"
+    showSelectorOptions[2] = "$iEquip_MCM_pot_opt_consAndShowSelector"
+    showSelectorOptions[3] = "$iEquip_MCM_pot_opt_smartConsAndShowSelector"
 
     potionSelectOptions = new String[3]
     potionSelectOptions[0] = "$iEquip_MCM_pot_opt_alwaysStrongest"
@@ -116,6 +117,7 @@ function drawPage()
 
         MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potSelOpts")
         MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
+        MCM.AddSliderOptionST("pot_sld_SmartConsumeThreshold", "$iEquip_MCM_pro_lbl_SmartConsumeThreshold", WC.fSmartRestoreThreshold*100, "{0} %")
         MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         MCM.AddEmptyOption()
         
@@ -192,6 +194,19 @@ State pot_men_showSelector
         elseIf currentEvent == "Accept"
             WC.iPotionSelectorChoice = currentVar as int
             MCM.SetMenuOptionValueST(showSelectorOptions[WC.iPotionSelectorChoice])
+        endIf
+    endEvent
+endState
+
+State pot_sld_SmartConsumeThreshold
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_SmartConsumeThreshold")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fSmartConsumeThreshold*100, 5.0, 100.0, 5.0, 80.0)
+        elseIf currentEvent == "Accept"
+            WC.fSmartConsumeThreshold = currentVar/100
+            MCM.SetSliderOptionValueST(WC.fSmartConsumeThreshold*100, "{0} %")
         endIf
     endEvent
 endState
