@@ -16,6 +16,7 @@ import iEquip_StringExt
 import iEquip_SpellExt
 import iEquip_ActorExt
 import iEquip_UIExt
+import iEquip_InventoryExt
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto
@@ -491,6 +492,9 @@ EndProperty
 state ENABLED
 	event OnBeginState()
 		debug.trace("iEquip_WidgetCore ENABLED OnBeginState start")
+		
+		iEquip_InventoryExt.ParseInventory()	; This initialises the ref handles for the players inventory
+		
 		iEquipQHolderObj = JValue.retain(JMap.object())
 		aiTargetQ[0] = JArray.object()
 		JMap.setObj(iEquipQHolderObj, "leftQ", aiTargetQ[0])
@@ -1556,11 +1560,11 @@ function ResetWidgetArrays()
 		afWidget_Y[iIndex] = afWidget_DefY[iIndex]
 		afWidget_S[iIndex] = afWidget_DefS[iIndex]
 		afWidget_R[iIndex] = afWidget_DefR[iIndex]
-		;afWidget_A[iIndex] = afWidget_DefA[iIndex]
+		afWidget_A[iIndex] = afWidget_DefA[iIndex]
 		aiWidget_D[iIndex] = aiWidget_DefD[iIndex]
-
 		asWidget_TA[iIndex] = asWidget_DefTA[iIndex]
-		;abWidget_V[iIndex] = abWidget_DefV[iIndex]
+		aiWidget_TC[iIndex] = aiWidget_DefTC[iIndex]
+		abWidget_V[iIndex] = abWidget_DefV[iIndex]
 		iIndex += 1
 	endWhile
 	debug.trace("iEquip_WidgetCore ResetWidgetArrays end")
@@ -2251,9 +2255,6 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		UICallback.PushString(iHandle, sIcon) 												; New icon
 		UICallback.PushString(iHandle, sName)
 		UICallback.PushFloat(iHandle, fNameAlpha) 											; Current item name alpha value
-		if bShowTemperInfo
-			UICallback.PushInt(iHandle, jMap.getInt(targetObject, "lastKnownItemHealth")) 	; Last known item health. If no value sent the .as updateWidget function will default to 100% and remove the fade
-		endIf
 		UICallback.Send(iHandle)
 	endIf
 
@@ -3589,9 +3590,9 @@ function UnequipHand(int Q)
     debug.trace("iEquip_WidgetCore UnequipHand end")
 endFunction
 
-;/Here we are creating JMap objects for each queue item, containing all of the data we will need later on when cycling the widgets and equipping/unequipping
+;/ Here we are creating JMap objects for each queue item, containing all of the data we will need later on when cycling the widgets and equipping/unequipping
 including formID, itemID, display name, itemType, isEnchanted, etc. These JMap objects are then placed into one of the JArray queue objects.
-This means that when we cycle later on none of this has to be done on the fly saving time when time is of the essence/;
+This means that when we cycle later on none of this has to be done on the fly saving time when time is of the essence /;
 
 function addToQueue(int Q)
 	debug.trace("iEquip_WidgetCore addToQueue start")
@@ -3612,10 +3613,8 @@ function addToQueue(int Q)
 				itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
 			endIf
 		elseIf UI.IsMenuOpen("InventoryMenu")
-			;itemForm = game.GetFormEx(itemFormID)
 			itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
 			itemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
-			;itemName = itemForm.GetName()
 			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF))
 		else
 			debug.trace("iEquip_WidgetCore addToQueue something went wrong...")
@@ -3629,31 +3628,36 @@ function addToQueue(int Q)
 		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check, itemForm: " + itemForm + ", " + itemName + ", itemID: " + itemID)
 		int itemType = itemForm.GetType()
 		int iEquipSlot
+		int itemHandle
 		bool isEnchanted
 		bool isPoisoned
 		
-		if itemType == 41 || itemType == 26 ;Weapons and shields only
+		if itemType == 41 || itemType == 26 ; Weapons and shields only
+			itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
 			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + ".selectedEntry.isEnchanted")
+			isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle)
 		elseIf itemType == 22
 			iEquipSlot = EquipSlots.Find((itemForm as spell).GetEquipType())
-			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
+			if iEquipSlot < 2 ; If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
 				Q = iEquipSlot
-			elseIf iEquipSlot == 3 || (iEquip_SpellExt.GetBoundSpellWeapType(itemForm as spell) > -1) ;If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
+			elseIf iEquipSlot == 3 || (iEquip_SpellExt.GetBoundSpellWeapType(itemForm as spell) > -1) ; If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
 				Q = 1
 			endIf
-			if iEquip_FormExt.IsSpellWard(itemForm) ;The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
+			if iEquip_FormExt.IsSpellWard(itemForm) ; The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
 				Q = 0
 			endIf
 		endIf
 		
 		int iButton
+
 		if isItemValidForSlot(Q, itemForm, itemType, itemName)
+			
 			if Q == 3 && (itemForm as Potion).isPoison()
 				Q = 4
 			endIf
-			bool isLightForm = (Math.LogicalAnd(itemFormID, 0xFF000000) == 0xFE000000)
-			if isLightForm
-				itemID = 0 ;Just in case we've got itemID by adding a lightForm item through Favorites Menu we need to remove it because the hash is invalid for light formIDs
+			
+			if Math.LogicalAnd(itemFormID, 0xFF000000) == 0xFE000000
+				itemID = 0 ; Just in case we've got itemID by adding a lightForm item through Favorites Menu we need to remove it because the hash is invalid for light formIDs
 			endIf
 
 			if !isAlreadyInQueue(Q, itemForm, itemID)
@@ -3665,19 +3669,16 @@ function addToQueue(int Q)
 					debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_InOtherQ{" + itemName + "}"))
 					return
 				endIf
-				if itemID == 0 && !isLightForm && TI.aiTemperedItemTypes.Find(itemType) == -1 ; itemID hashes won't work for light formIDs, and we'll generate one the first time we equip an item that may be tempered, enchanted or renamed
-					debug.trace("iEquip_WidgetCore addToQueue - testing CalcCRC32Hash with itemName: " + itemName + ", itemFormID: " + itemFormID + ", returned itemID: " + CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF)))
-					;queueItemForIDGenerationOnMenuClose(Q, jArray.count(aiTargetQ[Q]), itemName, itemFormID)
-					itemID = CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF))
-				endIf
-				bool success
-				if itemType == 41 ;if it is a weapon get the weapon type
-		        	itemType = (itemForm as Weapon).GetWeaponType()
-		        endIf
-				string itemIcon = GetItemIconName(itemForm, itemType, itemName)
-				debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + iEquip_StringExt.LocalizeString(asQueueName[Q]) + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
-				int iEquipItem = jMap.object()
+
 				if jArray.count(aiTargetQ[Q]) < iMaxQueueLength
+					
+					if itemType == 41 ; If it is a weapon get the weapon type
+			        	itemType = (itemForm as Weapon).GetWeaponType()
+			        endIf
+
+					string itemIcon = GetItemIconName(itemForm, itemType, itemName)
+					debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + iEquip_StringExt.LocalizeString(asQueueName[Q]) + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
+
 					if bShowQueueConfirmationMessages
 						if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
 							iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_AddToBoth{" + itemName + "}{" + asQueueName[Q] + "}"))
@@ -3691,13 +3692,46 @@ function addToQueue(int Q)
 							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName)), "iEquipAutoAdded", 0)
 						endIf
 					endIf
+
+					int iEquipItem = jMap.object()
+					
 					jMap.setForm(iEquipItem, "iEquipForm", itemForm)
+					jMap.setStr(iEquipItem, "iEquipName", itemName)
+					jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+					jMap.setInt(iEquipItem, "iEquipType", itemType)
+
+					if Q < 2
+						if itemType == 22
+							if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
+								jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
+							else
+								jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
+							endIf
+							jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
+						else
+							if aiTemperedItemTypes.Find(itemType) > -1
+								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
+								jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
+								jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
+								jMap.setStr(iEquipItem, "temperedNameForQueueMenu", itemName)
+								jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
+							endIf
+							jMap.setInt(iEquipItem, "isEnchanted", isEnchanted as int)
+							jMap.setInt(iEquipItem, "isPoisoned", isPoisoned as int)
+						endIf
+						jMap.setInt(iEquipItem, "iEquipAutoAdded", 0)
+
+						EH.blackListFLSTs[Q].RemoveAddedForm(itemForm) 				; iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
+					else
+			        	EH.blackListFLSTs[2].RemoveAddedForm(itemForm) 				; iEquip_GeneralBlacklistFLST
+					endIf
+
 					if itemID as bool
-						jMap.setInt(iEquipItem, "iEquipItemID", itemID) ;Store SKSE itemID for non-spell items so we can use EquipItemByID to handle user enchanted/created/renamed items
+						jMap.setInt(iEquipItem, "iEquipItemID", itemID) 			; Store SKSE itemID for non-spell items so we can use EquipItemByID if needed
 						if bMoreHUDLoaded
 							string moreHUDIcon
 							if Q < 2
-								AhzMoreHudIE.RemoveIconItem(itemID) ;Does nothing if the itemID isn't registered so no need for the IsIconItemRegistered check
+								AhzMoreHudIE.RemoveIconItem(itemID) 				; Does nothing if the itemID isn't registered so no need for the IsIconItemRegistered check
 								if foundInOtherHandQueue
 									moreHUDIcon = asMoreHUDIcons[3]
 								else
@@ -3709,45 +3743,14 @@ function addToQueue(int Q)
 				            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
 				        endIf
 					endIf
-					jMap.setInt(iEquipItem, "iEquipType", itemType)
-					jMap.setStr(iEquipItem, "iEquipName", itemName)
-					jMap.setStr(iEquipItem, "iEquipBaseName", itemForm.GetName())
-					jMap.setStr(iEquipItem, "temperedNameForQueueMenu", itemName)
-					jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
 
-					if Q < 2
-						if itemType == 22
-							if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
-								jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
-							else
-								jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
-							endIf
-							jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
-						else
-							jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
-							jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
-							jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)
-							jMap.setInt(iEquipItem, "isEnchanted", isEnchanted as int)
-							jMap.setInt(iEquipItem, "isPoisoned", isPoisoned as int)
-						endIf
-						jMap.setInt(iEquipItem, "iEquipAutoAdded", 0)
-					endIf
-					;Add any other info required for each item here - spell school, costliest effect, etc
 					jArray.addObj(aiTargetQ[Q], iEquipItem)
 					iEquip_AllCurrentItemsFLST.AddForm(itemForm)
 					EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
-					;Remove added item from the relevant blackList
-					if Q < 2
-			        	EH.blackListFLSTs[Q].RemoveAddedForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
-			        else
-			        	EH.blackListFLSTs[2].RemoveAddedForm(itemForm) ;iEquip_GeneralBlacklistFLST
-			        endIf
-					success = true
+
+					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AddedToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
 				else
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_QIsFull{" + asQueueName[Q] + "}"))
-				endIf
-				if success
-					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AddedToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
 				endIf
 			else
 				int i = findInQueue(Q, itemName)

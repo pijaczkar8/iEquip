@@ -32,7 +32,6 @@ endFunction
     if (a_version >= 1 && CurrentVersion < 1)
         Debug.Notification("$IEQ_MCM_not_Updating" + " " + a_version as string)
         OnConfigInit()
-        EM.ResetDefaults()
         updateSettings()
     endIf
 endEvent/;

@@ -6,9 +6,19 @@ ScriptName iEquip_FormExt
 Function RegisterForBoundWeaponEquippedEvent(Form a_thisForm) Global Native
 
 
+; @brief Unregisters the passed script to no longer be notified when the player equips a bound weapon.
+; @param a_thisForm The form to register for the event (i.e. Self).
+Function UnregisterForBoundWeaponEquippedEvent(Form a_thisForm) Global Native
+
+
 ; @brief Registers the passed script to be notified when the player unequips a bound weapon.
 ; @param a_thisForm The form to register for the event (i.e. Self).
 Function RegisterForBoundWeaponUnequippedEvent(Form a_thisForm) Global Native
+
+
+; @brief Unregisters the passed script to no longer be notified when the player unequips a bound weapon.
+; @param a_thisForm The form to register for the event (i.e. Self).
+Function UnregisterForBoundWeaponUnequippedEvent(Form a_thisForm) Global Native
 
 
 ; @brief Fires whenever the player equips a bound weapon.

@@ -1103,8 +1103,6 @@ function ResetDefaults()
         LoadAllElements()
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
         HighlightElement(true)
-    ;else
-        ;WC.refreshWidgetOnLoad()
     endIf
     
     PM.updateAnimationTargetValues()
