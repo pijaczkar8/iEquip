@@ -579,8 +579,10 @@ function processQueuedForms()
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
 		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
+		if queuedForm as ammo && (PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12)
+			AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
 		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
-		if !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
+		elseIf !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
 			int equippedSlot = -1
 			if PlayerRef.GetEquippedObject(0) == queuedForm
 				;Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time

@@ -72,7 +72,7 @@ string[] asCounterTextPath
 string[] asPoisonNamePath
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
-string sRotation
+string sRotation = "$iEquip_EM_clockwise"
 
 ; ######################
 ; ### INITIALIZATION ###
@@ -153,6 +153,7 @@ function DisableEditMode()
     iSelectedElement = -1
 
     WC.resetWidgetsToPreviousState()
+    PM.updateAnimationTargetValues()
     
     ; Restore DropShadowFilter to all text elements when leaving Edit Mode
     if WC.bDropShadowEnabled
@@ -199,7 +200,7 @@ function EnableEditmode()
     iLastElement = 5
     iSelectedElement = 0
     iSelectedElementFront = -1
-    sRotation = "Clockwise"
+    sRotation = "$iEquip_EM_clockwise"
     MoveStep = 10
     RotateStep = 15
     AlphaStep = 10
@@ -563,7 +564,7 @@ function UpdateEditModeGuide()
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_pixels"))
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotateIncrementText.text", RotateStep as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_degrees"))
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaIncrementText.text", AlphaStep as String + "%")
-        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationDirectionText.text", sRotation)
+        UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationDirectionText.text", iEquip_StringExt.LocalizeString(sRotation))
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.ScaleText.text", (WC.afWidget_S[iSelectedElement] as int) as String + "%")
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", (WC.afWidget_R[iSelectedElement] as int) as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_degrees"))
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iSelectedElement] as int) as String + "%")
@@ -730,6 +731,8 @@ function setTempItemInWidget(int Q, string iconName, string itemName)
         UICallback.PushString(iHandle, iconName)
         UICallback.PushString(iHandle, itemName)
         UICallback.PushFloat(iHandle, fNameAlpha)
+        UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[Q]])
+        UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[Q]])
         UICallback.Send(iHandle)
     endIf
 endFunction
@@ -1096,7 +1099,8 @@ function ResetDefaults()
     WC.updateWidgetVisibility(false)
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
     WC.ResetWidgetArrays()
-    UpdateElementsAll(false)
+    ;UpdateElementsAll(false)
+    UpdateElementsAll()
     
     if isEditMode
         iSelectedElement = 0

@@ -280,6 +280,8 @@ function resetWidgetOnTransformBack()
 				UICallback.PushString(iHandle, "Fist")
 				UICallback.PushString(iHandle, "$iEquip_common_Unarmed")
 				UICallback.PushFloat(iHandle, fNameAlpha)
+				UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[i]])
+				UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[i]])
 				UICallback.Send(iHandle)
 			endIf
 		;Otherwise reset the widget as required
@@ -524,6 +526,8 @@ function updateOtherHandOn2HSpellEquipped(int Q, int hand, int otherHand)
 		UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiBMQueues[Q], aiCurrentBMQueuePosition[hand]), "iEquipIcon")) ;Show the same icon and name in the left hand as already showing in the right
 		UICallback.PushString(iHandle, asCurrentlyEquipped[Q])
 		UICallback.PushFloat(iHandle, fNameAlpha)
+		UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[Q]])
+		UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[Q]])
 		UICallback.Send(iHandle)
 	endIf
 	if WC.bNameFadeoutEnabled
@@ -550,10 +554,10 @@ function showClaws()
 			UICallback.PushString(iHandle, "Claws")
 			UICallback.PushString(iHandle, "$iEquip_common_Claws")
 			UICallback.PushFloat(iHandle, fNameAlpha)
+			UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[i]])
+			UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[i]])
 			UICallback.Send(iHandle)
 		endIf
-		;aiCurrentBMQueuePosition[(currRace * 3) + i] = -1
-		;asCurrentlyEquipped[(currRace * 3) + i] = ""
 		i += 1
 	endWhile
 	debug.trace("iEquip_BeastMode showClaws end")
@@ -578,10 +582,10 @@ function showPreviousItems()
 			UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiBMQueues[Q], aiCurrentBMQueuePosition[Q]), "iEquipIcon"))
 			UICallback.PushString(iHandle, asCurrentlyEquipped[Q])
 			UICallback.PushFloat(iHandle, fNameAlpha)
+			UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[Q]])
+			UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[Q]])
 			UICallback.Send(iHandle)
 		endIf
-		;aiCurrentBMQueuePosition[(currRace * 3) + i] = -1
-		;asCurrentlyEquipped[(currRace * 3) + i] = ""
 		i += 1
 	endWhile
 	debug.trace("iEquip_BeastMode showPreviousItems end")
@@ -601,9 +605,10 @@ function reequipOtherHand(int otherHand)
 		UICallback.PushString(iHandle, jMap.getStr(targetObject, "iEquipIcon"))
 		UICallback.PushString(iHandle, asCurrentlyEquipped[Q])
 		UICallback.PushFloat(iHandle, fNameAlpha)
+		UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[Q]])
+		UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[Q]])
 		UICallback.Send(iHandle)
 	endIf
-	;cycleHand(Q, aiCurrentQueuePosition[Q], jMap.getForm(targetObject, "iEquipForm"), jMap.getInt(targetObject, "iEquipType"))
 	debug.trace("iEquip_BeastMode reequipOtherHand end")
 endFunction
 

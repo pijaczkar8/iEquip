@@ -21,7 +21,7 @@ string property sAmmoIconSuffix auto hidden
 int property iAmmoListSorting = 1 auto hidden
 int property iActionOnLastAmmoUsed = 1 auto hidden
 bool property bSimpleAmmoMode auto hidden
-bool bSimpleAmmoModeOnEnter
+bool property bSimpleAmmoModeOnEnter auto hidden
 
 bool property bAmmoMode auto hidden
 bool bReadyForAmmoModeAnim
@@ -457,9 +457,30 @@ function selectLastUsedAmmo(int thisQ)
 	debug.trace("iEquip_AmmoMode selectLastUsedAmmo end")
 endFunction
 
-function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate = true, bool equip = true)
+function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate = true, bool equip = true, form equippedAmmo = none)
 	debug.trace("iEquip_AmmoMode checkAndEquipAmmo start")
-	debug.trace("iEquip_AmmoMode checkAndEquipAmmo - reverse: " + reverse + ", ignoreEquipOnPause: " + ignoreEquipOnPause + ", animate: " + animate)
+	debug.trace("iEquip_AmmoMode checkAndEquipAmmo - reverse: " + reverse + ", ignoreEquipOnPause: " + ignoreEquipOnPause + ", animate: " + animate + ", equippedAmmo: " + equippedAmmo)
+
+	if equippedAmmo
+		if equippedAmmo != currentAmmoForm		; Runs if function has been called from PlayerEventHandler OnObjectEquipped sequence to catch ammo being manually equipped through the Inventory Menu
+			bool found
+			int i
+			while i < JArray.count(aiTargetQ[Q]) && !found
+				found = (equippedAmmo == jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm"))
+				if !found
+					i += 1
+				endIf
+			endWhile
+			if PlayerRef.isEquipped(equippedAmmo) && found
+				aiCurrentAmmoIndex[Q] = i
+			else
+				return
+			endIf
+		else
+			return
+		endIf
+	endIf
+
 	currentAmmoForm = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipForm")
 	int ammoCount = PlayerRef.GetItemCount(currentAmmoForm)
 	;Check we've still got the at least one of the target ammo, if not remove it from the queue and advance the queue again
@@ -483,6 +504,8 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 				UICallback.PushString(iHandle, jMap.getStr(ammoObject, "iEquipIcon") + sAmmoIconSuffix) ;New icon
 				UICallback.PushString(iHandle, asCurrentAmmo[Q]) ;New name
 				UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
+				UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[0]])
+				UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[0]])
 				UICallback.Send(iHandle)
 			endIf
 			;Update the left hand counter

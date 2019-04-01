@@ -252,6 +252,7 @@ bool property bWidgetFadeoutEnabled auto hidden
 bool property bNameFadeoutEnabled auto hidden
 bool[] property abIsNameShown auto hidden
 int[] property aiNameElements auto hidden
+int[] property aiIconClips auto hidden
 bool property bFirstPressShowsName = true auto hidden
 
 bool[] property abIsPoisonNameShown auto hidden
@@ -359,6 +360,16 @@ Event OnWidgetInit()
 	aiNameElements[5] = 18 	; leftPreselectName_mc
 	aiNameElements[6] = 32 	; rightPreselectName_mc
 	aiNameElements[7] = 40 	; shoutPreselectName_mc
+
+	aiIconClips = new int[8]
+	aiIconClips[0] = 7 		; leftIcon_mc
+	aiIconClips[1] = 21 	; rightIcon_mc
+	aiIconClips[2] = 35 	; shoutIcon_mc
+	aiIconClips[3] = 42 	; consumableIcon_mc
+	aiIconClips[4] = 47 	; poisonIcon_mc
+	aiIconClips[5] = 17 	; leftPreselectIcon_mc
+	aiIconClips[6] = 31 	; rightPreselectIcon_mc
+	aiIconClips[7] = 39 	; shoutPreselectIcon_mc
 
 	asWeaponTypeNames = new string[10]
 	asWeaponTypeNames[0] = "Fist"
@@ -542,6 +553,17 @@ state ENABLED
 	Event OnWidgetLoad()
 		debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
 
+		;ToDo - remove this array from OnWidgetLoad
+		aiIconClips = new int[8]
+		aiIconClips[0] = 7 		; leftIcon_mc
+		aiIconClips[1] = 21 	; rightIcon_mc
+		aiIconClips[2] = 35 	; shoutIcon_mc
+		aiIconClips[3] = 42 	; consumableIcon_mc
+		aiIconClips[4] = 47 	; poisonIcon_mc
+		aiIconClips[5] = 17 	; leftPreselectIcon_mc
+		aiIconClips[6] = 31 	; rightPreselectIcon_mc
+		aiIconClips[7] = 39 	; shoutPreselectIcon_mc
+
 		;fPositionIndicatorAlpha = 60.0
 		EM.isEditMode = false
 		bPreselectMode = false
@@ -559,20 +581,22 @@ state ENABLED
 		CheckDependencies()
 		
 		OnWidgetReset()
-		EM.UpdateElementsAll()
-		PM.updateAnimationTargetValues()
+		;EM.UpdateElementsAll()
+		;PM.updateAnimationTargetValues()
 		; Determine if the widget should be displayed
 		UpdateWidgetModes()
 		;Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
 		UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
+		
 		bool[] args = new bool[5]
 		if bAmmoMode
 			args[0] = true
 		endIf
 		args[3] = bAmmoMode
-		UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 		
 		if !bIsFirstEnabled
+			EM.UpdateElementsAll()
+			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			refreshWidgetOnLoad()
 		else
 			getAndStoreDefaultWidgetValues()
@@ -590,6 +614,7 @@ state ENABLED
 			UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", !bDropShadowEnabled)
 		endIf
+		PM.updateAnimationTargetValues()
 		bRefreshingWidget = false
 		
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
@@ -967,13 +992,9 @@ function resetWidgetsToPreviousState()
     	i += 1
     endWhile
 	;Reset Preselect Mode
-	if bPreselectMode
-		if EM.preselectEnabledOnEnter
-	        PM.togglePreselectMode(true)
-			EM.preselectEnabledOnEnter = false
-		else
-			PM.updateAnimationTargetValues()
-		endIf
+	if bPreselectMode && EM.preselectEnabledOnEnter
+        PM.togglePreselectMode(true)
+		EM.preselectEnabledOnEnter = false
 	endIf
 	;Reset enchantment meters and soulgems
 	CM.updateChargeMeters(true)
@@ -2030,10 +2051,10 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
 		bLeftIconFaded = false
 	endIf
-	if bPreselectMode
+	;/if bPreselectMode
 		Utility.WaitMenuMode(0.3)
 		UI.Invoke(HUD_MENU, WidgetRoot + ".updateLeftTargetAlphaValues")
-	endIf
+	endIf/;
 	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon end")
 endFunction
 
@@ -2254,7 +2275,11 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		UICallback.PushInt(iHandle, Slot) 													; Which slot we're updating
 		UICallback.PushString(iHandle, sIcon) 												; New icon
 		UICallback.PushString(iHandle, sName)
-		UICallback.PushFloat(iHandle, fNameAlpha) 											; Current item name alpha value
+		UICallback.PushFloat(iHandle, fNameAlpha)											; Current item name alpha value
+		if !bIsFirstEnabled
+			UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Slot]]) 					; Current item icon alpha value
+			UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Slot]]) 					; Current item icon scale value
+		endIf
 		UICallback.Send(iHandle)
 	endIf
 
@@ -2295,10 +2320,12 @@ function updateWidgetBM(int Q, string sIcon, string sName)
 	debug.trace("iEquip_WidgetCore updateWidgetBM about to call .updateWidget - Slot: " + Q + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
-		UICallback.PushInt(iHandle, Q) 				; Which slot we're updating
-		UICallback.PushString(iHandle, sIcon) 		; New icon
-		UICallback.PushString(iHandle, sName) 		; New name
-		UICallback.PushFloat(iHandle, fNameAlpha) 	; Current item name alpha value
+		UICallback.PushInt(iHandle, Q) 								; Which slot we're updating
+		UICallback.PushString(iHandle, sIcon) 						; New icon
+		UICallback.PushString(iHandle, sName) 						; New name
+		UICallback.PushFloat(iHandle, fNameAlpha) 					; Current item name alpha value
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]]) 	; Current item icon alpha value
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Q]]) 	; Current item icon scale value
 		UICallback.Send(iHandle)
 	endIf
 
@@ -2335,6 +2362,8 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 			UICallback.PushString(iHandle, "") 								; New name
 		endIf
 		UICallback.PushFloat(iHandle, fNameAlpha) 							; Current item name alpha value
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]]) 			; Current item icon alpha value
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Q]]) 			; Current item icon scale value
 		UICallback.Send(iHandle)
 	endIf
 	
@@ -2379,13 +2408,15 @@ function handleEmptyPoisonQueue()
 
 	UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text", "")
 	asCurrentlyEquipped[4] = ""
-													; Set to generic poison icon and name to empty before flashing/fading/hiding
+																	; Set to generic poison icon and name to empty before flashing/fading/hiding
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
-		UICallback.PushInt(iHandle, 4) 				; Which slot we're updating
-		UICallback.PushString(iHandle, "Poison") 	; New icon
-		UICallback.PushString(iHandle, "") 			; New name
-		UICallback.PushFloat(iHandle, fNameAlpha) 	; Current item name alpha value
+		UICallback.PushInt(iHandle, 4) 								; Which slot we're updating
+		UICallback.PushString(iHandle, "Poison") 					; New icon
+		UICallback.PushString(iHandle, "") 							; New name
+		UICallback.PushFloat(iHandle, fNameAlpha) 					; Current item name alpha value
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[4]]) 	; Current item icon alpha value
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[4]]) 	; Current item icon scale value
 		UICallback.Send(iHandle)
 	endIf
 	if PO.bFlashPotionWarning
@@ -3041,6 +3072,8 @@ function goUnarmed()
 		UICallback.PushString(iHandle, "Fist")
 		UICallback.PushString(iHandle, "$iEquip_common_Unarmed")
 		UICallback.PushFloat(iHandle, fNameAlpha)
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[0]])
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[0]])
 		UICallback.Send(iHandle)
 	endIf
 	if bNameFadeoutEnabled
@@ -3095,6 +3128,8 @@ function updateLeftSlotOn2HSpellEquipped()
 		UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipIcon")) ;Show the same icon and name in the left hand as already showing in the right
 		UICallback.PushString(iHandle, asCurrentlyEquipped[1])
 		UICallback.PushFloat(iHandle, fNameAlpha)
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[0]])
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[0]])
 		UICallback.Send(iHandle)
 	endIf
 	if bNameFadeoutEnabled
@@ -3140,6 +3175,8 @@ function reequipOtherHand(int Q, bool equip = true)
 		UICallback.PushString(iHandle, jMap.getStr(targetObject, "iEquipIcon"))
 		UICallback.PushString(iHandle, asCurrentlyEquipped[Q])
 		UICallback.PushFloat(iHandle, fNameAlpha)
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]])
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Q]])
 		UICallback.Send(iHandle)
 	endIf
 	if equip
@@ -3245,19 +3282,21 @@ function consumeItem()
     if bConsumablesEnabled
         int potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
         if potionGroupIndex != -1
-        	;If the potion selector is currently shown then select and consume a potion of the selected type
+        	bool statDamaged = iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]) > 0
+        	debug.trace("iEquip_WidgetCore consumeItem - stat: " + asActorValues[potionGroupIndex] + ", current damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]) + ", statDamaged: " + statDamaged + ", potion selector shown: " + bPotionSelectorShown)
+        	debug.trace("iEquip_WidgetCore consumeItem - iPotionSelectorChoice: " + iPotionSelectorChoice + ", current stat %: " + (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) + ", threshold: " + fSmartConsumeThreshold)
+        	; If the potion selector is currently shown then select and consume a potion of the selected type
         	if bPotionSelectorShown
         		PO.selectAndConsumePotion(potionGroupIndex, iPotionTypeChoice)
         		PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
-        	;If the selector isn't currently shown and conditions to show selector are met then show it now
-        	elseIf iPotionSelectorChoice == 2 && PlayerRef.IsInCombat()
-        		if (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) > PO.fSmartConsumeThreshold
+        	; If the selector isn't currently shown and conditions to show selector are met then show it now
+        	elseIf iPotionSelectorChoice > 0 || !statDamaged
+        		; If we have selected Consume & Show and the stat has any damage, or Smart Consume & Show and the stat is below the threshold then consume a suitable restore potion before showing the selector
+        		if (iPotionSelectorChoice == 1 && statDamaged) || (iPotionSelectorChoice == 2 && (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) < fSmartConsumeThreshold)
         			PO.selectAndConsumePotion(potionGroupIndex, 0)
 				endIf
 				updatePotionSelector()
-        	elseIf iPotionSelectorChoice == 0 || (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) > PO.fSmartConsumeThreshold
-        		updatePotionSelector()
-        	;Otherwise carry on and select and consume a restore potion
+        	; Or if we have selected COnsume Or Show and the stat is damaged carry on and select and consume a restore potion without showing the selector
         	else
             	PO.selectAndConsumePotion(potionGroupIndex, 0)
             endIf
@@ -3590,9 +3629,9 @@ function UnequipHand(int Q)
     debug.trace("iEquip_WidgetCore UnequipHand end")
 endFunction
 
-;/ Here we are creating JMap objects for each queue item, containing all of the data we will need later on when cycling the widgets and equipping/unequipping
+;/Here we are creating JMap objects for each queue item, containing all of the data we will need later on when cycling the widgets and equipping/unequipping
 including formID, itemID, display name, itemType, isEnchanted, etc. These JMap objects are then placed into one of the JArray queue objects.
-This means that when we cycle later on none of this has to be done on the fly saving time when time is of the essence /;
+This means that when we cycle later on none of this has to be done on the fly saving time when time is of the essence/;
 
 function addToQueue(int Q)
 	debug.trace("iEquip_WidgetCore addToQueue start")
@@ -3604,23 +3643,30 @@ function addToQueue(int Q)
 	string itemName
 	
 	if !UI.IsMenuOpen("Console") && !UI.IsMenuOpen("CustomMenu") && !((Self as form) as iEquip_uilib).IsMenuOpen()
-		listIndex = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.selectedIndex")
+		
 		itemFormID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.formId")
+		
 		if UI.IsMenuOpen("FavoritesMenu") || UI.IsMenuOpen("MagicMenu")
 			itemForm = game.GetFormEx(itemFormID)
 			itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
 			if UI.IsMenuOpen("FavoritesMenu")
+				;listIndex = UI.GetInt(sCurrentMenu, "_root.MenuHolder.Menu_mc.itemList.selectedIndex")
 				itemID = UI.GetInt(sCurrentMenu, sEntryPath + ".selectedEntry.itemId")
 			endIf
+		
 		elseIf UI.IsMenuOpen("InventoryMenu")
+			listIndex = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.selectedIndex")
 			itemName = UI.GetString(sCurrentMenu, sEntryPath + ".selectedEntry.text")
 			itemForm = iEquip_UIExt.GetFormAtInventoryIndex(listIndex)
 			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF))
+		
 		else
 			debug.trace("iEquip_WidgetCore addToQueue something went wrong...")
 			return
 		endIf
 	endIf
+
+	;debug.notification("Inventory index for the " + itemName + " is " + listIndex)
 
 	;int listLength = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.entryList.length")
 	
@@ -3634,24 +3680,23 @@ function addToQueue(int Q)
 		
 		if itemType == 41 || itemType == 26 ; Weapons and shields only
 			itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
+			isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle) > 0
 			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + ".selectedEntry.isEnchanted")
-			isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle)
+			
 		elseIf itemType == 22
 			iEquipSlot = EquipSlots.Find((itemForm as spell).GetEquipType())
-			if iEquipSlot < 2 ; If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
+			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
 				Q = iEquipSlot
-			elseIf iEquipSlot == 3 || (iEquip_SpellExt.GetBoundSpellWeapType(itemForm as spell) > -1) ; If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
+			elseIf iEquipSlot == 3 || (iEquip_SpellExt.GetBoundSpellWeapType(itemForm as spell) > -1) ;If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
 				Q = 1
 			endIf
-			if iEquip_FormExt.IsSpellWard(itemForm) ; The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
+			if iEquip_FormExt.IsSpellWard(itemForm) ;The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
 				Q = 0
 			endIf
 		endIf
 		
 		int iButton
-
 		if isItemValidForSlot(Q, itemForm, itemType, itemName)
-			
 			if Q == 3 && (itemForm as Potion).isPoison()
 				Q = 4
 			endIf
@@ -3709,7 +3754,7 @@ function addToQueue(int Q)
 							endIf
 							jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
 						else
-							if aiTemperedItemTypes.Find(itemType) > -1
+							if TI.aiTemperedItemTypes.Find(itemType) > -1
 								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
 								jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
 								jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
@@ -3727,11 +3772,11 @@ function addToQueue(int Q)
 					endIf
 
 					if itemID as bool
-						jMap.setInt(iEquipItem, "iEquipItemID", itemID) 			; Store SKSE itemID for non-spell items so we can use EquipItemByID if needed
+						jMap.setInt(iEquipItem, "iEquipItemID", itemID) ;Store SKSE itemID for non-spell items so we can use EquipItemByID to handle user enchanted/created/renamed items
 						if bMoreHUDLoaded
 							string moreHUDIcon
 							if Q < 2
-								AhzMoreHudIE.RemoveIconItem(itemID) 				; Does nothing if the itemID isn't registered so no need for the IsIconItemRegistered check
+								AhzMoreHudIE.RemoveIconItem(itemID) ;Does nothing if the itemID isn't registered so no need for the IsIconItemRegistered check
 								if foundInOtherHandQueue
 									moreHUDIcon = asMoreHUDIcons[3]
 								else
@@ -4244,7 +4289,7 @@ function QueueMenuClearQueue()
 endFunction
 
 function ApplyChanges()
-	debug.trace("iEquip_WidgetCore ApplyChanges start")
+	debug.trace("iEquip_WidgetCore ApplyChanges start - bMCMPresetLoaded: " + bMCMPresetLoaded)
 	int i
     
 	if bBackgroundStyleChanged || bMCMPresetLoaded
@@ -4273,7 +4318,7 @@ function ApplyChanges()
 			UICallback.PushFloat(iHandle, fCurrPositionIndicatorAlpha)
 			UICallback.Send(iHandle)
 		endIf
-		if bPermanentPositionIndicators || bMCMPresetLoaded
+		if bPermanentPositionIndicators
 			i = 0
 			int newPos
 			while i < 3
@@ -4283,6 +4328,12 @@ function ApplyChanges()
 					newPos = aiCurrentQueuePosition[i]
 				endIf
 				updateQueuePositionIndicator(i, jArray.count(aiTargetQ[i]), aiCurrentQueuePosition[i], newPos)
+				i += 1
+			endWhile
+		elseIf bMCMPresetLoaded
+			i = 0
+			while i < 3
+				UI.invokeInt("HUD Menu", WidgetRoot + ".hideQueuePositionIndicator", i)
 				i += 1
 			endWhile
 		endIf
@@ -4323,6 +4374,7 @@ function ApplyChanges()
 	    	PM.togglePreselectMode()
 	    endIf
 	    if bAmmoMode
+	    	debug.trace("iEquip_WidgetCore ApplyChanges - bSimpleAmmoMode: " + AM.bSimpleAmmoMode + ", bSimpleAmmoModeOnEnter: " + AM.bSimpleAmmoModeOnEnter + ", bPreselectMode: " + bPreselectMode)
 		    if bAmmoSortingChanged || bMCMPresetLoaded
 		    	AM.updateAmmoListsOnSettingChange()
 	            bAmmoSortingChanged = false
@@ -4330,6 +4382,38 @@ function ApplyChanges()
 		    if bAmmoIconChanged || bMCMPresetLoaded
 		    	AM.checkAndEquipAmmo(false, false, true, false)
 	            bAmmoIconChanged = false
+		    endIf
+		    if AM.bSimpleAmmoMode && !AM.bSimpleAmmoModeOnEnter
+		    	if !bPreselectMode
+					bool[] args = new bool[3]
+					args[2] = true
+					UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
+				endIf
+				AM.bSimpleAmmoModeOnEnter = true
+		    elseIf !AM.bSimpleAmmoMode && AM.bSimpleAmmoModeOnEnter
+		    	if !bPreselectMode
+		    		debug.trace("iEquip_WidgetCore ApplyChanges - switching from simple to advanced ammo mode, should be about to animate in the left preselect")
+		    		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+					If(iHandle)
+						debug.trace("iEquip_WidgetCore ApplyChanges - got iHandle")
+						UICallback.PushInt(iHandle, 5) 													; Which slot we're updating
+						if jArray.count(aiTargetQ[0]) > 0
+							UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiTargetQ[0], aiCurrentQueuePosition[0]), "iEquipIcon"))
+							UICallback.PushString(iHandle, asCurrentlyEquipped[0])
+						else
+							UICallback.PushString(iHandle, "Fist")
+							UICallback.PushString(iHandle, "$iEquip_common_Unarmed")
+						endIf
+						UICallback.PushFloat(iHandle, afWidget_A[aiNameElements[5]]) 					; Current item name alpha
+						UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[5]]) 						; Current item icon alpha
+						UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[5]]) 						; Current item icon scale
+						UICallback.Send(iHandle)
+					endIf
+					bool[] args = new bool[3]
+					args[2] = true
+					UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn", args)
+				endIf
+				AM.bSimpleAmmoModeOnEnter = false
 		    endIf
 		endIf
 		if bPreselectMode || bAttributeIconsOptionChanged || bMCMPresetLoaded

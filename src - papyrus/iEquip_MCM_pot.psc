@@ -17,10 +17,10 @@ function initData()
     emptyPotionQueueOptions[2] = "$iEquip_MCM_pot_opt_leaveIcon"
 
     showSelectorOptions = new String[4]
-    showSelectorOptions[0] = "$iEquip_MCM_pot_opt_alwaysShowSelector"
-    showSelectorOptions[1] = "$iEquip_MCM_pot_opt_consOrShowSelector"
-    showSelectorOptions[2] = "$iEquip_MCM_pot_opt_consAndShowSelector"
-    showSelectorOptions[3] = "$iEquip_MCM_pot_opt_smartConsAndShowSelector"
+    showSelectorOptions[0] = "$iEquip_MCM_pot_opt_consOrShowSelector"
+    showSelectorOptions[1] = "$iEquip_MCM_pot_opt_consAndShowSelector"
+    showSelectorOptions[2] = "$iEquip_MCM_pot_opt_smartConsAndShowSelector"
+    showSelectorOptions[3] = "$iEquip_MCM_pot_opt_alwaysShowSelector"
 
     potionSelectOptions = new String[3]
     potionSelectOptions[0] = "$iEquip_MCM_pot_opt_alwaysStrongest"
@@ -37,7 +37,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, PO.bExcludeRestoreAllEffects as int)
 	jArray.addInt(jPageObj, PO.iPotionSelectChoice)
 	
-	jArray.addFlt(jPageObj, PO.fSmartConsumeThreshold)
+	jArray.addFlt(jPageObj, PO.fSmartSelectThreshold)
 	jArray.addInt(jPageObj, PO.bBlockIfRestEffectActive as int)
 	jArray.addInt(jPageObj, PO.bSuspendChecksInCombat as int)
 	jArray.addInt(jPageObj, PO.bBlockIfBuffEffectActive as int)
@@ -60,7 +60,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	PO.bExcludeRestoreAllEffects = jArray.getInt(jPageObj, 2)
 	PO.iPotionSelectChoice = jArray.getInt(jPageObj, 3)
 	
-	PO.fSmartConsumeThreshold = jArray.getFlt(jPageObj, 4)
+	PO.fSmartSelectThreshold = jArray.getFlt(jPageObj, 4)
 	PO.bBlockIfRestEffectActive = jArray.getInt(jPageObj, 5)
 	PO.bSuspendChecksInCombat = jArray.getInt(jPageObj, 6)
 	PO.bBlockIfBuffEffectActive = jArray.getInt(jPageObj, 7)
@@ -92,7 +92,7 @@ function drawPage()
             MCM.AddEmptyOption()
             MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_thrshldFX")
             if PO.iPotionSelectChoice == 1 ; Smart Select
-                MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartConsumeThreshold*100, "{0} %")
+                MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartSelectThreshold*100, "{0} %")
             endIf
             MCM.AddToggleOptionST("pot_tgl_blockIfRestEffect", "$iEquip_MCM_pot_lbl_blockIfRestEffect", PO.bBlockIfRestEffectActive)
             if PO.bBlockIfRestEffectActive
@@ -117,7 +117,7 @@ function drawPage()
 
         MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potSelOpts")
         MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
-        MCM.AddSliderOptionST("pot_sld_SmartConsumeThreshold", "$iEquip_MCM_pro_lbl_SmartConsumeThreshold", WC.fSmartRestoreThreshold*100, "{0} %")
+        MCM.AddSliderOptionST("pot_sld_SmartConsumeThreshold", "$iEquip_MCM_pot_lbl_SmartConsumeThreshold", WC.fSmartConsumeThreshold*100, "{0} %")
         MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         MCM.AddEmptyOption()
         
@@ -242,10 +242,10 @@ State pot_sld_StatThreshold
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_pot_txt_StatThreshold")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(PO.fSmartConsumeThreshold*100, 5.0, 100.0, 5.0, 40.0)
+            MCM.fillSlider(PO.fSmartSelectThreshold*100, 5.0, 100.0, 5.0, 40.0)
         elseIf currentEvent == "Accept"
-            PO.fSmartConsumeThreshold = currentVar/100
-            MCM.SetSliderOptionValueST(PO.fSmartConsumeThreshold*100, "{0} %")
+            PO.fSmartSelectThreshold = currentVar/100
+            MCM.SetSliderOptionValueST(PO.fSmartSelectThreshold*100, "{0} %")
         endIf
     endEvent
 endState

@@ -134,6 +134,8 @@ function togglePreselectMode(bool togglingEditMode = false)
 								UICallback.PushString(iHandle, "$iEquip_PM_lbl_EMdummySword")
 							endIf
 							UICallback.PushFloat(iHandle, fNameAlpha)
+							;UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[Q]])
+							;UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[Q]])
 							UICallback.Send(iHandle)
 						endIf
 					elseIf !(Q == 2 && !bShoutPreselectEnabled)
@@ -549,8 +551,9 @@ endFunction
 endEvent/;
 
 function updateAnimationTargetValues()
-	;bReadyForPreselectAnim = false
+	debug.trace("iEquip_ProMode updateAnimationTargetValues start")
 	UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
+	debug.trace("iEquip_ProMode updateAnimationTargetValues end")
 endFunction
 
 function equipAllPreselectedItems()
@@ -760,7 +763,7 @@ function quickShield(bool forceSwitch = false)
 				bCurrentlyQuickRanged = false
 				AM.toggleAmmoMode((!bPreselectMode || abPreselectSlotEnabled[0]), true)
 				;And if we're not in Preselect Mode we need to hide the left preselect elements
-				if !bPreselectMode
+				if !bPreselectMode && !AM.bSimpleAmmoMode
 					bool[] args = new bool[3]
 					args[2] = true
 					UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
@@ -1278,9 +1281,11 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 		return false
 	else
 		int otherHand = (Q + 1) % 2
-		int nameElement = 2 ;rightName_mc
+		int nameElement = 22 ;rightName_mc
+		int iconElement = 21 ;rightIcon_mc
 		if Q == 0
 			nameElement = 8 ;leftName_mc
+			iconElement = 7 ;leftIcon_mc
 		endIf
 		int otherHandIndex = -1
 		bool dualCastAllowed = true
@@ -1302,6 +1307,8 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 				UICallback.PushString(iHandle, spellIcon)
 				UICallback.PushString(iHandle, spellName)
 				UICallback.PushFloat(iHandle, fNameAlpha)
+				UICallback.PushFloat(iHandle, WC.afWidget_A[iconElement])
+				UICallback.PushFloat(iHandle, WC.afWidget_S[iconElement])
 				while bWaitingForAmmoModeAnimation
 					Utility.WaitMenuMode(0.005)
 				endwhile
@@ -1535,8 +1542,10 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting
 		int foundIndex = WC.findInQueue(iEquipSlot, spellName)
 		PlayerRef.EquipSpell(jMap.getForm(spellObject, "iEquipForm") as Spell, iEquipSlot)
 		int nameElement = 22 ;rightName_mc
-		if iEquipSlot == 0
+		int iconElement = 21 ;rightIcon_mc
+		if Q == 0
 			nameElement = 8 ;leftName_mc
+			iconElement = 7 ;leftIcon_mc
 		endIf
 		Float fNameAlpha = WC.afWidget_A[nameElement]
 		if fNameAlpha < 1
@@ -1548,6 +1557,8 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting
 			UICallback.PushString(iHandle, jMap.getStr(spellObject, "iEquipIcon"))
 			UICallback.PushString(iHandle, spellName)
 			UICallback.PushFloat(iHandle, fNameAlpha)
+			UICallback.PushFloat(iHandle, WC.afWidget_A[iconElement])
+			UICallback.PushFloat(iHandle, WC.afWidget_S[iconElement])
 			while bWaitingForAmmoModeAnimation
 				Utility.WaitMenuMode(0.005)
 			endwhile

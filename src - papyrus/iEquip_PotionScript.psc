@@ -73,7 +73,7 @@ string[] asActorValues
 int[] aiActorValues
 
 int property iPotionSelectChoice = 1 auto hidden ; 0 = Always use strongest, 1 = Smart Select, 2 = Always Use Weakest
-float property fSmartConsumeThreshold = 0.4 auto hidden
+float property fSmartSelectThreshold = 0.4 auto hidden
 int property iQuickBuffsToApply = 3 auto hidden
 
 bool bIsCACOLoaded = false
@@ -1123,10 +1123,10 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                 ;ToDo - remove the next few lines of debug
                 float currAV = PlayerRef.GetActorValue(sTargetAV)
                 float currAVMax = currAV + currAVDamage
-                debug.trace("iEquip_PotionScript selectAndConsumePotion - current AV: " + currAV + ", current max: " + currAVMax + ", current %: " + (currAV/currAVMax) + ", threshold: " + fSmartConsumeThreshold + ", in combat: " + PlayerRef.IsInCombat())
+                debug.trace("iEquip_PotionScript selectAndConsumePotion - current AV: " + currAV + ", current max: " + currAVMax + ", current %: " + (currAV/currAVMax) + ", threshold: " + fSmartSelectThreshold + ", in combat: " + PlayerRef.IsInCombat())
                 bool bInCombat = PlayerRef.IsInCombat()
-                bool bBelowThreshold = ((currAV/currAVMax) <= fSmartConsumeThreshold)
-                ;bool bBelowThreshold = (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)) <= fSmartConsumeThreshold)
+                bool bBelowThreshold = ((currAV/currAVMax) <= fSmartSelectThreshold)
+                ;bool bBelowThreshold = (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)) <= fSmartSelectThreshold)
                 bool bEffectActive = bBlockIfRestEffectActive && isEffectAlreadyActive(Q, isRestore)
                 bool bSkipEffectCheck = bInCombat && bSuspendChecksInCombat && bBelowThreshold
                 debug.trace("iEquip_PotionScript selectAndConsumePotion - bBelowThreshold: " + bBelowThreshold + ", bEffectActive: " + bEffectActive + ", bSkipEffectCheck: " + bSkipEffectCheck)
