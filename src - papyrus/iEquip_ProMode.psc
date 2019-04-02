@@ -542,14 +542,6 @@ function equipPreselectedItem(int Q)
 	debug.trace("iEquip_ProMode equipPreselectedItem end")
 endFunction
 
-;/event ReadyForPreselectAnimation(string sEventName, string sStringArg, Float fNumArg, Form kSender)
-	debug.trace("iEquip_ProMode ReadyForPreselectAnimation start")
-	If(sEventName == "iEquip_ReadyForPreselectAnimation")
-		bReadyForPreselectAnim = true
-	endIf
-	debug.trace("iEquip_ProMode ReadyForPreselectAnimation end")
-endEvent/;
-
 function updateAnimationTargetValues()
 	debug.trace("iEquip_ProMode updateAnimationTargetValues start")
 	UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")

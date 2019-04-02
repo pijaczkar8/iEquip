@@ -641,7 +641,33 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	bool blockCall
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName
-	if itemType == 26
+	string itemBaseName
+	int itemHandle
+
+	if TI.aiTemperedItemTypes.Find(itemType) > -1
+		if itemType == 26
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(6)	; Shield
+		elseIf equippedSlot == 0
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(5)	; Left hand
+		else
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(4)	; Right hand
+		endIf
+	endIf
+
+	if itemHandle > -1
+		itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
+		itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
+	else
+		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
+		itemBaseName = queuedForm.getName()
+	endIf
+	
+	if itemName == ""
+		itemName = queuedForm.GetName()
+		itemBaseName = itemName
+	endIf
+
+	;/if itemType == 26
 		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 512)
 	else
 		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
@@ -651,17 +677,19 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemName set from queuedForm.GetName(): " + itemName)
 	else
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemName set from WornObject.GetDisplayName(): " + itemName)
-	endIf
+	endIf/;
+
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
 																										; Check if we've just manually equipped an item that is already in an iEquip queue
 	if formFound
 																										; If it's been found in the queue for the equippedSlot it's been equipped to
-		targetIndex = WC.findInQueue(equippedSlot, "", queuedForm)
+		targetIndex = WC.findInQueue(equippedSlot, "", queuedForm, itemHandle)
 		if targetIndex != -1
 			
 			if !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
+				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipBaseName", itemBaseName)
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
 				jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
 			else
@@ -726,9 +754,10 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 				string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
 				jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
 				jMap.setInt(iEquipItem, "iEquipItemID", itemID)
+				jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
 				jMap.setInt(iEquipItem, "iEquipType", itemType)
 				jMap.setStr(iEquipItem, "iEquipName", itemName)
-				jMap.setStr(iEquipItem, "iEquipBaseName", queuedForm.GetName())
+				jMap.setStr(iEquipItem, "iEquipBaseName", itemBaseName)
 				jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
 				jMap.setInt(iEquipItem, "iEquipAutoAdded", 1)
 				if equippedSlot < 2

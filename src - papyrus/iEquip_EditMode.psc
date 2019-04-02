@@ -752,13 +752,13 @@ function ToggleTextAlignment()
         
         If WC.asWidget_TA[iArgs[0]] == "Left"
             iArgs[1] = 1
-            tmpStr = "$iEquip_EM_leftAligned"
+            tmpStr = "$iEquip_EM_centreAligned"
         elseIf WC.asWidget_TA[iArgs[0]] == "Center"
             iArgs[1] = 2
-            tmpStr = "$iEquip_EM_centreAligned"
+            tmpStr = "$iEquip_EM_rightAligned"
         else
             iArgs[1] = 0
-            tmpStr = "$iEquip_EM_rightAligned"
+            tmpStr = "$iEquip_EM_leftAligned"
         endIf
     
         UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", iArgs)

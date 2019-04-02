@@ -92,6 +92,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, WC.bFadeLeftIconWhen2HEquipped as int)
 	jArray.addFlt(jPageObj, WC.fLeftIconFadeAmount)
     jArray.addInt(jPageObj, TI.iTemperNameFormat)
+    jArray.addInt(jPageObj, TI.bTemperInfoBelowName as int)
 	jArray.addInt(jPageObj, TI.bFadeIconOnDegrade as int)
 	jArray.addInt(jPageObj, TI.iColoredIconStyle)
     jArray.addInt(jPageObj, TI.iColoredIconLevels)
@@ -131,35 +132,36 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	WC.bFadeLeftIconWhen2HEquipped = jArray.getInt(jPageObj, 4)
 	WC.fLeftIconFadeAmount = jArray.getFlt(jPageObj, 5)
     TI.iTemperNameFormat = jArray.getInt(jPageObj, 6)
-	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 7)
-	TI.iColoredIconStyle = jArray.getInt(jPageObj, 8)
-    TI.iColoredIconLevels = jArray.getInt(jPageObj, 9)
-	iAmmoIconStyle = jArray.getInt(jPageObj, 10)
+    TI.bTemperInfoBelowName = jArray.getInt(jPageObj, 7)
+	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 8)
+	TI.iColoredIconStyle = jArray.getInt(jPageObj, 9)
+    TI.iColoredIconLevels = jArray.getInt(jPageObj, 10)
+	iAmmoIconStyle = jArray.getInt(jPageObj, 11)
     setAmmoStyle()
-	WC.iBackgroundStyle = jArray.getInt(jPageObj, 11)
+	WC.iBackgroundStyle = jArray.getInt(jPageObj, 12)
 	
-	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 12)
-	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 13)
-	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 14)
-	WC.iDropShadowBlur = jArray.getInt(jPageObj, 15)
-	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 16)
-	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 17)
+	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 13)
+	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 14)
+	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 15)
+	WC.iDropShadowBlur = jArray.getInt(jPageObj, 16)
+	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 17)
+	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 18)
 	
-	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 18)
-	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 19)
-	iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 20)
+	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 19)
+	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 20)
+	iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 21)
     setWidgetFadeout()
-	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 21)
-	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 22)
+	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 22)
+	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 23)
 	
-	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 23)
-	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 24)
-	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 25)
-	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 26)
-	iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 27)
+	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 24)
+	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 25)
+	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 26)
+	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 27)
+	iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 28)
     setNameFadeout()
-	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 28)
-	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 29)
+	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 29)
+	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 30)
 endFunction
 
 function drawPage()
@@ -177,6 +179,11 @@ function drawPage()
 
         MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_temperedItemOpts")
         MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
+        
+        if TI.iTemperNameFormat > 0 && TI.iTemperNameFormat < 9
+            MCM.AddToggleOptionST("ui_tgl_tempInfoBelow", "$iEquip_MCM_ui_lbl_tempInfoBelow", TI.bTemperInfoBelowName)
+        endIf
+        
         MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", TI.bFadeIconOnDegrade)
         
         if TI.bFadeIconOnDegrade
@@ -334,6 +341,19 @@ State ui_men_tmpLvlTxt
         elseIf currentEvent == "Accept"
             TI.iTemperNameFormat = currentVar as int
             MCM.SetMenuOptionValueST(temperLevelTextOptions[TI.iTemperNameFormat])
+            WC.bTemperDisplaySettingChanged = true
+            MCM.ForcePageReset()
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_tempInfoBelow
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tempInfoBelow")
+        elseIf currentEvent == "Select"
+            TI.bTemperInfoBelowName = !TI.bTemperInfoBelowName
+            MCM.SetToggleOptionValueST(TI.bTemperInfoBelowName)
             WC.bTemperDisplaySettingChanged = true
         endIf 
     endEvent
