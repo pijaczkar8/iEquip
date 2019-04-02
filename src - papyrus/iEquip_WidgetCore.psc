@@ -3674,13 +3674,17 @@ function addToQueue(int Q)
 		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check, itemForm: " + itemForm + ", " + itemName + ", itemID: " + itemID)
 		int itemType = itemForm.GetType()
 		int iEquipSlot
-		int itemHandle
+		int itemHandle = -1
 		bool isEnchanted
 		bool isPoisoned
 		
 		if itemType == 41 || itemType == 26 ; Weapons and shields only
-			itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
-			isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle) > 0
+			if listIndex > -1
+				itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
+				if itemHandle != -1
+					isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle) > 0
+				endIf
+			endIf
 			isEnchanted = UI.Getbool(sCurrentMenu, sEntryPath + ".selectedEntry.isEnchanted")
 			
 		elseIf itemType == 22
@@ -3756,7 +3760,9 @@ function addToQueue(int Q)
 						else
 							if TI.aiTemperedItemTypes.Find(itemType) > -1
 								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
-								jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
+								if itemHandle != -1
+									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
+								endIf
 								jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
 								jMap.setStr(iEquipItem, "temperedNameForQueueMenu", itemName)
 								jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
