@@ -1301,7 +1301,7 @@ function addCurrentItemsOnFirstEnable()
 	string itemBaseName
 	string itemIcon
 	int itemID
-	int itemHandle = -1
+	int itemHandle = 0xFFFF
 	int itemType
 	int iEquipSlot
 	while Q < 3
@@ -1317,6 +1317,7 @@ function addCurrentItemsOnFirstEnable()
 
 			if TI.aiTemperedItemTypes.Find(itemType) > -1
 				if itemType == 26
+					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - attempting to retrieve handle for shield from GetRefHandleFromWornObject(6)")
 					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(6)	; Shield
 				elseIf Q == 0
 					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(5)	; Left hand
@@ -1327,7 +1328,7 @@ function addCurrentItemsOnFirstEnable()
 
 			debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - Q: " + Q + ", itemHandle received: " + itemHandle)
 
-			if itemHandle > -1
+			if itemHandle != 0xFFFF
 				itemName = iEquip_InventoryExt.GetLongName(equippedItem, itemHandle)
 				itemBaseName = iEquip_InventoryExt.GetShortName(equippedItem, itemHandle)
 				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
@@ -2698,12 +2699,12 @@ function hideAttributeIcons(int Q)
 	debug.trace("iEquip_WidgetCore hideAttributeIcons end")
 endFunction
 
-int function findInQueue(int Q, string itemToFind, form formToFind = none, int itemHandle = -1)
+int function findInQueue(int Q, string itemToFind, form formToFind = none, int itemHandle = 0xFFFF)
 	debug.trace("iEquip_WidgetCore findInQueue start - formToFind: " + formToFind + ", itemToFind: " + itemToFind)
 	int iIndex
 	bool found
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
-		if itemHandle > -1
+		if itemHandle != 0xFFFF
 			if itemHandle != jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle")
 				iIndex += 1
 			else
@@ -3704,14 +3705,14 @@ function addToQueue(int Q)
 		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check, itemForm: " + itemForm + ", " + itemName + ", itemID: " + itemID)
 		int itemType = itemForm.GetType()
 		int iEquipSlot
-		int itemHandle = -1
+		int itemHandle = 0xFFFF
 		bool isEnchanted
 		bool isPoisoned
 		
 		if itemType == 41 || itemType == 26 ; Weapons and shields only
 			if listIndex > -1
 				itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
-				if itemHandle != -1
+				if itemHandle != 0xFFFF
 					isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle) > 0
 				endIf
 			endIf
@@ -3790,7 +3791,7 @@ function addToQueue(int Q)
 						else
 							if TI.aiTemperedItemTypes.Find(itemType) > -1
 								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
-								if itemHandle != -1
+								if itemHandle != 0xFFFF
 									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
 								endIf
 								jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
