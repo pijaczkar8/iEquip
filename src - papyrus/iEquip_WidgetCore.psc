@@ -1301,32 +1301,54 @@ function addCurrentItemsOnFirstEnable()
 	string itemBaseName
 	string itemIcon
 	int itemID
+	int itemHandle = 0xFFFF
 	int itemType
 	int iEquipSlot
 	while Q < 3
 		equippedItem = PlayerRef.GetEquippedObject(Q)
 		if equippedItem
 			itemType = equippedItem.GetType()
-			if itemType == 26
-				itemName = WornObject.GetDisplayName(PlayerRef, Q, 512)
-			else
-				itemName = WornObject.GetDisplayName(PlayerRef, Q, 0)
-			endIf
-			if itemName == ""
-				itemName = equippedItem.GetName()
-			endIf
-			itemBaseName = equippedItem.getName()
-			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(equippedItem.GetFormID(), 0x00FFFFFF))
-			
+
 			if itemType == 22
 				iEquipSlot = EquipSlots.Find((equippedItem as spell).GetEquipType())
-			elseIf itemType == 41 ;if it is a weapon get the weapon type
+			elseIf itemType == 41 ; If it is a weapon get the weapon type
 	        	itemType = (equippedItem as Weapon).GetWeaponType()
 	        endIf
+
+			if TI.aiTemperedItemTypes.Find(itemType) > -1
+				if itemType == 26
+					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - attempting to retrieve handle for shield from GetRefHandleFromWornObject(6)")
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(6)	; Shield
+				elseIf Q == 0
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(5)	; Left hand
+				elseIf Q == 1
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(4)	; Right hand
+				endIf
+			endIf
+
+			debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - Q: " + Q + ", itemHandle received: " + itemHandle)
+
+			if itemHandle != 0xFFFF
+				itemName = iEquip_InventoryExt.GetLongName(equippedItem, itemHandle)
+				itemBaseName = iEquip_InventoryExt.GetShortName(equippedItem, itemHandle)
+				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+			else
+				itemName = WornObject.GetDisplayName(PlayerRef, Q, 0)
+				itemBaseName = equippedItem.getName()
+				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+			endIf
+			
+			if itemName == ""
+				itemName = equippedItem.GetName()
+				itemBaseName = itemName
+			endIf
+			
+			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(equippedItem.GetFormID(), 0x00FFFFFF))
 	        itemIcon = GetItemIconName(equippedItem, itemType, itemName)
+	        
 	        if Q == 0 && (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
 	        	bAddingItemsOnFirstEnable = true
-	        	;The following sequence is to reset both hands so no auto re-equipping/auto-adding goes on the first time this 2H item is unequipped
+	        	; The following sequence is to reset both hands so no auto re-equipping/auto-adding goes on the first time this 2H item is unequipped
 	        	UnequipHand(0)
 	        	UnequipHand(1)
 	        	Utility.WaitMenuMode(0.3)
@@ -1337,13 +1359,16 @@ function addCurrentItemsOnFirstEnable()
 	        	bAddingItemsOnFirstEnable = false
 	        	Q = 1
 	        endIf
+			
 			int iEquipItem = jMap.object()
 			jMap.setForm(iEquipItem, "iEquipForm", equippedItem)
+			jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
 			jMap.setInt(iEquipItem, "iEquipItemID", itemID)
 			jMap.setInt(iEquipItem, "iEquipType", itemType)
 			jMap.setStr(iEquipItem, "iEquipName", itemName)
 			jMap.setStr(iEquipItem, "iEquipBaseName", itemBaseName)
 			jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+			
 			if Q < 2
 				if itemType == 22
 					if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
@@ -1353,7 +1378,7 @@ function addCurrentItemsOnFirstEnable()
 					endIf
 					jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
 				else
-					;These will be set correctly by CycleHand() and associated functions
+					; These will be set correctly by CycleHand() and associated functions
 					jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
 					jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
 					jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)
@@ -1362,21 +1387,21 @@ function addCurrentItemsOnFirstEnable()
 				endIf
 			endIf
 			jArray.addObj(aiTargetQ[Q], iEquipItem)
-			;Add to the AllItems formlist
+			; Add to the AllItems formlist
 			iEquip_AllCurrentItemsFLST.AddForm(equippedItem)
 			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
-			;Send to moreHUD if loaded
+			; Send to moreHUD if loaded
 			if bMoreHUDLoaded
 				if Q == 1 && AhzMoreHudIE.IsIconItemRegistered(itemID)
 					AhzMoreHudIE.RemoveIconItem(itemID)
-					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[3]) ;Both queues
+					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[3]) ; Both queues
 				else
 					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[Q])
 				endIf
 			endIf
-			;Now update the widget to show the equipped item
+			; Now update the widget to show the equipped item
 			if Q == 1
-				aiCurrentQueuePosition[Q] = 1 ;Make sure we show the equipped item and not the Unarmed shortcut we've already added in index 0
+				aiCurrentQueuePosition[Q] = 1 ; Make sure we show the equipped item and not the Unarmed shortcut we've already added in index 0
 			else
 				aiCurrentQueuePosition[Q] = 0
 			endIf
@@ -1384,11 +1409,11 @@ function addCurrentItemsOnFirstEnable()
 			if Q < 2 || bShoutEnabled
 				updateWidget(Q, aiCurrentQueuePosition[Q], false, true)
 			endIf
-			;And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
+			; And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
 			if Q < 2
 				checkAndEquipShownHandItem(Q, false, true)
 			endIf
-		;Otherwise set left/right slots to Unarmed
+		; Otherwise set left/right slots to Unarmed
 		elseIf Q == 0
 			setSlotToEmpty(0)
 		elseIf Q == 1
@@ -1398,7 +1423,7 @@ function addCurrentItemsOnFirstEnable()
 		endIf
 		Q += 1
 	endWhile
-	;The only slots this should potentially leave as + Empty on a fresh start are the Shout and Poison slots
+	; The only slots this should potentially leave as + Empty on a fresh start are the Shout and Poison slots
 	
 	; Update consumable and poison slots to show Health Potions and first poison if any present
 	Q = 3
@@ -2674,12 +2699,18 @@ function hideAttributeIcons(int Q)
 	debug.trace("iEquip_WidgetCore hideAttributeIcons end")
 endFunction
 
-int function findInQueue(int Q, string itemToFind, form formToFind = none)
+int function findInQueue(int Q, string itemToFind, form formToFind = none, int itemHandle = 0xFFFF)
 	debug.trace("iEquip_WidgetCore findInQueue start - formToFind: " + formToFind + ", itemToFind: " + itemToFind)
 	int iIndex
 	bool found
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
-		if formToFind != none
+		if itemHandle != 0xFFFF
+			if itemHandle != jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle")
+				iIndex += 1
+			else
+				found = true
+			endIf
+		elseIf formToFind
 			if formToFind != jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm")
 				iIndex += 1
 			else
@@ -3674,14 +3705,14 @@ function addToQueue(int Q)
 		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check, itemForm: " + itemForm + ", " + itemName + ", itemID: " + itemID)
 		int itemType = itemForm.GetType()
 		int iEquipSlot
-		int itemHandle = -1
+		int itemHandle = 0xFFFF
 		bool isEnchanted
 		bool isPoisoned
 		
 		if itemType == 41 || itemType == 26 ; Weapons and shields only
 			if listIndex > -1
 				itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
-				if itemHandle != -1
+				if itemHandle != 0xFFFF
 					isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle) > 0
 				endIf
 			endIf
@@ -3760,7 +3791,7 @@ function addToQueue(int Q)
 						else
 							if TI.aiTemperedItemTypes.Find(itemType) > -1
 								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
-								if itemHandle != -1
+								if itemHandle != 0xFFFF
 									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
 								endIf
 								jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
