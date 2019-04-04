@@ -2679,7 +2679,7 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none)
 	int iIndex
 	bool found
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
-		if formToFind
+		if formToFind != none
 			if formToFind != jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm")
 				iIndex += 1
 			else

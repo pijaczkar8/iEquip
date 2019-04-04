@@ -66,6 +66,7 @@ Int Function GetRefHandleAtInvIndex(Int a_index) Global Native
 ; 3 - Gloves
 ; 4 - RightHand
 ; 5 - LeftHand
+; 6 - Shield
 Int Function GetRefHandleFromWornObject(Int a_equipSlot) Global Native
 
 
