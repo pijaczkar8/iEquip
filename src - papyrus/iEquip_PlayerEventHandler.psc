@@ -18,6 +18,7 @@ iEquip_ChargeMeters Property CM Auto
 iEquip_TemperedItemHandler Property TI Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_WidgetVisUpdateScript property WVis auto
+iEquip_TorchScript property TO auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
@@ -27,6 +28,8 @@ Race property PlayerRace auto hidden
 
 Keyword Property CraftingSmithingSharpeningWheel Auto
 Keyword Property CraftingSmithingArmorTable Auto
+
+light property Torch01 auto
 
 Race PlayerBaseRace
 
@@ -495,6 +498,12 @@ EndEvent
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
+	
+	if akBaseObject == Torch01 as form 		; This just handles the finite torch life timer
+		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
+		;TO.onTorchEquipped()
+	endIf
+	
 	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
@@ -807,6 +816,13 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
 endFunction
 
+event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
+  	if akBaseObject == Torch01 as form
+  		debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
+    	;TO.onTorchUnequipped()
+  	endIf
+endEvent
+
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start")	
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
@@ -843,6 +859,9 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
 					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
 						WC.setSlotCount(i, itemCount)
+						if itemType == 31	; Torch
+							;TO.onTorchRemoved()
+						endIf
 						actionTaken = true
 					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
 					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
