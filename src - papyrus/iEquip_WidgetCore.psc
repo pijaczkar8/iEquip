@@ -503,7 +503,6 @@ EndProperty
 state ENABLED
 	event OnBeginState()
 		debug.trace("iEquip_WidgetCore ENABLED OnBeginState start")
-		
 		iEquip_InventoryExt.ParseInventory()	; This initialises the ref handles for the players inventory
 		
 		iEquipQHolderObj = JValue.retain(JMap.object())
@@ -532,6 +531,7 @@ state ENABLED
 		self.RegisterForMenu("Journal Menu")
 		
 		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
+		CheckDependencies()
 		AM.updateAmmoLists()
 		addFists()
 		addCurrentItemsOnFirstEnable()
@@ -578,8 +578,6 @@ state ENABLED
 		AM.OnWidgetLoad()
 		CM.OnWidgetLoad()
 		
-		CheckDependencies()
-		
 		OnWidgetReset()
 		;EM.UpdateElementsAll()
 		;PM.updateAnimationTargetValues()
@@ -595,6 +593,7 @@ state ENABLED
 		args[3] = bAmmoMode
 		
 		if !bIsFirstEnabled
+			CheckDependencies()
 			EM.UpdateElementsAll()
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			refreshWidgetOnLoad()
@@ -763,6 +762,7 @@ function refreshWidgetOnLoad()
 	debug.trace("iEquip_WidgetCore refreshWidgetOnLoad end")
 endFunction
 
+; FEEDBACK - Look into reusing reload widget on load instead of this (FUTURE SUGGESTION)
 ;ToDo - This function is still to finish/review
 function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget start")

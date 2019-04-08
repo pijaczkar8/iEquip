@@ -1,6 +1,5 @@
 Scriptname iEquip_MCM_inf extends iEquip_MCM_Page
 
-import Utility
 import StringUtil
 import iEquip_StringExt
 
@@ -50,8 +49,6 @@ endFunction
 ; ---------------
 ; - Information -
 ; ---------------
-
-; Nothing here yet
 
 State inf_inp_savepreset
     event OnBeginState()
