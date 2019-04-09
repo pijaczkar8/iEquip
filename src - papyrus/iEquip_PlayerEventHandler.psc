@@ -106,6 +106,7 @@ bool[] property abSkipQueueObjectUpdate auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
+int[] specificHandedItems
 
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
@@ -141,6 +142,14 @@ Event OnInit()
 	itemTypesToProcess[3] = 41 			; Weapons
 	itemTypesToProcess[4] = 42 			; Ammo
 	itemTypesToProcess[5] = 119 		; Powers
+
+	specificHandedItems = new int[6]
+	specificHandedItems[0] = 5 			; Greatswords
+	specificHandedItems[1] = 6			; Battleaxes & Warhammers
+	specificHandedItems[2] = 7			; Bows
+	specificHandedItems[3] = 9			; Crossbows
+	specificHandedItems[4] = 26			; Shields
+	specificHandedItems[5] = 31			; Torches
 
 	blackListFLSTs = new formlist[3]
 	blackListFLSTs[0] = iEquip_LeftHandBlacklistFLST
@@ -827,13 +836,14 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start")	
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
 	int i
+	int itemType = akBaseItem.GetType()
 	;Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
 	elseIf akBaseItem as ammo
 		AM.onAmmoRemoved(akBaseItem)
 	;Check if a Bound Shield has just been unequipped
-	elseIf (akBaseItem.GetType() == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
+	elseIf (itemType == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
 		WC.onBoundWeaponUnequipped(0, true)
 		iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
 		updateEventFilter(iEquip_AllCurrentItemsFLST)
@@ -844,7 +854,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		bool actionTaken
 		while i < 3 && !actionTaken
 			string itemName = akBaseItem.GetName()
-			foundAt = WC.findInQueue(i, itemName)
+			foundAt = WC.findInQueue(i, itemName, akBaseItem)
 			if foundAt != -1
 				;If it's a shout or power remove it straight away
 				if i == 2
@@ -852,9 +862,11 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					actionTaken = true
 				else
 					int otherHand = (i + 1) % 2
-					int itemType = akBaseItem.GetType()
 					;Check if it's contained in the other hand queue as well
-					int foundAtOtherHand = WC.findInQueue(otherHand, itemName)
+					int foundAtOtherHand = -1
+					if specificHandedItems.Find(itemType) > -1
+						foundAtOtherHand = WC.findInQueue(otherHand, itemName, akBaseItem)
+					endIf
 					int itemCount = PlayerRef.GetItemCount(akBaseItem)
 					;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
 					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
