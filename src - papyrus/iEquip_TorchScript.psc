@@ -1,8 +1,11 @@
 
 Scriptname iEquip_TorchScript extends Quest
 
+import iEquip_FormExt
+
 iEquip_WidgetCore Property WC Auto
 iEquip_ChargeMeters Property CM Auto
+;iEquip_TorchFadeHandler Property TF Auto
 
 Actor Property PlayerRef Auto
 
@@ -14,7 +17,7 @@ float fTorchRadius
 
 float fGameTimeOnEquip
 float fCurrentTorchLife
-float fSecondsInADay = 86400.0
+float property fSecondsInADay = 86400.0 autoReadonly hidden
 
 ; MCM Properties
 bool property bShowTorchMeter = true auto hidden
@@ -28,8 +31,8 @@ function initialise(bool bEnabled)
 	debug.trace("iEquip_TorchScript initialise start")
 	if bEnabled
 		GoToState("")
-		;/fTorchDuration =
-		fTorchRadius = 
+		;/fTorchDuration = GetTorchDuration(Torch01)
+		fTorchRadius = GetTorchRadius(Torch01)
 		if fCurrentTorchLife == 0.0
 			fCurrentTorchLife = fTorchDuration
 		endIf/;
@@ -55,8 +58,17 @@ function onTorchEquipped()
 	debug.trace("iEquip_TorchScript onTorchEquipped start")
 	fGameTimeOnEquip = Utility.GetCurrentGameTime()
 	RegisterForSingleUpdate(fCurrentTorchLife)
-	;Show torch meter if enabled
-
+	
+	if bShowTorchMeter	; Show torch meter if enabled
+		
+	endIf
+	
+	if bReduceLightAsTorchRunsOut && fCurrentTorchLife < 30.0
+		;TF.BeginTorchFade(fTorchRadius, fCurrentTorchLife)
+	else
+		;TF.UnregisterForTorchFadeUpdate()
+		;ResetTorchRadius(Torch01)
+	endIf
 	debug.trace("iEquip_TorchScript onTorchEquipped end")
 endfunction
 
@@ -79,7 +91,9 @@ event OnUpdate()
 endEvent
 
 auto state DISABLED
-	UnregisterForUpdate()
+	event OnBeginState()
+		UnregisterForUpdate()
+	endEvent
 
 	function onTorchRemoved()
 	endfunction
