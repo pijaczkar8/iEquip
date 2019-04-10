@@ -2387,8 +2387,12 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 			UICallback.PushString(iHandle, "Empty") 						; New icon
 			UICallback.PushString(iHandle, "") 								; New name
 		endIf
-		UICallback.PushFloat(iHandle, fNameAlpha) 							; Current item name alpha value
-		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]]) 			; Current item icon alpha value
+		UICallback.PushFloat(iHandle, fNameAlpha)							; Current item name alpha value
+		if bIsFirstEnabled
+			UICallback.PushFloat(iHandle, 100.0)							; If setting a slot to empty on first enable we need to set the value here as getAndStoreDefaultWidgetValues has not yet run so stored value is currently 0
+		else
+		 	UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]]) 		; Current item icon alpha value
+		endIf
 		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Q]]) 			; Current item icon scale value
 		UICallback.Send(iHandle)
 	endIf
@@ -2910,41 +2914,44 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
    	
    	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
     
-    ;Set targetObjectIs2hOrRanged to true if the item we're about to equip is a 2H or ranged weapon
     if itemType == -1
     	itemType = jMap.getInt(targetObject, "iEquipType")
     endIf
+
+    ; Set targetObjectIs2hOrRanged to true if the item we're about to equip is a 2H or ranged weapon
     bool targetObjectIs2hOrRanged = (ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3))
    	
-   	;When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
+   	; When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
    	int iEquipSlotId = 1
    	if Q == 0
     	iEquipSlotId = 2
     endIf
+
     int otherHand = (Q + 1) % 2
 
-    ;Get the current (or previous if equippingOnAutoAdd) right hand item type and set previously2H to true if it is/was a 2H weapon or 2H spell
+    ; Get the current (or previous if equippingOnAutoAdd) right hand item type and set previously2H to true if it is/was a 2H weapon or 2H spell
     int currRHType
     if equippingOnAutoAdd
     	currRHType = jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType")
     else
     	currRHType = PlayerRef.GetEquippedItemType(1)
     endIf
+    
     bool previously2H = currRHType == 5 || currRHType == 6 || (equippingOnAutoAdd && currRHType == 22 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)) || (!equippingOnAutoAdd && currRHType == 9 && EquipSlots.Find((PlayerRef.GetEquippedObject(1) as spell).GetEquipType()) == 3)
     
-    ;Hide the attribute icons ready to show full poison and enchantment elements if required
+    ; Hide the attribute icons ready to show full poison and enchantment elements if required
     hideAttributeIcons(Q)
 
 	debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", iEquipSlotId = " + iEquipSlotId + ", otherHand = " + otherHand + ", bSwitchingHands = " + bSwitchingHands + ", bGoneUnarmed = " + bGoneUnarmed + ", currRHType: " + currRHType + ", previously2H: " + previously2H)
-	;if we're switching hands we can reset to false now, and we don't need to unequip here because we already did so when we started switching hands
+	; if we're switching hands we can reset to false now, and we don't need to unequip here because we already did so when we started switching hands
 	if bSwitchingHands
 		bSwitchingHands = false
 		justSwitchedHands = true
-	;Otherwise unequip current item if we need to
+	; Otherwise unequip current item if we need to
 	elseif !bGoneUnarmed && !equippingOnAutoAdd
 		UnequipHand(Q)
 	endIf
-	;if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place, or we're about to equip a 2H/ranged item and we're currently unarmed or have a 2H spell equipped
+	; if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place, or we're about to equip a 2H/ranged item and we're currently unarmed or have a 2H spell equipped
     if (Q == 0 && ((equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) > -1) || (!equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) > -1))) || (targetObjectIs2hOrRanged && (bGoneUnarmed || b2HSpellEquipped))
     	if !targetObjectIs2hOrRanged
     		bSwitchingHands = true
@@ -2954,16 +2961,18 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     	endIf
     	debug.trace("iEquip_WidgetCore cycleHand - Q == 0 && RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypesAlt.Find(currRHType) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands)
     	if !bGoneUnarmed && !b2HSpellEquipped && !equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) == -1
-    		UnequipHand(otherHand)
+    		if PlayerRef.GetEquippedObject(otherHand)
+    			UnequipHand(otherHand)
+    		endIf
     		otherHandUnequipped = true
     	endIf
     endif
-    ;In case we are re-equipping from an unarmed or 2H spell state
+    ; In case we are re-equipping from an unarmed or 2H spell state
 	bGoneUnarmed = false
 	b2HSpellEquipped = false
 	
 	if !equippingOnAutoAdd
-		;if target item is a spell equip straight away
+		; If target item is a spell equip straight away
 		if itemType == 22
 			PlayerRef.EquipSpell(targetItem as Spell, Q)
 			if jMap.getInt(targetObject, "iEquipSlot") == 3 ; 2H spells
@@ -2971,20 +2980,20 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			elseIf bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
 				spell targetSpell = targetItem as spell
 				string spellSchool = jMap.getStr(targetObject, "iEquipSchool")
-				;Only allow QuickDualCast is the feature is enabled for this school, and if the equipped spell is GetEquipType == 2 (EitherHand), and as long as it's not a Bound 2H item or shield
+				; Only allow QuickDualCast is the feature is enabled for this school, and if the equipped spell is GetEquipType == 2 (EitherHand), and as long as it's not a Bound 2H item or shield
 				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !((ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(targetSpell)) > -1) || (Game.GetModName(targetItem.GetFormID() / 0x1000000) == "Bound Shield.esp"))
 					debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
 					if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "iEquipName"), spellSchool)
-						bSwitchingHands = false ;Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
+						bSwitchingHands = false ; Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
 					endIf
 				endIf
 			endIf
 		else
-			;if item is anything other than a spell check if it is already equipped, possibly in the other hand, and there is only 1 of it
+			; If item is anything other than a spell check if it is already equipped, possibly in the other hand, and there is only 1 of it
 			int itemCount = PlayerRef.GetItemCount(targetItem)
 		    if !otherHandUnequipped && (targetItem == PlayerRef.GetEquippedObject(otherHand)) && itemCount < 2
 		    	debug.trace("iEquip_WidgetCore cycleHand - targetItem found in other hand and only one of them")
-		    	;if it is already equipped and player has allowed switching hands then unequip the other hand first before equipping the target item in this hand
+		    	; If it is already equipped and player has allowed switching hands then unequip the other hand first before equipping the target item in this hand
 		        if bAllowWeaponSwitchHands
 		        	bSwitchingHands = true
 		        	debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands: " + bSwitchingHands)
@@ -2994,7 +3003,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		        	return
 		        endIf
 		    endIf
-		    ;Equip target item
+		    ; Equip target item
 		    debug.trace("iEquip_WidgetCore cycleHand - about to equip " + jMap.getStr(targetObject, "iEquipName") + " into slot " + Q)
 		    Utility.WaitMenuMode(0.1)
 		    if (Q == 1 && itemType == 42) 																		; Ammo in the right hand queue, so in this case grenades and other throwing weapons
@@ -3029,7 +3038,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    endIf
 		endIf
 		Utility.WaitMenuMode(0.2)
-	;If we've just directly equipped and are auto adding a 2H spell now we need to show it in the left slot as well, which will also sit b2HSpellEquipped to true blocking cycleHand(0) below
+	; If we've just directly equipped and are auto adding a 2H spell now we need to show it in the left slot as well, which will also sit b2HSpellEquipped to true blocking cycleHand(0) below
 	elseIf itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3
 		updateLeftSlotOn2HSpellEquipped()
 	endIf
@@ -3047,18 +3056,18 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		endIf
 		bAmmoModeFirstLook = false
 	endIf
-	;If we've just left ammo mode as a result of equipping on auto-add, check the other hand and if it's empty set the other hand slot to unarmed
+	; If we've just left ammo mode as a result of equipping on auto-add, check the other hand and if it's empty set the other hand slot to unarmed
 	if bJustLeftAmmoMode && equippingOnAutoAdd
 		if !PlayerRef.GetEquippedObject(otherHand)
     		setSlotToEmpty(otherHand)
     	endIf
-    ;if we've just equipped a 1H item in RH forcing left hand to reequip, now we can re-equip the left hand making sure to block QuickDualCast
+    ; If we've just equipped a 1H item in RH forcing left hand to reequip, now we can re-equip the left hand making sure to block QuickDualCast
 	elseIf Q == 1 && jArray.count(aiTargetQ[0]) > 0 && (bJustLeftAmmoMode || previously2H) && (ai2HWeaponTypes.Find(itemType) == -1) && !b2HSpellEquipped
 		targetObject = jArray.getObj(aiTargetQ[0], aiCurrentQueuePosition[0])
 		PM.bBlockQuickDualCast = (jMap.getInt(targetObject, "iEquipType") == 22)
 		debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", bJustLeftAmmoMode: " + bJustLeftAmmoMode + ", about to equip left hand item of type: " + jMap.getInt(targetObject, "iEquipType") + ", blockQuickDualCast: " + PM.bBlockQuickDualCast)
 		cycleHand(0, aiCurrentQueuePosition[0], jMap.getForm(targetObject, "iEquipForm"))
-    ;if we unequipped the other hand now equip the next item
+    ; If we unequipped the other hand now equip the next item
     elseif bSwitchingHands
     	if equippingOnAutoAdd
     		if !PlayerRef.GetEquippedObject(otherHand)
@@ -3077,7 +3086,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			endIf
 		endIf
 	endIf
-	if bEnableGearedUp && !previouslyUnarmedOr2HSpell ;This will be actioned on the second pass when re-equipping a previous otherHand item
+	if bEnableGearedUp && !previouslyUnarmedOr2HSpell ; This will be actioned on the second pass when re-equipping a previous otherHand item
 		refreshGearedUp()
 	endIf
 	EH.bJustQuickDualCast = false
