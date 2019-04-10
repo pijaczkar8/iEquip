@@ -586,7 +586,7 @@ function updateWidgetOnWeaponSwing()
 	debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing end")
 endFunction
 
-;This event handles auto-adding newly equipped items to the left, right and shout slots
+; This event handles auto-adding newly equipped items to the left, right and shout slots
 function processQueuedForms()
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms start")	
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())
@@ -599,11 +599,11 @@ function processQueuedForms()
 		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
 		if queuedForm as ammo && (PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12)
 			AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
-		;Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
+		; Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
 		elseIf !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
 			int equippedSlot = -1
 			if PlayerRef.GetEquippedObject(0) == queuedForm
-				;Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
+				; Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
 				if PlayerRef.GetEquippedObject(1) == queuedForm
 					equippedSlot = 3 ;We'll use 3 to indicate the same 1H item has been found in both hands so we can update both queues and widget slots
 				else
@@ -614,12 +614,12 @@ function processQueuedForms()
 			elseIf PlayerRef.GetEquippedObject(2) == queuedForm
 				equippedSlot = 2 ;Shout/Power
 			endIf
-			;If the item has been equipped in the left, right or shout slot
+			; If the item has been equipped in the left, right or shout slot
 			if equippedSlot != -1
 				debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
 				int itemType = queuedForm.GetType()
 				int iEquipSlot
-				;If it's a 2H or ranged weapon or a BothHands spell we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
+				; If it's a 2H or ranged weapon or a BothHands spell we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
 				if itemType == 22
 					iEquipSlot = WC.EquipSlots.Find((queuedForm as spell).GetEquipType())
 				elseIf itemType == 41

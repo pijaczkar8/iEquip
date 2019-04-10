@@ -2960,7 +2960,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     	endIf
     	debug.trace("iEquip_WidgetCore cycleHand - Q == 0 && RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypesAlt.Find(currRHType) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands)
     	if !bGoneUnarmed && !b2HSpellEquipped && !equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) == -1
-    		UnequipHand(otherHand)
+    		if PlayerRef.GetEquippedObject(otherHand)
+    			UnequipHand(otherHand)
+    		endIf
     		otherHandUnequipped = true
     	endIf
     endif
