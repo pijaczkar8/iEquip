@@ -18,7 +18,7 @@ iEquip_ChargeMeters Property CM Auto
 iEquip_TemperedItemHandler Property TI Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_WidgetVisUpdateScript property WVis auto
-iEquip_TorchScript property TO auto
+;iEquip_TorchScript property TO auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
