@@ -503,6 +503,7 @@ EndProperty
 state ENABLED
 	event OnBeginState()
 		debug.trace("iEquip_WidgetCore ENABLED OnBeginState start")
+		
 		iEquip_InventoryExt.ParseInventory()	; This initialises the ref handles for the players inventory
 		
 		iEquipQHolderObj = JValue.retain(JMap.object())
