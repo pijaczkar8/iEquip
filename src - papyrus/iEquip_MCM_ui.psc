@@ -240,6 +240,11 @@ function drawPage()
         MCM.AddToggleOptionST("ui_tgl_enblNameFade", "$iEquip_MCM_ui_lbl_enblNameFade", WC.bNameFadeoutEnabled)
                 
         if WC.bNameFadeoutEnabled
+
+            MCM.AddToggleOptionST("ui_tgl_leftRightNameFade", "$iEquip_MCM_ui_lbl_leftRightNameFade", WC.bLeftRightNameFadeEnabled)
+            MCM.AddToggleOptionST("ui_tgl_shoutNameFade", "$iEquip_MCM_ui_lbl_shoutNameFade", WC.bShoutNameFadeEnabled)
+            MCM.AddToggleOptionST("ui_tgl_consPoisNameFade", "$iEquip_MCM_ui_lbl_consPoisNameFade", WC.bConsPoisNameFadeEnabled)
+
             MCM.AddSliderOptionST("ui_sld_mainNameFadeDelay", "$iEquip_MCM_ui_lbl_mainNameFadeDelay", WC.fMainNameFadeoutDelay, "{1}")
             MCM.AddSliderOptionST("ui_sld_poisonNameFadeDelay", "$iEquip_MCM_ui_lbl_poisonNameFadeDelay", WC.fPoisonNameFadeoutDelay, "{1}")
                     
@@ -634,6 +639,51 @@ State ui_tgl_enblNameFade
             endIf
             WC.bFadeOptionsChanged = true
             MCM.forcePageReset()
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_leftRightNameFade
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_leftRightNameFade")
+        else
+            if currentEvent == "Select"
+                WC.bLeftRightNameFadeEnabled = !WC.bLeftRightNameFadeEnabled
+            elseIf currentEvent == "Default"
+                WC.bLeftRightNameFadeEnabled = true
+            endIf
+            WC.bFadeOptionsChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_shoutNameFade
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_shoutNameFade")
+        else
+            if currentEvent == "Select"
+                WC.bShoutNameFadeEnabled = !WC.bShoutNameFadeEnabled
+            elseIf currentEvent == "Default"
+                WC.bShoutNameFadeEnabled = true
+            endIf
+            WC.bFadeOptionsChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_consPoisNameFade
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_consPoisNameFade")
+        else
+            if currentEvent == "Select"
+                WC.bConsPoisNameFadeEnabled = !WC.bConsPoisNameFadeEnabled
+            elseIf currentEvent == "Default"
+                WC.bConsPoisNameFadeEnabled = true
+            endIf
+            WC.bFadeOptionsChanged = true
         endIf 
     endEvent
 endState

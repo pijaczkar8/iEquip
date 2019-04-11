@@ -530,7 +530,7 @@ function updateOtherHandOn2HSpellEquipped(int Q, int hand, int otherHand)
 		UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[Q]])
 		UICallback.Send(iHandle)
 	endIf
-	if WC.bNameFadeoutEnabled
+	if WC.bNameFadeoutEnabled && WC.bLeftRightNameFadeEnabled
 		WC.LNUpdate.registerForNameFadeoutUpdate()
 	endIf
 	b2HSpellEquipped = true

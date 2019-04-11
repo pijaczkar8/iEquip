@@ -213,13 +213,13 @@ function PreselectModeAnimateIn()
 			endIf
 			i += 1
 		endwhile
-		if abPreselectSlotEnabled[0]
+		if abPreselectSlotEnabled[0] && WC.bLeftRightNameFadeEnabled
 			WC.LPNUpdate.registerForNameFadeoutUpdate()
 		endIf
-		if abPreselectSlotEnabled[1]
+		if abPreselectSlotEnabled[1] && WC.bLeftRightNameFadeEnabled
 			WC.RPNUpdate.registerForNameFadeoutUpdate()
 		endIf
-		if abPreselectSlotEnabled[2]
+		if abPreselectSlotEnabled[2] && WC.bShoutNameFadeEnabled
 			WC.SPNUpdate.registerForNameFadeoutUpdate()
 		endIf
 	endIf
@@ -350,13 +350,13 @@ function equipPreselectedItem(int Q)
 			UICallback.Send(iHandle)
 		endIf
 		if WC.bNameFadeoutEnabled
-			if Q == 0
+			if Q == 0 && WC.bLeftRightNameFadeEnabled
 				WC.LNUpdate.registerForNameFadeoutUpdate()
 				WC.LPNUpdate.registerForNameFadeoutUpdate()
-			elseif Q == 1
+			elseif Q == 1 && WC.bLeftRightNameFadeEnabled
 				WC.RNUpdate.registerForNameFadeoutUpdate()
 				WC.RPNUpdate.registerForNameFadeoutUpdate()
-			elseif Q == 2
+			elseif Q == 2 && WC.bShoutNameFadeEnabled
 				WC.SNUpdate.registerForNameFadeoutUpdate()
 				WC.SPNUpdate.registerForNameFadeoutUpdate()	
 			endIf
@@ -398,7 +398,7 @@ function equipPreselectedItem(int Q)
 			if WC.bUnequipAmmo && PlayerRef.isEquipped(AM.currentAmmoForm as Ammo)
 				PlayerRef.UnequipItemEx(AM.currentAmmoForm as Ammo)
 			endIf
-			if WC.bNameFadeoutEnabled
+			if WC.bNameFadeoutEnabled && WC.bLeftRightNameFadeEnabled
 				WC.LNUpdate.registerForNameFadeoutUpdate()
 				if abPreselectSlotEnabled[0]
 					WC.LPNUpdate.registerForNameFadeoutUpdate()
@@ -652,15 +652,15 @@ function equipAllPreselectedItems()
 		WC.checkAndFadeLeftIcon(1, rightHandItemType)
 	endIf
 	if WC.bNameFadeoutEnabled
-		if equipLeft
+		if equipLeft && WC.bLeftRightNameFadeEnabled
 			WC.LNUpdate.registerForNameFadeoutUpdate()
 			WC.LPNUpdate.registerForNameFadeoutUpdate()
 		endIf
-		if abPreselectSlotEnabled[1]
+		if abPreselectSlotEnabled[1] && WC.bLeftRightNameFadeEnabled
 			WC.RNUpdate.registerForNameFadeoutUpdate()
 			WC.RPNUpdate.registerForNameFadeoutUpdate()
 		endIf
-		if abPreselectSlotEnabled[2]
+		if abPreselectSlotEnabled[2] && WC.bShoutNameFadeEnabled
 			WC.SNUpdate.registerForNameFadeoutUpdate()
 			WC.SPNUpdate.registerForNameFadeoutUpdate()	
 		endIf

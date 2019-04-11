@@ -16,21 +16,23 @@ Float fDuration
 bool bWaitingForNameFadeoutUpdate
 
 function registerForNameFadeoutUpdate()
-	WidgetRoot = WC.WidgetRoot
-	
-	if targetName == 0									; Targeting main name
-		fDelay = WC.fMainNameFadeoutDelay
-	elseIf targetName == 1								; Targeting preselect name
-		fDelay = WC.fPreselectNameFadeoutDelay
-	else 												; Targeting poison name
-		fDelay = WC.fPoisonNameFadeoutDelay
-	endIf
-	
-	fDuration = WC.fNameFadeoutDuration 				; The fadeout duration is a common value for all three names
-	
-	if WC.bNameFadeoutEnabled && fDelay > 0
-		RegisterForSingleUpdate(fDelay)
-		bWaitingForNameFadeoutUpdate = true
+	if WC.bNameFadeoutEnabled
+		WidgetRoot = WC.WidgetRoot
+		
+		if targetName == 0									; Targeting main name
+			fDelay = WC.fMainNameFadeoutDelay
+		elseIf targetName == 1								; Targeting preselect name
+			fDelay = WC.fPreselectNameFadeoutDelay
+		else 												; Targeting poison name
+			fDelay = WC.fPoisonNameFadeoutDelay
+		endIf
+		
+		fDuration = WC.fNameFadeoutDuration 				; The fadeout duration is a common value for all three names
+		
+		if fDelay > 0
+			RegisterForSingleUpdate(fDelay)
+			bWaitingForNameFadeoutUpdate = true
+		endIf
 	endIf
 endFunction
 
