@@ -534,7 +534,6 @@ state ENABLED
 		CheckDependencies()
 		AM.updateAmmoLists()
 		addFists()
-		addCurrentItemsOnFirstEnable()
 
 		;ResetWidgetArrays()
 		OnWidgetLoad()
@@ -587,14 +586,14 @@ state ENABLED
 		UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 		
 		bool[] args = new bool[5]
-		if bAmmoMode
-			args[0] = true
-		endIf
-		args[3] = bAmmoMode
 		
 		if !bIsFirstEnabled
 			CheckDependencies()
 			EM.UpdateElementsAll()
+			if bAmmoMode
+				args[0] = true
+			endIf
+			args[3] = bAmmoMode
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			refreshWidgetOnLoad()
 		else
@@ -605,6 +604,11 @@ state ENABLED
 				CM.initSoulGem(i)
 				i += 1
 			endWhile
+			addCurrentItemsOnFirstEnable()
+			if bAmmoMode
+				args[0] = true
+			endIf
+			args[3] = bAmmoMode
 			initQueuePositionIndicators()
 			debug.trace("iEquip_WidgetCore OnWidgetLoad - checking values for Potion Selector, visible: " + abWidget_V[45] + ", alpha: " + afWidget_A[45] + ", defV: " + abWidget_DefV[45] + ", defA: " + afWidget_DefA[45])
             updatePotionSelector(true) ;Hide the potion selector
@@ -2301,10 +2305,8 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		UICallback.PushString(iHandle, sIcon) 												; New icon
 		UICallback.PushString(iHandle, sName)
 		UICallback.PushFloat(iHandle, fNameAlpha)											; Current item name alpha value
-		if !bIsFirstEnabled
-			UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Slot]]) 					; Current item icon alpha value
-			UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Slot]]) 					; Current item icon scale value
-		endIf
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Slot]]) 					; Current item icon alpha value
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Slot]]) 					; Current item icon scale value
 		UICallback.Send(iHandle)
 	endIf
 
@@ -2387,11 +2389,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 			UICallback.PushString(iHandle, "") 								; New name
 		endIf
 		UICallback.PushFloat(iHandle, fNameAlpha)							; Current item name alpha value
-		if bIsFirstEnabled
-			UICallback.PushFloat(iHandle, 100.0)							; If setting a slot to empty on first enable we need to set the value here as getAndStoreDefaultWidgetValues has not yet run so stored value is currently 0
-		else
-		 	UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]]) 		; Current item icon alpha value
-		endIf
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]]) 			; Current item icon alpha value
 		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Q]]) 			; Current item icon scale value
 		UICallback.Send(iHandle)
 	endIf

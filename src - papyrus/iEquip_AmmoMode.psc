@@ -691,7 +691,7 @@ function updateAmmoLists()
 		if !((iEquip_FormExt.IsJavelin(ammoForm) && ammoName != "Javelin") || iEquip_FormExt.IsSpear(ammoForm) || iEquip_FormExt.IsGrenade(ammoForm) || iEquip_FormExt.IsThrowingKnife(ammoForm) || iEquip_FormExt.IsThrowingAxe(ammoForm))
 			if !isAlreadyInAmmoQueue(ammoForm, aiTargetQ[isBolt])
 				AddToAmmoQueue(ammoForm, AmmoName, isBolt)
-				abNeedsSorting[isBolt as int] = true
+				abNeedsSorting[isBolt] = true
 			endIf
 		endIf
 		i += 1
@@ -771,14 +771,14 @@ bool function isAlreadyInAmmoQueue(form itemForm, int targetQ)
 endFunction
 
 function AddToAmmoQueue(form ammoForm, string ammoName, int isBolt)
-	debug.trace("iEquip_AmmoMode AddToAmmoQueue start")
+	debug.trace("iEquip_AmmoMode AddToAmmoQueue start - isBolt: " + isBolt + ", ammoName: " + ammoName)
 	;Add to the formlist
 	iEquip_AmmoItemsFLST.AddForm(ammoForm)
 	EH.updateEventFilter(iEquip_AmmoItemsFLST)
 	;Create the ammo object
 	int AmmoItem = jMap.object()
 	jMap.setForm(AmmoItem, "iEquipForm", ammoForm)
-	jMap.setStr(AmmoItem, "iEquipIcon", getAmmoIcon(ammoForm,AmmoName, isBolt))
+	jMap.setStr(AmmoItem, "iEquipIcon", getAmmoIcon(ammoForm, AmmoName, isBolt))
 	jMap.setStr(AmmoItem, "iEquipName", AmmoName)
 	if incrementDamage
 		incrementDamage = false
@@ -863,8 +863,8 @@ endFunction
 
 function sortAmmoQueue(string theKey, int targetQ, int thisQ)
 	debug.trace("iEquip_AmmoMode sortAmmoQueue start")
-    debug.trace("iEquip_AmmoMode sortAmmoQueue - Sort by: " + theKey)
     int n = jArray.count(targetQ)
+    debug.trace("iEquip_AmmoMode sortAmmoQueue - thisQ: " + thisQ + ", count: " + n + ", Sort by: " + theKey)
     int i
     While (n > 1)
         i = 1
