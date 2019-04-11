@@ -119,6 +119,9 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, iCurrentNameFadeoutChoice)
 	jArray.addFlt(jPageObj, WC.fNameFadeoutDuration)
 	jArray.addInt(jPageObj, WC.bFirstPressShowsName as int)
+    jArray.addInt(jPageObj, WC.bLeftRightNameFadeEnabled as int)
+    jArray.addInt(jPageObj, WC.bShoutNameFadeEnabled as int)
+    jArray.addInt(jPageObj, WC.bConsPoisNameFadeEnabled as int)
     
 	return jPageObj
 endFunction
@@ -162,6 +165,9 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
     setNameFadeout()
 	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 29)
 	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 30)
+    WC.bLeftRightNameFadeEnabled = jArray.getInt(jPageObj, 31)
+    WC.bShoutNameFadeEnabled = jArray.getInt(jPageObj, 32)
+    WC.bConsPoisNameFadeEnabled = jArray.getInt(jPageObj, 33)
 endFunction
 
 function drawPage()
