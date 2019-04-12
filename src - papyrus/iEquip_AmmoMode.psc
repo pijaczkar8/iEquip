@@ -691,7 +691,7 @@ function updateAmmoLists()
 		if !((iEquip_FormExt.IsJavelin(ammoForm) && ammoName != "Javelin") || iEquip_FormExt.IsSpear(ammoForm) || iEquip_FormExt.IsGrenade(ammoForm) || iEquip_FormExt.IsThrowingKnife(ammoForm) || iEquip_FormExt.IsThrowingAxe(ammoForm))
 			if !isAlreadyInAmmoQueue(ammoForm, aiTargetQ[isBolt])
 				AddToAmmoQueue(ammoForm, AmmoName, isBolt)
-				abNeedsSorting[isBolt] = true
+				abNeedsSorting[isBolt as int] = true
 			endIf
 		endIf
 		i += 1

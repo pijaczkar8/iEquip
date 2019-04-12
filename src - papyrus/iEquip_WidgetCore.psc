@@ -2377,7 +2377,7 @@ function updateWidgetBM(int Q, string sIcon, string sName)
 endFunction
 
 function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = false)
-	debug.trace("iEquip_WidgetCore setSlotToEmpty start")
+	debug.trace("iEquip_WidgetCore setSlotToEmpty start - bIsFirstEnabled: " + bIsFirstEnabled)
 	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
