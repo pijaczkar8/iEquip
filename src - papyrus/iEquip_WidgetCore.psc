@@ -2874,6 +2874,9 @@ function addBackCachedItem(form addedForm)
 			else
 				Q = jMap.getInt(targetObject, "PrevQ")
 			endIf
+			if addedForm as weapon || (addedForm as armor).isShield()
+				jMap.setInt(targetObject, "iEquipHandle", 0xFFFF)		; The previous refHandle will have been invalidated when the item left the players inventory, and will be set to the new handle next time we equip the item
+			endIf
 			jArray.addObj(aiTargetQ[Q], targetObject)
 			;Remove the form from the RemovedItems formlist
 			iEquip_RemovedItemsFLST.RemoveAddedForm(jMap.getForm(targetObject, "iEquipForm"))
