@@ -184,6 +184,7 @@ function initialise(bool enabled)
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
+		iEquip_InventoryExt.RegisterForOnRefHandleInvalidatedEvent(self)
 		if bPlayerIsABeast
 			registerForBMEvents()
 		elseIf PlayerRace == PlayerBaseRace || aPlayerBaseVampireRaces.Find(PlayerRace) == aPlayerBaseRaces.Find(PlayerBaseRace) ;Use this once ActorExt function is fixed
@@ -249,6 +250,7 @@ function unregisterForCoreAnimationEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
 	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
 	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
+	iEquip_InventoryExt.UnegisterForOnRefHandleInvalidatedEvent(self)
 endFunction
 
 ; Register for all of the animation events we care about for beast mode
@@ -660,19 +662,17 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName
 	string itemBaseName
-	int itemHandle
+	int itemHandle = 0xFFFF
 
 	if TI.aiTemperedItemTypes.Find(itemType) > -1
-		if itemType == 26
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(6)	; Shield
-		elseIf equippedSlot == 0
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(5)	; Left hand
-		else
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(4)	; Right hand
+		if itemType == 26 && PlayerRef.GetEquippedShield as Form == queuedForm
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)				; Shield
+		elseIf PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(equippedSlot)	; Left/Right hand
 		endIf
 	endIf
 
-	if itemHandle > -1
+	if itemHandle != 0xFFFF
 		itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
 		itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
 	else
@@ -681,31 +681,22 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	endIf
 	
 	if itemName == ""
-		itemName = queuedForm.GetName()
-		itemBaseName = itemName
+		itemName = itemBaseName
 	endIf
-
-	;/if itemType == 26
-		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 512)
-	else
-		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
-	endIf
-	if itemName == ""
-		itemName = queuedForm.GetName()
-		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemName set from queuedForm.GetName(): " + itemName)
-	else
-		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemName set from WornObject.GetDisplayName(): " + itemName)
-	endIf/;
 
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
 																										; Check if we've just manually equipped an item that is already in an iEquip queue
 	if formFound
 																										; If it's been found in the queue for the equippedSlot it's been equipped to
-		targetIndex = WC.findInQueue(equippedSlot, "", queuedForm, itemHandle)
+		targetIndex = WC.findInQueue(equippedSlot, itemName, queuedForm, itemHandle)
 		if targetIndex != -1
 			
 			if !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
+				if itemHandle != 0xFFFF && PlayerRef.GetItemCount == 1 && (JArray.FindInt(WC.iRefHandleArray, itemHandle) == -1 || jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF)
+					JArray.AddInt(WC.iRefHandleArray, itemHandle)
+					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
+				endIf
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipBaseName", itemBaseName)
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
@@ -891,6 +882,17 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	endIf
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
+
+Event OnRefHandleInvalidated(Form a_item, Int a_refHandle)
+	debug.trace("iEquip_PlayerEventHandler OnRefHandleInvalidated event received - form: " + a_item + "(" + a_item.GetName() + "), refHandle: " + a_refHandle)
+	int foundAt = JArray.FindInt(WC.iRefHandleArray, a_refHandle)
+	if foundAt == -1
+		debug.trace("iEquip_PlayerEventHandler OnRefHandleInvalidated - refHandle not found in iRefHandleArray")
+	else
+		debug.trace("iEquip_PlayerEventHandler OnRefHandleInvalidated - refHandle found in iRefHandleArray at index " + foundAt)
+		JArray.EraseIndex(WC.iRefHandleArray, foundAt)
+	endIf
+EndEvent
 
 Event OnGetUp(ObjectReference akFurniture)
 	debug.trace("iEquip_PlayerEventHandler OnGetUp start")
