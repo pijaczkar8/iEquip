@@ -281,6 +281,7 @@ bool property bMoreHUDLoaded auto hidden
 string[] property asMoreHUDIcons auto hidden
 
 int iRemovedItemsCacheObj
+int property iRefHandleArray auto hidden
 int property iEquipQHolderObj auto hidden
 
 bool bReverse
@@ -521,7 +522,9 @@ state ENABLED
 		aiTargetQ[4] = JArray.object()
 		JMap.setObj(iEquipQHolderObj, "poisonQ", aiTargetQ[4])
 		iRemovedItemsCacheObj = JArray.object()
-		JMap.setObj(iEquipQHolderObj, "lastRemovedCache", iRemovedItemsCacheObj )
+		JMap.setObj(iEquipQHolderObj, "lastRemovedCache", iRemovedItemsCacheObj)
+		iRefHandleArray = JArray.object()
+		JMap.setObj(iEquipQHolderObj, "refHandleArray", iRefHandleArray)
 		
 		PO.InitialisePotionQueueArrays(iEquipQHolderObj, aiTargetQ[3], aiTargetQ[4])
 		addPotionGroups()
@@ -1341,6 +1344,7 @@ function addCurrentItemsOnFirstEnable()
 			debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - Q: " + Q + ", itemHandle received: " + itemHandle)
 
 			if itemHandle != 0xFFFF
+				JArray.AddInt(iRefHandleArray, itemHandle)
 				itemName = iEquip_InventoryExt.GetLongName(equippedItem, itemHandle)
 				itemBaseName = iEquip_InventoryExt.GetShortName(equippedItem, itemHandle)
 				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
@@ -2710,11 +2714,11 @@ function hideAttributeIcons(int Q)
 endFunction
 
 int function findInQueue(int Q, string itemToFind, form formToFind = none, int itemHandle = 0xFFFF)
-	debug.trace("iEquip_WidgetCore findInQueue start - Q: " + Q + ", formToFind: " + formToFind + ", itemToFind: " + itemToFind)
+	debug.trace("iEquip_WidgetCore findInQueue start - Q: " + Q + ", formToFind: " + formToFind + ", itemToFind: " + itemToFind + ", itemHandle: " + itemHandle)
 	int iIndex
 	bool found
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
-		if itemHandle != 0xFFFF
+		if itemHandle != 0xFFFF && JArray.FindInt(iRefHandleArray, itemHandle) != -1
 			debug.trace("iEquip_WidgetCore findInQueue - seaching by handle")
 			if itemHandle != jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle")
 				iIndex += 1
@@ -2870,6 +2874,9 @@ function addBackCachedItem(form addedForm)
 			else
 				Q = jMap.getInt(targetObject, "PrevQ")
 			endIf
+			if addedForm as weapon || (addedForm as armor).isShield()
+				jMap.setInt(targetObject, "iEquipHandle", 0xFFFF)		; The previous refHandle will have been invalidated when the item left the players inventory, and will be set to the new handle next time we equip the item
+			endIf
 			jArray.addObj(aiTargetQ[Q], targetObject)
 			;Remove the form from the RemovedItems formlist
 			iEquip_RemovedItemsFLST.RemoveAddedForm(jMap.getForm(targetObject, "iEquipForm"))
@@ -3018,28 +3025,37 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    elseIf itemCount == 1																				; If we only have one of it there's no risk of equipping the wrong one so safe to use EquipItemEx
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 		    else
-				; If we have more than one of the item check if the queue object is enchanted or poisoned and attempt to equip the correct item using that information
-    			Enchantment tempEnchantment = jMap.getForm(targetObject, "lastKnownEnchantment") as Enchantment
-    			Potion tempPoison = jMap.getForm(targetObject, "lastKnownPoison") as Potion
-    			if tempEnchantment
-    				if tempPoison
-    					iEquip_ActorExt.EquipEnchantedAndPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment, tempPoison)		; Enchanted and poisoned
-    				else
-    					iEquip_ActorExt.EquipEnchantedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment)								; Enchanted only
-    				endIf
-    			elseIf tempPoison
-    				iEquip_ActorExt.EquipPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempPoison)										; Poisoned only
-    			else 																															; If it's not enchanted or poisoned then if we have an itemID for it try equipping it that way
-    				int itemID = jMap.getInt(targetObject, "iEquipItemID")
-			    	if itemID as bool 																				; If we have an itemID then try equipping by that first.  This will fail if the display name has changed since we last equipped it,
-			    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)									; for example if the item has been renamed or a temper level has changed
-			    	endIf
-    			endIf
-    			Utility.WaitMenuMode(0.1)
-	    		if !PlayerRef.GetEquippedObject(iEquipSlotID)												; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
-	    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; So fall back on EquipItemEX and take pot luck as to which one is equipped
-    				EH.abSkipQueueObjectUpdate[iEquipSlotId] = true 	
-	    		endIf
+		    	if aiTemperedItemTypes.Find(itemType) != -1														; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
+		    		int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+		    		if refHandle != 0xFFFF
+		    			iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef, iEquipSlotId)
+		    			Utility.WaitMenuMode(0.1)
+		    		endIf
+		    	endIf
+		    	
+		    	if !PlayerRef.GetEquippedObject(iEquipSlotID)													; If we haven't successfully equipped anything next check if the queue object is enchanted or poisoned and attempt to equip the correct item using that information
+	    			Enchantment tempEnchantment = jMap.getForm(targetObject, "lastKnownEnchantment") as Enchantment
+	    			Potion tempPoison = jMap.getForm(targetObject, "lastKnownPoison") as Potion
+	    			if tempEnchantment
+	    				if tempPoison
+	    					iEquip_ActorExt.EquipEnchantedAndPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment, tempPoison)		; Enchanted and poisoned
+	    				else
+	    					iEquip_ActorExt.EquipEnchantedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment)								; Enchanted only
+	    				endIf
+	    			elseIf tempPoison
+	    				iEquip_ActorExt.EquipPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempPoison)										; Poisoned only
+	    			else 																															; If it's not enchanted or poisoned then if we have an itemID for it try equipping it that way
+	    				int itemID = jMap.getInt(targetObject, "iEquipItemID")
+				    	if itemID as bool 																		; If we have an itemID then try equipping by that first.  This will fail if the display name has changed since we last equipped it,
+				    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)							; for example if the item has been renamed or a temper level has changed
+				    	endIf
+	    			endIf
+	    			Utility.WaitMenuMode(0.1)
+		    		if !PlayerRef.GetEquippedObject(iEquipSlotID)												; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
+		    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; So fall back on EquipItemEX and take pot luck as to which one is equipped
+	    				EH.abSkipQueueObjectUpdate[iEquipSlotId] = true 	
+		    		endIf
+		    	endIf
 		    endIf
 		endIf
 		Utility.WaitMenuMode(0.2)
