@@ -4,6 +4,7 @@ Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 Import iEquip_FormExt
 import iEquip_ActorExt
 import iEquip_StringExt
+import iEquip_InventoryExt
 Import Utility
 import UI
 import AhzMoreHudIE
@@ -18,7 +19,7 @@ iEquip_ChargeMeters Property CM Auto
 iEquip_TemperedItemHandler Property TI Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_WidgetVisUpdateScript property WVis auto
-;iEquip_TorchScript property TO auto
+iEquip_TorchScript property TO auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
@@ -250,7 +251,7 @@ function unregisterForCoreAnimationEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
 	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
 	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
-	iEquip_InventoryExt.UnegisterForOnRefHandleInvalidatedEvent(self)
+	iEquip_InventoryExt.UnregisterForOnRefHandleInvalidatedEvent(self)
 endFunction
 
 ; Register for all of the animation events we care about for beast mode
@@ -665,7 +666,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	int itemHandle = 0xFFFF
 
 	if TI.aiTemperedItemTypes.Find(itemType) > -1
-		if itemType == 26 && PlayerRef.GetEquippedShield as Form == queuedForm
+		if itemType == 26 && PlayerRef.GetEquippedShield() as Form == queuedForm
 			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)				; Shield
 		elseIf PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
 			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(equippedSlot)	; Left/Right hand
@@ -693,7 +694,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		if targetIndex != -1
 			
 			if !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
-				if itemHandle != 0xFFFF && PlayerRef.GetItemCount == 1 && (JArray.FindInt(WC.iRefHandleArray, itemHandle) == -1 || jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF)
+				if itemHandle != 0xFFFF && PlayerRef.GetItemCount(queuedForm) == 1 && (JArray.FindInt(WC.iRefHandleArray, itemHandle) == -1 || jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF)
 					JArray.AddInt(WC.iRefHandleArray, itemHandle)
 					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
 				endIf

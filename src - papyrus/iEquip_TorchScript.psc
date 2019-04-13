@@ -1,6 +1,7 @@
 
 Scriptname iEquip_TorchScript extends Quest
 
+import UI
 import iEquip_FormExt
 
 iEquip_WidgetCore Property WC Auto
@@ -12,7 +13,10 @@ Actor Property PlayerRef Auto
 light property Torch01 auto
 ;light property iEquipTorch01 auto
 
-float fTorchDuration
+string HUD_MENU = "HUD Menu"
+string WidgetRoot
+
+float fTorchDuration = 240.0
 float fTorchRadius
 
 float fGameTimeOnEquip
@@ -33,6 +37,7 @@ function initialise(bool bEnabled)
 	debug.trace("iEquip_TorchScript initialise start")
 	if bEnabled
 		GoToState("")
+		WidgetRoot = WC.WidgetRoot
 		;/fTorchDuration = GetTorchDuration(Torch01)
 		fTorchRadius = GetTorchRadius(Torch01)
 		if fCurrentTorchLife == 0.0
@@ -62,7 +67,11 @@ function onTorchEquipped()
 	RegisterForSingleUpdate(fCurrentTorchLife)
 	
 	if bShowTorchMeter	; Show torch meter if enabled
-		
+		if CM.abIsChargeMeterShown[0]
+			updateTorchMeterVisibility(false)
+			Utility.WaitMenuMode(0.2)
+		endIf
+		showTorchMeter()
 	endIf
 	
 	if bReduceLightAsTorchRunsOut && fCurrentTorchLife < 30.0
@@ -114,7 +123,7 @@ function showTorchMeter()
 	; Set the starting fill level for the meter
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterPercent")
 	If(iHandle)
-		UICallback.PushInt(iHandle, Q)
+		UICallback.PushInt(iHandle, 0)
 		UICallback.PushFloat(iHandle, currPercent)
 		UICallback.PushInt(iHandle, iTorchMeterFillColor)
 		UICallback.PushBool(iHandle, true)	; Enables gradient fill
@@ -124,8 +133,8 @@ function showTorchMeter()
 	endIf
 
 	; Show the meter if not currently visible
-	if !abIsChargeMeterShown[Q]
-		updateChargeMeterVisibility(Q, true)
+	if !CM.abIsChargeMeterShown[0]
+		updateTorchMeterVisibility(true)
 	endIf
 
 	; Start the meter fill tween
@@ -136,22 +145,22 @@ endFunction
 
 function startTorchMeterAnim()
 	debug.trace("iEquip_TorchScript startTorchMeterAnim start")
-	UI.InvokeInt(HUD_MENU, WidgetRoot + ".startTorchMeterFillTween", fCurrentTorchLife)
+	UI.InvokeFloat(HUD_MENU, WidgetRoot + ".startTorchMeterFillTween", fCurrentTorchLife)
 	debug.trace("iEquip_TorchScript startTorchMeterAnim end")
-endIf
+endFunction
 
-function stopChargeMeterAnim()
+function stopTorchMeterAnim()
 	debug.trace("iEquip_TorchScript stopChargeMeterAnim start")
 	UI.Invoke(HUD_MENU, WidgetRoot + ".stopTorchMeterFillTween")
 	debug.trace("iEquip_TorchScript stopChargeMeterAnim end")
-endIf
+endFunction
 
 function startTorchMeterFlash()
 	debug.trace("iEquip_TorchScript startTorchMeterFlash start")
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
-		UICallback.PushInt(iHandle, iFlashColor)
+		UICallback.PushInt(iHandle, 0xFF0000)
 		UICallback.PushBool(iHandle, false)
 		UICallback.Send(iHandle)
 	endIf
@@ -170,10 +179,10 @@ function updateTorchMeterVisibility(bool show)
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", 0)
 			UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc._visible", true)
 			targetAlpha = WC.afWidget_A[13]
-			abIsChargeMeterShown[0] = true
+			CM.abIsChargeMeterShown[0] = true
 		else
 			targetAlpha = 0.0
-			abIsChargeMeterShown[0] = false
+			CM.abIsChargeMeterShown[0] = false
 		endIf
 		
 		UICallback.PushInt(iHandle, 0)

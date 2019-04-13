@@ -3025,7 +3025,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    elseIf itemCount == 1																				; If we only have one of it there's no risk of equipping the wrong one so safe to use EquipItemEx
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 		    else
-		    	if aiTemperedItemTypes.Find(itemType) != -1														; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
+		    	if TI.aiTemperedItemTypes.Find(itemType) != -1													; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
 		    		int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
 		    		if refHandle != 0xFFFF
 		    			iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef, iEquipSlotId)
