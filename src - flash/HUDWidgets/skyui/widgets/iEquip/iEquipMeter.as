@@ -3,6 +3,11 @@ import Shared.GlobalFunc;
 import flash.geom.Transform;
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
+import com.greensock.TimelineLite;
+import com.greensock.TweenLite;
+import com.greensock.plugins.TweenPlugin;
+import com.greensock.plugins.FramePlugin;
+import com.greensock.easing.*;
 
 class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 {
@@ -55,6 +60,8 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 	public function iEquipMeter()
 	{
 		super();
+
+		TweenPlugin.activate([FramePlugin]); //activation is permanent in the SWF, so this line only needs to be run once.
 
 		background._visible = meterContent.capBackground._visible = false;
 
@@ -238,6 +245,16 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 			var meterFrame: Number = Math.floor(GlobalFunc.Lerp(_emptyIdx, _fullIdx, 0, 1, _currentPercent));
 			_meterBarAnim.gotoAndStop(meterFrame);
 		}
+	}
+
+	public function startFillTween(a_duration: Number): Void
+	{
+		TweenLite.to(_meterBarAnim, a_duration, {frame:120}); 
+	}
+
+	public function stopFillTween(): Void
+	{
+		TweenLite.killTweensOf(_meterBarAnim)
 	}
 
 	public function startFlash(a_force: Boolean): Void

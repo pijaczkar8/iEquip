@@ -121,7 +121,7 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 
 	function setEditModeButtons(Exit: Number, Nxt: Number, Prv: Number, Up: Number, Down: Number, Left: Number, Right: Number, ScaleUp: Number, ScaleDown: Number, Rot: Number, Alpha: Number, Align: Number, Dep: Number, Rul: Number, Res: Number, Load: Number, Save: Number, Disc: Number): Void
 	{
-		skyui.util.Debug.log("iEquipEditMode setEditModeButtons - Exit: " + Exit)
+		//skyui.util.Debug.log("iEquipEditMode setEditModeButtons - Exit: " + Exit)
 		NextButton.gotoAndStop(Nxt);
 		PrevButton._x = NextButton._x + NextButton._width + 1;
 		PrevButton.gotoAndStop(Prv);
@@ -170,7 +170,7 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 	
 	function setEditModeCurrentValueColor(_color: Number): Void
 	{
-		skyui.util.Debug.log("iEquipEditMode setEditModeCurrentValueColor - _color: " + _color)
+		//skyui.util.Debug.log("iEquipEditMode setEditModeCurrentValueColor - _color: " + _color)
 		ScaleText.textColor = _color;
 		RotationText.textColor = _color;
 		RotationDirectionText.textColor = _color;

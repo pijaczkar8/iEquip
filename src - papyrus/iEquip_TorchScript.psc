@@ -6,12 +6,10 @@ import iEquip_FormExt
 
 iEquip_WidgetCore Property WC Auto
 iEquip_ChargeMeters Property CM Auto
-;iEquip_TorchFadeHandler Property TF Auto
 
 Actor Property PlayerRef Auto
 
 light property Torch01 auto
-;light property iEquipTorch01 auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
@@ -26,6 +24,7 @@ float property fSecondsInADay = 86400.0 autoReadonly hidden
 ; MCM Properties
 bool property bShowTorchMeter = true auto hidden
 int property iTorchMeterFillColor = 0xFFF8AC auto hidden
+int property iTorchMeterFillColorDark = 0x686543 auto hidden
 string property sTorchMeterFillDirection = "left" auto hidden
 bool property bAutoReEquipTorch = true auto hidden
 bool property bRealisticReEquip = true auto hidden
@@ -38,33 +37,46 @@ function initialise(bool bEnabled)
 	if bEnabled
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
-		;/fTorchDuration = GetTorchDuration(Torch01)
-		fTorchRadius = GetTorchRadius(Torch01)
+		fTorchDuration = iEquip_FormExt.GetLightDuration(Torch01)
+		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01)
 		if fCurrentTorchLife == 0.0
 			fCurrentTorchLife = fTorchDuration
-		endIf/;
+		endIf
 	else
 		GoToState("DISABLED")
 	endIf
 	debug.trace("iEquip_TorchScript initialise end")
 endFunction
 
-function onTorchRemoved()
+function onTorchRemoved(form torchForm)
 	debug.trace("iEquip_TorchScript onTorchRemoved start")
 	fCurrentTorchLife = fTorchDuration
-	if bAutoReEquipTorch && PlayerRef.GetItemCount(Torch01) > 0
+	if bAutoReEquipTorch && PlayerRef.GetItemCount(torchForm) > 0
 		if bRealisticReEquip
 			Utility.Wait(fRealisticReEquipDelay)
 		endIf
-		PlayerRef.EquipItemEx(Torch01)
+		PlayerRef.EquipItemEx(torchForm)
 	endIf
 	debug.trace("iEquip_TorchScript onTorchRemoved end")
 endfunction
 
 function onTorchEquipped()
 	debug.trace("iEquip_TorchScript onTorchEquipped start")
+	form equippedTorch = PlayerRef.GetEquippedObject(0)
+	iEquip_FormExt.ResetLightRadius(equippedTorch)
+	fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch)
+	fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch)
+
 	fGameTimeOnEquip = Utility.GetCurrentGameTime()
-	RegisterForSingleUpdate(fCurrentTorchLife)
+	
+	if fCurrentTorchLife < 30.0
+		if bReduceLightAsTorchRunsOut
+			iEquip_FormExt.SetLightRadius(equippedTorch, fOriginalRadius * ((((fCurrentTorchLife / 5) as int) + 1) * 0.15))
+		endIf
+		RegisterForSingleUpdate(fCurrentTorchLife - (((fCurrentTorchLife / 5) as int) * 5))
+	else
+		RegisterForSingleUpdate(fCurrentTorchLife - 30.1)
+	endIf
 	
 	if bShowTorchMeter	; Show torch meter if enabled
 		if CM.abIsChargeMeterShown[0]
@@ -73,13 +85,7 @@ function onTorchEquipped()
 		endIf
 		showTorchMeter()
 	endIf
-	
-	if bReduceLightAsTorchRunsOut && fCurrentTorchLife < 30.0
-		;TF.BeginTorchFade(fTorchRadius, fCurrentTorchLife)
-	else
-		;TF.UnregisterForTorchFadeUpdate()
-		;ResetTorchRadius(Torch01)
-	endIf
+
 	debug.trace("iEquip_TorchScript onTorchEquipped end")
 endfunction
 
@@ -93,13 +99,23 @@ endfunction
 
 event OnUpdate()
 	debug.trace("iEquip_TorchScript OnUpdate start")
-	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch
-		form equippedTorch = PlayerRef.GetEquippedObject(0)
-		PlayerRef.UnequipItemEx(equippedTorch)
-		PlayerRef.RemoveItem(equippedTorch)
+	fCurrentTorchLife -= 5.0
+	if bReduceLightAsTorchRunsOut
+		iEquip_FormExt.SetLightRadius(equippedTorch, fOriginalRadius * ((((fCurrentTorchLife / 5) as int) + 1) * 0.15))
 	endIf
-	startTorchMeterFlash()
-	updateTorchMeterVisibility(false)
+	if fCurrentTorchLife <= 0.0
+		if PlayerRef.GetEquippedItemType(0) == 11 ; Torch
+			form equippedTorch = PlayerRef.GetEquippedObject(0)
+			PlayerRef.UnequipItemEx(equippedTorch)
+			PlayerRef.RemoveItem(equippedTorch)
+		endIf
+		if bShowTorchMeter
+			startTorchMeterFlash()
+			updateTorchMeterVisibility(false)
+		endIf
+	else
+		RegisterForSingleUpdate(5.0)
+	endIf
 	debug.trace("iEquip_TorchScript OnUpdate end")
 endEvent
 
@@ -127,7 +143,7 @@ function showTorchMeter()
 		UICallback.PushFloat(iHandle, currPercent)
 		UICallback.PushInt(iHandle, iTorchMeterFillColor)
 		UICallback.PushBool(iHandle, true)	; Enables gradient fill
-		UICallback.PushInt(iHandle, 0x686543)
+		UICallback.PushInt(iHandle, iTorchMeterFillColorDark)
 		UICallback.PushBool(iHandle, true)
 		UICallback.Send(iHandle)
 	endIf

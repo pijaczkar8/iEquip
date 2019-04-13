@@ -21,6 +21,28 @@ Function RegisterForBoundWeaponUnequippedEvent(Form a_thisForm) Global Native
 Function UnregisterForBoundWeaponUnequippedEvent(Form a_thisForm) Global Native
 
 
+; @brief Returns the light duration of the given light.
+; @param a_light The light to retrieve the light duration of.
+; @return Returns -1 on error, else returns the light duration.
+Int Function GetLightDuration(Form a_light) Global Native
+
+
+; @brief Returns the light radius of the given light.
+; @param a_light The light to retrieve the light radius of.
+; @return Returns -1 on error, else returns the light radius.
+Int Function GetLightRadius(Form a_light) Global Native
+
+
+; @brief Sets the light radius of the given light.
+; @param a_light The light to set the light radius of.
+Function SetLightRadius(Form a_light, Int a_radius) Global Native
+
+
+; @brief Resets the light radius of the given light.
+; @param a_light The light to reset the light radius of.
+Function ResetLightRadius(Form a_light) Global Native
+
+
 ; @brief Fires whenever the player equips a bound weapon.
 ; @param a_weaponType The type of weapon equipped.
 ; VALID TYPES:

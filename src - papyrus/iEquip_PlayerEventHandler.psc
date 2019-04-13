@@ -17,6 +17,7 @@ iEquip_PotionScript Property PO Auto
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
 iEquip_TemperedItemHandler Property TI Auto
+iEquip_InventoryEventsListener Property IE Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_TorchScript property TO auto
@@ -185,14 +186,14 @@ function initialise(bool enabled)
 			Utility.SetINIBool("bDisableGearedUp:General", False)
 			WC.refreshVisibleItems()
 		EndIf
-		iEquip_InventoryExt.RegisterForOnRefHandleInvalidatedEvent(self)
+		
 		if bPlayerIsABeast
 			registerForBMEvents()
 		elseIf PlayerRace == PlayerBaseRace || aPlayerBaseVampireRaces.Find(PlayerRace) == aPlayerBaseRaces.Find(PlayerBaseRace) ;Use this once ActorExt function is fixed
 			registerForCoreAnimationEvents()
 			registerForCoreActorActions()
 		endIf
-		BW.initialise()
+		
 		PO.initialise()
 		TI.initialise()
 		updateAllEventFilters()
@@ -200,6 +201,10 @@ function initialise(bool enabled)
 		gotoState("DISABLED")
 		UnregisterForAllEvents()
 	endIf
+
+	IE.initialise(enabled)	
+	BW.initialise(enabled)
+
 	debug.trace("iEquip_PlayerEventHandler initialise end")
 endFunction
 
@@ -251,7 +256,6 @@ function unregisterForCoreAnimationEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
 	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
 	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
-	iEquip_InventoryExt.UnregisterForOnRefHandleInvalidatedEvent(self)
 endFunction
 
 ; Register for all of the animation events we care about for beast mode
@@ -513,7 +517,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	
 	if akBaseObject == Torch01 as form 		; This just handles the finite torch life timer
 		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
-		;TO.onTorchEquipped()
+		TO.onTorchEquipped()
 	endIf
 	
 	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms
@@ -667,9 +671,13 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 
 	if TI.aiTemperedItemTypes.Find(itemType) > -1
 		if itemType == 26 && PlayerRef.GetEquippedShield() as Form == queuedForm
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)				; Shield
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)					; Shield
 		elseIf PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(equippedSlot)	; Left/Right hand
+			if itemType == 7 || itemType == 9
+				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)				; Need to check right hand for ranged weapon iHandle
+			else
+				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(equippedSlot)	; Left/Right hand
+			endIf
 		endIf
 	endIf
 
@@ -820,7 +828,7 @@ endFunction
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
   	if akBaseObject == Torch01 as form
   		debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
-    	;TO.onTorchUnequipped()
+    	TO.onTorchUnequipped()
   	endIf
 endEvent
 
@@ -864,7 +872,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
 						WC.setSlotCount(i, itemCount)
 						if itemType == 31	; Torch
-							;TO.onTorchRemoved()
+							TO.onTorchRemoved(akBaseItem)
 						endIf
 						actionTaken = true
 					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
@@ -883,17 +891,6 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	endIf
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
-
-Event OnRefHandleInvalidated(Form a_item, Int a_refHandle)
-	debug.trace("iEquip_PlayerEventHandler OnRefHandleInvalidated event received - form: " + a_item + "(" + a_item.GetName() + "), refHandle: " + a_refHandle)
-	int foundAt = JArray.FindInt(WC.iRefHandleArray, a_refHandle)
-	if foundAt == -1
-		debug.trace("iEquip_PlayerEventHandler OnRefHandleInvalidated - refHandle not found in iRefHandleArray")
-	else
-		debug.trace("iEquip_PlayerEventHandler OnRefHandleInvalidated - refHandle found in iRefHandleArray at index " + foundAt)
-		JArray.EraseIndex(WC.iRefHandleArray, foundAt)
-	endIf
-EndEvent
 
 Event OnGetUp(ObjectReference akFurniture)
 	debug.trace("iEquip_PlayerEventHandler OnGetUp start")

@@ -1335,9 +1335,13 @@ function addCurrentItemsOnFirstEnable()
 				if itemType == 26
 					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - shield from GetEquippedObject: " + equippedItem + ", from GetEquippedShield: " + PlayerRef.GetEquippedShield() as form)
 					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - attempting to retrieve handle for shield from GetRefHandleFromWornObject(2)")
-					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)	; Shield
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)		; Shield
 				else
-					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)	; Left/Right hand
+					if itemType == 7 || itemType == 9
+						itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)	; Need to check right hand for ranged weapon iHandle
+					else
+						itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)	; Left/Right hand
+					endIf
 				endIf
 			endIf
 

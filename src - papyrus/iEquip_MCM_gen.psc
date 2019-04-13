@@ -5,12 +5,16 @@ import iEquip_StringExt
 iEquip_AmmoMode property AM auto
 iEquip_BeastMode property BM auto
 iEquip_PlayerEventHandler property EH auto
+iEquip_TorchScript property TO auto
 
 string[] ammoSortingOptions
 string[] whenNoAmmoLeftOptions
 string[] ammoModeOptions
 string[] posIndBehaviour
 int iPosIndChoice = 1
+string[] meterFillDirectionOptions
+string[] rawMeterFillDirectionOptions
+int iTorchMeterFillDirection
 
 bool bFirstTimeDisablingTooltips = true
 
@@ -30,14 +34,24 @@ function initData()
     whenNoAmmoLeftOptions[2] = "$iEquip_MCM_gen_opt_SwitchCycle"
     whenNoAmmoLeftOptions[3] = "$iEquip_MCM_gen_opt_Cycle"
 
-    ;/ammoModeOptions = new string[2]
+    ammoModeOptions = new string[2]
     ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
-    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"/;
+    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"
 
     posIndBehaviour = new string[3]
     posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
     posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
     posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
+
+    meterFillDirectionOptions = new String[3]
+    meterFillDirectionOptions[0] = "$iEquip_MCM_rep_opt_left"
+    meterFillDirectionOptions[1] = "$iEquip_MCM_rep_opt_right"
+    meterFillDirectionOptions[2] = "$iEquip_MCM_rep_opt_both"
+
+    rawMeterFillDirectionOptions = new String[3] ;DO NOT TRANSLATE!
+    rawMeterFillDirectionOptions[0] = "left"
+    rawMeterFillDirectionOptions[1] = "right"
+    rawMeterFillDirectionOptions[2] = "both"
 
 endFunction
 
@@ -61,7 +75,7 @@ int function saveData()             ; Save page data and return jObject
 	
 	jArray.addInt(jPageObj, WC.bEnableGearedUp as int)
 	jArray.addInt(jPageObj, WC.bUnequipAmmo as int)
-	jArray.addInt(jPageObj, WC.bEnableGearedUp as int)
+
 	jArray.addInt(jPageObj, BM.abShowInTransformedState[0] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[1] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[2] as int)
@@ -89,22 +103,13 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	
 	WC.bEnableGearedUp = jArray.getInt(jPageObj, 11)
 	WC.bUnequipAmmo = jArray.getInt(jPageObj, 12)
-	WC.bEnableGearedUp = jArray.getInt(jPageObj, 13)
-	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 14)
-	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 15)
-	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 16)
+
+	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 13)
+	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 14)
+	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 15)
 endFunction
 
 function drawPage()
-	;ToDo - remove and uncomment same above
-	ammoModeOptions = new string[2]
-    ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
-    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"
-
-    posIndBehaviour = new string[3]
-    posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
-    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
-    posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
 
     MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
     MCM.AddToggleOptionST("gen_tgl_showTooltips", "$iEquip_MCM_gen_lbl_showTooltips", WC.bShowTooltips)
@@ -130,7 +135,28 @@ function drawPage()
 	        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
 	        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
 
-	        MCM.SetCursorPosition(1)
+	        MCM.AddEmptyOption()
+            MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_TorchOptions")
+            MCM.AddToggleOptionST("gen_tgl_showTorchMeter", "$iEquip_MCM_gen_lbl_showTorchMeter", TO.bShowTorchMeter)
+            if TO.bShowTorchMeter
+                MCM.AddColorOptionST("gen_col_torchMeterCol", "$iEquip_MCM_gen_lbl_torchMeterCol", TO.iTorchMeterFillColor)
+                MCM.AddMenuOptionST("gen_men_torchMeterFillDir", "$iEquip_MCM_gen_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
+            endIf
+
+            MCM.AddToggleOptionST("gen_tgl_reequipTorch", "$iEquip_MCM_gen_lbl_reequipTorch", TO.bAutoReEquipTorch)
+            if TO.bAutoReEquipTorch
+                MCM.AddToggleOptionST("gen_tgl_realisticEquip", "$iEquip_MCM_gen_lbl_realisticEquip", TO.bRealisticReEquip)
+                if TO.bRealisticReEquip
+                    MCM.AddSliderOptionST("gen_sld_realisticEquipDelay", "$iEquip_MCM_gen_lbl_realisticEquipDelay", TO.fRealisticReEquipDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+                endIf
+            endIf
+
+            MCM.AddToggleOptionST("gen_tgl_finiteTorchLife", "$iEquip_MCM_gen_lbl_finiteTorchLife", TO.bFiniteTorchLife)
+            if TO.bFiniteTorchLife
+                MCM.AddToggleOptionST("gen_tgl_torchesFade", "$iEquip_MCM_gen_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
+            endIf
+
+            MCM.SetCursorPosition(1)
 	                
 	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_Cycling")
 	        MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
@@ -258,35 +284,147 @@ State gen_tgl_enblPoisonSlt
 endState
 
 ; ------------------------
-; - Visible Gear Options -
-; ------------------------        
+; - Ammo Mode Options -
+; ------------------------ 
 
-State gen_tgl_enblAllGeard
+State gen_txt_AmmoModeChoice
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblAllGeard")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_AmmoModeChoice")
         elseIf currentEvent == "Select"
-            WC.bEnableGearedUp = !WC.bEnableGearedUp
-            MCM.SetToggleOptionValueST(WC.bEnableGearedUp)
-            WC.bGearedUpOptionChanged = true
-        elseIf currentEvent == "Default"
-            WC.bEnableGearedUp = true 
-            MCM.SetToggleOptionValueST(WC.bEnableGearedUp)
-            WC.bGearedUpOptionChanged = true
+            AM.bSimpleAmmoMode = !AM.bSimpleAmmoMode
+            MCM.SetTextOptionValueST(ammoModeOptions[AM.bSimpleAmmoMode as int])
         endIf
     endEvent
 endState
 
-State gen_tgl_autoUnqpAmmo
+State gen_men_ammoLstSrt
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_autoUnqpAmmo")
-        elseIf currentEvent == "Select"
-            WC.bUnequipAmmo = !WC.bUnequipAmmo
-            MCM.SetToggleOptionValueST(WC.bUnequipAmmo)
-        elseIf currentEvent == "Default"
-            WC.bUnequipAmmo = true 
-            MCM.SetToggleOptionValueST(WC.bUnequipAmmo)
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_ammoLstSrt")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(AM.iAmmoListSorting, ammoSortingOptions, 0)
+        elseIf currentEvent == "Accept"
+            AM.iAmmoListSorting = currentVar as int
+            MCM.SetMenuOptionValueST(ammoSortingOptions[AM.iAmmoListSorting])
+            WC.bAmmoSortingChanged = true
+        endIf
+    endEvent
+endState
+
+State gen_men_whenNoAmmoLeft
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_whenNoAmmoLeft")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
+        elseIf currentEvent == "Accept"
+            AM.iActionOnLastAmmoUsed = currentVar as int
+            MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+        endIf
+    endEvent
+endState
+
+; -----------------
+; - Torch Options -
+; -----------------
+
+State gen_tgl_showTorchMeter
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_showTorchMeter")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bShowTorchMeter)
+            TO.bShowTorchMeter = !TO.bShowTorchMeter
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_col_torchMeterCol
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_torchMeterCol")
+        elseIf currentEvent == "Open"
+            MCM.SetColorDialogStartColor(TO.iTorchMeterFillColor)
+            MCM.SetColorDialogDefaultColor(0xFFF8AC)
+        else
+            If currentEvent == "Accept"
+                TO.iTorchMeterFillColor = currentVar as int
+            elseIf currentEvent == "Default"
+                TO.iTorchMeterFillColor = 0xFFF8AC
+            endIf
+            TO.iTorchMeterFillColorDark = multiplyRBG(TO.iTorchMeterFillColor, 0.4)
+            MCM.SetColorOptionValueST(TO.iTorchMeterFillColor)
+            TO.bSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State gen_men_torchMeterFillDir
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_torchMeterFillDir")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(iTorchMeterFillDirection, meterFillDirectionOptions, 0)
+        elseIf currentEvent == "Accept"
+            iTorchMeterFillDirection = currentVar as int
+            MCM.SetMenuOptionValueST(meterFillDirectionOptions[iTorchMeterFillDirection])
+            TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
+            TO.bSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State gen_tgl_reequipTorch
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_reequipTorch")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bAutoReEquipTorch)
+            TO.bAutoReEquipTorch = !TO.bAutoReEquipTorch
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_tgl_realisticEquip
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_realisticEquip")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bRealisticReEquip)
+            TO.bRealisticReEquip = !TO.bRealisticReEquip
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_sld_realisticEquipDelay
+    event OnBeginState()
+        if currentEvent == "Open"
+            MCM.fillSlider(TO.fRealisticReEquipDelay, 0.5, 5.0, 0.1, 2.0)
+        elseIf currentEvent == "Accept"
+            TO.fRealisticReEquipDelay = currentVar
+            MCM.SetSliderOptionValueST(TO.fRealisticReEquipDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        endIf
+    endEvent
+endState
+
+State gen_tgl_finiteTorchLife
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_finiteTorchLife")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bFiniteTorchLife)
+            TO.bFiniteTorchLife = !TO.bFiniteTorchLife
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_tgl_torchesFade
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_torchesFade")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bReduceLightAsTorchRunsOut)
+            TO.bReduceLightAsTorchRunsOut = !TO.bReduceLightAsTorchRunsOut
         endIf
     endEvent
 endState
@@ -346,44 +484,6 @@ State gen_tgl_showAtrIco
     endEvent
 endState
 
-State gen_men_ammoLstSrt
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_ammoLstSrt")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(AM.iAmmoListSorting, ammoSortingOptions, 0)
-        elseIf currentEvent == "Accept"
-            AM.iAmmoListSorting = currentVar as int
-            MCM.SetMenuOptionValueST(ammoSortingOptions[AM.iAmmoListSorting])
-            WC.bAmmoSortingChanged = true
-        endIf
-    endEvent
-endState
-
-State gen_men_whenNoAmmoLeft
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_whenNoAmmoLeft")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
-        elseIf currentEvent == "Accept"
-            AM.iActionOnLastAmmoUsed = currentVar as int
-            MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
-        endIf
-    endEvent
-endState
-
-State gen_txt_AmmoModeChoice
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_AmmoModeChoice")
-        elseIf currentEvent == "Select"
-            AM.bSimpleAmmoMode = !AM.bSimpleAmmoMode
-            MCM.SetTextOptionValueST(ammoModeOptions[AM.bSimpleAmmoMode as int])
-        endIf
-    endEvent
-endState
-
 State gen_txt_addFists
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -394,6 +494,44 @@ State gen_txt_addFists
         endIf
     endEvent
 endState
+
+; ------------------------
+; - Visible Gear Options -
+; ------------------------        
+
+State gen_tgl_enblAllGeard
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblAllGeard")
+        elseIf currentEvent == "Select"
+            WC.bEnableGearedUp = !WC.bEnableGearedUp
+            MCM.SetToggleOptionValueST(WC.bEnableGearedUp)
+            WC.bGearedUpOptionChanged = true
+        elseIf currentEvent == "Default"
+            WC.bEnableGearedUp = true 
+            MCM.SetToggleOptionValueST(WC.bEnableGearedUp)
+            WC.bGearedUpOptionChanged = true
+        endIf
+    endEvent
+endState
+
+State gen_tgl_autoUnqpAmmo
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_autoUnqpAmmo")
+        elseIf currentEvent == "Select"
+            WC.bUnequipAmmo = !WC.bUnequipAmmo
+            MCM.SetToggleOptionValueST(WC.bUnequipAmmo)
+        elseIf currentEvent == "Default"
+            WC.bUnequipAmmo = true 
+            MCM.SetToggleOptionValueST(WC.bUnequipAmmo)
+        endIf
+    endEvent
+endState
+
+; ------------------------
+; -  Beast Mode Options  -
+; ------------------------ 
 
 State gen_tgl_BM_werewolf
     event OnBeginState()
@@ -429,6 +567,8 @@ State gen_tgl_BM_lich
     endEvent
 endState
 
+; General Functions
+
 function updatePositionIndicatorSettings()
     if iPosIndChoice == 0
         WC.bShowPositionIndicators = false
@@ -441,3 +581,28 @@ function updatePositionIndicatorSettings()
         WC.bPermanentPositionIndicators = false
     endIf
 endFunction
+
+Function multiplyRGB(Int a_color, Float a_multiplier)
+    Int red = Math.LogicalAND(a_color, 0xFF0000)
+    Int green = Math.LogicalAND(a_color, 0x00FF00)
+    Int blue = Math.LogicalAND(a_color, 0x0000FF)
+
+    red *= a_multiplier
+    green *= a_multiplier
+    blue *= a_multiplier
+
+    If (red > 0xFF0000)
+        red = 0xFF0000
+    EndIf
+    If (green > 0x00FF00)
+        green = 0x0FF000
+    EndIf
+    If (blue > 0x0000FF)
+        blue = 0x0000FF
+    EndIf
+   
+    Int result = Math.LogicalAND(red, 0xFF0000)
+    result += Math.LogicalAND(green, 0x00FF00)
+    result += Math.LogicalAND(blue, 0x0000FF)
+    return result
+EndFunction
