@@ -11,6 +11,9 @@ Actor Property PlayerRef Auto
 
 light property Torch01 auto
 
+spell property iEquip_TorchTimerSpell auto
+magiceffect property iEquip_TorchTimerEffect auto
+
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
 
@@ -19,6 +22,7 @@ float fTorchRadius
 
 float fGameTimeOnEquip
 float fCurrentTorchLife
+float property fTorchEffectTimeElapsed auto
 float property fSecondsInADay = 86400.0 autoReadonly hidden
 
 ; MCM Properties
@@ -37,8 +41,8 @@ function initialise(bool bEnabled)
 	if bEnabled
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
-		fTorchDuration = iEquip_FormExt.GetLightDuration(Torch01)
-		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01)
+		fTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float
+		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
 		if fCurrentTorchLife == 0.0
 			fCurrentTorchLife = fTorchDuration
 		endIf
@@ -62,16 +66,18 @@ endfunction
 
 function onTorchEquipped()
 	debug.trace("iEquip_TorchScript onTorchEquipped start")
+
+	iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
+	PlayerRef.AddSpell(iEquip_TorchTimerSpell)
+
 	form equippedTorch = PlayerRef.GetEquippedObject(0)
 	iEquip_FormExt.ResetLightRadius(equippedTorch)
-	fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch)
-	fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch)
+	fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float
+	fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
 
-	fGameTimeOnEquip = Utility.GetCurrentGameTime()
-	
 	if fCurrentTorchLife < 30.0
 		if bReduceLightAsTorchRunsOut
-			iEquip_FormExt.SetLightRadius(equippedTorch, fOriginalRadius * ((((fCurrentTorchLife / 5) as int) + 1) * 0.15))
+			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * ((((fCurrentTorchLife / 5) as int) + 1) * 0.15)) as int)
 		endIf
 		RegisterForSingleUpdate(fCurrentTorchLife - (((fCurrentTorchLife / 5) as int) * 5))
 	else
@@ -91,30 +97,38 @@ endfunction
 
 function onTorchUnequipped()
 	debug.trace("iEquip_TorchScript onTorchUnequipped start")
-	stopTorchMeterAnim()
-	fCurrentTorchLife = fCurrentTorchLife - (fSecondsInADay * (Utility.GetCurrentGameTime() - fGameTimeOnEquip))
+	
+	PlayerRef.RemoveSpell(iEquip_TorchTimerSpell) ; Should result in the script attached to the torch timer spell setting fCurrentTorchLife to fCurrentTorchLife - GetElapsedTime ready for next equip
 	UnregisterForUpdate()
+	stopTorchMeterAnim()
+
 	debug.trace("iEquip_TorchScript onTorchUnequipped end")
 endfunction
 
 event OnUpdate()
 	debug.trace("iEquip_TorchScript OnUpdate start")
 	fCurrentTorchLife -= 5.0
-	if bReduceLightAsTorchRunsOut
-		iEquip_FormExt.SetLightRadius(equippedTorch, fOriginalRadius * ((((fCurrentTorchLife / 5) as int) + 1) * 0.15))
-	endIf
-	if fCurrentTorchLife <= 0.0
-		if PlayerRef.GetEquippedItemType(0) == 11 ; Torch
-			form equippedTorch = PlayerRef.GetEquippedObject(0)
+
+	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch
+		
+		form equippedTorch = PlayerRef.GetEquippedObject(0)
+		
+		if bReduceLightAsTorchRunsOut
+			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * ((((fCurrentTorchLife / 5) as int) + 1) * 0.15)) as int)
+		endIf
+		
+		if fCurrentTorchLife <= 0.0
 			PlayerRef.UnequipItemEx(equippedTorch)
 			PlayerRef.RemoveItem(equippedTorch)
+			
+			if bShowTorchMeter
+				startTorchMeterFlash()
+				updateTorchMeterVisibility(false)
+			endIf
+		else
+			RegisterForSingleUpdate(5.0)
 		endIf
-		if bShowTorchMeter
-			startTorchMeterFlash()
-			updateTorchMeterVisibility(false)
-		endIf
-	else
-		RegisterForSingleUpdate(5.0)
+	
 	endIf
 	debug.trace("iEquip_TorchScript OnUpdate end")
 endEvent
@@ -217,7 +231,7 @@ auto state DISABLED
 		UnregisterForUpdate()
 	endEvent
 
-	function onTorchRemoved()
+	function onTorchRemoved(form torchForm)
 	endfunction
 
 	function onTorchEquipped()
