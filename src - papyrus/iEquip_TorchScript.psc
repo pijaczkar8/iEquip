@@ -12,7 +12,7 @@ Actor Property PlayerRef Auto
 light property Torch01 auto
 
 spell property iEquip_TorchTimerSpell auto
-magiceffect property iEquip_TorchTimerEffect auto
+ActiveMagicEffect property TorchTimer auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
@@ -20,10 +20,9 @@ string WidgetRoot
 float fTorchDuration = 240.0
 float fTorchRadius
 
-float fGameTimeOnEquip
 float fCurrentTorchLife
-float property fTorchEffectTimeElapsed auto
-float property fSecondsInADay = 86400.0 autoReadonly hidden
+
+bool bFirstUpdateForCurrentTorch = true
 
 ; MCM Properties
 bool property bShowTorchMeter = true auto hidden
@@ -35,6 +34,7 @@ bool property bRealisticReEquip = true auto hidden
 float property fRealisticReEquipDelay = 2.0 auto hidden
 bool property bFiniteTorchLife = true auto hidden
 bool property bReduceLightAsTorchRunsOut auto hidden
+bool property bSettingsChanged auto hidden
 
 function initialise(bool bEnabled)
 	debug.trace("iEquip_TorchScript initialise start")
@@ -47,6 +47,7 @@ function initialise(bool bEnabled)
 			fCurrentTorchLife = fTorchDuration
 		endIf
 	else
+		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
 		GoToState("DISABLED")
 	endIf
 	debug.trace("iEquip_TorchScript initialise end")
@@ -54,12 +55,15 @@ endFunction
 
 function onTorchRemoved(form torchForm)
 	debug.trace("iEquip_TorchScript onTorchRemoved start")
-	fCurrentTorchLife = fTorchDuration
-	if bAutoReEquipTorch && PlayerRef.GetItemCount(torchForm) > 0
-		if bRealisticReEquip
-			Utility.Wait(fRealisticReEquipDelay)
+	if !PlayerRef.GetEquippedItemType(0) == 11
+		fCurrentTorchLife = fTorchDuration
+		bFirstUpdateForCurrentTorch = true
+		if WC.asCurrentlyEquipped[0] == torchForm.GetName() && bAutoReEquipTorch && PlayerRef.GetItemCount(torchForm) > 0
+			if bRealisticReEquip
+				Utility.Wait(fRealisticReEquipDelay)
+			endIf
+			PlayerRef.EquipItemEx(torchForm)
 		endIf
-		PlayerRef.EquipItemEx(torchForm)
 	endIf
 	debug.trace("iEquip_TorchScript onTorchRemoved end")
 endfunction
@@ -68,18 +72,20 @@ function onTorchEquipped()
 	debug.trace("iEquip_TorchScript onTorchEquipped start")
 
 	iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
-	PlayerRef.AddSpell(iEquip_TorchTimerSpell)
+	PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
 
 	form equippedTorch = PlayerRef.GetEquippedObject(0)
 	iEquip_FormExt.ResetLightRadius(equippedTorch)
 	fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float
 	fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
 
+	debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fTorchDuration: " + fTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
+
 	if fCurrentTorchLife < 30.0
 		if bReduceLightAsTorchRunsOut
-			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * ((((fCurrentTorchLife / 5) as int) + 1) * 0.15)) as int)
+			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
 		endIf
-		RegisterForSingleUpdate(fCurrentTorchLife - (((fCurrentTorchLife / 5) as int) * 5))
+		RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
 	else
 		RegisterForSingleUpdate(fCurrentTorchLife - 30.1)
 	endIf
@@ -97,34 +103,49 @@ endfunction
 
 function onTorchUnequipped()
 	debug.trace("iEquip_TorchScript onTorchUnequipped start")
-	
-	PlayerRef.RemoveSpell(iEquip_TorchTimerSpell) ; Should result in the script attached to the torch timer spell setting fCurrentTorchLife to fCurrentTorchLife - GetElapsedTime ready for next equip
+
+	debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife: " + fCurrentTorchLife + ", elapsed time: " + TorchTimer.GetTimeElapsed())
+	fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
+	debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife set to: " + fCurrentTorchLife)
+	PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
 	UnregisterForUpdate()
 	stopTorchMeterAnim()
 
 	debug.trace("iEquip_TorchScript onTorchUnequipped end")
 endfunction
 
+function onTorchTimerExpired()
+	debug.trace("iEquip_TorchScript onTorchTimerExpired start")
+	
+	debug.trace("iEquip_TorchScript onTorchTimerExpired end")
+endFunction
+
 event OnUpdate()
-	debug.trace("iEquip_TorchScript OnUpdate start")
-	fCurrentTorchLife -= 5.0
+	debug.trace("iEquip_TorchScript OnUpdate start - fCurrentTorchLife: " + fCurrentTorchLife)
+	
+	if bFirstUpdateForCurrentTorch
+		fCurrentTorchLife = 29.9
+		bFirstUpdateForCurrentTorch = false
+	else
+		fCurrentTorchLife -= 5.0
+	endIf
 
 	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch
 		
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
 		
 		if bReduceLightAsTorchRunsOut
-			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * ((((fCurrentTorchLife / 5) as int) + 1) * 0.15)) as int)
+			debug.trace("iEquip_TorchScript OnUpdate - setting torch light radius to " + (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
+			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
 		endIf
 		
 		if fCurrentTorchLife <= 0.0
-			PlayerRef.UnequipItemEx(equippedTorch)
-			PlayerRef.RemoveItem(equippedTorch)
-			
 			if bShowTorchMeter
 				startTorchMeterFlash()
 				updateTorchMeterVisibility(false)
 			endIf
+			PlayerRef.UnequipItemEx(equippedTorch)
+			PlayerRef.RemoveItem(equippedTorch)
 		else
 			RegisterForSingleUpdate(5.0)
 		endIf
@@ -138,7 +159,9 @@ endEvent
 function showTorchMeter()
 	debug.trace("iEquip_TorchScript showTorchMeter start")
 
-	float currPercent = ((100 / fTorchDuration * fCurrentTorchLife) as int) as float
+	float currPercent = 1.0 / fTorchDuration * fCurrentTorchLife
+
+	debug.trace("iEquip_TorchScript showTorchMeter - currPercent: " + currPercent)
 
 	; Set the fill direction if different to the regular left enchantment meter fill direction setting
 	if sTorchMeterFillDirection != CM.asMeterFillDirection[0]
@@ -190,8 +213,8 @@ function startTorchMeterFlash()
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
-		UICallback.PushInt(iHandle, 0xFF0000)
-		UICallback.PushBool(iHandle, false)
+		UICallback.PushInt(iHandle, -1)
+		UICallback.PushBool(iHandle, true)
 		UICallback.Send(iHandle)
 	endIf
 	debug.trace("iEquip_TorchScript startTorchMeterFlash end")

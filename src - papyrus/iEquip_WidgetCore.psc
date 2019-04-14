@@ -507,6 +507,10 @@ EndProperty
 state ENABLED
 	event OnBeginState()
 		debug.trace("iEquip_WidgetCore ENABLED OnBeginState start")
+
+		if bIsFirstEnabled
+			getAndStoreDefaultWidgetValues()
+		endIf
 		
 		iEquip_InventoryExt.ParseInventory()	; This initialises the ref handles for the players inventory
 		
@@ -559,18 +563,6 @@ state ENABLED
 	Event OnWidgetLoad()
 		debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
 
-		;ToDo - remove this array from OnWidgetLoad
-		aiIconClips = new int[8]
-		aiIconClips[0] = 7 		; leftIcon_mc
-		aiIconClips[1] = 21 	; rightIcon_mc
-		aiIconClips[2] = 35 	; shoutIcon_mc
-		aiIconClips[3] = 42 	; consumableIcon_mc
-		aiIconClips[4] = 47 	; poisonIcon_mc
-		aiIconClips[5] = 17 	; leftPreselectIcon_mc
-		aiIconClips[6] = 31 	; rightPreselectIcon_mc
-		aiIconClips[7] = 39 	; shoutPreselectIcon_mc
-
-		;fPositionIndicatorAlpha = 60.0
 		EM.isEditMode = false
 		bPreselectMode = false
 		bRefreshingWidget = true
@@ -585,11 +577,10 @@ state ENABLED
 		CM.OnWidgetLoad()
 		
 		OnWidgetReset()
-		;EM.UpdateElementsAll()
-		;PM.updateAnimationTargetValues()
+
 		; Determine if the widget should be displayed
 		UpdateWidgetModes()
-		;Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
+		; Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
 		UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 		
 		bool[] args = new bool[5]
@@ -604,7 +595,7 @@ state ENABLED
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			refreshWidgetOnLoad()
 		else
-			getAndStoreDefaultWidgetValues()
+			;getAndStoreDefaultWidgetValues()
 			int i
 			while i < 2
 				CM.initChargeMeter(i)
@@ -617,7 +608,6 @@ state ENABLED
 			endIf
 			args[3] = bAmmoMode
 			initQueuePositionIndicators()
-			debug.trace("iEquip_WidgetCore OnWidgetLoad - checking values for Potion Selector, visible: " + abWidget_V[45] + ", alpha: " + afWidget_A[45] + ", defV: " + abWidget_DefV[45] + ", defA: " + afWidget_DefA[45])
             updatePotionSelector(true) ;Hide the potion selector
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
@@ -2321,8 +2311,8 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		UICallback.PushString(iHandle, sIcon) 												; New icon
 		UICallback.PushString(iHandle, sName)
 		UICallback.PushFloat(iHandle, fNameAlpha)											; Current item name alpha value
-		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Slot]]) 					; Current item icon alpha value
-		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Slot]]) 					; Current item icon scale value
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Slot]]) 						; Current item icon alpha value
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Slot]]) 						; Current item icon scale value
 		UICallback.Send(iHandle)
 	endIf
 
@@ -3057,7 +3047,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	    			Utility.WaitMenuMode(0.1)
 		    		if !PlayerRef.GetEquippedObject(iEquipSlotID)												; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
 		    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; So fall back on EquipItemEX and take pot luck as to which one is equipped
-	    				EH.abSkipQueueObjectUpdate[iEquipSlotId] = true 	
+	    				EH.abSkipQueueObjectUpdate[Q] = true 	
 		    		endIf
 		    	endIf
 		    endIf
@@ -3753,6 +3743,7 @@ function addToQueue(int Q)
 		if itemType == 41 || itemType == 26 ; Weapons and shields only
 			if listIndex > -1
 				itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
+				debug.trace("iEquip_WidgetCore addToQueue - listIndex: " + listIndex + ", itemHandle: " + itemHandle)
 				if itemHandle != 0xFFFF
 					isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle) > 0
 				endIf
@@ -3833,7 +3824,7 @@ function addToQueue(int Q)
 							if TI.aiTemperedItemTypes.Find(itemType) > -1
 								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
 								if itemHandle != 0xFFFF
-									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
+									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))	
 								endIf
 								jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
 								jMap.setStr(iEquipItem, "temperedNameForQueueMenu", itemName)

@@ -353,7 +353,7 @@ State gen_col_torchMeterCol
             elseIf currentEvent == "Default"
                 TO.iTorchMeterFillColor = 0xFFF8AC
             endIf
-            TO.iTorchMeterFillColorDark = multiplyRBG(TO.iTorchMeterFillColor, 0.4)
+            TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
             MCM.SetColorOptionValueST(TO.iTorchMeterFillColor)
             TO.bSettingsChanged = true
         endIf 
@@ -425,6 +425,7 @@ State gen_tgl_torchesFade
             MCM.SetInfoText("$iEquip_MCM_gen_txt_torchesFade")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bReduceLightAsTorchRunsOut)
             TO.bReduceLightAsTorchRunsOut = !TO.bReduceLightAsTorchRunsOut
+            MCM.SetToggleOptionValueST(TO.bReduceLightAsTorchRunsOut)
         endIf
     endEvent
 endState
@@ -582,14 +583,14 @@ function updatePositionIndicatorSettings()
     endIf
 endFunction
 
-Function multiplyRGB(Int a_color, Float a_multiplier)
+int function multiplyRGB(Int a_color, Float a_multiplier)
     Int red = Math.LogicalAND(a_color, 0xFF0000)
     Int green = Math.LogicalAND(a_color, 0x00FF00)
     Int blue = Math.LogicalAND(a_color, 0x0000FF)
 
-    red *= a_multiplier
-    green *= a_multiplier
-    blue *= a_multiplier
+    red = (red as float * a_multiplier) as int
+    green = (green as float * a_multiplier) as int
+    blue = (blue as float * a_multiplier) as int
 
     If (red > 0xFF0000)
         red = 0xFF0000
@@ -605,4 +606,4 @@ Function multiplyRGB(Int a_color, Float a_multiplier)
     result += Math.LogicalAND(green, 0x00FF00)
     result += Math.LogicalAND(blue, 0x0000FF)
     return result
-EndFunction
+endFunction

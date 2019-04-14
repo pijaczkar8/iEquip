@@ -249,7 +249,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function startFillTween(a_duration: Number): Void
 	{
-		TweenLite.to(_meterBarAnim, a_duration, {frame:120}); 
+		TweenLite.to(_meterBarAnim, a_duration*1.2, {frame:120}); 
 	}
 
 	public function stopFillTween(): Void

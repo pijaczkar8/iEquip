@@ -204,6 +204,7 @@ function initialise(bool enabled)
 
 	IE.initialise(enabled)	
 	BW.initialise(enabled)
+	TO.initialise(enabled)
 
 	debug.trace("iEquip_PlayerEventHandler initialise end")
 endFunction
@@ -849,6 +850,9 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		updateEventFilter(iEquip_AllCurrentItemsFLST)
     ;Otherwise handle anything else in left, right or shout queue other than bound weapons
 	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
+		if itemType == 31	; Torch
+			TO.onTorchRemoved(akBaseItem)
+		endIf
 		i = 0
 		int foundAt
 		bool actionTaken
@@ -871,9 +875,6 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
 					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
 						WC.setSlotCount(i, itemCount)
-						if itemType == 31	; Torch
-							TO.onTorchRemoved(akBaseItem)
-						endIf
 						actionTaken = true
 					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
 					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
