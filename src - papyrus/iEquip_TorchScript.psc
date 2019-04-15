@@ -97,7 +97,7 @@ function onTorchEquipped()
 				bSettingLightRadius = true
 				iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
 				PlayerRef.UnequipItemEx(equippedTorch)
-				PlayerRef.EquipItemEx(equippedTorch)
+				PlayerRef.EquipItemEx(equippedTorch, 0, false, false)
 			endIf
 			RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
 		else
@@ -153,7 +153,7 @@ event OnUpdate()
 			bSettingLightRadius = true
 			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
 			PlayerRef.UnequipItemEx(equippedTorch)
-			PlayerRef.EquipItemEx(equippedTorch)
+			PlayerRef.EquipItemEx(equippedTorch, 0, false, false)
 		endIf
 		
 		if fCurrentTorchLife <= 0.0
