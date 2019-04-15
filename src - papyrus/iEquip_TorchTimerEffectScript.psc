@@ -31,23 +31,29 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 endEvent
 
 Event OnMenuOpen(String MenuName)
+    debug.trace("iEquip_TorchTimerEffectScript OnMenuOpen start - " + MenuName)
 	if TO.bShowTorchMeter
 		; Check if time is paused in menu and if so pause the meter fill animation
 	    Float TimePassed = GetTimeElapsed()
 	    Utility.WaitMenuMode(0.2)
 	    if TimePassed < (GetTimeElapsed() + 0.2)
+            debug.trace("iEquip_TorchTimerEffectScript OnMenuOpen - time appears to be paused, pausing the meter animation")
 	    	UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.pauseFillTween")
 			bTweenPaused = true
 	    endIf
 	endIf
+    debug.trace("iEquip_TorchTimerEffectScript OnMenuOpen end")
 EndEvent
 
 Event OnMenuClose(String MenuName)
+    debug.trace("iEquip_TorchTimerEffectScript OnMenuClose start - " + MenuName)
     ; Resume the meter fill animation if it was stopped
     if bTweenPaused && !Utility.IsInMenuMode()
+        debug.trace("iEquip_TorchTimerEffectScript OnMenuClose - unpausing the meter animation")
 		UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween")
 		bTweenPaused = false
 	endIf
+    debug.trace("iEquip_TorchTimerEffectScript OnMenuClose end")
 EndEvent
 
 Event OnEffectFinish(Actor akTarget, Actor akCaster)

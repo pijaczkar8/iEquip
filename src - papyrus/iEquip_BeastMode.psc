@@ -177,7 +177,10 @@ function onPlayerTransform(race newRace, bool bPlayerIsAVampire, bool bLoading =
 		int i
 		while i < 3
 			if WC.iBackgroundStyle > 0
-				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", i, WC.iBackgroundStyle)	; Reshow the background if it was previously hidden
+				int[] args = new int[2]
+				args[0] = i
+				args[1] = WC.iBackgroundStyle
+				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Reshow the background if it was previously hidden
 			endIf
 			;Hide the attribute, poison, count and charge info
 			if i < 2 && (!bInSupportedBeastForm || bLoading)

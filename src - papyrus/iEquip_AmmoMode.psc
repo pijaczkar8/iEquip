@@ -499,7 +499,10 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 			endIf
 
 			if WC.iBackgroundStyle > 0
-				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", 0, WC.iBackgroundStyle)	; Reshow the background if it was previously hidden
+				int[] args = new int[2]
+				args[0] = 0
+				args[1] = WC.iBackgroundStyle
+				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Reshow the background if it was previously hidden
 			endIf
 			
 			;Update the widget

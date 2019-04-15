@@ -55,6 +55,10 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 	public var meterContent: MovieClip;
 	public var background: MovieClip;
 
+  /* TORCH METER FILL ANIMATION */
+
+  	public var TorchMeterTween: TweenLite;
+
   /* INITIALIZATION */
 
 	public function iEquipMeter()
@@ -249,7 +253,18 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function startFillTween(a_duration: Number): Void
 	{
-		TweenLite.to(_meterBarAnim, a_duration*1.2, {frame:120}); 
+		TorchMeterTween = new TweenLite(_meterBarAnim, a_duration*1.2, {frame:120});
+		TorchMeterTween.play();
+	}
+
+	public function pauseFillTween(): Void
+	{
+		TorchMeterTween.pause()
+	}
+
+	public function resumeFillTween(): Void
+	{
+		TorchMeterTween.resume()
 	}
 
 	public function stopFillTween(): Void

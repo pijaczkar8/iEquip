@@ -54,10 +54,8 @@ function initialise(bool bEnabled)
 		if fCurrentTorchLife == 0.0
 			fCurrentTorchLife = fTorchDuration
 		endIf
-		RegisterForAllMenus()
 	else
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
-		UnregisterForAllMenus()
 		GoToState("DISABLED")
 	endIf
 	debug.trace("iEquip_TorchScript initialise end")
@@ -67,6 +65,7 @@ function onTorchRemoved(form torchForm)
 	debug.trace("iEquip_TorchScript onTorchRemoved start")
 	if !PlayerRef.GetEquippedItemType(0) == 11
 		fCurrentTorchLife = fTorchDuration
+		iEquip_FormExt.SetLightRadius(torchForm, fTorchRadius as int)
 		bFirstUpdateForCurrentTorch = true
 		if WC.asCurrentlyEquipped[0] == torchForm.GetName() && bAutoReEquipTorch && PlayerRef.GetItemCount(torchForm) > 0
 			if bRealisticReEquip
@@ -87,7 +86,7 @@ function onTorchEquipped()
 		PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
 
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
-		iEquip_FormExt.ResetLightRadius(equippedTorch)
+		;iEquip_FormExt.ResetLightRadius(equippedTorch)
 		fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float - 5.0
 		fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
 
@@ -96,8 +95,8 @@ function onTorchEquipped()
 		if fCurrentTorchLife < 30.0
 			if bReduceLightAsTorchRunsOut
 				bSettingLightRadius = true
-				PlayerRef.UnequipItemEx(equippedTorch)
 				iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
+				PlayerRef.UnequipItemEx(equippedTorch)
 				PlayerRef.EquipItemEx(equippedTorch)
 			endIf
 			RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
@@ -131,7 +130,7 @@ endfunction
 
 function onTorchTimerExpired()
 	debug.trace("iEquip_TorchScript onTorchTimerExpired start")
-	
+	; ToDo - don't know if we actually need this for anything...
 	debug.trace("iEquip_TorchScript onTorchTimerExpired end")
 endFunction
 
@@ -152,8 +151,8 @@ event OnUpdate()
 		if bReduceLightAsTorchRunsOut
 			debug.trace("iEquip_TorchScript OnUpdate - setting torch light radius to " + (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
 			bSettingLightRadius = true
-			PlayerRef.UnequipItemEx(equippedTorch)
 			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
+			PlayerRef.UnequipItemEx(equippedTorch)
 			PlayerRef.EquipItemEx(equippedTorch)
 		endIf
 		
@@ -163,6 +162,7 @@ event OnUpdate()
 				Utility.Wait(2.0)
 				updateTorchMeterVisibility(false)
 			endIf
+			iEquip_FormExt.SetLightRadius(equippedTorch, fTorchRadius as int)
 			PlayerRef.UnequipItemEx(equippedTorch)
 			PlayerRef.RemoveItem(equippedTorch)
 		else
@@ -238,7 +238,7 @@ function startTorchMeterFlash()
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
-		UICallback.PushInt(iHandle, -1)
+		UICallback.PushInt(iHandle, 0xFF0000)
 		UICallback.PushBool(iHandle, true)
 		UICallback.Send(iHandle)
 	endIf

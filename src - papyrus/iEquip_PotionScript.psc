@@ -875,7 +875,10 @@ function checkAndAddToPoisonQueue(potion foundPoison)
         ;If the poison queue was previously empty update the widget to show what we've just added
         if jArray.count(iPoisonQ) == 1
             if WC.iBackgroundStyle > 0
-                UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", 4, WC.iBackgroundStyle)   ; Reshow the background if it was previously hidden
+                int[] args = new int[2]
+                args[0] = 4
+                args[1] = WC.iBackgroundStyle
+                UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)   ; Reshow the background if it was previously hidden
             endIf
             WC.aiCurrentQueuePosition[4] = 0
             WC.asCurrentlyEquipped[4] = poisonName
@@ -939,7 +942,10 @@ function checkAndAddToConsumableQueue(potion foundConsumable, bool isPotion = fa
         endIf    
         if count == 1 || ((count - enabledPotionGroups == 1) && groupHasPotions == 0)
             if WC.iBackgroundStyle > 0
-                UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", 3, WC.iBackgroundStyle)   ; Reshow the background if it was previously hidden
+                int[] args = new int[2]
+                args[0] = 3
+                args[1] = WC.iBackgroundStyle
+                UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)   ; Reshow the background if it was previously hidden
             endIf
             WC.aiCurrentQueuePosition[3] = count - 1
             WC.asCurrentlyEquipped[3] = consumableName

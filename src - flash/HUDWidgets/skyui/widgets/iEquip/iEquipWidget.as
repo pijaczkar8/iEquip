@@ -542,6 +542,65 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		poisonBg_mc.gotoAndStop(backgroundName);
 	}
 
+	public function setWidgetBackground(iSlot: Number, iOption: Number): Void
+	{
+		var backgroundClip: MovieClip;
+		var backgroundName: String;
+
+		switch(iSlot) {
+			case 0:
+				backgroundClip = leftBg_mc;
+				break;
+			case 1:
+				backgroundClip = rightBg_mc;
+				break;
+			case 2:
+				backgroundClip = shoutBg_mc;
+				break;
+			case 3:
+				backgroundClip = consumableBg_mc;
+				break;
+			case 4:
+				backgroundClip = poisonBg_mc;
+				break;
+			/*case 5:
+				backgroundClip = leftPreselectBg_mc;
+				break;
+			case 6:
+				backgroundClip = rightPreselectBg_mc;
+				break;
+			case 7:
+				backgroundClip = shoutPreselectBg_mc;
+				break;*/
+			};
+
+		switch(iOption) {
+			case 0:
+				backgroundName = "Hidden";
+				break;
+			case 1:
+				backgroundName = "Square";
+				break;
+			case 2:
+				backgroundName = "SquareNoBorder";
+				break;
+			case 3:
+				backgroundName = "Round";
+				break;
+			case 4:
+				backgroundName = "RoundNoBorder";
+				break;
+			case 5:
+				backgroundName = "RoundFade";
+				break;
+			case 6:
+				backgroundName = "Dialogue";
+				break;
+			};
+
+		backgroundClip.gotoAndStop(backgroundName);
+	}
+
 	public function togglePreselect(leftEnabled: Boolean, rightEnabled: Boolean, shoutEnabled: Boolean, ammoMode: Boolean): Void
 	{
 		if(!ammoMode){

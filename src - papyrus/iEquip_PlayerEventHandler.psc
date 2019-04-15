@@ -691,7 +691,11 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	endIf
 	
 	if itemName == ""
-		itemName = itemBaseName
+		itemName = queuedForm.getName()
+	endIf
+
+	if itemBaseName == ""
+		itemBaseName = itemName
 	endIf
 
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))

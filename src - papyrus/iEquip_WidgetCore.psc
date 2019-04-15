@@ -27,6 +27,7 @@ iEquip_AmmoMode property AM auto
 iEquip_ProMode property PM auto
 iEquip_BeastMode property BM auto
 iEquip_PotionScript property PO auto
+iEquip_TorchScript property TO auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_BoundWeaponEventsListener property BW auto
 iEquip_AddedItemHandler property AD auto
@@ -1366,24 +1367,23 @@ function addCurrentItemsOnFirstEnable()
 	        itemIcon = GetItemIconName(equippedItem, itemType, itemName)
 	        
 	        if Q == 0 && (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3) || itemType == 31)
-		        	bAddingItemsOnFirstEnable = true
-		        	; The following sequence is to reset both hands so no auto re-equipping/auto-adding goes on the first time this 2H item is unequipped
-		        	UnequipHand(0)
-		        	if !itemType == 31
-		        		UnequipHand(1)
-		        	endIf
-		        	Utility.WaitMenuMode(0.3)
-		        	UnequipHand(0)
-		        	if itemType == 31
-		        		PlayerRef.EquipItemEx(equippedItem)
-		        	else
-			        	UnequipHand(1)
-			        	PlayerRef.EquipItemById(equippedItem, itemID, 1)
-			        endIf
-		        	Utility.WaitMenuMode(0.3)
-		        	bAddingItemsOnFirstEnable = false
+	        	bAddingItemsOnFirstEnable = true
+	        	; The following sequence is to reset both hands so no auto re-equipping/auto-adding goes on the first time this 2H item is unequipped
+	        	UnequipHand(0)
+	        	if !itemType == 31
+	        		UnequipHand(1)
+	        	endIf
+	        	Utility.WaitMenuMode(0.3)
+	        	UnequipHand(0)
+	        	if itemType == 31
+	        		PlayerRef.EquipItemEx(equippedItem)
+	        	else
+		        	UnequipHand(1)
+		        	PlayerRef.EquipItemById(equippedItem, itemID, 1)
 		        	Q = 1
 		        endIf
+	        	Utility.WaitMenuMode(0.3)
+	        	bAddingItemsOnFirstEnable = false
 	        endIf
 			
 			int iEquipItem = jMap.object()
@@ -1744,7 +1744,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 
 		if Q < 3
 			if iBackgroundStyle > 0
-				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", Q, iBackgroundStyle)	; Reshow the background if it was previously hidden
+				int[] args = new int[2]
+				args[0] = Q
+				args[1] = iBackgroundStyle
+				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Reshow the background if it was previously hidden
 			endIf
 			abQueueWasEmpty[Q] = false
 			;Hide the slot counter, poison info and charge meter if currently shown
@@ -2423,7 +2426,10 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 	endIf
 
 	if !bLeaveBackground && iBackgroundStyle > 0
-		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", Q, 0)	; Set background to Hidden if not showing Fist
+		int[] args = new int[2]
+		args[0] = Q
+		args[1] = 0
+		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Set background to Hidden if not showing Fist
 	endIf
 	
 	if (Q != 3 || !bPotionGrouping)
@@ -3156,7 +3162,10 @@ function goUnarmed()
 	endIf
 
 	if iBackgroundStyle > 0 && abQueueWasEmpty[0]
-		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", 0, iBackgroundStyle)	; Reshow the background if it was previously hidden
+		int[] args = new int[2]
+		args[0] = 0
+		args[1] = iBackgroundStyle
+		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Reshow the background if it was previously hidden
 	endIf
 
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
@@ -3218,7 +3227,10 @@ function updateLeftSlotOn2HSpellEquipped()
 	endIf
 
 	if iBackgroundStyle > 0 && abQueueWasEmpty[0]
-		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", 0, iBackgroundStyle)	; Reshow the background if it was previously hidden
+		int[] args = new int[2]
+		args[0] = 0
+		args[1] = iBackgroundStyle
+		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Reshow the background if it was previously hidden
 	endIf
 
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
@@ -3861,7 +3873,9 @@ function addToQueue(int Q)
 							if TI.aiTemperedItemTypes.Find(itemType) > -1
 								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
 								if itemHandle != 0xFFFF
-									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))	
+									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
+								else
+									jMap.setStr(iEquipItem, "iEquipBaseName", itemName)
 								endIf
 								jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
 								jMap.setStr(iEquipItem, "temperedNameForQueueMenu", itemName)
@@ -4403,7 +4417,10 @@ function ApplyChanges()
 		if iBackgroundStyle > 0
 			while i < 5
 				if abQueueWasEmpty[i]
-					UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", i, 0)	; Hide the background if it was previously hidden
+					int[] args = new int[2]
+					args[0] = i
+					args[1] = 0
+					UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Hide the background if it was previously hidden
 				endIf
 				i += 1
 			endWhile
@@ -4565,7 +4582,7 @@ function ApplyChanges()
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
 			endIf
 		endIf
-		if TO.bSettingsChanged && PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
+		if (TO.bSettingsChanged || bMCMPresetLoaded) && PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
 			TO.updateTorchMeterOnSettingsChanged()
 		endIf
 		if bTemperDisplaySettingChanged || bMCMPresetLoaded

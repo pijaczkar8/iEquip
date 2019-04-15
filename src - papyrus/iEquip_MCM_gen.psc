@@ -66,6 +66,15 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, AM.bSimpleAmmoMode as int)
 	jArray.addInt(jPageObj, AM.iAmmoListSorting)
 	jArray.addInt(jPageObj, AM.iActionOnLastAmmoUsed)
+
+    jArray.addInt(jPageObj, TO.bShowTorchMeter as int)
+    jArray.addInt(jPageObj, TO.iTorchMeterFillColor)
+    jArray.addInt(jPageObj, iTorchMeterFillDirection)
+    jArray.addInt(jPageObj, TO.bAutoReEquipTorch as int)
+    jArray.addInt(jPageObj, TO.bRealisticReEquip as int)
+    jArray.addFlt(jPageObj, TO.fRealisticReEquipDelay)
+    jArray.addInt(jPageObj, TO.bFiniteTorchLife as int)
+    jArray.addInt(jPageObj, TO.bReduceLightAsTorchRunsOut as int)
 	
 	jArray.addInt(jPageObj, WC.bEquipOnPause as int)
 	jArray.addFlt(jPageObj, WC.fEquipOnPauseDelay)
@@ -92,21 +101,32 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	AM.bSimpleAmmoMode = jArray.getInt(jPageObj, 4)
 	AM.iAmmoListSorting = jArray.getInt(jPageObj, 5)
 	AM.iActionOnLastAmmoUsed = jArray.getInt(jPageObj, 6)
+
+    TO.bShowTorchMeter = jArray.getInt(jPageObj, 7)
+    TO.iTorchMeterFillColor = jArray.getInt(jPageObj, 8)
+    TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
+    iTorchMeterFillDirection = jArray.getInt(jPageObj, 9)
+    TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
+    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 10)
+    TO.bRealisticReEquip = jArray.getInt(jPageObj, 11)
+    TO.fRealisticReEquipDelay = jArray.getFlt(jPageObj, 12)
+    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 13)
+    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 14)
 	
-	WC.bEquipOnPause = jArray.getInt(jPageObj, 7)
-	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 8)
+	WC.bEquipOnPause = jArray.getInt(jPageObj, 15)
+	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 16)
 	
-	iPosIndChoice = jArray.getInt(jPageObj, 9)
+	iPosIndChoice = jArray.getInt(jPageObj, 17)
     updatePositionIndicatorSettings()
 
-	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 10)
+	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 18)
 	
-	WC.bEnableGearedUp = jArray.getInt(jPageObj, 11)
-	WC.bUnequipAmmo = jArray.getInt(jPageObj, 12)
+	WC.bEnableGearedUp = jArray.getInt(jPageObj, 19)
+	WC.bUnequipAmmo = jArray.getInt(jPageObj, 20)
 
-	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 13)
-	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 14)
-	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 15)
+	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 21)
+	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 22)
+	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 23)
 endFunction
 
 function drawPage()
