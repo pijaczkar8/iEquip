@@ -431,7 +431,7 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 				if RC.bRechargingEnabled && CM.iChargeDisplayType > 0 && CM.abIsChargeMeterShown[iSlotToUpdate]
 					CM.updateMeterPercent(iSlotToUpdate)
 				endIf
-			else
+			elseIf slot == 0
 				;Otherwise check if we've just cast Bound Shield (weapons are handled in BoundWeaponEventsListener)
 				Utility.WaitMenuMode(0.3)
 				if PlayerRef.GetEquippedShield() && PlayerRef.GetEquippedShield().GetName() == WC.asCurrentlyEquipped[0]
@@ -516,7 +516,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
 	
-	if akBaseObject == Torch01 as form 		; This just handles the finite torch life timer
+	if akBaseObject == Torch01 as form	; This just handles the finite torch life timer
 		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
 		TO.onTorchEquipped()
 	endIf
@@ -827,7 +827,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 endFunction
 
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-  	if akBaseObject == Torch01 as form
+  	if akBaseObject == Torch01 as form && !WC.bAddingItemsOnFirstEnable
   		debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
     	TO.onTorchUnequipped()
   	endIf

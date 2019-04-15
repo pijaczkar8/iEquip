@@ -754,6 +754,11 @@ function refreshWidgetOnLoad()
 	endwhile
 	
 	CM.updateChargeMeters(true)
+
+	if PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter		
+		TO.showTorchMeter(true)
+	endIf
+
 	if EH.bPlayerIsABeast
 		BM.onPlayerTransform(PlayerRef.GetRace(), EH.bPlayerIsAVampire, true)
 	else
@@ -1356,18 +1361,25 @@ function addCurrentItemsOnFirstEnable()
 			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(equippedItem.GetFormID(), 0x00FFFFFF))
 	        itemIcon = GetItemIconName(equippedItem, itemType, itemName)
 	        
-	        if Q == 0 && (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
-	        	bAddingItemsOnFirstEnable = true
-	        	; The following sequence is to reset both hands so no auto re-equipping/auto-adding goes on the first time this 2H item is unequipped
-	        	UnequipHand(0)
-	        	UnequipHand(1)
-	        	Utility.WaitMenuMode(0.3)
-	        	UnequipHand(0)
-	        	UnequipHand(1)
-	        	PlayerRef.EquipItemById(equippedItem, itemID, 1)
-	        	Utility.WaitMenuMode(0.3)
-	        	bAddingItemsOnFirstEnable = false
-	        	Q = 1
+	        if Q == 0 && (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3) || itemType == 31)
+		        	bAddingItemsOnFirstEnable = true
+		        	; The following sequence is to reset both hands so no auto re-equipping/auto-adding goes on the first time this 2H item is unequipped
+		        	UnequipHand(0)
+		        	if !itemType == 31
+		        		UnequipHand(1)
+		        	endIf
+		        	Utility.WaitMenuMode(0.3)
+		        	UnequipHand(0)
+		        	if itemType == 31
+		        		PlayerRef.EquipItemEx(equippedItem)
+		        	else
+			        	UnequipHand(1)
+			        	PlayerRef.EquipItemById(equippedItem, itemID, 1)
+			        endIf
+		        	Utility.WaitMenuMode(0.3)
+		        	bAddingItemsOnFirstEnable = false
+		        	Q = 1
+		        endIf
 	        endIf
 			
 			int iEquipItem = jMap.object()

@@ -2,6 +2,7 @@
 Scriptname iEquip_TorchScript extends Quest
 
 import UI
+import Utility
 import iEquip_FormExt
 
 iEquip_WidgetCore Property WC Auto
@@ -20,9 +21,13 @@ string WidgetRoot
 float fTorchDuration = 240.0
 float fTorchRadius
 
+bool bGetInitialValues = true
+
 float fCurrentTorchLife
 
 bool bFirstUpdateForCurrentTorch = true
+bool bSettingLightRadius
+bool bTweenPaused
 
 ; MCM Properties
 bool property bShowTorchMeter = true auto hidden
@@ -41,13 +46,18 @@ function initialise(bool bEnabled)
 	if bEnabled
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
-		fTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float
-		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
+		if bGetInitialValues
+			fTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float
+			fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
+			bGetInitialValues = false
+		endIf
 		if fCurrentTorchLife == 0.0
 			fCurrentTorchLife = fTorchDuration
 		endIf
+		RegisterForAllMenus()
 	else
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
+		UnregisterForAllMenus()
 		GoToState("DISABLED")
 	endIf
 	debug.trace("iEquip_TorchScript initialise end")
@@ -70,47 +80,52 @@ endfunction
 
 function onTorchEquipped()
 	debug.trace("iEquip_TorchScript onTorchEquipped start")
-
-	iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
-	PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
-
-	form equippedTorch = PlayerRef.GetEquippedObject(0)
-	iEquip_FormExt.ResetLightRadius(equippedTorch)
-	fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float
-	fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
-
-	debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fTorchDuration: " + fTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
-
-	if fCurrentTorchLife < 30.0
-		if bReduceLightAsTorchRunsOut
-			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
-		endIf
-		RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
+	if bSettingLightRadius
+		bSettingLightRadius = false
 	else
-		RegisterForSingleUpdate(fCurrentTorchLife - 30.1)
-	endIf
-	
-	if bShowTorchMeter	; Show torch meter if enabled
-		if CM.abIsChargeMeterShown[0]
-			updateTorchMeterVisibility(false)
-			Utility.WaitMenuMode(0.2)
-		endIf
-		showTorchMeter()
-	endIf
+		iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
+		PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
 
+		form equippedTorch = PlayerRef.GetEquippedObject(0)
+		iEquip_FormExt.ResetLightRadius(equippedTorch)
+		fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float
+		fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
+
+		debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fTorchDuration: " + fTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
+
+		if fCurrentTorchLife < 30.0
+			if bReduceLightAsTorchRunsOut
+				bSettingLightRadius = true
+				PlayerRef.UnequipItemEx(equippedTorch)
+				iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
+				PlayerRef.EquipItemEx(equippedTorch)
+			endIf
+			RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
+		else
+			RegisterForSingleUpdate(fCurrentTorchLife - 30.1)
+		endIf
+		
+		if bShowTorchMeter	; Show torch meter if enabled
+			if CM.abIsChargeMeterShown[0]
+				updateTorchMeterVisibility(false)
+				Utility.WaitMenuMode(0.2)
+			endIf
+			showTorchMeter()
+		endIf
+	endIf
 	debug.trace("iEquip_TorchScript onTorchEquipped end")
 endfunction
 
 function onTorchUnequipped()
 	debug.trace("iEquip_TorchScript onTorchUnequipped start")
-
-	debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife: " + fCurrentTorchLife + ", elapsed time: " + TorchTimer.GetTimeElapsed())
-	fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
-	debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife set to: " + fCurrentTorchLife)
-	PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
-	UnregisterForUpdate()
-	stopTorchMeterAnim()
-
+	if !bSettingLightRadius
+		debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife: " + fCurrentTorchLife + ", elapsed time: " + TorchTimer.GetTimeElapsed())
+		fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
+		debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife set to: " + fCurrentTorchLife)
+		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
+		UnregisterForUpdate()
+		stopTorchMeterAnim()
+	endIf
 	debug.trace("iEquip_TorchScript onTorchUnequipped end")
 endfunction
 
@@ -136,7 +151,10 @@ event OnUpdate()
 		
 		if bReduceLightAsTorchRunsOut
 			debug.trace("iEquip_TorchScript OnUpdate - setting torch light radius to " + (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
+			bSettingLightRadius = true
+			PlayerRef.UnequipItemEx(equippedTorch)
 			iEquip_FormExt.SetLightRadius(equippedTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
+			PlayerRef.EquipItemEx(equippedTorch)
 		endIf
 		
 		if fCurrentTorchLife <= 0.0
@@ -156,8 +174,14 @@ endEvent
 
 ; Meter functions
 
-function showTorchMeter()
-	debug.trace("iEquip_TorchScript showTorchMeter start")
+function showTorchMeter(bool checkTimer = false)
+	debug.trace("iEquip_TorchScript showTorchMeter start - checkTimer: " + checkTimer)
+
+	if checkTimer	; Will only be true if called from refreshWidgetOnLoad
+		debug.trace("iEquip_TorchScript showTorchMeter - fCurrentTorchLife: " + fCurrentTorchLife + ", elapsed time: " + TorchTimer.GetTimeElapsed())
+		fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
+		debug.trace("iEquip_TorchScript showTorchMeter - fCurrentTorchLife set to: " + fCurrentTorchLife)
+	endIf
 
 	float currPercent = 1.0 / fTorchDuration * fCurrentTorchLife
 
@@ -196,15 +220,29 @@ function showTorchMeter()
 	debug.trace("iEquip_TorchScript showTorchMeter end")
 endFunction
 
+event OnMenuOpen(string _sCurrentMenu)
+	if PlayerRef.GetEquippedItemType(0) == 11 && bShowTorchMeter
+		UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.pauseFillTween")
+		bTweenPaused = true
+	endIf
+endEvent
+
+event OnMenuClosed(string _sCurrentMenu)
+	if bTweenPaused && !Utility.IsInMenuMode()
+		UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween")
+		bTweenPaused = false
+	endIf
+endEvent
+
 function startTorchMeterAnim()
 	debug.trace("iEquip_TorchScript startTorchMeterAnim start")
-	UI.InvokeFloat(HUD_MENU, WidgetRoot + ".startTorchMeterFillTween", fCurrentTorchLife)
+	UI.InvokeFloat(HUD_MENU, WidgetRoot + ".leftMeter.startFillTween", fCurrentTorchLife)
 	debug.trace("iEquip_TorchScript startTorchMeterAnim end")
 endFunction
 
 function stopTorchMeterAnim()
 	debug.trace("iEquip_TorchScript stopChargeMeterAnim start")
-	UI.Invoke(HUD_MENU, WidgetRoot + ".stopTorchMeterFillTween")
+	UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.stopFillTween")
 	debug.trace("iEquip_TorchScript stopChargeMeterAnim end")
 endFunction
 
@@ -248,6 +286,45 @@ function updateTorchMeterVisibility(bool show)
 	endIf
 	debug.trace("iEquip_TorchScript updateChargeMeterVisibility end")
 endFunction
+
+function RegisterForAllMenus()
+    RegisterForMenu("BarterMenu")
+    RegisterForMenu("Book Menu")
+    RegisterForMenu("Console")
+    RegisterForMenu("Console Native UI Menu")
+    RegisterForMenu("ContainerMenu")
+    RegisterForMenu("Crafting Menu")
+    ;RegisterForMenu("Credits Menu")
+    ;RegisterForMenu("Cursor Menu")
+    ;RegisterForMenu("Debug Text Menu")
+    RegisterForMenu("Dialogue Menu")
+    ;RegisterForMenu("Fader Menu")
+    RegisterForMenu("FavoritesMenu")
+    RegisterForMenu("GiftMenu")
+    ;RegisterForMenu("HUD Menu")
+    RegisterForMenu("InventoryMenu")
+    RegisterForMenu("Journal Menu")
+    ;RegisterForMenu("Kinect Menu")
+    RegisterForMenu("LevelUp Menu")
+    RegisterForMenu("Loading Menu")
+    RegisterForMenu("Lockpicking Menu")
+    RegisterForMenu("MagicMenu")
+    RegisterForMenu("Main Menu")
+    RegisterForMenu("MapMenu")
+    RegisterForMenu("MessageBoxMenu")
+    ;RegisterForMenu("Mist Menu")
+    ;RegisterForMenu("Overlay Interaction Menu")
+    ;RegisterForMenu("Overlay Menu")
+    ;RegisterForMenu("Quantity Menu")
+    RegisterForMenu("RaceSex Menu")
+    RegisterForMenu("Sleep/Wait Menu")
+    RegisterForMenu("StatsMenu")
+    ;RegisterForMenu("TitleSequence Menu")
+    ;RegisterForMenu("Top Menu")
+    RegisterForMenu("Training Menu")
+    RegisterForMenu("Tutorial Menu")
+    RegisterForMenu("TweenMenu")
+endfunction
 
 auto state DISABLED
 	event OnBeginState()
