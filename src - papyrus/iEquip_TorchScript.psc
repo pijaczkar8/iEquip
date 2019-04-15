@@ -18,7 +18,7 @@ ActiveMagicEffect property TorchTimer auto
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
 
-float fTorchDuration = 240.0
+float fTorchDuration = 235.0
 float fTorchRadius
 
 bool bGetInitialValues = true
@@ -47,7 +47,7 @@ function initialise(bool bEnabled)
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
 		if bGetInitialValues
-			fTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float
+			fTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
 			fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
 			bGetInitialValues = false
 		endIf
@@ -88,7 +88,7 @@ function onTorchEquipped()
 
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
 		iEquip_FormExt.ResetLightRadius(equippedTorch)
-		fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float
+		fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float - 5.0
 		fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
 
 		debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fTorchDuration: " + fTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
@@ -160,6 +160,7 @@ event OnUpdate()
 		if fCurrentTorchLife <= 0.0
 			if bShowTorchMeter
 				startTorchMeterFlash()
+				Utility.Wait(2.0)
 				updateTorchMeterVisibility(false)
 			endIf
 			PlayerRef.UnequipItemEx(equippedTorch)
@@ -220,20 +221,6 @@ function showTorchMeter(bool checkTimer = false)
 	debug.trace("iEquip_TorchScript showTorchMeter end")
 endFunction
 
-event OnMenuOpen(string _sCurrentMenu)
-	if PlayerRef.GetEquippedItemType(0) == 11 && bShowTorchMeter
-		UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.pauseFillTween")
-		bTweenPaused = true
-	endIf
-endEvent
-
-event OnMenuClosed(string _sCurrentMenu)
-	if bTweenPaused && !Utility.IsInMenuMode()
-		UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween")
-		bTweenPaused = false
-	endIf
-endEvent
-
 function startTorchMeterAnim()
 	debug.trace("iEquip_TorchScript startTorchMeterAnim start")
 	UI.InvokeFloat(HUD_MENU, WidgetRoot + ".leftMeter.startFillTween", fCurrentTorchLife)
@@ -287,44 +274,17 @@ function updateTorchMeterVisibility(bool show)
 	debug.trace("iEquip_TorchScript updateChargeMeterVisibility end")
 endFunction
 
-function RegisterForAllMenus()
-    RegisterForMenu("BarterMenu")
-    RegisterForMenu("Book Menu")
-    RegisterForMenu("Console")
-    RegisterForMenu("Console Native UI Menu")
-    RegisterForMenu("ContainerMenu")
-    RegisterForMenu("Crafting Menu")
-    ;RegisterForMenu("Credits Menu")
-    ;RegisterForMenu("Cursor Menu")
-    ;RegisterForMenu("Debug Text Menu")
-    RegisterForMenu("Dialogue Menu")
-    ;RegisterForMenu("Fader Menu")
-    RegisterForMenu("FavoritesMenu")
-    RegisterForMenu("GiftMenu")
-    ;RegisterForMenu("HUD Menu")
-    RegisterForMenu("InventoryMenu")
-    RegisterForMenu("Journal Menu")
-    ;RegisterForMenu("Kinect Menu")
-    RegisterForMenu("LevelUp Menu")
-    RegisterForMenu("Loading Menu")
-    RegisterForMenu("Lockpicking Menu")
-    RegisterForMenu("MagicMenu")
-    RegisterForMenu("Main Menu")
-    RegisterForMenu("MapMenu")
-    RegisterForMenu("MessageBoxMenu")
-    ;RegisterForMenu("Mist Menu")
-    ;RegisterForMenu("Overlay Interaction Menu")
-    ;RegisterForMenu("Overlay Menu")
-    ;RegisterForMenu("Quantity Menu")
-    RegisterForMenu("RaceSex Menu")
-    RegisterForMenu("Sleep/Wait Menu")
-    RegisterForMenu("StatsMenu")
-    ;RegisterForMenu("TitleSequence Menu")
-    ;RegisterForMenu("Top Menu")
-    RegisterForMenu("Training Menu")
-    RegisterForMenu("Tutorial Menu")
-    RegisterForMenu("TweenMenu")
-endfunction
+function updateTorchMeterOnSettingsChanged()
+	debug.trace("iEquip_TorchScript updateTorchMeterOnSettingsChanged start")
+	stopTorchMeterAnim()
+	if CM.abIsChargeMeterShown[0]
+		updateTorchMeterVisibility(false)
+		Utility.WaitMenuMode(0.2)
+	endIf
+	showTorchMeter()
+	bSettingsChanged = false
+	debug.trace("iEquip_TorchScript updateTorchMeterOnSettingsChanged end")
+endFunction
 
 auto state DISABLED
 	event OnBeginState()

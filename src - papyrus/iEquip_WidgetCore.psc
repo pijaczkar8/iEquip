@@ -322,7 +322,7 @@ Event OnWidgetInit()
 	aiCurrentQueuePosition = new int[5] ; Array containing the current index for each queue - left, right, shout, potion, poison, arrow, bolt
 	asCurrentlyEquipped = new string[5] ; Array containing the itemName for whatever is currently equipped in each queue
 	aiCurrentlyPreselected = new int[3] ; Array containing current preselect queue positions
-	abQueueWasEmpty = new bool[3]
+	abQueueWasEmpty = new bool[5]
 	abPotionGroupEmpty = new bool[3]
 	abIsCounterShown = new bool[5]
 	abIsPoisonNameShown = new bool[2]
@@ -1008,6 +1008,10 @@ function resetWidgetsToPreviousState()
 	endIf
 	;Reset enchantment meters and soulgems
 	CM.updateChargeMeters(true)
+	;Update the torch meter if needed
+	if PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
+		TO.updateTorchMeterOnSettingsChanged()
+	endIf
 	debug.trace("iEquip_WidgetCore resetWidgetsToPreviousState end")
 endFunction
 
@@ -1739,6 +1743,9 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	    string targetName
 
 		if Q < 3
+			if iBackgroundStyle > 0
+				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", Q, iBackgroundStyle)	; Reshow the background if it was previously hidden
+			endIf
 			abQueueWasEmpty[Q] = false
 			;Hide the slot counter, poison info and charge meter if currently shown
 			if Q < 2 
@@ -2393,11 +2400,14 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 		fNameAlpha = 100
 	endIf
 
+	bool bLeaveBackground
+
 	; Set icon and name to empty
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q) 										; Which slot we're updating
 		if (Q == 0 && !bAmmoMode) || Q == 1
+			bLeaveBackground = true
 			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Unarmed")
 			UICallback.PushString(iHandle, "Fist") 							; New icon
 			UICallback.PushString(iHandle, "$iEquip_common_Unarmed") 		; New name
@@ -2410,6 +2420,10 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]]) 			; Current item icon alpha value
 		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Q]]) 			; Current item icon scale value
 		UICallback.Send(iHandle)
+	endIf
+
+	if !bLeaveBackground && iBackgroundStyle > 0
+		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", Q, 0)	; Set background to Hidden if not showing Fist
 	endIf
 	
 	if (Q != 3 || !bPotionGrouping)
@@ -2436,7 +2450,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 	elseIf Q == 5 || Q == 6
 		hideAttributeIcons(Q)
 	endIf
-	if Q < 3 && !leaveFlag
+	if Q < 5 && !leaveFlag
 		abQueueWasEmpty[Q] = true
 	endIf
 	debug.trace("iEquip_WidgetCore setSlotToEmpty end")
@@ -3140,6 +3154,11 @@ function goUnarmed()
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
+
+	if iBackgroundStyle > 0 && abQueueWasEmpty[0]
+		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", 0, iBackgroundStyle)	; Reshow the background if it was previously hidden
+	endIf
+
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
@@ -3150,6 +3169,7 @@ function goUnarmed()
 		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[0]])
 		UICallback.Send(iHandle)
 	endIf
+	
 	if bNameFadeoutEnabled && bLeftRightNameFadeEnabled
 		LNUpdate.registerForNameFadeoutUpdate()
 	endIf
@@ -3196,6 +3216,11 @@ function updateLeftSlotOn2HSpellEquipped()
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
+
+	if iBackgroundStyle > 0 && abQueueWasEmpty[0]
+		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", 0, iBackgroundStyle)	; Reshow the background if it was previously hidden
+	endIf
+
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, 0)
@@ -4375,6 +4400,14 @@ function ApplyChanges()
     
 	if bBackgroundStyleChanged || bMCMPresetLoaded
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+		if iBackgroundStyle > 0
+			while i < 5
+				if abQueueWasEmpty[i]
+					UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", i, 0)	; Hide the background if it was previously hidden
+				endIf
+				i += 1
+			endWhile
+		endIf
         bBackgroundStyleChanged = false
 	endIf
 	if (bDropShadowSettingChanged || bMCMPresetLoaded) && !EM.isEditMode
@@ -4531,6 +4564,9 @@ function ApplyChanges()
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
 			endIf
+		endIf
+		if TO.bSettingsChanged && PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
+			TO.updateTorchMeterOnSettingsChanged()
 		endIf
 		if bTemperDisplaySettingChanged || bMCMPresetLoaded
 			i = 0

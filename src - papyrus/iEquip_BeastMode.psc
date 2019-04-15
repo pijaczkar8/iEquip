@@ -176,6 +176,9 @@ function onPlayerTransform(race newRace, bool bPlayerIsAVampire, bool bLoading =
 		endIf
 		int i
 		while i < 3
+			if WC.iBackgroundStyle > 0
+				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", i, WC.iBackgroundStyle)	; Reshow the background if it was previously hidden
+			endIf
 			;Hide the attribute, poison, count and charge info
 			if i < 2 && (!bInSupportedBeastForm || bLoading)
 				WC.hideAttributeIcons(i)
@@ -264,8 +267,12 @@ function resetWidgetOnTransformBack()
 	WC.bShoutEnabled = bShoutSlotEnabled
 	WC.updateSlotsEnabled()
 	;ReEquip the shout/power that was equipped before the transformation and update the widget as it isn't re-equipped during the transformation
-	WC.cycleShout(2, WC.aiCurrentQueuePosition[2], jMap.getForm(jArray.getObj(WC.aiTargetQ[2], WC.aiCurrentQueuePosition[2]), "iEquipForm"))
-	WC.updateWidget(2, WC.aiCurrentQueuePosition[2])
+	if jArray.Count(WC.aiTargetQ[2]) > 0
+		WC.cycleShout(2, WC.aiCurrentQueuePosition[2], jMap.getForm(jArray.getObj(WC.aiTargetQ[2], WC.aiCurrentQueuePosition[2]), "iEquipForm"))
+		WC.updateWidget(2, WC.aiCurrentQueuePosition[2])
+	else
+		WC.setSlotToEmpty(2)
+	endIf
 	int i = 0
 	while i < 2
 		;If we were previously displaying fists in either queue for any reason
