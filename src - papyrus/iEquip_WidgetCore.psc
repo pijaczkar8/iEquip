@@ -770,31 +770,27 @@ function refreshWidgetOnLoad()
 endFunction
 
 ; FEEDBACK - Look into reusing reload widget on load instead of this (FUTURE SUGGESTION)
-;ToDo - This function is still to finish/review
+; ToDo - This function is still to finish/review
 function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget start")
 	bRefreshingWidget = true
-	;Hide the widget first
 	KH.bAllowKeyPress = false
+	; Hide the widget first
 	updateWidgetVisibility(false)
 	debug.notification("$iEquip_WC_not_refreshingWidget")
-	EM.UpdateElementsAll()
-	;Toggle preselect mode now (we exit again later)
+	; Toggle preselect mode now (we exit again later)
 	if !bPreselectMode
-		PM.togglePreselectMode()
+		PM.togglePreselectMode(true)
 		Utility.WaitMenuMode(3.0)
 	endIf
-	;Reset visibility and alpha on every element
-	int i
-	while i < asWidgetDescriptions.Length
-		UI.SetBool(HUD_MENU, WidgetRoot + asWidgetElements[i] + "._visible", abWidget_V[i])
-		UI.setFloat(HUD_MENU, WidgetRoot + asWidgetElements[i] + "._alpha", afWidget_A[i])
-		i += 1
-	endwhile
-	;Exit Preselect Mode now
-	PM.togglePreselectMode()
+	; Reset visibility and alpha on every element
+	EM.UpdateElementsAll()
+	; Exit Preselect Mode now
+	PM.togglePreselectMode(true)
 	Utility.WaitMenuMode(3.0)
-	;Check what the items and shout the player currently has equipped and find them in the queues
+	; Reset the backgrounds, any that need to be hidden will be done so when setSlotToEmpty is called
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+	; Check what the items and shout the player currently has equipped and find them in the queues
 	i = 0
 	form equippedForm
 	bool rangedWeaponEquipped
@@ -802,7 +798,7 @@ function refreshWidget()
 	while i < 3
 		int itemType 
 		equippedForm = PlayerRef.GetEquippedObject(i)
-		;If we have something equipped in the slot make sure it is correctly displayed
+		; If we have something equipped in the slot make sure it is correctly displayed
 		if equippedForm
 			if i == 0 && equippedForm as weapon
 				itemType = (equippedForm as weapon).GetWeaponType()
@@ -815,11 +811,11 @@ function refreshWidget()
 				endIf
 			endIf
 			int foundAt = findInQueue(i, equippedForm.GetName())
-			;If we've found the item in the queue then set the queue position and name
+			; If we've found the item in the queue then set the queue position and name
 			if foundAt != -1
 				aiCurrentQueuePosition[i] = foundAt
 				asCurrentlyEquipped[i] = jMap.getStr(jArray.getObj(aiTargetQ[i], foundAt), "iEquipName")
-			;Otherwise unequip and re-equip the item which should then cause EH.OnObjectEquipped to add it in to the relevant queue and update the widget accordingly
+			; Otherwise unequip and re-equip the item which should then cause EH.OnObjectEquipped to add it in to the relevant queue and update the widget accordingly
 			elseIf i < 2
 				UnequipHand(i)
 				Utility.WaitMenuMode(0.2)
@@ -837,25 +833,25 @@ function refreshWidget()
 			        PlayerRef.EquipShout(equippedForm as Shout)
 			    endIf
 			endIf
-		;Otherwise set the slot to empty
+		; Otherwise set the slot to empty
 		else
 			slotEmpty[i] = true
-			setSlotToEmpty(i, (jArray.count(aiTargetQ[i]) > 0))
+			setSlotToEmpty(i, true, (jArray.count(aiTargetQ[i]) > 0))
 		endIf
 		i += 1
 	endwhile
-	;if we're in ammo mode check if we actually should be
+	; If we're in ammo mode check if we actually should be
 	if (bAmmoMode && !rangedWeaponEquipped) || (!bAmmoMode && rangedWeaponEquipped)
 		AM.toggleAmmoMode()
 		Utility.WaitMenuMode(3.0)
 	endIf
-	;Now we need to refresh the names and icons for each slot to show what is currently equipped
+	; Now we need to refresh the names and icons for each slot to show what is currently equipped
 	i = 0
 	while i < 5
 		abIsNameShown[i] = true
 		if i < 2
 			checkAndUpdatePoisonInfo(i)
-			if i == 1 || !bAmmoMode && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0)
+			if (i == 1 || !bAmmoMode) && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0)
 				TI.checkAndUpdateTemperLevelInfo(i)
 			endIf
 		endIf
@@ -867,10 +863,10 @@ function refreshWidget()
 		i += 1
 	endwhile
 	CM.updateChargeMeters(true)
-	;We can now check if we need to fade the left icon if we've got a 2H weapon equipped
+	; We can now check if we need to fade the left icon if we've got a 2H weapon equipped
 	Utility.WaitMenuMode(1.5)
 	checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
-	;Reset consumable count and fade
+	; Reset consumable count and fade
 	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
 	int count
 	if potionGroup == -1
@@ -884,7 +880,7 @@ function refreshWidget()
 	elseIf bConsumableIconFaded
 		checkAndFadeConsumableIcon(false)
 	endIf
-	;Reset poison count and fade
+	; Reset poison count and fade
 	if jArray.count(aiTargetQ[4]) < 1
 		handleEmptyPoisonQueue()
 	else
@@ -893,37 +889,37 @@ function refreshWidget()
 			checkAndFadePoisonIcon(false)
 		endIf
 	endIf
-	;Check and show or hide left and right counters
+	; Check and show or hide left and right counters
 	if !bAmmoMode
 		i = 0
 		while i < 2
 			if itemRequiresCounter(i, jMap.getInt(jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i]), "iEquipType")) || abPoisonInfoDisplayed[i]
 				setSlotCount(i, PlayerRef.GetItemCount(equippedForm))
-				;Show the counter if currently hidden
+				; Show the counter if currently hidden
 				setCounterVisibility(i, true)
-			;The item doesn't require a counter so hide it if it's currently shown
+			; The item doesn't require a counter so hide it if it's currently shown
 			else
 				setCounterVisibility(i, false)
 			endIf
 			i += 1
 		endwhile
-	;We're in Ammo Mode so we need to make sure only the left counter is shown
+	; We're in Ammo Mode so we need to make sure only the left counter is shown
 	else
 		setCounterVisibility(0, true)
-		;And hide the right hand counter unless the current ranged weapon is poisoned
+		; And hide the right hand counter unless the current ranged weapon is poisoned
 		setCounterVisibility(1, abPoisonInfoDisplayed[1])
 	endIf
-	;Make sure that any slots which should be hidden are hidden
+	; Make sure that any slots which should be hidden are hidden
 	updateSlotsEnabled()
-	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+	; Update the text field drop shadow
 	if !bDropShadowEnabled
 		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
 	endIf
-	;Hide the potion selector
+	; Hide the potion selector
 	UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", 0.0)
-	;Show the widget
+	; Show the widget
 	updateWidgetVisibility()
-	;And finally re-register for fadeouts if required
+	; And finally re-register for fadeouts if required
 	if bNameFadeoutEnabled
 		if bLeftRightNameFadeEnabled
 			LNUpdate.registerForNameFadeoutUpdate()
@@ -1323,6 +1319,8 @@ function addCurrentItemsOnFirstEnable()
 		itemHandle = 0xFFFF
 		equippedItem = PlayerRef.GetEquippedObject(Q)
 		if equippedItem
+			abQueueWasEmpty[Q] = false
+
 			itemType = equippedItem.GetType()
 
 			if itemType == 22
@@ -2179,16 +2177,16 @@ function checkAndFadePoisonIcon(bool fadeOut)
 	debug.trace("iEquip_WidgetCore checkAndFadePoisonIcon - fadeOut: " + fadeOut + ", bPoisonIconFaded: " + bPoisonIconFaded)
 	float[] widgetData = new float[4]
 	if fadeOut
-		float adjustment = (1 - (fconsIconFadeAmount * 0.01)) ;Use same value as consumable icon fade for consistency
-		widgetData[0] = afWidget_A[46] * adjustment ;poisonBg_mc
-		widgetData[1] = afWidget_A[47] * adjustment ;poisonIcon_mc
+		float adjustment = (1 - (fconsIconFadeAmount * 0.01)) 				; Use same value as consumable icon fade for consistency
+		widgetData[0] = afWidget_A[46] * adjustment 						; poisonBg_mc
+		widgetData[1] = afWidget_A[47] * adjustment 						; poisonIcon_mc
 		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[48] * adjustment ;poisonName_mc
+			widgetData[2] = afWidget_A[48] * adjustment 					; poisonName_mc
 		endIf
-		widgetData[3] = afWidget_A[49]  * adjustment ;poisonCount_mc
+		widgetData[3] = afWidget_A[49]  * adjustment 						; poisonCount_mc
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenPoisonIconAlpha", widgetData)
 		bPoisonIconFaded = true
-	;For anything else fade it back in (we've already checked if it needs fading or not before calling this function)
+																			; For anything else fade it back in (we've already checked if it needs fading or not before calling this function)
 	else
 		widgetData[0] = afWidget_A[46]
 		widgetData[1] = afWidget_A[47]
@@ -2207,19 +2205,19 @@ function setCounterVisibility(int Q, bool show)
 	debug.trace("iEquip_WidgetCore setCounterVisibility - Q: " + Q + ", show: " + show)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenWidgetCounterAlpha")
 	if iHandle && (show || abIsCounterShown[Q] || bRefreshingWidget)
-		UICallback.PushInt(iHandle, Q) ;Which counter _mc we're fading out
+		UICallback.PushInt(iHandle, Q) 										; Which counter _mc we're fading out
 		if show && !abIsCounterShown[Q]
-			float targetAlpha = afWidget_A[aiCounterClips[Q]] ;Left count alpha
+			float targetAlpha = afWidget_A[aiCounterClips[Q]] 				; Get target count _mc alpha
 			if targetAlpha < 1
 				targetAlpha = 100
 			endIf
 			abIsCounterShown[Q] = true
-			UICallback.PushFloat(iHandle, targetAlpha) ;Target alpha
+			UICallback.PushFloat(iHandle, targetAlpha) 						; Target alpha
 		else
 			abIsCounterShown[Q] = false
-			UICallback.PushFloat(iHandle, 0) ;Target alpha
+			UICallback.PushFloat(iHandle, 0) 								; Target alpha = 0 to hide
 		endIf
-		UICallback.PushFloat(iHandle, 0.15) ;Fade duration
+		UICallback.PushFloat(iHandle, 0.15) 								; Fade duration
 		UICallback.Send(iHandle)
 	endIf
 	debug.trace("iEquip_WidgetCore setCounterVisibility end")
@@ -3161,7 +3159,7 @@ function goUnarmed()
 		fNameAlpha = 100
 	endIf
 
-	if iBackgroundStyle > 0 && abQueueWasEmpty[0]
+	if iBackgroundStyle > 0
 		int[] args = new int[2]
 		args[0] = 0
 		args[1] = iBackgroundStyle
@@ -3226,7 +3224,7 @@ function updateLeftSlotOn2HSpellEquipped()
 		fNameAlpha = 100
 	endIf
 
-	if iBackgroundStyle > 0 && abQueueWasEmpty[0]
+	if iBackgroundStyle > 0
 		int[] args = new int[2]
 		args[0] = 0
 		args[1] = iBackgroundStyle

@@ -98,9 +98,9 @@ function OnWidgetLoad()
 	debug.trace("iEquip_ProMode OnWidgetLoad end")
 endFunction
 
-function togglePreselectMode(bool togglingEditMode = false)
+function togglePreselectMode(bool togglingEditModeOrRefreshing = false)
 	debug.trace("iEquip_ProMode togglePreselectMode start")
-	if bPreselectEnabled || togglingEditMode
+	if bPreselectEnabled || togglingEditModeOrRefreshing
 		bPreselectMode = !bPreselectMode
 		WC.bPreselectMode = bPreselectMode
 		bool[] args = new bool[5]
@@ -115,10 +115,10 @@ function togglePreselectMode(bool togglingEditMode = false)
 			while Q < 3
 				int queueLength = JArray.count(WC.aiTargetQ[Q])
 				;if any of the queues have less than 3 items in it then there is either nothing to preselect (1 item in queue) or you'd just be doing the same as regularly cycling two items so no need for preselect, therefore disable preselect elements for that slot
-				if queueLength < 2 && !togglingEditMode
+				if queueLength < 2 && !togglingEditModeOrRefreshing
 					WC.aiCurrentlyPreselected[Q] = -1
 				else
-					if togglingEditMode && queueLength < 2
+					if togglingEditModeOrRefreshing && queueLength < 2
 						float fNameAlpha = WC.afWidget_A[aiNameElements[Q]]
 						if fNameAlpha < 1
 							fNameAlpha = 100
@@ -151,10 +151,10 @@ function togglePreselectMode(bool togglingEditMode = false)
 				Q += 1
 			endwhile
 
-			abPreselectSlotEnabled[0] = (((WC.aiCurrentlyPreselected[0] != -1) && JArray.count(WC.aiTargetQ[0]) > 1) || togglingEditMode)
-			abPreselectSlotEnabled[1] = ((WC.aiCurrentlyPreselected[1] != -1) || togglingEditMode)
+			abPreselectSlotEnabled[0] = (((WC.aiCurrentlyPreselected[0] != -1) && JArray.count(WC.aiTargetQ[0]) > 1) || togglingEditModeOrRefreshing)
+			abPreselectSlotEnabled[1] = ((WC.aiCurrentlyPreselected[1] != -1) || togglingEditModeOrRefreshing)
 			;Also if shout preselect has been turned off in the MCM or hidden in Edit Mode make sure it stays hidden before showing the preselect group
-			abPreselectSlotEnabled[2] = ((WC.bShoutEnabled && bShoutPreselectEnabled && (WC.aiCurrentlyPreselected[2] != -1)) || togglingEditMode)
+			abPreselectSlotEnabled[2] = ((WC.bShoutEnabled && bShoutPreselectEnabled && (WC.aiCurrentlyPreselected[2] != -1)) || togglingEditModeOrRefreshing)
 
 			;Add showLeft/showRight with check for number of items in queue must be greater than 1 (ie if only 1 in queue then nothing to preselect)
 			args[0] = abPreselectSlotEnabled[0] ;Show left
