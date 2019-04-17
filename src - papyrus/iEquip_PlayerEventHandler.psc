@@ -94,6 +94,7 @@ bool property bIsUndeathLoaded auto hidden
 bool property bPlayerIsMeditating auto hidden
 bool property bDualCasting auto hidden
 bool property bGoingUnarmed auto hidden
+
 int dualCastCounter
 
 bool property bAutoAddNewItems = true auto hidden
@@ -672,8 +673,10 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 
 	if TI.aiTemperedItemTypes.Find(itemType) > -1
 		if itemType == 26 && PlayerRef.GetEquippedShield() as Form == queuedForm
+			debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to retrieve handle for shield")
 			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)					; Shield
 		elseIf PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
+			debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to retrieve handle for weapon")
 			if itemType == 7 || itemType == 9
 				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)				; Need to check right hand for ranged weapon iHandle
 			else
@@ -682,12 +685,16 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		endIf
 	endIf
 
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
+
 	if itemHandle != 0xFFFF
 		itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
 		itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
+		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 	else
 		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
 		itemBaseName = queuedForm.getName()
+		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 	endIf
 	
 	if itemName == ""
@@ -697,6 +704,8 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	if itemBaseName == ""
 		itemBaseName = itemName
 	endIf
+
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - final names being saved, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
@@ -733,22 +742,29 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	            endIf
 	            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
 	        endIf
+
+	        bool bCurrentlyDualCasting = !WC.b2HSpellEquipped && jMap.getInt(jArray.GetObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && WC.asCurrentlyEquipped[1] == UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text")
 			
-			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex									; If it's somehow already shown in the widget
+			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !(equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting))			; If it's somehow already shown in the widget
 				if equippedSlot < 2
-					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0								; Update the name and temper level if required
+					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0													; Update the name and temper level if required
 						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
 					else
-						UI.SetString(HUD_MENU, WidgetRoot + TI.asNamePaths[equippedSlot], itemName)		; Or just update the display name
+						UI.SetString(HUD_MENU, WidgetRoot + TI.asNamePaths[equippedSlot], itemName)							; Or just update the display name
 					endIf
 				endIf
-				blockCall = true
+				if !(equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped || AM.bAmmoMode))
+					blockCall = true
+				endIf
 			
-			else 																						; Otherwise update the position and name, then update the widget
+			else 																											; Otherwise update the position and name, then update the widget
 				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
 				WC.asCurrentlyEquipped[equippedSlot] = itemName
 				if equippedSlot < 2 || WC.bShoutEnabled
 					WC.updateWidget(equippedSlot, targetIndex, false, true)
+				endIf
+				if equippedSlot == 0
+					WC.bGoneUnarmed = false
 				endIf
 			endIf
 			actionTaken = true

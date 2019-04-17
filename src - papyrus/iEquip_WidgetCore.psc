@@ -170,7 +170,7 @@ bool property bAllowSingleItemsInBothQueues auto hidden
 bool property bSkipAutoAddedItems auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
 int property iMaxCachedItems = 60 auto hidden
-bool property bBlacklistEnabled = true auto hidden
+bool property bBlacklistEnabled auto hidden
 bool property bShowAutoAddedFlag auto hidden
 
 float property fWidgetFadeoutDelay = 20.0 auto hidden
@@ -294,6 +294,7 @@ bool property bPreselectSwitchingHands auto hidden
 bool bSkipOtherHandCheck
 bool property bGoneUnarmed auto hidden
 bool property b2HSpellEquipped auto hidden
+bool property bJustDroppedTorch auto hidden
 
 bool bWaitingForFlash
 bool bGotID
@@ -791,7 +792,7 @@ function refreshWidget()
 	; Reset the backgrounds, any that need to be hidden will be done so when setSlotToEmpty is called
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 	; Check what the items and shout the player currently has equipped and find them in the queues
-	i = 0
+	int i
 	form equippedForm
 	bool rangedWeaponEquipped
 	bool[] slotEmpty = new bool[3]
@@ -1335,7 +1336,7 @@ function addCurrentItemsOnFirstEnable()
 					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - attempting to retrieve handle for shield from GetRefHandleFromWornObject(2)")
 					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)		; Shield
 				else
-					if itemType == 7 || itemType == 9
+					if itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9
 						itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)	; Need to check right hand for ranged weapon iHandle
 					else
 						itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)	; Left/Right hand
@@ -2814,10 +2815,15 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 				bool actionTaken
 				if Q == 1 && (itemType == 7 || itemType == 9)
 					 actionTaken = PM.quickRangedFindAndEquipWeapon(itemType, false)
-				elseIf Q == 0 && itemType == 26
-					PM.quickShield(true)
-					Utility.WaitMenuMode(0.5)
-					if PlayerRef.GetEquippedShield()
+				elseIf Q == 0
+					if itemType == 26 ; Shield
+						PM.quickShield(true)
+						Utility.WaitMenuMode(0.5)
+						if PlayerRef.GetEquippedShield()
+							actionTaken = true
+						endIf
+					elseIf itemType == 31 && bJustDroppedTorch ; Torch
+						bJustDroppedTorch = false
 						actionTaken = true
 					endIf
 				endIf
@@ -3046,8 +3052,11 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    	PlayerRef.EquipItemEx(targetItem as Ammo)
 		    elseif ((Q == 0 && itemType == 26) || jMap.getStr(targetObject, "iEquipName") == "Rocket Launcher") ; Shield in the left hand queue
 		    	PlayerRef.EquipItemEx(targetItem as Armor)
-		    elseIf itemCount == 1																				; If we only have one of it there's no risk of equipping the wrong one so safe to use EquipItemEx
-		    	debug.trace("iEquip_WidgetCore cycleHand - we only have one of these so equip using EquipItemEx")
+		    elseIf targetItem as light
+		    	debug.trace("iEquip_WidgetCore cycleHand - this is a torch so equip using EquipItemEx")
+		    	PlayerRef.EquipItemEx(targetItem, 0)
+		    elseIf !(targetItem as weapon) || itemCount == 1													; If it's not a weapon, or we only have one of them there's no risk of equipping the wrong one so safe to use EquipItemEx
+		    	debug.trace("iEquip_WidgetCore cycleHand - not a weapon, or we only have one of these so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 		    else
 		    	if TI.aiTemperedItemTypes.Find(itemType) != -1													; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle

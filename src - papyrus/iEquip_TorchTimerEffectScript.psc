@@ -59,7 +59,6 @@ EndEvent
 Event OnEffectFinish(Actor akTarget, Actor akCaster)
 	debug.trace("iEquip_TorchTimerEffectScript OnEffectFinish start")
 	TO.onTorchTimerExpired()
-	UnregisterForAllMenus()
 	debug.trace("iEquip_TorchTimerEffectScript OnEffectFinish end")
 endEvent
 

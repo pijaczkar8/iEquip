@@ -693,10 +693,10 @@ event EquipAllComplete(string sEventName, string sStringArg, Float fNumArg, Form
 endEvent
 
 ;The forceSwitch bool is set to true when quickShield is called by WC.removeItemFromQueue when a previously equipped shield has been removed, so we're only looking for a shield, not a ward
-function quickShield(bool forceSwitch = false)
+function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 	debug.trace("iEquip_ProMode quickShield start")
 	;if right hand or ranged weapon in right hand and bQuickShield2HSwitchAllowed not enabled then return out
-	if !bQuickShieldEnabled || (!forceSwitch && (((WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
+	if (!bQuickShieldEnabled && !onTorchDropped) || (!forceSwitch && (((WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
 		return
 	endIf
 	int i
@@ -811,8 +811,8 @@ function quickShield(bool forceSwitch = false)
 			WC.updateWidget(0, found)
 		endIf
 	else
-		if forceSwitch
-			;If we've forced quickShield because a previously equipped shield was removed from the player and we haven't been able to find another in the left queue we now need to cycle the left queue
+		if forceSwitch || onTorchDropped
+			;If we've forced quickShield because a previously equipped shield was removed from the player, or we've just dropped a lit torch and we haven't been able to find another in the left queue we now need to cycle the left queue
 			WC.cycleSlot(0, false, true)
 		else
 			if bQuickShieldUnequipLeftIfNotFound && (PlayerRef.GetEquippedObject(1) as weapon) && !(WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1)
@@ -1265,8 +1265,17 @@ function quickRangedSwitchOut(bool force1H = false)
 	debug.trace("iEquip_ProMode quickRangedSwitchOut end")
 endFunction
 
-bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, string spellName, string spellIcon)
-	debug.trace("iEquip_ProMode quickDualCastEquipSpellInOtherHand start")
+function quickDualCastOnDoubleTap(int Q)
+	debug.trace("iEquip_ProMode quickDualCastOnDoubleTap start - Q: " + Q)
+	spell equippedSpell = PlayerRef.GetEquippedSpell(Q)
+	if WC.EquipSlots.Find(equippedSpell.GetEquipType()) == 2 && equippedSpell != PlayerRef.GetEquippedSpell((Q + 1) % 2)	; If it's an 'Either Hand' spell and isn't already equipped in the other hand
+		bool success = quickDualCastEquipSpellInOtherHand(Q, equippedSpell as form, equippedSpell.GetName(), jMap.getStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipIcon"), true)
+	endIf
+	debug.trace("iEquip_ProMode quickDualCastOnDoubleTap end")
+endFunction
+
+bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, string spellName, string spellIcon, bool onDoubleTapSpell = false)
+	debug.trace("iEquip_ProMode quickDualCastEquipSpellInOtherHand start - Q: " + Q + ", " + spellName + ", icon: " + spellIcon + ", onDoubleTapSpell: " + onDoubleTapSpell)
 	debug.trace("iEquip_ProMode quickDualCastEquipSpellInOtherHand - bBlockQuickDualCast: " + bBlockQuickDualCast)
 	if bBlockQuickDualCast
 		bBlockQuickDualCast = false
@@ -1279,13 +1288,8 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 			nameElement = 8 ;leftName_mc
 			iconElement = 7 ;leftIcon_mc
 		endIf
-		int otherHandIndex = -1
-		bool dualCastAllowed = true
-		if bQuickDualCastMustBeInBothQueues
-			otherHandIndex = WC.findInQueue(otherHand, spellName)
-			dualCastAllowed = (otherHandIndex > -1)
-		endIf
-		if dualCastAllowed
+		int otherHandIndex = WC.findInQueue(otherHand, spellName)
+		if !bQuickDualCastMustBeInBothQueues || otherHandIndex > -1 || onDoubleTapSpell
 			WC.EH.bJustQuickDualCast = true
 			WC.bBlockSwitchBackToBoundSpell = true
 			PlayerRef.EquipSpell(spellToEquip as Spell, otherHand)
@@ -1308,9 +1312,6 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 			endIf
 			WC.checkAndUpdatePoisonInfo(otherHand)
 			WC.CM.checkAndUpdateChargeMeter(otherHand)
-			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
-				TI.checkAndUpdateTemperLevelInfo(otherHand)
-			endIf
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[otherHand]
 				WC.showName(otherHand)
 			endIf

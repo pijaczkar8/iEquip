@@ -360,7 +360,7 @@ State que_tgl_enblBlacklist
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_que_txt_enblBlacklist")
-        elseIf currentEvent == "Select" || currentEvent == "Default" && !WC.bBlacklistEnabled
+        elseIf currentEvent == "Select" || currentEvent == "Default" && WC.bBlacklistEnabled
             WC.bBlacklistEnabled = !WC.bBlacklistEnabled
             if !WC.bBlacklistEnabled
                 clearBlacklistFormlists()

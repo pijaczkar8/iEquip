@@ -12,6 +12,7 @@ iEquip_BeastMode property BM auto
 iEquip_ProMode property PM auto
 iEquip_RechargeScript property RC auto
 iEquip_HelpMenu property HM auto
+iEquip_TorchScript property TO auto
 
 Actor property PlayerRef  auto
 
@@ -353,7 +354,13 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     WC.openQueueManagerMenu(1)
                 elseIf !AM.bAmmoMode
-                    WC.applyPoison(0)
+                    if PlayerRef.GetEquippedItemType(0) == 9 ; Spell
+                        PM.quickDualCastOnDoubleTap(0)
+                    elseIf PlayerRef.GetEquippedItemType(0) == 11 ; Torch
+                        TO.DropTorch()
+                    else
+                        WC.applyPoison(0)
+                    endIf
                 elseIf !AM.bSimpleAmmoMode ;We're in ammo mode, so cycle the left preselect slot unless Simple Ammo Mode is enabled
                     WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
                 endIf
@@ -366,7 +373,11 @@ function runUpdate()
                     endIf
                 else
                     if iWaitingKeyCode == iRightKey
-                        WC.applyPoison(1)
+                        if PlayerRef.GetEquippedItemType(1) == 9 ; Spell
+                            PM.quickDualCastOnDoubleTap(1)
+                        else
+                            WC.applyPoison(1)
+                        endIf
                     endIf
                 endIf
             endIf             

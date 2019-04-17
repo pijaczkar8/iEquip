@@ -11,6 +11,7 @@ string[] ammoSortingOptions
 string[] whenNoAmmoLeftOptions
 string[] ammoModeOptions
 string[] posIndBehaviour
+string[] dropLitTorchBehaviour
 int iPosIndChoice = 1
 string[] meterFillDirectionOptions
 string[] rawMeterFillDirectionOptions
@@ -43,15 +44,22 @@ function initData()
     posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
     posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
 
-    meterFillDirectionOptions = new String[3]
+    meterFillDirectionOptions = new string[3]
     meterFillDirectionOptions[0] = "$iEquip_MCM_rep_opt_left"
     meterFillDirectionOptions[1] = "$iEquip_MCM_rep_opt_right"
     meterFillDirectionOptions[2] = "$iEquip_MCM_rep_opt_both"
 
-    rawMeterFillDirectionOptions = new String[3] ;DO NOT TRANSLATE!
+    rawMeterFillDirectionOptions = new string[3] ;DO NOT TRANSLATE!
     rawMeterFillDirectionOptions[0] = "left"
     rawMeterFillDirectionOptions[1] = "right"
     rawMeterFillDirectionOptions[2] = "both"
+
+    dropLitTorchBehaviour = new string[5]
+    dropLitTorchBehaviour[0] = "$iEquip_MCM_gen_opt_DoNothing"
+    dropLitTorchBehaviour[1] = "$iEquip_MCM_gen_opt_TorchNothing"
+    dropLitTorchBehaviour[2] = "$iEquip_MCM_gen_opt_TorchCycle"
+    dropLitTorchBehaviour[3] = "$iEquip_MCM_gen_opt_CycleLeft"
+    dropLitTorchBehaviour[4] = "$iEquip_MCM_htk_opt_qckShld"
 
 endFunction
 
@@ -70,11 +78,15 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, TO.bShowTorchMeter as int)
     jArray.addInt(jPageObj, TO.iTorchMeterFillColor)
     jArray.addInt(jPageObj, iTorchMeterFillDirection)
+    jArray.addInt(jPageObj, TO.bCustomTorchDuration as int)
+    jArray.addFlt(jPageObj, TO.fCustomTorchDuration)
     jArray.addInt(jPageObj, TO.bAutoReEquipTorch as int)
     jArray.addInt(jPageObj, TO.bRealisticReEquip as int)
     jArray.addFlt(jPageObj, TO.fRealisticReEquipDelay)
     jArray.addInt(jPageObj, TO.bFiniteTorchLife as int)
     jArray.addInt(jPageObj, TO.bReduceLightAsTorchRunsOut as int)
+    jArray.addInt(jPageObj, TO.bDropLitTorchesEnabled as int)
+    jArray.addInt(jPageObj, TO.iDropLitTorchBehavior)
 	
 	jArray.addInt(jPageObj, WC.bEquipOnPause as int)
 	jArray.addFlt(jPageObj, WC.fEquipOnPauseDelay)
@@ -107,26 +119,30 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
     TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
     iTorchMeterFillDirection = jArray.getInt(jPageObj, 9)
     TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
-    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 10)
-    TO.bRealisticReEquip = jArray.getInt(jPageObj, 11)
-    TO.fRealisticReEquipDelay = jArray.getFlt(jPageObj, 12)
-    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 13)
-    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 14)
+    TO.bCustomTorchDuration = jArray.getInt(jPageObj, 10)
+    TO.fCustomTorchDuration = jArray.getInt(jPageObj, 11)
+    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 12)
+    TO.bRealisticReEquip = jArray.getInt(jPageObj, 13)
+    TO.fRealisticReEquipDelay = jArray.getFlt(jPageObj, 14)
+    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 15)
+    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 16)
+    TO.bDropLitTorchesEnabled = jArray.getInt(jPageObj, 17)
+    TO.iDropLitTorchBehavior = jArray.getInt(jPageObj, 18)
 	
-	WC.bEquipOnPause = jArray.getInt(jPageObj, 15)
-	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 16)
+	WC.bEquipOnPause = jArray.getInt(jPageObj, 19)
+	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 20)
 	
-	iPosIndChoice = jArray.getInt(jPageObj, 17)
+	iPosIndChoice = jArray.getInt(jPageObj, 21)
     updatePositionIndicatorSettings()
 
-	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 18)
+	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 22)
 	
-	WC.bEnableGearedUp = jArray.getInt(jPageObj, 19)
-	WC.bUnequipAmmo = jArray.getInt(jPageObj, 20)
+	WC.bEnableGearedUp = jArray.getInt(jPageObj, 23)
+	WC.bUnequipAmmo = jArray.getInt(jPageObj, 24)
 
-	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 21)
-	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 22)
-	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 23)
+	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 25)
+	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 26)
+	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 27)
 endFunction
 
 function drawPage()
@@ -163,6 +179,11 @@ function drawPage()
                 MCM.AddMenuOptionST("gen_men_torchMeterFillDir", "$iEquip_MCM_gen_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
             endIf
 
+            MCM.AddToggleOptionST("gen_tgl_setTorchDuration", "$iEquip_MCM_gen_lbl_setTorchDuration", TO.bCustomTorchDuration)
+            if TO.bCustomTorchDuration
+                MCM.AddSliderOptionST("gen_sld_torchDuration", "$iEquip_MCM_gen_lbl_torchDuration", TO.fCustomTorchDuration + 5.0, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+            endIf
+
             MCM.AddToggleOptionST("gen_tgl_reequipTorch", "$iEquip_MCM_gen_lbl_reequipTorch", TO.bAutoReEquipTorch)
             if TO.bAutoReEquipTorch
                 MCM.AddToggleOptionST("gen_tgl_realisticEquip", "$iEquip_MCM_gen_lbl_realisticEquip", TO.bRealisticReEquip)
@@ -174,6 +195,11 @@ function drawPage()
             MCM.AddToggleOptionST("gen_tgl_finiteTorchLife", "$iEquip_MCM_gen_lbl_finiteTorchLife", TO.bFiniteTorchLife)
             if TO.bFiniteTorchLife
                 MCM.AddToggleOptionST("gen_tgl_torchesFade", "$iEquip_MCM_gen_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
+            endIf
+
+            MCM.AddToggleOptionST("gen_tgl_dropLitTorches", "$iEquip_MCM_gen_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
+            if TO.bDropLitTorchesEnabled
+                MCM.AddMenuOptionST("gen_men_dropLitTorchBehavior", "$iEquip_MCM_gen_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
             endIf
 
             MCM.SetCursorPosition(1)
@@ -395,6 +421,30 @@ State gen_men_torchMeterFillDir
     endEvent
 endState
 
+State gen_tgl_setTorchDuration
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_setTorchDuration")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && TO.bCustomTorchDuration)
+            TO.bCustomTorchDuration = !TO.bCustomTorchDuration
+            MCM.forcePageReset()
+            TO.bCustomDurationSettingsChanged = true
+        endIf
+    endEvent
+endState
+
+State gen_sld_torchDuration
+    event OnBeginState()
+        if currentEvent == "Open"
+            MCM.fillSlider(TO.fCustomTorchDuration + 5.0, 60.0, 600.0, 30.0, 240.0)
+        elseIf currentEvent == "Accept"
+            TO.fCustomTorchDuration = currentVar - 5.0
+            MCM.SetSliderOptionValueST(TO.fCustomTorchDuration + 5.0, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+            TO.bCustomDurationSettingsChanged = true
+        endIf
+    endEvent
+endState
+
 State gen_tgl_reequipTorch
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -446,6 +496,30 @@ State gen_tgl_torchesFade
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bReduceLightAsTorchRunsOut)
             TO.bReduceLightAsTorchRunsOut = !TO.bReduceLightAsTorchRunsOut
             MCM.SetToggleOptionValueST(TO.bReduceLightAsTorchRunsOut)
+        endIf
+    endEvent
+endState
+
+State gen_tgl_dropLitTorches
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_dropLitTorches")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && TO.bDropLitTorchesEnabled)
+            TO.bDropLitTorchesEnabled = !TO.bDropLitTorchesEnabled
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_men_dropLitTorchBehavior
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_dropLitTorchBehavior")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(TO.iDropLitTorchBehavior, dropLitTorchBehaviour, 0)
+        elseIf currentEvent == "Accept"
+            TO.iDropLitTorchBehavior = currentVar as int
+            MCM.SetMenuOptionValueST(dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
         endIf
     endEvent
 endState
