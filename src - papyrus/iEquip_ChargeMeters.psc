@@ -256,52 +256,55 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter end")
 endFunction
 
-function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false)
+function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false, bool isTorchMeter = false)
 	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility start")
 	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility - Q: " + Q + ", show: " + show)
 	int element
 	int iHandle
-	if hideMeters || (iChargeDisplayType == 1 && !hideGems)
-		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
-		element = 13 ;leftEnchantmentMeter_mc
-		if Q == 1
-			element = 27 ;rightEnchantmentMeter_mc
-		endIf
-	else
-		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenSoulGemAlpha")	
-		element = 14 ;leftSoulgem_mc
-		if Q == 1
-			element = 28 ;rightSoulgem_mc
-		endIf
-	endIf
-	float targetAlpha
-	if show
-		;Just in case the charge meter and the queue position indicator occupy the same screen space hide the position indicator first (does nothing if not currently shown)
-		if iChargeDisplayType == 1
-			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
-		endIf
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[element] + "._visible", true)
-		targetAlpha = WC.afWidget_A[element]
-		abIsChargeMeterShown[Q] = true
-	else
-		targetAlpha = 0.0
-		abIsChargeMeterShown[Q] = false
-	endIf
-	If(iHandle)
-		UICallback.PushInt(iHandle, Q)
-		UICallback.PushFloat(iHandle, targetAlpha)
-		UICallback.Send(iHandle)
-	endIf
-	if show
-		if bChargeFadeoutEnabled && (fChargeFadeoutDelay > 0) && (afCurrCharge[Q] > fLowChargeThreshold)
-			if Q == 0
-				LU.registerForMeterFadeoutUpdate(Q, iChargeDisplayType, fChargeFadeoutDelay)
-			else
-				RU.registerForMeterFadeoutUpdate(Q, iChargeDisplayType, fChargeFadeoutDelay)
+	if (show && !abIsChargeMeterShown[Q]) || (!show && abIsChargeMeterShown[Q]) || hideMeters || hideGems
+		if hideMeters || (iChargeDisplayType == 1 && !hideGems)
+			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
+			element = 13 ;leftEnchantmentMeter_mc
+			if Q == 1
+				element = 27 ;rightEnchantmentMeter_mc
+			endIf
+		else
+			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenSoulGemAlpha")	
+			element = 14 ;leftSoulgem_mc
+			if Q == 1
+				element = 28 ;rightSoulgem_mc
 			endIf
 		endIf
-	else
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[element] + "._visible", false)
+		float targetAlpha
+		if show
+			;Just in case the charge meter and the queue position indicator occupy the same screen space hide the position indicator first (does nothing if not currently shown)
+			if iChargeDisplayType == 1
+				UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
+			endIf
+			UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[element] + "._visible", true)
+			targetAlpha = WC.afWidget_A[element]
+			abIsChargeMeterShown[Q] = true
+		else
+			targetAlpha = 0.0
+			abIsChargeMeterShown[Q] = false
+		endIf
+
+		If(iHandle)
+			UICallback.PushInt(iHandle, Q)
+			UICallback.PushFloat(iHandle, targetAlpha)
+			UICallback.Send(iHandle)
+		endIf
+		if show && !isTorchMeter
+			if bChargeFadeoutEnabled && (fChargeFadeoutDelay > 0) && (afCurrCharge[Q] > fLowChargeThreshold)
+				if Q == 0
+					LU.registerForMeterFadeoutUpdate(Q, iChargeDisplayType, fChargeFadeoutDelay)
+				else
+					RU.registerForMeterFadeoutUpdate(Q, iChargeDisplayType, fChargeFadeoutDelay)
+				endIf
+			endIf
+		else
+			UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[element] + "._visible", false)
+		endIf
 	endIf
 	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility end")
 endFunction

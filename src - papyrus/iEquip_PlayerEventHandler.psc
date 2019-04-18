@@ -429,8 +429,8 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 		if actionType == 2 ;Spell Cast/Spell Fire
 			;Check if the action has come from a hand with a staff currently equipped
 			if PlayerRef.GetEquippedItemType(slot) == 8
-				if RC.bRechargingEnabled && CM.iChargeDisplayType > 0 && CM.abIsChargeMeterShown[iSlotToUpdate]
-					CM.updateMeterPercent(iSlotToUpdate)
+				if RC.bRechargingEnabled && CM.iChargeDisplayType > 0 && CM.abIsChargeMeterShown[slot]
+					CM.updateMeterPercent(slot)
 				endIf
 			elseIf slot == 0
 				;Otherwise check if we've just cast Bound Shield (weapons are handled in BoundWeaponEventsListener)
@@ -693,7 +693,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 	else
 		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
-		itemBaseName = queuedForm.getName()
+		;itemBaseName = queuedForm.getName()
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 	endIf
 	
@@ -701,9 +701,9 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		itemName = queuedForm.getName()
 	endIf
 
-	if itemBaseName == ""
+	;/if itemBaseName == ""
 		itemBaseName = itemName
-	endIf
+	endIf/;
 
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - final names being saved, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 

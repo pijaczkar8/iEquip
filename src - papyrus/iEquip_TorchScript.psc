@@ -20,12 +20,14 @@ ActiveMagicEffect property TorchTimer auto
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
 
-float fTorchDuration = 235.0
+float fMaxTorchDuration = 235.0
+float fLastMaxDuration
+bool bTorchValuesChanged
 float fTorchRadius
 
-bool bGetInitialValues = true
-
 float fCurrentTorchLife
+
+bool bSetInitialValues = true
 
 bool bFirstUpdateForCurrentTorch = true
 bool bSettingLightRadius
@@ -38,9 +40,8 @@ bool property bShowTorchMeter = true auto hidden
 int property iTorchMeterFillColor = 0xFFF8AC auto hidden
 int property iTorchMeterFillColorDark = 0x686543 auto hidden
 string property sTorchMeterFillDirection = "left" auto hidden
-bool property bCustomTorchDuration auto hidden
-float property fCustomTorchDuration = 235.0 auto hidden
-bool property bCustomDurationSettingsChanged auto hidden
+float property fTorchDuration = 235.0 auto hidden
+bool property bTorchDurationSettingChanged auto hidden
 bool property bautoReEquipTorch = true auto hidden
 bool property bRealisticReEquip = true auto hidden
 float property fRealisticReEquipDelay = 2.0 auto hidden
@@ -56,12 +57,20 @@ function initialise(bool bEnabled)
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
 		RegisterForMenu("Journal Menu")
-		if bGetInitialValues
-			fTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
-			fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
-			bGetInitialValues = false
+		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
+		fMaxTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
+		if bSetInitialValues || fMaxTorchDuration < fTorchDuration
+			fTorchDuration = fMaxTorchDuration
 		endIf
-		if fCurrentTorchLife == 0.0
+		if fMaxTorchDuration != fLastMaxDuration
+			fLastMaxDuration = fMaxTorchDuration
+			if bSetInitialValues
+				bSetInitialValues = false
+			else
+				bTorchValuesChanged = true
+			endIf
+		endIf
+		if fCurrentTorchLife > fTorchDuration || fCurrentTorchLife == 0.0
 			fCurrentTorchLife = fTorchDuration
 		endIf
 	else
@@ -73,42 +82,39 @@ function initialise(bool bEnabled)
 endFunction
 
 event OnMenuClose(string MenuName)											; This is purely to handle custom torch durations set in the MCM
-	debug.trace("iEquip_TorchScript OnMenuClose start - " + MenuName + ", bCustomDurationSettingsChanged: " + bCustomDurationSettingsChanged)
-	if bCustomDurationSettingsChanged
-		if bCustomTorchDuration && fCustomTorchDuration < fTorchDuration 	; If the default duration for the torch is shorter then the MCM setting then do nothing and continue to use the default value
-			debug.trace("iEquip_TorchScript OnMenuClose - setting custom torch duration")
-			bSettingDuration = true
-			if PlayerRef.GetEquippedItemType(0) == 11						; If the player currently has a torch equipped we need to unequip it, check and change fCurrentTorchLife if required, and re-equip it
-				debug.trace("iEquip_TorchScript OnMenuClose - player has a torch equipped")
-				form torchForm = PlayerRef.GetEquippedObject(0)
-				while Utility.IsInMenuMode()
-					Utility.Wait(0.1)
-				endWhile
-				PlayerRef.UnequipItemEx(torchForm)
-				Utility.Wait(1.0)
-				If fCurrentTorchLife > fCustomTorchDuration
-					debug.trace("iEquip_TorchScript OnMenuClose - fCurrentTorchLife: " + fCurrentTorchLife + ", fCustomTorchDuration: " + fCustomTorchDuration + ", setting current torch life to new duration")
-					fCurrentTorchLife = fCustomTorchDuration
-				endIf
-				PlayerRef.EquipItemEx(torchForm, 0, false, false)
-			elseIf fCurrentTorchLife > fCustomTorchDuration 				; Otherwise we just need to adjust fCurrentTorchLife if required ready for the next equip
-				debug.trace("iEquip_TorchScript OnMenuClose - fCurrentTorchLife: " + fCurrentTorchLife + ", fCustomTorchDuration: " + fCustomTorchDuration + ", setting current torch life to new duration")
-				fCurrentTorchLife = fCustomTorchDuration
+	debug.trace("iEquip_TorchScript OnMenuClose start - " + MenuName + ", bTorchDurationSettingChanged: " + bTorchDurationSettingChanged)
+	if bTorchDurationSettingChanged
+		bSettingDuration = true
+		if PlayerRef.GetEquippedItemType(0) == 11						; If the player currently has a torch equipped we need to unequip it, check and change fCurrentTorchLife if required, and re-equip it
+			debug.trace("iEquip_TorchScript OnMenuClose - player has a torch equipped")
+			form torchForm = PlayerRef.GetEquippedObject(0)
+			while Utility.IsInMenuMode()
+				Utility.Wait(0.1)
+			endWhile
+			PlayerRef.UnequipItemEx(torchForm)
+			Utility.Wait(1.0)
+			If fCurrentTorchLife > fTorchDuration
+				debug.trace("iEquip_TorchScript OnMenuClose - fCurrentTorchLife: " + fCurrentTorchLife + ", fTorchDuration: " + fTorchDuration + ", setting current torch life to new duration")
+				fCurrentTorchLife = fTorchDuration
 			endIf
-			Utility.Wait(0.5)
-			bSettingDuration = false
+			PlayerRef.EquipItemEx(torchForm, 0, false, false)
+		elseIf fCurrentTorchLife > fTorchDuration 				; Otherwise we just need to adjust fCurrentTorchLife if required ready for the next equip
+			debug.trace("iEquip_TorchScript OnMenuClose - fCurrentTorchLife: " + fCurrentTorchLife + ", fTorchDuration: " + fTorchDuration + ", setting current torch life to new duration")
+			fCurrentTorchLife = fTorchDuration
 		endIf
-		bCustomDurationSettingsChanged = false
+		Utility.Wait(0.5)
+		bSettingDuration = false
+		bTorchDurationSettingChanged = false
 	endIf
 endEvent
 
 function onTorchRemoved(form torchForm)
 	debug.trace("iEquip_TorchScript onTorchRemoved start")
 	if !PlayerRef.GetEquippedItemType(0) == 11
-		if bCustomTorchDuration && fCustomTorchDuration < fTorchDuration
-			fCurrentTorchLife = fCustomTorchDuration
-		else
+		if bCustomTorchDuration && fTorchDuration < fMaxTorchDuration
 			fCurrentTorchLife = fTorchDuration
+		else
+			fCurrentTorchLife = fMaxTorchDuration
 		endIf
 		iEquip_FormExt.SetLightRadius(torchForm, fTorchRadius as int)
 		bFirstUpdateForCurrentTorch = true
@@ -134,10 +140,10 @@ function onTorchEquipped()
 
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
 		;iEquip_FormExt.ResetLightRadius(equippedTorch)
-		fTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float - 5.0
+		fMaxTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float - 5.0
 		fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
 
-		debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fTorchDuration: " + fTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
+		debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fMaxTorchDuration: " + fMaxTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
 
 		if fCurrentTorchLife < 30.0
 			if bReduceLightAsTorchRunsOut
@@ -297,19 +303,24 @@ function showTorchMeter(bool checkTimer = false)
 	debug.trace("iEquip_TorchScript showTorchMeter start - checkTimer: " + checkTimer)
 
 	if checkTimer	; Will only be true if called from refreshWidgetOnLoad
-		debug.trace("iEquip_TorchScript showTorchMeter - fCurrentTorchLife: " + fCurrentTorchLife + ", elapsed time: " + TorchTimer.GetTimeElapsed())
-		fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
+		float fTimeRemaining = fCurrentTorchLife - TorchTimer.GetTimeElapsed()
+		debug.trace("iEquip_TorchScript showTorchMeter - fCurrentTorchLife: " + fCurrentTorchLife + ", time remaining: " + fTimeRemaining)
+		if fTimeRemaining > fTorchDuration || fTimeRemaining < 0.0
+			fCurrentTorchLife = fTorchDuration
+		else
+			fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
+		endIf
 		debug.trace("iEquip_TorchScript showTorchMeter - fCurrentTorchLife set to: " + fCurrentTorchLife)
 	endIf
 
 	float currPercent
 
-	if bCustomTorchDuration && fCustomTorchDuration < fTorchDuration
-		debug.trace("iEquip_TorchScript showTorchMeter - setting currPercent from fCustomTorchDuration")
-		currPercent = 1.0 / fCustomTorchDuration * fCurrentTorchLife
-	else
+	if bCustomTorchDuration && fTorchDuration < fMaxTorchDuration
 		debug.trace("iEquip_TorchScript showTorchMeter - setting currPercent from fTorchDuration")
 		currPercent = 1.0 / fTorchDuration * fCurrentTorchLife
+	else
+		debug.trace("iEquip_TorchScript showTorchMeter - setting currPercent from fMaxTorchDuration")
+		currPercent = 1.0 / fMaxTorchDuration * fCurrentTorchLife
 	endIf 
 
 	debug.trace("iEquip_TorchScript showTorchMeter - currPercent: " + currPercent)
@@ -351,13 +362,13 @@ endFunction
 function startTorchMeterAnim()
 	debug.trace("iEquip_TorchScript startTorchMeterAnim start - duration: " + fCurrentTorchLife)
 	UI.InvokeFloat(HUD_MENU, WidgetRoot + ".leftMeter.startFillTween", fCurrentTorchLife)
-	UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween") ; Just in case
+	;UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween") ; Just in case
 	debug.trace("iEquip_TorchScript startTorchMeterAnim end")
 endFunction
 
 function stopTorchMeterAnim()
 	debug.trace("iEquip_TorchScript stopChargeMeterAnim start")
-	UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween") ; Just in case
+	;UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween") ; Just in case
 	UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.stopFillTween")
 	debug.trace("iEquip_TorchScript stopChargeMeterAnim end")
 endFunction

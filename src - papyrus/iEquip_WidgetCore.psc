@@ -1353,13 +1353,13 @@ function addCurrentItemsOnFirstEnable()
 				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 			else
 				itemName = WornObject.GetDisplayName(PlayerRef, Q, 0)
-				itemBaseName = equippedItem.getName()
+				;itemBaseName = equippedItem.getName()
 				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 			endIf
 			
 			if itemName == ""
 				itemName = equippedItem.GetName()
-				itemBaseName = itemName
+				;itemBaseName = itemName
 			endIf
 			
 			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(equippedItem.GetFormID(), 0x00FFFFFF))
@@ -3894,7 +3894,7 @@ function addToQueue(int Q)
 								if itemHandle != 0xFFFF
 									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
 								else
-									jMap.setStr(iEquipItem, "iEquipBaseName", itemName)
+									jMap.setStr(iEquipItem, "iEquipBaseName", "")
 								endIf
 								jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
 								jMap.setStr(iEquipItem, "temperedNameForQueueMenu", itemName)
