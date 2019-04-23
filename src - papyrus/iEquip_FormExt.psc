@@ -38,11 +38,6 @@ Int Function GetLightRadius(Form a_light) Global Native
 Function SetLightRadius(Form a_light, Int a_radius) Global Native
 
 
-; @brief Resets the light radius of the given light.
-; @param a_light The light to reset the light radius of.
-Function ResetLightRadius(Form a_light) Global Native
-
-
 ; @brief Fires whenever the player equips a bound weapon.
 ; @param a_weaponType The type of weapon equipped.
 ; VALID TYPES:

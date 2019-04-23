@@ -3,11 +3,10 @@ import Shared.GlobalFunc;
 import flash.geom.Transform;
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
-import com.greensock.TimelineLite;
-import com.greensock.TweenLite;
-import com.greensock.plugins.TweenPlugin;
-import com.greensock.plugins.FramePlugin;
-import com.greensock.easing.*;
+import com.iequip.TweenLite;
+import com.iequip.plugins.TweenPlugin;
+import com.iequip.plugins.FramePlugin;
+import com.iequip.plugins.FrameLabelPlugin;
 
 class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 {
@@ -25,12 +24,12 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 	private var _originalCapHeight: Number;
 	private var _originalMeterFillHolderWidth: Number;
 
-	private var _meterFrameContent: MovieClip;
-	private var _meterFillHolder: MovieClip;
-	private var _meterFillContent: MovieClip;
-	private var _meterFlashAnim: MovieClip;
-	private var _meterBarAnim: MovieClip;
-	private var _meterBar: MovieClip;
+	private var _iEquipMeterFrameContent: MovieClip;
+	private var _iEquipMeterFillHolder: MovieClip;
+	private var _iEquipMeterFillContent: MovieClip;
+	private var _iEquipMeterFlashAnim: MovieClip;
+	private var _iEquipMeterBarAnim: MovieClip;
+	private var _iEquipMeterBar: MovieClip;
 
 	private var _currentPercent: Number;
 	private var _targetPercent: Number;
@@ -52,7 +51,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
   /* STAGE ELEMENTS */
 	
-	public var meterContent: MovieClip;
+	public var iEquipMeterContent: MovieClip;
 	public var background: MovieClip;
 
   /* TORCH METER FILL ANIMATION */
@@ -65,28 +64,28 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 	{
 		super();
 
-		TweenPlugin.activate([FramePlugin]); //activation is permanent in the SWF, so this line only needs to be run once.
+		TweenPlugin.activate([FramePlugin, FrameLabelPlugin]); //activation is permanent in the SWF, so this line only needs to be run once.
 
-		background._visible = meterContent.capBackground._visible = false;
+		background._visible = iEquipMeterContent.capBackground._visible = false;
 
 		// Set internal dimensions to stage dimensions
 		__width = _width;
 		__height = _height;
 
-		_meterFrameContent = meterContent.meterFrameHolder.meterFrameContent;
-		_meterFillHolder = meterContent.meterFillHolder;
-		_meterFillContent = _meterFillHolder.meterFillContent;
-		_meterFlashAnim = _meterFrameContent.meterFlashAnim;
-		_meterBarAnim = _meterFillContent.meterBarAnim;
-		_meterBar = _meterBarAnim.meterBar;
+		_iEquipMeterFrameContent = iEquipMeterContent.iEquipMeterFrameHolder.iEquipMeterFrameContent;
+		_iEquipMeterFillHolder = iEquipMeterContent.iEquipMeterFillHolder;
+		_iEquipMeterFillContent = _iEquipMeterFillHolder.iEquipMeterFillContent;
+		_iEquipMeterFlashAnim = _iEquipMeterFrameContent.iEquipMeterFlashAnim;
+		_iEquipMeterBarAnim = _iEquipMeterFillContent.iEquipMeterBarAnim;
+		_iEquipMeterBar = _iEquipMeterBarAnim.iEquipMeterBar;
 
 		_originalWidth = background._width;
 		_originalHeight = background._height;
-		_originalCapWidth = meterContent.capBackground._width;
-		_originalCapHeight = meterContent.capBackground._height;
-		_originalMeterFillHolderWidth = _meterFillHolder._width;
+		_originalCapWidth = iEquipMeterContent.capBackground._width;
+		_originalCapHeight = iEquipMeterContent.capBackground._height;
+		_originalMeterFillHolderWidth = _iEquipMeterFillHolder._width;
 
-		_meterFillHolder._x = _originalCapWidth;
+		_iEquipMeterFillHolder._x = _originalCapWidth;
 
 		// Set stage dimensions to original dimensions and invalidate size
 		_width = _originalWidth;
@@ -95,10 +94,11 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function onLoad(): Void
 	{
+		skyui.util.Debug.log("iEquipMeter onLoad called");
 		invalidateSize();
 		invalidateFillDirection();
 
-		onEnterFrame = enterFrameHandler;
+		//onEnterFrame = enterFrameHandler;
 
 		_initialized = true;
 	}
@@ -167,6 +167,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function setColors(a_primaryColor: Number, a_secondaryColor: Number, a_flashColor: Number): Void
 	{
+		skyui.util.Debug.log("iEquipMeter setColors called - a_primaryColor:" + a_primaryColor + ", a_secondaryColor: " + a_secondaryColor + ", a_flashColor: " + a_flashColor);
 		// Wasteful checking..
 		//if (a_primaryColor != undefined && _primaryColor == a_primaryColor && _secondaryColor == a_secondaryColor)
 		//	return;
@@ -222,6 +223,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function setFillDirection(a_fillDirection: String, a_restorePercent: Boolean): Void
 	{
+		skyui.util.Debug.log("iEquipMeter setFillDirection called - a_fillDirection: " + a_fillDirection + ", a_restorePercent: " + a_restorePercent);
 		var fillDirection: String = a_fillDirection.toLowerCase();
 		if (_fillDirection == fillDirection && !a_restorePercent)
 			return;
@@ -242,50 +244,69 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function setPercent(a_percent: Number, a_force: Boolean): Void
 	{
+		skyui.util.Debug.log("iEquipMeter setPercent called - a_percent: " + a_percent + ", a_force: " + a_force);
 		_targetPercent = Math.min(1, Math.max(a_percent, 0));
 
 		if (a_force) {
 			_currentPercent = _targetPercent;
-			var meterFrame: Number = Math.floor(GlobalFunc.Lerp(_emptyIdx, _fullIdx, 0, 1, _currentPercent));
-			_meterBarAnim.gotoAndStop(meterFrame);
+			var iEquipMeterFrame: Number = Math.floor(GlobalFunc.Lerp(_emptyIdx, _fullIdx, 0, 1, _currentPercent));
+			_iEquipMeterBarAnim.gotoAndStop(iEquipMeterFrame);
 		}
 	}
 
 	public function startFillTween(a_duration: Number): Void
 	{
-		TorchMeterTween = new TweenLite(_meterBarAnim, a_duration*1.2, {frame:120});
-		TorchMeterTween.play();
+		//skyui.util.Debug.log("iEquipMeter startFillTween - a_duration: " + a_duration);
+		//try {
+			TorchMeterTween = new TweenLite(_iEquipMeterBarAnim, a_duration*1.2, {frame:120, overwrite:1});
+			//TorchMeterTween = new TweenLite(_iEquipMeterBarAnim, a_duration*1.2, {frameLabel:"Empty"});
+			TorchMeterTween.play();
+			//return "Animation should be playing";
+		//}
+		//catch (e) {
+			/*var status_txt;
+			this.createTextField("status_txt", this.getNextHighestDepth(), 0, 0, 100, 22);
+			status_txt.autoSize = true;
+			status_txt.text = e.toString();*/
+			//skyui.util.Debug.log("iEquipMeter startFillTween - error caught: " + (e.toString()));
+			//return e.toString();
+		//}
 	}
 
 	public function pauseFillTween(): Void
 	{
+		skyui.util.Debug.log("iEquipMeter pauseFillTween called");
 		TorchMeterTween.pause()
 	}
 
 	public function resumeFillTween(): Void
 	{
+		skyui.util.Debug.log("iEquipMeter resumeFillTween called");
 		TorchMeterTween.resume()
 	}
 
 	public function stopFillTween(): Void
 	{
-		TweenLite.killTweensOf(_meterBarAnim)
+		skyui.util.Debug.log("iEquipMeter stopFillTween called");
+		TweenLite.killTweensOf(_iEquipMeterBarAnim)
 	}
 
 	public function startFlash(a_force: Boolean): Void
 	{
+		skyui.util.Debug.log("iEquipMeter startFlash called");
 		// meterFlashing is set on the timeline and is false once the animation has finished
-		if (_meterFlashAnim.meterFlashing && !a_force) {
+		if (_iEquipMeterFlashAnim.meterFlashing && !a_force) {
 			return;
 		}
 
-		_meterFlashAnim.gotoAndPlay("StartFlash");
+		_iEquipMeterFlashAnim.gotoAndPlay("StartFlash");
 	}
 
   /* PRIVATE FUNCTIONS */
 
 	private function invalidateSize(): Void
 	{
+		skyui.util.Debug.log("iEquipMeter invalidateSize called");
 		var safeWidth: Number = _originalCapWidth * 3; // Safe width is 3* size of cap
 		var safeHeight: Number;
 
@@ -306,16 +327,17 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 		var scalePercent: Number = __height/_originalHeight;
 
 		// Scale the meterContent based on height so the caps AR is maintained
-		meterContent._xscale = meterContent._yscale = scalePercent * 100;
+		iEquipMeterContent._xscale = iEquipMeterContent._yscale = scalePercent * 100;
 
 		// Scale inner content
-		// Scale meterFrameContent instead of meterFrameHolder due to scale9Grid
-		_meterFrameContent._width = __width / scalePercent; // newWidth = oldWidth * newPercent/oldPercent /. newPercent -> 100
-		_meterFillHolder._xscale = ((_meterFrameContent._width - 2*_originalCapWidth)/_originalMeterFillHolderWidth) * 100;
+		// Scale iEquipMeterFrameContent instead of meterFrameHolder due to scale9Grid
+		_iEquipMeterFrameContent._width = __width / scalePercent; // newWidth = oldWidth * newPercent/oldPercent /. newPercent -> 100
+		_iEquipMeterFillHolder._xscale = ((_iEquipMeterFrameContent._width - 2*_originalCapWidth)/_originalMeterFillHolderWidth) * 100;
 	}
 
 	private function invalidateFillDirection(a_restorePercent: Boolean): Void
 	{
+		skyui.util.Debug.log("iEquipMeter invalidateFillDirection called");
 		switch(_fillDirection) {
 			case FILL_DIRECTION_LEFT:
 			case FILL_DIRECTION_BOTH:
@@ -325,14 +347,14 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 				_fillDirection = FILL_DIRECTION_LEFT;
 		}
 
-		_meterFillContent.gotoAndStop(_fillDirection);
+		_iEquipMeterFillContent.gotoAndStop(_fillDirection);
 		
 		drawMeterGradients();
 		
-		_meterBarAnim.gotoAndStop("Full");
-		_fullIdx = _meterBarAnim._currentframe;
-		_meterBarAnim.gotoAndStop("Empty");
-		_emptyIdx = _meterBarAnim._currentframe;
+		_iEquipMeterBarAnim.gotoAndStop("Full");
+		_fullIdx = _iEquipMeterBarAnim._currentframe;
+		_iEquipMeterBarAnim.gotoAndStop("Empty");
+		_emptyIdx = _iEquipMeterBarAnim._currentframe;
 		
 		if (a_restorePercent || !_initialized)
 			setPercent(_currentPercent, true);
@@ -342,11 +364,12 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function drawMeterGradients(): Void
 	{
+		skyui.util.Debug.log("iEquipMeter drawMeterGradients called");
 		// Draws the meter
-		var w: Number = _meterBar._width;
-		var h: Number = _meterBar._height;
-		var meterBevel: MovieClip = _meterBar.meterBevel;
-		var meterShine: MovieClip = _meterBar.meterShine;
+		var w: Number = _iEquipMeterBar._width;
+		var h: Number = _iEquipMeterBar._height;
+		var iEquipMeterBevel: MovieClip = _iEquipMeterBar.iEquipMeterBevel;
+		var iEquipMeterShine: MovieClip = _iEquipMeterBar.iEquipMeterShine;
 		
 		var colors: Array = [0xCCCCCC, 0xFFFFFF, 0x000000, 0x000000, 0x000000];
 		var alphas: Array = [10,       60,       0,        10,       30];
@@ -354,40 +377,41 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 		var ratios: Array = [0,       115,      128,      128,      255];
 		var matrix: Matrix = new Matrix();
 		
-		if (meterShine != undefined)
+		if (iEquipMeterShine != undefined)
 			return;
 			
-		meterShine = _meterBar.createEmptyMovieClip("meterShine", 2);
+		iEquipMeterShine = _iEquipMeterBar.createEmptyMovieClip("iEquipMeterShine", 2);
 		
-		meterBevel.swapDepths(1);
+		iEquipMeterBevel.swapDepths(1);
 		matrix.createGradientBox(w, h, Math.PI/2);
-		meterShine.beginGradientFill("linear", colors, alphas, ratios, matrix);
-		meterShine.moveTo(0,0);
-		meterShine.lineTo(w, 0);
-		meterShine.lineTo(w, h);
-		meterShine.lineTo(0, h);
-		meterShine.lineTo(0, 0);
-		meterShine.endFill();
+		iEquipMeterShine.beginGradientFill("linear", colors, alphas, ratios, matrix);
+		iEquipMeterShine.moveTo(0,0);
+		iEquipMeterShine.lineTo(w, 0);
+		iEquipMeterShine.lineTo(w, h);
+		iEquipMeterShine.lineTo(0, h);
+		iEquipMeterShine.lineTo(0, 0);
+		iEquipMeterShine.endFill();
 		
 		invalidateColor();
 	}
 
 	private function invalidateColor(): Void
 	{
+		skyui.util.Debug.log("iEquipMeter invalidateColor called");
 		var colors: Array;
 		var alphas: Array;
 		var ratios: Array;
-		var w: Number = _meterBar._width;
-		var h: Number = _meterBar._height;
-		var meterGradient: MovieClip = _meterBar.meterGradient;
+		var w: Number = _iEquipMeterBar._width;
+		var h: Number = _iEquipMeterBar._height;
+		var iEquipMeterGradient: MovieClip = _iEquipMeterBar.iEquipMeterGradient;
 		var matrix: Matrix = new Matrix();
 		
-		if (meterGradient != undefined)
-			meterGradient.removeMovieClip();
+		if (iEquipMeterGradient != undefined)
+			iEquipMeterGradient.removeMovieClip();
 
 
 			
-		meterGradient = _meterBar.createEmptyMovieClip("meterGradient", 0);
+		iEquipMeterGradient = _iEquipMeterBar.createEmptyMovieClip("iEquipMeterGradient", 0);
 		
 		switch(_fillDirection) {
 			case FILL_DIRECTION_LEFT:
@@ -408,13 +432,13 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 		}
 		
 		matrix.createGradientBox(w, h);
-		meterGradient.beginGradientFill("linear", colors, alphas, ratios, matrix);
-		meterGradient.moveTo(0,0);
-		meterGradient.lineTo(w, 0);
-		meterGradient.lineTo(w, h);
-		meterGradient.lineTo(0, h);
-		meterGradient.lineTo(0, 0);
-		meterGradient.endFill();
+		iEquipMeterGradient.beginGradientFill("linear", colors, alphas, ratios, matrix);
+		iEquipMeterGradient.moveTo(0,0);
+		iEquipMeterGradient.lineTo(w, 0);
+		iEquipMeterGradient.lineTo(w, h);
+		iEquipMeterGradient.lineTo(0, h);
+		iEquipMeterGradient.lineTo(0, 0);
+		iEquipMeterGradient.endFill();
 
 		if (_flashColorAuto || !_initialized) {
 			if (_flashColorAuto)
@@ -425,7 +449,8 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function invalidateFlashColor(): Void
 	{
-		var tf: Transform = new Transform(_meterFlashAnim);
+		skyui.util.Debug.log("iEquipMeter invalidateFlashColor called");
+		var tf: Transform = new Transform(_iEquipMeterFlashAnim);
 		var colorTf: ColorTransform = new ColorTransform();
 		colorTf.rgb = _flashColor;
 		tf.colorTransform = colorTf;
@@ -433,6 +458,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function enterFrameHandler(): Void
 	{
+		skyui.util.Debug.log("iEquipMeter enterFrameHandler called");
 		/*if (!_initialized) {
 			_currentPercent = _targetPercent;
 		} else*/ if (_targetPercent == _currentPercent) {
@@ -450,7 +476,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 		}
 		
 		_currentPercent = Math.min(1, Math.max(_currentPercent, 0));
-		var meterFrame: Number = Math.floor(GlobalFunc.Lerp(_emptyIdx, _fullIdx, 0, 1, _currentPercent));
-		_meterBarAnim.gotoAndStop(meterFrame);
+		var iEquipMeterFrame: Number = Math.floor(GlobalFunc.Lerp(_emptyIdx, _fullIdx, 0, 1, _currentPercent));
+		_iEquipMeterBarAnim.gotoAndStop(iEquipMeterFrame);
 	}
 }

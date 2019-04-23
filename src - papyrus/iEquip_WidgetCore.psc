@@ -8,7 +8,7 @@ import UICallback
 import Utility
 import StringUtil
 import iEquip_UILIB
-import _Q2C_Functions
+;import _Q2C_Functions
 import AhzMoreHudIE
 import WornObject
 import iEquip_FormExt
@@ -75,6 +75,47 @@ Message property iEquip_ConfirmDeletePreset auto
 Message property iEquip_ConfirmReset auto
 Message property iEquip_ConfirmResetParent auto
 Message property iEquip_ConfirmDiscardChanges auto
+
+Weapon[] property aUniqueItems auto hidden
+string[] asUniqueItemIcons
+Weapon property DBAlainAegisbane auto
+Weapon property DA02Dagger auto
+Weapon property TG07Chillrend001 auto
+Weapon property TG07Chillrend002 auto
+Weapon property TG07Chillrend003 auto
+Weapon property TG07Chillrend004 auto
+Weapon property TG07Chillrend005 auto
+Weapon property TG07Chillrend006 auto
+Weapon property DA09Dawnbreaker auto
+Weapon property MG07DraugrMagicSword auto
+Weapon property dunFolgunthurMikrulSword02 auto
+Weapon property dunFolgunthurMikrulSword03 auto
+Weapon property dunFolgunthurMikrulSword04 auto
+Weapon property dunFolgunthurMikrulSword05 auto
+Weapon property dunFolgunthurMikrulSword06 auto
+Weapon property dunAnsilvundGhostblade auto
+Weapon property FFRiften09Grimsever auto
+Weapon property MGRKeening auto
+Weapon property DA10MaceofMolagBal auto
+Weapon property DA07MehrunesRazor auto
+Weapon property T03Nettlebane auto
+Weapon property NightingaleBlade01 auto
+Weapon property NightingaleBlade02 auto
+Weapon property NightingaleBlade03 auto
+Weapon property NightingaleBlade04 auto
+Weapon property NightingaleBlade05 auto
+Weapon property NightingaleBladeNPC auto
+Weapon property dunVolunruudPickaxe auto
+Weapon property dunVolunruudOkin auto
+Weapon property weapPickaxe auto
+Weapon property dunRedEagleSwordBase auto
+Weapon property dunRedEagleSwordUpgraded auto
+Weapon property DA03RuefulAxe auto
+Weapon property DA06Volendrung auto
+Weapon property dunKatariahScimitar auto
+Weapon property Axe01 auto
+Weapon property dunHaltedStreamPoachersAxe auto
+Weapon property C06BladeOfYsgramor auto
 
 FormList property iEquip_AllCurrentItemsFLST auto
 FormList property iEquip_RemovedItemsFLST auto
@@ -447,6 +488,98 @@ Event OnWidgetInit()
     aiActorValues[1] = 25 ; Magicka
     aiActorValues[2] = 26 ; Stamina
 
+    aUniqueItems = new Weapon[50]
+    aUniqueItems[0] = DBAlainAegisbane
+	aUniqueItems[1] = DA02Dagger
+	aUniqueItems[2] = TG07Chillrend001
+	aUniqueItems[3] = TG07Chillrend002
+	aUniqueItems[4] = TG07Chillrend003
+	aUniqueItems[5] = TG07Chillrend004
+	aUniqueItems[6] = TG07Chillrend005
+	aUniqueItems[7] = TG07Chillrend006
+	aUniqueItems[8] = DA09Dawnbreaker
+	aUniqueItems[9] = MG07DraugrMagicSword
+	aUniqueItems[10] = dunFolgunthurMikrulSword02
+	aUniqueItems[11] = dunFolgunthurMikrulSword03
+	aUniqueItems[12] = dunFolgunthurMikrulSword04
+	aUniqueItems[13] = dunFolgunthurMikrulSword05
+	aUniqueItems[14] = dunFolgunthurMikrulSword06
+	aUniqueItems[15] = dunAnsilvundGhostblade
+	aUniqueItems[16] = FFRiften09Grimsever
+	aUniqueItems[17] = MGRKeening
+	aUniqueItems[18] = DA10MaceofMolagBal
+	aUniqueItems[19] = DA07MehrunesRazor
+	aUniqueItems[20] = T03Nettlebane
+	aUniqueItems[21] = NightingaleBlade01
+	aUniqueItems[22] = NightingaleBlade02
+	aUniqueItems[23] = NightingaleBlade03
+	aUniqueItems[24] = NightingaleBlade04
+	aUniqueItems[25] = NightingaleBlade05
+	aUniqueItems[26] = NightingaleBladeNPC
+	aUniqueItems[27] = dunVolunruudPickaxe
+	aUniqueItems[28] = dunVolunruudOkin
+	aUniqueItems[29] = weapPickaxe
+	aUniqueItems[30] = dunRedEagleSwordBase
+	aUniqueItems[31] = dunRedEagleSwordUpgraded
+	aUniqueItems[32] = DA03RuefulAxe
+	aUniqueItems[33] = DA06Volendrung
+	aUniqueItems[34] = dunKatariahScimitar
+	aUniqueItems[35] = Axe01
+	aUniqueItems[36] = dunHaltedStreamPoachersAxe
+	aUniqueItems[37] = C06BladeOfYsgramor
+
+	asUniqueItemIcons = new string[50]
+    asUniqueItemIcons[0] = "Aegisbane"
+	asUniqueItemIcons[1] = "BladeOfSacrifice"
+	asUniqueItemIcons[2] = "Chillrend"
+	asUniqueItemIcons[3] = "Chillrend"
+	asUniqueItemIcons[4] = "Chillrend"
+	asUniqueItemIcons[5] = "Chillrend"
+	asUniqueItemIcons[6] = "Chillrend"
+	asUniqueItemIcons[7] = "Chillrend"
+	asUniqueItemIcons[8] = "Dawnbreaker"
+	asUniqueItemIcons[9] = "DrainheartSword"
+	asUniqueItemIcons[10] = "GauldurBlackBlade"
+	asUniqueItemIcons[11] = "GauldurBlackBlade"
+	asUniqueItemIcons[12] = "GauldurBlackBlade"
+	asUniqueItemIcons[13] = "GauldurBlackBlade"
+	asUniqueItemIcons[14] = "GauldurBlackBlade"
+	asUniqueItemIcons[15] = "Ghostblade"
+	asUniqueItemIcons[16] = "Grimsever"
+	asUniqueItemIcons[17] = "Keening"
+	asUniqueItemIcons[18] = "MaceofMolagBal"
+	asUniqueItemIcons[19] = "MehrunesRazor"
+	asUniqueItemIcons[20] = "Nettlebane"
+	asUniqueItemIcons[21] = "NightingaleBlade"
+	asUniqueItemIcons[22] = "NightingaleBlade"
+	asUniqueItemIcons[23] = "NightingaleBlade"
+	asUniqueItemIcons[24] = "NightingaleBlade"
+	asUniqueItemIcons[25] = "NightingaleBlade"
+	asUniqueItemIcons[26] = "NightingaleBlade"
+	asUniqueItemIcons[27] = "NotchedPickaxe"
+	asUniqueItemIcons[28] = "Okin"
+	asUniqueItemIcons[29] = "Pickaxe"
+	asUniqueItemIcons[30] = "RedEaglesBane"
+	asUniqueItemIcons[31] = "RedEaglesFury"
+	asUniqueItemIcons[32] = "RuefulAxe"
+	asUniqueItemIcons[33] = "Volendrung"
+	asUniqueItemIcons[34] = "Windshear"
+	asUniqueItemIcons[35] = "WoodcuttersAxe"
+	asUniqueItemIcons[36] = "WoodcuttersAxe"
+	asUniqueItemIcons[37] = "Wuuthrad"
+	asUniqueItemIcons[38] = "AurielsBow"
+	asUniqueItemIcons[39] = "HarkonsSword"
+	asUniqueItemIcons[40] = "RuneHammer"
+	asUniqueItemIcons[41] = "Zephyr"
+	asUniqueItemIcons[42] = "WoodenSword"
+	asUniqueItemIcons[43] = "AncientNordicPickaxe"
+	asUniqueItemIcons[44] = "AncientNordicPickaxe"
+	asUniqueItemIcons[45] = "BloodskaalBlade"
+	asUniqueItemIcons[46] = "ChampionsCudgel"
+	asUniqueItemIcons[47] = "MiraaksSword"
+	asUniqueItemIcons[48] = "MiraaksSword"
+	asUniqueItemIcons[49] = "MiraaksSword"
+
 	debug.trace("iEquip_WidgetCore OnWidgetInit end")
 EndEvent
 
@@ -464,8 +597,38 @@ function CheckDependencies()
     endIf
     if Game.GetModByName("Dawnguard.esm") != 255
 		EH.DLC1VampireBeastRace = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race
+		aUniqueItems[38] = Game.GetFormFromFile(0x00000800, "Dawnguard.esm") as Weapon 	; DLC1AurielsBow
+		aUniqueItems[39] = Game.GetFormFromFile(0x000067CF, "Dawnguard.esm") as Weapon 	; DLC1HarkonsSword
+		aUniqueItems[40] = Game.GetFormFromFile(0x00011BAD, "Dawnguard.esm") as Weapon 	; DLC1DawnguardRuneHammer
+		aUniqueItems[41] = Game.GetFormFromFile(0x0000CFB6, "Dawnguard.esm") as Weapon 	; DLC1LD_KatriaBow - Zephyr
 	else
 		EH.DLC1VampireBeastRace = none
+		aUniqueItems[38] = none
+		aUniqueItems[39] = none
+		aUniqueItems[40] = none
+		aUniqueItems[41] = none
+	endIf
+	if Game.GetModByName("Hearthfires.esm") != 255
+		aUniqueItems[42] = Game.GetFormFromFile(0x00004D91, "Hearthfires.esm") as Weapon 	; BYOHWoodenSword
+	else
+		aUniqueItems[42] = none
+	endIf
+	if Game.GetModByName("Dragonborn.esm") != 255
+		aUniqueItems[43] = Game.GetFormFromFile(0x000206F2, "Dragonborn.esm") as Weapon 	; DLC2RR03NordPickaxe - Ancient Nordic Pickaxe
+		aUniqueItems[44] = Game.GetFormFromFile(0x000398E6, "Dragonborn.esm") as Weapon 	; DLC2AncientNordPickaxe - Ancient Nordic Pickaxe
+		aUniqueItems[45] = Game.GetFormFromFile(0x0001AEA4, "Dragonborn.esm") as Weapon 	; DLC2BloodskaalBlade
+		aUniqueItems[46] = Game.GetFormFromFile(0x0001A578, "Dragonborn.esm") as Weapon 	; DLC2RR01FalxWarhammer - Champions Cudgel
+		aUniqueItems[47] = Game.GetFormFromFile(0x000397F6, "Dragonborn.esm") as Weapon 	; DLC2MKMiraakSword1
+		aUniqueItems[48] = Game.GetFormFromFile(0x00039FB1, "Dragonborn.esm") as Weapon 	; DLC2MKMiraakSword2
+		aUniqueItems[49] = Game.GetFormFromFile(0x00039FB4, "Dragonborn.esm") as Weapon 	; DLC2MKMiraakSword3
+	else
+		aUniqueItems[43] = none
+		aUniqueItems[44] = none
+		aUniqueItems[45] = none
+		aUniqueItems[46] = none
+		aUniqueItems[47] = none
+		aUniqueItems[48] = none
+		aUniqueItems[49] = none
 	endIf
 	if Game.GetModByName("Undeath.esp") != 255
 		EH.NecroLichRace = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race
@@ -548,7 +711,6 @@ state ENABLED
 		AM.updateAmmoLists()
 		addFists()
 
-		;ResetWidgetArrays()
 		OnWidgetLoad()
 		
 		bIsFirstEnabled = false
@@ -3516,7 +3678,7 @@ function applyPoison(int Q)
             ApplyWithoutUpdatingWidget = true
         endIf
 
-        Potion currentPoison = _Q2C_Functions.WornGetPoison(PlayerRef, Q)
+        Potion currentPoison = WornGetPoison(PlayerRef, Q)
         if currentPoison
             string currentPoisonName = currentPoison.GetName()
             if currentPoison != poisonToApply
@@ -3530,7 +3692,7 @@ function applyPoison(int Q)
                             return
                         endIf
                     endIf
-                    _Q2C_Functions.WornRemovePoison(PlayerRef, Q)
+                    bool poisonRemoved = WornRemovePoison(PlayerRef, Q)
                 endIf	
             elseif iShowPoisonMessages < 2
                 iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"))
@@ -3555,14 +3717,16 @@ function applyPoison(int Q)
         else
             chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier
         endIf
-        int newCharges = -1
+        bool chargesApplied
         if currentPoison == poisonToApply
-            chargesToApply += _Q2C_Functions.WornGetPoisonCharges(PlayerRef, Q)
+            ;chargesToApply += _Q2C_Functions.WornGetPoisonCharges(PlayerRef, Q)
+            ;chargesToApply += GetPoisonCount(currentWeapon as form, GetRefHandleFromWornObject(Q))
             ;debug.trace("iEquip_WidgetCore applyPoison - about to top up the " + newPoison + " on your " + weaponName + " to " + chargesToApply + " charges")
-            newCharges = _Q2C_Functions.WornSetPoisonCharges(PlayerRef, Q, chargesToApply)
+            ;newCharges = _Q2C_Functions.WornSetPoisonCharges(PlayerRef, Q, chargesToApply)
+            SetPoisonCount(currentWeapon as form, GetRefHandleFromWornObject(Q), chargesToApply + GetPoisonCount(currentWeapon as form, GetRefHandleFromWornObject(Q)))
         else
             ;debug.trace("iEquip_WidgetCore applyPoison - about to apply " + chargesToApply + " charges of " + newPoison + " to your " + weaponName)
-            newCharges = _Q2C_Functions.WornSetPoison(PlayerRef, Q, poisonToApply, chargesToApply)
+            chargesApplied = WornSetPoison(PlayerRef, Q, poisonToApply, chargesToApply)
         endIf
         ;Remove one item from the player
         PlayerRef.RemoveItem(poisonToApply, 1, true)
@@ -3597,7 +3761,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	int itemType = jMap.getInt(targetObject, "iEquipType")
-	Potion currentPoison = _Q2C_Functions.WornGetPoison(PlayerRef, Q)
+	Potion currentPoison = WornGetPoison(PlayerRef, Q)
 	Form equippedItem = PlayerRef.GetEquippedObject(Q)
 	if !forceHide && !equippedItem && !bGoneUnarmed && !(Q == 0 && (b2HSpellEquipped || itemType == 26))
 		return
@@ -3648,7 +3812,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	;Otherwise update the poison name, count and icon
 	else
 		string poisonName = currentPoison.GetName()
-		int charges = _Q2C_Functions.WornGetPoisonCharges(PlayerRef, Q)
+		int charges = GetPoisonCount(equippedItem, GetRefHandleFromWornObject(Q))
 		;Update the poison icon
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")
 		if iPoisonIndicatorStyle == 0
@@ -3722,7 +3886,7 @@ bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 		isPoisoned = jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "isPoisoned") as bool
 	;Otherwise we're checking an equipped item so we can check the actual data from the weapon
 	else
-		Potion currentPoison = _Q2C_Functions.WornGetPoison(PlayerRef, Q)
+		Potion currentPoison = WornGetPoison(PlayerRef, Q)
 		if currentPoison
 			isPoisoned = true
 		else
@@ -4031,19 +4195,24 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     debug.trace("iEquip_WidgetCore GetItemIconName - itemType: " + itemType + ", itemName: " + itemName)
     string IconName = "Empty"
 
-    if itemType < 13 ;It is a weapon
-        ;Weapon W = itemForm as Weapon
-        IconName = asWeaponTypeNames[itemType]
-        ;2H axes and maces have the same ID for some reason, so we have to differentiate them
-        if itemType == 6 && (itemForm as Weapon).IsWarhammer()
-            IconName = "Warhammer"
-        elseif itemType == 1 && iEquip_FormExt.IsSpear(itemform) ;Looking for spears here from Spears by Soolie which are classed as 1H swords
-        	IconName = "Spear"
-        elseif itemType == 4 && iEquip_FormExt.IsGrenade(itemform) ;Looking for CACO grenades here which are classed as maces
-        	IconName = "Grenade"
-        endIf
+    if itemType < 13 														; It is a weapon
+    																		; First check if it is a Unique
+    	int uniqueItemIndex = aUniqueItems.Find(itemForm as weapon)
+    	if uniqueItemIndex != -1
+    		IconName = asUniqueItemIcons[uniqueItemIndex]
+    	else 																; Otherwise give it a base weapon name
+	        IconName = asWeaponTypeNames[itemType]
+	        																; 2H axes and maces have the same ID for some reason, so we have to differentiate them
+	        if itemType == 6 && (itemForm as Weapon).IsWarhammer()
+	            IconName = "Warhammer"
+	        elseif itemType == 1 && iEquip_FormExt.IsSpear(itemform) 		; Looking for spears here from Spears by Soolie which are classed as 1H swords
+	        	IconName = "Spear"
+	        elseif itemType == 4 && iEquip_FormExt.IsGrenade(itemform) 		; Looking for CACO grenades here which are classed as maces
+	        	IconName = "Grenade"
+	        endIf
+	    endIf
 
-    elseif itemType == 26 && (itemForm as Armor).GetSlotMask() == 512 ;Shield
+    elseif itemType == 26 && (itemForm as Armor).GetSlotMask() == 512 		; Shield
     	IconName = "Shield"
 
     elseif itemType == 23
@@ -4053,21 +4222,21 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     	IconName = "Torch"
 
     elseif itemType == 119
-    	if EH.bPlayerIsABeast && BM.currRace == 0 ;Werewolf
+    	if EH.bPlayerIsABeast && BM.currRace == 0 							; Werewolf
     		IconName = "Howl"
     	else
     		IconName = "Shout"
     	endIf
     
-    elseif itemType == 22 ;Is a spell
+    elseif itemType == 22 													; Is a spell
         Spell S = itemForm as Spell
 
     	if S.GetEquipType() == EquipSlots[4]
     		IconName = "Power"
     		if EH.bPlayerIsABeast && BM.currRace > 0
-    			if BM.currRace == 1 ;Vampire Lord
+    			if BM.currRace == 1 										; Vampire Lord
     				IconName += "Vamp"
-    			else ;2 - Lich
+    			else 														; 2 - Lich
     				IconName += "Lich"
     			endIf
     		endIf
@@ -4087,9 +4256,9 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
         endIf
         if !IconName
         	if EH.bPlayerIsABeast && BM.currRace > 0
-        		if BM.currRace == 1 ;Vampire Lord
+        		if BM.currRace == 1 										; Vampire Lord
         			IconName = "SpellVamp"
-        		else ;2 - Lich
+        		else 														; 2 - Lich
         			IconName = "SpellLich"
         		endIf
         	else
@@ -4097,7 +4266,7 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
         	endIf
         endIf
 
-    elseif itemType == 42 ;Ammo - Throwing weapons
+    elseif itemType == 42 													; Ammo - Throwing weapons
     	if iEquip_FormExt.IsSpear(itemform) || iEquip_FormExt.IsJavelin(itemform)
 			IconName = "Spear"
 		elseif iEquip_FormExt.IsGrenade(itemform)
@@ -4108,21 +4277,19 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
 			IconName = "ThrowingKnife"
 		endIf
     
-    elseif itemType == 46 ;Is a potion
+    elseif itemType == 46 													; Is a potion
         Potion P = itemForm as Potion
         if(P.IsPoison())
             IconName = "Poison"
-        elseIf(P.IsFood()) ;Only way to differentiate between food and drink types is by checking their consume sound
-        	if P.GetUseSound() == Game.GetForm(0x0010E2EA) ;NPCHumanEatSoup
+        elseIf(P.IsFood()) 													; Only way to differentiate between food and drink types is by checking their consume sound
+        	if P.GetUseSound() == Game.GetForm(0x0010E2EA) 					; NPCHumanEatSoup
             	IconName = "Soup"
-            elseif P.GetUseSound() == Game.GetForm(0x000B6435) ;ITMPotionUse
+            elseif P.GetUseSound() == Game.GetForm(0x000B6435) 				; ITMPotionUse
             	IconName = "Drink"
             else
             	IconName = "Food"
             endIf
         else
-	        ;int pIndex = P.GetCostliestEffectIndex()
-	        ;MagicEffect pEffect = P.GetNthEffectMagicEffect(P.GetCostliestEffectIndex())
 	        string pStr = P.GetNthEffectMagicEffect(P.GetCostliestEffectIndex()).GetName()
 			
 	        if (find(pStr, "Health") != -1)
@@ -4147,7 +4314,7 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     return IconName
 endFunction
 
-;Called by MCM if user has disabled Allow Single Items In Both Queues to remove duplicate 1h items from the right hand queue
+; Called by MCM if user has disabled Allow Single Items In Both Queues to remove duplicate 1h items from the right hand queue
 function purgeQueue()
 	debug.trace("iEquip_WidgetCore purgeQueue start")
 	int i

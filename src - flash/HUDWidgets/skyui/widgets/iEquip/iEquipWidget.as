@@ -6,11 +6,11 @@ import skyui.widgets.iEquip.iEquipEditMode;
 
 import gfx.io.GameDelegate;
 
-import com.greensock.TimelineLite;
-import com.greensock.TweenLite;
-import com.greensock.easing.*;
-import com.greensock.plugins.TweenPlugin;
-import com.greensock.plugins.DirectionalRotationPlugin;
+import com.iequip.TimelineLite;
+import com.iequip.TweenLite;
+import com.iequip.easing.*;
+import com.iequip.plugins.TweenPlugin;
+import com.iequip.plugins.DirectionalRotationPlugin;
 
 import flash.geom.ColorTransform;
 import flash.geom.Transform;
@@ -563,7 +563,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 			case 4:
 				backgroundClip = poisonBg_mc;
 				break;
-			/*case 5:
+			case 5:
 				backgroundClip = leftPreselectBg_mc;
 				break;
 			case 6:
@@ -571,7 +571,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 				break;
 			case 7:
 				backgroundClip = shoutPreselectBg_mc;
-				break;*/
+				break;
 			};
 
 		switch(iOption) {
@@ -1544,6 +1544,14 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public function startTorchMeterFillTween(nDuration: Number): Void
 	{
 		leftMeter.startFillTween(nDuration);
+		/*skyui.util.Debug.log("iEquipWidget startTorchMeterFillTween - nDuration: " + nDuration)
+		try {
+			var theString = leftMeter.startFillTween(nDuration);
+			skyui.util.Debug.log("iEquipWidget startTorchMeterFillTween - return from startFillTween: " + theString);
+		}
+		catch (e) {
+			skyui.util.Debug.log("iEquipWidget startTorchMeterFillTween - error caught: " + (e.toString()));
+		}*/
 	}
 
 	public function stopTorchMeterFillTween(): Void

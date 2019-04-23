@@ -1,11 +1,12 @@
 
 scriptName iEquip_PotionScript extends Quest
 
-import _Q2C_Functions
+;import _Q2C_Functions
 import AhzMoreHudIE
 import iEquip_StringExt
 import iEquip_FormExt
 import iEquip_ActorExt
+import iEquip_ObjectReferenceExt
 import UI
 
 iEquip_WidgetCore property WC auto
@@ -327,6 +328,7 @@ function findAndSortPotions()
     debug.trace("iEquip_PotionScript findAndSortPotions start")
     ;Count the number of potion items currently in the players inventory
     int numFound = GetNumItemsOfType(PlayerRef, 46)
+    debug.trace("iEquip_PotionScript findAndSortPotions - there are " + numFound + " potions in the player's inventory")
     ;If any potions found
     if numFound > 0
         int i = 0
@@ -361,6 +363,7 @@ function findAndSortPotions()
         while i < numFound
             foundPotion = GetNthFormOfType(PlayerRef, 46, i) as potion
             if foundPotion
+                debug.trace("iEquip_PotionScript findAndSortPotions - " + i + " is a " + foundPotion.GetName())
                 checkAndAddToPotionQueue(foundPotion, true)
             endIf
             i += 1

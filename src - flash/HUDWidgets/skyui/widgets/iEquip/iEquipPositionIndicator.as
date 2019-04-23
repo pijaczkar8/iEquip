@@ -6,9 +6,9 @@ import flash.geom.Matrix;
 
 import skyui.util.Debug;
 
-import com.greensock.TimelineLite;
-import com.greensock.TweenLite;
-import com.greensock.easing.*;
+import com.iequip.TimelineLite;
+import com.iequip.TweenLite;
+import com.iequip.easing.*;
 
 class skyui.widgets.iEquip.iEquipPositionIndicator extends MovieClip
 {
@@ -175,6 +175,9 @@ class skyui.widgets.iEquip.iEquipPositionIndicator extends MovieClip
 
 	private function setIndicatorPosition(): Void
 	{
+		if (currentPosition < 0){
+			currentPosition = 0;
+		}
 		positionMarker._x = positionMarker._width * currentPosition + (positionMarker._width/2) - (maxWidth/2);
 		currentPositionMarker._x = positionMarker._x;
 	}

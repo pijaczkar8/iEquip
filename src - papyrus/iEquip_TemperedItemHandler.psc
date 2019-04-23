@@ -230,60 +230,61 @@ function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, in
 	debug.trace("iEquip_TemperedItemHandler setTemperLevelName start - Q: " + Q + ", " + temperLevelName)
 	
 	string tempName = jMap.getStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipBaseName")
-	
-	if temperLevelName == ""
-		jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "temperedNameForQueueMenu", tempName)
-	else
-		jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "temperedNameForQueueMenu", tempName + " (" + temperLevelName + ")")
-	endIf
-	
-	if iTemperNameFormat > 0 && temperLevelName != ""												; Iron Sword
-		
-		if iTemperNameFormat < 9 && bTemperInfoBelowName
-			if iTemperNameFormat == 1
-				tempName = tempName + "\n(" + temperLevelName + ")"									; Iron Sword
-			elseIf iTemperNameFormat == 2															; (Fine)
-				tempName = tempName + "\n(" + temperLevelName + ", " + temperLevelPercent + "%)"	; Iron Sword
-			elseIf iTemperNameFormat == 3 || iTemperNameFormat == 6									; (Fine, 60%)
-				tempName = tempName + "\n" + temperLevelName										; Iron Sword
-			elseIf iTemperNameFormat == 4 || iTemperNameFormat == 7									; Fine
-				tempName = tempName + "\n" + temperLevelName + " (" + temperLevelPercent + "%)"		; Iron Sword
-			elseIf iTemperNameFormat == 5															; Fine (60%)
-				tempName = tempName + "\n" + temperLevelName + ", " + temperLevelPercent + "%"		; Iron Sword
-			elseIf iTemperNameFormat == 8															; Fine, 60%
-				tempName = tempName + "\n" + temperLevelName + " - " + temperLevelPercent + "%"		; Iron Sword
-			endIf 																					; Fine - 60%
+	if tempName != ""
+		if temperLevelName == ""
+			jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "temperedNameForQueueMenu", tempName)
 		else
-			if iTemperNameFormat == 1
-				tempName = tempName + " (" + temperLevelName + ")"									; Iron Sword (Fine)
-			elseIf iTemperNameFormat == 2
-				tempName = tempName + " (" + temperLevelName + ", " + temperLevelPercent + "%)"		; Iron Sword (Fine, 60%)
-			elseIf iTemperNameFormat == 3
-				tempName = tempName + " - " + temperLevelName										; Iron Sword - Fine
-			elseIf iTemperNameFormat == 4
-				tempName = tempName + " - " + temperLevelName + " (" + temperLevelPercent + "%)"	; Iron Sword - Fine (60%)
-			elseIf iTemperNameFormat == 5
-				tempName = tempName + " - " + temperLevelName + ", " + temperLevelPercent + "%"		; Iron Sword - Fine, 60%
-			elseIf iTemperNameFormat == 6
-				tempName = tempName + ", " + temperLevelName										; Iron Sword, Fine
-			elseIf iTemperNameFormat == 7
-				tempName = tempName + ", " + temperLevelName + " (" + temperLevelPercent + "%)"		; Iron Sword, Fine (60%)
-			elseIf iTemperNameFormat == 8
-				tempName = tempName + ", " + temperLevelName + " - " + temperLevelPercent + "%"		; Iron Sword, Fine - 60%
-			elseIf iTemperNameFormat == 9	
-				tempName = temperLevelName + " " + tempName											; Fine Iron Sword
-			elseIf iTemperNameFormat == 10
-				tempName = temperLevelName + " " + tempName	+ " (" + temperLevelPercent + "%)"		; Fine Iron Sword (60%)
-			elseIf iTemperNameFormat == 11
-				tempName = temperLevelName + " " + tempName	+ ", " + temperLevelPercent + "%"		; Fine Iron Sword, 60%
+			jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "temperedNameForQueueMenu", tempName + " (" + temperLevelName + ")")
+		endIf
+		
+		if iTemperNameFormat > 0 && temperLevelName != ""												; Iron Sword
+			
+			if iTemperNameFormat < 9 && bTemperInfoBelowName
+				if iTemperNameFormat == 1
+					tempName = tempName + "\n(" + temperLevelName + ")"									; Iron Sword
+				elseIf iTemperNameFormat == 2															; (Fine)
+					tempName = tempName + "\n(" + temperLevelName + ", " + temperLevelPercent + "%)"	; Iron Sword
+				elseIf iTemperNameFormat == 3 || iTemperNameFormat == 6									; (Fine, 60%)
+					tempName = tempName + "\n" + temperLevelName										; Iron Sword
+				elseIf iTemperNameFormat == 4 || iTemperNameFormat == 7									; Fine
+					tempName = tempName + "\n" + temperLevelName + " (" + temperLevelPercent + "%)"		; Iron Sword
+				elseIf iTemperNameFormat == 5															; Fine (60%)
+					tempName = tempName + "\n" + temperLevelName + ", " + temperLevelPercent + "%"		; Iron Sword
+				elseIf iTemperNameFormat == 8															; Fine, 60%
+					tempName = tempName + "\n" + temperLevelName + " - " + temperLevelPercent + "%"		; Iron Sword
+				endIf 																					; Fine - 60%
 			else
-				tempName = temperLevelName + " " + tempName	+ " - " + temperLevelPercent + "%"		; Fine Iron Sword - 60%
+				if iTemperNameFormat == 1
+					tempName = tempName + " (" + temperLevelName + ")"									; Iron Sword (Fine)
+				elseIf iTemperNameFormat == 2
+					tempName = tempName + " (" + temperLevelName + ", " + temperLevelPercent + "%)"		; Iron Sword (Fine, 60%)
+				elseIf iTemperNameFormat == 3
+					tempName = tempName + " - " + temperLevelName										; Iron Sword - Fine
+				elseIf iTemperNameFormat == 4
+					tempName = tempName + " - " + temperLevelName + " (" + temperLevelPercent + "%)"	; Iron Sword - Fine (60%)
+				elseIf iTemperNameFormat == 5
+					tempName = tempName + " - " + temperLevelName + ", " + temperLevelPercent + "%"		; Iron Sword - Fine, 60%
+				elseIf iTemperNameFormat == 6
+					tempName = tempName + ", " + temperLevelName										; Iron Sword, Fine
+				elseIf iTemperNameFormat == 7
+					tempName = tempName + ", " + temperLevelName + " (" + temperLevelPercent + "%)"		; Iron Sword, Fine (60%)
+				elseIf iTemperNameFormat == 8
+					tempName = tempName + ", " + temperLevelName + " - " + temperLevelPercent + "%"		; Iron Sword, Fine - 60%
+				elseIf iTemperNameFormat == 9	
+					tempName = temperLevelName + " " + tempName											; Fine Iron Sword
+				elseIf iTemperNameFormat == 10
+					tempName = temperLevelName + " " + tempName	+ " (" + temperLevelPercent + "%)"		; Fine Iron Sword (60%)
+				elseIf iTemperNameFormat == 11
+					tempName = temperLevelName + " " + tempName	+ ", " + temperLevelPercent + "%"		; Fine Iron Sword, 60%
+				else
+					tempName = temperLevelName + " " + tempName	+ " - " + temperLevelPercent + "%"		; Fine Iron Sword - 60%
+				endIf
 			endIf
 		endIf
+		debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
+		UI.SetString(HUD_MENU, WidgetRoot + asNamePaths[Q], tempName)
+		jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastDisplayedName", tempName)
 	endIf
-	debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
-	UI.SetString(HUD_MENU, WidgetRoot + asNamePaths[Q], tempName)
-	jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastDisplayedName", tempName)
 	debug.trace("iEquip_TemperedItemHandler setTemperLevelName end")
 endFunction
 

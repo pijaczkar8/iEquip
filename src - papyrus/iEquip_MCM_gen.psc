@@ -78,8 +78,7 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, TO.bShowTorchMeter as int)
     jArray.addInt(jPageObj, TO.iTorchMeterFillColor)
     jArray.addInt(jPageObj, iTorchMeterFillDirection)
-    jArray.addInt(jPageObj, TO.bCustomTorchDuration as int)
-    jArray.addFlt(jPageObj, TO.fCustomTorchDuration)
+    jArray.addFlt(jPageObj, TO.fTorchDuration)
     jArray.addInt(jPageObj, TO.bAutoReEquipTorch as int)
     jArray.addInt(jPageObj, TO.bRealisticReEquip as int)
     jArray.addFlt(jPageObj, TO.fRealisticReEquipDelay)
@@ -119,30 +118,29 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
     TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
     iTorchMeterFillDirection = jArray.getInt(jPageObj, 9)
     TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
-    TO.bCustomTorchDuration = jArray.getInt(jPageObj, 10)
-    TO.fCustomTorchDuration = jArray.getInt(jPageObj, 11)
-    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 12)
-    TO.bRealisticReEquip = jArray.getInt(jPageObj, 13)
-    TO.fRealisticReEquipDelay = jArray.getFlt(jPageObj, 14)
-    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 15)
-    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 16)
-    TO.bDropLitTorchesEnabled = jArray.getInt(jPageObj, 17)
-    TO.iDropLitTorchBehavior = jArray.getInt(jPageObj, 18)
+    TO.fTorchDuration = jArray.getInt(jPageObj, 10)
+    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 11)
+    TO.bRealisticReEquip = jArray.getInt(jPageObj, 12)
+    TO.fRealisticReEquipDelay = jArray.getFlt(jPageObj, 13)
+    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 14)
+    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 15)
+    TO.bDropLitTorchesEnabled = jArray.getInt(jPageObj, 16)
+    TO.iDropLitTorchBehavior = jArray.getInt(jPageObj, 17)
 	
-	WC.bEquipOnPause = jArray.getInt(jPageObj, 19)
-	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 20)
+	WC.bEquipOnPause = jArray.getInt(jPageObj, 18)
+	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 19)
 	
-	iPosIndChoice = jArray.getInt(jPageObj, 21)
+	iPosIndChoice = jArray.getInt(jPageObj, 20)
     updatePositionIndicatorSettings()
 
-	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 22)
+	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 21)
 	
-	WC.bEnableGearedUp = jArray.getInt(jPageObj, 23)
-	WC.bUnequipAmmo = jArray.getInt(jPageObj, 24)
+	WC.bEnableGearedUp = jArray.getInt(jPageObj, 22)
+	WC.bUnequipAmmo = jArray.getInt(jPageObj, 23)
 
-	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 25)
-	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 26)
-	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 27)
+	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 24)
+	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 25)
+	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 26)
 endFunction
 
 function drawPage()
@@ -179,10 +177,7 @@ function drawPage()
                 MCM.AddMenuOptionST("gen_men_torchMeterFillDir", "$iEquip_MCM_gen_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
             endIf
 
-            MCM.AddToggleOptionST("gen_tgl_setTorchDuration", "$iEquip_MCM_gen_lbl_setTorchDuration", TO.bCustomTorchDuration)
-            if TO.bCustomTorchDuration
-                MCM.AddSliderOptionST("gen_sld_torchDuration", "$iEquip_MCM_gen_lbl_torchDuration", TO.fCustomTorchDuration + 5.0, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-            endIf
+            MCM.AddSliderOptionST("gen_sld_torchDuration", "$iEquip_MCM_gen_lbl_torchDuration", (TO.fTorchDuration + 5.0) / 60, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
 
             MCM.AddToggleOptionST("gen_tgl_reequipTorch", "$iEquip_MCM_gen_lbl_reequipTorch", TO.bAutoReEquipTorch)
             if TO.bAutoReEquipTorch
@@ -421,26 +416,16 @@ State gen_men_torchMeterFillDir
     endEvent
 endState
 
-State gen_tgl_setTorchDuration
+State gen_sld_torchDuration
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_setTorchDuration")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && TO.bCustomTorchDuration)
-            TO.bCustomTorchDuration = !TO.bCustomTorchDuration
-            MCM.forcePageReset()
-            TO.bCustomDurationSettingsChanged = true
-        endIf
-    endEvent
-endState
-
-State gen_sld_torchDuration
-    event OnBeginState()
-        if currentEvent == "Open"
-            MCM.fillSlider(TO.fCustomTorchDuration + 5.0, 60.0, 600.0, 30.0, 240.0)
+        elseIf currentEvent == "Open"
+            MCM.fillSlider((TO.fTorchDuration + 5.0) / 60.0, 1.0, TO.fMaxTorchDuration / 60.0, 0.5, TO.fMaxTorchDuration / 60.0)
         elseIf currentEvent == "Accept"
-            TO.fCustomTorchDuration = currentVar - 5.0
-            MCM.SetSliderOptionValueST(TO.fCustomTorchDuration + 5.0, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-            TO.bCustomDurationSettingsChanged = true
+            TO.fTorchDuration = currentVar * 60.0 - 5.0
+            MCM.SetSliderOptionValueST((TO.fTorchDuration + 5.0) / 60.0, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
+            TO.bTorchDurationSettingChanged = true
         endIf
     endEvent
 endState

@@ -4,9 +4,9 @@ import flash.geom.Transform;
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
 
-import com.greensock.TimelineLite;
-import com.greensock.TweenLite;
-import com.greensock.easing.*;
+import com.iequip.TimelineLite;
+import com.iequip.TweenLite;
+import com.iequip.easing.*;
 
 class skyui.widgets.iEquip.iEquipSoulGem extends MovieClip
 {

@@ -7,11 +7,16 @@ Import iEquip_FormExt
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
 iEquip_PotionScript Property PO Auto
+iEquip_TorchScript Property TO Auto
 
 Actor Property PlayerRef Auto
 
+light property iEquipTorch auto
+
 FormList Property iEquip_RemovedItemsFLST Auto
 FormList Property iEquip_ItemsToAddFLST Auto
+
+bool bSwitchingTorches
 
 function initialise(bool bEnabled)
 	debug.trace("iEquip_AddedItemHandler initialise start")
@@ -25,9 +30,13 @@ endFunction
 
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	debug.trace("iEquip_AddedItemHandler OnItemAdded start")
-	debug.trace("iEquip_AddedItemHandler OnItemAdded - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
-	iEquip_ItemsToAddFLST.AddForm(akBaseItem)
-	registerForSingleUpdate(0.5)
+	debug.trace("iEquip_AddedItemHandler OnItemAdded - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
+	if bSwitchingTorches && akBaseItem == TO.realTorchForm
+		bSwitchingTorches = false
+	else
+		iEquip_ItemsToAddFLST.AddForm(akBaseItem)
+		registerForSingleUpdate(0.5)
+	endIf
 	debug.trace("iEquip_AddedItemHandler OnItemAdded end")
 endEvent
 
@@ -55,6 +64,12 @@ event OnUpdate()
 		    	WC.addBackCachedItem(formToAdd)
 		    ;Or finally check if we've just added one of a currently equipped item which requires a counter update
 			else
+				if formToAdd == iEquipTorch as form 	; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for a real torch now
+					bSwitchingTorches = true
+					formToAdd = TO.realTorchForm
+					PlayerRef.RemoveItem(iEquipTorch, 1, true)
+					PlayerRef.AddItem(formToAdd, 1, true)
+				endIf
 				j = 0
 				int itemType = formToAdd.GetType()
 				while j < 2

@@ -4,11 +4,12 @@ Scriptname iEquip_AmmoMode extends Quest
 Import UI
 Import UICallback
 Import Utility
-import _Q2C_Functions
+;import _Q2C_Functions
 import iEquip_StringExt
 import iEquip_AmmoExt
 import iEquip_FormExt
 import iEquip_WeaponExt
+import iEquip_ObjectReferenceExt
 
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
