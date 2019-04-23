@@ -33,7 +33,7 @@ float fCurrentTorchLife
 bool bSetInitialValues = true
 
 bool bFirstUpdateForCurrentTorch = true
-bool bSettingLightRadius
+bool property bSettingLightRadius auto hidden
 bool bSettingDuration
 bool bFinalUpdateReceived
 bool bJustDroppedTorch
@@ -256,20 +256,15 @@ endEvent
 Function DropTorch()
 	if bDropLitTorchesEnabled
 		bJustDroppedTorch = true
-		WC.bJustDroppedTorch = true
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
 		int remainingTorches = PlayerRef.GetItemCount(realTorchForm) - 1
 		int queueLength = JArray.count(WC.aiTargetQ[0])
 		if remainingTorches == 0
+			WC.bJustDroppedTorch = true
 			queueLength -= 1
 		endIf
 
 		PlayerRef.UnequipItemEx(equippedTorch)
-		PlayerRef.RemoveItem(realTorchForm, 1, true, None)
-		if equippedTorch == iEquipTorch
-			PlayerRef.RemoveItem(equippedTorch, 1, true, None)
-		endIf
-
 
 		ObjectReference DroppedTorch = PlayerRef.PlaceAtMe(equippedTorch, 1, false, true)
 
@@ -298,6 +293,11 @@ Function DropTorch()
 		EndWhile
 		
 		DroppedTorch.ApplyHavokImpulse(0,0,1,5)
+
+		PlayerRef.RemoveItem(realTorchForm, 1, true, None)
+		if equippedTorch == iEquipTorch
+			PlayerRef.RemoveItem(equippedTorch, 1, true, None)
+		endIf
 
 		if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || (iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3 && queueLength == 0)		; Do Nothing and set left hand to empty
 			WC.setSlotToEmpty(0, false, true)

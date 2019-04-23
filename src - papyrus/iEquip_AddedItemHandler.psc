@@ -33,7 +33,7 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	debug.trace("iEquip_AddedItemHandler OnItemAdded - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
 	if bSwitchingTorches && akBaseItem == TO.realTorchForm
 		bSwitchingTorches = false
-	else
+	elseIf !(akBaseItem == iEquipTorch as form && TO.bSettingLightRadius)
 		iEquip_ItemsToAddFLST.AddForm(akBaseItem)
 		registerForSingleUpdate(0.5)
 	endIf
