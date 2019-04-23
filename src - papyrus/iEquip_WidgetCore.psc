@@ -4385,6 +4385,9 @@ function initQueueMenu(int Q, int queueLength, bool update = false, int iIndex =
 		if Q < 2 && TI.aiTemperedItemTypes.Find(JMap.getInt(jArray.getObj(targetArray, i), "iEquipType")) != -1
 			iconNames[i] = JMap.getStr(jArray.getObj(targetArray, i), "iEquipBaseIcon")
 			itemName = JMap.getStr(jArray.getObj(targetArray, i), "temperedNameForQueueMenu")
+			if itemName == ""
+				itemName = JMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
+			endIf
 		else
 			iconNames[i] = JMap.getStr(jArray.getObj(targetArray, i), "iEquipIcon")
 			itemName = JMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
