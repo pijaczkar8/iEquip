@@ -31,7 +31,7 @@ Race property PlayerRace auto hidden
 Keyword Property CraftingSmithingSharpeningWheel Auto
 Keyword Property CraftingSmithingArmorTable Auto
 
-light property Torch01 auto
+light property iEquipTorch auto
 
 Race PlayerBaseRace
 
@@ -517,12 +517,12 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
 	
-	if akBaseObject == Torch01 as form	; This just handles the finite torch life timer
+	if akBaseObject.GetType() == 31	; This just handles the finite torch life timer
 		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
 		TO.onTorchEquipped()
 	endIf
 	
-	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms
+	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && !akBaseObject == iEquipTorch as form
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
 			if dualCastCounter == 0
@@ -602,7 +602,6 @@ function processQueuedForms()
 	processingQueuedForms = true
 	int i
 	form queuedForm
-	objectReference queuedObjRef
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
 		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
