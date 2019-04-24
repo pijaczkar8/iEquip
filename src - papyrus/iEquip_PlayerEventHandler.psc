@@ -522,7 +522,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		TO.onTorchEquipped()
 	endIf
 	
-	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && !akBaseObject == iEquipTorch as form
+	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && akBaseObject != iEquipTorch as form
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
 			if dualCastCounter == 0
@@ -846,7 +846,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 endFunction
 
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-  	if akBaseObject == Torch01 as form && !WC.bAddingItemsOnFirstEnable
+  	if akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable
   		debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
     	TO.onTorchUnequipped()
   	endIf

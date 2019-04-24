@@ -60,6 +60,7 @@ function initialise(bool bEnabled)
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
 		RegisterForMenu("Journal Menu")
+		realTorchForm = Torch01
 		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
 		fMaxTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
 		if bSetInitialValues || fMaxTorchDuration < fTorchDuration
