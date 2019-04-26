@@ -265,7 +265,7 @@ bool property bAttributeIconsOptionChanged auto hidden
 
 int[] property aiTargetQ auto hidden
 string[] asQueueName
-bool[] abQueueWasEmpty
+bool[] property abQueueWasEmpty auto hidden
 
 EquipSlot[] property EquipSlots auto hidden
 

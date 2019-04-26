@@ -153,8 +153,10 @@ function onTorchEquipped()
 					PlayerRef.AddItem(iEquipTorch, 1, true)
 				endIf
 				iEquip_FormExt.SetLightRadius(iEquipTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
-				PlayerRef.UnequipItemEx(equippedTorch)
+				;PlayerRef.UnequipItemEx(equippedTorch)
 				PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
+				;Debug.SendAnimationEvent(PlayerRef, "torchEquip")
+				;Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
 			endIf
 			RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
 		else
@@ -229,8 +231,10 @@ event OnUpdate()
 				PlayerRef.AddItem(iEquipTorch, 1, true)
 			endIf
 			iEquip_FormExt.SetLightRadius(iEquipTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
-			PlayerRef.UnequipItemEx(equippedTorch)
+			;PlayerRef.UnequipItemEx(equippedTorch)
+			Debug.SendAnimationEvent(PlayerRef, "torchEquip")
 			PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
+			Debug.SendAnimationEvent(PlayerRef, "torchEquip")
 		endIf
 		
 		if fCurrentTorchLife <= 0.0
