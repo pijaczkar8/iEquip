@@ -226,6 +226,7 @@ endEvent
 function savePreset(string presetName)	; Save data to JContainer file
 	int jMCMPreset = jMap.object()
 	
+	jMap.setInt(jMCMPreset, "Version", GetVersion())
 	jMap.setObj(jMCMPreset, "General", gen.saveData())
 	jMap.setObj(jMCMPreset, "Hotkey", htk.saveData())
 	jMap.setObj(jMCMPreset, "Queue", que.saveData())
@@ -243,17 +244,21 @@ endFunction
 function loadPreset(string presetName)	; Load MCM data
 	int jMCMPreset = jValue.readFromFile(MCMSettingsPath + presetName + FileExtMCM)
 	
-    gen.loadData(jMap.getObj(jMCMPreset, "General"))
-    htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"))
-    que.loadData(jMap.getObj(jMCMPreset, "Queue"))
-    pot.loadData(jMap.getObj(jMCMPreset, "Potions"))
-    poi.loadData(jMap.getObj(jMCMPreset, "Potions&"))
-    uii.loadData(jMap.getObj(jMCMPreset, "Ui"))
-    pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
-    edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
-    inf.loadData(jMap.getObj(jMCMPreset, "Info"))
-	bUpdateKeyMaps = true
-    WC.bMCMPresetLoaded = true
+	if (jMap.getInt(jMCMPreset, "Version") == GetVersion())
+		gen.loadData(jMap.getObj(jMCMPreset, "General"))
+		htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"))
+		que.loadData(jMap.getObj(jMCMPreset, "Queue"))
+		pot.loadData(jMap.getObj(jMCMPreset, "Potions"))
+		poi.loadData(jMap.getObj(jMCMPreset, "Potions&"))
+		uii.loadData(jMap.getObj(jMCMPreset, "Ui"))
+		pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
+		edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
+		inf.loadData(jMap.getObj(jMCMPreset, "Info"))
+		bUpdateKeyMaps = true
+		WC.bMCMPresetLoaded = true
+	else
+		ShowMessage("$iEquip_common_LoadPresetError")
+	endIf
 	
 	jValue.zeroLifetime(jMCMPreset)
 endFunction
@@ -288,22 +293,22 @@ endFunction
 ; -------------------
 
 string[] function cutStrArray(string[] stringArray, int cutIndex)
-    if stringArray.length > 1
-        string[] newStringArray = Utility.CreateStringArray(stringArray.length - 1)
-        int oldAIndex
-        int newAIndex
-            
-        while oldAIndex < stringArray.length && newAIndex < stringArray.length - 1
-            if oldAIndex != cutIndex
-                newStringArray[newAIndex] = stringArray[oldAIndex]
-                newAIndex += 1
-            endIf
-                
-            oldAIndex += 1
-        endWhile
-        
-        return newStringArray
-    else
-        return stringArray
-    endIf
+	if stringArray.length == 0
+		return stringArray
+	endIf
+
+	string[] newStringArray = Utility.CreateStringArray(stringArray.length - 1)
+	int oldAIndex
+	int newAIndex
+		
+	while oldAIndex < stringArray.length && newAIndex < stringArray.length - 1
+		if oldAIndex != cutIndex
+			newStringArray[newAIndex] = stringArray[oldAIndex]
+			newAIndex += 1
+		endIf
+			
+		oldAIndex += 1
+	endWhile
+	
+	return newStringArray
 endFunction

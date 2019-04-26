@@ -11,6 +11,7 @@ import iEquip_StringExt
 
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
+iEquip_ChargeMeters property CM auto
 
 ; - REFERENCES -
 
@@ -73,6 +74,13 @@ string[] asPoisonNamePath
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
 string sRotation = "$iEquip_EM_clockwise"
+
+; ######################
+; ### PRESET VERSION ###
+
+int function GetVersion()
+    return 1
+endFunction
 
 ; ######################
 ; ### INITIALIZATION ###
@@ -867,8 +875,16 @@ function ShowPresetList()
             int[] MenuReturnArgs = ((Self as Form) as iEquip_UILIB).ShowList("$iEquip_EM_lbl_presetListTitle", sPresetList, 0, 0)
             
             if MenuReturnArgs[1] == 0       ; Load preset
-                LoadPreset(jValue.readFromFile(WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + FileExtWP))
-                Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + FileExtWP)
+				int jPreset = jValue.readFromFile(WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + FileExtWP)
+				
+				if (jMap.getInt(jPreset, "Version") == GetVersion())
+					LoadPreset(jPreset)
+					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + FileExtWP)
+				else
+					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_common_LoadPresetError"))
+				endIf
+				
+				jValue.zeroLifetime(jPreset)
                 bDontExit = false
             elseIf MenuReturnArgs[1] == 1   ; Delete preset
                 bDontExit = true
@@ -962,8 +978,9 @@ function SavePreset()
         jMap.setObj(jSavePreset, "_TC", jArray.objectWithInts(WC.aiWidget_TC))
         jMap.setObj(jSavePreset, "_TA", jArray.objectWithStrings(WC.asWidget_TA))
         jMap.setObj(jSavePreset, "_V", jArray.objectWithBooleans(WC.abWidget_V))
-		;jMap.setObj(jSavePreset, "_X", jArray.objectWithFloats(WC.afWidget_X))
-		;jMap.setInt(jSavePreset, "_X", jArray.objectWithFloats(WC.afWidget_X))
+		jMap.setInt(jSavePreset, "potionSelectorAlignment", bPotionSelectorOnLeft as int)
+		jMap.setInt(jSavePreset, "chargeDisplayType", CM.iChargeDisplayType)
+		jMap.setInt(jSavePreset, "backgroundStyle", WC.iBackgroundStyle)
 
         jValue.writeTofile(jSavePreset, WidgetPresetPath + textInput + FileExtWP)
         Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_savedAs") + " " + textInput + FileExtWP)
@@ -984,6 +1001,9 @@ function LoadPreset(int jPreset)
     JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_TC"), WC.aiWidget_TC, 0, -1, 0, 0)
     JArray.writeToStringPArray(JMap.getObj(jPreset, "_TA"), WC.asWidget_TA, 0, -1, 0, 0)
     JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_V"), abWidget_V_temp, 0, -1, 0, 0)
+	bPotionSelectorOnLeft = jMap.getInt(jPreset, "potionSelectorAlignment") as bool
+	CM.iChargeDisplayType = jMap.getInt(jPreset, "chargeDisplayType")
+	WC.iBackgroundStyle = jMap.getInt(jPreset, "backgroundStyle")
     
     int iIndex = WC.asWidgetDescriptions.Length
     while iIndex > 0
@@ -993,7 +1013,30 @@ function LoadPreset(int jPreset)
     
     WC.updateWidgetVisibility(false)
     Wait(0.2)
+	UpdateEditModeGuide()
     UpdateElementsAll()
+	
+	CM.updateChargeMeters(true) ;forceUpdate will make sure updateMeterPercent runs in full
+	if CM.iChargeDisplayType > 0
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD Alt Charge Meter
+	else
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 100)
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
+	endIf
+	if WC.iBackgroundStyle > 0
+		while iIndex < 5
+			if WC.abQueueWasEmpty[iIndex]
+				int[] args = new int[2]
+				args[0] = iIndex
+				args[1] = 0
+				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Hide the background if it was previously hidden
+			endIf
+			iIndex += 1
+		endWhile
+	endIf
     Wait(0.1)
     WC.updateWidgetVisibility()
 endFunction
