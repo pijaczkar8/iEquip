@@ -969,6 +969,7 @@ function SavePreset()
     if textInput != ""
         int jSavePreset = jMap.object()
 
+		jMap.setInt(jSavePreset, "Version", GetVersion())
         jMap.setObj(jSavePreset, "_X", jArray.objectWithFloats(WC.afWidget_X))
         jMap.setObj(jSavePreset, "_Y", jArray.objectWithFloats(WC.afWidget_Y))
         jMap.setObj(jSavePreset, "_S", jArray.objectWithFloats(WC.afWidget_S))
