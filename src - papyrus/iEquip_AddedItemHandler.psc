@@ -11,7 +11,7 @@ iEquip_TorchScript Property TO Auto
 
 Actor Property PlayerRef Auto
 
-light property iEquipTorch auto
+light property iEquipDroppedTorch auto
 
 FormList Property iEquip_RemovedItemsFLST Auto
 FormList Property iEquip_ItemsToAddFLST Auto
@@ -33,7 +33,7 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	debug.trace("iEquip_AddedItemHandler OnItemAdded - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
 	if bSwitchingTorches && akBaseItem == TO.realTorchForm
 		bSwitchingTorches = false
-	elseIf !(akBaseItem == iEquipTorch as form && TO.bSettingLightRadius)
+	elseIf !(akBaseItem == iEquipDroppedTorch as form && TO.bSettingLightRadius)
 		iEquip_ItemsToAddFLST.AddForm(akBaseItem)
 		registerForSingleUpdate(0.5)
 	endIf
@@ -49,7 +49,7 @@ event OnUpdate()
 	form formToAdd
 	while i < numForms
 		formToAdd = iEquip_ItemsToAddFLST.GetAt(i)
-		;Handle Potions, Ammo and bound ammo first
+																										; Handle Potions, Ammo and bound ammo first
 		if formToAdd
 			if formToAdd as potion
 				PO.onPotionAdded(formToAdd)
@@ -59,15 +59,19 @@ event OnUpdate()
 				else
 					AM.onAmmoAdded(formToAdd)
 				endIf
-		    ;Otherwise check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
+		    																							; Otherwise check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
 		    elseIf WC.bEnableRemovedItemCaching && iEquip_RemovedItemsFLST.HasForm(formToAdd)
 		    	WC.addBackCachedItem(formToAdd)
-		    ;Or finally check if we've just added one of a currently equipped item which requires a counter update
+		    																							; Or finally check if we've just added one of a currently equipped item which requires a counter update
 			else
-				if formToAdd == iEquipTorch as form 	; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for a real torch now
+				if formToAdd == iEquipDroppedTorch as form 												; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for...
 					bSwitchingTorches = true
-					formToAdd = TO.realTorchForm
-					PlayerRef.RemoveItem(iEquipTorch, 1, true)
+					if Game.GetModByName("RealisticTorches.esp") != 255
+						formToAdd = Game.GetFormFromFile(0x00002DC5, "RealisticTorches.esp") as form 	; RT_TorchOut - Burnt Out Torch (if Realistic Torches detected)
+					else
+						formToAdd = TO.realTorchForm 													; Or a real torch
+					endIf
+					PlayerRef.RemoveItem(iEquipDroppedTorch, 1, true)
 					PlayerRef.AddItem(formToAdd, 1, true)
 				endIf
 				j = 0

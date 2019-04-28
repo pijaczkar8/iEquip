@@ -14,6 +14,10 @@ Faction property PlayerFaction auto
 
 light property Torch01 auto
 light property iEquipTorch auto
+light property iEquipDroppedTorch auto
+MiscObject property iEquipBurntOutTorch auto
+
+FormList property iEquip_DroppedTorchesFLST auto
 
 spell property iEquip_TorchTimerSpell auto
 ActiveMagicEffect property TorchTimer auto
@@ -117,6 +121,7 @@ function onTorchRemoved(form torchForm)
 	if !PlayerRef.GetEquippedItemType(0) == 11 && torchForm != iEquipTorch
 		fCurrentTorchLife = fTorchDuration
 		iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
+		iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
 		bFirstUpdateForCurrentTorch = true
 		if !bJustDroppedTorch && WC.asCurrentlyEquipped[0] == torchForm.GetName() && bautoReEquipTorch && PlayerRef.GetItemCount(torchForm) > 0
 			if bRealisticReEquip
@@ -149,14 +154,13 @@ function onTorchEquipped()
 		if fCurrentTorchLife < 30.0
 			if bReduceLightAsTorchRunsOut
 				bSettingLightRadius = true
+				int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
 				if PlayerRef.GetItemCount(iEquipTorch) < 1
 					PlayerRef.AddItem(iEquipTorch, 1, true)
 				endIf
-				iEquip_FormExt.SetLightRadius(iEquipTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
-				;PlayerRef.UnequipItemEx(equippedTorch)
+				iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
+				iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 				PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
-				;Debug.SendAnimationEvent(PlayerRef, "torchEquip")
-				;Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
 			endIf
 			RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
 		else
@@ -224,17 +228,16 @@ event OnUpdate()
 		
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
 		
-		if bReduceLightAsTorchRunsOut
-			debug.trace("iEquip_TorchScript OnUpdate - setting torch light radius to " + (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
+		if bReduceLightAsTorchRunsOut && fCurrentTorchLife > 0.0
+			int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
+			debug.trace("iEquip_TorchScript OnUpdate - setting torch light radius to " + newRadius)
 			bSettingLightRadius = true
 			if PlayerRef.GetItemCount(iEquipTorch) < 1
 				PlayerRef.AddItem(iEquipTorch, 1, true)
 			endIf
-			iEquip_FormExt.SetLightRadius(iEquipTorch, (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int)
-			;PlayerRef.UnequipItemEx(equippedTorch)
-			Debug.SendAnimationEvent(PlayerRef, "torchEquip")
-			PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
-			Debug.SendAnimationEvent(PlayerRef, "torchEquip")
+			iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
+			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
+            PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
 		endIf
 		
 		if fCurrentTorchLife <= 0.0
@@ -245,6 +248,7 @@ event OnUpdate()
 				updateTorchMeterVisibility(false)
 			endIf
 			iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
+			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
 			PlayerRef.UnequipItemEx(iEquipTorch)
 			PlayerRef.RemoveItem(iEquipTorch, 1, true)	; Remove the fadable torch
 			PlayerRef.RemoveItem(realTorchForm)			; Remove the real torch which will trigger the timer reset and re-equip
@@ -270,6 +274,10 @@ Function DropTorch()
 		endIf
 
 		PlayerRef.UnequipItemEx(equippedTorch)
+
+		if equippedTorch == iEquipTorch 			; Switch to using the one with the display name so if the player wants to pick it up again it will have the same name/value/weight displayed as Torch01
+			equippedTorch = iEquipDroppedTorch
+		endIf
 
 		ObjectReference DroppedTorch = PlayerRef.PlaceAtMe(equippedTorch, 1, false, true)
 
@@ -300,8 +308,9 @@ Function DropTorch()
 		DroppedTorch.ApplyHavokImpulse(0,0,1,5)
 
 		PlayerRef.RemoveItem(realTorchForm, 1, true, None)
-		if equippedTorch == iEquipTorch
-			PlayerRef.RemoveItem(equippedTorch, 1, true, None)
+		
+		if equippedTorch == iEquipDroppedTorch
+			PlayerRef.RemoveItem(iEquipTorch, 1, true, None)
 		endIf
 
 		if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || (iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3 && queueLength == 0)		; Do Nothing and set left hand to empty

@@ -3225,6 +3225,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    		int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
 		    		if refHandle != 0xFFFF
 		    			debug.trace("iEquip_WidgetCore cycleHand - we have more than one of these and a refHandle so attempting to equip by handle")
+		    			debug.trace("iEquip_WidgetCore cycleHand - args being passed to EquipItem are targetItem: " + targetItem + ", refHandle: " + refHandle + ", PlayerRef: " + PlayerRef + ", equip slot: " + iEquipSlotId)
 		    			iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef, iEquipSlotId)
 		    			Utility.WaitMenuMode(0.1)
 		    		endIf
@@ -4057,6 +4058,7 @@ function addToQueue(int Q)
 								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
 								if itemHandle != 0xFFFF
 									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
+									debug.trace("iEquip_WidgetCore addToQueue - itemBaseName retrieved from itemHandle " + itemHandle + ": " + iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
 								else
 									jMap.setStr(iEquipItem, "iEquipBaseName", "")
 								endIf
