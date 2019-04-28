@@ -12,6 +12,7 @@ iEquip_TorchScript Property TO Auto
 Actor Property PlayerRef Auto
 
 light property iEquipDroppedTorch auto
+MiscObject property iEquipBurntOutTorch auto
 
 FormList Property iEquip_RemovedItemsFLST Auto
 FormList Property iEquip_ItemsToAddFLST Auto
@@ -36,6 +37,11 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	elseIf !(akBaseItem == iEquipDroppedTorch as form && TO.bSettingLightRadius)
 		iEquip_ItemsToAddFLST.AddForm(akBaseItem)
 		registerForSingleUpdate(0.5)
+	endIf
+	if akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch
+		akItemReference.Delete()
+		akItemReference.Disable()
+		TO.aDroppedTorches[TO.aDroppedTorches.Find(akItemReference)] = none
 	endIf
 	debug.trace("iEquip_AddedItemHandler OnItemAdded end")
 endEvent
@@ -64,14 +70,14 @@ event OnUpdate()
 		    	WC.addBackCachedItem(formToAdd)
 		    																							; Or finally check if we've just added one of a currently equipped item which requires a counter update
 			else
-				if formToAdd == iEquipDroppedTorch as form 												; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for...
+				if formToAdd == iEquipDroppedTorch as form || formToAdd == iEquipBurntOutTorch as form	; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for...
 					bSwitchingTorches = true
+					PlayerRef.RemoveItem(formToAdd, 1, true)
 					if Game.GetModByName("RealisticTorches.esp") != 255
 						formToAdd = Game.GetFormFromFile(0x00002DC5, "RealisticTorches.esp") as form 	; RT_TorchOut - Burnt Out Torch (if Realistic Torches detected)
 					else
 						formToAdd = TO.realTorchForm 													; Or a real torch
 					endIf
-					PlayerRef.RemoveItem(iEquipDroppedTorch, 1, true)
 					PlayerRef.AddItem(formToAdd, 1, true)
 				endIf
 				j = 0

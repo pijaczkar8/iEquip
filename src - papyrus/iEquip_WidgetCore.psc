@@ -3738,8 +3738,10 @@ function applyPoison(int Q)
             checkAndUpdatePoisonInfo(Q)
         endIf
         ;Play sound
+        debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison sound")
         iEquip_ITMPoisonUse.Play(PlayerRef)
         ;Add Poison FX to weapon
+        debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison VFX")
         if Q == 0
             PLFX.ShowPoisonFX()
         else
@@ -3762,6 +3764,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	int itemType = jMap.getInt(targetObject, "iEquipType")
+	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call WornGetPoison, PlayerRef: " + PlayerRef + ", equip slot: " + Q)
 	Potion currentPoison = WornGetPoison(PlayerRef, Q)
 	Form equippedItem = PlayerRef.GetEquippedObject(Q)
 	if !forceHide && !equippedItem && !bGoneUnarmed && !(Q == 0 && (b2HSpellEquipped || itemType == 26))
@@ -3770,6 +3773,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", cycling: " + cycling + ", itemType: " + itemType + ", currentPoison: " + currentPoison)
 	;if item isn't poisoned remove the poisoned flag
 	if equippedItem && (equippedItem == jMap.getForm(targetObject, "iEquipForm"))
+		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - setting isPoisoned flag")
 		if currentPoison
 			jMap.setInt(targetObject, "isPoisoned", 1)
 		else
@@ -3782,7 +3786,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	int[] args
 	;if the currently equipped item isn't poisonable, or if it isn't currently poisoned check and remove poison info is showing
 	if cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && bAmmoMode)
-		if abPoisonInfoDisplayed[Q] || forceHide || bRefreshingWidget
+		if abPoisonInfoDisplayed[Q] || forceHide || bRefreshingWidget || !currentPoison
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - should be hiding poison icon and name now")
 			;Hide the poison icon
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")

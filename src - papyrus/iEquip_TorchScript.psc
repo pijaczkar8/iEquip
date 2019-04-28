@@ -15,9 +15,9 @@ Faction property PlayerFaction auto
 light property Torch01 auto
 light property iEquipTorch auto
 light property iEquipDroppedTorch auto
-MiscObject property iEquipBurntOutTorch auto
 
-FormList property iEquip_DroppedTorchesFLST auto
+ObjectReference[] property aDroppedTorches auto hidden
+int iCurrentDroppedTorchesIndex
 
 spell property iEquip_TorchTimerSpell auto
 ActiveMagicEffect property TorchTimer auto
@@ -65,6 +65,9 @@ function initialise(bool bEnabled)
 		WidgetRoot = WC.WidgetRoot
 		RegisterForMenu("Journal Menu")
 		realTorchForm = Torch01
+		if !aDroppedTorches
+			aDroppedTorches = new ObjectReference[4]
+		endIf
 		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
 		fMaxTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
 		if bSetInitialValues || fMaxTorchDuration < fTorchDuration
@@ -280,6 +283,17 @@ Function DropTorch()
 		endIf
 
 		ObjectReference DroppedTorch = PlayerRef.PlaceAtMe(equippedTorch, 1, false, true)
+
+		ObjectReference TorchToDelete = aDroppedTorches[iCurrentDroppedTorchesIndex]
+		if TorchToDelete
+			TorchToDelete.Delete()
+			TorchToDelete.Disable()
+		endIf	
+		aDroppedTorches[iCurrentDroppedTorchesIndex] = DroppedTorch
+		iCurrentDroppedTorchesIndex += 1
+		if iCurrentDroppedTorchesIndex == 4
+			iCurrentDroppedTorchesIndex = 0
+		endIf
 
 		DroppedTorch.SetActorOwner(PlayerRef.GetActorBase())
 		DroppedTorch.SetFactionOwner(PlayerFaction)
