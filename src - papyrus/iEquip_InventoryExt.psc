@@ -84,6 +84,27 @@ String Function GetLongName(Form a_item, Int a_refHandle) Global Native
 String Function GetShortName(Form a_item, Int a_refHandle) Global Native
 
 
+; @brief Retrieves the poison applied to the item.
+; @param a_item The item to retrieve the poison from.
+; @param a_refHandle The handle to the item.
+; @return Returns NONE error, else returns the applied poison.
+Potion Function GetPoison(Form a_item, Int a_refHandle) Global Native
+
+
+; @brief Applies the given poison to the given item with the given number of charges.
+; @param a_item The item to apply the poison to.
+; @param a_refHandle The handle to the item.
+; @param a_newPoison The new poison to apply.
+; @param a_newCount The number of charges to apply.
+Function SetPoison(Form a_item, Int a_refHandle, Potion a_newPoison, Int a_newCount) Global Native
+
+
+; @brief Removes the applied poison from the given item, if any.
+; @param a_item The item to remove the poison from.
+; @param a_refHandle The handle to the item.
+Function RemovePoison(Form a_item, Int a_refHandle) Global Native
+
+
 ; @brief Retrieves the poison count of the item.
 ; @param a_item The item to retrieve the poison count of.
 ; @param a_refHandle The handle to the item.

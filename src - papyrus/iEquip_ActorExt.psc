@@ -64,35 +64,3 @@ Race Function GetBaseRace(Actor a_actor) Native Global
 ; @param a_mgef The magic effect to retrieve the magnitude of.
 ; @return Returns 0.0 on error, else returns the magnitude of the specified magic effect.
 Float Function GetMagicEffectMagnitude(Actor a_actor, MagicEffect a_mgef) Native Global
-
-
-; @brief Returns the poison applied to the weapon in the specified hand slot of the specified actor.
-; @param a_actor The actor the weapon is equipped to.
-; @param a_handSlot The slot the weapon is equipped in.
-; @return Returns NONE on error, else returns the applied poison.
-; @notes Valid hand slots:
-; 0 - Left
-; 1 - Right
-Potion Function WornGetPoison(Actor a_actor, Int a_handSlot) Native Global
-
-
-; @brief Returns the poison applied to the weapon in the specified hand slot of the specified actor.
-; @param a_actor The actor the weapon is equipped to.
-; @param a_handSlot The slot the weapon is equipped in.
-; @return Returns False on error, else returns True.
-; @notes Valid hand slots:
-; 0 - Left
-; 1 - Right
-Bool Function WornRemovePoison(Actor a_actor, Int a_handSlot) Native Global
-
-
-; @brief Returns the poison applied to the weapon in the specified hand slot of the specified actor.
-; @param a_actor The actor the weapon is equipped to.
-; @param a_handSlot The slot the weapon is equipped in.
-; @param a_poison The poison to apply to the weapon.
-; @param a_charges The number of charges to apply to the weapon.
-; @return Returns False on error, else returns True.
-; @notes Valid hand slots:
-; 0 - Left
-; 1 - Right
-Bool Function WornSetPoison(Actor a_actor, Int a_handSlot, Potion a_poison, Int a_charges) Native Global

@@ -3227,11 +3227,11 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    			debug.trace("iEquip_WidgetCore cycleHand - we have more than one of these and a refHandle so attempting to equip by handle")
 		    			debug.trace("iEquip_WidgetCore cycleHand - args being passed to EquipItem are targetItem: " + targetItem + ", refHandle: " + refHandle + ", PlayerRef: " + PlayerRef + ", equip slot: " + iEquipSlotId)
 		    			iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef, iEquipSlotId)
-		    			Utility.WaitMenuMode(0.1)
+		    			Utility.WaitMenuMode(0.2)
 		    		endIf
 		    	endIf
 		    	
-		    	if !PlayerRef.GetEquippedObject(iEquipSlotID)													; If we haven't successfully equipped anything next check if the queue object is enchanted or poisoned and attempt to equip the correct item using that information
+		    	if !PlayerRef.GetEquippedObject(Q)													; If we haven't successfully equipped anything next check if the queue object is enchanted or poisoned and attempt to equip the correct item using that information
 	    			debug.trace("iEquip_WidgetCore cycleHand - we haven't succeeded in equipping anything yet, trying other methods")
 	    			Enchantment tempEnchantment = jMap.getForm(targetObject, "lastKnownEnchantment") as Enchantment
 	    			Potion tempPoison = jMap.getForm(targetObject, "lastKnownPoison") as Potion
@@ -3253,8 +3253,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 				    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)							; for example if the item has been renamed or a temper level has changed
 				    	endIf
 	    			endIf
-	    			Utility.WaitMenuMode(0.1)
-		    		if !PlayerRef.GetEquippedObject(iEquipSlotID)												; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
+	    			Utility.WaitMenuMode(0.2)
+		    		if !PlayerRef.GetEquippedObject(Q)												; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
 		    			debug.trace("iEquip_WidgetCore cycleHand - We still haven't succeeded in equipping anything so falling back on EquipItemEx and taking pot luck")
 		    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; So fall back on EquipItemEX and take pot luck as to which one is equipped
 	    				EH.abSkipQueueObjectUpdate[Q] = true 	
@@ -3652,6 +3652,7 @@ function applyPoison(int Q)
         bool isLeftHand = !(Q as bool)
         string handName = "$iEquip_common_left"
         if Q == 1
+        	;isLeftHand = false
             handName = "$iEquip_common_right"
         endIf
         Weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
@@ -3679,7 +3680,8 @@ function applyPoison(int Q)
             ApplyWithoutUpdatingWidget = true
         endIf
 
-        Potion currentPoison = WornGetPoison(PlayerRef, Q)
+        Potion currentPoison = iEquip_InventoryExt.GetPoison(currentWeapon as form, GetRefHandleFromWornObject(Q)) 
+        debug.trace("iEquip_WidgetCore applyPoison - Q: " + Q + ", isLeftHand: " + isLeftHand + ", current weapon: " + currentWeapon + ", current poison: " + currentPoison)
         if currentPoison
             string currentPoisonName = currentPoison.GetName()
             if currentPoison != poisonToApply
@@ -3693,7 +3695,7 @@ function applyPoison(int Q)
                             return
                         endIf
                     endIf
-                    bool poisonRemoved = WornRemovePoison(PlayerRef, Q)
+                    RemovePoison(currentWeapon as form, GetRefHandleFromWornObject(Q))
                 endIf	
             elseif iShowPoisonMessages < 2
                 iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"))
@@ -3718,16 +3720,11 @@ function applyPoison(int Q)
         else
             chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier
         endIf
-        bool chargesApplied
+        
         if currentPoison == poisonToApply
-            ;chargesToApply += _Q2C_Functions.WornGetPoisonCharges(PlayerRef, Q)
-            ;chargesToApply += GetPoisonCount(currentWeapon as form, GetRefHandleFromWornObject(Q))
-            ;debug.trace("iEquip_WidgetCore applyPoison - about to top up the " + newPoison + " on your " + weaponName + " to " + chargesToApply + " charges")
-            ;newCharges = _Q2C_Functions.WornSetPoisonCharges(PlayerRef, Q, chargesToApply)
             SetPoisonCount(currentWeapon as form, GetRefHandleFromWornObject(Q), chargesToApply + GetPoisonCount(currentWeapon as form, GetRefHandleFromWornObject(Q)))
         else
-            ;debug.trace("iEquip_WidgetCore applyPoison - about to apply " + chargesToApply + " charges of " + newPoison + " to your " + weaponName)
-            chargesApplied = WornSetPoison(PlayerRef, Q, poisonToApply, chargesToApply)
+            SetPoison(currentWeapon as form, GetRefHandleFromWornObject(Q), poisonToApply, chargesToApply)
         endIf
         ;Remove one item from the player
         PlayerRef.RemoveItem(poisonToApply, 1, true)
@@ -3764,13 +3761,22 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	int itemType = jMap.getInt(targetObject, "iEquipType")
-	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call WornGetPoison, PlayerRef: " + PlayerRef + ", equip slot: " + Q)
-	Potion currentPoison = WornGetPoison(PlayerRef, Q)
 	Form equippedItem = PlayerRef.GetEquippedObject(Q)
+	
 	if !forceHide && !equippedItem && !bGoneUnarmed && !(Q == 0 && (b2HSpellEquipped || itemType == 26))
 		return
 	endIf
-	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", cycling: " + cycling + ", itemType: " + itemType + ", currentPoison: " + currentPoison)
+
+	int charges = GetPoisonCount(equippedItem, GetRefHandleFromWornObject(Q))
+	Potion currentPoison
+	
+	if charges > 0
+		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call WornGetPoison, PlayerRef: " + PlayerRef + ", equip slot: " + Q)
+		currentPoison = iEquip_InventoryExt.GetPoison(equippedItem, GetRefHandleFromWornObject(Q))
+	endIf
+	
+	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", cycling: " + cycling + ", itemType: " + itemType + ", currentPoison: " + currentPoison + ", charges: " + charges)
+	
 	;if item isn't poisoned remove the poisoned flag
 	if equippedItem && (equippedItem == jMap.getForm(targetObject, "iEquipForm"))
 		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - setting isPoisoned flag")
@@ -3780,12 +3786,14 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			jMap.setInt(targetObject, "isPoisoned", 0)
 		endIf
 	endIf
+	
 	float targetAlpha
 	string iconName
 	int iHandle
 	int[] args
+	
 	;if the currently equipped item isn't poisonable, or if it isn't currently poisoned check and remove poison info is showing
-	if cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && bAmmoMode)
+	if cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && bAmmoMode) || charges == 0
 		if abPoisonInfoDisplayed[Q] || forceHide || bRefreshingWidget || !currentPoison
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - should be hiding poison icon and name now")
 			;Hide the poison icon
@@ -3817,7 +3825,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	;Otherwise update the poison name, count and icon
 	else
 		string poisonName = currentPoison.GetName()
-		int charges = GetPoisonCount(equippedItem, GetRefHandleFromWornObject(Q))
+		;int charges = GetPoisonCount(equippedItem, GetRefHandleFromWornObject(Q))
 		;Update the poison icon
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")
 		if iPoisonIndicatorStyle == 0
@@ -3891,7 +3899,7 @@ bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 		isPoisoned = jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "isPoisoned") as bool
 	;Otherwise we're checking an equipped item so we can check the actual data from the weapon
 	else
-		Potion currentPoison = WornGetPoison(PlayerRef, Q)
+		Potion currentPoison = iEquip_InventoryExt.GetPoison(PlayerRef.GetEquippedObject(Q), GetRefHandleFromWornObject(Q))
 		if currentPoison
 			isPoisoned = true
 		else
