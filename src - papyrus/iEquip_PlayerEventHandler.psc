@@ -832,6 +832,15 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 																										; Now update the widget to show the equipped item
 				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
 				WC.asCurrentlyEquipped[equippedSlot] = itemName
+				
+				if WC.abQueueWasEmpty[equippedSlot] && WC.iBackgroundStyle > 0
+					int[] args = new int[2]
+					args[0] = equippedSlot
+					args[1] = WC.iBackgroundStyle
+					UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)				; Show the background if required if it was previously hidden
+				endIf
+				WC.abQueueWasEmpty[equippedSlot] = false
+
 				if equippedSlot < 2 || WC.bShoutEnabled
 					WC.updateWidget(equippedSlot, targetIndex, false, true)
 				endIf

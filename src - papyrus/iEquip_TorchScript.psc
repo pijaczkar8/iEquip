@@ -327,7 +327,8 @@ Function DropTorch()
 			PlayerRef.RemoveItem(iEquipTorch, 1, true, None)
 		endIf
 
-		if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || (iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3 && queueLength == 0)		; Do Nothing and set left hand to empty
+		; iDropLitTorchBehaviour - 0: Do Nothing, 1: Torch/Nothing, 2: Torch/Cycle, 3: Cycle, 4: QuickShield
+		if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || ((iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3) && queueLength == 0)	; Do Nothing and set left hand to empty
 			WC.setSlotToEmpty(0, false, true)
 		elseIf iDropLitTorchBehavior == 1 || (iDropLitTorchBehavior == 2 && remainingTorches > 0)																					; Equip another torch
 			Utility.Wait(fRealisticReEquipDelay)

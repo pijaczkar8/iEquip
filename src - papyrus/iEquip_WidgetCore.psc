@@ -3066,7 +3066,7 @@ function addBackCachedItem(form addedForm)
 			else
 				Q = jMap.getInt(targetObject, "PrevQ")
 			endIf
-			if addedForm as weapon || (addedForm as armor).isShield()
+			if addedForm as weapon || (addedForm as armor && (addedForm as armor).isShield())
 				jMap.setInt(targetObject, "iEquipHandle", 0xFFFF)		; The previous refHandle will have been invalidated when the item left the players inventory, and will be set to the new handle next time we equip the item
 			endIf
 			jArray.addObj(aiTargetQ[Q], targetObject)
@@ -3273,7 +3273,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	endIf
 	checkIfBoundSpellEquipped()
 	checkAndUpdatePoisonInfo(Q)
-	CM.checkAndUpdateChargeMeter(Q, true)
+	if itemType != 31	; TorchScript already handles this if we've just equipped a torch
+		CM.checkAndUpdateChargeMeter(Q, true)
+	endIf
 	if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
 		TI.checkAndUpdateTemperLevelInfo(Q)
 	endIf

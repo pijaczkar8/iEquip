@@ -30,20 +30,22 @@ function initialise(bool bEnabled)
 endFunction
 
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
-	debug.trace("iEquip_AddedItemHandler OnItemAdded start")
-	debug.trace("iEquip_AddedItemHandler OnItemAdded - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
-	if bSwitchingTorches && akBaseItem == TO.realTorchForm
-		bSwitchingTorches = false
-	elseIf !(akBaseItem == iEquipDroppedTorch as form && TO.bSettingLightRadius)
-		iEquip_ItemsToAddFLST.AddForm(akBaseItem)
-		registerForSingleUpdate(0.5)
+	if akBaseItem as weapon || akBaseItem as ammo || akBaseItem as potion || akBaseItem as light || akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch || (akBaseItem as armor && (akBaseItem as armor).IsShield()) || akBaseItem as scroll
+		debug.trace("iEquip_AddedItemHandler OnItemAdded start")
+		debug.trace("iEquip_AddedItemHandler OnItemAdded - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
+		if bSwitchingTorches && akBaseItem == TO.realTorchForm
+			bSwitchingTorches = false
+		elseIf !(akBaseItem == iEquipDroppedTorch as form && TO.bSettingLightRadius)
+			iEquip_ItemsToAddFLST.AddForm(akBaseItem)
+			registerForSingleUpdate(0.5)
+		endIf
+		if akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch
+			akItemReference.Delete()
+			akItemReference.Disable()
+			TO.aDroppedTorches[TO.aDroppedTorches.Find(akItemReference)] = none
+		endIf
+		debug.trace("iEquip_AddedItemHandler OnItemAdded end")
 	endIf
-	if akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch
-		akItemReference.Delete()
-		akItemReference.Disable()
-		TO.aDroppedTorches[TO.aDroppedTorches.Find(akItemReference)] = none
-	endIf
-	debug.trace("iEquip_AddedItemHandler OnItemAdded end")
 endEvent
 
 event OnUpdate()
