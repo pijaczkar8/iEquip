@@ -4619,7 +4619,7 @@ function ApplyChanges()
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 		if iBackgroundStyle > 0
 			while i < 5
-				if abQueueWasEmpty[i]
+				if abQueueWasEmpty[i] && !(i == 0 && UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text") == iEquip_StringExt.LocalizeString("$iEquip_common_Unarmed"))
 					int[] args = new int[2]
 					args[0] = i
 					args[1] = 0
