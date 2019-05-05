@@ -171,102 +171,98 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
+	if WC.bShowPositionIndicators
+		MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_posIndOpts")
+		MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
+		MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
+		MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
+		MCM.AddSliderOptionST("ui_sld_currPosIndAlpha", "$iEquip_MCM_ui_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
+		MCM.AddEmptyOption()
+	endIf
 
-    if MCM.bEnabled && !MCM.bFirstEnabled
-        
-        if WC.bShowPositionIndicators
-            MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_posIndOpts")
-            MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
-            MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
-            MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
-            MCM.AddSliderOptionST("ui_sld_currPosIndAlpha", "$iEquip_MCM_ui_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
-            MCM.AddEmptyOption()
-        endIf
+	MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_temperedItemOpts")
+	MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
+	
+	if TI.iTemperNameFormat > 0 && TI.iTemperNameFormat < 9
+		MCM.AddToggleOptionST("ui_tgl_tempInfoBelow", "$iEquip_MCM_ui_lbl_tempInfoBelow", TI.bTemperInfoBelowName)
+	endIf
+	
+	MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", TI.bFadeIconOnDegrade)
+	
+	if TI.bFadeIconOnDegrade
+		MCM.AddMenuOptionST("ui_men_tempLvlColorIcon", "$iEquip_MCM_ui_lbl_tempLvlColorIcon", coloredIconOptions[TI.iColoredIconStyle])
 
-        MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_temperedItemOpts")
-        MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
-        
-        if TI.iTemperNameFormat > 0 && TI.iTemperNameFormat < 9
-            MCM.AddToggleOptionST("ui_tgl_tempInfoBelow", "$iEquip_MCM_ui_lbl_tempInfoBelow", TI.bTemperInfoBelowName)
-        endIf
-        
-        MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", TI.bFadeIconOnDegrade)
-        
-        if TI.bFadeIconOnDegrade
-            MCM.AddMenuOptionST("ui_men_tempLvlColorIcon", "$iEquip_MCM_ui_lbl_tempLvlColorIcon", coloredIconOptions[TI.iColoredIconStyle])
+		if TI.iColoredIconStyle > 0
+			MCM.AddMenuOptionST("ui_men_tempLvlThresholds", "$iEquip_MCM_ui_lbl_tempLvlThresholds", tempLvlThresholdOptions[TI.iColoredIconLevels])
+		endIf
+	endIf
+	MCM.AddEmptyOption()
 
-            if TI.iColoredIconStyle > 0
-                MCM.AddMenuOptionST("ui_men_tempLvlThresholds", "$iEquip_MCM_ui_lbl_tempLvlThresholds", tempLvlThresholdOptions[TI.iColoredIconLevels])
-            endIf
-        endIf
-        MCM.AddEmptyOption()
+	MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_iconBgOpts")
+	MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
+			
+	if WC.bFadeLeftIconWhen2HEquipped
+		MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
+	endIf
 
-        MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_iconBgOpts")
-        MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
-                
-        if WC.bFadeLeftIconWhen2HEquipped
-            MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
-        endIf
+	MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
+	MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
+	
+	MCM.SetCursorPosition(1)
+	;We don't want drop shadow settings being messed around with while we are in Edit Mode
+	if !WC.EM.isEditMode
+		MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_txtShadOpts")
+		MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
+		
+		if WC.bDropShadowEnabled
+			MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha*100, "{0}%")
+			MCM.AddSliderOptionST("ui_sld_dropShadowAngle", "$iEquip_MCM_ui_lbl_dropShadowAngle", WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
+			MCM.AddTextOptionST("ui_txt_dropShadowBlur", "$iEquip_MCM_ui_lbl_dropShadowBlur", WC.iDropShadowBlur as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+			MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+			MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength*100, "{0}%")
+		endIf
 
-        MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
-        MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
-        
-        MCM.SetCursorPosition(1)
-        ;We don't want drop shadow settings being messed around with while we are in Edit Mode
-        if !WC.EM.isEditMode
-            MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_txtShadOpts")
-            MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
-            
-            if WC.bDropShadowEnabled
-                MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha*100, "{0}%")
-                MCM.AddSliderOptionST("ui_sld_dropShadowAngle", "$iEquip_MCM_ui_lbl_dropShadowAngle", WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
-                MCM.AddTextOptionST("ui_txt_dropShadowBlur", "$iEquip_MCM_ui_lbl_dropShadowBlur", WC.iDropShadowBlur as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
-                MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
-                MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength*100, "{0}%")
-            endIf
+		MCM.AddEmptyOption()
+	endIf
 
-            MCM.AddEmptyOption()
-        endIf
+	MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_fadeoutopts")
+	MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
+			
+	if WC.bWidgetFadeoutEnabled
+		MCM.AddSliderOptionST("ui_sld_wdgetFadeDelay", "$iEquip_MCM_ui_lbl_wdgetFadeDelay", WC.fWidgetFadeoutDelay, "{0}")
+		MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "$iEquip_MCM_ui_lbl_wdgetFadeSpeed", fadeoutOptions[iCurrentWidgetFadeoutChoice])
+				
+		if iCurrentWidgetFadeoutChoice == 3
+			MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "$iEquip_MCM_ui_lbl_wdgetFadeDur", WC.fWidgetFadeoutDuration, "{1}")
+		endIf
 
-        MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_fadeoutopts")
-        MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
-                
-        if WC.bWidgetFadeoutEnabled
-            MCM.AddSliderOptionST("ui_sld_wdgetFadeDelay", "$iEquip_MCM_ui_lbl_wdgetFadeDelay", WC.fWidgetFadeoutDelay, "{0}")
-            MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "$iEquip_MCM_ui_lbl_wdgetFadeSpeed", fadeoutOptions[iCurrentWidgetFadeoutChoice])
-                    
-            if iCurrentWidgetFadeoutChoice == 3
-                MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "$iEquip_MCM_ui_lbl_wdgetFadeDur", WC.fWidgetFadeoutDuration, "{1}")
-            endIf
+		MCM.AddToggleOptionST("ui_tgl_visWhenWeapDrawn", "$iEquip_MCM_ui_lbl_visWhenWeapDrawn", WC.bAlwaysVisibleWhenWeaponsDrawn)
+	endIf
+	
+	MCM.AddEmptyOption()
+	MCM.AddToggleOptionST("ui_tgl_enblNameFade", "$iEquip_MCM_ui_lbl_enblNameFade", WC.bNameFadeoutEnabled)
+			
+	if WC.bNameFadeoutEnabled
 
-            MCM.AddToggleOptionST("ui_tgl_visWhenWeapDrawn", "$iEquip_MCM_ui_lbl_visWhenWeapDrawn", WC.bAlwaysVisibleWhenWeaponsDrawn)
-        endIf
-        
-        MCM.AddEmptyOption()
-        MCM.AddToggleOptionST("ui_tgl_enblNameFade", "$iEquip_MCM_ui_lbl_enblNameFade", WC.bNameFadeoutEnabled)
-                
-        if WC.bNameFadeoutEnabled
+		MCM.AddToggleOptionST("ui_tgl_leftRightNameFade", "$iEquip_MCM_ui_lbl_leftRightNameFade", WC.bLeftRightNameFadeEnabled)
+		MCM.AddToggleOptionST("ui_tgl_shoutNameFade", "$iEquip_MCM_ui_lbl_shoutNameFade", WC.bShoutNameFadeEnabled)
+		MCM.AddToggleOptionST("ui_tgl_consPoisNameFade", "$iEquip_MCM_ui_lbl_consPoisNameFade", WC.bConsPoisNameFadeEnabled)
 
-            MCM.AddToggleOptionST("ui_tgl_leftRightNameFade", "$iEquip_MCM_ui_lbl_leftRightNameFade", WC.bLeftRightNameFadeEnabled)
-            MCM.AddToggleOptionST("ui_tgl_shoutNameFade", "$iEquip_MCM_ui_lbl_shoutNameFade", WC.bShoutNameFadeEnabled)
-            MCM.AddToggleOptionST("ui_tgl_consPoisNameFade", "$iEquip_MCM_ui_lbl_consPoisNameFade", WC.bConsPoisNameFadeEnabled)
-
-            MCM.AddSliderOptionST("ui_sld_mainNameFadeDelay", "$iEquip_MCM_ui_lbl_mainNameFadeDelay", WC.fMainNameFadeoutDelay, "{1}")
-            MCM.AddSliderOptionST("ui_sld_poisonNameFadeDelay", "$iEquip_MCM_ui_lbl_poisonNameFadeDelay", WC.fPoisonNameFadeoutDelay, "{1}")
-                    
-            if WC.bProModeEnabled
-                MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "$iEquip_MCM_ui_lbl_preselectNameFadeDelay", WC.fPreselectNameFadeoutDelay, "{1}")
-            endIf
-                    
-            MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "$iEquip_MCM_ui_lbl_nameFadeSpeed", fadeoutOptions[iCurrentNameFadeoutChoice])
-                    
-            if (iCurrentNameFadeoutChoice == 3)
-                MCM.AddSliderOptionST("ui_sld_nameFadeDur", "$iEquip_MCM_ui_lbl_nameFadeDur", WC.fNameFadeoutDuration, "{1}")
-            endIf
-                    
-            MCM.AddMenuOptionST("ui_men_firstPressNameHidn", "$iEquip_MCM_ui_lbl_firstPressNameHidn", firstPressIfNameHiddenOptions[WC.bFirstPressShowsName as int])
-        endIf
-    endIf
+		MCM.AddSliderOptionST("ui_sld_mainNameFadeDelay", "$iEquip_MCM_ui_lbl_mainNameFadeDelay", WC.fMainNameFadeoutDelay, "{1}")
+		MCM.AddSliderOptionST("ui_sld_poisonNameFadeDelay", "$iEquip_MCM_ui_lbl_poisonNameFadeDelay", WC.fPoisonNameFadeoutDelay, "{1}")
+				
+		if WC.bProModeEnabled
+			MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "$iEquip_MCM_ui_lbl_preselectNameFadeDelay", WC.fPreselectNameFadeoutDelay, "{1}")
+		endIf
+				
+		MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "$iEquip_MCM_ui_lbl_nameFadeSpeed", fadeoutOptions[iCurrentNameFadeoutChoice])
+				
+		if (iCurrentNameFadeoutChoice == 3)
+			MCM.AddSliderOptionST("ui_sld_nameFadeDur", "$iEquip_MCM_ui_lbl_nameFadeDur", WC.fNameFadeoutDuration, "{1}")
+		endIf
+				
+		MCM.AddMenuOptionST("ui_men_firstPressNameHidn", "$iEquip_MCM_ui_lbl_firstPressNameHidn", firstPressIfNameHiddenOptions[WC.bFirstPressShowsName as int])
+	endIf
 endFunction
 
 ; ##################
@@ -621,12 +617,13 @@ State ui_tgl_visWhenWeapDrawn
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_visWhenWeapDrawn")
-        else
+        elseIf currentEvent == "Select" || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.bAlwaysVisibleWhenWeaponsDrawn = !WC.bAlwaysVisibleWhenWeaponsDrawn
-            elseIf currentEvent == "Default"
+            else
                 WC.bAlwaysVisibleWhenWeaponsDrawn = true
             endIf
+			
             MCM.SetToggleOptionValueST(WC.bAlwaysVisibleWhenWeaponsDrawn)
             WC.bFadeOptionsChanged = true
         endIf 
@@ -637,12 +634,13 @@ State ui_tgl_enblNameFade
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_enblNameFade")
-        else
+        elseIf currentEvent == "Select" || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.bNameFadeoutEnabled = !WC.bNameFadeoutEnabled
-            elseIf currentEvent == "Default"
+            else
                 WC.bNameFadeoutEnabled = false
             endIf
+			
             WC.bFadeOptionsChanged = true
             MCM.forcePageReset()
         endIf 
@@ -653,12 +651,14 @@ State ui_tgl_leftRightNameFade
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_leftRightNameFade")
-        else
+        elseIf currentEvent == "Select" || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.bLeftRightNameFadeEnabled = !WC.bLeftRightNameFadeEnabled
-            elseIf currentEvent == "Default"
+            else
                 WC.bLeftRightNameFadeEnabled = true
             endIf
+			
+			MCM.SetToggleOptionValueST(WC.bLeftRightNameFadeEnabled)
             WC.bFadeOptionsChanged = true
         endIf 
     endEvent
@@ -668,12 +668,14 @@ State ui_tgl_shoutNameFade
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_shoutNameFade")
-        else
+        elseIf currentEvent == "Select" || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.bShoutNameFadeEnabled = !WC.bShoutNameFadeEnabled
-            elseIf currentEvent == "Default"
+            else
                 WC.bShoutNameFadeEnabled = true
             endIf
+			
+			MCM.SetToggleOptionValueST(WC.bShoutNameFadeEnabled)
             WC.bFadeOptionsChanged = true
         endIf 
     endEvent
@@ -683,12 +685,14 @@ State ui_tgl_consPoisNameFade
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_consPoisNameFade")
-        else
+        elseIf currentEvent == "Select" || currentEvent == "Default"
             if currentEvent == "Select"
                 WC.bConsPoisNameFadeEnabled = !WC.bConsPoisNameFadeEnabled
-            elseIf currentEvent == "Default"
+            else
                 WC.bConsPoisNameFadeEnabled = true
             endIf
+			
+			MCM.SetToggleOptionValueST(WC.bConsPoisNameFadeEnabled)
             WC.bFadeOptionsChanged = true
         endIf 
     endEvent

@@ -163,7 +163,11 @@ function onTorchEquipped()
 				endIf
 				iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 				iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
+				PlayerRef.SetActorValue("Paralysis", 1)
 				PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
+				PlayerRef.SetActorValue("Paralysis", 0)
+				Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
+				Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
 			endIf
 			RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
 		else

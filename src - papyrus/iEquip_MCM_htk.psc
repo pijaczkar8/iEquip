@@ -56,39 +56,36 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
+	MCM.AddTextOptionST("htk_txt_htkHelp", "$iEquip_MCM_htk_lbl_htkHelp", "")
+		
+	MCM.AddEmptyOption()
+	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_MainHtks")
+	MCM.AddKeyMapOptionST("htk_key_leftHand", "$iEquip_MCM_htk_lbl_leftHand", KH.iLeftKey, mcmUnmapFLAG)
+	MCM.AddKeyMapOptionST("htk_key_rightHand", "$iEquip_MCM_htk_lbl_rightHand", KH.iRightKey, mcmUnmapFLAG)
+	MCM.AddKeyMapOptionST("htk_key_shout", "$iEquip_MCM_htk_lbl_shout", KH.iShoutKey, mcmUnmapFLAG)
+	MCM.AddKeyMapOptionST("htk_key_consumPoison", "$iEquip_MCM_htk_lbl_consumPoison", KH.iConsumableKey, mcmUnmapFLAG)
+	MCM.AddEmptyOption()
+			
+	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_UtHtkOpts")
+	MCM.AddKeyMapOptionST("htk_key_util", "$iEquip_MCM_htk_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
 
-    if MCM.bEnabled && !MCM.bFirstEnabled
-        MCM.AddTextOptionST("htk_txt_htkHelp", "$iEquip_MCM_htk_lbl_htkHelp", "")
-            
-        MCM.AddEmptyOption()
-        MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_MainHtks")
-        MCM.AddKeyMapOptionST("htk_key_leftHand", "$iEquip_MCM_htk_lbl_leftHand", KH.iLeftKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("htk_key_rightHand", "$iEquip_MCM_htk_lbl_rightHand", KH.iRightKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("htk_key_shout", "$iEquip_MCM_htk_lbl_shout", KH.iShoutKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("htk_key_consumPoison", "$iEquip_MCM_htk_lbl_consumPoison", KH.iConsumableKey, mcmUnmapFLAG)
-        MCM.AddEmptyOption()
-                
-        MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_UtHtkOpts")
-        MCM.AddKeyMapOptionST("htk_key_util", "$iEquip_MCM_htk_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
-
-        MCM.SetCursorPosition(1)
-                
-        ;These are just so the right side lines up nicely with the left!
-        MCM.AddEmptyOption()
-        MCM.AddEmptyOption()
-        
-        MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_KeyPressOpts")
-        MCM.AddSliderOptionST("htk_sld_multiTapDelay", "$iEquip_MCM_htk_lbl_multiTapDelay", KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-        MCM.AddSliderOptionST("htk_sld_longPrsDelay", "$iEquip_MCM_htk_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-        MCM.AddEmptyOption()
-        
-        MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_OptAddHtks")
-        MCM.AddToggleOptionST("htk_tgl_enblOptHotkey", "$iEquip_MCM_htk_lbl_enblOptHotkey", KH.bOptionalHotkeyEnabled)
-        if KH.bOptionalHotkeyEnabled
-            MCM.AddKeyMapOptionST("htk_key_optHotKey", "$iEquip_MCM_htk_lbl_optHotKey", KH.iOptHtKey, mcmUnmapFLAG)
-            MCM.AddMenuOptionST("htk_men_optHotKeyAction", "$iEquip_MCM_htk_lbl_optHotKeyAction", optHotKeyActions[KH.iOptHotKeyAction])
-        endIf
-    endIf
+	MCM.SetCursorPosition(1)
+			
+	;These are just so the right side lines up nicely with the left!
+	MCM.AddEmptyOption()
+	MCM.AddEmptyOption()
+	
+	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_KeyPressOpts")
+	MCM.AddSliderOptionST("htk_sld_multiTapDelay", "$iEquip_MCM_htk_lbl_multiTapDelay", KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+	MCM.AddSliderOptionST("htk_sld_longPrsDelay", "$iEquip_MCM_htk_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+	MCM.AddEmptyOption()
+	
+	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_OptAddHtks")
+	MCM.AddToggleOptionST("htk_tgl_enblOptHotkey", "$iEquip_MCM_htk_lbl_enblOptHotkey", KH.bOptionalHotkeyEnabled)
+	if KH.bOptionalHotkeyEnabled
+		MCM.AddKeyMapOptionST("htk_key_optHotKey", "$iEquip_MCM_htk_lbl_optHotKey", KH.iOptHtKey, mcmUnmapFLAG)
+		MCM.AddMenuOptionST("htk_men_optHotKeyAction", "$iEquip_MCM_htk_lbl_optHotKeyAction", optHotKeyActions[KH.iOptHotKeyAction])
+	endIf
 endFunction
 
 ; ######################

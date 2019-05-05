@@ -57,47 +57,45 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-    if MCM.bEnabled && !MCM.bFirstEnabled
-        MCM.AddHeaderOption("$iEquip_MCM_que_lbl_queLenOpts")
-        MCM.AddSliderOptionST("que_sld_maxItmQue", "$iEquip_MCM_que_lbl_maxItmQue", WC.iMaxQueueLength, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
-        MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "$iEquip_MCM_que_lbl_hrdLimQueSize", WC.bHardLimitQueueSize)
-        
-        MCM.AddEmptyOption()      
-        MCM.AddHeaderOption("$iEquip_MCM_que_lbl_addToQueOpts")
-        MCM.AddToggleOptionST("que_tgl_showConfMsg", "$iEquip_MCM_que_lbl_showConfMsg", WC.bShowQueueConfirmationMessages)
-        MCM.AddToggleOptionST("que_tgl_signlBothQue", "$iEquip_MCM_que_lbl_signlBothQue", WC.bAllowSingleItemsInBothQueues)
-                
-        if WC.bAllowSingleItemsInBothQueues
-            MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "$iEquip_MCM_que_lbl_allow1hSwitch", WC.bAllowWeaponSwitchHands)
-        endIf
+	MCM.AddHeaderOption("$iEquip_MCM_que_lbl_queLenOpts")
+	MCM.AddSliderOptionST("que_sld_maxItmQue", "$iEquip_MCM_que_lbl_maxItmQue", WC.iMaxQueueLength, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
+	MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "$iEquip_MCM_que_lbl_hrdLimQueSize", WC.bHardLimitQueueSize)
+	
+	MCM.AddEmptyOption()      
+	MCM.AddHeaderOption("$iEquip_MCM_que_lbl_addToQueOpts")
+	MCM.AddToggleOptionST("que_tgl_showConfMsg", "$iEquip_MCM_que_lbl_showConfMsg", WC.bShowQueueConfirmationMessages)
+	MCM.AddToggleOptionST("que_tgl_signlBothQue", "$iEquip_MCM_que_lbl_signlBothQue", WC.bAllowSingleItemsInBothQueues)
+			
+	if WC.bAllowSingleItemsInBothQueues
+		MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "$iEquip_MCM_que_lbl_allow1hSwitch", WC.bAllowWeaponSwitchHands)
+	endIf
 
-        MCM.AddEmptyOption()
-        MCM.AddHeaderOption("$iEquip_MCM_que_lbl_cacheBlkLst")
-        MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "$iEquip_MCM_que_lbl_allowCacheRmvItm", WC.bEnableRemovedItemCaching)
-                
-        if WC.bEnableRemovedItemCaching
-            MCM.AddSliderOptionST("que_sld_MaxItmCache", "$iEquip_MCM_que_lbl_MaxItmCache", WC.iMaxCachedItems, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
-        endIf
+	MCM.AddEmptyOption()
+	MCM.AddHeaderOption("$iEquip_MCM_que_lbl_cacheBlkLst")
+	MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "$iEquip_MCM_que_lbl_allowCacheRmvItm", WC.bEnableRemovedItemCaching)
+			
+	if WC.bEnableRemovedItemCaching
+		MCM.AddSliderOptionST("que_sld_MaxItmCache", "$iEquip_MCM_que_lbl_MaxItmCache", WC.iMaxCachedItems, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
+	endIf
 
-        MCM.AddToggleOptionST("que_tgl_enblBlacklist", "$iEquip_MCM_que_lbl_enblBlacklist", WC.bBlacklistEnabled)
-                
-        if WC.bBlacklistEnabled && (EH.iEquip_LeftHandBlacklistFLST.GetSize() > 0 || EH.iEquip_RightHandBlacklistFLST.GetSize() > 0 || EH.iEquip_GeneralBlacklistFLST.GetSize() > 0)
-            MCM.AddTextOptionST("que_txt_clearBlacklist", "", "$iEquip_MCM_que_lbl_clearBlacklist")
-        endIf
+	MCM.AddToggleOptionST("que_tgl_enblBlacklist", "$iEquip_MCM_que_lbl_enblBlacklist", WC.bBlacklistEnabled)
+			
+	if WC.bBlacklistEnabled && (EH.iEquip_LeftHandBlacklistFLST.GetSize() > 0 || EH.iEquip_RightHandBlacklistFLST.GetSize() > 0 || EH.iEquip_GeneralBlacklistFLST.GetSize() > 0)
+		MCM.AddTextOptionST("que_txt_clearBlacklist", "", "$iEquip_MCM_que_lbl_clearBlacklist")
+	endIf
 
-        MCM.SetCursorPosition(1)
+	MCM.SetCursorPosition(1)
 
-        MCM.AddHeaderOption("$iEquip_MCM_que_lbl_autoAddOpts")
-        MCM.AddToggleOptionST("que_tgl_autoAddHandItems", "$iEquip_MCM_que_lbl_autoAddHandItems", EH.bAutoAddNewItems)
-        MCM.AddToggleOptionST("que_tgl_autoAddShouts", "$iEquip_MCM_que_lbl_autoAddShouts", EH.bAutoAddShouts)
-        MCM.AddToggleOptionST("que_tgl_autoAddPowers", "$iEquip_MCM_que_lbl_autoAddPowers", EH.bAutoAddPowers)
-        MCM.AddToggleOptionST("que_tgl_autoAddPotions", "$iEquip_MCM_que_lbl_autoAddPotions", PO.bAutoAddPotions)
-        MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "$iEquip_MCM_que_lbl_autoAddPoisons", PO.bAutoAddPoisons)
-        MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
-        MCM.AddEmptyOption()
-        MCM.AddToggleOptionST("que_tgl_queueMenuAAFlags", "$iEquip_MCM_que_lbl_queueMenuAAFlags", WC.bShowAutoAddedFlag)
-        MCM.AddToggleOptionST("que_tgl_skipAutoAddedItems", "$iEquip_MCM_que_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
-    endIf
+	MCM.AddHeaderOption("$iEquip_MCM_que_lbl_autoAddOpts")
+	MCM.AddToggleOptionST("que_tgl_autoAddHandItems", "$iEquip_MCM_que_lbl_autoAddHandItems", EH.bAutoAddNewItems)
+	MCM.AddToggleOptionST("que_tgl_autoAddShouts", "$iEquip_MCM_que_lbl_autoAddShouts", EH.bAutoAddShouts)
+	MCM.AddToggleOptionST("que_tgl_autoAddPowers", "$iEquip_MCM_que_lbl_autoAddPowers", EH.bAutoAddPowers)
+	MCM.AddToggleOptionST("que_tgl_autoAddPotions", "$iEquip_MCM_que_lbl_autoAddPotions", PO.bAutoAddPotions)
+	MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "$iEquip_MCM_que_lbl_autoAddPoisons", PO.bAutoAddPoisons)
+	MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
+	MCM.AddEmptyOption()
+	MCM.AddToggleOptionST("que_tgl_queueMenuAAFlags", "$iEquip_MCM_que_lbl_queueMenuAAFlags", WC.bShowAutoAddedFlag)
+	MCM.AddToggleOptionST("que_tgl_skipAutoAddedItems", "$iEquip_MCM_que_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
 endFunction
 
 ; #####################

@@ -14,7 +14,6 @@ iEquip_MCM_edt property edt auto
 iEquip_MCM_inf property inf auto
 
 bool property bEnabled auto hidden
-bool property bFirstEnabled = true auto hidden
 bool property bUpdateKeyMaps auto hidden
 
 string property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
@@ -57,7 +56,7 @@ event OnConfigInit()
     pot.initData()
     poi.initData()    
     uii.initData()          
-    pro.initData()   
+    pro.initData()
     edt.initData()           
     inf.initData()
 endEvent
@@ -65,7 +64,6 @@ endEvent
 Event OnConfigClose()
     if WC.isEnabled != bEnabled
         WC.isEnabled = bEnabled
-        bFirstEnabled = false
     else
         updateSettings()
     endIf
@@ -96,22 +94,24 @@ event OnPageReset(string page)
     
         if page == "$iEquip_MCM_lbl_General"
             gen.drawPage()
-        elseIf page == "$iEquip_MCM_lbl_Hotkey"
-            htk.drawPage()
-        elseIf page == "$iEquip_MCM_lbl_Queue" 
-            que.drawPage()
-        elseIf page == "$iEquip_MCM_lbl_Potions" 
-            pot.drawPage()
-        elseIf page == "$iEquip_MCM_lbl_Recharging"
-            poi.drawPage()    
-        elseIf page == "$iEquip_MCM_lbl_Misc"
-            uii.drawPage()          
-        elseIf page == "$iEquip_MCM_lbl_Pro"
-            pro.drawPage()   
-        elseIf page == "$iEquip_MCM_lbl_Edit"
-            edt.drawPage()           
-        elseIf page == "$iEquip_MCM_lbl_Info"
-            inf.drawPage()
+		elseIf WC.isEnabled
+			if page == "$iEquip_MCM_lbl_Hotkey"
+				htk.drawPage()
+			elseIf page == "$iEquip_MCM_lbl_Queue" 
+				que.drawPage()
+			elseIf page == "$iEquip_MCM_lbl_Potions" 
+				pot.drawPage()
+			elseIf page == "$iEquip_MCM_lbl_Recharging"
+				poi.drawPage()    
+			elseIf page == "$iEquip_MCM_lbl_Misc"
+				uii.drawPage()          
+			elseIf page == "$iEquip_MCM_lbl_Pro"
+				pro.drawPage()   
+			elseIf page == "$iEquip_MCM_lbl_Edit"
+				edt.drawPage()           
+			elseIf page == "$iEquip_MCM_lbl_Info"
+				inf.drawPage()
+			endIf
         endIf
     endif
 endEvent

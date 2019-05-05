@@ -68,35 +68,33 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-    if MCM.bEnabled && !MCM.bFirstEnabled
-        MCM.AddHeaderOption("$iEquip_MCM_edt_lbl_EMOptions")
-        MCM.AddSliderOptionST("edt_sld_slowTimeStr", "$iEquip_MCM_edt_lbl_slowTimeStr", iEquip_EditModeSlowTimeStrength.GetValueint())
-                
-        MCM.SetCursorPosition(1)               
-        MCM.AddHeaderOption("")
-        MCM.AddMenuOptionST("edt_men_chooseHtKey", "$iEquip_MCM_edt_lbl_chooseHtKey", EMKeysChoice[iCurrentEMKeysChoice])
-                
-        if(iCurrentEMKeysChoice == 1)
-            MCM.AddEmptyOption()
-            MCM.AddKeyMapOptionST("edt_key_nextElem", "$iEquip_MCM_edt_lbl_nextElem", KH.iEditNextKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_prevElem", "$iEquip_MCM_edt_lbl_prevElem", KH.iEditPrevKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_moveUp", "$iEquip_MCM_edt_lbl_moveUp", KH.iEditUpKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_moveDown", "$iEquip_MCM_edt_lbl_moveDown", KH.iEditDownKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_moveLeft", "$iEquip_MCM_edt_lbl_moveLeft", KH.iEditLeftKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_moveRight", "$iEquip_MCM_edt_lbl_moveRight", KH.iEditRightKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_sclUp", "$iEquip_MCM_edt_lbl_sclUp", KH.iEditScaleUpKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_sclDown", "$iEquip_MCM_edt_lbl_sclDown", KH.iEditScaleDownKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_rotate", "$iEquip_MCM_edt_lbl_rotate", KH.iEditRotateKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_adjTransp", "$iEquip_MCM_edt_lbl_adjTransp", KH.iEditAlphaKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_bringFrnt", "$iEquip_MCM_edt_lbl_bringFrnt", KH.iEditDepthKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_setTxtAlCo", "$iEquip_MCM_edt_lbl_setTxtAlCo", KH.iEditTextKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_tglRulers", "$iEquip_MCM_edt_lbl_tglRulers", KH.iEditRulersKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_rstSelElem", "$iEquip_MCM_edt_lbl_rstSelElem", KH.iEditResetKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_loadPrst", "$iEquip_common_LoadPreset", KH.iEditLoadPresetKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_savePrst", "$iEquip_common_SavePreset", KH.iEditSavePresetKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("edt_key_discChangs", "$iEquip_common_DiscardChanges", KH.iEditDiscardKey, mcmUnmapFLAG)
-        endIf
-    endIf
+	MCM.AddHeaderOption("$iEquip_MCM_edt_lbl_EMOptions")
+	MCM.AddSliderOptionST("edt_sld_slowTimeStr", "$iEquip_MCM_edt_lbl_slowTimeStr", iEquip_EditModeSlowTimeStrength.GetValueint())
+	
+	MCM.SetCursorPosition(1)               
+	MCM.AddHeaderOption("")
+	MCM.AddMenuOptionST("edt_men_chooseHtKey", "$iEquip_MCM_edt_lbl_chooseHtKey", EMKeysChoice[iCurrentEMKeysChoice])
+	
+	if(iCurrentEMKeysChoice == 1)
+		MCM.AddEmptyOption()
+		MCM.AddKeyMapOptionST("edt_key_nextElem", "$iEquip_MCM_edt_lbl_nextElem", KH.iEditNextKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_prevElem", "$iEquip_MCM_edt_lbl_prevElem", KH.iEditPrevKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_moveUp", "$iEquip_MCM_edt_lbl_moveUp", KH.iEditUpKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_moveDown", "$iEquip_MCM_edt_lbl_moveDown", KH.iEditDownKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_moveLeft", "$iEquip_MCM_edt_lbl_moveLeft", KH.iEditLeftKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_moveRight", "$iEquip_MCM_edt_lbl_moveRight", KH.iEditRightKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_sclUp", "$iEquip_MCM_edt_lbl_sclUp", KH.iEditScaleUpKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_sclDown", "$iEquip_MCM_edt_lbl_sclDown", KH.iEditScaleDownKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_rotate", "$iEquip_MCM_edt_lbl_rotate", KH.iEditRotateKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_adjTransp", "$iEquip_MCM_edt_lbl_adjTransp", KH.iEditAlphaKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_bringFrnt", "$iEquip_MCM_edt_lbl_bringFrnt", KH.iEditDepthKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_setTxtAlCo", "$iEquip_MCM_edt_lbl_setTxtAlCo", KH.iEditTextKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_tglRulers", "$iEquip_MCM_edt_lbl_tglRulers", KH.iEditRulersKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_rstSelElem", "$iEquip_MCM_edt_lbl_rstSelElem", KH.iEditResetKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_loadPrst", "$iEquip_common_LoadPreset", KH.iEditLoadPresetKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_savePrst", "$iEquip_common_SavePreset", KH.iEditSavePresetKey, mcmUnmapFLAG)
+		MCM.AddKeyMapOptionST("edt_key_discChangs", "$iEquip_common_DiscardChanges", KH.iEditDiscardKey, mcmUnmapFLAG)
+	endIf
 endFunction
 
 ; #################

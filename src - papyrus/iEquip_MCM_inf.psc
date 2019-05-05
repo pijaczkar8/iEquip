@@ -27,19 +27,17 @@ function drawPage()
     ;+++Dependency checks
     ;+++Supported mods detected
 
-    if MCM.bEnabled && !MCM.bFirstEnabled
-        MCM.SetCursorPosition(1)
-		MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_presets")
-		MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "")
-		if jMap.count(JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)) > 0
-			MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
-			MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "")
-		endIf
-		MCM.AddEmptyOption()
-		
-        MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")
-        MCM.AddTextOptionST("inf_txt_rstLayout", "$iEquip_MCM_inf_lbl_rstLayout", "")
-    endIf
+	MCM.SetCursorPosition(1)
+	MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_presets")
+	MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "")
+	if jMap.count(JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)) > 0
+		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
+		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "")
+	endIf
+	MCM.AddEmptyOption()
+	
+	MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")
+	MCM.AddTextOptionST("inf_txt_rstLayout", "$iEquip_MCM_inf_lbl_rstLayout", "")
 endFunction
 
 ; ########################

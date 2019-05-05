@@ -18,6 +18,7 @@ string[] rawMeterFillDirectionOptions
 int iTorchMeterFillDirection
 
 bool bFirstTimeDisablingTooltips = true
+bool bFirstEnabled = false
 
 ; #############
 ; ### SETUP ###
@@ -147,88 +148,86 @@ function drawPage()
 
     MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
     MCM.AddToggleOptionST("gen_tgl_showTooltips", "$iEquip_MCM_gen_lbl_showTooltips", WC.bShowTooltips)
-           
-    if MCM.bEnabled
-    	MCM.AddEmptyOption()
-    	if MCM.bFirstEnabled
-    		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
-    		MCM.AddTextOptionST("gen_txt_firstEnabled2", "$iEquip_MCM_common_lbl_firstEnabled2", "")
-    		MCM.AddTextOptionST("gen_txt_firstEnabled3", "$iEquip_MCM_common_lbl_firstEnabled3", "")
-            MCM.AddEmptyOption()
-            MCM.AddTextOptionST("gen_txt_firstEnabled4", "$iEquip_MCM_common_lbl_firstEnabled4", "")
-            MCM.AddTextOptionST("gen_txt_firstEnabled5", "$iEquip_MCM_common_lbl_firstEnabled5", "")
-    	else
-	        MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
-	        MCM.AddToggleOptionST("gen_tgl_enblShoutSlt", "$iEquip_MCM_gen_lbl_enblShoutSlt", WC.bShoutEnabled)
-	        MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "$iEquip_MCM_gen_lbl_enblConsumSlt", WC.bConsumablesEnabled)
-	        MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
+	
+    if WC.isEnabled
+		MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+		MCM.AddToggleOptionST("gen_tgl_enblShoutSlt", "$iEquip_MCM_gen_lbl_enblShoutSlt", WC.bShoutEnabled)
+		MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "$iEquip_MCM_gen_lbl_enblConsumSlt", WC.bConsumablesEnabled)
+		MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
 
-	        MCM.AddEmptyOption()
-	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_AmmoMode")
-	        MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
-	        MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
-	        MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+		MCM.AddEmptyOption()
+		MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_AmmoMode")
+		MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
+		MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
+		MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
 
-	        MCM.AddEmptyOption()
-            MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_TorchOptions")
-            MCM.AddToggleOptionST("gen_tgl_showTorchMeter", "$iEquip_MCM_gen_lbl_showTorchMeter", TO.bShowTorchMeter)
-            if TO.bShowTorchMeter
-                MCM.AddColorOptionST("gen_col_torchMeterCol", "$iEquip_MCM_gen_lbl_torchMeterCol", TO.iTorchMeterFillColor)
-                MCM.AddMenuOptionST("gen_men_torchMeterFillDir", "$iEquip_MCM_gen_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
-            endIf
+		MCM.AddEmptyOption()
+		MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_TorchOptions")
+		MCM.AddToggleOptionST("gen_tgl_showTorchMeter", "$iEquip_MCM_gen_lbl_showTorchMeter", TO.bShowTorchMeter)
+		if TO.bShowTorchMeter
+			MCM.AddColorOptionST("gen_col_torchMeterCol", "$iEquip_MCM_gen_lbl_torchMeterCol", TO.iTorchMeterFillColor)
+			MCM.AddMenuOptionST("gen_men_torchMeterFillDir", "$iEquip_MCM_gen_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
+		endIf
 
-            MCM.AddSliderOptionST("gen_sld_torchDuration", "$iEquip_MCM_gen_lbl_torchDuration", (TO.fTorchDuration + 5.0) / 60, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
+		MCM.AddSliderOptionST("gen_sld_torchDuration", "$iEquip_MCM_gen_lbl_torchDuration", (TO.fTorchDuration + 5.0) / 60, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
 
-            MCM.AddToggleOptionST("gen_tgl_reequipTorch", "$iEquip_MCM_gen_lbl_reequipTorch", TO.bAutoReEquipTorch)
-            if TO.bAutoReEquipTorch
-                MCM.AddToggleOptionST("gen_tgl_realisticEquip", "$iEquip_MCM_gen_lbl_realisticEquip", TO.bRealisticReEquip)
-                if TO.bRealisticReEquip
-                    MCM.AddSliderOptionST("gen_sld_realisticEquipDelay", "$iEquip_MCM_gen_lbl_realisticEquipDelay", TO.fRealisticReEquipDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-                endIf
-            endIf
+		MCM.AddToggleOptionST("gen_tgl_reequipTorch", "$iEquip_MCM_gen_lbl_reequipTorch", TO.bAutoReEquipTorch)
+		if TO.bAutoReEquipTorch
+			MCM.AddToggleOptionST("gen_tgl_realisticEquip", "$iEquip_MCM_gen_lbl_realisticEquip", TO.bRealisticReEquip)
+			if TO.bRealisticReEquip
+				MCM.AddSliderOptionST("gen_sld_realisticEquipDelay", "$iEquip_MCM_gen_lbl_realisticEquipDelay", TO.fRealisticReEquipDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+			endIf
+		endIf
 
-            MCM.AddToggleOptionST("gen_tgl_finiteTorchLife", "$iEquip_MCM_gen_lbl_finiteTorchLife", TO.bFiniteTorchLife)
-            if TO.bFiniteTorchLife
-                MCM.AddToggleOptionST("gen_tgl_torchesFade", "$iEquip_MCM_gen_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
-            endIf
+		MCM.AddToggleOptionST("gen_tgl_finiteTorchLife", "$iEquip_MCM_gen_lbl_finiteTorchLife", TO.bFiniteTorchLife)
+		if TO.bFiniteTorchLife
+			MCM.AddToggleOptionST("gen_tgl_torchesFade", "$iEquip_MCM_gen_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
+		endIf
 
-            MCM.AddToggleOptionST("gen_tgl_dropLitTorches", "$iEquip_MCM_gen_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
-            if TO.bDropLitTorchesEnabled
-                MCM.AddMenuOptionST("gen_men_dropLitTorchBehavior", "$iEquip_MCM_gen_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
-            endIf
+		MCM.AddToggleOptionST("gen_tgl_dropLitTorches", "$iEquip_MCM_gen_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
+		if TO.bDropLitTorchesEnabled
+			MCM.AddMenuOptionST("gen_men_dropLitTorchBehavior", "$iEquip_MCM_gen_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
+		endIf
 
-            MCM.SetCursorPosition(1)
-	                
-	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_Cycling")
-	        MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
-	                
-	        if WC.bEquipOnPause
-	            MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-	        endIf
+		MCM.SetCursorPosition(1)
+				
+		MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_Cycling")
+		MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
+				
+		if WC.bEquipOnPause
+			MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+		endIf
 
-	        MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[iPosIndChoice])
+		MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[iPosIndChoice])
 
-	        MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
+		MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
 
-	        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
-	            MCM.AddTextOptionST("gen_txt_addFists", "$iEquip_MCM_gen_lbl_AddUnarmed", "")
-	        endIf
+		if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
+			MCM.AddTextOptionST("gen_txt_addFists", "$iEquip_MCM_gen_lbl_AddUnarmed", "")
+		endIf
 
-	        MCM.AddEmptyOption()
-	        MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_VisGear")
-	        MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
-	        MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
+		MCM.AddEmptyOption()
+		MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_VisGear")
+		MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
+		MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
 
-            MCM.AddEmptyOption()
-            MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_BeastMode")
-            MCM.AddToggleOptionST("gen_tgl_BM_werewolf", "$iEquip_MCM_gen_lbl_BM_werewolf", BM.abShowInTransformedState[0])
-            if EH.bIsDawnguardLoaded
-                MCM.AddToggleOptionST("gen_tgl_BM_vampLord", "$iEquip_MCM_gen_lbl_BM_vampLord", BM.abShowInTransformedState[1])
-            endIf
-            if EH.bIsUndeathLoaded
-                MCM.AddToggleOptionST("gen_tgl_BM_lich", "$iEquip_MCM_gen_lbl_BM_lich", BM.abShowInTransformedState[2])
-            endIf
-	    endIf
+		MCM.AddEmptyOption()
+		MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_BeastMode")
+		MCM.AddToggleOptionST("gen_tgl_BM_werewolf", "$iEquip_MCM_gen_lbl_BM_werewolf", BM.abShowInTransformedState[0])
+		if EH.bIsDawnguardLoaded
+			MCM.AddToggleOptionST("gen_tgl_BM_vampLord", "$iEquip_MCM_gen_lbl_BM_vampLord", BM.abShowInTransformedState[1])
+		endIf
+		if EH.bIsUndeathLoaded
+			MCM.AddToggleOptionST("gen_tgl_BM_lich", "$iEquip_MCM_gen_lbl_BM_lich", BM.abShowInTransformedState[2])
+		endIf
+	elseIf bFirstEnabled
+		MCM.AddEmptyOption()
+		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
+		MCM.AddTextOptionST("gen_txt_firstEnabled2", "$iEquip_MCM_common_lbl_firstEnabled2", "")
+		MCM.AddTextOptionST("gen_txt_firstEnabled3", "$iEquip_MCM_common_lbl_firstEnabled3", "")
+		MCM.AddEmptyOption()
+		MCM.AddTextOptionST("gen_txt_firstEnabled4", "$iEquip_MCM_common_lbl_firstEnabled4", "")
+		MCM.AddTextOptionST("gen_txt_firstEnabled5", "$iEquip_MCM_common_lbl_firstEnabled5", "")
     endIf
 endFunction
 
@@ -246,10 +245,12 @@ State gen_tgl_onOff
                 MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
             else
                 MCM.bEnabled = !MCM.bEnabled
+				bFirstEnabled = !bFirstEnabled
                 MCM.forcePageReset()
             endIf
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
+			bFirstEnabled = false
             MCM.forcePageReset()
         endIf
     endEvent
