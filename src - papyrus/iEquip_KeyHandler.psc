@@ -324,7 +324,7 @@ function runUpdate()
                 
                 if bIsUtilityKeyHeld
                     if AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
-                        AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
+                        WC.cycleSlot(0, false, false, false, true)
                     else
                         WC.applyPoison(0)
                     endIf

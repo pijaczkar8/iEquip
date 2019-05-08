@@ -269,7 +269,8 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			if !toggleWithoutAnimation
 				
 				if bSimpleAmmoMode && bSimpleAmmoModeOnEnter
-					WC.reequipOtherHand(0, false)
+					;WC.reequipOtherHand(0, false)
+					WC.reequipOtherHand(0)
 
 				else
 					UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", false)

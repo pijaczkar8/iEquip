@@ -760,7 +760,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
 				WC.asCurrentlyEquipped[equippedSlot] = itemName
 				if equippedSlot < 2 || WC.bShoutEnabled
-					WC.updateWidget(equippedSlot, targetIndex, false, true)
+					WC.updateWidget(equippedSlot, targetIndex, true, true)
 				endIf
 				if equippedSlot == 0
 					WC.bGoneUnarmed = false
@@ -842,7 +842,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 				WC.abQueueWasEmpty[equippedSlot] = false
 
 				if equippedSlot < 2 || WC.bShoutEnabled
-					WC.updateWidget(equippedSlot, targetIndex, false, true)
+					WC.updateWidget(equippedSlot, targetIndex, true, true)
 				endIf
 			endIf
 		endIf

@@ -727,6 +727,8 @@ state ENABLED
 	Event OnWidgetLoad()
 		debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
 
+		bool bPreselectEnabledOnLoad = bPreselectMode
+
 		EM.isEditMode = false
 		bPreselectMode = false
 		bRefreshingWidget = true
@@ -794,6 +796,10 @@ state ENABLED
 		
 		if !EH.bPlayerIsABeast
 			checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+		endIf
+
+		if bPreselectEnabledOnLoad
+			PM.togglePreselectMode()
 		endIf
 
 		KH.RegisterForGameplayKeys()
