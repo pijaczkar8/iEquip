@@ -3482,6 +3482,7 @@ function reequipOtherHand(int Q, bool equip = true)
 	endIf
 	if equip
 		cycleHand(Q, aiCurrentQueuePosition[Q], jMap.getForm(targetObject, "iEquipForm"), jMap.getInt(targetObject, "iEquipType"))
+		;cycleHand(Q, aiCurrentQueuePosition[Q], jMap.getForm(targetObject, "iEquipForm"), jMap.getInt(targetObject, "iEquipType"), true)
 	endIf
 	debug.trace("iEquip_WidgetCore reequipOtherHand end")
 endFunction
