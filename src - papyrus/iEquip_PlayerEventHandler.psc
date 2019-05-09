@@ -700,10 +700,6 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		itemName = queuedForm.getName()
 	endIf
 
-	;/if itemBaseName == ""
-		itemBaseName = itemName
-	endIf/;
-
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - final names being saved, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))

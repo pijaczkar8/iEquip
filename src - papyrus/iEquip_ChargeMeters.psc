@@ -196,9 +196,15 @@ endFunction
 function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter start")
 	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", forceUpdate: " + forceUpdate + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
+	;Hide first
+	if abIsChargeMeterShown[Q]
+		updateChargeMeterVisibility(Q, false) ;Hide
+	endIf
+
 	if !PlayerRef.IsWeaponDrawn()
 		Utility.WaitMenuMode(0.2)
 	endIf
+	
 	if PlayerRef.IsWeaponDrawn()
 		int isEnchanted
 		bool isLeftHand = !(Q as bool)
@@ -221,10 +227,6 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 			endIf
 		endIf
 		debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", abIsChargeMeterShown[" + Q + "]: " + abIsChargeMeterShown[Q])
-		;Hide first
-		if abIsChargeMeterShown[Q]
-			updateChargeMeterVisibility(Q, false) ;Hide
-		endIf
 		;Now as long as meters aren't disabled, and the item is enchanted, and it's not an infinite charge item carry on and update the meters
 		if iChargeDisplayType > 0 && isEnchanted == 1 && WornObject.GetItemMaxCharge(PlayerRef, Q, 0) > 0.0
 			;Update values

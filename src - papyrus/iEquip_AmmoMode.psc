@@ -229,14 +229,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				endwhile
 				AmmoModeAnimateIn()
 			endIf
-			;/if WC.bPreselectMode || bSimpleAmmoMode
-				;Equip the ammo and update the left hand slot in the widget
-				checkAndEquipAmmo(false, true, true)
-				;Show the counter if previously hidden
-				if !WC.abIsCounterShown[0]
-					WC.setCounterVisibility(0, true)
-				endIf
-			endIf/;
+
 			WC.bCyclingLHPreselectInAmmoMode = true
 			WC.updateAttributeIcons(0, WC.aiCurrentlyPreselected[0], false, true)
 			;If we've just equipped a bound weapon the ammo will already be equipped, otherwise go ahead and equip the ammo
@@ -267,17 +260,14 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 		;Toggle out
 		else
 			if !toggleWithoutAnimation
-				
+				; The only way of toggling out of Simple Ammo Mode is by cycling and equipping the right hand, so now we need to re-equip the left hand as well
 				if bSimpleAmmoMode && bSimpleAmmoModeOnEnter
 					WC.reequipOtherHand(0, false)
-					;WC.reequipOtherHand(0)
-
 				else
 					UI.invokebool(HUD_MENU, WidgetRoot + ".prepareForAmmoModeAnimation", false)
 					while !bReadyForAmmoModeAnim
 						Utility.WaitMenuMode(0.01)
 					endwhile
-					;AmmoModeAnimateOut(toggleWithoutEquipping)
 					AmmoModeAnimateOut()
 				endIf
 			endIf
@@ -290,14 +280,14 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 					WC.cycleSlot(1, false, true)
 				endIf
 			else
-				;Update the main slot index
-				if !WC.bPreselectMode
+				;Update the main slot index in case we're in Advanced Ammo Mode and have cycled the left preselect slot in the meantime
+				if !WC.bPreselectMode && !bSimpleAmmoMode
 					WC.aiCurrentQueuePosition[0] = WC.aiCurrentlyPreselected[0]
 					WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipName")
 				endIf
-				;And re-equip the left hand item, which should in turn force a re-equip on the right hand to a 1H item, as long as we've not just toggled out of ammo mode as a result of us equipping a 2H weapon in the right hand
-				if !toggleWithoutEquipping
-					WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
+				;And re-equip the left hand item, which should in turn force a re-equip on the right hand to a 1H item, as long as we've not just toggled out of ammo mode as a result of us equipping a 2H weapon in the right hand or cycling the right hand to exit Simple Ammo Mode
+				if !toggleWithoutEquipping || bSimpleAmmoMode
+					WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"), jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType"), bSimpleAmmoMode)
 				endIf
 			endIf
 			;Show the left name if previously faded out on timer

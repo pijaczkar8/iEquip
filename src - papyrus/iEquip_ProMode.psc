@@ -98,7 +98,7 @@ function OnWidgetLoad()
 	debug.trace("iEquip_ProMode OnWidgetLoad end")
 endFunction
 
-function togglePreselectMode(bool togglingEditModeOrRefreshing = false)
+function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool enablingOnLoad = false)
 	debug.trace("iEquip_ProMode togglePreselectMode start")
 	if bPreselectEnabled || togglingEditModeOrRefreshing
 		bPreselectMode = !bPreselectMode
@@ -139,10 +139,12 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false)
 							UICallback.Send(iHandle)
 						endIf
 					elseIf !(Q == 2 && !bShoutPreselectEnabled)
-						;Otherwise if enabled, set left, right and shout preselect to next item in each queue, play power up sound, update widget and show preselect elements
-						WC.aiCurrentlyPreselected[Q] = WC.aiCurrentQueuePosition[Q] + 1
-						if WC.aiCurrentlyPreselected[Q] == queueLength
-							WC.aiCurrentlyPreselected[Q] = 0
+						if !enablingOnLoad
+							;Otherwise if enabled, set left, right and shout preselect to next item in each queue, play power up sound, update widget and show preselect elements
+							WC.aiCurrentlyPreselected[Q] = WC.aiCurrentQueuePosition[Q] + 1
+							if WC.aiCurrentlyPreselected[Q] == queueLength
+								WC.aiCurrentlyPreselected[Q] = 0
+							endIf
 						endIf
 						debug.trace("iEquip_ProMode togglePreselectMode, bPreselectMode: " + bPreselectMode + ", Q: " + Q + ", aiCurrentlyPreselected[" + Q + "]: " + WC.aiCurrentlyPreselected[Q])
 						WC.updateWidget(Q, WC.aiCurrentlyPreselected[Q])

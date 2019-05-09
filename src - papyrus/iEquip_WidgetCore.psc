@@ -799,7 +799,7 @@ state ENABLED
 		endIf
 
 		if bPreselectEnabledOnLoad
-			PM.togglePreselectMode()
+			PM.togglePreselectMode(false, true)
 		endIf
 
 		KH.RegisterForGameplayKeys()
