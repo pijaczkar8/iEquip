@@ -13,12 +13,13 @@ string[] optHotKeyActions
 function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
 
-    optHotKeyActions = new string[5]
+    optHotKeyActions = new string[6]
     optHotKeyActions[0] = "$iEquip_MCM_htk_opt_consItem"
     optHotKeyActions[1] = "$iEquip_MCM_htk_opt_cycPois"
     optHotKeyActions[2] = "$iEquip_MCM_htk_opt_qckRest"
     optHotKeyActions[3] = "$iEquip_MCM_htk_opt_qckRng"
     optHotKeyActions[4] = "$iEquip_MCM_htk_opt_qckShld"
+    optHotKeyActions[5] = "$iEquip_MCM_htk_opt_toggleTorch"
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -36,6 +37,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, KH.bOptionalHotkeyEnabled as int)
 	jArray.addInt(jPageObj, KH.iOptHtKey)
 	jArray.addInt(jPageObj, KH.iOptHotKeyAction)
+    jArray.addInt(jPageObj, KH.iOptHotKeyDblTapAction)
 
     return jPageObj
 endFunction
@@ -52,7 +54,8 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	
 	KH.bOptionalHotkeyEnabled = jArray.getInt(jPageObj, 7)
 	KH.iOptHtKey = jArray.getInt(jPageObj, 8)
-	KH.iOptHotKeyAction = jArray.getInt(jPageObj, 9)	
+	KH.iOptHotKeyAction = jArray.getInt(jPageObj, 9)
+    KH.iOptHotKeyDblTapAction = jArray.getInt(jPageObj, 10)
 endFunction
 
 function drawPage()
@@ -85,6 +88,7 @@ function drawPage()
 	if KH.bOptionalHotkeyEnabled
 		MCM.AddKeyMapOptionST("htk_key_optHotKey", "$iEquip_MCM_htk_lbl_optHotKey", KH.iOptHtKey, mcmUnmapFLAG)
 		MCM.AddMenuOptionST("htk_men_optHotKeyAction", "$iEquip_MCM_htk_lbl_optHotKeyAction", optHotKeyActions[KH.iOptHotKeyAction])
+        MCM.AddMenuOptionST("htk_men_optHotKeyDblTapAction", "$iEquip_MCM_htk_lbl_optHotKeyDblTapAction", optHotKeyActions[KH.iOptHotKeyDblTapAction])
 	endIf
 endFunction
 
@@ -279,6 +283,19 @@ State htk_men_optHotKeyAction
         elseIf currentEvent == "Accept"
             KH.iOptHotKeyAction = currentVar as int
             MCM.SetMenuOptionValueST(optHotKeyActions[KH.iOptHotKeyAction])
+        endIf 
+    endEvent
+endState
+
+State htk_men_optHotKeyDblTapAction
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKeyDblTapAction")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(KH.iOptHotKeyDblTapAction, optHotKeyActions, 0)
+        elseIf currentEvent == "Accept"
+            KH.iOptHotKeyDblTapAction = currentVar as int
+            MCM.SetMenuOptionValueST(optHotKeyActions[KH.iOptHotKeyDblTapAction])
         endIf 
     endEvent
 endState

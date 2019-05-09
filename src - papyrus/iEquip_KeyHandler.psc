@@ -26,6 +26,7 @@ int property iUtilityKey = 37 auto hidden ;K - Active in all modes
 ; Optional hotkeys
 int property iOptHtKey = -1 auto hidden
 int property iOptHotKeyAction auto hidden
+int property iOptHotKeyDblTapAction auto hidden
 
 ; Edit Mode Keys
 int property iEditNextKey = 55 auto hidden ;Num *
@@ -287,6 +288,20 @@ function runUpdate()
             endIf
         elseIf iWaitingKeyCode == iRightKey
             WC.cycleSlot(1, bIsUtilityKeyHeld, false, false, true)
+        elseIf iWaitingKeyCode == iOptHtKey && bOptionalHotkeyEnabled
+                if iOptHotKeyAction == 0 && WC.bConsumablesEnabled
+                    WC.consumeItem()
+                elseIf iOptHotKeyAction == 1 && WC.bPoisonsEnabled
+                    WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
+                elseIf iOptHotKeyAction == 2
+                    PM.quickRestore()
+                elseIf iOptHotKeyAction == 3
+                    PM.quickRanged()
+                elseIf iOptHotKeyAction == 4
+                    PM.quickShield()
+                elseIf iOptHotKeyAction == 5
+                    TO.toggleTorch()
+                endIf
         elseIf bNotInLootMenu
             if iWaitingKeyCode == iShoutKey
                 if WC.bShoutEnabled
@@ -298,18 +313,6 @@ function runUpdate()
                 elseIf WC.bPoisonsEnabled
                     WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
                 endIf
-            elseIf iWaitingKeyCode == iOptHtKey && bOptionalHotkeyEnabled
-                if iOptHotKeyAction == 0 && WC.bConsumablesEnabled
-                    WC.consumeItem()
-                elseIf iOptHotKeyAction == 1 && WC.bPoisonsEnabled
-                    WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
-                elseIf iOptHotKeyAction == 2
-                    PM.quickRestore()
-                elseIf iOptHotKeyAction == 3
-                    PM.quickRanged()
-                elseIf iOptHotKeyAction == 4
-                    PM.quickShield()
-                endIf
             endIf
         endIf
         
@@ -317,7 +320,21 @@ function runUpdate()
         if iWaitingKeyCode == iConsumableKey 
             if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
-            endIf 
+            endIf
+        elseIf iWaitingKeyCode == iOptHtKey && bOptionalHotkeyEnabled
+                if iOptHotKeyDblTapAction == 0 && WC.bConsumablesEnabled
+                    WC.consumeItem()
+                elseIf iOptHotKeyDblTapAction == 1 && WC.bPoisonsEnabled
+                    WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
+                elseIf iOptHotKeyDblTapAction == 2
+                    PM.quickRestore()
+                elseIf iOptHotKeyDblTapAction == 3
+                    PM.quickRanged()
+                elseIf iOptHotKeyDblTapAction == 4
+                    PM.quickShield()
+                elseIf iOptHotKeyDblTapAction == 5
+                    TO.toggleTorch()
+                endIf
         elseif PM.bPreselectMode
             if iWaitingKeyCode == iLeftKey
                 int RHItemType = PlayerRef.GetEquippedItemType(1)

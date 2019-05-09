@@ -267,6 +267,17 @@ event OnUpdate()
 	debug.trace("iEquip_TorchScript OnUpdate end")
 endEvent
 
+; ToDo -	This feature can be fleshed out including re-equipping previous item, preferred item to re-equip (QuickShield, etc), disallow/cycle if 2H equipped, etc
+; 			For now this is one of the options on the Optional Hotkey (single or double press). If it is a popular option may need to move it somewhere more prominent?
+
+function toggleTorch()
+	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
+		PlayerRef.UnequipItemEx(PlayerRef.GetEquippedObject(0))
+	else
+		PlayerRef.EquipItemEx(realTorchForm) ; This should then be caught by EH.onObjectEquipped and trigger all the relevant widget/torch/RH stuff as required
+	endIf
+endFunction
+
 ; Simple Drop Lit Torches - Courtesy of, and with full permission from, Snotgurg
 
 Function DropTorch()
