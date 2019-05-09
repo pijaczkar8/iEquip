@@ -24,9 +24,12 @@ int property iConsumableKey = 48 auto hidden ;B
 int property iUtilityKey = 37 auto hidden ;K - Active in all modes
 
 ; Optional hotkeys
-int property iOptHtKey = -1 auto hidden
-int property iOptHotKeyAction auto hidden
-int property iOptHotKeyDblTapAction auto hidden
+int property iConsumeItemKey = -1 auto hidden
+int property iCyclePoisonKey = -1 auto hidden
+int property iToggleTorchKey = -1 auto hidden
+int property iQuickRestoreKey = -1 auto hidden
+int property iQuickShieldKey = -1 auto hidden
+int property iQuickRangedKey = -1 auto hidden
 
 ; Edit Mode Keys
 int property iEditNextKey = 55 auto hidden ;Num *
@@ -52,7 +55,7 @@ float property fMultiTapDelay = 0.3 auto hidden
 float property fLongPressDelay = 0.6 auto hidden
 
 ; Bools
-bool property bOptionalHotkeyEnabled auto hidden
+bool property bExtendedKbControlsEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
@@ -288,20 +291,21 @@ function runUpdate()
             endIf
         elseIf iWaitingKeyCode == iRightKey
             WC.cycleSlot(1, bIsUtilityKeyHeld, false, false, true)
-        elseIf iWaitingKeyCode == iOptHtKey && bOptionalHotkeyEnabled
-                if iOptHotKeyAction == 0 && WC.bConsumablesEnabled
-                    WC.consumeItem()
-                elseIf iOptHotKeyAction == 1 && WC.bPoisonsEnabled
-                    WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
-                elseIf iOptHotKeyAction == 2
-                    PM.quickRestore()
-                elseIf iOptHotKeyAction == 3
-                    PM.quickRanged()
-                elseIf iOptHotKeyAction == 4
-                    PM.quickShield()
-                elseIf iOptHotKeyAction == 5
-                    TO.toggleTorch()
-                endIf
+        
+        ; Extended Keyboard Controls
+        elseIf iWaitingKeyCode == iConsumeItemKey && bExtendedKbControlsEnabled && WC.bConsumablesEnabled
+            WC.consumeItem()
+        elseIf iWaitingKeyCode == iCyclePoisonKey && bExtendedKbControlsEnabled && WC.bPoisonsEnabled
+            WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
+        elseIf iWaitingKeyCode == iToggleTorchKey && bExtendedKbControlsEnabled
+            TO.toggleTorch()
+        elseIf iWaitingKeyCode == iQuickRestoreKey && bExtendedKbControlsEnabled
+            PM.quickRestore()
+        elseIf iWaitingKeyCode == iQuickShieldKey && bExtendedKbControlsEnabled
+            PM.quickShield()
+        elseIf iWaitingKeyCode == iQuickRangedKey && bExtendedKbControlsEnabled
+            PM.quickRanged()
+
         elseIf bNotInLootMenu
             if iWaitingKeyCode == iShoutKey
                 if WC.bShoutEnabled
@@ -321,20 +325,6 @@ function runUpdate()
             if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
             endIf
-        elseIf iWaitingKeyCode == iOptHtKey && bOptionalHotkeyEnabled
-                if iOptHotKeyDblTapAction == 0 && WC.bConsumablesEnabled
-                    WC.consumeItem()
-                elseIf iOptHotKeyDblTapAction == 1 && WC.bPoisonsEnabled
-                    WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
-                elseIf iOptHotKeyDblTapAction == 2
-                    PM.quickRestore()
-                elseIf iOptHotKeyDblTapAction == 3
-                    PM.quickRanged()
-                elseIf iOptHotKeyDblTapAction == 4
-                    PM.quickShield()
-                elseIf iOptHotKeyDblTapAction == 5
-                    TO.toggleTorch()
-                endIf
         elseif PM.bPreselectMode
             if iWaitingKeyCode == iLeftKey
                 int RHItemType = PlayerRef.GetEquippedItemType(1)
@@ -646,8 +636,25 @@ function RegisterForGameplayKeys()
     RegisterForKey(iRightKey)
     RegisterForKey(iConsumableKey)
     RegisterForKey(iUtilityKey)
-    if bOptionalHotkeyEnabled
-        RegisterForKey(iOptHtKey)
+    if bExtendedKbControlsEnabled
+        if iConsumeItemKey != -1
+            RegisterForKey(iConsumeItemKey)
+        endIf
+        if iCyclePoisonKey != -1
+            RegisterForKey(iCyclePoisonKey)
+        endIf
+        if iToggleTorchKey != -1
+            RegisterForKey(iToggleTorchKey)
+        endIf
+        if iQuickRestoreKey != -1
+            RegisterForKey(iQuickRestoreKey)
+        endIf
+        if iQuickShieldKey != -1
+            RegisterForKey(iQuickShieldKey)
+        endIf
+        if iQuickRangedKey != -1
+            RegisterForKey(iQuickRangedKey)
+        endIf
     endIf
     debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
 endFunction

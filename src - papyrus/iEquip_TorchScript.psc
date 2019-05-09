@@ -4,6 +4,8 @@ Scriptname iEquip_TorchScript extends Quest
 import UI
 import Utility
 import iEquip_FormExt
+import iEquip_StringExt
+import iEquip_InventoryExt
 
 iEquip_WidgetCore property WC auto
 iEquip_ChargeMeters property CM auto
@@ -41,6 +43,9 @@ bool property bSettingLightRadius auto hidden
 bool bSettingDuration
 bool bFinalUpdateReceived
 bool bJustDroppedTorch
+
+int previousLeftHandItemHandle
+form previousLeftHandItemForm
 
 ; MCM Properties
 bool property bShowTorchMeter = true auto hidden
@@ -273,8 +278,20 @@ endEvent
 function toggleTorch()
 	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
 		PlayerRef.UnequipItemEx(PlayerRef.GetEquippedObject(0))
-	else
+		if previousLeftHandItemHandle != 0xFFFF
+			iEquip_InventoryExt.EquipItem(previousLeftHandItemForm, previousLeftHandItemHandle, PlayerRef, 2)
+		elseIf previousLeftHandItemForm
+			PlayerRef.EquipItemEx(previousLeftHandItemForm, 2)
+		else
+			WC.setSlotToEmpty(0, true, jArray.count(WC.aiTargetQ[0]) > 0)
+		endIf
+
+	elseIf PlayerRef.GetItemCount(realTorchForm) > 0
+		previousLeftHandItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(0)
+		previousLeftHandItemForm = PlayerRef.GetEquippedObject(0)
 		PlayerRef.EquipItemEx(realTorchForm) ; This should then be caught by EH.onObjectEquipped and trigger all the relevant widget/torch/RH stuff as required
+	else
+		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TO_not_noTorch"))
 	endIf
 endFunction
 

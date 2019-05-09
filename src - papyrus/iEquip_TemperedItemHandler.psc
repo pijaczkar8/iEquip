@@ -17,6 +17,7 @@ float[] afTemperLevelMax
 int[] property aiTemperedItemTypes auto hidden
 
 string[] property asNamePaths auto hidden
+int[] property aiNameElements auto hidden
 
 ; MCM Properties
 bool property bFadeIconOnDegrade = true auto hidden
@@ -43,6 +44,12 @@ function initialise()
 		asNamePaths[1] = ".widgetMaster.RightHandWidget.rightName_mc.rightName.text"
 		asNamePaths[5] = ".widgetMaster.LeftHandWidget.leftPreselectName_mc.leftPreselectName.text"
 		asNamePaths[6] = ".widgetMaster.RightHandWidget.rightPreselectName_mc.rightPreselectName.text"
+
+		aiNameElements = new int[7]
+		aiNameElements[0] = 8
+		aiNameElements[1] = 22
+		aiNameElements[5] = 18
+		aiNameElements[6] = 32
 		
 		aiTemperedItemTypes = new int[9]
 		aiTemperedItemTypes[0] = 1		; Swords
@@ -85,54 +92,6 @@ function updateTemperLevelArrays()
 	endWhile
 	debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays end")
 endFunction
-
-;/int function getTemperLevelPercent(int Q, float fItemHealth)
-	debug.trace("iEquip_TemperedItemHandler getTemperLevelPercent start - Q: " + Q)
-	int currentTemperLevelPercent
-	
-	if fItemHealth > afTemperLevelMax[0] 	; First check if the item has been improved
-
-		int i = 1 							; Now if it has find which level range it is currently within
-		while fItemHealth > afTemperLevelMax[i] && i < 7
-			i += 1
-		endWhile
-		
-		if i == 7 							; If it has been tempered past Legendary set it to full
-			currentTemperLevelPercent = 100
-		else								; Otherwise calculate the current % value within the level range
-			int j = i - 1
-			currentTemperLevelPercent = Round((fItemHealth - afTemperLevelMax[j]) / (afTemperLevelMax[i] - afTemperLevelMax[j]) * 100)
-		endIf
-	else									; Untempered
-		currentTemperLevelPercent = 100
-	endIf
-	debug.trace("iEquip_TemperedItemHandler getTemperLevelPercent - returning: " + currentTemperLevelPercent + "%")
-	return currentTemperLevelPercent
-endFunction
-
-string function gettemperLevelName(int Q, float fItemHealth)
-	debug.trace("iEquip_TemperedItemHandler gettemperLevelName start - Q: " + Q)
-	string temperLevelName
-	
-	if fItemHealth > afTemperLevelMax[0] 	; First check if the item has been improved
-
-		int i = 1 							; Now if it has find which level range it is currently within
-		while fItemHealth > afTemperLevelMax[i] && i < 7
-			i += 1
-		endWhile
-		
-		if i == 7 							; If it has been tempered past Legendary suffix it Legendary+ (or whatever the upper level name happens to be)
-			temperLevelName = asTemperLevelNames[5] + "+"
-		else 								; Otherwise retrieve the temper level string
-			temperLevelName = asTemperLevelNames[i]
-		endIf
-	
-	else									; Untempered
-		temperLevelName = ""
-	endIf
-	debug.trace("iEquip_TemperedItemHandler gettemperLevelName - returning: " + temperLevelName)
-	return temperLevelName
-endFunction/;
 
 function checkAndUpdateTemperLevelInfo(int Q)
 	debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - Q: " + Q)
@@ -282,7 +241,13 @@ function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, in
 			endIf
 		endIf
 		debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
-		UI.SetString(HUD_MENU, WidgetRoot + asNamePaths[Q], tempName)
+		;UI.SetString(HUD_MENU, WidgetRoot + asNamePaths[Q], tempName)
+		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
+		If(iHandle)
+			UICallback.PushInt(iHandle, aiNameElements[Q])
+			UICallback.PushString(iHandle, tempName)
+			UICallback.Send(iHandle)
+		endIf
 		jMap.setStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "lastDisplayedName", tempName)
 	endIf
 	debug.trace("iEquip_TemperedItemHandler setTemperLevelName end")

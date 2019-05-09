@@ -410,6 +410,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 				break;
 			};
 
+		//skyui.util.Debug.log("iEquipWidget updateWidget - currAlpha: " + currAlpha + ", currScale: " + currScale)
+
 		if(currAlpha == undefined){
 			currAlpha = iconClip._alpha;
 		}
@@ -478,6 +480,18 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		itemName.text = sName;
 		//Restore the text formatting
 		itemName.setTextFormat(textFormat);
+	}
+
+	public function updateDisplayedText(iIndex: Number, sString: String): Void
+	{
+		if (sString == undefined){
+			sString = "";
+		}
+
+		var targetText: TextField = textElementArray[iIndex];
+		var textFormat:TextFormat = targetText.getTextFormat();
+		targetText.text = sString;
+		targetText.setTextFormat(textFormat);
 	}
 
 	// Called from TemperedItemHandler updateIcon()
@@ -1314,9 +1328,19 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
             selector.gotoAndStop("_right");
         }
     }
- 
 
-     public function tweenPotionSelectorAlpha(targetAlpha: Number): Void
+    public function updatePotionSelectorText(sRestoreText: String, sFortifyText: String, sRegenText: String): Void
+    {
+    	var textFormat:TextFormat = restoreText.getTextFormat();
+    	restoreText.text = sRestoreText;
+    	fortifyText.text = sFortifyText;
+    	regenText.text = sRegenText;
+    	restoreText.setTextFormat(textFormat);
+    	fortifyText.setTextFormat(textFormat);
+    	regenText.setTextFormat(textFormat);
+    }
+
+    public function tweenPotionSelectorAlpha(targetAlpha: Number): Void
     {
         TweenLite.to(potionSelector_mc, 0.2, {_alpha:targetAlpha, ease:Quad.easeOut});
     }

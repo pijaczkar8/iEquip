@@ -2435,11 +2435,16 @@ function updatePotionSelector(bool bHide = false)
 	;Otherwise update the counts as required
 	else
 		;Update the potion type counts
-		string textPath = asWidgetElements[45] ;potionSelector_mc
+		;string textPath = asWidgetElements[45] ;potionSelector_mc
 		int potionGroup = asPotionGroups.Find(asCurrentlyEquipped[3])
-		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".restoreText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_restore{" + PO.getCountForSelector(potionGroup, 0) + "}"))
-		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".fortifyText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_fortify{" + PO.getCountForSelector(potionGroup, 1) + "}"))
-		UI.SetString(HUD_MENU, WidgetRoot + textPath + ".regenText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_regen{" + PO.getCountForSelector(potionGroup, 2) + "}"))
+		;UI.SetString(HUD_MENU, WidgetRoot + textPath + ".restoreText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_restore{" + PO.getCountForSelector(potionGroup, 0) + "}"))
+		;UI.SetString(HUD_MENU, WidgetRoot + textPath + ".fortifyText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_fortify{" + PO.getCountForSelector(potionGroup, 1) + "}"))
+		;UI.SetString(HUD_MENU, WidgetRoot + textPath + ".regenText.text", iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_regen{" + PO.getCountForSelector(potionGroup, 2) + "}"))
+		string[] args = new string[3]
+		args[0] = iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_restore{" + PO.getCountForSelector(potionGroup, 0) + "}")
+		args[1] = iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_fortify{" + PO.getCountForSelector(potionGroup, 1) + "}")
+		args[2] = iEquip_StringExt.LocalizeString("$iEquip_WC_potionSelector_regen{" + PO.getCountForSelector(potionGroup, 2) + "}")
+		UI.InvokeStringA(HUD_MENU, WidgetRoot + ".updatePotionSelectorText", args)
 		;If the selector isn't already shown then show it now
 		if !bPotionSelectorShown
 			UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", afWidget_A[45])
@@ -2617,9 +2622,12 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 			endIf
 		endIf
 	elseIf Q == 3
-		UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.ConsumableWidget.consumableCount_mc.consumableCount.text", "")
+		;UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.ConsumableWidget.consumableCount_mc.consumableCount.text", "")
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 44)
 	elseIf Q == 4 && hidePoisonCount
-		UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text", "")
+		;UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text", "")
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 49)
+
 	elseIf Q == 5 || Q == 6
 		hideAttributeIcons(Q)
 	endIf
@@ -2638,7 +2646,8 @@ function handleEmptyPoisonQueue()
 	
 	;Hide the count by setting it to an empty string
 
-	UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text", "")
+	;UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text", "")
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 49)
 	asCurrentlyEquipped[4] = ""
 																	; Set to generic poison icon and name to empty before flashing/fading/hiding
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
@@ -3854,10 +3863,13 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 		endIf
 		;Update poison name
 		string poisonNamePath
+		int poisonNameElement
 		if Q == 0
 			poisonNamePath = ".widgetMaster.LeftHandWidget.leftPoisonName_mc.leftPoisonName.text"
+			poisonNameElement = 11
 		elseif Q == 1
 			poisonNamePath = ".widgetMaster.RightHandWidget.rightPoisonName_mc.rightPoisonName.text"
+			poisonNameElement = 25
 		endIf
 		string currentlyDisplayedPoison = UI.GetString(HUD_MENU, WidgetRoot + poisonNamePath)
 		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - currentlyDisplayedPoison: " + currentlyDisplayedPoison + ", poisonName: " + poisonName)
@@ -3865,7 +3877,13 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			if abIsPoisonNameShown[Q]
 				showName(Q, false, true, 0.15)
 			endIf
-			UI.SetString(HUD_MENU, WidgetRoot + poisonNamePath, poisonName)
+			;UI.SetString(HUD_MENU, WidgetRoot + poisonNamePath, poisonName)
+			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
+			If(iHandle)
+				UICallback.PushInt(iHandle, poisonNameElement)
+				UICallback.PushString(iHandle, poisonName)
+				UICallback.Send(iHandle)
+			endIf
 		endIf
 		if !abIsPoisonNameShown[Q]
 			showName(Q, true, true, 0.15)

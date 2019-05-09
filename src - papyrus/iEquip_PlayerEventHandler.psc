@@ -745,7 +745,13 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0													; Update the name and temper level if required
 						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
 					else
-						UI.SetString(HUD_MENU, WidgetRoot + TI.asNamePaths[equippedSlot], itemName)							; Or just update the display name
+						;UI.SetString(HUD_MENU, WidgetRoot + TI.asNamePaths[equippedSlot], itemName)							; Or just update the display name
+						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
+						If(iHandle)
+							UICallback.PushInt(iHandle, TI.aiNameElements[equippedSlot])
+							UICallback.PushString(iHandle, itemName)
+							UICallback.Send(iHandle)
+						endIf
 					endIf
 				endIf
 				if !(equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped || AM.bAmmoMode))

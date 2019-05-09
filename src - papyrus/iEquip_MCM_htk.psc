@@ -5,21 +5,12 @@ import iEquip_StringExt
 iEquip_KeyHandler Property KH Auto
 
 int mcmUnmapFLAG
-string[] optHotKeyActions
 
 ; #############
 ; ### SETUP ###
 
 function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
-
-    optHotKeyActions = new string[6]
-    optHotKeyActions[0] = "$iEquip_MCM_htk_opt_consItem"
-    optHotKeyActions[1] = "$iEquip_MCM_htk_opt_cycPois"
-    optHotKeyActions[2] = "$iEquip_MCM_htk_opt_qckRest"
-    optHotKeyActions[3] = "$iEquip_MCM_htk_opt_qckRng"
-    optHotKeyActions[4] = "$iEquip_MCM_htk_opt_qckShld"
-    optHotKeyActions[5] = "$iEquip_MCM_htk_opt_toggleTorch"
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -34,10 +25,13 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addFlt(jPageObj, KH.fMultiTapDelay)
 	jArray.addFlt(jPageObj, KH.fLongPressDelay)
 	
-	jArray.addInt(jPageObj, KH.bOptionalHotkeyEnabled as int)
-	jArray.addInt(jPageObj, KH.iOptHtKey)
-	jArray.addInt(jPageObj, KH.iOptHotKeyAction)
-    jArray.addInt(jPageObj, KH.iOptHotKeyDblTapAction)
+	jArray.addInt(jPageObj, KH.bExtendedKbControlsEnabled as int)
+	jArray.addInt(jPageObj, KH.iConsumeItemKey)
+    jArray.addInt(jPageObj, KH.iCyclePoisonKey)
+    jArray.addInt(jPageObj, KH.iToggleTorchKey)
+    jArray.addInt(jPageObj, KH.iQuickRestoreKey)
+    jArray.addInt(jPageObj, KH.iQuickShieldKey)
+    jArray.addInt(jPageObj, KH.iQuickRangedKey)
 
     return jPageObj
 endFunction
@@ -52,10 +46,14 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	KH.fMultiTapDelay = jArray.getFlt(jPageObj, 5)
 	KH.fLongPressDelay = jArray.getFlt(jPageObj, 6)
 	
-	KH.bOptionalHotkeyEnabled = jArray.getInt(jPageObj, 7)
-	KH.iOptHtKey = jArray.getInt(jPageObj, 8)
-	KH.iOptHotKeyAction = jArray.getInt(jPageObj, 9)
-    KH.iOptHotKeyDblTapAction = jArray.getInt(jPageObj, 10)
+	KH.bExtendedKbControlsEnabled = jArray.getInt(jPageObj, 7)
+	KH.iConsumeItemKey = jArray.getInt(jPageObj, 8)
+    KH.iCyclePoisonKey = jArray.getInt(jPageObj, 9)
+    KH.iToggleTorchKey = jArray.getInt(jPageObj, 10)
+    KH.iQuickRestoreKey = jArray.getInt(jPageObj, 11)
+    KH.iQuickShieldKey = jArray.getInt(jPageObj, 12)
+    KH.iQuickRangedKey = jArray.getInt(jPageObj, 13)
+
 endFunction
 
 function drawPage()
@@ -83,12 +81,15 @@ function drawPage()
 	MCM.AddSliderOptionST("htk_sld_longPrsDelay", "$iEquip_MCM_htk_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 	MCM.AddEmptyOption()
 	
-	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_OptAddHtks")
-	MCM.AddToggleOptionST("htk_tgl_enblOptHotkey", "$iEquip_MCM_htk_lbl_enblOptHotkey", KH.bOptionalHotkeyEnabled)
-	if KH.bOptionalHotkeyEnabled
-		MCM.AddKeyMapOptionST("htk_key_optHotKey", "$iEquip_MCM_htk_lbl_optHotKey", KH.iOptHtKey, mcmUnmapFLAG)
-		MCM.AddMenuOptionST("htk_men_optHotKeyAction", "$iEquip_MCM_htk_lbl_optHotKeyAction", optHotKeyActions[KH.iOptHotKeyAction])
-        MCM.AddMenuOptionST("htk_men_optHotKeyDblTapAction", "$iEquip_MCM_htk_lbl_optHotKeyDblTapAction", optHotKeyActions[KH.iOptHotKeyDblTapAction])
+	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_ExtKbCtrls")
+	MCM.AddToggleOptionST("htk_tgl_enblExtKbCtrls", "$iEquip_MCM_htk_lbl_enblExtKbCtrls", KH.bExtendedKbControlsEnabled)
+	if KH.bExtendedKbControlsEnabled
+		MCM.AddKeyMapOptionST("htk_key_consItem", "$iEquip_MCM_htk_lbl_consItem", KH.iConsumeItemKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("htk_key_cyclePoison", "$iEquip_MCM_htk_lbl_cyclePoison", KH.iCyclePoisonKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("htk_key_toggleTorch", "$iEquip_MCM_htk_lbl_toggleTorch", KH.iToggleTorchKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("htk_key_quickRestore", "$iEquip_MCM_htk_lbl_quickRestore", KH.iQuickRestoreKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("htk_key_quickShield", "$iEquip_MCM_htk_lbl_quickShield", KH.iQuickShieldKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("htk_key_quickRanged", "$iEquip_MCM_htk_lbl_quickRanged", KH.iQuickRangedKey, mcmUnmapFLAG)
 	endIf
 endFunction
 
@@ -242,60 +243,115 @@ endState
 ; - Optional Hotkeys -
 ; --------------------
 
-State htk_tgl_enblOptHotkey
+State htk_tgl_enblExtKbCtrls
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_htk_txt_enblOptHotkey")
-        elseIf currentEvent == "Select" || "Default"
-            If currentEvent == "Select"
-                KH.bOptionalHotkeyEnabled = !KH.bOptionalHotkeyEnabled
-            else
-                KH.bOptionalHotkeyEnabled = false
-            endIf
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_enblExtKbCtrls")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && KH.bExtendedKbControlsEnabled)
+            KH.bExtendedKbControlsEnabled = !KH.bExtendedKbControlsEnabled
             MCM.forcePageReset()
         endIf
     endEvent
 endState
 
-State htk_key_optHotKey
+State htk_key_consItem
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
         elseIf currentEvent == "Change" || "Default"
             if currentEvent == "Change"
-                KH.iOptHtKey = currentVar as int
+                KH.iConsumeItemKey = currentVar as int
             else
-                KH.iOptHtKey = -1
+                KH.iConsumeItemKey = -1
             endIf
             
             MCM.bUpdateKeyMaps = true
-            MCM.SetKeyMapOptionValueST(KH.iOptHtKey)        
+            MCM.SetKeyMapOptionValueST(KH.iConsumeItemKey)        
         endIf
     endEvent
 endState
 
-State htk_men_optHotKeyAction
+State htk_key_cyclePoison
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKeyAction")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(KH.iOptHotKeyAction, optHotKeyActions, 0)
-        elseIf currentEvent == "Accept"
-            KH.iOptHotKeyAction = currentVar as int
-            MCM.SetMenuOptionValueST(optHotKeyActions[KH.iOptHotKeyAction])
-        endIf 
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iCyclePoisonKey = currentVar as int
+            else
+                KH.iCyclePoisonKey = -1
+            endIf
+            
+            MCM.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iCyclePoisonKey)        
+        endIf
     endEvent
 endState
 
-State htk_men_optHotKeyDblTapAction
+State htk_key_toggleTorch
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKeyDblTapAction")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(KH.iOptHotKeyDblTapAction, optHotKeyActions, 0)
-        elseIf currentEvent == "Accept"
-            KH.iOptHotKeyDblTapAction = currentVar as int
-            MCM.SetMenuOptionValueST(optHotKeyActions[KH.iOptHotKeyDblTapAction])
-        endIf 
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iToggleTorchKey = currentVar as int
+            else
+                KH.iToggleTorchKey = -1
+            endIf
+            
+            MCM.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iToggleTorchKey)        
+        endIf
+    endEvent
+endState
+
+State htk_key_quickRestore
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iQuickRestoreKey = currentVar as int
+            else
+                KH.iQuickRestoreKey = -1
+            endIf
+            
+            MCM.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iQuickRestoreKey)        
+        endIf
+    endEvent
+endState
+
+State htk_key_quickShield
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iQuickShieldKey = currentVar as int
+            else
+                KH.iQuickShieldKey = -1
+            endIf
+            
+            MCM.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iQuickShieldKey)        
+        endIf
+    endEvent
+endState
+
+State htk_key_quickRanged
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iQuickRangedKey = currentVar as int
+            else
+                KH.iQuickRangedKey = -1
+            endIf
+            
+            MCM.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iQuickRangedKey)        
+        endIf
     endEvent
 endState

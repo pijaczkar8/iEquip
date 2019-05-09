@@ -60,7 +60,7 @@ function initData()
     dropLitTorchBehaviour[1] = "$iEquip_MCM_gen_opt_TorchNothing"
     dropLitTorchBehaviour[2] = "$iEquip_MCM_gen_opt_TorchCycle"
     dropLitTorchBehaviour[3] = "$iEquip_MCM_gen_opt_CycleLeft"
-    dropLitTorchBehaviour[4] = "$iEquip_MCM_htk_opt_qckShld"
+    dropLitTorchBehaviour[4] = "$iEquip_MCM_htk_lbl_quickShield"
 
 endFunction
 
@@ -145,6 +145,8 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
+    ;ToDo - remove next line
+    dropLitTorchBehaviour[4] = "$iEquip_MCM_htk_lbl_quickShield"
 
     MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
     MCM.AddToggleOptionST("gen_tgl_showTooltips", "$iEquip_MCM_gen_lbl_showTooltips", WC.bShowTooltips)
