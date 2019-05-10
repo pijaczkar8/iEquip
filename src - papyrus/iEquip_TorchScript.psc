@@ -280,6 +280,7 @@ endEvent
 ; 			For now this is one of the options on the Optional Hotkey (single or double press). If it is a popular option may need to move it somewhere more prominent?
 
 function toggleTorch()
+	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + PlayerRef.GetEquippedObject(0) == 11)
 	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
 		PlayerRef.UnequipItemEx(PlayerRef.GetEquippedObject(0))
 		if previousLeftHandItemHandle != 0xFFFF
@@ -297,11 +298,13 @@ function toggleTorch()
 	else
 		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TO_not_noTorch"))
 	endIf
+	debug.trace("iEquip_TorchScript toggleTorch end")
 endFunction
 
 ; Simple Drop Lit Torches - Courtesy of, and with full permission from, Snotgurg
 
 Function DropTorch()
+	debug.trace("iEquip_TorchScript DropTorch start")
 	if bDropLitTorchesEnabled
 		bJustDroppedTorch = true
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
@@ -375,6 +378,7 @@ Function DropTorch()
 			PM.QuickShield(false, true)
 		endIf
 	endIf
+	debug.trace("iEquip_TorchScript DropTorch end")
 EndFunction
 
 ; Meter functions

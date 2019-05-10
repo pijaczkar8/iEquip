@@ -665,22 +665,18 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	bool actionTaken
 	int targetIndex
 	bool blockCall
-	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
+	;bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName
 	string itemBaseName
 	int itemHandle = 0xFFFF
 
-	if TI.aiTemperedItemTypes.Find(itemType) > -1
-		if itemType == 26 && PlayerRef.GetEquippedShield() as Form == queuedForm
-			debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to retrieve handle for shield")
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)					; Shield
-		elseIf PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
-			debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to retrieve handle for weapon")
-			if itemType == 7 || itemType == 9
-				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)				; Need to check right hand for ranged weapon iHandle
-			else
-				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(equippedSlot)	; Left/Right hand
-			endIf
+	if TI.aiTemperedItemTypes.Find(itemType) > -1 && PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
+		if itemType == 26
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)				; Shield
+		elseIf itemType == 7 || itemType == 9
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)				; Need to check right hand for ranged weapon iHandle
+		else
+			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(equippedSlot)	; Left/Right hand
 		endIf
 	endIf
 
@@ -692,7 +688,6 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 	else
 		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
-		;itemBaseName = queuedForm.getName()
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 	endIf
 	
@@ -705,15 +700,21 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
 																										; Check if we've just manually equipped an item that is already in an iEquip queue
-	if formFound
+	bool formFound = PlayerRef.GetItemCount(queuedForm) == 1 && iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
+	; ToDo - fix this!
+ 	if formFound
 																										; If it's been found in the queue for the equippedSlot it's been equipped to
 		targetIndex = WC.findInQueue(equippedSlot, itemName, queuedForm, itemHandle)
 		if targetIndex != -1
 			
 			if !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
-				if itemHandle != 0xFFFF && PlayerRef.GetItemCount(queuedForm) == 1 && (JArray.FindInt(WC.iRefHandleArray, itemHandle) == -1 || jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF)
-					JArray.AddInt(WC.iRefHandleArray, itemHandle)
-					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
+				if itemHandle != 0xFFFF
+					if JArray.FindInt(WC.iRefHandleArray, itemHandle) == -1
+						JArray.AddInt(WC.iRefHandleArray, itemHandle)
+					endIf
+					if PlayerRef.GetItemCount(queuedForm) > 1 || jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF
+						jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
+					endIf
 				endIf
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipBaseName", itemBaseName)
@@ -742,10 +743,9 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			
 			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !(equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting))			; If it's somehow already shown in the widget
 				if equippedSlot < 2
-					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0													; Update the name and temper level if required
+					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0																			; Update the name and temper level if required
 						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
 					else
-						;UI.SetString(HUD_MENU, WidgetRoot + TI.asNamePaths[equippedSlot], itemName)							; Or just update the display name
 						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
 						If(iHandle)
 							UICallback.PushInt(iHandle, TI.aiNameElements[equippedSlot])
@@ -758,7 +758,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 					blockCall = true
 				endIf
 			
-			else 																											; Otherwise update the position and name, then update the widget
+			else 																																	; Otherwise update the position and name, then update the widget
 				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
 				WC.asCurrentlyEquipped[equippedSlot] = itemName
 				if equippedSlot < 2 || WC.bShoutEnabled
@@ -839,7 +839,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 					int[] args = new int[2]
 					args[0] = equippedSlot
 					args[1] = WC.iBackgroundStyle
-					UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)				; Show the background if required if it was previously hidden
+					UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)					; Show the background if required if it was previously hidden
 				endIf
 				WC.abQueueWasEmpty[equippedSlot] = false
 
@@ -849,8 +849,12 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			endIf
 		endIf
 																										; And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
-		if !blockCall && equippedSlot < 2
-			WC.checkAndEquipShownHandItem(equippedSlot, false, true)
+		if equippedSlot < 2
+			if blockCall && equippedSlot == 0
+				CM.checkAndUpdateChargeMeter(0)
+			else
+				WC.checkAndEquipShownHandItem(equippedSlot, false, true)
+			endIf
 		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
