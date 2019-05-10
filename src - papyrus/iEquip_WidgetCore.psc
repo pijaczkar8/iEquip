@@ -4731,7 +4731,9 @@ function ApplyChanges()
 	    if !bAmmoMode && bUnequipAmmo && targetAmmo && PlayerRef.isEquipped(targetAmmo)
 			PlayerRef.UnequipItemEx(targetAmmo)
 		endIf
-	    if bPreselectMode && (!PM.bPreselectEnabled || !bProModeEnabled)
+		debug.trace("iEquip_WidgetCore ApplyChanges - bPreselectMode: " + bPreselectMode + ", bProModeEnabled: " + bProModeEnabled + ", PM.bPreselectEnabled: " + PM.bPreselectEnabled)
+	    if bPreselectMode && !(bProModeEnabled && PM.bPreselectEnabled)
+	    	debug.trace("iEquip_WidgetCore ApplyChanges - should be toggling out of Preselect Mode")
 	    	PM.togglePreselectMode()
 	    endIf
 	    if bAmmoMode

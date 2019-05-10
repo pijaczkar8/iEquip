@@ -22,7 +22,7 @@ bool property bPreselectMode auto hidden
 bool bPreselectModeFirstLook = true
 bool bEquippingAllPreselectedItems
 bool bTogglingPreselectOnEquipAll
-;bool bReadyForPreselectAnim
+bool bOverrideTogglePreselectOnEquipAll
 bool bAllEquipped
 bool[] property abPreselectSlotEnabled auto hidden
 bool bAmmoModePreselectModeFirstLook = true
@@ -550,8 +550,9 @@ function updateAnimationTargetValues()
 	debug.trace("iEquip_ProMode updateAnimationTargetValues end")
 endFunction
 
-function equipAllPreselectedItems()
+function equipAllPreselectedItems(bool handsOnly = false)
 	debug.trace("iEquip_ProMode equipAllPreselectedItems start")
+	bOverrideTogglePreselectOnEquipAll = handsOnly
 	bEquippingAllPreselectedItems = true
 	
 	string[] leftData
@@ -575,7 +576,7 @@ function equipAllPreselectedItems()
 	endIf
 
 	;Equip preselected shout unless !bShoutPreselectEnabled
-	if abPreselectSlotEnabled[2]
+	if !handsOnly && abPreselectSlotEnabled[2]
 		targetArray = WC.aiTargetQ[2]
 		;Store currently equipped item icons and preselected item icons and names for each slot if enabled
 		targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[2])
@@ -600,7 +601,7 @@ function equipAllPreselectedItems()
 		rightData[1] = jMap.getStr(targetObject, "iEquipIcon")
 		rightData[2] = jMap.getStr(targetObject, "iEquipName")
 		equipPreselectedItem(1)
-		if !bTogglePreselectOnEquipAll
+		if !bTogglePreselectOnEquipAll || handsOnly
 			targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[1])
 			rightData[3] = jMap.getStr(targetObject, "iEquipIcon")
 			rightData[4] = jMap.getStr(targetObject, "iEquipName")
@@ -619,21 +620,17 @@ function equipAllPreselectedItems()
 		leftData[1] = jMap.getStr(targetObject, "iEquipIcon")
 		leftData[2] = jMap.getStr(targetObject, "iEquipName")
 		equipPreselectedItem(0)
-		if !bTogglePreselectOnEquipAll
+		if !bTogglePreselectOnEquipAll || handsOnly
 			targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
 			leftData[3] = jMap.getStr(targetObject, "iEquipIcon")
 			leftData[4] = jMap.getStr(targetObject, "iEquipName")
 		endIf
 	endIf
-    
-	;while !bReadyForPreselectAnim
-	;	Utility.WaitMenuMode(0.01)
-	;endwhile
 
 	bAllEquipped = false
 	Self.RegisterForModEvent("iEquip_EquipAllComplete", "EquipAllComplete")
 	int iHandle
-	if bTogglePreselectOnEquipAll
+	if bTogglePreselectOnEquipAll && !handsOnly
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".equipAllPreselectedItemsAndTogglePreselect")
 	else
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".equipAllPreselectedItems")
@@ -662,7 +659,7 @@ function equipAllPreselectedItems()
 			WC.RNUpdate.registerForNameFadeoutUpdate()
 			WC.RPNUpdate.registerForNameFadeoutUpdate()
 		endIf
-		if abPreselectSlotEnabled[2] && WC.bShoutNameFadeEnabled
+		if abPreselectSlotEnabled[2] && WC.bShoutNameFadeEnabled && !handsOnly
 			WC.SNUpdate.registerForNameFadeoutUpdate()
 			WC.SPNUpdate.registerForNameFadeoutUpdate()	
 		endIf
@@ -687,7 +684,7 @@ event EquipAllComplete(string sEventName, string sStringArg, Float fNumArg, Form
 		bAllEquipped = true
 		Self.UnregisterForModEvent("iEquip_EquipAllComplete")
 	endIf
-	if bTogglePreselectOnEquipAll
+	if bTogglePreselectOnEquipAll && !bOverrideTogglePreselectOnEquipAll
 		bTogglingPreselectOnEquipAll = true
 		togglePreselectMode()
 	endIf

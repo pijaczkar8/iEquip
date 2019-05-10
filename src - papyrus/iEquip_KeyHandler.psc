@@ -239,12 +239,14 @@ function runUpdate()
                 if bNotInLootMenu
                     WC.consumeItem()
                 endIf
+            elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && PM.bPreselectMode && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
+                PM.equipAllPreselectedItems()
             elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
                 if PM.bPreselectMode
                     if bIsUtilityKeyHeld
                         RC.rechargeWeapon((iWaitingKeyCode == iRightKey) as int)
                     else
-                        PM.equipAllPreselectedItems()
+                        PM.equipAllPreselectedItems(true)
                     endIf
                 else
                     if iWaitingKeyCode == iLeftKey
