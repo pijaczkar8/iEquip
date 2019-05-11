@@ -286,6 +286,7 @@ function runUpdate()
             endIf         
         elseIf iWaitingKeyCode == iLeftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
+			
             if AM.bAmmoMode || (PM.bPreselectMode && (RHItemType == 7 || RHItemType == 12))
                 AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
             else
@@ -327,8 +328,10 @@ function runUpdate()
             if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
             endIf
-        elseIf iWaitingKeyCode == iToggleTorchKey && bExtendedKbControlsEnabled && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
-            TO.DropTorch()
+        elseIf iWaitingKeyCode == iToggleTorchKey 
+			if bExtendedKbControlsEnabled && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
+				TO.DropTorch()
+			endIf
         elseif PM.bPreselectMode
             if iWaitingKeyCode == iLeftKey
                 int RHItemType = PlayerRef.GetEquippedItemType(1)
@@ -367,9 +370,11 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     WC.openQueueManagerMenu(1)
                 elseIf !AM.bAmmoMode
-                    if PlayerRef.GetEquippedItemType(0) == 9 ; Spell
+					int LHItemType = PlayerRef.GetEquippedItemType(0)
+				
+                    if LHItemType == 9 ; Spell
                         PM.quickDualCastOnDoubleTap(0)
-                    elseIf PlayerRef.GetEquippedItemType(0) == 11 ; Torch
+                    elseIf LHItemType == 11 ; Torch
                         TO.DropTorch()
                     else
                         WC.applyPoison(0)
