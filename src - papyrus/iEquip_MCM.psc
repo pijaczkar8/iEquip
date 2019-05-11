@@ -191,7 +191,7 @@ endEvent
 ; HOTKEYS
 
 event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
-    if (conflictControl != "")
+    if (conflictControl != "" && keyCode != -1)
         string msg
         
         if (conflictName != "")
