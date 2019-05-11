@@ -2248,7 +2248,7 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
 		bLeftIconFaded = true
 	;For anything else check if it is currently faded and if so fade it back in
-	elseif Q < 2 && bLeftIconFaded && !AM.bAmmoModePending
+	elseif Q < 2 && bLeftIconFaded && !AM.bAmmoModePending && !(itemType == 5 || itemType == 6)
 		widgetData[0] = afWidget_A[6]
 		widgetData[1] = afWidget_A[7]
 		if abIsNameShown[0]
@@ -2922,24 +2922,26 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
 		if itemHandle != 0xFFFF && JArray.FindInt(iRefHandleArray, itemHandle) != -1
 			debug.trace("iEquip_WidgetCore findInQueue - seaching by handle")
-			if itemHandle != jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle")
-				iIndex += 1
-			else
+			if itemHandle == jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle")
 				found = true
+			else
+				iIndex += 1
 			endIf
+
 		elseIf formToFind != none
 			debug.trace("iEquip_WidgetCore findInQueue - seaching by form")
-			if formToFind != jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm")
-				iIndex += 1
-			else
+			if formToFind == jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm") && (itemHandle == 0xFFFF || jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle") == 0xFFFF)
 				found = true
+			else
+				iIndex += 1
 			endIf
+
 		else
 			debug.trace("iEquip_WidgetCore findInQueue - seaching by name")
-			if itemToFind != jMap.getStr(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipName")
-				iIndex += 1
-			else
+			if itemToFind == jMap.getStr(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipName")
 				found = true
+			else
+				iIndex += 1
 			endIf
 		endIf
 	endwhile
@@ -3051,8 +3053,20 @@ endFunction
 
 function AddItemToLastRemovedCache(int Q, int iIndex)
 	debug.trace("iEquip_WidgetCore AddItemToLastRemovedCache start")
-	if jArray.count(iRemovedItemsCacheObj) == iMaxCachedItems ; Max number of removed items to cache for re-adding
-		iEquip_RemovedItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(iRemovedItemsCacheObj, 0), "iEquipForm"))
+	int cacheSize = jArray.count(iRemovedItemsCacheObj)
+	if cacheSize == iMaxCachedItems ; Max number of removed items to cache for re-adding
+		form formToRemove = jMap.getForm(jArray.getObj(iRemovedItemsCacheObj, 0), "iEquipForm")
+		int numForms = 1
+		int i = 1
+		while i < cacheSize
+			if jMap.getForm(jArray.getObj(iRemovedItemsCacheObj, i), "iEquipForm") == formToRemove
+				numForms += 1
+			endIf
+			i += 1
+		endWhile
+		if numForms == 1
+			iEquip_RemovedItemsFLST.RemoveAddedForm(formToRemove)
+		endIf
 		jArray.eraseIndex(iRemovedItemsCacheObj, 0)
 	endIf
 	int objToCache = jArray.getObj(aiTargetQ[Q], iIndex)
@@ -4522,6 +4536,12 @@ function QueueMenuRemoveFromQueue(int iIndex)
         if !keepInFLST
         	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
         	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+        endIf
+        if TI.aiTemperedItemTypes.Find(JMap.getInt(targetObject, "iEquipType")) != -1
+        	int itemHandle = JMap.getInt(targetObject, "iEquipHandle")
+        	if itemHandle != 0xFFFF
+        		JArray.EraseIndex(iRefHandleArray, JArray.FindInt(iRefHandleArray, itemHandle))
+        	endIf
         endIf
     endIf
 	jArray.eraseIndex(targetArray, iIndex)

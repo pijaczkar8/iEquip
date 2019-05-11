@@ -19,6 +19,15 @@ Event OnRefHandleInvalidated(Form a_item, Int a_refHandle)
 		debug.trace("iEquip_InventoryEventsListener OnRefHandleInvalidated - refHandle not found in iRefHandleArray")
 	else
 		debug.trace("iEquip_InventoryEventsListener OnRefHandleInvalidated - refHandle found in iRefHandleArray at index " + foundAt)
+		int i
+		int index
+		while i < 2
+			index = WC.findInQueue(i, "", none, a_refHandle)
+			if index != -1
+				WC.removeItemFromQueue(i, index, false, false, true)
+			endIf
+			i += 1
+		endWhile
 		JArray.EraseIndex(WC.iRefHandleArray, foundAt)
 	endIf
 EndEvent

@@ -466,7 +466,7 @@ function MoveElement(int iDirection)
     ; 2 = Left  3 = Right
 
     if iSelectedElement != -1
-        float fDuration = 0.005 * MoveStep
+        float fDuration = 0.003 * MoveStep
     
         if iDirection < 2
             if iDirection == 0  ; Up

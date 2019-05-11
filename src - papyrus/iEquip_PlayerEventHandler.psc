@@ -222,6 +222,7 @@ function registerForCoreAnimationEvents()
 	RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	RegisterForAnimationEvent(PlayerRef, "arrowRelease")
 	RegisterForAnimationEvent(PlayerRef, "bashStop")
+	RegisterForAnimationEvent(PlayerRef, "CastStop")
 	;Listeners for the beast form transformation sAttributes
 	RegisterForAnimationEvent(PlayerRef, "SetRace")
 	RegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
@@ -251,6 +252,7 @@ function unregisterForCoreAnimationEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
 	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+	UnRegisterForAnimationEvent(PlayerRef, "CastStop")
 	;Listeners for the beast form transformation sAttributes
 	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
 	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
@@ -303,6 +305,7 @@ function unregisterForAllEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
 	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+	UnRegisterForAnimationEvent(PlayerRef, "CastStop")
 	;Beast Mode animation events
 	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
 	UnRegisterForAnimationEvent(PlayerRef, "GroundStart")
@@ -467,6 +470,7 @@ endEvent
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent start")	
     debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
+    int iTmp
     if EventName == "Soundplay.NPCWerewolfTransformation"
     	BM.OnWerewolfTransformationStart()
     ;ToDo - update meditation animation event names
@@ -479,8 +483,15 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     	bPlayerIsMeditating = false
     	debug.trace("OK Ma, I'm done meditating!")
     	KH.bAllowKeyPress = true
+    elseIf EventName == "CastStop"	; No way to check which hand has just finished casting so we need to update meters in whichever hands we currently have staffs equipped
+    	if PlayerRef.GetEquippedItemType(0) == 8 ; Staff
+    		CM.checkAndUpdateChargeMeter(0, true)
+    	endIf
+    	if PlayerRef.GetEquippedItemType(1) == 8
+    		CM.checkAndUpdateChargeMeter(1, true)
+    	endIf
     else
-	    int iTmp = 2 
+	    iTmp = 2 
 	    if EventName == "weaponLeftSwing"
 	        iTmp = 1
 	    endIf    
@@ -665,7 +676,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	bool actionTaken
 	int targetIndex
 	bool blockCall
-	;bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
+	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName
 	string itemBaseName
 	int itemHandle = 0xFFFF
@@ -700,7 +711,6 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
 																										; Check if we've just manually equipped an item that is already in an iEquip queue
-	bool formFound = PlayerRef.GetItemCount(queuedForm) == 1 && iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	; ToDo - fix this!
  	if formFound
 																										; If it's been found in the queue for the equippedSlot it's been equipped to
@@ -708,13 +718,11 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		if targetIndex != -1
 			
 			if !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
-				if itemHandle != 0xFFFF
+				if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF
 					if JArray.FindInt(WC.iRefHandleArray, itemHandle) == -1
 						JArray.AddInt(WC.iRefHandleArray, itemHandle)
 					endIf
-					if PlayerRef.GetItemCount(queuedForm) > 1 || jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF
-						jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
-					endIf
+					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
 				endIf
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipBaseName", itemBaseName)
@@ -911,7 +919,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 						WC.setSlotCount(i, itemCount)
 						actionTaken = true
 					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
-					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
+					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0 && !TI.aiTemperedItemTypes.Find(itemType) != -1		; The aiTemperedItemTypes exclusion here is because they are now removed through OnRefHandleInvalidated
 						WC.removeItemFromQueue(i, foundAt, false, false, true)
 						;If the removed item was in both queues and we've got none left remove from the other queue as well
 						if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))

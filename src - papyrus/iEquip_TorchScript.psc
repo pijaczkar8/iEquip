@@ -169,7 +169,7 @@ function onTorchEquipped()
 				iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 				iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 				;PlayerRef.SetActorValue("Paralysis", 1)
-				if !PlayerRef.IsWeaponDraw()
+				if !PlayerRef.IsWeaponDrawn()
 	            	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
 	            endIf
 				;PlayerRef.SetActorValue("Paralysis", 0)
@@ -251,7 +251,7 @@ event OnUpdate()
 			endIf
 			iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
-			if !PlayerRef.IsWeaponDraw()
+			if !PlayerRef.IsWeaponDrawn()
             	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
             endIf
 		endIf
