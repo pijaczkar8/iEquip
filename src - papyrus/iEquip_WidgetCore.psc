@@ -1149,9 +1149,9 @@ function resetWidgetsToPreviousState()
 				endIf
 				;Reset attribute icons
 				hideAttributeIcons(i)
-				if bPreselectMode && EM.preselectEnabledOnEnter
+				;/if bPreselectMode && EM.preselectEnabledOnEnter
 					updateAttributeIcons(i, 0)
-				endIf
+				endIf/;
             ; Handle empty shout,consumable and poison queues to ensure all temporary elements are removed
             elseIf jArray.count(aiTargetQ[i]) < 1
                 if i < 4

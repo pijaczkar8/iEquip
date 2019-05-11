@@ -483,13 +483,15 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     	bPlayerIsMeditating = false
     	debug.trace("OK Ma, I'm done meditating!")
     	KH.bAllowKeyPress = true
-    elseIf EventName == "CastStop"	; No way to check which hand has just finished casting so we need to update meters in whichever hands we currently have staffs equipped
-    	if PlayerRef.GetEquippedItemType(0) == 8 ; Staff
-    		CM.checkAndUpdateChargeMeter(0, true)
-    	endIf
-    	if PlayerRef.GetEquippedItemType(1) == 8
-    		CM.checkAndUpdateChargeMeter(1, true)
-    	endIf
+    elseIf EventName == "CastStop"													; No way to check which hand has just finished casting so we need to update meters in whichever hands we currently have staffs equipped
+    	if RC.bRechargingEnabled && CM.iChargeDisplayType > 0
+	    	if PlayerRef.GetEquippedItemType(0) == 8 && CM.abIsChargeMeterShown[0]	; Staff
+				CM.updateMeterPercent(0)
+	    	endIf
+	    	if PlayerRef.GetEquippedItemType(1) == 8 && CM.abIsChargeMeterShown[1]
+	    		CM.updateMeterPercent(1)
+	    	endIf
+	    endIf
     else
 	    iTmp = 2 
 	    if EventName == "weaponLeftSwing"
