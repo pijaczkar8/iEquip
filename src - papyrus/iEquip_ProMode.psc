@@ -488,9 +488,9 @@ function equipPreselectedItem(int Q)
 				debug.trace("iEquip_ProMode equipPreselectedItem - should have updated left slot to 2H spell")
 			endIf
 		elseif (Q == 1 && itemType == 42) ;Ammo in the right hand queue, so in this case grenades and other throwing weapons
-	    	PlayerRef.EquipItem(targetItem as Ammo)
+	    	PlayerRef.EquipItem(targetItem as Ammo, false, true)
 	    elseif (Q == 0 && itemType == 26) ;Shield in the left hand queue
-	    	PlayerRef.EquipItem(targetItem as Armor)
+	    	PlayerRef.EquipItem(targetItem as Armor, false, true)
 		else
 		    PlayerRef.EquipItemEx(targetItem, iEquipSlotId, false, false)
 		endIf
@@ -516,7 +516,9 @@ function equipPreselectedItem(int Q)
 			WC.setCounterVisibility(Q, false)
 		endIf
 		WC.checkAndUpdatePoisonInfo(Q)
-		WC.CM.checkAndUpdateChargeMeter(Q)
+		if !(Q == 0 && targetItem as light)
+			WC.CM.checkAndUpdateChargeMeter(Q)
+		endIf
 		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
 			TI.checkAndUpdateTemperLevelInfo(Q)
 		endIf
@@ -638,7 +640,7 @@ function equipAllPreselectedItems(bool handsOnly = false)
 	if(iHandle)
 		UICallback.Pushbool(iHandle, equipLeft)
 		UICallback.Pushbool(iHandle, abPreselectSlotEnabled[1])
-		UICallback.Pushbool(iHandle, abPreselectSlotEnabled[2])
+		UICallback.Pushbool(iHandle, (abPreselectSlotEnabled[2] && !handsOnly))
 		UICallback.PushStringA(iHandle, leftData)
 		UICallback.PushStringA(iHandle, rightData)
 		UICallback.PushStringA(iHandle, shoutData)

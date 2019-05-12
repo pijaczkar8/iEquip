@@ -39,7 +39,7 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 			iEquip_ItemsToAddFLST.AddForm(akBaseItem)
 			registerForSingleUpdate(0.5)
 		endIf
-		if akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch
+		if akItemReference && (akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch)
 			akItemReference.Delete()
 			akItemReference.Disable()
 			TO.aDroppedTorches[TO.aDroppedTorches.Find(akItemReference)] = none

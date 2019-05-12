@@ -204,6 +204,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 		Self.RegisterForModEvent("iEquip_ReadyForAmmoModeAnimation", "ReadyForAmmoModeAnimation")
 		;Toggle in
 		if bAmmoMode
+			EH.bTogglingAmmoMode = true
 			bSimpleAmmoModeOnEnter = bSimpleAmmoMode
 			bAmmoModePending = false ;Reset
 			if WC.bLeftIconFaded ;In case we're coming from bAmmoModePending and it's still faded out

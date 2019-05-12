@@ -1516,6 +1516,7 @@ function addCurrentItemsOnFirstEnable()
 
 			if itemHandle != 0xFFFF
 				JArray.AddInt(iRefHandleArray, itemHandle)
+				JArray.unique(iRefHandleArray)
 				itemName = iEquip_InventoryExt.GetLongName(equippedItem, itemHandle)
 				itemBaseName = iEquip_InventoryExt.GetShortName(equippedItem, itemHandle)
 				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
@@ -2372,22 +2373,24 @@ endFunction
 function setCounterVisibility(int Q, bool show)
 	debug.trace("iEquip_WidgetCore setCounterVisibility start")
 	debug.trace("iEquip_WidgetCore setCounterVisibility - Q: " + Q + ", show: " + show)
-	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenWidgetCounterAlpha")
-	if iHandle && (show || abIsCounterShown[Q] || bRefreshingWidget)
-		UICallback.PushInt(iHandle, Q) 										; Which counter _mc we're fading out
-		if show && !abIsCounterShown[Q]
-			float targetAlpha = afWidget_A[aiCounterClips[Q]] 				; Get target count _mc alpha
-			if targetAlpha < 1
-				targetAlpha = 100
+	if show || abIsCounterShown[Q] || bRefreshingWidget
+		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenWidgetCounterAlpha")
+		if iHandle
+			UICallback.PushInt(iHandle, Q) 										; Which counter _mc we're fading out
+			if show ;&& !abIsCounterShown[Q]
+				float targetAlpha = afWidget_A[aiCounterClips[Q]] 				; Get target count _mc alpha
+				if targetAlpha < 1
+					targetAlpha = 100
+				endIf
+				abIsCounterShown[Q] = true
+				UICallback.PushFloat(iHandle, targetAlpha) 						; Target alpha
+			else
+				abIsCounterShown[Q] = false
+				UICallback.PushFloat(iHandle, 0) 								; Target alpha = 0 to hide
 			endIf
-			abIsCounterShown[Q] = true
-			UICallback.PushFloat(iHandle, targetAlpha) 						; Target alpha
-		else
-			abIsCounterShown[Q] = false
-			UICallback.PushFloat(iHandle, 0) 								; Target alpha = 0 to hide
+			UICallback.PushFloat(iHandle, 0.15) 								; Fade duration
+			UICallback.Send(iHandle)
 		endIf
-		UICallback.PushFloat(iHandle, 0.15) 								; Fade duration
-		UICallback.Send(iHandle)
 	endIf
 	debug.trace("iEquip_WidgetCore setCounterVisibility end")
 endFunction
@@ -2418,7 +2421,7 @@ function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
 		UICallback.PushInt(iHandle, count)
 		UICallback.PushInt(iHandle, currPos)
 		UICallback.PushInt(iHandle, newPos)
-		UICallback.PushBool(iHandle, abCyclingQueue[Q])
+		UICallback.PushBool(iHandle, (abCyclingQueue[Q] || bPreselectMode))
 		UICallback.Send(iHandle)
 	endIf
 	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator end")
@@ -4031,6 +4034,8 @@ function addToQueue(int Q)
 				itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
 				debug.trace("iEquip_WidgetCore addToQueue - listIndex: " + listIndex + ", itemHandle: " + itemHandle)
 				if itemHandle != 0xFFFF
+					JArray.AddInt(iRefHandleArray, itemHandle)
+					JArray.unique(iRefHandleArray)
 					isPoisoned = iEquip_InventoryExt.GetPoisonCount(itemForm, itemHandle) > 0
 				endIf
 			endIf
@@ -4754,7 +4759,7 @@ function ApplyChanges()
 		debug.trace("iEquip_WidgetCore ApplyChanges - bPreselectMode: " + bPreselectMode + ", bProModeEnabled: " + bProModeEnabled + ", PM.bPreselectEnabled: " + PM.bPreselectEnabled)
 	    if bPreselectMode && !(bProModeEnabled && PM.bPreselectEnabled)
 	    	debug.trace("iEquip_WidgetCore ApplyChanges - should be toggling out of Preselect Mode")
-	    	PM.togglePreselectMode()
+	    	PM.togglePreselectMode(true)
 	    endIf
 	    if bAmmoMode
 	    	debug.trace("iEquip_WidgetCore ApplyChanges - bSimpleAmmoMode: " + AM.bSimpleAmmoMode + ", bSimpleAmmoModeOnEnter: " + AM.bSimpleAmmoModeOnEnter + ", bPreselectMode: " + bPreselectMode)

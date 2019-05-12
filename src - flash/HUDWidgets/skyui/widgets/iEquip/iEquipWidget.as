@@ -666,9 +666,9 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		}
 		//Set up the animation timeline
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:prepareForPreselectAnimation});
-		tl.staggerTo(preselectIcons, 0.8, {_rotation:"+=360", _alpha:100, _xscale:100, _yscale:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0)
-		tl.staggerTo(preselectBackgrounds, 0.8, {_rotation:180, _alpha:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
-		tl.staggerTo(preselectNames, 0.3, {_alpha:100, immediateRender:false}, 0.2, 0.6);
+		tl.staggerTo(preselectIcons, 0.6, {_rotation:"+=360", _alpha:100, _xscale:100, _yscale:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0)
+		tl.staggerTo(preselectBackgrounds, 0.6, {_rotation:180, _alpha:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
+		tl.staggerTo(preselectNames, 0.25, {_alpha:100, immediateRender:false}, 0.2, 0.4);
 		//And action!
 		tl.play();
 	}
@@ -696,8 +696,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		}
 
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
-		tl.staggerTo(preselectIcons, 1.0, {_rotation:"-=360", _alpha:0, _xscale:20, _yscale:20, immediateRender:false, ease:Quad.easeOut}, 0.3, 0)
-		tl.staggerTo(preselectBackgrounds, 1.0, {_rotation:"-=120", _alpha:0, immediateRender:false, ease:Quad.easeOut}, 0.3, 0.2)
+		tl.staggerTo(preselectIcons, 0.8, {_rotation:"-=360", _alpha:0, _xscale:20, _yscale:20, immediateRender:false, ease:Quad.easeOut}, 0.3, 0)
+		tl.staggerTo(preselectBackgrounds, 0.8, {_rotation:"-=120", _alpha:0, immediateRender:false, ease:Quad.easeOut}, 0.3, 0.2)
 		tl.staggerTo(preselectNames, 0.4, {_alpha:0, immediateRender:false}, 0.3, 0);
 
 		tl.play();
@@ -791,7 +791,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function equipPreselectedItem(iSlot: Number, currIcon: String, newIcon: String, newName: String, currPIcon: String, newPIcon: String, newPName: String): Void
 	{
-		
+		//skyui.util.Debug.log("iEquipWidget equipPreselectedItem - iSlot: " + iSlot + ", currIcon: " + currIcon + ", newIcon: " + newIcon + ", newName: " + newName + ", currPIcon: " + currPIcon + ", newPIcon: " + newPIcon + ", newPName: " + newPName)
+
 		var iconClip: MovieClip;
 		var iconClip_mc: MovieClip;
 		var pIconClip: MovieClip;
@@ -894,16 +895,16 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		pIconClip._yscale = 25;
 		pIconClip.gotoAndStop(newPIcon);
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:equipPreselectedItemComplete, onCompleteParams:[iconClip_mc, tempIcon, pIconClip_mc, tempPIcon]});
-		tl.to(itemName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
-		.to(preselectName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		tl.to(itemName_mc, 0.2, {_alpha:0, ease:Quad.easeOut}, 0)
+		.to(preselectName_mc, 0.2, {_alpha:0, ease:Quad.easeOut}, 0)
 		.call(updateNamesForEquipPreselect, [itemName, pItemName, newName, newPName])
-		.to(tempIcon, 0.6, {_x:targetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
-		.to(tempPIcon, 0.6, {_x:pTargetX, _y:pTargetY, _rotation: pTargetRotation, _alpha:iconAlpha, _xscale:pIconTargetScale, _yscale:pIconTargetScale, ease:Quad.easeOut}, 0)
+		.to(tempIcon, 0.4, {_x:targetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
+		.to(tempPIcon, 0.4, {_x:pTargetX, _y:pTargetY, _rotation: pTargetRotation, _alpha:iconAlpha, _xscale:pIconTargetScale, _yscale:pIconTargetScale, ease:Quad.easeOut}, 0)
 		.to(iconClip, 0, {_alpha:iconAlpha, ease:Linear.easeNone})
 		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})
-		.to(pIconClip, 0.4, {_alpha:pIconAlpha, _xscale:pIconScale, _yscale:pIconScale, ease:Elastic.easeOut}, 0.5)
-		.to(itemName_mc, 0.3, {_alpha:itemNameAlpha, ease:Quad.easeOut}, 0.6)
-		.to(preselectName_mc, 0.3, {_alpha:preselectNameAlpha, ease:Quad.easeOut}, 0.6);
+		.to(pIconClip, 0.3, {_alpha:pIconAlpha, _xscale:pIconScale, _yscale:pIconScale, ease:Elastic.easeOut}, 0.3)
+		.to(itemName_mc, 0.2, {_alpha:itemNameAlpha, ease:Quad.easeOut}, 0.4)
+		.to(preselectName_mc, 0.2, {_alpha:preselectNameAlpha, ease:Quad.easeOut}, 0.4);
 
 		tl.play();
 	}
@@ -1041,14 +1042,14 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		tempPIcon.gotoAndStop(currPIcon);
 		pIconClip._alpha = 0;
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:equipPreselectedItemComplete, onCompleteParams:[iconClip_mc, tempIcon, pIconClip_mc, tempPIcon]});
-		tl.to(itemName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
-		.to(preselectName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		tl.to(itemName_mc, 0.2, {_alpha:0, ease:Quad.easeOut}, 0)
+		.to(preselectName_mc, 0.2, {_alpha:0, ease:Quad.easeOut}, 0)
 		.call(updateNamesForEquipPreselectWithoutNewPreselect, [itemName, newName])
-		.to(tempIcon, 0.6, {_x:targetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
-		.to(tempPIcon, 0.6, {_x:pTargetX, _y:pTargetY, _rotation: pTargetRotation, _alpha:iconAlpha, _xscale:pIconTargetScale, _yscale:pIconTargetScale, ease:Quad.easeOut}, 0)
+		.to(tempIcon, 0.4, {_x:targetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
+		.to(tempPIcon, 0.4, {_x:pTargetX, _y:pTargetY, _rotation: pTargetRotation, _alpha:iconAlpha, _xscale:pIconTargetScale, _yscale:pIconTargetScale, ease:Quad.easeOut}, 0)
 		.to(iconClip, 0, {_alpha:iconAlpha, ease:Linear.easeNone})
 		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})
-		.to(itemName_mc, 0.3, {_alpha:itemNameAlpha, ease:Quad.easeOut}, 0.6)
+		.to(itemName_mc, 0.2, {_alpha:itemNameAlpha, ease:Quad.easeOut}, 0.4)
 
 		tl.play();
 	}
@@ -1159,11 +1160,14 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function ammoModeAnimateIn(currIcon: String, currName: String, newIcon: String, newName: String): Void
 	{		
+		leftPreselectBg_mc._alpha = 0;
+		leftPreselectBg_mc._visible = true;
+
 		if (leftNameAlpha < 1.0){
-			leftNameAlpha = 100
+			leftNameAlpha = 100;
 		}
 		if (leftPNameAlpha < 1.0){
-			leftPNameAlpha = 100
+			leftPNameAlpha = 100;
 		}
 		var targetRotation: Number = leftPreselectIcon_mc._rotation - leftIcon_mc._rotation;
 		tempIcon = leftIcon.duplicateMovieClip("tempIcon", this.getNextHighestDepth());
@@ -1178,14 +1182,14 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		leftPreselectIcon_mc._visible = true
 		leftPreselectName_mc._visible = true
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:AmmoModeAnimateInComplete, onCompleteParams:[leftIcon_mc, tempIcon]});
-		tl.to(leftName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		tl.to(leftName_mc, 0.2, {_alpha:0, ease:Quad.easeOut}, 0)
 		.call(updateNamesForEquipPreselect, [leftName, leftPreselectName, newName, currName])
-		.to(tempIcon, 0.6, {_x:leftTargetX, _y:leftTargetY, _rotation:targetRotation, _alpha:leftPIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
-		.to(leftPreselectIcon, 0, {_alpha:leftPIconAlpha, ease:Linear.easeNone}, 0.6)
-		.to(leftIcon, 0.4, {_alpha:leftIconAlpha, _xscale:100, _yscale:100, ease:Elastic.easeOut}, 0.3)
-		.to(leftPreselectBg_mc, 0.4, {_rotation:180, _alpha:100, ease:Back.easeOut}, 0.4)
-		.to(leftName_mc, 0.3, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.6)
-		.to(leftPreselectName_mc, 0.3, {_alpha:leftPNameAlpha, ease:Quad.easeOut}, 0.6);
+		.to(tempIcon, 0.4, {_x:leftTargetX, _y:leftTargetY, _rotation:targetRotation, _alpha:leftPIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
+		.to(leftPreselectIcon, 0, {_alpha:leftPIconAlpha, ease:Linear.easeNone}, 0.4)
+		.to(leftIcon, 0.25, {_alpha:leftIconAlpha, _xscale:100, _yscale:100, ease:Elastic.easeOut}, 0.2)
+		.to(leftPreselectBg_mc, 0.25, {_rotation:180, _alpha:100, ease:Back.easeOut}, 0.25)
+		.to(leftName_mc, 0.2, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.4)
+		.to(leftPreselectName_mc, 0.2, {_alpha:leftPNameAlpha, ease:Quad.easeOut}, 0.4);
 
 		tl.play();
 	}
@@ -1206,16 +1210,15 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		tempPIcon.gotoAndStop(currPIcon);
 		leftPreselectIcon._alpha = 0;
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:AmmoModeAnimateOutComplete, onCompleteParams:[leftIcon_mc, tempIcon, leftPreselectIcon_mc, tempPIcon]});
-		tl.to(leftName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
-		.to(leftPreselectName_mc, 0.3, {_alpha:0, ease:Quad.easeOut}, 0)
+		tl.to(leftName_mc, 0.2, {_alpha:0, ease:Quad.easeOut}, 0)
+		.to(leftPreselectName_mc, 0.2, {_alpha:0, ease:Quad.easeOut}, 0)
 		.call(updateNamesForEquipPreselect, [leftName, leftPreselectName, newName, ""])
-		.to(tempIcon, 0.6, {_x:leftTargetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
-		.to(tempPIcon, 0.6, {_x:leftPTargetX, _y:leftPTargetY, _rotation:targetRotation, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
-		//.to(tempPIcon, 0.6, {_x:leftPTargetX, _y:leftPTargetY, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
-		.to(leftPreselectBg_mc, 0.4, {_rotation:"-=120", _alpha:0, ease:Back.easeOut}, 0)
+		.to(tempIcon, 0.4, {_x:leftTargetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
+		.to(tempPIcon, 0.4, {_x:leftPTargetX, _y:leftPTargetY, _rotation:targetRotation, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
+		.to(leftPreselectBg_mc, 0.25, {_rotation:"-=120", _alpha:0, ease:Back.easeOut}, 0)
 		.to(leftIcon, 0, {_alpha:leftIconAlpha, ease:Linear.easeNone})
 		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})
-		.to(leftName_mc, 0.3, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.6);
+		.to(leftName_mc, 0.2, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.4);
 
 		tl.play();
 	}
@@ -1232,6 +1235,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//Delete the temporary movieclip
 		iconClip_mc.tempIcon.removeMovieClip();
 		pIconClip_mc.tempPIcon.removeMovieClip();
+		leftPreselectBg_mc._visible = false;
 		skse.SendModEvent("iEquip_AmmoModeAnimationComplete", null);
 	}
 	
@@ -1280,13 +1284,13 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		var poisonNameClip: MovieClip = leftPoisonName_mc
 		var enchantmentClip: MovieClip = i_target == 0 ? leftEnchantmentMeter_mc : leftSoulgem_mc;
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
-		tl.to(bgClip, 0.3, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
-		.to(iconClip, 0.3, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
-		.to(nameClip, 0.3, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
-		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0)
-		.to(poisonIconClip, 0.3, {_alpha:poisonIconAlpha, ease:Quad.easeOut}, 0)
-		.to(poisonNameClip, 0.3, {_alpha:poisonNameAlpha, ease:Quad.easeOut}, 0)
-		.to(enchantmentClip, 0.3, {_alpha:enchantmentAlpha, ease:Quad.easeOut}, 0);
+		tl.to(bgClip, 0.25, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
+		.to(iconClip, 0.25, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
+		.to(nameClip, 0.25, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
+		.to(countClip, 0.25, {_alpha:countAlpha, ease:Quad.easeOut}, 0)
+		.to(poisonIconClip, 0.25, {_alpha:poisonIconAlpha, ease:Quad.easeOut}, 0)
+		.to(poisonNameClip, 0.25, {_alpha:poisonNameAlpha, ease:Quad.easeOut}, 0)
+		.to(enchantmentClip, 0.25, {_alpha:enchantmentAlpha, ease:Quad.easeOut}, 0);
 		tl.play();
 	}
 
@@ -1297,10 +1301,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		var nameClip: MovieClip = consumableName_mc
 		var countClip: MovieClip = consumableCount_mc
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
-		tl.to(bgClip, 0.3, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
-		.to(iconClip, 0.3, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
-		.to(nameClip, 0.3, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
-		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0);
+		tl.to(bgClip, 0.25, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
+		.to(iconClip, 0.25, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
+		.to(nameClip, 0.25, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
+		.to(countClip, 0.25, {_alpha:countAlpha, ease:Quad.easeOut}, 0);
 		tl.play();
 	}
 
@@ -1311,10 +1315,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		var nameClip: MovieClip = poisonName_mc
 		var countClip: MovieClip = poisonCount_mc
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
-		tl.to(bgClip, 0.3, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
-		.to(iconClip, 0.3, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
-		.to(nameClip, 0.3, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
-		.to(countClip, 0.3, {_alpha:countAlpha, ease:Quad.easeOut}, 0);
+		tl.to(bgClip, 0.25, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
+		.to(iconClip, 0.25, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
+		.to(nameClip, 0.25, {_alpha:nameAlpha, ease:Quad.easeOut}, 0)
+		.to(countClip, 0.25, {_alpha:countAlpha, ease:Quad.easeOut}, 0);
 		tl.play();
 	}
 
@@ -1562,7 +1566,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public function tweenChargeMeterAlpha(i_meter: Number, targetAlpha: Number): Void
 	{
 		var meterClip: MovieClip = i_meter == 0 ? leftEnchantmentMeter_mc : rightEnchantmentMeter_mc;
-		TweenLite.to(meterClip, 1.0, {_alpha:targetAlpha, ease:Quad.easeOut});
+		TweenLite.to(meterClip, 0.5, {_alpha:targetAlpha, ease:Quad.easeOut});
 	}
 
 	public function startTorchMeterFillTween(nDuration: Number): Void
@@ -1619,7 +1623,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public function tweenSoulGemAlpha(i_gem: Number, targetAlpha: Number): Void
 	{
 		var soulGemClip: MovieClip = i_gem == 0 ? leftSoulgem_mc : rightSoulgem_mc;
-		TweenLite.to(soulGemClip, 1.0, {_alpha:targetAlpha, ease:Quad.easeOut});
+		TweenLite.to(soulGemClip, 0.5, {_alpha:targetAlpha, ease:Quad.easeOut});
 	}
 
 	//Called from OnWidgetLoad
@@ -1700,7 +1704,6 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function tweenIt(tweenType: Number, endValue: Number, secs: Number): Void
 	{
-		//skyui.util.Debug.log("iEquipEditMode tweenIt - tweenType: " + tweenType + ", endValue: " + endValue)
 		//tweenType = Attribute to change: 0 = _x, 1 = _y, 2 = _xscale/_yscale, 3 =  _rotation, 4 = _alpha
 		switch(tweenType) {
 			case 0:
@@ -1713,10 +1716,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 				TweenLite.to(clip, secs, {_xscale:endValue, _yscale:endValue, ease:Quad.easeOut});
 				break;
 			case 3:
-				//skyui.util.Debug.log("iEquipEditMode tweenIt - should be rotating to " + endValue + " degrees now")
 				TweenLite.to(clip, secs, {directionalRotation:{_rotation: endValue + "_short"}, ease:Quad.easeOut});
-				//TweenLite.to(clip, secs, {directionalRotation:(endValue + "_cw"), ease:Quad.easeOut});
-				//TweenLite.to(clip, secs, {_rotation:endValue, ease:Quad.easeOut});
 				break;
 			case 4:
 				TweenLite.to(clip, secs, {_alpha:endValue, ease:Quad.easeOut});

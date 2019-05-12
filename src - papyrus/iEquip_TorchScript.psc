@@ -280,9 +280,16 @@ endEvent
 ; 			For now this is one of the options on the Optional Hotkey (single or double press). If it is a popular option may need to move it somewhere more prominent?
 
 function toggleTorch()
-	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + PlayerRef.GetEquippedObject(0) == 11)
-	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
-		PlayerRef.UnequipItemEx(PlayerRef.GetEquippedObject(0))
+
+	form currentLeftHandForm = PlayerRef.GetEquippedObject(0)
+	bool torchEquipped = PlayerRef.GetEquippedItemType(0) == 11	; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
+	
+	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + torchEquipped)
+	
+	if torchEquipped
+		
+		PlayerRef.UnequipItemEx(currentLeftHandForm)
+		
 		if previousLeftHandItemHandle != 0xFFFF
 			iEquip_InventoryExt.EquipItem(previousLeftHandItemForm, previousLeftHandItemHandle, PlayerRef, 2)
 		elseIf previousLeftHandItemForm
@@ -292,9 +299,11 @@ function toggleTorch()
 		endIf
 
 	elseIf PlayerRef.GetItemCount(realTorchForm) > 0
+		
 		previousLeftHandItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(0)
-		previousLeftHandItemForm = PlayerRef.GetEquippedObject(0)
+		previousLeftHandItemForm = currentLeftHandForm
 		PlayerRef.EquipItemEx(realTorchForm) ; This should then be caught by EH.onObjectEquipped and trigger all the relevant widget/torch/RH stuff as required
+	
 	else
 		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TO_not_noTorch"))
 	endIf
