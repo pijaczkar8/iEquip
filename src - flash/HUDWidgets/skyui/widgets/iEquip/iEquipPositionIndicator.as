@@ -141,18 +141,18 @@ class skyui.widgets.iEquip.iEquipPositionIndicator extends MovieClip
 			//If it isn't alread shown fade in the indicator bar and at the same time animate the position marker to the new position
 			var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 			tl.to(positionIndicatorHolder, 0.2, {_alpha:100, ease:Quad.easeOut}, 0)
-			.to(positionMarker, 0.3, {_x:positionMarker._width * i_newPosition + (positionMarker._width/2) - (maxWidth/2), ease:Quad.easeOut}, 0);
+			.to(positionMarker, 0.25, {_x:positionMarker._width * i_newPosition + (positionMarker._width/2) - (maxWidth/2), ease:Quad.easeOut}, 0);
 			tl.play();
 			_shown = true;
 		}else{
-			TweenLite.to(positionMarker, 0.3, {_x:positionMarker._width * i_newPosition + (positionMarker._width/2) - (maxWidth/2), ease:Quad.easeOut});
+			TweenLite.to(positionMarker, 0.25, {_x:positionMarker._width * i_newPosition + (positionMarker._width/2) - (maxWidth/2), ease:Quad.easeOut});
 		}
 	}
 
 	public function showIndicator(): Void
 	{
 		if (!_shown){
-			TweenLite.to(positionIndicatorHolder, 0.3, {_alpha:100, ease:Quad.easeOut});
+			TweenLite.to(positionIndicatorHolder, 0.2, {_alpha:100, ease:Quad.easeOut});
 		}
 		_shown = true;
 	}
@@ -160,7 +160,7 @@ class skyui.widgets.iEquip.iEquipPositionIndicator extends MovieClip
 	public function hideIndicator(): Void
 	{
 		if (_shown){
-			TweenLite.to(positionIndicatorHolder, 0.4, {_alpha:0, ease:Quad.easeOut});
+			TweenLite.to(positionIndicatorHolder, 0.3, {_alpha:0, ease:Quad.easeOut});
 		}
 		_shown = false;
 	}

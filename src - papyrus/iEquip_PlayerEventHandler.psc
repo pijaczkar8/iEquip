@@ -94,6 +94,7 @@ bool property bIsUndeathLoaded auto hidden
 bool property bPlayerIsMeditating auto hidden
 bool property bDualCasting auto hidden
 bool property bGoingUnarmed auto hidden
+bool property bTogglingAmmoMode auto hidden
 
 int dualCastCounter
 
@@ -483,13 +484,15 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     	bPlayerIsMeditating = false
     	debug.trace("OK Ma, I'm done meditating!")
     	KH.bAllowKeyPress = true
-    elseIf EventName == "CastStop"	; No way to check which hand has just finished casting so we need to update meters in whichever hands we currently have staffs equipped
-    	if PlayerRef.GetEquippedItemType(0) == 8 ; Staff
-    		CM.checkAndUpdateChargeMeter(0, true)
-    	endIf
-    	if PlayerRef.GetEquippedItemType(1) == 8
-    		CM.checkAndUpdateChargeMeter(1, true)
-    	endIf
+    elseIf EventName == "CastStop"													; No way to check which hand has just finished casting so we need to update meters in whichever hands we currently have staffs equipped
+    	if RC.bRechargingEnabled && CM.iChargeDisplayType > 0
+	    	if PlayerRef.GetEquippedItemType(0) == 8 && CM.abIsChargeMeterShown[0]	; Staff
+				CM.updateMeterPercent(0)
+	    	endIf
+	    	if PlayerRef.GetEquippedItemType(1) == 8 && CM.abIsChargeMeterShown[1]
+	    		CM.updateMeterPercent(1)
+	    	endIf
+	    endIf
     else
 	    iTmp = 2 
 	    if EventName == "weaponLeftSwing"
@@ -616,8 +619,12 @@ function processQueuedForms()
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
 		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
-		if queuedForm as ammo && (PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12)
-			AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
+		if queuedForm as ammo
+			if bTogglingAmmoMode
+				bTogglingAmmoMode = false
+			elseIf (PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12)
+				AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
+			endIf
 		; Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
 		elseIf !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
 			int equippedSlot = -1
@@ -681,7 +688,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	string itemBaseName
 	int itemHandle = 0xFFFF
 
-	if TI.aiTemperedItemTypes.Find(itemType) > -1 && PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
+	if equippedSlot < 2 && TI.aiTemperedItemTypes.Find(itemType) > -1 && PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
 		if itemType == 26
 			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)				; Shield
 		elseIf itemType == 7 || itemType == 9
@@ -717,11 +724,10 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		targetIndex = WC.findInQueue(equippedSlot, itemName, queuedForm, itemHandle)
 		if targetIndex != -1
 			
-			if !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
+			if equippedSlot < 2 && !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
 				if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF
-					if JArray.FindInt(WC.iRefHandleArray, itemHandle) == -1
-						JArray.AddInt(WC.iRefHandleArray, itemHandle)
-					endIf
+					JArray.AddInt(WC.iRefHandleArray, itemHandle)
+					JArray.unique(WC.iRefHandleArray)
 					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
 				endIf
 				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
@@ -763,6 +769,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 					endIf
 				endIf
 				if !(equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped || AM.bAmmoMode))
+				;if !(equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped))
 					blockCall = true
 				endIf
 			
@@ -825,10 +832,15 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 					endIf
 				endIf
 				jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
-																										; If it's not already in the AllItems formlist because it's in the other hand queue add it now
-				if !formFound
+
+				if !formFound 																			; If it's not already in the AllItems formlist because it's in the other hand queue add it now
 					iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
 					updateEventFilter(iEquip_AllCurrentItemsFLST)
+				endIf
+
+				if itemHandle != 0xFFFF																	; Add the new itemHandle to the ref handle array
+					JArray.AddInt(WC.iRefHandleArray, itemHandle)
+					JArray.unique(WC.iRefHandleArray)
 				endIf
 																										; Send to moreHUD if loaded
 				if WC.bMoreHUDLoaded
@@ -858,8 +870,10 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		endIf
 																										; And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
 		if equippedSlot < 2
-			if blockCall && equippedSlot == 0
-				CM.checkAndUpdateChargeMeter(0)
+			if blockCall
+				if equippedSlot == 0 && !queuedForm as light
+					CM.checkAndUpdateChargeMeter(0)
+				endIf
 			else
 				WC.checkAndEquipShownHandItem(equippedSlot, false, true)
 			endIf
