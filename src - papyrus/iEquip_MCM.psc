@@ -8,11 +8,11 @@ iEquip_MCM_htk property htk auto
 iEquip_MCM_que property que auto
 iEquip_MCM_pot property pot auto
 iEquip_MCM_rep property poi auto
+iEquip_MCM_tch property tch auto
 iEquip_MCM_ui property uii auto
 iEquip_MCM_pro property pro auto
 iEquip_MCM_edt property edt auto
 iEquip_MCM_inf property inf auto
-iEquip_MCM_tch property tch auto
 
 bool property bEnabled auto hidden
 bool property bUpdateKeyMaps auto hidden
@@ -46,22 +46,23 @@ event OnConfigInit()
     Pages[2] = "$iEquip_MCM_lbl_Queue"
     Pages[3] = "$iEquip_MCM_lbl_Potions"
     Pages[4] = "$iEquip_MCM_lbl_Recharging"
-    Pages[5] = "$iEquip_MCM_lbl_Pro"
-    Pages[6] = "$iEquip_MCM_lbl_Misc"
-    Pages[7] = "$iEquip_MCM_lbl_Edit"
-    Pages[8] = "$iEquip_MCM_lbl_Info"
-	Pages[9] = "$iEquip_MCM_lbl_Torch"
+    Pages[5] = "$iEquip_MCM_lbl_Torch"
+    Pages[6] = "$iEquip_MCM_lbl_Pro"
+    Pages[7] = "$iEquip_MCM_lbl_Misc"
+    Pages[8] = "$iEquip_MCM_lbl_Edit"
+    Pages[9] = "$iEquip_MCM_lbl_Info"
 
     gen.initData()
     htk.initData()
     que.initData()
     pot.initData()
-    poi.initData()    
+    poi.initData()
+    tch.initData()    
     uii.initData()          
     pro.initData()
     edt.initData()           
     inf.initData()
-	tch.initData()
+
 endEvent
 
 Event OnConfigClose()
@@ -105,7 +106,9 @@ event OnPageReset(string page)
 			elseIf page == "$iEquip_MCM_lbl_Potions" 
 				pot.drawPage()
 			elseIf page == "$iEquip_MCM_lbl_Recharging"
-				poi.drawPage()    
+				poi.drawPage()
+            elseIf page == "$iEquip_MCM_lbl_Torch"
+                tch.drawPage()  
 			elseIf page == "$iEquip_MCM_lbl_Misc"
 				uii.drawPage()          
 			elseIf page == "$iEquip_MCM_lbl_Pro"
@@ -114,8 +117,6 @@ event OnPageReset(string page)
 				edt.drawPage()           
 			elseIf page == "$iEquip_MCM_lbl_Info"
 				inf.drawPage()
-			elseIf page == "$iEquip_MCM_lbl_Torch"
-				tch.drawPage()
 			endIf
         endIf
     endif
@@ -134,6 +135,8 @@ function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
         pot.jumpToState(sCurrentState, eventName, tmpVar)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Recharging"
         poi.jumpToState(sCurrentState, eventName, tmpVar)
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Torch"
+        tch.jumpToState(sCurrentState, eventName, tmpVar)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Misc"
         uii.jumpToState(sCurrentState, eventName, tmpVar)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Pro"
@@ -142,8 +145,6 @@ function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
         edt.jumpToState(sCurrentState, eventName, tmpVar)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Info"
         inf.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
-	elseIf sCurrentPage == "$iEquip_MCM_lbl_Torch"
-        tch.jumpToState(sCurrentState, eventName, tmpVar)
     endIf
 endFunction
 
@@ -238,12 +239,12 @@ function savePreset(string presetName)	; Save data to JContainer file
 	jMap.setObj(jMCMPreset, "Hotkey", htk.saveData())
 	jMap.setObj(jMCMPreset, "Queue", que.saveData())
 	jMap.setObj(jMCMPreset, "Potions", pot.saveData())
-	jMap.setObj(jMCMPreset, "Potions&", poi.saveData())
+	jMap.setObj(jMCMPreset, "Poisons&", poi.saveData())
+    jMap.setObj(jMCMPreset, "Torch", tch.saveData())
 	jMap.setObj(jMCMPreset, "Ui", uii.saveData())
 	jMap.setObj(jMCMPreset, "Pro", pro.saveData())
 	jMap.setObj(jMCMPreset, "Editmode", edt.saveData())
-	jMap.setObj(jMCMPreset, "Info", inf.saveData())	
-	jMap.setObj(jMCMPreset, "Torch", tch.saveData())	
+	jMap.setObj(jMCMPreset, "Info", inf.saveData())		
 	
 	jValue.writeTofile(jMCMPreset, MCMSettingsPath + presetName + FileExtMCM)
 	jValue.zeroLifetime(jMCMPreset)
@@ -257,12 +258,12 @@ function loadPreset(string presetName)	; Load MCM data
 		htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"))
 		que.loadData(jMap.getObj(jMCMPreset, "Queue"))
 		pot.loadData(jMap.getObj(jMCMPreset, "Potions"))
-		poi.loadData(jMap.getObj(jMCMPreset, "Potions&"))
+		poi.loadData(jMap.getObj(jMCMPreset, "Poisons&"))
+        tch.loadData(jMap.getObj(jMCMPreset, "Torch"))
 		uii.loadData(jMap.getObj(jMCMPreset, "Ui"))
 		pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
 		edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
 		inf.loadData(jMap.getObj(jMCMPreset, "Info"))
-		tch.loadData(jMap.getObj(jMCMPreset, "Torch"))
 		bUpdateKeyMaps = true
 		WC.bMCMPresetLoaded = true
 	else

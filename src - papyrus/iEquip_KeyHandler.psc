@@ -294,14 +294,14 @@ function runUpdate()
             endIf
         elseIf iWaitingKeyCode == iRightKey
             WC.cycleSlot(1, bIsUtilityKeyHeld, false, false, true)
+        elseIf iWaitingKeyCode == iToggleTorchKey
+            TO.toggleTorch()
         
         ; Extended Keyboard Controls
         elseIf iWaitingKeyCode == iConsumeItemKey && bExtendedKbControlsEnabled && WC.bConsumablesEnabled
             WC.consumeItem()
         elseIf iWaitingKeyCode == iCyclePoisonKey && bExtendedKbControlsEnabled && WC.bPoisonsEnabled
             WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
-        elseIf iWaitingKeyCode == iToggleTorchKey && bExtendedKbControlsEnabled
-            TO.toggleTorch()
         elseIf iWaitingKeyCode == iQuickRestoreKey && bExtendedKbControlsEnabled
             PM.quickRestore()
         elseIf iWaitingKeyCode == iQuickShieldKey && bExtendedKbControlsEnabled
@@ -328,10 +328,8 @@ function runUpdate()
             if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
             endIf
-        elseIf iWaitingKeyCode == iToggleTorchKey 
-			if bExtendedKbControlsEnabled && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
-				TO.DropTorch()
-			endIf
+        elseIf iWaitingKeyCode == iToggleTorchKey && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
+			TO.DropTorch()
         elseif PM.bPreselectMode
             if iWaitingKeyCode == iLeftKey
                 int RHItemType = PlayerRef.GetEquippedItemType(1)

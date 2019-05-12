@@ -44,8 +44,11 @@ bool bSettingDuration
 bool bFinalUpdateReceived
 bool bJustDroppedTorch
 
-int previousLeftHandItemHandle
-form previousLeftHandItemForm
+bool bPreviously2HOrRanged
+int previousItemHandle
+form previousItemForm
+int previousLeftHandIndex = -1
+string previousLeftHandName
 
 ; MCM Properties
 bool property bShowTorchMeter = true auto hidden
@@ -53,11 +56,11 @@ int property iTorchMeterFillColor = 0xFFF8AC auto hidden
 int property iTorchMeterFillColorDark = 0x686543 auto hidden
 string property sTorchMeterFillDirection = "left" auto hidden
 float property fTorchDuration = 235.0 auto hidden
+bool property bFiniteTorchLife = true auto hidden
 bool property bTorchDurationSettingChanged auto hidden
 bool property bautoReEquipTorch = true auto hidden
 bool property bRealisticReEquip = true auto hidden
 float property fRealisticReEquipDelay = 2.0 auto hidden
-bool property bFiniteTorchLife = true auto hidden
 bool property bReduceLightAsTorchRunsOut auto hidden
 bool property bDropLitTorchesEnabled auto hidden
 int property iDropLitTorchBehavior = 0 auto hidden
@@ -196,7 +199,11 @@ function onTorchUnequipped()
 	debug.trace("iEquip_TorchScript onTorchUnequipped start - bSettingLightRadius: " + bSettingLightRadius + ", bSettingDuration: " + bSettingDuration)
 	if !bSettingLightRadius
 		debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife: " + fCurrentTorchLife + ", elapsed time: " + TorchTimer.GetTimeElapsed())
-		fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
+		if bFiniteTorchLife
+			fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
+		else
+			fCurrentTorchLife = fTorchDuration
+		endIf
 		debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife set to: " + fCurrentTorchLife)
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
 		UnregisterForUpdate()
@@ -281,27 +288,52 @@ endEvent
 
 function toggleTorch()
 
-	form currentLeftHandForm = PlayerRef.GetEquippedObject(0)
-	bool torchEquipped = PlayerRef.GetEquippedItemType(0) == 11	; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
+	form currentItemForm = PlayerRef.GetEquippedObject(0)
+	int currentItemType = PlayerRef.GetEquippedItemType(0)
+	bool torchEquipped = currentItemType == 11	; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
+	int targetSlot
 	
-	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + torchEquipped)
+	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + torchEquipped + ", currentItemForm: " + currentItemForm + ", currentItemType: " + currentItemType + ", bPreviously2HOrRanged: " + bPreviously2HOrRanged + ", previousLeftHandIndex: " + previousLeftHandIndex)
 	
 	if torchEquipped
 		
-		PlayerRef.UnequipItemEx(currentLeftHandForm)
+		PlayerRef.UnequipItemEx(currentItemForm)
+
+		if bPreviously2HOrRanged
+			targetSlot = 1	; Right hand
+			WC.aiCurrentQueuePosition[0] = previousLeftHandIndex
+			WC.asCurrentlyEquipped[0] = previousLeftHandName
+			WC.updateWidget(0, previousLeftHandIndex, true)
+		else
+			targetSlot = 2	; Left hand
+		endIf
 		
-		if previousLeftHandItemHandle != 0xFFFF
-			iEquip_InventoryExt.EquipItem(previousLeftHandItemForm, previousLeftHandItemHandle, PlayerRef, 2)
-		elseIf previousLeftHandItemForm
-			PlayerRef.EquipItemEx(previousLeftHandItemForm, 2)
+		if previousItemHandle != 0xFFFF
+			iEquip_InventoryExt.EquipItem(previousItemForm, previousItemHandle, PlayerRef, targetSlot)
+		elseIf previousItemForm
+			PlayerRef.EquipItemEx(previousItemForm, targetSlot)
 		else
 			WC.setSlotToEmpty(0, true, jArray.count(WC.aiTargetQ[0]) > 0)
 		endIf
 
 	elseIf PlayerRef.GetItemCount(realTorchForm) > 0
 		
-		previousLeftHandItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(0)
-		previousLeftHandItemForm = currentLeftHandForm
+		if WC.ai2HWeaponTypesAlt.Find(currentItemType) > -1
+			bPreviously2HOrRanged = true
+			previousLeftHandIndex = WC.aiCurrentQueuePosition[0]
+			previousLeftHandName = WC.asCurrentlyEquipped[0]
+		else
+			bPreviously2HOrRanged = false
+		endIf 
+
+		if currentItemType == 10 ; Shield
+			targetSlot = 2
+		else
+			targetSlot = bPreviously2HOrRanged as int
+		endIf
+
+		previousItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(targetSlot)
+		previousItemForm = currentItemForm
 		PlayerRef.EquipItemEx(realTorchForm) ; This should then be caught by EH.onObjectEquipped and trigger all the relevant widget/torch/RH stuff as required
 	
 	else

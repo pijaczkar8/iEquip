@@ -28,7 +28,6 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, KH.bExtendedKbControlsEnabled as int)
 	jArray.addInt(jPageObj, KH.iConsumeItemKey)
     jArray.addInt(jPageObj, KH.iCyclePoisonKey)
-    jArray.addInt(jPageObj, KH.iToggleTorchKey)
     jArray.addInt(jPageObj, KH.iQuickRestoreKey)
     jArray.addInt(jPageObj, KH.iQuickShieldKey)
     jArray.addInt(jPageObj, KH.iQuickRangedKey)
@@ -49,10 +48,9 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	KH.bExtendedKbControlsEnabled = jArray.getInt(jPageObj, 7)
 	KH.iConsumeItemKey = jArray.getInt(jPageObj, 8)
     KH.iCyclePoisonKey = jArray.getInt(jPageObj, 9)
-    KH.iToggleTorchKey = jArray.getInt(jPageObj, 10)
-    KH.iQuickRestoreKey = jArray.getInt(jPageObj, 11)
-    KH.iQuickShieldKey = jArray.getInt(jPageObj, 12)
-    KH.iQuickRangedKey = jArray.getInt(jPageObj, 13)
+    KH.iQuickRestoreKey = jArray.getInt(jPageObj, 10)
+    KH.iQuickShieldKey = jArray.getInt(jPageObj, 11)
+    KH.iQuickRangedKey = jArray.getInt(jPageObj, 12)
 
 endFunction
 
@@ -86,7 +84,6 @@ function drawPage()
 	if KH.bExtendedKbControlsEnabled
 		MCM.AddKeyMapOptionST("htk_key_consItem", "$iEquip_MCM_htk_lbl_consItem", KH.iConsumeItemKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("htk_key_cyclePoison", "$iEquip_MCM_htk_lbl_cyclePoison", KH.iCyclePoisonKey, mcmUnmapFLAG)
-        MCM.AddKeyMapOptionST("htk_key_toggleTorch", "$iEquip_MCM_htk_lbl_toggleTorch", KH.iToggleTorchKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("htk_key_quickRestore", "$iEquip_MCM_htk_lbl_quickRestore", KH.iQuickRestoreKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("htk_key_quickShield", "$iEquip_MCM_htk_lbl_quickShield", KH.iQuickShieldKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("htk_key_quickRanged", "$iEquip_MCM_htk_lbl_quickRanged", KH.iQuickRangedKey, mcmUnmapFLAG)
@@ -284,23 +281,6 @@ State htk_key_cyclePoison
             
             MCM.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iCyclePoisonKey)        
-        endIf
-    endEvent
-endState
-
-State htk_key_toggleTorch
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_htk_txt_optHotKey")
-        elseIf currentEvent == "Change" || "Default"
-            if currentEvent == "Change"
-                KH.iToggleTorchKey = currentVar as int
-            else
-                KH.iToggleTorchKey = -1
-            endIf
-            
-            MCM.bUpdateKeyMaps = true
-            MCM.SetKeyMapOptionValueST(KH.iToggleTorchKey)        
         endIf
     endEvent
 endState
