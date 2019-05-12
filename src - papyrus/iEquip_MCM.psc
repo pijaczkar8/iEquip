@@ -12,6 +12,7 @@ iEquip_MCM_ui property uii auto
 iEquip_MCM_pro property pro auto
 iEquip_MCM_edt property edt auto
 iEquip_MCM_inf property inf auto
+iEquip_MCM_tch property tch auto
 
 bool property bEnabled auto hidden
 bool property bUpdateKeyMaps auto hidden
@@ -39,7 +40,7 @@ endEvent/;
 ; ### MCM Internal Settings ###
 
 event OnConfigInit()
-    Pages = new String[9]
+    Pages = new String[10]
     Pages[0] = "$iEquip_MCM_lbl_General"
     Pages[1] = "$iEquip_MCM_lbl_Hotkey"
     Pages[2] = "$iEquip_MCM_lbl_Queue"
@@ -49,6 +50,7 @@ event OnConfigInit()
     Pages[6] = "$iEquip_MCM_lbl_Misc"
     Pages[7] = "$iEquip_MCM_lbl_Edit"
     Pages[8] = "$iEquip_MCM_lbl_Info"
+	Pages[9] = "$iEquip_MCM_lbl_Torch"
 
     gen.initData()
     htk.initData()
@@ -59,6 +61,7 @@ event OnConfigInit()
     pro.initData()
     edt.initData()           
     inf.initData()
+	tch.initData()
 endEvent
 
 Event OnConfigClose()
@@ -111,6 +114,8 @@ event OnPageReset(string page)
 				edt.drawPage()           
 			elseIf page == "$iEquip_MCM_lbl_Info"
 				inf.drawPage()
+			elseIf page == "$iEquip_MCM_lbl_Torch"
+				tch.drawPage()
 			endIf
         endIf
     endif
@@ -137,6 +142,8 @@ function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
         edt.jumpToState(sCurrentState, eventName, tmpVar)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Info"
         inf.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
+	elseIf sCurrentPage == "$iEquip_MCM_lbl_Torch"
+        inf.jumpToState(sCurrentState, eventName, tmpVar)
     endIf
 endFunction
 
@@ -236,6 +243,7 @@ function savePreset(string presetName)	; Save data to JContainer file
 	jMap.setObj(jMCMPreset, "Pro", pro.saveData())
 	jMap.setObj(jMCMPreset, "Editmode", edt.saveData())
 	jMap.setObj(jMCMPreset, "Info", inf.saveData())	
+	jMap.setObj(jMCMPreset, "Torch", tch.saveData())	
 	
 	jValue.writeTofile(jMCMPreset, MCMSettingsPath + presetName + FileExtMCM)
 	jValue.zeroLifetime(jMCMPreset)
@@ -254,6 +262,7 @@ function loadPreset(string presetName)	; Load MCM data
 		pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
 		edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
 		inf.loadData(jMap.getObj(jMCMPreset, "Info"))
+		tch.loadData(jMap.getObj(jMCMPreset, "Torch"))
 		bUpdateKeyMaps = true
 		WC.bMCMPresetLoaded = true
 	else
