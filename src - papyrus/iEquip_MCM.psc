@@ -143,7 +143,7 @@ function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Info"
         inf.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
 	elseIf sCurrentPage == "$iEquip_MCM_lbl_Torch"
-        inf.jumpToState(sCurrentState, eventName, tmpVar)
+        tch.jumpToState(sCurrentState, eventName, tmpVar)
     endIf
 endFunction
 
