@@ -59,14 +59,13 @@ Race Property WoodElfRaceVampire auto
 Race[] Property aPlayerBaseRaces auto Hidden
 Race[] Property aPlayerBaseVampireRaces auto Hidden
 
+; The Path of Transcendence Lich race properties
+Race[] Property aPlayerBasePOTLichRaces auto Hidden
+
 bool bPlayerRaceConfirmed
 
 ; Werewolf reference - Vanilla - populated in CK
 race property WerewolfBeastRace auto
-; Vampire Lord reference - Dawnguard - populated in OnInit or OnPlayerLoadGame
-race property DLC1VampireBeastRace auto hidden
-; Lich reference - Undeath - populated in OnInit or OnPlayerLoadGame
-race property NecroLichRace auto hidden
 
 FormList property iEquip_AllCurrentItemsFLST Auto
 FormList property iEquip_AmmoItemsFLST Auto
@@ -89,8 +88,6 @@ bool processingQueuedForms
 
 bool property bIsThunderchildLoaded auto hidden
 bool property bIsWintersunLoaded auto hidden
-bool property bIsDawnguardLoaded auto hidden
-bool property bIsUndeathLoaded auto hidden
 bool property bPlayerIsMeditating auto hidden
 bool property bDualCasting auto hidden
 bool property bGoingUnarmed auto hidden
@@ -103,7 +100,7 @@ bool property bAutoAddShouts = true auto hidden
 bool property bAutoAddPowers = true auto hidden
 
 bool property bPlayerIsABeast auto hidden
-bool property bPlayerIsAVampire auto hidden
+bool property bPlayerIsAVampireOrLich auto hidden
 bool property bWaitingForTransform auto hidden
 
 bool[] property abSkipQueueObjectUpdate auto hidden
@@ -115,7 +112,7 @@ int[] specificHandedItems
 Event OnInit()
 	debug.trace("iEquip_PlayerEventHandler OnInit start")
     
-    aPlayerBaseRaces = new race [10]
+    aPlayerBaseRaces = new race[10]
     aPlayerBaseRaces[0] = ArgonianRace
     aPlayerBaseRaces[1] = BretonRace
     aPlayerBaseRaces[2] = DarkElfRace
@@ -127,7 +124,7 @@ Event OnInit()
     aPlayerBaseRaces[8] = RedguardRace
     aPlayerBaseRaces[9] = WoodElfRace
 
-    aPlayerBaseVampireRaces = new race [10]
+    aPlayerBaseVampireRaces = new race[10]
     aPlayerBaseVampireRaces[0] = ArgonianRaceVampire
     aPlayerBaseVampireRaces[1] = BretonRaceVampire
     aPlayerBaseVampireRaces[2] = DarkElfRaceVampire
@@ -138,6 +135,8 @@ Event OnInit()
     aPlayerBaseVampireRaces[7] = OrcRaceVampire
     aPlayerBaseVampireRaces[8] = RedguardRaceVampire
     aPlayerBaseVampireRaces[9] = WoodElfRaceVampire
+
+    aPlayerBasePOTLichRaces = new race[10]
 
     itemTypesToProcess = new int[6]
 	itemTypesToProcess[0] = 22 			; Spells or shouts
@@ -178,8 +177,36 @@ function initialise(bool enabled)
 		WidgetRoot = WC.WidgetRoot
 		PlayerRace = PlayerRef.GetRace()
 		PlayerBaseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
+
+		if Game.GetModByName("The Path of Transcendence.esp") != 255
+			bPOTLoaded = true
+			aPlayerBasePOTLichRaces[0] = Game.GetFormFromFile(0x0024F487, "The Path of Transcendence.esp") as Race 	; POT_ArgonianRaceLich
+			aPlayerBasePOTLichRaces[1] = Game.GetFormFromFile(0x0024A378, "The Path of Transcendence.esp") as Race 	; POT_BretonRaceLich
+			aPlayerBasePOTLichRaces[2] = Game.GetFormFromFile(0x00240167, "The Path of Transcendence.esp") as Race 	; POT_DarkElfRaceLich
+			aPlayerBasePOTLichRaces[3] = Game.GetFormFromFile(0x0024F47D, "The Path of Transcendence.esp") as Race 	; POT_HighElfRaceLich
+			aPlayerBasePOTLichRaces[4] = Game.GetFormFromFile(0x00240166, "The Path of Transcendence.esp") as Race 	; POT_ImperialRaceLich
+			aPlayerBasePOTLichRaces[5] = Game.GetFormFromFile(0x0024F486, "The Path of Transcendence.esp") as Race 	; POT_KhajiitRaceLich
+			aPlayerBasePOTLichRaces[7] = Game.GetFormFromFile(0x0022BD61, "The Path of Transcendence.esp") as Race 	; POT_NordRaceLich
+			aPlayerBasePOTLichRaces[7] = Game.GetFormFromFile(0x0024F47E, "The Path of Transcendence.esp") as Race 	; POT_OrcRaceLich
+			aPlayerBasePOTLichRaces[8] = Game.GetFormFromFile(0x0024A379, "The Path of Transcendence.esp") as Race 	; POT_RedguardRaceLich
+			aPlayerBasePOTLichRaces[9] = Game.GetFormFromFile(0x0024F482, "The Path of Transcendence.esp") as Race 	; POT_WoodElfRaceLich
+		else
+			bPOTLoaded = false
+			aPlayerBasePOTLichRaces[0] = none
+			aPlayerBasePOTLichRaces[1] = none
+			aPlayerBasePOTLichRaces[2] = none
+			aPlayerBasePOTLichRaces[3] = none
+			aPlayerBasePOTLichRaces[4] = none
+			aPlayerBasePOTLichRaces[5] = none
+			aPlayerBasePOTLichRaces[6] = none
+			aPlayerBasePOTLichRaces[7] = none
+			aPlayerBasePOTLichRaces[8] = none
+			aPlayerBasePOTLichRaces[9] = none
+		endIf
+
 		BM.initialise()
 		BM.PlayerBaseRace = PlayerBaseRace
+		bPlayerIsAVampireOrLich = ((aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBaseVampireRaces.Find(PlayerRace)) || (aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBasePOTLichRaces.Find(PlayerRace)))
 		bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
 		debug.trace("iEquip_PlayerEventHandler initialise - current PlayerRace: " + PlayerRace.GetName() + ", original race: " + PlayerBaseRace.GetName() + ", bPlayerIsABeast: " + bPlayerIsABeast)
 		Utility.SetINIBool("bDisableGearedUp:General", True)
@@ -191,7 +218,7 @@ function initialise(bool enabled)
 		
 		if bPlayerIsABeast
 			registerForBMEvents()
-		elseIf PlayerRace == PlayerBaseRace || aPlayerBaseVampireRaces.Find(PlayerRace) == aPlayerBaseRaces.Find(PlayerBaseRace) ;Use this once ActorExt function is fixed
+		elseIf PlayerRace == PlayerBaseRace || bPlayerIsAVampireOrLich
 			registerForCoreAnimationEvents()
 			registerForCoreActorActions()
 		endIf
@@ -399,7 +426,7 @@ Event OnRaceSwitchComplete()
 		endIf
 		if PlayerRace != newRace
 			PlayerRace = newRace
-			bPlayerIsAVampire = (aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBaseVampireRaces.Find(PlayerRace))
+			bPlayerIsAVampireOrLich = ((aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBaseVampireRaces.Find(PlayerRace)) || (aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBasePOTLichRaces.Find(PlayerRace)))
 			bPlayerIsABeast = BM.arBeastRaces.Find(PlayerRace) > -1
 			KH.bPlayerIsABeast = bPlayerIsABeast
 			if bPlayerIsABeast
@@ -407,8 +434,8 @@ Event OnRaceSwitchComplete()
 				gotoState("BEASTMODE")
 				unregisterForCoreAnimationEvents()
 				registerForBMEvents()
-			elseIf (PlayerRace == PlayerBaseRace) || bPlayerIsAVampire
-				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsAVampire: " + bPlayerIsAVampire)
+			elseIf (PlayerRace == PlayerBaseRace) || bPlayerIsAVampireOrLich
+				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsAVampireOrLich: " + bPlayerIsAVampireOrLich)
 				unregisterForBMEvents()
 				registerForCoreAnimationEvents()
 				gotoState("")
@@ -418,7 +445,7 @@ Event OnRaceSwitchComplete()
 				gotoState("DISABLED")
 			endIf
 			if WC.isEnabled
-				BM.onPlayerTransform(PlayerRace, bPlayerIsAVampire)
+				BM.onPlayerTransform(PlayerRace, bPlayerIsAVampireOrLich)
 			endIf
 		endIf
 	endIf
@@ -679,7 +706,7 @@ endFunction
 
 function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start")
-	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot)
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", queuedForm: " + queuedForm + ", itemType: " + itemType + ", iEquipSlot: " + iEquipSlot)
 	bool actionTaken
 	int targetIndex
 	bool blockCall
@@ -689,7 +716,8 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	int itemHandle = 0xFFFF
 
 	if equippedSlot < 2 && TI.aiTemperedItemTypes.Find(itemType) > -1 && PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
-		if itemType == 26
+		;if itemType == 26
+		if equippedSlot == 0 && PlayerRef.GetEquippedShield()
 			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)				; Shield
 		elseIf itemType == 7 || itemType == 9
 			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)				; Need to check right hand for ranged weapon iHandle
@@ -724,7 +752,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		targetIndex = WC.findInQueue(equippedSlot, itemName, queuedForm, itemHandle)
 		if targetIndex != -1
 			
-			if equippedSlot < 2 && !abSkipQueueObjectUpdate[equippedSlot]													; Update the item name in case the display name differs from the base item name, and store the new itemID
+			if equippedSlot < 2 && !abSkipQueueObjectUpdate[equippedSlot]								; Update the item name in case the display name differs from the base item name, and store the new itemID
 				if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF
 					JArray.AddInt(WC.iRefHandleArray, itemHandle)
 					JArray.unique(WC.iRefHandleArray)

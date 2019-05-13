@@ -140,12 +140,15 @@ function drawPage()
 		MCM.AddEmptyOption()
 		MCM.AddHeaderOption("$iEquip_MCM_gen_lbl_BeastMode")
 		MCM.AddToggleOptionST("gen_tgl_BM_werewolf", "$iEquip_MCM_gen_lbl_BM_werewolf", BM.abShowInTransformedState[0])
-		if EH.bIsDawnguardLoaded
+		if Game.GetModByName("Dawnguard.esm") != 255
 			MCM.AddToggleOptionST("gen_tgl_BM_vampLord", "$iEquip_MCM_gen_lbl_BM_vampLord", BM.abShowInTransformedState[1])
 		endIf
-		if EH.bIsUndeathLoaded
+		if Game.GetModByName("Undeath.esp") != 255
 			MCM.AddToggleOptionST("gen_tgl_BM_lich", "$iEquip_MCM_gen_lbl_BM_lich", BM.abShowInTransformedState[2])
 		endIf
+        if Game.GetModByName("The Path of Transcendence.esp") != 255
+            MCM.AddToggleOptionST("gen_tgl_BM_POTBoneTyrant", "$iEquip_MCM_gen_lbl_BM_POTBoneTyrant", BM.abShowInTransformedState[3])
+        endIf
 	elseIf bFirstEnabled
 		MCM.AddEmptyOption()
 		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
@@ -426,6 +429,17 @@ State gen_tgl_BM_lich
         elseIf currentEvent == "Select"
             BM.abShowInTransformedState[2] = !BM.abShowInTransformedState[2]
             MCM.SetToggleOptionValueST(BM.abShowInTransformedState[2])
+            WC.bBeastModeOptionsChanged = true
+        endIf
+    endEvent
+endState
+State gen_tgl_BM_POTBoneTyrant
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_BM_POTBoneTyrant")
+        elseIf currentEvent == "Select"
+            BM.abShowInTransformedState[3] = !BM.abShowInTransformedState[3]
+            MCM.SetToggleOptionValueST(BM.abShowInTransformedState[3])
             WC.bBeastModeOptionsChanged = true
         endIf
     endEvent

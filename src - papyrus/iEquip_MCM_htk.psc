@@ -21,6 +21,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, KH.iShoutKey)
 	jArray.addInt(jPageObj, KH.iConsumableKey)
 	jArray.addInt(jPageObj, KH.iUtilityKey)
+    jArray.addInt(jPageObj, KH.bNoUtilMenuInCombat)
 	
 	jArray.addFlt(jPageObj, KH.fMultiTapDelay)
 	jArray.addFlt(jPageObj, KH.fLongPressDelay)
@@ -41,16 +42,17 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	KH.iShoutKey = jArray.getInt(jPageObj, 2)
 	KH.iConsumableKey = jArray.getInt(jPageObj, 3)
 	KH.iUtilityKey = jArray.getInt(jPageObj, 4)
+    KH.bNoUtilMenuInCombat = jArray.getInt(jPageObj, 5)
 	
-	KH.fMultiTapDelay = jArray.getFlt(jPageObj, 5)
-	KH.fLongPressDelay = jArray.getFlt(jPageObj, 6)
+	KH.fMultiTapDelay = jArray.getFlt(jPageObj, 6)
+	KH.fLongPressDelay = jArray.getFlt(jPageObj, 7)
 	
-	KH.bExtendedKbControlsEnabled = jArray.getInt(jPageObj, 7)
-	KH.iConsumeItemKey = jArray.getInt(jPageObj, 8)
-    KH.iCyclePoisonKey = jArray.getInt(jPageObj, 9)
-    KH.iQuickRestoreKey = jArray.getInt(jPageObj, 10)
-    KH.iQuickShieldKey = jArray.getInt(jPageObj, 11)
-    KH.iQuickRangedKey = jArray.getInt(jPageObj, 12)
+	KH.bExtendedKbControlsEnabled = jArray.getInt(jPageObj, 8)
+	KH.iConsumeItemKey = jArray.getInt(jPageObj, 9)
+    KH.iCyclePoisonKey = jArray.getInt(jPageObj, 10)
+    KH.iQuickRestoreKey = jArray.getInt(jPageObj, 11)
+    KH.iQuickShieldKey = jArray.getInt(jPageObj, 12)
+    KH.iQuickRangedKey = jArray.getInt(jPageObj, 13)
 
 endFunction
 
@@ -67,6 +69,7 @@ function drawPage()
 			
 	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_UtHtkOpts")
 	MCM.AddKeyMapOptionST("htk_key_util", "$iEquip_MCM_htk_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
+    MCM.AddToggleOptionST("htk_tgl_blockUtilMenuInCombat", "$iEquip_MCM_htk_lbl_blockUtilMenuInCombat", KH.bNoUtilMenuInCombat)
 
 	MCM.SetCursorPosition(1)
 			
@@ -202,6 +205,17 @@ State htk_key_util
             
             MCM.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iUtilityKey)        
+        endIf
+    endEvent
+endState
+
+State htk_tgl_blockUtilMenuInCombat
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_htk_txt_blockUtilMenuInCombat")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && KH.bNoUtilMenuInCombat)
+            KH.bNoUtilMenuInCombat = !KH.bNoUtilMenuInCombat
+            MCM.SetToggleOptionValueST(KH.bNoUtilMenuInCombat)
         endIf
     endEvent
 endState

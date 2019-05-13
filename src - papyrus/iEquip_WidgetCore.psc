@@ -596,13 +596,11 @@ function CheckDependencies()
         RC.bIsRequiemLoaded = false
     endIf
     if Game.GetModByName("Dawnguard.esm") != 255
-		EH.DLC1VampireBeastRace = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race
 		aUniqueItems[38] = Game.GetFormFromFile(0x00000800, "Dawnguard.esm") as Weapon 	; DLC1AurielsBow
 		aUniqueItems[39] = Game.GetFormFromFile(0x000067CF, "Dawnguard.esm") as Weapon 	; DLC1HarkonsSword
 		aUniqueItems[40] = Game.GetFormFromFile(0x00011BAD, "Dawnguard.esm") as Weapon 	; DLC1DawnguardRuneHammer
 		aUniqueItems[41] = Game.GetFormFromFile(0x0000CFB6, "Dawnguard.esm") as Weapon 	; DLC1LD_KatriaBow - Zephyr
 	else
-		EH.DLC1VampireBeastRace = none
 		aUniqueItems[38] = none
 		aUniqueItems[39] = none
 		aUniqueItems[40] = none
@@ -629,11 +627,6 @@ function CheckDependencies()
 		aUniqueItems[47] = none
 		aUniqueItems[48] = none
 		aUniqueItems[49] = none
-	endIf
-	if Game.GetModByName("Undeath.esp") != 255
-		EH.NecroLichRace = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race
-	else
-		EH.NecroLichRace = none
 	endIf
 	if Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
         EH.bIsThunderchildLoaded = true
@@ -930,7 +923,7 @@ function refreshWidgetOnLoad()
 	endIf
 
 	if EH.bPlayerIsABeast
-		BM.onPlayerTransform(PlayerRef.GetRace(), EH.bPlayerIsAVampire, true)
+		BM.onPlayerTransform(PlayerRef.GetRace(), EH.bPlayerIsAVampireOrLich, true)
 	else
 		updateSlotsEnabled()
 	endIf

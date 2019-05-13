@@ -55,6 +55,7 @@ float property fMultiTapDelay = 0.3 auto hidden
 float property fLongPressDelay = 0.6 auto hidden
 
 ; Bools
+bool property bNoUtilMenuInCombat auto hidden
 bool property bExtendedKbControlsEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
@@ -265,7 +266,8 @@ function runUpdate()
             
     elseIf iMultiTap == 1   ; Single tap
         if iWaitingKeyCode == iUtilityKey
-            if PlayerRef.IsWeaponDrawn()
+            ;if PlayerRef.IsWeaponDrawn()
+            if PlayerRef.IsInCombat() && bNoUtilMenuInCombat
                 debug.notification(iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_notWithWeaponsDrawn"))
             else
                 int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))

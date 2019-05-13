@@ -22,6 +22,10 @@ race property WerewolfBeastRace auto
 
 race[] property arBeastRaces auto hidden
 
+; The Path of Transcendence Bone Tyrant races
+race[] property arPOTBoneTyrantRaces auto hidden
+bool bPOTLoaded
+
 formlist property iEquip_BeastModeItemsFLST auto
 
 int property currRace auto hidden
@@ -51,14 +55,16 @@ event OnInit()
 	arBeastRaces = new race[3]
 	arBeastRaces[0] = WerewolfBeastRace
 
+	arPOTBoneTyrantRaces = new race[10]
+
 	aiBMQueues = new int[9]
 	aiCurrentBMQueuePosition = new int[9]
 	asCurrentlyEquipped = new string[9]
-	abShowInTransformedState = new bool[3]
+	abShowInTransformedState = new bool[4]
 
 	int i
 	while i < 9
-		if i < 3
+		if i < 4
 			abShowInTransformedState[i] = true
 		endIf
 		aiCurrentBMQueuePosition[i] = -1
@@ -72,6 +78,44 @@ function initialise()
 	debug.trace("iEquip_BeastMode initialise start")
 	WidgetRoot = WC.WidgetRoot
 	initialiseQueueArrays()
+
+	if Game.GetModByName("Dawnguard.esm") != 255
+		arBeastRaces[1] = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race 	; DLC1VampireBeastRace
+	else
+		arBeastRaces[1] = none
+	endIf
+
+	if Game.GetModByName("Undeath.esp") != 255
+		arBeastRaces[2] = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race 		; NecroLichRace
+	else
+		arBeastRaces[2] = none
+	endIf
+
+	if Game.GetModByName("The Path of Transcendence.esp") != 255
+		bPOTLoaded = true
+		arPOTBoneTyrantRaces[0] = Game.GetFormFromFile(0x00038354, "The Path of Transcendence.esp") as Race 	; POT_ArgonianRaceBoneTyrant
+		arPOTBoneTyrantRaces[1] = Game.GetFormFromFile(0x00038355, "The Path of Transcendence.esp") as Race 	; POT_BretonRaceBoneTyrant
+		arPOTBoneTyrantRaces[2] = Game.GetFormFromFile(0x00038356, "The Path of Transcendence.esp") as Race 	; POT_DarkElfRaceBoneTyrant
+		arPOTBoneTyrantRaces[3] = Game.GetFormFromFile(0x00038357, "The Path of Transcendence.esp") as Race 	; POT_ImperialRaceBoneTyrant
+		arPOTBoneTyrantRaces[4] = Game.GetFormFromFile(0x00038358, "The Path of Transcendence.esp") as Race 	; POT_NordRaceBoneTyrant
+		arPOTBoneTyrantRaces[5] = Game.GetFormFromFile(0x00038359, "The Path of Transcendence.esp") as Race 	; POT_HighElfRaceBoneTyrant
+		arPOTBoneTyrantRaces[6] = Game.GetFormFromFile(0x0003835A, "The Path of Transcendence.esp") as Race 	; POT_KhajiitRaceBoneTyrant
+		arPOTBoneTyrantRaces[7] = Game.GetFormFromFile(0x0003835B, "The Path of Transcendence.esp") as Race 	; POT_RedguardRaceBoneTyrant
+		arPOTBoneTyrantRaces[8] = Game.GetFormFromFile(0x0003835C, "The Path of Transcendence.esp") as Race 	; POT_OrcRaceBoneTyrant
+		arPOTBoneTyrantRaces[9] = Game.GetFormFromFile(0x0003835D, "The Path of Transcendence.esp") as Race 	; POT_WoodElfRaceBoneTyrant
+	else
+		bPOTLoaded = false
+		arPOTBoneTyrantRaces[0] = none
+		arPOTBoneTyrantRaces[1] = none
+		arPOTBoneTyrantRaces[2] = none
+		arPOTBoneTyrantRaces[3] = none
+		arPOTBoneTyrantRaces[4] = none
+		arPOTBoneTyrantRaces[5] = none
+		arPOTBoneTyrantRaces[6] = none
+		arPOTBoneTyrantRaces[7] = none
+		arPOTBoneTyrantRaces[8] = none
+		arPOTBoneTyrantRaces[9] = none
+	endIf
 	debug.trace("iEquip_BeastMode initialise end")
 endFunction
 
@@ -113,6 +157,18 @@ function initialiseQueueArrays()
         aiBMQueues[8] = JArray.object()
         JMap.setObj(WC.iEquipQHolderObj, "lichPowerQ", aiBMQueues[8])
     endIf
+     if aiBMQueues[9] == 0
+        aiBMQueues[9] = JArray.object()
+        JMap.setObj(WC.iEquipQHolderObj, "boneTyrantLeftQ", aiBMQueues[9])
+    endIf
+    if aiBMQueues[10] == 0
+        aiBMQueues[10] = JArray.object()
+        JMap.setObj(WC.iEquipQHolderObj, "boneTyrantRightQ", aiBMQueues[10])
+    endIf
+    if aiBMQueues[11] == 0
+        aiBMQueues[11] = JArray.object()
+        JMap.setObj(WC.iEquipQHolderObj, "boneTyrantPowerQ", aiBMQueues[11])
+    endIf
     debug.trace("iEquip_BeastMode initialiseQueueArrays end")
 endfunction
 
@@ -124,7 +180,7 @@ function OnWerewolfTransformationStart()
 	debug.trace("iEquip_BeastMode OnWerewolfTransformationStart end")
 endFunction
 
-function onPlayerTransform(race newRace, bool bPlayerIsAVampire, bool bLoading = false)
+function onPlayerTransform(race newRace, bool bPlayerIsAVampireOrLich, bool bLoading = false)
 	debug.trace("iEquip_BeastMode onPlayerTransform start")
 	;Lock out controls and hide the widget while we switch.  If we've switched to an unsupported form the widget will stay hidden until we switch back
 	if !bAlreadyHidden && !bLoading
@@ -134,7 +190,12 @@ function onPlayerTransform(race newRace, bool bPlayerIsAVampire, bool bLoading =
 	endIf
 	bAlreadyHidden = false
 	currRace = arBeastRaces.Find(newRace)
-	if newRace == PlayerBaseRace || bPlayerIsAVampire && !bLoading
+	if currRace == -1 && bPOTLoaded
+		if arPOTBoneTyrantRaces.Find(newRace) > -1
+			currRace = 3
+		endIf
+	endIf
+	if newRace == PlayerBaseRace || bPlayerIsAVampireOrLich && !bLoading
 		EH.bWaitingForTransform = true
 		if bInSupportedBeastForm ;Player is no longer one of the supported beast races and have transformed back to their original form, if we transformed to something other than a supported form we won't have altered the widget so no need to reset here
 			bInSupportedBeastForm = false
@@ -191,7 +252,7 @@ function onPlayerTransform(race newRace, bool bPlayerIsAVampire, bool bLoading =
 					CM.updateChargeMeterVisibility(i, false)
 				endIf
 			endIf
-			if bLoading && !(currRace == 0 && i < 2)
+			if bLoading && !(currRace == 0 && i < 2) ; ToDo - Add Bone Tyrant support here
 				int targetQ = (currRace * 3) + i
 				WC.updateWidgetBM(i, jMap.getStr(jArray.getObj(aiBMQueues[targetQ], aiCurrentBMQueuePosition[targetQ]), "iEquipIcon"), asCurrentlyEquipped[targetQ])
 			else
@@ -207,6 +268,9 @@ function onPlayerTransform(race newRace, bool bPlayerIsAVampire, bool bLoading =
 		;If we're a werewolf then show claws in both hand slots
 		if currRace == 0
 			showClaws()
+		; ToDo - Add Bone Tyrant support here
+		;elseIf currRace == 3
+
 		endIf
 		if !bLoading
 			;Release the queued forms to update the widget - need the delay to allow time for all three spells/powers to be added to the OnObjectEquippedFLST
