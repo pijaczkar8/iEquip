@@ -972,7 +972,7 @@ function refreshWidget()
 					i = 1
 				endIf
 			endIf
-			int itemHandle = 0xFFFF
+			;/int itemHandle = 0xFFFF
 			if i < 2 && TI.aiTemperedItemTypes.Find(itemType) > -1
 				if itemType == 26
 					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)
@@ -981,7 +981,8 @@ function refreshWidget()
 				else
 					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(i)
 				endIf
-			endIf
+			endIf/;
+			int itemHandle = getHandle(i, itemType)
 			int foundAt = findInQueue(i, "", equippedForm, itemHandle)
 			; If we've found the item in the queue then set the queue position and name
 			if foundAt != -1
@@ -995,6 +996,12 @@ function refreshWidget()
 			    	PlayerRef.EquipItemEx(equippedForm as Ammo)
 			    elseif (i == 0 && itemType == 26)
 			    	PlayerRef.EquipItemEx(equippedForm as Armor)
+			    elseIf itemHandle != 0xFFFF
+			    	if (itemType > 4 && itemType < 8) || itemType == 9
+			    		iEquip_InventoryExt.EquipItem(equippedForm, itemHandle, PlayerRef, 1)
+			    	else
+			    		iEquip_InventoryExt.EquipItem(equippedForm, itemHandle, PlayerRef, i)
+			    	endIf
 			    else
 			    	PlayerRef.EquipItemEx(equippedForm, i)
 			    endIf
@@ -1383,11 +1390,6 @@ endEvent
 
 event OnMenuClose(string _sCurrentMenu)
 	debug.trace("iEquip_WidgetCore OnMenuClose start - current menu: " + _sCurrentMenu)
-	;debug.trace("iEquip_WidgetCore OnMenuClose - current menu: " + _sCurrentMenu + ", bItemsWaitingForID: " + bItemsWaitingForID)
-	;if bItemsWaitingForID ;&& !utility.IsInMenuMode()
-	;	findAndFillMissingItemIDs()
-	;	bItemsWaitingForID = false
-	;endIf
 	int i
 	;Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
 	while i < 2
@@ -1484,11 +1486,10 @@ function addCurrentItemsOnFirstEnable()
 	string itemBaseName
 	string itemIcon
 	int itemID
-	int itemHandle
+	int itemHandle = 0xFFFF
 	int itemType
 	int iEquipSlot
 	while Q < 3
-		itemHandle = 0xFFFF
 		equippedItem = PlayerRef.GetEquippedObject(Q)
 		if equippedItem
 			abQueueWasEmpty[Q] = false
@@ -1501,7 +1502,9 @@ function addCurrentItemsOnFirstEnable()
 	        	itemType = (equippedItem as Weapon).GetWeaponType()
 	        endIf
 
-			if TI.aiTemperedItemTypes.Find(itemType) > -1
+			itemHandle = getHandle(Q, itemType)
+
+			;/if TI.aiTemperedItemTypes.Find(itemType) > -1
 				if itemType == 26
 					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - shield from GetEquippedObject: " + equippedItem + ", from GetEquippedShield: " + PlayerRef.GetEquippedShield() as form)
 					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - attempting to retrieve handle for shield from GetRefHandleFromWornObject(2)")
@@ -1513,7 +1516,7 @@ function addCurrentItemsOnFirstEnable()
 						itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)	; Left/Right hand
 					endIf
 				endIf
-			endIf
+			endIf/;
 
 			debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - Q: " + Q + ", itemHandle received: " + itemHandle)
 
@@ -1813,6 +1816,32 @@ function ResetWidgetArrays()
 	debug.trace("iEquip_WidgetCore ResetWidgetArrays end")
 endFunction
 
+int function getHandle(int Q, int itemType = -1)
+	debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType)
+	int itemHandle = 0xFFFF
+	if Q < 2
+		if itemType == -1
+			form equippedItem = PlayerRef.GetEquippedObject(Q)
+			itemType = equippedItem.GetType()
+			If itemType == 41 														; If it is a weapon get the weapon type
+	        	itemType = (equippedItem as Weapon).GetWeaponType()
+	        endIf
+	        debug.trace("iEquip_WidgetCore getHandle - itemType: " + itemType)
+		endIf
+		if TI.aiTemperedItemTypes.Find(itemType) > -1
+			if itemType == 26														; Shield
+				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)
+			elseIf (itemType > 4 && itemType < 8) || itemType == 9					; 2H or ranged
+				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)
+			else
+				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)
+			endIf
+		endIf
+	endIf
+	debug.trace("iEquip_WidgetCore getHandle end - returning itemHandle: " + itemHandle)
+	return itemHandle
+endFunction
+
 function setCurrentQueuePosition(int Q, int iIndex)
 	debug.trace("iEquip_WidgetCore setCurrentQueuePosition start")
 	debug.trace("iEquip_WidgetCore setCurrentQueuePosition - Q: " + Q + ", iIndex: " + iIndex)
@@ -1935,7 +1964,11 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		
 		;Make sure we're starting from the correct index, in case somehow the queue has been amended without the aiCurrentQueuePosition array being updated
 		if asCurrentlyEquipped[Q] != "" && asCurrentlyEquipped[Q] != jMap.getStr(jArray.getObj(targetArray, aiCurrentQueuePosition[Q]), "iEquipName")
-			aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q])
+			if Q < 2
+				aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q], PlayerRef.GetEquippedObject(Q), getHandle(Q))
+			else
+				aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q])
+			endIf
 		endIf
 		
 		if queueLength > 1

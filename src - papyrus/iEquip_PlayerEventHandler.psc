@@ -713,8 +713,16 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName
 	string itemBaseName
-	int itemHandle = 0xFFFF
 
+	if equippedSlot < 2 
+		WC.setCounterVisibility(equippedSlot, false)
+		WC.hidePoisonInfo(equippedSlot)
+		if CM.abIsChargeMeterShown[equippedSlot]
+			CM.updateChargeMeterVisibility(equippedSlot, false)
+		endIf
+	endIf
+	
+	;/int itemHandle = 0xFFFF
 	if equippedSlot < 2 && TI.aiTemperedItemTypes.Find(itemType) > -1 && PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
 		;if itemType == 26
 		if equippedSlot == 0 && PlayerRef.GetEquippedShield()
@@ -724,7 +732,9 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		else
 			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(equippedSlot)	; Left/Right hand
 		endIf
-	endIf
+	endIf/;
+
+	int itemHandle = WC.getHandle(equippedSlot, itemType)
 
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
 
@@ -897,14 +907,8 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			endIf
 		endIf
 																										; And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
-		if equippedSlot < 2
-			if blockCall
-				if equippedSlot == 0 && !queuedForm as light
-					CM.checkAndUpdateChargeMeter(0)
-				endIf
-			else
-				WC.checkAndEquipShownHandItem(equippedSlot, false, true)
-			endIf
+		if equippedSlot < 2 && !blockCall
+			WC.checkAndEquipShownHandItem(equippedSlot, false, true)
 		endIf
 	endIf
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
@@ -922,17 +926,20 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
 	int i
 	int itemType = akBaseItem.GetType()
-	;Handle potions/consumales/poisons and ammo in AmmoMode first
+	If itemType == 41 													; If it is a weapon get the weapon type
+		itemType = (akBaseItem as Weapon).GetWeaponType()
+	endIf
+																		; Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
 	elseIf akBaseItem as ammo
 		AM.onAmmoRemoved(akBaseItem)
-	;Check if a Bound Shield has just been unequipped
+																		; Check if a Bound Shield has just been unequipped
 	elseIf (itemType == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
 		WC.onBoundWeaponUnequipped(0, true)
 		iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
 		updateEventFilter(iEquip_AllCurrentItemsFLST)
-    ;Otherwise handle anything else in left, right or shout queue other than bound weapons
+    																	; Otherwise handle anything else in left, right or shout queue other than bound weapons
 	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
 		if itemType == 31	; Torch
 			TO.onTorchRemoved(akBaseItem)
@@ -944,26 +951,26 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 			string itemName = akBaseItem.GetName()
 			foundAt = WC.findInQueue(i, itemName, akBaseItem)
 			if foundAt != -1
-				;If it's a shout or power remove it straight away
+																		; If it's a shout or power remove it straight away
 				if i == 2
 					WC.removeItemFromQueue(i, foundAt)
 					actionTaken = true
 				else
 					int otherHand = (i + 1) % 2
-					;Check if it's contained in the other hand queue as well
+																		; Check if it's contained in the other hand queue as well
 					int foundAtOtherHand = -1
 					if specificHandedItems.Find(itemType) > -1
 						foundAtOtherHand = WC.findInQueue(otherHand, itemName, akBaseItem)
 					endIf
 					int itemCount = PlayerRef.GetItemCount(akBaseItem)
-					;If it's ammo, scrolls, torch or other throwing weapons which require a counter update
+																		; If it's ammo, scrolls, torch or other throwing weapons which require a counter update
 					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
 						WC.setSlotCount(i, itemCount)
 						actionTaken = true
-					;Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
+																		; Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
 					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0 && !TI.aiTemperedItemTypes.Find(itemType) != -1		; The aiTemperedItemTypes exclusion here is because they are now removed through OnRefHandleInvalidated
 						WC.removeItemFromQueue(i, foundAt, false, false, true)
-						;If the removed item was in both queues and we've got none left remove from the other queue as well
+																		; If the removed item was in both queues and we've got none left remove from the other queue as well
 						if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))
 							WC.removeItemFromQueue(otherHand, foundAtOtherHand)
 						endIf
