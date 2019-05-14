@@ -717,7 +717,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	if equippedSlot < 2 
 		WC.setCounterVisibility(equippedSlot, false)
 		WC.hidePoisonInfo(equippedSlot)
-		if CM.abIsChargeMeterShown[equippedSlot]
+		if CM.abIsChargeMeterShown[equippedSlot] && !PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
 			CM.updateChargeMeterVisibility(equippedSlot, false)
 		endIf
 	endIf
