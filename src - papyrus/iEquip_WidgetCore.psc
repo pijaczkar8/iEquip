@@ -972,7 +972,17 @@ function refreshWidget()
 					i = 1
 				endIf
 			endIf
-			int foundAt = findInQueue(i, equippedForm.GetName())
+			int itemHandle = 0xFFFF
+			if i < 2 && TI.aiTemperedItemTypes.Find(itemType) > -1
+				if itemType == 26
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)
+				elseIf (itemType > 4 && itemType < 8) || itemType == 9
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)
+				else
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(i)
+				endIf
+			endIf
+			int foundAt = findInQueue(i, "", equippedForm, itemHandle)
 			; If we've found the item in the queue then set the queue position and name
 			if foundAt != -1
 				aiCurrentQueuePosition[i] = foundAt
@@ -1895,7 +1905,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			PM.cyclePreselectSlot(Q, queueLength, Reverse, true, onKeyPress)
 		endIf
 	;if name not shown then first cycle press shows name without advancing the queue
-	elseif bFirstPressShowsName && !bPreselectSwitchingHands && !abIsNameShown[Q] && asCurrentlyEquipped[Q] != ""
+	elseif bFirstPressShowsName && !bSwitchingHands && !bPreselectSwitchingHands && !abIsNameShown[Q] && asCurrentlyEquipped[Q] != ""
 		showName(Q)
 
 	elseIf queueLength > 1 || onItemRemoved || (Q < 3 && abQueueWasEmpty[Q]) || (Q == 0 && bGoneUnarmed || b2HSpellEquipped)
@@ -2065,8 +2075,8 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			endIf
 			checkAndEquipShownShoutOrConsumable(Q, Reverse, targetIndex, targetItem, isPotionGroup)
 		endIf
-		debug.trace("iEquip_WidgetCore cycleSlot end")
 	endIf
+	debug.trace("iEquip_WidgetCore cycleSlot end")
 endFunction
 
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false, bool calledByQuickRanged = false)
@@ -2084,6 +2094,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
     Form targetItem = jMap.getForm(targetObject, "iEquipForm")
     int itemType = jMap.getInt(targetObject, "iEquipType")
+    int itemHandle = jMap.getInt(targetObject, "iEquipHandle")
     
     PM.bCurrentlyQuickRanged = false
     PM.bCurrentlyQuickHealing = false
@@ -2100,11 +2111,11 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 			goUnarmed()
 			doneHere = true  
 	    ;if you already have the item/shout equipped in the slot you are cycling then refresh the poison, charge and count info and hide the attribute icons
-	    elseif (targetItem == PlayerRef.GetEquippedObject(Q))
+	    elseif (itemHandle != 0xFFFF && ((itemType == 26 && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2)) || itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q))) || (targetItem == PlayerRef.GetEquippedObject(Q))
 	    	hideAttributeIcons(Q)
 	    	checkAndUpdatePoisonInfo(Q)
 			CM.checkAndUpdateChargeMeter(Q)
-			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			if TI.aiTemperedItemTypes.Find(itemType) > -1 && TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
 				TI.checkAndUpdateTemperLevelInfo(Q)
 			endIf
 			if itemRequiresCounter(Q, itemType)
@@ -2112,7 +2123,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 			endIf
 	    	doneHere = true
 		;if somehow the item has been removed from the player and we haven't already caught it remove it from queue and advance queue again
-		elseif !playerStillHasItem(targetItem)
+		elseif !playerStillHasItem(targetItem, itemHandle)
 			iEquip_AllCurrentItemsFLST.RemoveAddedForm(targetItem)
 			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
 			if bEnableRemovedItemCaching
@@ -3114,7 +3125,7 @@ function addBackCachedItem(form addedForm)
 	debug.trace("iEquip_WidgetCore addBackCachedItem end")
 endFunction
 
-bool function playerStillHasItem(form itemForm)
+bool function playerStillHasItem(form itemForm, int itemHandle = 0xFFFF)
 	debug.trace("iEquip_WidgetCore playerStillHasItem start")
 	debug.trace("iEquip_WidgetCore playerStillHasItem - itemForm: " + itemForm)
     int itemType = itemForm.GetType()
@@ -3123,7 +3134,9 @@ bool function playerStillHasItem(form itemForm)
     if (itemType == 22 || itemType == 119)
         stillHasItem = PlayerRef.HasSpell(itemForm)
     ; This is an inventory item
-    else 
+    elseIf itemHandle != 0xFFFF
+    	stillHasItem = (JArray.FindInt(iRefHandleArray, itemHandle) != -1)
+    else
         stillHasItem = (PlayerRef.GetItemCount(itemForm) > 0)
     endIf
     debug.trace("iEquip_WidgetCore playerStillHasItem returning " + stillHasItem)
