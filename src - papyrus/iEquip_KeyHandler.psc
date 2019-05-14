@@ -647,15 +647,15 @@ function RegisterForGameplayKeys()
     RegisterForKey(iRightKey)
     RegisterForKey(iConsumableKey)
     RegisterForKey(iUtilityKey)
+    if iToggleTorchKey != -1
+        RegisterForKey(iToggleTorchKey)
+    endIf
     if bExtendedKbControlsEnabled
         if iConsumeItemKey != -1
             RegisterForKey(iConsumeItemKey)
         endIf
         if iCyclePoisonKey != -1
             RegisterForKey(iCyclePoisonKey)
-        endIf
-        if iToggleTorchKey != -1
-            RegisterForKey(iToggleTorchKey)
         endIf
         if iQuickRestoreKey != -1
             RegisterForKey(iQuickRestoreKey)

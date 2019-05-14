@@ -21,7 +21,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, KH.iShoutKey)
 	jArray.addInt(jPageObj, KH.iConsumableKey)
 	jArray.addInt(jPageObj, KH.iUtilityKey)
-    jArray.addInt(jPageObj, KH.bNoUtilMenuInCombat)
+    jArray.addInt(jPageObj, KH.bNoUtilMenuInCombat as int)
 	
 	jArray.addFlt(jPageObj, KH.fMultiTapDelay)
 	jArray.addFlt(jPageObj, KH.fLongPressDelay)
