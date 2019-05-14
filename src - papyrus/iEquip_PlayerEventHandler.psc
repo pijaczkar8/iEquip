@@ -179,7 +179,7 @@ function initialise(bool enabled)
 		PlayerBaseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
 
 		if Game.GetModByName("The Path of Transcendence.esp") != 255
-			bPOTLoaded = true
+			;bPOTLoaded = true
 			aPlayerBasePOTLichRaces[0] = Game.GetFormFromFile(0x0024F487, "The Path of Transcendence.esp") as Race 	; POT_ArgonianRaceLich
 			aPlayerBasePOTLichRaces[1] = Game.GetFormFromFile(0x0024A378, "The Path of Transcendence.esp") as Race 	; POT_BretonRaceLich
 			aPlayerBasePOTLichRaces[2] = Game.GetFormFromFile(0x00240167, "The Path of Transcendence.esp") as Race 	; POT_DarkElfRaceLich
@@ -191,7 +191,7 @@ function initialise(bool enabled)
 			aPlayerBasePOTLichRaces[8] = Game.GetFormFromFile(0x0024A379, "The Path of Transcendence.esp") as Race 	; POT_RedguardRaceLich
 			aPlayerBasePOTLichRaces[9] = Game.GetFormFromFile(0x0024F482, "The Path of Transcendence.esp") as Race 	; POT_WoodElfRaceLich
 		else
-			bPOTLoaded = false
+			;bPOTLoaded = false
 			aPlayerBasePOTLichRaces[0] = none
 			aPlayerBasePOTLichRaces[1] = none
 			aPlayerBasePOTLichRaces[2] = none
