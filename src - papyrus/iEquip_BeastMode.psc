@@ -57,7 +57,7 @@ event OnInit()
 
 	arPOTBoneTyrantRaces = new race[10]
 
-	aiBMQueues = new int[9]
+	aiBMQueues = new int[12]
 	aiCurrentBMQueuePosition = new int[9]
 	asCurrentlyEquipped = new string[9]
 	abShowInTransformedState = new bool[4]

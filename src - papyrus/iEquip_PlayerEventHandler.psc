@@ -715,10 +715,12 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	string itemBaseName
 
 	if equippedSlot < 2 
-		WC.setCounterVisibility(equippedSlot, false)
 		WC.hidePoisonInfo(equippedSlot)
-		if CM.abIsChargeMeterShown[equippedSlot] && !PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
-			CM.updateChargeMeterVisibility(equippedSlot, false)
+ 		if !PlayerRef.GetEquippedItemType(0) == 11
+ 			WC.setCounterVisibility(equippedSlot, false)
+			if CM.abIsChargeMeterShown[equippedSlot] && TO.bShowTorchMeter
+				CM.updateChargeMeterVisibility(equippedSlot, false)
+			endIf
 		endIf
 	endIf
 	
@@ -742,9 +744,9 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
 		itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
-	else
-		itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
-		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+	;else
+		;itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
+		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 	endIf
 	
 	if itemName == ""
