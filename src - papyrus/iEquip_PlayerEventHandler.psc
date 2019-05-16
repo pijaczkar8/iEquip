@@ -714,9 +714,10 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	string itemName
 	string itemBaseName
 
+	;ToDo - check logic for whether or not to hide it if we have a torch in the left hand
 	if equippedSlot < 2 
 		WC.hidePoisonInfo(equippedSlot)
- 		if !PlayerRef.GetEquippedItemType(0) == 11
+ 		if !((equippedSlot == 0 || specificHandedItems.Find(itemType) > -1) && PlayerRef.GetEquippedItemType(0) == 11)
  			WC.setCounterVisibility(equippedSlot, false)
 			if CM.abIsChargeMeterShown[equippedSlot] && TO.bShowTorchMeter
 				CM.updateChargeMeterVisibility(equippedSlot, false)
