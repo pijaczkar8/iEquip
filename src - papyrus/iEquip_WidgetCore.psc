@@ -1393,8 +1393,10 @@ event OnMenuClose(string _sCurrentMenu)
 	int i
 	;Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
 	while i < 2
+		int targetObject = jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i])
 		form equippedItem = PlayerRef.GetEquippedObject(i)
-		if equippedItem as Weapon && equippedItem == jMap.GetForm(jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i]), "iEquipForm")
+		int itemHandle = getHandle(i)
+		if equippedItem as Weapon && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle"))
 			checkAndUpdatePoisonInfo(i)
 			CM.checkAndUpdateChargeMeter(i)
 			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
@@ -4105,7 +4107,7 @@ function addToQueue(int Q)
 			if !isAlreadyInQueue(Q, itemForm, itemID)
 				bool foundInOtherHandQueue
 				if Q < 2
-					foundInOtherHandQueue = isAlreadyInQueue((Q + 1) % 2, itemForm, itemID)
+					foundInOtherHandQueue = isAlreadyInQueue((Q + 1) % 2, itemForm, itemID, itemHandle)
 				endIf
 				if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2) && !bAllowSingleItemsInBothQueues
 					debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_InOtherQ{" + itemName + "}"))
@@ -4131,7 +4133,7 @@ function addToQueue(int Q)
 							return
 						endIf
 						if foundInOtherHandQueue
-							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName)), "iEquipAutoAdded", 0)
+							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName, itemForm, itemHandle)), "iEquipAutoAdded", 0)
 						endIf
 					endIf
 
@@ -4200,13 +4202,13 @@ function addToQueue(int Q)
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_QIsFull{" + asQueueName[Q] + "}"))
 				endIf
 			else
-				int i = findInQueue(Q, itemName)
+				int i = findInQueue(Q, itemName, itemForm, itemHandle)
 				if jMap.getInt(jarray.getObj(aiTargetQ[Q], i), "iEquipAutoAdded") == 1
 					iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_RemoveAAFlag{" + itemName + "}{" + asQueueName[Q] + "}"))
 					if iButton == 0
 						jMap.setInt(jarray.getObj(aiTargetQ[Q], i), "iEquipAutoAdded", 0)
-						if Q < 2 && isAlreadyInQueue((Q + 1) % 2, itemForm, itemID)
-							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName)), "iEquipAutoAdded", 0)
+						if Q < 2 && isAlreadyInQueue((Q + 1) % 2, itemForm, itemID, itemHandle)
+							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName, itemForm, itemHandle)), "iEquipAutoAdded", 0)
 						endIf
 						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AAFlagRemoved"))
 					endIf
@@ -4269,7 +4271,7 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
     return isValid
 endFunction
 
-bool function isAlreadyInQueue(int Q, form itemForm, int itemID)
+bool function isAlreadyInQueue(int Q, form itemForm, int itemID, int itemHandle = 0xFFFF)
 	debug.trace("iEquip_WidgetCore isAlreadyInQueue start")
 	debug.trace("iEquip_WidgetCore isAlreadyInQueue - Q: " + Q + ", itemForm: " + itemForm + ", itemID: " + itemID)
 	bool found
@@ -4278,6 +4280,8 @@ bool function isAlreadyInQueue(int Q, form itemForm, int itemID)
 	int targetObject
 	while i < JArray.count(targetArray) && !found
 		targetObject = jArray.getObj(targetArray, i)
+		if itemHandle != 0xFFFF
+			found = (itemHandle == jMap.getInt(targetObject, "iEquipHandle"))
 		if itemID as bool
 		    found = (itemID == jMap.getInt(targetObject, "iEquipItemID"))
 		else
@@ -4423,14 +4427,16 @@ function purgeQueue()
 	form itemForm
 	int itemType
 	int itemID
+	int itemHandle
 	int targetObject
 	while i < count
 		targetObject = jArray.getObj(targetArray, i)
 		itemForm = jMap.getForm(targetObject, "iEquipForm")
 		itemType = jMap.getInt(targetObject, "iEquipType")
 		itemID = jMap.getInt(targetObject, "iEquipItemID")
+		itemHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
 		debug.trace("iEquip_WidgetCore purgeQueue - index: " + i + ", itemForm: " + itemForm + ", itemID: " + itemID)
-		if isAlreadyInQueue(0, itemForm, itemID) && PlayerRef.GetItemCount(itemForm) < 2 && itemType != 22
+		if isAlreadyInQueue(0, itemForm, itemID, itemHandle) && PlayerRef.GetItemCount(itemForm) < 2 && itemType != 22
 			removeItemFromQueue(1, i, true)
 			count -= 1
 			i -= 1
@@ -4553,6 +4559,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	if !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed") && !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
 		bool keepInFLST
 		int itemID = JMap.getInt(targetObject, "iEquipItemID")
+		int itemHandle = JMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
 		form itemForm = JMap.getForm(targetObject, "iEquipForm")
 		if bMoreHUDLoaded
 			AhzMoreHudIE.RemoveIconItem(itemID)
@@ -4562,7 +4569,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 			if iQueueMenuCurrentQueue == 1
 				otherHandQueue = 0
 			endIf
-			if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+			if isAlreadyInQueue(otherHandQueue, itemForm, itemID, itemHandle)
 				if bMoreHUDLoaded
 					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
 				endIf
@@ -4645,6 +4652,7 @@ function QueueMenuClearQueue()
 		if !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1)) && !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed")
 			bool keepInFLST
 			int itemID = JMap.getInt(targetObject, "iEquipItemID")
+			int itemHandle = JMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
 			form itemForm = JMap.getForm(targetObject, "iEquipForm")
 			if bMoreHUDLoaded
 				AhzMoreHudIE.RemoveIconItem(itemID)
@@ -4654,7 +4662,7 @@ function QueueMenuClearQueue()
 				if iQueueMenuCurrentQueue == 1
 					otherHandQueue = 0
 				endIf
-				if isAlreadyInQueue(otherHandQueue, itemForm, itemID)
+				if isAlreadyInQueue(otherHandQueue, itemForm, itemID, itemHandle)
 					if bMoreHUDLoaded
 						AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
 					endIf

@@ -766,7 +766,7 @@ bool function isAlreadyInAmmoQueue(form itemForm, int targetQ)
 		found = (itemform == jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm"))
 		i += 1
 	endWhile
-	debug.trace("iEquip_AmmoMode isAlreadyInQueue() - returning found: " + found)
+	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue() - returning found: " + found)
 	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue end")
 	return found
 endFunction

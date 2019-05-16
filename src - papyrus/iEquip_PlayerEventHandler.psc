@@ -782,7 +782,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 				string moreHUDIcon
 				if equippedSlot < 2
 					AhzMoreHudIE.RemoveIconItem(itemID)
-					if WC.isAlreadyInQueue((equippedSlot + 1) % 2, queuedForm, itemID)
+					if WC.isAlreadyInQueue((equippedSlot + 1) % 2, queuedForm, itemID, itemHandle)
 						moreHUDIcon = WC.asMoreHUDIcons[3]
 					else
 	            		moreHUDIcon = WC.asMoreHUDIcons[equippedSlot]
