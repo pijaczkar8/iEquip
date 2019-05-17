@@ -110,6 +110,7 @@ function drawPage()
 
 		MCM.AddHeaderOption("$iEquip_MCM_tch_lbl_torchKeyOptions")
 		MCM.AddKeyMapOptionST("tch_key_toggleTorch", "$iEquip_MCM_tch_lbl_toggleTorch", KH.iToggleTorchKey, mcmUnmapFLAG)
+        MCM.AddToggleOptionST("tch_tgl_toggleTorchEquipRH", "$iEquip_MCM_tch_lbl_toggleTorchEquipRH", TO.bToggleTorchEquipRH)
 
 		MCM.AddEmptyOption()
 		
@@ -129,23 +130,6 @@ endFunction
 ; -----------------
 ; - Torch Options -
 ; -----------------
-
-State tch_key_toggleTorch
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_tch_txt_toggleTorchHotKey")
-        elseIf currentEvent == "Change" || "Default"
-            if currentEvent == "Change"
-                KH.iToggleTorchKey = currentVar as int
-            else
-                KH.iToggleTorchKey = -1
-            endIf
-            
-            MCM.bUpdateKeyMaps = true
-            MCM.SetKeyMapOptionValueST(KH.iToggleTorchKey)        
-        endIf
-    endEvent
-endState
 
 State tch_tgl_showTorchMeter
     event OnBeginState()
@@ -258,6 +242,34 @@ State tch_tgl_torchesFade
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bReduceLightAsTorchRunsOut)
             TO.bReduceLightAsTorchRunsOut = !TO.bReduceLightAsTorchRunsOut
             MCM.SetToggleOptionValueST(TO.bReduceLightAsTorchRunsOut)
+        endIf
+    endEvent
+endState
+
+State tch_key_toggleTorch
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_toggleTorchHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iToggleTorchKey = currentVar as int
+            else
+                KH.iToggleTorchKey = -1
+            endIf
+            
+            MCM.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iToggleTorchKey)        
+        endIf
+    endEvent
+endState
+
+State tch_tgl_toggleTorchEquipRH
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_toggleTorchEquipRH")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bToggleTorchEquipRH)
+            TO.bToggleTorchEquipRH = !TO.bToggleTorchEquipRH
+            MCM.SetToggleOptionValueST(TO.bToggleTorchEquipRH)
         endIf
     endEvent
 endState

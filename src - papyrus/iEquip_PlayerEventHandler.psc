@@ -788,7 +788,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 				string moreHUDIcon
 				if equippedSlot < 2
 					AhzMoreHudIE.RemoveIconItem(itemID)
-					if WC.isAlreadyInQueue((equippedSlot + 1) % 2, queuedForm, itemID, itemHandle)
+					if specificHandedItems.Find(itemType) == -1 && WC.isAlreadyInQueue((equippedSlot + 1) % 2, queuedForm, itemID, itemHandle)
 						moreHUDIcon = WC.asMoreHUDIcons[3]
 					else
 	            		moreHUDIcon = WC.asMoreHUDIcons[equippedSlot]
@@ -800,7 +800,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	        endIf
 
 	        bool bCurrentlyDualCasting = !WC.b2HSpellEquipped && jMap.getInt(jArray.GetObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && WC.asCurrentlyEquipped[1] == UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text")
-			
+			; ToDo - Add torch toggle condition so right hand widget updates correctly if torch switch included RH to Unarmed
 			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !(equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting))			; If it's somehow already shown in the widget
 				if equippedSlot < 2
 					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0																			; Update the name and temper level if required
@@ -815,7 +815,6 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 					endIf
 				endIf
 				if !(equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped || AM.bAmmoMode))
-				;if !(equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped))
 					blockCall = true
 				endIf
 			

@@ -3360,8 +3360,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		endIf
 		bAmmoModeFirstLook = false
 	endIf
+	bool forceRight = (Q == 0 && TI.bJustToggledTorch && TI.bToggleTorchEquipRH)
 	; If we've just left ammo mode as a result of equipping on auto-add, check the other hand and if it's empty set the other hand slot to unarmed
-	if bJustLeftAmmoMode && equippingOnAutoAdd
+	if bJustLeftAmmoMode && equippingOnAutoAdd && !forceRight
 		if !PlayerRef.GetEquippedObject(otherHand)
     		setSlotToEmpty(otherHand)
     	endIf
@@ -3373,7 +3374,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		cycleHand(0, aiCurrentQueuePosition[0], jMap.getForm(targetObject, "iEquipForm"))
     ; If we unequipped the other hand now equip the next item
     elseif bSwitchingHands
-    	if equippingOnAutoAdd
+    	if equippingOnAutoAdd && !forceRight
     		if !PlayerRef.GetEquippedObject(otherHand)
     			setSlotToEmpty(otherHand)
     		endIf
@@ -3393,6 +3394,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	if bEnableGearedUp && !previouslyUnarmedOr2HSpell ; This will be actioned on the second pass when re-equipping a previous otherHand item
 		refreshGearedUp()
 	endIf
+	TI.bJustToggledTorch = false
 	EH.bJustQuickDualCast = false
 	bBlockSwitchBackToBoundSpell = false
 	debug.trace("iEquip_WidgetCore cycleHand end")

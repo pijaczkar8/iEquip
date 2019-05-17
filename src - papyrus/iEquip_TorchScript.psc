@@ -42,6 +42,9 @@ bool bFirstUpdateForCurrentTorch = true
 bool property bSettingLightRadius auto hidden
 bool bSettingDuration
 bool bFinalUpdateReceived
+
+bool property bJustToggledTorch auto hidden
+bool property bToggleTorchEquipRH = true auto hidden
 bool bJustDroppedTorch
 
 bool bPreviously2HOrRanged
@@ -293,7 +296,7 @@ function toggleTorch()
 	bool torchEquipped = currentItemType == 11	; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
 	int targetSlot
 	
-	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + torchEquipped + ", currentItemForm: " + currentItemForm + ", currentItemType: " + currentItemType + "bPreviously2HOrRanged: " + bPreviously2HOrRanged)
+	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + torchEquipped + ", currentItemForm: " + currentItemForm + ", currentItemType: " + currentItemType + ", bPreviously2HOrRanged: " + bPreviously2HOrRanged)
 	debug.trace("iEquip_TorchScript toggleTorch - previousLeftHandIndex: " + previousLeftHandIndex + ", previousLeftHandName: " + previousLeftHandName + ", previousItemForm: " + previousItemForm + ", previousItemHandle: " + previousItemHandle)
 
 	if torchEquipped
@@ -305,6 +308,8 @@ function toggleTorch()
 			WC.aiCurrentQueuePosition[0] = previousLeftHandIndex
 			WC.asCurrentlyEquipped[0] = previousLeftHandName
 			WC.updateWidget(0, previousLeftHandIndex, true)
+		elseIf previousItemForm as Armor
+			targetSlot = 0	; Default, for shields only
 		else
 			targetSlot = 2	; Left hand
 		endIf
@@ -312,11 +317,7 @@ function toggleTorch()
 		if previousItemHandle != 0xFFFF
 			iEquip_InventoryExt.EquipItem(previousItemForm, previousItemHandle, PlayerRef, targetSlot)
 		elseIf previousItemForm
-			if previousItemForm as Armor
-				PlayerRef.EquipItemEx(previousItemForm as Armor)
-			else
-				PlayerRef.EquipItemEx(previousItemForm, targetSlot)
-			endIf
+			PlayerRef.EquipItemEx(previousItemForm, targetSlot)
 		else
 			WC.setSlotToEmpty(0, true, jArray.count(WC.aiTargetQ[0]) > 0)
 		endIf
@@ -339,6 +340,7 @@ function toggleTorch()
 
 		previousItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(targetSlot)
 		previousItemForm = currentItemForm
+		bJustToggledTorch = true
 		PlayerRef.EquipItemEx(realTorchForm) ; This should then be caught by EH.onObjectEquipped and trigger all the relevant widget/torch/RH stuff as required
 	
 	else
