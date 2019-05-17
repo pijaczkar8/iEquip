@@ -4282,13 +4282,13 @@ bool function isAlreadyInQueue(int Q, form itemForm, int itemID, int itemHandle 
 		targetObject = jArray.getObj(targetArray, i)
 		if itemHandle != 0xFFFF
 			found = (itemHandle == jMap.getInt(targetObject, "iEquipHandle"))
-		if itemID as bool
+		elseIf itemID as bool
 		    found = (itemID == jMap.getInt(targetObject, "iEquipItemID"))
 		else
 		    found = (itemform == jMap.getForm(targetObject, "iEquipForm"))
 		endIf
 		i += 1
-	endwhile
+	endWhile
 	debug.trace("iEquip_WidgetCore isAlreadyInQueue end")
 return found
 endFunction
@@ -4588,11 +4588,8 @@ function QueueMenuRemoveFromQueue(int iIndex)
         	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
         	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
         endIf
-        if TI.aiTemperedItemTypes.Find(JMap.getInt(targetObject, "iEquipType")) != -1
-        	int itemHandle = JMap.getInt(targetObject, "iEquipHandle")
-        	if itemHandle != 0xFFFF
-        		JArray.EraseIndex(iRefHandleArray, JArray.FindInt(iRefHandleArray, itemHandle))
-        	endIf
+        if TI.aiTemperedItemTypes.Find(JMap.getInt(targetObject, "iEquipType")) != -1 && itemHandle != 0xFFFF
+        	JArray.EraseIndex(iRefHandleArray, JArray.FindInt(iRefHandleArray, itemHandle))
         endIf
     endIf
 	jArray.eraseIndex(targetArray, iIndex)

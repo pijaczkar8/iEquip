@@ -717,10 +717,16 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	;ToDo - check logic for whether or not to hide it if we have a torch in the left hand
 	if equippedSlot < 2 
 		WC.hidePoisonInfo(equippedSlot)
- 		if !((equippedSlot == 0 || specificHandedItems.Find(itemType) > -1) && PlayerRef.GetEquippedItemType(0) == 11)
+ 		if !(equippedSlot == 0 && PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter)
  			WC.setCounterVisibility(equippedSlot, false)
-			if CM.abIsChargeMeterShown[equippedSlot] && TO.bShowTorchMeter
+			if CM.abIsChargeMeterShown[equippedSlot]
 				CM.updateChargeMeterVisibility(equippedSlot, false)
+			endIf
+		endIf
+
+		if equippedSlot == 1 && specificHandedItems.Find(itemType) > -1
+			if CM.abIsChargeMeterShown[0]
+				CM.updateChargeMeterVisibility(0, false)
 			endIf
 		endIf
 	endIf
@@ -759,7 +765,6 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
 																										; Check if we've just manually equipped an item that is already in an iEquip queue
-	; ToDo - fix this!
  	if formFound
 																										; If it's been found in the queue for the equippedSlot it's been equipped to
 		targetIndex = WC.findInQueue(equippedSlot, itemName, queuedForm, itemHandle)

@@ -293,8 +293,9 @@ function toggleTorch()
 	bool torchEquipped = currentItemType == 11	; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
 	int targetSlot
 	
-	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + torchEquipped + ", currentItemForm: " + currentItemForm + ", currentItemType: " + currentItemType + ", bPreviously2HOrRanged: " + bPreviously2HOrRanged + ", previousLeftHandIndex: " + previousLeftHandIndex)
-	
+	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + torchEquipped + ", currentItemForm: " + currentItemForm + ", currentItemType: " + currentItemType + "bPreviously2HOrRanged: " + bPreviously2HOrRanged)
+	debug.trace("iEquip_TorchScript toggleTorch - previousLeftHandIndex: " + previousLeftHandIndex + ", previousLeftHandName: " + previousLeftHandName + ", previousItemForm: " + previousItemForm + ", previousItemHandle: " + previousItemHandle)
+
 	if torchEquipped
 		
 		PlayerRef.UnequipItemEx(currentItemForm)
@@ -311,7 +312,11 @@ function toggleTorch()
 		if previousItemHandle != 0xFFFF
 			iEquip_InventoryExt.EquipItem(previousItemForm, previousItemHandle, PlayerRef, targetSlot)
 		elseIf previousItemForm
-			PlayerRef.EquipItemEx(previousItemForm, targetSlot)
+			if previousItemForm as Armor
+				PlayerRef.EquipItemEx(previousItemForm as Armor)
+			else
+				PlayerRef.EquipItemEx(previousItemForm, targetSlot)
+			endIf
 		else
 			WC.setSlotToEmpty(0, true, jArray.count(WC.aiTargetQ[0]) > 0)
 		endIf
