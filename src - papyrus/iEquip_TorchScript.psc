@@ -10,6 +10,7 @@ import iEquip_InventoryExt
 iEquip_WidgetCore property WC auto
 iEquip_ChargeMeters property CM auto
 iEquip_ProMode property PM auto
+iEquip_AmmoMode property AM auto
 
 Actor property PlayerRef auto
 Faction property PlayerFaction auto
@@ -48,7 +49,7 @@ bool property bToggleTorchEquipRH = true auto hidden
 bool bJustDroppedTorch
 
 bool bPreviously2HOrRanged
-int previousItemHandle
+int previousItemHandle = 0xFFFF
 form previousItemForm
 int previousLeftHandIndex = -1
 string previousLeftHandName
@@ -137,6 +138,7 @@ function onTorchRemoved(form torchForm)
 		iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
 		iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
 		bFirstUpdateForCurrentTorch = true
+		debug.trace("iEquip_TorchScript onTorchRemoved - WC.asCurrentlyEquipped[0]: " + WC.asCurrentlyEquipped[0] + ", torchForm.GetName(): " + torchForm.GetName())
 		if !bJustDroppedTorch && WC.asCurrentlyEquipped[0] == torchForm.GetName() && bautoReEquipTorch && PlayerRef.GetItemCount(torchForm) > 0
 			if bRealisticReEquip
 				Utility.Wait(fRealisticReEquipDelay)
@@ -149,7 +151,7 @@ function onTorchRemoved(form torchForm)
 endfunction
 
 function onTorchEquipped()
-	debug.trace("iEquip_TorchScript onTorchEquipped start")
+	debug.trace("iEquip_TorchScript onTorchEquipped start - bSettingLightRadius: " + bSettingLightRadius)
 	if bSettingLightRadius
 		Utility.Wait(1.0) ; Just in case the unequipped event is received after this one
 		bSettingLightRadius = false
@@ -167,15 +169,17 @@ function onTorchEquipped()
 
 		if fCurrentTorchLife < 30.0
 			if bReduceLightAsTorchRunsOut
-				bSettingLightRadius = true
+				
 				int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
-				if PlayerRef.GetItemCount(iEquipTorch) < 1
-					PlayerRef.AddItem(iEquipTorch, 1, true)
-				endIf
+				
 				iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 				iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 				;PlayerRef.SetActorValue("Paralysis", 1)
 				if !PlayerRef.IsWeaponDrawn()
+					bSettingLightRadius = true
+					if PlayerRef.GetItemCount(iEquipTorch) < 1
+						PlayerRef.AddItem(iEquipTorch, 1, true)
+					endIf
 	            	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
 	            endIf
 				;PlayerRef.SetActorValue("Paralysis", 0)
@@ -238,7 +242,7 @@ function onTorchTimerExpired()
 endFunction
 
 event OnUpdate()
-	debug.trace("iEquip_TorchScript OnUpdate start - fCurrentTorchLife: " + fCurrentTorchLife)
+	debug.trace("iEquip_TorchScript OnUpdate start - fCurrentTorchLife: " + fCurrentTorchLife + ", bFirstUpdateForCurrentTorch: " + bFirstUpdateForCurrentTorch)
 	
 	if bFirstUpdateForCurrentTorch
 		bFinalUpdateReceived = false
@@ -255,13 +259,15 @@ event OnUpdate()
 		if bReduceLightAsTorchRunsOut && fCurrentTorchLife > 0.0
 			int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
 			debug.trace("iEquip_TorchScript OnUpdate - setting torch light radius to " + newRadius)
-			bSettingLightRadius = true
-			if PlayerRef.GetItemCount(iEquipTorch) < 1
-				PlayerRef.AddItem(iEquipTorch, 1, true)
-			endIf
+			
 			iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
+			
 			if !PlayerRef.IsWeaponDrawn()
+				bSettingLightRadius = true
+				if PlayerRef.GetItemCount(iEquipTorch) < 1
+					PlayerRef.AddItem(iEquipTorch, 1, true)
+				endIf
             	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
             endIf
 		endIf
@@ -275,7 +281,7 @@ event OnUpdate()
 			endIf
 			iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
 			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
-			PlayerRef.UnequipItemEx(iEquipTorch)
+			PlayerRef.UnequipItemEx(equippedTorch)
 			PlayerRef.RemoveItem(iEquipTorch, 1, true)	; Remove the fadable torch
 			PlayerRef.RemoveItem(realTorchForm)			; Remove the real torch which will trigger the timer reset and re-equip
 		else
@@ -285,9 +291,6 @@ event OnUpdate()
 	endIf
 	debug.trace("iEquip_TorchScript OnUpdate end")
 endEvent
-
-; ToDo -	This feature can be fleshed out including re-equipping previous item, preferred item to re-equip (QuickShield, etc), disallow/cycle if 2H equipped, etc
-; 			For now this is one of the options on the Optional Hotkey (single or double press). If it is a popular option may need to move it somewhere more prominent?
 
 function toggleTorch()
 
@@ -301,6 +304,11 @@ function toggleTorch()
 
 	if torchEquipped
 		
+		WC.setCounterVisibility(0, false)
+		if bShowTorchMeter
+			CM.updateChargeMeterVisibility(0, false)
+		endIf
+
 		PlayerRef.UnequipItemEx(currentItemForm)
 
 		if bPreviously2HOrRanged
@@ -313,6 +321,8 @@ function toggleTorch()
 		else
 			targetSlot = 2	; Left hand
 		endIf
+
+		bJustToggledTorch = true
 		
 		if previousItemHandle != 0xFFFF
 			iEquip_InventoryExt.EquipItem(previousItemForm, previousItemHandle, PlayerRef, targetSlot)
@@ -324,13 +334,26 @@ function toggleTorch()
 
 	elseIf PlayerRef.GetItemCount(realTorchForm) > 0
 		
+		WC.hidePoisonInfo(0)
+
 		if WC.ai2HWeaponTypesAlt.Find(currentItemType) > -1
 			bPreviously2HOrRanged = true
 			previousLeftHandIndex = WC.aiCurrentQueuePosition[0]
 			previousLeftHandName = WC.asCurrentlyEquipped[0]
 		else
 			bPreviously2HOrRanged = false
-		endIf 
+		endIf
+
+		if AM.bAmmoMode
+			AM.toggleAmmoMode(true, true)
+			if !AM.bSimpleAmmoMode
+				bool[] args = new bool[3]
+				args[2] = true
+				UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
+				args = new bool[4]
+				UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+			endIf
+		endIf
 
 		if currentItemType == 10 ; Shield
 			targetSlot = 2
@@ -365,7 +388,7 @@ Function DropTorch()
 
 		PlayerRef.UnequipItemEx(equippedTorch)
 
-		if equippedTorch == iEquipTorch 			; Switch to using the one with the display name so if the player wants to pick it up again it will have the same name/value/weight displayed as Torch01
+		if equippedTorch == iEquipTorch || (fCurrentTorchLife < 30.0 && bReduceLightAsTorchRunsOut)			; Switch to using the one with the display name so if the player wants to pick it up again it will have the same name/value/weight displayed as Torch01
 			equippedTorch = iEquipDroppedTorch
 		endIf
 

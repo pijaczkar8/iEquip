@@ -1141,7 +1141,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                 debug.trace("iEquip_PotionScript selectAndConsumePotion - current AV: " + currAV + ", current max: " + currAVMax + ", current %: " + (currAV/currAVMax) + ", threshold: " + fSmartSelectThreshold + ", in combat: " + PlayerRef.IsInCombat())
                 bool bInCombat = PlayerRef.IsInCombat()
                 bool bBelowThreshold = ((currAV/currAVMax) <= fSmartSelectThreshold)
-                ;bool bBelowThreshold = (PlayerRef.GetActorValue(sTargetAV) / (PlayerRef.GetActorValue(sTargetAV) + iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)) <= fSmartSelectThreshold)
+                ;bool bBelowThreshold = ((PlayerRef.GetActorValue(sTargetAV)/(currAV + currAVDamage)) <= fSmartSelectThreshold)
                 bool bEffectActive = bBlockIfRestEffectActive && isEffectAlreadyActive(Q, isRestore)
                 bool bSkipEffectCheck = bInCombat && bSuspendChecksInCombat && bBelowThreshold
                 debug.trace("iEquip_PotionScript selectAndConsumePotion - bBelowThreshold: " + bBelowThreshold + ", bEffectActive: " + bEffectActive + ", bSkipEffectCheck: " + bSkipEffectCheck)

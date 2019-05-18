@@ -714,35 +714,6 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	string itemName
 	string itemBaseName
 
-	;ToDo - check logic for whether or not to hide it if we have a torch in the left hand
-	if equippedSlot < 2 
-		WC.hidePoisonInfo(equippedSlot)
- 		if !(equippedSlot == 0 && PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter)
- 			WC.setCounterVisibility(equippedSlot, false)
-			if CM.abIsChargeMeterShown[equippedSlot]
-				CM.updateChargeMeterVisibility(equippedSlot, false)
-			endIf
-		endIf
-
-		if equippedSlot == 1 && specificHandedItems.Find(itemType) > -1
-			if CM.abIsChargeMeterShown[0]
-				CM.updateChargeMeterVisibility(0, false)
-			endIf
-		endIf
-	endIf
-	
-	;/int itemHandle = 0xFFFF
-	if equippedSlot < 2 && TI.aiTemperedItemTypes.Find(itemType) > -1 && PlayerRef.GetEquippedObject(equippedSlot) == queuedForm
-		;if itemType == 26
-		if equippedSlot == 0 && PlayerRef.GetEquippedShield()
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)				; Shield
-		elseIf itemType == 7 || itemType == 9
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)				; Need to check right hand for ranged weapon iHandle
-		else
-			itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(equippedSlot)	; Left/Right hand
-		endIf
-	endIf/;
-
 	int itemHandle = WC.getHandle(equippedSlot, itemType)
 
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
@@ -751,9 +722,6 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
 		itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
 		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
-	;else
-		;itemName = WornObject.GetDisplayName(PlayerRef, equippedSlot, 0)
-		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 	endIf
 	
 	if itemName == ""
@@ -800,8 +768,8 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	        endIf
 
 	        bool bCurrentlyDualCasting = !WC.b2HSpellEquipped && jMap.getInt(jArray.GetObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && WC.asCurrentlyEquipped[1] == UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text")
-			; ToDo - Add torch toggle condition so right hand widget updates correctly if torch switch included RH to Unarmed
-			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !(equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting))			; If it's somehow already shown in the widget
+
+			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || (equippedSlot == 1 && TO.bJustToggledTorch))			; If it's somehow already shown in the widget
 				if equippedSlot < 2
 					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0																			; Update the name and temper level if required
 						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
@@ -871,7 +839,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 					else
 						jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
 						jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
-						jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)																				; These will be set correctly by WC.CycleHand() and associated functions
+						jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)								; These will be set correctly by WC.CycleHand() and associated functions
 						jMap.setInt(iEquipItem, "isEnchanted", 0)
 						jMap.setInt(iEquipItem, "isPoisoned", 0)
 					endIf
@@ -966,7 +934,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					int otherHand = (i + 1) % 2
 																		; Check if it's contained in the other hand queue as well
 					int foundAtOtherHand = -1
-					if specificHandedItems.Find(itemType) > -1
+					if specificHandedItems.Find(itemType) == -1
 						foundAtOtherHand = WC.findInQueue(otherHand, itemName, akBaseItem)
 					endIf
 					int itemCount = PlayerRef.GetItemCount(akBaseItem)

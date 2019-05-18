@@ -75,12 +75,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-    ;ToDo - remove after testing
-    emptyPotionQueueOptions = new String[3]
-    emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
-    emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
-    emptyPotionQueueOptions[2] = "$iEquip_MCM_pot_opt_leaveIcon"
-	; ^^^^^^
+
 	MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potOpts")
 	MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)
 			

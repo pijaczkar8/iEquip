@@ -64,13 +64,6 @@ function initialise()
 		
 		bFirstRun = false
 	endIf
-
-	; ToDo - remove
-	aiNameElements = new int[7]
-	aiNameElements[0] = 8
-	aiNameElements[1] = 22
-	aiNameElements[5] = 18
-	aiNameElements[6] = 32
 	
 	updateTemperLevelArrays()
 	

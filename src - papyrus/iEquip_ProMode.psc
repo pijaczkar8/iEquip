@@ -1340,6 +1340,8 @@ function quickRestore()
 		bool bQuickBuff = bDoBoth || ((iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bPlayerIsInCombat)) && bIn2ndPressWindow)
 		bool bQuickRestore = bDoBoth || !bQuickBuff
 
+		float currAV
+
 		debug.trace("iEquip_ProMode quickRestore - bPlayerIsInCombat: " + bPlayerIsInCombat + ", bIn2ndPressWindow: " + bIn2ndPressWindow + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore + ", fQuickRestoreThreshold: " + fQuickRestoreThreshold)
 
 		if bQuickRestore
@@ -1354,10 +1356,10 @@ function quickRestore()
 	        
 	        elseIf bQuickRestore
 	        	;ToDo - remove the next few lines of debug code
-		    	float currHAV = PlayerRef.GetActorValue("Health")
-		    	float currHAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 24)
-		    	float currHAVMax = currHAV + currHAVDamage
-	    		debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled + ", current health: " + currHAV + ", current damage: " + currHAVDamage + ", current max: " + currHAVMax + ", current %: " + (currHAV / currHAVMax))
+		    	;float currHAV = PlayerRef.GetActorValue("Health")
+		    	;float currHAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 24)
+		    	;float currHAVMax = currHAV + currHAVDamage
+	    		;debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled + ", current health: " + currHAV + ", current damage: " + currHAVDamage + ", current max: " + currHAVMax + ", current %: " + (currHAV / currHAVMax))
 	        	debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
 	        	quickHeal()
 	        endIf
@@ -1373,13 +1375,14 @@ function quickRestore()
 	    endIf
 
 	    if bQuickStaminaEnabled
+	    	currAV = PlayerRef.GetActorValue("Stamina")
 	    	;ToDo - remove the next few lines of debug code
-	    	float currSAV = PlayerRef.GetActorValue("Stamina")
-	    	float currSAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 26)
-	    	float currSAVMax = currSAV + currSAVDamage
-    		debug.trace("iEquip_ProMode quickRestore - bQuickStaminaEnabled: " + bQuickStaminaEnabled + ", current stamina: " + currSAV + ", current damage: " + currSAVDamage + ", current max: " + currSAVMax + ", current %: " + (currSAV / currSAVMax))
-    		if bQuickRestore && ((currSAV / currSAVMax) <= fQuickRestoreThreshold)
-    		;if bQuickRestore && (PlayerRef.GetActorValue("Stamina") / (PlayerRef.GetActorValue("Stamina") + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
+	    	;float currSAV = PlayerRef.GetActorValue("Stamina")
+	    	;float currSAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 26)
+	    	;float currSAVMax = currSAV + currSAVDamage
+    		;debug.trace("iEquip_ProMode quickRestore - bQuickStaminaEnabled: " + bQuickStaminaEnabled + ", current stamina: " + currSAV + ", current damage: " + currSAVDamage + ", current max: " + currSAVMax + ", current %: " + (currSAV / currSAVMax))
+    		;if bQuickRestore && ((currSAV / currSAVMax) <= fQuickRestoreThreshold)
+    		if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
 		    	PO.selectAndConsumePotion(2, 0) ;Stamina
 		    else
@@ -1397,13 +1400,14 @@ function quickRestore()
 	    endIf
 
 	    if bQuickMagickaEnabled
+	    	currAV = PlayerRef.GetActorValue("Magicka")
 	    	;ToDo - remove the next few lines of debug code
-	    	float currMAV = PlayerRef.GetActorValue("Magicka")
-	    	float currMAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 25)
-	    	float currMAVMax = currMAV + currMAVDamage
-    		debug.trace("iEquip_ProMode quickRestore - bQuickMagickaEnabled: " + bQuickMagickaEnabled + ", current magicka: " + currMAV + ", current damage: " + currMAVDamage + ", current max: " + currMAVMax + ", current %: " + (currMAV / currMAVMax))
-    		if bQuickRestore && ((currMAV / currMAVMax) <= fQuickRestoreThreshold)
-	    	;if bQuickRestore && (PlayerRef.GetActorValue("Magicka") / (PlayerRef.GetActorValue("Magicka") + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
+	    	;float currMAV = PlayerRef.GetActorValue("Magicka")
+	    	;float currMAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, 25)
+	    	;float currMAVMax = currMAV + currMAVDamage
+    		;debug.trace("iEquip_ProMode quickRestore - bQuickMagickaEnabled: " + bQuickMagickaEnabled + ", current magicka: " + currMAV + ", current damage: " + currMAVDamage + ", current max: " + currMAVMax + ", current %: " + (currMAV / currMAVMax))
+    		;if bQuickRestore && ((currMAV / currMAVMax) <= fQuickRestoreThreshold)
+	    	if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
 		    	PO.selectAndConsumePotion(1, 0) ;Magicka
 		    else
