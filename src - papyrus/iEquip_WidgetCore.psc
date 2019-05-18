@@ -590,27 +590,33 @@ function CheckDependencies()
 	else
 		bMoreHUDLoaded = false
 	endIf
+	
     if Game.GetModByName("Requiem.esp") != 255
         RC.bIsRequiemLoaded = true
     else
         RC.bIsRequiemLoaded = false
     endIf
+
     if Game.GetModByName("Dawnguard.esm") != 255
+    	BM.arBeastRaces[1] = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race 	; DLC1VampireBeastRace
 		aUniqueItems[38] = Game.GetFormFromFile(0x00000800, "Dawnguard.esm") as Weapon 	; DLC1AurielsBow
 		aUniqueItems[39] = Game.GetFormFromFile(0x000067CF, "Dawnguard.esm") as Weapon 	; DLC1HarkonsSword
 		aUniqueItems[40] = Game.GetFormFromFile(0x00011BAD, "Dawnguard.esm") as Weapon 	; DLC1DawnguardRuneHammer
 		aUniqueItems[41] = Game.GetFormFromFile(0x0000CFB6, "Dawnguard.esm") as Weapon 	; DLC1LD_KatriaBow - Zephyr
 	else
+		BM.arBeastRaces[1] = none
 		aUniqueItems[38] = none
 		aUniqueItems[39] = none
 		aUniqueItems[40] = none
 		aUniqueItems[41] = none
 	endIf
+
 	if Game.GetModByName("Hearthfires.esm") != 255
 		aUniqueItems[42] = Game.GetFormFromFile(0x00004D91, "Hearthfires.esm") as Weapon 	; BYOHWoodenSword
 	else
 		aUniqueItems[42] = none
 	endIf
+
 	if Game.GetModByName("Dragonborn.esm") != 255
 		aUniqueItems[43] = Game.GetFormFromFile(0x000206F2, "Dragonborn.esm") as Weapon 	; DLC2RR03NordPickaxe - Ancient Nordic Pickaxe
 		aUniqueItems[44] = Game.GetFormFromFile(0x000398E6, "Dragonborn.esm") as Weapon 	; DLC2AncientNordPickaxe - Ancient Nordic Pickaxe
@@ -628,16 +634,50 @@ function CheckDependencies()
 		aUniqueItems[48] = none
 		aUniqueItems[49] = none
 	endIf
+
 	if Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
         EH.bIsThunderchildLoaded = true
     else
         EH.bIsThunderchildLoaded = false
     endIf
+
     if Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255
         EH.bIsWintersunLoaded = true
     else
         EH.bIsWintersunLoaded = false
     endIf
+
+	if Game.GetModByName("Undeath.esp") != 255
+		BM.arBeastRaces[2] = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race 		; NecroLichRace
+	else
+		BM.arBeastRaces[2] = none
+	endIf
+
+	if Game.GetModByName("The Path of Transcendence.esp") != 255
+		BM.bPOTLoaded = true
+		BM.arPOTBoneTyrantRaces[0] = Game.GetFormFromFile(0x00038354, "The Path of Transcendence.esp") as Race 	; POT_ArgonianRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[1] = Game.GetFormFromFile(0x00038355, "The Path of Transcendence.esp") as Race 	; POT_BretonRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[2] = Game.GetFormFromFile(0x00038356, "The Path of Transcendence.esp") as Race 	; POT_DarkElfRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[3] = Game.GetFormFromFile(0x00038357, "The Path of Transcendence.esp") as Race 	; POT_ImperialRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[4] = Game.GetFormFromFile(0x00038358, "The Path of Transcendence.esp") as Race 	; POT_NordRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[5] = Game.GetFormFromFile(0x00038359, "The Path of Transcendence.esp") as Race 	; POT_HighElfRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[6] = Game.GetFormFromFile(0x0003835A, "The Path of Transcendence.esp") as Race 	; POT_KhajiitRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[7] = Game.GetFormFromFile(0x0003835B, "The Path of Transcendence.esp") as Race 	; POT_RedguardRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[8] = Game.GetFormFromFile(0x0003835C, "The Path of Transcendence.esp") as Race 	; POT_OrcRaceBoneTyrant
+		BM.arPOTBoneTyrantRaces[9] = Game.GetFormFromFile(0x0003835D, "The Path of Transcendence.esp") as Race 	; POT_WoodElfRaceBoneTyrant
+	else
+		BM.bPOTLoaded = false
+		BM.arPOTBoneTyrantRaces[0] = none
+		BM.arPOTBoneTyrantRaces[1] = none
+		BM.arPOTBoneTyrantRaces[2] = none
+		BM.arPOTBoneTyrantRaces[3] = none
+		BM.arPOTBoneTyrantRaces[4] = none
+		BM.arPOTBoneTyrantRaces[5] = none
+		BM.arPOTBoneTyrantRaces[6] = none
+		BM.arPOTBoneTyrantRaces[7] = none
+		BM.arPOTBoneTyrantRaces[8] = none
+		BM.arPOTBoneTyrantRaces[9] = none
+	endIf
 endFunction
 
 ; ##########################
@@ -754,7 +794,6 @@ state ENABLED
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			refreshWidgetOnLoad()
 		else
-			;getAndStoreDefaultWidgetValues()
 			int i
 			while i < 2
 				CM.initChargeMeter(i)
@@ -2658,7 +2697,9 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 		setCounterVisibility(Q, false)
 		if Q == 1
 			if bAmmoMode
-				AM.toggleAmmoMode()
+				if !TO.bJustToggledTorch
+					AM.toggleAmmoMode()
+				endIf
 			elseIf bLeftIconFaded
 				checkAndFadeLeftIcon(0, 0)
 			endIf
@@ -3360,7 +3401,8 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		endIf
 		bAmmoModeFirstLook = false
 	endIf
-	bool forceRight = (Q == 0 && TI.bJustToggledTorch && TI.bToggleTorchEquipRH)
+	bool forceRight = (Q == 0 && TO.bJustToggledTorch && TO.bToggleTorchEquipRH)
+	debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", TO.bJustToggledTorch: " + TO.bJustToggledTorch + ", TO.bToggleTorchEquipRH: " + TO.bToggleTorchEquipRH + ", forceRight: " + forceRight)
 	; If we've just left ammo mode as a result of equipping on auto-add, check the other hand and if it's empty set the other hand slot to unarmed
 	if bJustLeftAmmoMode && equippingOnAutoAdd && !forceRight
 		if !PlayerRef.GetEquippedObject(otherHand)
@@ -3394,7 +3436,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	if bEnableGearedUp && !previouslyUnarmedOr2HSpell ; This will be actioned on the second pass when re-equipping a previous otherHand item
 		refreshGearedUp()
 	endIf
-	TI.bJustToggledTorch = false
+	TO.bJustToggledTorch = false
 	EH.bJustQuickDualCast = false
 	bBlockSwitchBackToBoundSpell = false
 	debug.trace("iEquip_WidgetCore cycleHand end")
@@ -3444,11 +3486,13 @@ function goUnarmed()
 	debug.trace("iEquip_WidgetCore goUnarmed - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
 	if bAmmoMode && !bPreselectMode
 		AM.toggleAmmoMode(true, true)
-		bool[] args = new bool[3]
-		args[2] = true
-		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
-		args = new bool[4]
-		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+		if !AM.bSimpleAmmoMode
+			bool[] args = new bool[3]
+			args[2] = true
+			UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
+			args = new bool[4]
+			UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+		endIf
 	endIf
 	bGoneUnarmed = true
 	int i

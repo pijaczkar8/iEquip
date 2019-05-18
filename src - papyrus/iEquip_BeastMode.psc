@@ -24,7 +24,7 @@ race[] property arBeastRaces auto hidden
 
 ; The Path of Transcendence Bone Tyrant races
 race[] property arPOTBoneTyrantRaces auto hidden
-bool bPOTLoaded
+bool property bPOTLoaded auto hidden
 
 formlist property iEquip_BeastModeItemsFLST auto
 
@@ -78,44 +78,6 @@ function initialise()
 	debug.trace("iEquip_BeastMode initialise start")
 	WidgetRoot = WC.WidgetRoot
 	initialiseQueueArrays()
-
-	if Game.GetModByName("Dawnguard.esm") != 255
-		arBeastRaces[1] = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race 	; DLC1VampireBeastRace
-	else
-		arBeastRaces[1] = none
-	endIf
-
-	if Game.GetModByName("Undeath.esp") != 255
-		arBeastRaces[2] = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race 		; NecroLichRace
-	else
-		arBeastRaces[2] = none
-	endIf
-
-	if Game.GetModByName("The Path of Transcendence.esp") != 255
-		bPOTLoaded = true
-		arPOTBoneTyrantRaces[0] = Game.GetFormFromFile(0x00038354, "The Path of Transcendence.esp") as Race 	; POT_ArgonianRaceBoneTyrant
-		arPOTBoneTyrantRaces[1] = Game.GetFormFromFile(0x00038355, "The Path of Transcendence.esp") as Race 	; POT_BretonRaceBoneTyrant
-		arPOTBoneTyrantRaces[2] = Game.GetFormFromFile(0x00038356, "The Path of Transcendence.esp") as Race 	; POT_DarkElfRaceBoneTyrant
-		arPOTBoneTyrantRaces[3] = Game.GetFormFromFile(0x00038357, "The Path of Transcendence.esp") as Race 	; POT_ImperialRaceBoneTyrant
-		arPOTBoneTyrantRaces[4] = Game.GetFormFromFile(0x00038358, "The Path of Transcendence.esp") as Race 	; POT_NordRaceBoneTyrant
-		arPOTBoneTyrantRaces[5] = Game.GetFormFromFile(0x00038359, "The Path of Transcendence.esp") as Race 	; POT_HighElfRaceBoneTyrant
-		arPOTBoneTyrantRaces[6] = Game.GetFormFromFile(0x0003835A, "The Path of Transcendence.esp") as Race 	; POT_KhajiitRaceBoneTyrant
-		arPOTBoneTyrantRaces[7] = Game.GetFormFromFile(0x0003835B, "The Path of Transcendence.esp") as Race 	; POT_RedguardRaceBoneTyrant
-		arPOTBoneTyrantRaces[8] = Game.GetFormFromFile(0x0003835C, "The Path of Transcendence.esp") as Race 	; POT_OrcRaceBoneTyrant
-		arPOTBoneTyrantRaces[9] = Game.GetFormFromFile(0x0003835D, "The Path of Transcendence.esp") as Race 	; POT_WoodElfRaceBoneTyrant
-	else
-		bPOTLoaded = false
-		arPOTBoneTyrantRaces[0] = none
-		arPOTBoneTyrantRaces[1] = none
-		arPOTBoneTyrantRaces[2] = none
-		arPOTBoneTyrantRaces[3] = none
-		arPOTBoneTyrantRaces[4] = none
-		arPOTBoneTyrantRaces[5] = none
-		arPOTBoneTyrantRaces[6] = none
-		arPOTBoneTyrantRaces[7] = none
-		arPOTBoneTyrantRaces[8] = none
-		arPOTBoneTyrantRaces[9] = none
-	endIf
 	debug.trace("iEquip_BeastMode initialise end")
 endFunction
 
