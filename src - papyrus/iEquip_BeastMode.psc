@@ -24,7 +24,7 @@ race[] property arBeastRaces auto hidden
 
 ; The Path of Transcendence Bone Tyrant races
 race[] property arPOTBoneTyrantRaces auto hidden
-bool bPOTLoaded
+bool property bPOTLoaded auto hidden
 
 formlist property iEquip_BeastModeItemsFLST auto
 

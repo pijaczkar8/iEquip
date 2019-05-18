@@ -16,7 +16,7 @@ endFunction
 
 int function saveData()             ; Save page data and return jObject
     debug.trace("WARN: An iEquip MCM Page has no defined save data")
-    return -1
+    return jArray.object()
 endFunction
 
 function loadData(int jPageObj)     ; Load page data from jPageObj

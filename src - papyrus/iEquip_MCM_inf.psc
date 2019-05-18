@@ -15,7 +15,7 @@ function initData()                  ; Initialize page specific data
 endFunction
 
 int function saveData()             ; Save page data and return jObject
-    return -1
+    return jArray.object()
 endFunction
 
 function loadData(int jPageObj)     ; Load page data from jPageObj
@@ -72,7 +72,7 @@ State inf_men_loadpreset
 			int i
 			saPresets = Utility.CreateStringArray(tmpStrArr.length + 1, "$iEquip_MCM_inf_lbl_noLoad")
 			while(i < tmpStrArr.length)
-				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], "."))
+				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], MCM.FileExtMCM))
 				i += 1
 			EndWhile
 			
@@ -96,7 +96,7 @@ State inf_men_deletepreset
 			int i
 			saPresets = Utility.CreateStringArray(tmpStrArr.length + 1, "$iEquip_MCM_inf_lbl_noDelete")
 			while(i < tmpStrArr.length)
-				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], "."))
+				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], MCM.FileExtMCM))
 				i += 1
 			EndWhile
 			
