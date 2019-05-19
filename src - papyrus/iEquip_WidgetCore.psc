@@ -1977,7 +1977,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			PM.cyclePreselectSlot(Q, queueLength, Reverse, true, onKeyPress)
 		endIf
 	;if name not shown then first cycle press shows name without advancing the queue
-	elseif bFirstPressShowsName && !bSwitchingHands && !bPreselectSwitchingHands && !abIsNameShown[Q] && asCurrentlyEquipped[Q] != ""
+	elseif bFirstPressShowsName && !onItemRemoved && !bSwitchingHands && !bPreselectSwitchingHands && !abIsNameShown[Q] && asCurrentlyEquipped[Q] != ""
 		showName(Q)
 
 	elseIf queueLength > 1 || onItemRemoved || (Q < 3 && abQueueWasEmpty[Q]) || (Q == 0 && bGoneUnarmed || b2HSpellEquipped)

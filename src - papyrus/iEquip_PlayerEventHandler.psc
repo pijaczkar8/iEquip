@@ -939,7 +939,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					endIf
 					int itemCount = PlayerRef.GetItemCount(akBaseItem)
 																		; If it's ammo, scrolls, torch or other throwing weapons which require a counter update
-					if WC.asCurrentlyEquipped[i] == itemName && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)) && itemCount > 0)
+					if WC.asCurrentlyEquipped[i] == itemName && itemCount > 0 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)))
 						WC.setSlotCount(i, itemCount)
 						actionTaken = true
 																		; Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
