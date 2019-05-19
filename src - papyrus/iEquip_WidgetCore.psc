@@ -1861,21 +1861,23 @@ int function getHandle(int Q, int itemType = -1)
 	debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType)
 	int itemHandle = 0xFFFF
 	if Q < 2
-		if itemType == -1
-			form equippedItem = PlayerRef.GetEquippedObject(Q)
-			itemType = equippedItem.GetType()
-			If itemType == 41 														; If it is a weapon get the weapon type
-	        	itemType = (equippedItem as Weapon).GetWeaponType()
-	        endIf
-	        debug.trace("iEquip_WidgetCore getHandle - itemType: " + itemType)
-		endIf
-		if TI.aiTemperedItemTypes.Find(itemType) > -1
-			if itemType == 26														; Shield
-				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)
-			elseIf (itemType > 4 && itemType < 8) || itemType == 9					; 2H or ranged
-				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)
-			else
-				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)
+		form equippedItem = PlayerRef.GetEquippedObject(Q)
+		if equippedItem
+			if itemType == -1
+				itemType = equippedItem.GetType()
+				If itemType == 41 														; If it is a weapon get the weapon type
+		        	itemType = (equippedItem as Weapon).GetWeaponType()
+		        endIf
+		        debug.trace("iEquip_WidgetCore getHandle - itemType: " + itemType)
+			endIf
+			if TI.aiTemperedItemTypes.Find(itemType) > -1
+				if itemType == 26														; Shield
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)
+				elseIf (itemType > 4 && itemType < 8) || itemType == 9					; 2H or ranged
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)
+				else
+					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)
+				endIf
 			endIf
 		endIf
 	endIf
