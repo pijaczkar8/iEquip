@@ -1435,7 +1435,7 @@ event OnMenuClose(string _sCurrentMenu)
 		int targetObject = jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i])
 		form equippedItem = PlayerRef.GetEquippedObject(i)
 		int itemHandle = getHandle(i)
-		if equippedItem as Weapon && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle"))
+		if equippedItem as Weapon && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
 			checkAndUpdatePoisonInfo(i)
 			CM.checkAndUpdateChargeMeter(i)
 			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
@@ -2173,7 +2173,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	int targetObject = jArray.getObj(aiTargetQ[Q], targetIndex)
     Form targetItem = jMap.getForm(targetObject, "iEquipForm")
     int itemType = jMap.getInt(targetObject, "iEquipType")
-    int itemHandle = jMap.getInt(targetObject, "iEquipHandle")
+    int itemHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
     
     PM.bCurrentlyQuickRanged = false
     PM.bCurrentlyQuickHealing = false
@@ -2189,8 +2189,8 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	    if Q == 1 && itemType == 0
 			goUnarmed()
 			doneHere = true  
-	    ;if you already have the item/shout equipped in the slot you are cycling then refresh the poison, charge and count info and hide the attribute icons
-	    elseif (itemHandle != 0xFFFF && ((itemType == 26 && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2)) || itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q))) || (targetItem == PlayerRef.GetEquippedObject(Q))
+	    ;if you already have the item equipped in the slot you are cycling then refresh the poison, charge and count info and hide the attribute icons
+	    elseif (itemHandle != 0xFFFF && ((itemType == 26 && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2)) || itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q)))
 	    	hideAttributeIcons(Q)
 	    	checkAndUpdatePoisonInfo(Q)
 			CM.checkAndUpdateChargeMeter(Q)
@@ -3010,7 +3010,7 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
 		if itemHandle != 0xFFFF && JArray.FindInt(iRefHandleArray, itemHandle) != -1
 			debug.trace("iEquip_WidgetCore findInQueue - seaching by handle")
-			if itemHandle == jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle")
+			if itemHandle == jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle", 0xFFFF)
 				found = true
 			else
 				iIndex += 1
@@ -4332,7 +4332,7 @@ bool function isAlreadyInQueue(int Q, form itemForm, int itemID, int itemHandle 
 	while i < JArray.count(targetArray) && !found
 		targetObject = jArray.getObj(targetArray, i)
 		if itemHandle != 0xFFFF
-			found = (itemHandle == jMap.getInt(targetObject, "iEquipHandle"))
+			found = (itemHandle == jMap.getInt(targetObject, "iEquipHandle", 0xFFFF))
 		elseIf itemID as bool
 		    found = (itemID == jMap.getInt(targetObject, "iEquipItemID"))
 		else
