@@ -2190,7 +2190,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 			goUnarmed()
 			doneHere = true  
 	    ;if you already have the item/shout equipped in the slot you are cycling then refresh the poison, charge and count info and hide the attribute icons
-	    elseif (itemHandle != 0xFFFF && ((itemType == 26 && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2)) || itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q))) || (targetItem == PlayerRef.GetEquippedObject(Q))
+	    elseif (itemHandle != 0xFFFF && ((itemType == 26 && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2)) || itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q)))
 	    	hideAttributeIcons(Q)
 	    	checkAndUpdatePoisonInfo(Q)
 			CM.checkAndUpdateChargeMeter(Q)

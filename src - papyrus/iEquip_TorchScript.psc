@@ -309,17 +309,19 @@ function toggleTorch()
 			CM.updateChargeMeterVisibility(0, false)
 		endIf
 
+		UnregisterForUpdate()	; Cancel any pending updates
+
 		PlayerRef.UnequipItemEx(currentItemForm)
 
 		if bPreviously2HOrRanged
-			targetSlot = 1	; Right hand
+			targetSlot = 1		; Right hand
 			WC.aiCurrentQueuePosition[0] = previousLeftHandIndex
 			WC.asCurrentlyEquipped[0] = previousLeftHandName
 			WC.updateWidget(0, previousLeftHandIndex, true)
 		elseIf previousItemForm as Armor
-			targetSlot = 0	; Default, for shields only
+			targetSlot = 0		; Default, for shields only
 		else
-			targetSlot = 2	; Left hand
+			targetSlot = 2		; Left hand
 		endIf
 
 		bJustToggledTorch = true
