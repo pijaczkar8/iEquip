@@ -35,6 +35,8 @@ string[] property asItemCharge auto hidden
 
 bool property bSettingsChanged auto hidden
 
+bool property bTorchMeterShown auto hidden
+
 ; EVENTS ------------------------------------------------------------------------------------------
 event OnInit()
 	debug.trace("iEquip_ChargeMeters OnInit start")
@@ -260,13 +262,13 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter end")
 endFunction
 
-function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false, bool isTorchMeter = false)
+function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false)
 	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility start")
 	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility - Q: " + Q + ", show: " + show)
 	int element
 	int iHandle
 	if (show && !abIsChargeMeterShown[Q]) || (!show && abIsChargeMeterShown[Q]) || hideMeters || hideGems
-		if hideMeters || (iChargeDisplayType == 1 && !hideGems)
+		if hideMeters || (iChargeDisplayType == 1 && !hideGems) || (Q == 0 && bTorchMeterShown)
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
 			element = 13 ;leftEnchantmentMeter_mc
 			if Q == 1
@@ -291,6 +293,9 @@ function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, 
 		else
 			targetAlpha = 0.0
 			abIsChargeMeterShown[Q] = false
+			if Q == 0
+				bTorchMeterShown = false
+			endIf
 		endIf
 
 		If(iHandle)
@@ -298,7 +303,8 @@ function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, 
 			UICallback.PushFloat(iHandle, targetAlpha)
 			UICallback.Send(iHandle)
 		endIf
-		if show && !isTorchMeter
+		
+		if show
 			if bChargeFadeoutEnabled && (fChargeFadeoutDelay > 0) && (afCurrCharge[Q] > fLowChargeThreshold)
 				if Q == 0
 					LU.registerForMeterFadeoutUpdate(Q, iChargeDisplayType, fChargeFadeoutDelay)

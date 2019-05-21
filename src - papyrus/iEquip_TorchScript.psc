@@ -215,6 +215,9 @@ function onTorchUnequipped()
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
 		UnregisterForUpdate()
 		stopTorchMeterAnim()
+		;if bShowTorchMeter && CM.abIsChargeMeterShown[0]
+		;	updateTorchMeterVisibility(false)
+		;endIf
 		if PlayerRef.GetItemCount(iEquipTorch) > 0
 			PlayerRef.RemoveItem(iEquipTorch, PlayerRef.GetItemCount(iEquipTorch), true)
 		endIf
@@ -306,7 +309,7 @@ function toggleTorch()
 		
 		WC.setCounterVisibility(0, false)
 		if bShowTorchMeter
-			CM.updateChargeMeterVisibility(0, false)
+			updateTorchMeterVisibility(false)
 		endIf
 
 		UnregisterForUpdate()	; Cancel any pending updates
@@ -548,9 +551,11 @@ function updateTorchMeterVisibility(bool show)
 			UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc._visible", true)
 			targetAlpha = WC.afWidget_A[13]
 			CM.abIsChargeMeterShown[0] = true
+			CM.bTorchMeterShown = true
 		else
 			targetAlpha = 0.0
 			CM.abIsChargeMeterShown[0] = false
+			CM.bTorchMeterShown = false
 		endIf
 		
 		UICallback.PushInt(iHandle, 0)
