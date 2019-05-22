@@ -437,13 +437,13 @@ Event OnWidgetInit()
 	asSpellSchools[3] = "Illusion"
 	asSpellSchools[4] = "Restoration"
 
-	ai2HWeaponTypes = new int[4]
+	ai2HWeaponTypes = new int[4] 				; For use with weapon.GetWeaponType()
 	ai2HWeaponTypes[0] = 5 ; Greatsword
 	ai2HWeaponTypes[1] = 6 ; Waraxe/Warhammer
 	ai2HWeaponTypes[2] = 7 ; Bow
 	ai2HWeaponTypes[3] = 9 ; Crossbow
 
-	ai2HWeaponTypesAlt = new int[4]
+	ai2HWeaponTypesAlt = new int[4]				; For use with GetEquippedItemType()
 	ai2HWeaponTypesAlt[0] = 5 	; Greatsword
 	ai2HWeaponTypesAlt[1] = 6 	; Waraxe/Warhammer
 	ai2HWeaponTypesAlt[2] = 7 	; Bow
@@ -1430,6 +1430,9 @@ endEvent
 event OnMenuClose(string _sCurrentMenu)
 	debug.trace("iEquip_WidgetCore OnMenuClose start - current menu: " + _sCurrentMenu)
 	int i
+	if ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(0)) > -1
+		i = 1
+	endIf
 	;Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
 	while i < 2
 		int targetObject = jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i])
