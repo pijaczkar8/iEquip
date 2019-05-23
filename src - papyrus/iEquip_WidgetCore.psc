@@ -8,7 +8,6 @@ import UICallback
 import Utility
 import StringUtil
 import iEquip_UILIB
-;import _Q2C_Functions
 import AhzMoreHudIE
 import WornObject
 import iEquip_FormExt

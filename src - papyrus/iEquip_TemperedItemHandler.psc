@@ -119,7 +119,7 @@ function checkAndUpdateTemperLevelInfo(int Q)
 		elseIf fItemHealth > afTemperLevelMax[0] 	; Next check if the item has been improved
 
 			int i = 1								; Now if it has find which level range it is currently within
-			while fItemHealth > afTemperLevelMax[i] && i < 6
+			while i < 6 && fItemHealth > afTemperLevelMax[i]
 				i += 1
 			endWhile
 			

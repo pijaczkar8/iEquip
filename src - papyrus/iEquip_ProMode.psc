@@ -711,7 +711,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 	;if player currently has a spell equipped in the right hand or we've enabled Prefer Magic in the MCM search for a ward spell first
 	if !forceSwitch && (rightHandHasSpell || bQuickShieldPreferMagic)
 		while i < leftCount && found == -1
-			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0] && !AM.bAmmoMode) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as spell)
+			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0] && !AM.bAmmoMode) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm"))
 				found = i
 				foundType = 22
 			endIf
@@ -741,7 +741,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 		if found == -1 && !forceSwitch
 			i = 0
 			while i < leftCount && found == -1
-				if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0] && !AM.bAmmoMode) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm") as spell)
+				if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0] && !AM.bAmmoMode) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm"))
 					found = i
 					foundType = 22
 				endIf
