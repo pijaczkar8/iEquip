@@ -472,19 +472,24 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 					updateEventFilter(iEquip_AllCurrentItemsFLST)
 				endIf
 			endIf
-		elseIf actionType == 7 ;Draw Begin
-			debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
-			WVis.unregisterForWidgetFadeoutUpdate() ;Unregister first in case it's just about to fade out
-			if !WC.bIsWidgetShown
-				WC.updateWidgetVisibility()
-			endIf
-		elseIf actionType == 8 ;Draw End
+		elseIf actionType == 7 || actionType == 8 ; Draw Begin or Draw End
 			debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
 			WVis.unregisterForWidgetFadeoutUpdate()
 			if !WC.bIsWidgetShown ;In case we're drawing a spell which won't have been caught by Draw Begin
 				WC.updateWidgetVisibility()
 			endIf
-			if bWaitingForEnchantedWeaponDrawn
+			int i = (PlayerRef.GetEquippedItemType(1) == 5 || PlayerRef.GetEquippedItemType(1) == 6) as int 		; Don't need to show the left hand name/poison name if we're drawing a 2H weapon here, if it's a ranged weapon we still need to show the ammo name
+			while i < 2
+				debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, abIsNameShown: " + WC.abIsNameShown[i] + ", abIsPoisonNameShown: " + WC.abIsPoisonNameShown[i])
+				if !WC.abIsNameShown[i]
+					WC.showName(i)
+				endIf
+				if !WC.abIsPoisonNameShown[i] && !(i == 0 && WC.bAmmoMode) && GetPoisonCount(PlayerRef.GetEquippedObject(i), GetRefHandleFromWornObject(i)) > 0 	; Check and show the poison name if weapon poisoned
+					WC.showName(i, true, true)
+				endIf
+				i += 1
+			endWhile
+			if actionType == 8 && bWaitingForEnchantedWeaponDrawn
 				CM.updateChargeMetersOnWeaponsDrawn()
 				bWaitingForEnchantedWeaponDrawn = false
 			endIf
@@ -972,14 +977,17 @@ state BEASTMODE
 		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE start")	
 		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE - actionType: " + actionType + ", slot: " + slot)
 		if akActor == PlayerRef
-			if actionType == 7 ;Draw Begin
+			if actionType == 7 || actionType == 8 ;Draw Begin or Draw End
 				if !WC.bIsWidgetShown && !bWaitingForTransform
 					WC.updateWidgetVisibility()
 				endIf
-			elseIf actionType == 8 ;Draw End
-				if !WC.bIsWidgetShown && !bWaitingForTransform ;In case we're drawing a spell which won't have been caught by Draw Begin
-					WC.updateWidgetVisibility()
-				endIf
+				int i
+				while i < 2
+					if !WC.abIsNameShown[i]
+						WC.showName(i)
+					endIf
+					i += 1
+				endWhile
 			elseIf actionType == 10 && WC.bIsWidgetShown && WC.bWidgetFadeoutEnabled ;Sheathe End
 				WVis.registerForWidgetFadeoutUpdate()
 			endIf
