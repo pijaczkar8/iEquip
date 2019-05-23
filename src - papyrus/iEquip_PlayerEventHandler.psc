@@ -484,7 +484,7 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 				if !WC.abIsNameShown[i]
 					WC.showName(i)
 				endIf
-				if !WC.abIsPoisonNameShown[i] && !(i == 0 && WC.bAmmoMode) && GetPoisonCount(PlayerRef.GetEquippedObject(i), GetRefHandleFromWornObject(i)) > 0 	; Check and show the poison name if weapon poisoned
+				if !WC.abIsPoisonNameShown[i] && !(i == 0 && WC.bAmmoMode) && jMap.getInt(jArray.GetObj(WC.aiTargetQ[i], WC.aiCurrentQueuePosition[i]), "isPoisoned") == 1 	; Check and show the poison name if weapon poisoned
 					WC.showName(i, true, true)
 				endIf
 				i += 1

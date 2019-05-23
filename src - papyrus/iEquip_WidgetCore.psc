@@ -4789,6 +4789,9 @@ function ApplyChanges()
 		i = 0
         while i < 8
             showName(i, true) ;Reshow all the names and either register or unregister for updates
+            if i < 2
+            	showName(i, true, true) ;Reshow the poison names
+            endIf
             i += 1
         endwhile
         bFadeOptionsChanged = false
