@@ -321,8 +321,8 @@ function toggleTorch()
 			WC.aiCurrentQueuePosition[0] = previousLeftHandIndex
 			WC.asCurrentlyEquipped[0] = previousLeftHandName
 			WC.updateWidget(0, previousLeftHandIndex, true)
-		elseIf previousItemForm as Armor
-			targetSlot = 0		; Default, for shields only
+		elseIf previousItemForm as Armor || previousItemForm as spell
+			targetSlot = 0		; Default, for shields only, 0 for spells with EquipSpell (left)
 		else
 			targetSlot = 2		; Left hand
 		endIf
@@ -332,7 +332,11 @@ function toggleTorch()
 		if previousItemHandle != 0xFFFF
 			iEquip_InventoryExt.EquipItem(previousItemForm, previousItemHandle, PlayerRef, targetSlot)
 		elseIf previousItemForm
-			PlayerRef.EquipItemEx(previousItemForm, targetSlot)
+			if previousItemForm as spell
+				PlayerRef.EquipSpell(previousItemForm as Spell, targetSlot)
+			else
+				PlayerRef.EquipItemEx(previousItemForm, targetSlot)
+			endIf
 		else
 			WC.setSlotToEmpty(0, true, jArray.count(WC.aiTargetQ[0]) > 0)
 		endIf

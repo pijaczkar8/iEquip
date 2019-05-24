@@ -46,7 +46,7 @@ event OnUpdate()
 	if bWaitingForNameFadeoutUpdate 					;Failsafe bool to block OnUpdate if triggered from another script on the quest
 		bWaitingForNameFadeoutUpdate = false
 		if targetName == 2
-			WC.abIsPoisonNameShown[0] = false
+			WC.abIsPoisonNameShown[index] = false
 		else
 			WC.abIsNameShown[index] = false
 		endIf

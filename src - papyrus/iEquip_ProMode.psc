@@ -695,7 +695,7 @@ endEvent
 
 ;The forceSwitch bool is set to true when quickShield is called by WC.removeItemFromQueue when a previously equipped shield has been removed, so we're only looking for a shield, not a ward
 function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
-	debug.trace("iEquip_ProMode quickShield start")
+	debug.trace("iEquip_ProMode quickShield start - forceSwitch: " + forceSwitch + ", onTorchDropped: " + onTorchDropped)
 	;if right hand or ranged weapon in right hand and bQuickShield2HSwitchAllowed not enabled then return out
 	if (!bQuickShieldEnabled && !onTorchDropped) || (!forceSwitch && (((WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
 		return
@@ -710,7 +710,13 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 	debug.trace("iEquip_ProMode quickShield() - RH current item: " + WC.asCurrentlyEquipped[1] + ", RH item type: " + (PlayerRef.GetEquippedItemType(1)))
 	;if player currently has a spell equipped in the right hand or we've enabled Prefer Magic in the MCM search for a ward spell first
 	if !forceSwitch && (rightHandHasSpell || bQuickShieldPreferMagic)
+		debug.trace("iEquip_ProMode quickShield() - should be looking for a ward spell")
+		debug.trace("iEquip_ProMode quickShield() - leftCount: " + leftCount + ", current queue position: " + WC.aiCurrentQueuePosition[0] + ", bPreselectMode: " + bPreselectMode + ", ammo mode: " + AM.bAmmoMode)
 		while i < leftCount && found == -1
+			debug.trace("iEquip_ProMode quickShield() - i: " + i + ", item name: " + jMap.getStr(jArray.getObj(targetArray, i), "iEquipName") + ", item type: " + jMap.getInt(jArray.getObj(targetArray, i), "iEquipType"))
+			if jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22
+				debug.trace("iEquip_ProMode quickShield() - is this a ward spell: " + iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm")))
+			endIf
 			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0] && !AM.bAmmoMode) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm"))
 				found = i
 				foundType = 22
@@ -719,6 +725,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 		endwhile
 		;if we haven't found a ward look for a shield
 		if found == -1
+			debug.trace("iEquip_ProMode quickShield() - ward spell not found, should now be looking for a shield")
 			i = 0
 			while i < leftCount && found == -1
 				if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0] && !AM.bAmmoMode) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 26
@@ -730,6 +737,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 		endIf
 	;Otherwise look for a shield first
 	else
+		debug.trace("iEquip_ProMode quickShield() - should be looking for a shield")
 		while i < leftCount && found == -1
 			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0] && !AM.bAmmoMode) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 26
 				found = i
@@ -739,6 +747,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 		endwhile
 		;And if we haven't found a shield then look for a ward
 		if found == -1 && !forceSwitch
+			debug.trace("iEquip_ProMode quickShield() - shield not found, should now be looking for a ward spell")
 			i = 0
 			while i < leftCount && found == -1
 				if !(bPreselectMode && i == WC.aiCurrentQueuePosition[0] && !AM.bAmmoMode) && jMap.getInt(jArray.getObj(targetArray, i), "iEquipType") == 22 && iEquip_FormExt.IsSpellWard(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm"))
