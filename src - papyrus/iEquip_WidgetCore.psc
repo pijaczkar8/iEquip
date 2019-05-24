@@ -2737,7 +2737,6 @@ function handleEmptyPoisonQueue()
 	
 	;Hide the count by setting it to an empty string
 
-	;UI.SetString(HUD_MENU, WidgetRoot + ".widgetMaster.PoisonWidget.poisonCount_mc.poisonCount.text", "")
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 49)
 	asCurrentlyEquipped[4] = ""
 																	; Set to generic poison icon and name to empty before flashing/fading/hiding

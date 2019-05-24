@@ -132,7 +132,7 @@ event OnMenuClose(string MenuName)											; This is purely to handle custom t
 endEvent
 
 function onTorchRemoved(form torchForm)
-	debug.trace("iEquip_TorchScript onTorchRemoved start")
+	debug.trace("iEquip_TorchScript onTorchRemoved start - torchForm: " + torchForm)
 	if !PlayerRef.GetEquippedItemType(0) == 11 && torchForm != iEquipTorch
 		fCurrentTorchLife = fTorchDuration
 		iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
