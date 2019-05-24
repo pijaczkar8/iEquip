@@ -558,7 +558,9 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
 	
-	if akBaseObject.GetType() == 31	; This just handles the finite torch life timer
+	int itemType = akBaseObject.GetType()
+
+	if itemType == 31	; This just handles the finite torch life timer
 		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
 		TO.onTorchEquipped()
 	endIf
@@ -570,13 +572,16 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 				bDualCasting = false
 			endIf
 		else
-			int itemType = akBaseObject.GetType()
 			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
 				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
 				debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_OnObjectEquippedFLST contains " + iEquip_OnObjectEquippedFLST.GetSize() + " entries")
 				if !bWaitingForTransform
-					bWaitingForOnObjectEquippedUpdate = true
-					registerForSingleUpdate(0.5)
+					if itemType == 31
+						processQueuedForms(0)	; Should allow the left slot to be updated if you just re-equipped a torch having previously unequipped it during burnout, before it is switched to an iEquipTorch
+					else
+						bWaitingForOnObjectEquippedUpdate = true
+						registerForSingleUpdate(0.5)
+					endIf
 				endIf
 			endIf
 		endIf
@@ -637,7 +642,7 @@ function updateWidgetOnWeaponSwing()
 endFunction
 
 ; This event handles auto-adding newly equipped items to the left, right and shout slots
-function processQueuedForms()
+function processQueuedForms(int equippedSlot = -1)
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms start")	
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())
 	processingQueuedForms = true
@@ -654,18 +659,19 @@ function processQueuedForms()
 			endIf
 		; Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
 		elseIf !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
-			int equippedSlot = -1
-			if PlayerRef.GetEquippedObject(0) == queuedForm
-				; Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
-				if PlayerRef.GetEquippedObject(1) == queuedForm
-					equippedSlot = 3 ;We'll use 3 to indicate the same 1H item has been found in both hands so we can update both queues and widget slots
-				else
-					equippedSlot = 0 ;Left
+			if equippedSlot == -1
+				if PlayerRef.GetEquippedObject(0) == queuedForm
+					; Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
+					if PlayerRef.GetEquippedObject(1) == queuedForm
+						equippedSlot = 3 ;We'll use 3 to indicate the same 1H item has been found in both hands so we can update both queues and widget slots
+					else
+						equippedSlot = 0 ;Left
+					endIf
+				elseIf PlayerRef.GetEquippedObject(1) == queuedForm
+					equippedSlot = 1 ;Right
+				elseIf PlayerRef.GetEquippedObject(2) == queuedForm
+					equippedSlot = 2 ;Shout/Power
 				endIf
-			elseIf PlayerRef.GetEquippedObject(1) == queuedForm
-				equippedSlot = 1 ;Right
-			elseIf PlayerRef.GetEquippedObject(2) == queuedForm
-				equippedSlot = 2 ;Shout/Power
 			endIf
 			; If the item has been equipped in the left, right or shout slot
 			if equippedSlot != -1
@@ -769,7 +775,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 
 	        bool bCurrentlyDualCasting = !WC.b2HSpellEquipped && jMap.getInt(jArray.GetObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && WC.asCurrentlyEquipped[1] == UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text")
 
-			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || (equippedSlot == 1 && TO.bJustToggledTorch))			; If it's somehow already shown in the widget
+			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || TO.bJustToggledTorch)			; If it's somehow already shown in the widget
 				if equippedSlot < 2
 					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0																			; Update the name and temper level if required
 						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
