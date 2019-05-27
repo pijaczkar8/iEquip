@@ -596,7 +596,7 @@ function onBoundRangedWeaponEquipped(int weaponType)
 		asCurrentAmmo[Q] = asBoundAmmoNames[Q]
 		bBoundAmmoAdded = true
 	endIf
-	toggleAmmoMode(PM.bPreselectEnabled && PM.abPreselectSlotEnabled[0]) ;If we're in preselect mode and the left preselect slot is enabled then toggle without animation
+	toggleAmmoMode(PM.bPreselectMode && PM.abPreselectSlotEnabled[0]) ;If we're in preselect mode and the left preselect slot is enabled then toggle without animation
 	debug.trace("iEquip_AmmoMode onBoundRangedWeaponEquipped end")
 endFunction
 
@@ -607,6 +607,8 @@ function addBoundAmmoToQueue(form boundAmmo, string ammoName)
 	;If we've already added a dummy object to the ammo queue we only need to add the form
 	int targetObject = jArray.getObj(aiTargetQ[Q], jArray.count(aiTargetQ[Q]) - 1)
 	currentAmmoForm = boundAmmo
+	iEquip_AmmoItemsFLST.AddForm(boundAmmo)
+	EH.updateEventFilter(iEquip_AmmoItemsFLST)
 	if jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_BoundArrow" || jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_BoundBolt"
 		;debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - adding Form to dummy object")
 		jMap.setForm(targetObject, "iEquipForm", boundAmmo)
@@ -641,6 +643,8 @@ function checkAndRemoveBoundAmmo(int weaponType)
 	Q = (weaponType == 9) as int
 	int targetIndex = jArray.count(aiTargetQ[Q]) - 1
 	if iEquip_AmmoExt.IsAmmoBound(jMap.getForm(jArray.getObj(aiTargetQ[Q], targetIndex), "iEquipForm") as ammo)
+		iEquip_AmmoItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiTargetQ[Q], targetIndex), "iEquipForm"))
+		EH.updateEventFilter(iEquip_AmmoItemsFLST)
 		jArray.eraseIndex(aiTargetQ[Q], targetIndex)
 	endIf
 	abBoundAmmoInQueue[Q] = false

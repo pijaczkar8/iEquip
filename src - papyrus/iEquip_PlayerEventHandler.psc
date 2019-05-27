@@ -564,7 +564,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
 	
 	int itemType = akBaseObject.GetType()
-
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - itemType: " + itemType)
 	if itemType == 31	; This just handles the finite torch life timer
 		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
 		TO.onTorchEquipped()
@@ -585,7 +585,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 						processQueuedForms(0)	; Should allow the left slot to be updated if you just re-equipped a torch having previously unequipped it during burnout, before it is switched to an iEquipTorch
 					else
 						bWaitingForOnObjectEquippedUpdate = true
-						registerForSingleUpdate(0.5)
+						registerForSingleUpdate(0.8)
 					endIf
 				endIf
 			endIf
@@ -648,7 +648,7 @@ endFunction
 
 ; This event handles auto-adding newly equipped items to the left, right and shout slots
 function processQueuedForms(int equippedSlot = -1)
-	debug.trace("iEquip_PlayerEventHandler processQueuedForms start")	
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms start - equippedSlot: " + equippedSlot)	
 	debug.trace("iEquip_PlayerEventHandler processQueuedForms - number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())
 	processingQueuedForms = true
 	int i
@@ -707,6 +707,7 @@ function processQueuedForms(int equippedSlot = -1)
 				endIf
 			endIf
 		endIf
+		equippedSlot = -1
 		i += 1
 	endWhile
 	iEquip_OnObjectEquippedFLST.Revert()
@@ -780,7 +781,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 
 	        bool bCurrentlyDualCasting = !WC.b2HSpellEquipped && jMap.getInt(jArray.GetObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && WC.asCurrentlyEquipped[1] == UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text")
 
-			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || TO.bJustToggledTorch)			; If it's somehow already shown in the widget
+			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || TO.bJustCalledQuickLight)			; If it's somehow already shown in the widget
 				if equippedSlot < 2
 					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0																			; Update the name and temper level if required
 						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
@@ -793,7 +794,12 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 						endIf
 					endIf
 				endIf
-				if !(equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped || AM.bAmmoMode))
+				if equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped || AM.bAmmoMode)
+					if WC.bLeftIconFaded
+						WC.checkAndFadeLeftIcon(0, itemType)
+						blockCall = true
+					endIf
+				else
 					blockCall = true
 				endIf
 			
@@ -810,7 +816,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			actionTaken = true
 		endIf
 	endIf
-	debug.trace("iEquip_PlayerEventHandler processQueuedForms - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
 																										; Check that the queuedForm isn't blacklisted for the slot it's been equipped to
 	if !blackListFLSTs[equippedSlot].HasForm(queuedForm)
 																										; If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
@@ -828,7 +834,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			endIf
 			if freeSpace
 																										; If there is space in the target queue create a new jMap object and add it to the queue
-				debug.trace("iEquip_PlayerEventHandler processQueuedForms - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
+				debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)
 				int iEquipItem = jMap.object()
 				string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
 				jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
@@ -896,6 +902,10 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		if equippedSlot < 2 && !blockCall
 			WC.checkAndEquipShownHandItem(equippedSlot, false, true)
 		endIf
+	endIf
+	if equippedSlot == 1 && targetIndex > -1 && WC.ai2HWeaponTypes.Find(itemType) == -1
+		WC.iLastRH1HItemIndex = targetIndex
+		debug.notification("iLastRH1HItemIndex set to " + targetIndex)
 	endIf
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
 endFunction

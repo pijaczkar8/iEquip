@@ -44,50 +44,55 @@ endFunction
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 
-    jArray.addInt(jPageObj, TO.bShowTorchMeter as int)
-    jArray.addInt(jPageObj, TO.iTorchMeterFillColor)
-    jArray.addInt(jPageObj, iTorchMeterFillDirection)
+    jArray.addInt(jPageObj, KH.iQuickLightKey)
+    jArray.addInt(jPageObj, TO.bQuickLightPreferMagic as int)
+    jArray.addInt(jPageObj, TO.bQuickLightEquipRH as int)
+    jArray.addInt(jPageObj, TO.bQuickLightConsumePotion as int)
     jArray.addFlt(jPageObj, TO.fTorchDuration)
     jArray.addInt(jPageObj, TO.bFiniteTorchLife as int)
     jArray.addInt(jPageObj, TO.bReduceLightAsTorchRunsOut as int)
     jArray.addInt(jPageObj, TO.bAutoReEquipTorch as int)
     jArray.addInt(jPageObj, TO.bRealisticReEquip as int)
     jArray.addFlt(jPageObj, TO.fRealisticReEquipDelay)
-    jArray.addInt(jPageObj, KH.iToggleTorchKey)
     jArray.addInt(jPageObj, TO.bDropLitTorchesEnabled as int)
     jArray.addInt(jPageObj, TO.iDropLitTorchBehavior)
+    jArray.addInt(jPageObj, TO.bShowTorchMeter as int)
+    jArray.addInt(jPageObj, TO.iTorchMeterFillColor)
+    jArray.addInt(jPageObj, iTorchMeterFillDirection)
 
     return jPageObj    
 endFunction
 
 function loadData(int jPageObj)     ; Load page data from jPageObj
 
-	TO.bShowTorchMeter = jArray.getInt(jPageObj, 0)
-    TO.iTorchMeterFillColor = jArray.getInt(jPageObj, 1)
-    TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
-    iTorchMeterFillDirection = jArray.getInt(jPageObj, 2)
-    TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
-    TO.fTorchDuration = jArray.getInt(jPageObj, 3)
-    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 4)
-    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 5)
-    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 6)
-    TO.bRealisticReEquip = jArray.getInt(jPageObj, 7)
+	KH.iQuickLightKey = jArray.getInt(jPageObj, 0)
+    TO.bQuickLightPreferMagic = jArray.getInt(jPageObj, 1)
+    TO.bQuickLightEquipRH = jArray.getInt(jPageObj, 2)
+    TO.bQuickLightConsumePotion = jArray.getInt(jPageObj, 3)
+    TO.fTorchDuration = jArray.getInt(jPageObj, 4)
+    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 5)
+    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 6)
+    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 7)
+    TO.bRealisticReEquip = jArray.getInt(jPageObj, 8)
     TO.fRealisticReEquipDelay = jArray.getFlt(jPageObj, 9)
-    KH.iToggleTorchKey = jArray.getInt(jPageObj, 9)
     TO.bDropLitTorchesEnabled = jArray.getInt(jPageObj, 10)
     TO.iDropLitTorchBehavior = jArray.getInt(jPageObj, 11)
+    TO.bShowTorchMeter = jArray.getInt(jPageObj, 12)
+    TO.iTorchMeterFillColor = jArray.getInt(jPageObj, 13)
+    TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
+    iTorchMeterFillDirection = jArray.getInt(jPageObj, 14)
+    TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
 
 endFunction
 
 function drawPage()
 	if WC.isEnabled
 
-		MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
-		MCM.AddToggleOptionST("tch_tgl_showTorchMeter", "$iEquip_MCM_tch_lbl_showTorchMeter", TO.bShowTorchMeter)
-		if TO.bShowTorchMeter
-			MCM.AddColorOptionST("tch_col_torchMeterCol", "$iEquip_MCM_tch_lbl_torchMeterCol", TO.iTorchMeterFillColor)
-			MCM.AddMenuOptionST("tch_men_torchMeterFillDir", "$iEquip_MCM_tch_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
-		endIf
+        MCM.AddHeaderOption("$iEquip_MCM_tch_lbl_quickLightOptions")
+        MCM.AddKeyMapOptionST("tch_key_quickLight", "$iEquip_MCM_tch_lbl_quickLight", KH.iQuickLightKey, mcmUnmapFLAG)
+        MCM.AddToggleOptionST("tch_tgl_quickLightPreferMagic", "$iEquip_MCM_tch_lbl_quickLightPreferMagic", TO.bQuickLightPreferMagic)
+        MCM.AddToggleOptionST("tch_tgl_quickLightEquipRH", "$iEquip_MCM_tch_lbl_quickLightEquipRH", TO.bQuickLightEquipRH)
+        MCM.AddToggleOptionST("tch_tgl_quickLightConsumePotion", "$iEquip_MCM_tch_lbl_quickLightConsumePotion", TO.bQuickLightConsumePotion)
 
 		MCM.AddEmptyOption()
 
@@ -108,17 +113,20 @@ function drawPage()
 
 		MCM.SetCursorPosition(1)
 
-		MCM.AddHeaderOption("$iEquip_MCM_tch_lbl_torchKeyOptions")
-		MCM.AddKeyMapOptionST("tch_key_toggleTorch", "$iEquip_MCM_tch_lbl_toggleTorch", KH.iToggleTorchKey, mcmUnmapFLAG)
-        MCM.AddToggleOptionST("tch_tgl_toggleTorchEquipRH", "$iEquip_MCM_tch_lbl_toggleTorchEquipRH", TO.bToggleTorchEquipRH)
+        MCM.AddHeaderOption("$iEquip_MCM_tch_lbl_torchDropOptions")
+        MCM.AddToggleOptionST("tch_tgl_dropLitTorches", "$iEquip_MCM_tch_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
+        if TO.bDropLitTorchesEnabled
+            MCM.AddMenuOptionST("tch_men_dropLitTorchBehavior", "$iEquip_MCM_tch_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
+        endIf
 
-		MCM.AddEmptyOption()
-		
-		MCM.AddHeaderOption("$iEquip_MCM_tch_lbl_torchDropOptions")
-		MCM.AddToggleOptionST("tch_tgl_dropLitTorches", "$iEquip_MCM_tch_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
-		if TO.bDropLitTorchesEnabled
-			MCM.AddMenuOptionST("tch_men_dropLitTorchBehavior", "$iEquip_MCM_tch_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
-		endIf
+        MCM.AddEmptyOption()
+
+		MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+        MCM.AddToggleOptionST("tch_tgl_showTorchMeter", "$iEquip_MCM_tch_lbl_showTorchMeter", TO.bShowTorchMeter)
+        if TO.bShowTorchMeter
+            MCM.AddColorOptionST("tch_col_torchMeterCol", "$iEquip_MCM_tch_lbl_torchMeterCol", TO.iTorchMeterFillColor)
+            MCM.AddMenuOptionST("tch_men_torchMeterFillDir", "$iEquip_MCM_tch_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
+        endIf
 
 		MCM.AddEmptyOption()
 
@@ -131,49 +139,53 @@ endFunction
 ; - Torch Options -
 ; -----------------
 
-State tch_tgl_showTorchMeter
+State tch_key_quickLight
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_tch_txt_showTorchMeter")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bShowTorchMeter)
-            TO.bShowTorchMeter = !TO.bShowTorchMeter
-            MCM.forcePageReset()
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iQuickLightKey = currentVar as int
+            else
+                KH.iQuickLightKey = -1
+            endIf
+            
+            MCM.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iQuickLightKey)        
         endIf
     endEvent
 endState
 
-State tch_col_torchMeterCol
+State tch_tgl_quickLightPreferMagic
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_tch_txt_torchMeterCol")
-        elseIf currentEvent == "Open"
-            MCM.SetColorDialogStartColor(TO.iTorchMeterFillColor)
-            MCM.SetColorDialogDefaultColor(0xFFF8AC)
-        else
-            If currentEvent == "Accept"
-                TO.iTorchMeterFillColor = currentVar as int
-            elseIf currentEvent == "Default"
-                TO.iTorchMeterFillColor = 0xFFF8AC
-            endIf
-            TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
-            MCM.SetColorOptionValueST(TO.iTorchMeterFillColor)
-            TO.bSettingsChanged = true
-        endIf 
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightPreferMagic")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bQuickLightPreferMagic)
+            TO.bQuickLightPreferMagic = !TO.bQuickLightPreferMagic
+            MCM.SetToggleOptionValueST(TO.bQuickLightPreferMagic)
+        endIf
     endEvent
 endState
 
-State tch_men_torchMeterFillDir
+State tch_tgl_quickLightEquipRH
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_tch_txt_torchMeterFillDir")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(iTorchMeterFillDirection, meterFillDirectionOptions, 0)
-        elseIf currentEvent == "Accept"
-            iTorchMeterFillDirection = currentVar as int
-            MCM.SetMenuOptionValueST(meterFillDirectionOptions[iTorchMeterFillDirection])
-            TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
-            TO.bSettingsChanged = true
-        endIf 
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightEquipRH")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bQuickLightEquipRH)
+            TO.bQuickLightEquipRH = !TO.bQuickLightEquipRH
+            MCM.SetToggleOptionValueST(TO.bQuickLightEquipRH)
+        endIf
+    endEvent
+endState
+
+State tch_tgl_quickLightConsumePotion
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightConsumePotion")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bQuickLightConsumePotion)
+            TO.bQuickLightConsumePotion = !TO.bQuickLightConsumePotion
+            MCM.SetToggleOptionValueST(TO.bQuickLightConsumePotion)
+        endIf
     endEvent
 endState
 
@@ -246,34 +258,6 @@ State tch_tgl_torchesFade
     endEvent
 endState
 
-State tch_key_toggleTorch
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_tch_txt_toggleTorchHotKey")
-        elseIf currentEvent == "Change" || "Default"
-            if currentEvent == "Change"
-                KH.iToggleTorchKey = currentVar as int
-            else
-                KH.iToggleTorchKey = -1
-            endIf
-            
-            MCM.bUpdateKeyMaps = true
-            MCM.SetKeyMapOptionValueST(KH.iToggleTorchKey)        
-        endIf
-    endEvent
-endState
-
-State tch_tgl_toggleTorchEquipRH
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_tch_txt_toggleTorchEquipRH")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bToggleTorchEquipRH)
-            TO.bToggleTorchEquipRH = !TO.bToggleTorchEquipRH
-            MCM.SetToggleOptionValueST(TO.bToggleTorchEquipRH)
-        endIf
-    endEvent
-endState
-
 State tch_tgl_dropLitTorches
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -295,6 +279,52 @@ State tch_men_dropLitTorchBehavior
             TO.iDropLitTorchBehavior = currentVar as int
             MCM.SetMenuOptionValueST(dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
         endIf
+    endEvent
+endState
+
+State tch_tgl_showTorchMeter
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_showTorchMeter")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bShowTorchMeter)
+            TO.bShowTorchMeter = !TO.bShowTorchMeter
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State tch_col_torchMeterCol
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_torchMeterCol")
+        elseIf currentEvent == "Open"
+            MCM.SetColorDialogStartColor(TO.iTorchMeterFillColor)
+            MCM.SetColorDialogDefaultColor(0xFFF8AC)
+        else
+            If currentEvent == "Accept"
+                TO.iTorchMeterFillColor = currentVar as int
+            elseIf currentEvent == "Default"
+                TO.iTorchMeterFillColor = 0xFFF8AC
+            endIf
+            TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
+            MCM.SetColorOptionValueST(TO.iTorchMeterFillColor)
+            TO.bSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State tch_men_torchMeterFillDir
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_torchMeterFillDir")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(iTorchMeterFillDirection, meterFillDirectionOptions, 0)
+        elseIf currentEvent == "Accept"
+            iTorchMeterFillDirection = currentVar as int
+            MCM.SetMenuOptionValueST(meterFillDirectionOptions[iTorchMeterFillDirection])
+            TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
+            TO.bSettingsChanged = true
+        endIf 
     endEvent
 endState
 

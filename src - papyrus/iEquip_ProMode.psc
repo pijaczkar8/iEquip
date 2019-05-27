@@ -491,6 +491,7 @@ function equipPreselectedItem(int Q)
 	    	PlayerRef.EquipItem(targetItem as Ammo, false, true)
 	    elseif (Q == 0 && itemType == 26) ;Shield in the left hand queue
 	    	PlayerRef.EquipItem(targetItem as Armor, false, true)
+		; ToDo - Add equip by refHandle
 		else
 		    PlayerRef.EquipItemEx(targetItem, iEquipSlotId, false, false)
 		endIf
@@ -595,6 +596,28 @@ function equipAllPreselectedItems(bool handsOnly = false)
 		endIf
 	endIf
 
+	targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1])
+	rightHandItemType = jMap.getInt(targetObject, "iEquipType")
+
+	bool equipLeft
+	if abPreselectSlotEnabled[0] && !(abPreselectSlotEnabled[1] && ((WC.ai2HWeaponTypes.Find(rightHandItemType) > -1) || rightHandItemType == 0 || (rightHandItemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3) || (leftTargetItem == rightTargetItem && itemCount < 2 && rightHandItemType != 22)))
+		equipLeft = true
+		if abPreselectSlotEnabled[1]
+			WC.UnequipHand(1)
+		endIf
+		targetArray = WC.aiTargetQ[0]
+		targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
+		leftData[0] = jMap.getStr(jArray.getObj(targetArray, WC.aiCurrentQueuePosition[0]), "iEquipIcon")
+		leftData[1] = jMap.getStr(targetObject, "iEquipIcon")
+		leftData[2] = jMap.getStr(targetObject, "iEquipName")
+		equipPreselectedItem(0)
+		if !bTogglePreselectOnEquipAll || handsOnly
+			targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[0])
+			leftData[3] = jMap.getStr(targetObject, "iEquipIcon")
+			leftData[4] = jMap.getStr(targetObject, "iEquipName")
+		endIf
+	endIf
+
 	;Equip right hand first so any 2H/Ranged weapons take priority and equipping left hand can be blocked
 	if abPreselectSlotEnabled[1]
 		targetArray = WC.aiTargetQ[1]
@@ -610,7 +633,7 @@ function equipAllPreselectedItems(bool handsOnly = false)
 			Utility.WaitMenuMode(0.2)
 		endIf
 	endIf
-	targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1])
+	;/targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1])
 	rightHandItemType = jMap.getInt(targetObject, "iEquipType")
 
 	bool equipLeft
@@ -627,7 +650,7 @@ function equipAllPreselectedItems(bool handsOnly = false)
 			leftData[3] = jMap.getStr(targetObject, "iEquipIcon")
 			leftData[4] = jMap.getStr(targetObject, "iEquipName")
 		endIf
-	endIf
+	endIf/;
 
 	bAllEquipped = false
 	Self.RegisterForModEvent("iEquip_EquipAllComplete", "EquipAllComplete")

@@ -26,7 +26,7 @@ int property iUtilityKey = 37 auto hidden ;K - Active in all modes
 ; Optional hotkeys
 int property iConsumeItemKey = -1 auto hidden
 int property iCyclePoisonKey = -1 auto hidden
-int property iToggleTorchKey = -1 auto hidden
+int property iQuickLightKey = -1 auto hidden
 int property iQuickRestoreKey = -1 auto hidden
 int property iQuickShieldKey = -1 auto hidden
 int property iQuickRangedKey = -1 auto hidden
@@ -296,8 +296,8 @@ function runUpdate()
             endIf
         elseIf iWaitingKeyCode == iRightKey
             WC.cycleSlot(1, bIsUtilityKeyHeld, false, false, true)
-        elseIf iWaitingKeyCode == iToggleTorchKey
-            TO.toggleTorch()
+        elseIf iWaitingKeyCode == iQuickLightKey
+            TO.quickLight()
         
         ; Extended Keyboard Controls
         elseIf iWaitingKeyCode == iConsumeItemKey && bExtendedKbControlsEnabled && WC.bConsumablesEnabled
@@ -330,7 +330,7 @@ function runUpdate()
             if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
             endIf
-        elseIf iWaitingKeyCode == iToggleTorchKey && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
+        elseIf iWaitingKeyCode == iQuickLightKey && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
 			TO.DropTorch()
         elseif PM.bPreselectMode
             if iWaitingKeyCode == iLeftKey
@@ -647,8 +647,8 @@ function RegisterForGameplayKeys()
     RegisterForKey(iRightKey)
     RegisterForKey(iConsumableKey)
     RegisterForKey(iUtilityKey)
-    if iToggleTorchKey != -1
-        RegisterForKey(iToggleTorchKey)
+    if iQuickLightKey != -1
+        RegisterForKey(iQuickLightKey)
     endIf
     if bExtendedKbControlsEnabled
         if iConsumeItemKey != -1

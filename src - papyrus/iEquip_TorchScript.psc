@@ -11,9 +11,12 @@ iEquip_WidgetCore property WC auto
 iEquip_ChargeMeters property CM auto
 iEquip_ProMode property PM auto
 iEquip_AmmoMode property AM auto
+iEquip_PotionScript property PO auto
 
 Actor property PlayerRef auto
 Faction property PlayerFaction auto
+
+spell property Candlelight auto
 
 light property Torch01 auto
 light property iEquipTorch auto
@@ -46,6 +49,10 @@ bool bFinalUpdateReceived
 
 bool property bJustToggledTorch auto hidden
 bool property bToggleTorchEquipRH = true auto hidden
+
+bool property bJustCalledQuickLight auto hidden
+bool property bQuickLightEquipRH = true auto hidden
+
 bool bJustDroppedTorch
 
 bool bPreviously2HOrRanged
@@ -55,6 +62,8 @@ int previousLeftHandIndex = -1
 string previousLeftHandName
 
 ; MCM Properties
+bool property bQuickLightPreferMagic auto hidden
+bool property bQuickLightConsumePotion = true auto hidden
 bool property bShowTorchMeter = true auto hidden
 int property iTorchMeterFillColor = 0xFFF8AC auto hidden
 int property iTorchMeterFillColorDark = 0x686543 auto hidden
@@ -295,7 +304,111 @@ event OnUpdate()
 	debug.trace("iEquip_TorchScript OnUpdate end")
 endEvent
 
-function toggleTorch()
+function quickLight()
+
+	form currentItemForm = PlayerRef.GetEquippedObject(0)
+	int currentItemType = PlayerRef.GetEquippedItemType(0)
+	bool torchEquipped = currentItemType == 11	; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
+	bool candlelightEquipped = (currentItemType == 9 && (currentItemForm as spell) == Candlelight)
+	int targetSlot
+	
+	debug.trace("iEquip_TorchScript quickLight start - torch equipped: " + torchEquipped + ", currentItemForm: " + currentItemForm + ", currentItemType: " + currentItemType + ", bPreviously2HOrRanged: " + bPreviously2HOrRanged)
+	debug.trace("iEquip_TorchScript quickLight - previousLeftHandIndex: " + previousLeftHandIndex + ", previousLeftHandName: " + previousLeftHandName + ", previousItemForm: " + previousItemForm + ", previousItemHandle: " + previousItemHandle)
+
+	if torchEquipped || candlelightEquipped
+		
+		if torchEquipped
+			WC.setCounterVisibility(0, false)
+			if bShowTorchMeter
+				updateTorchMeterVisibility(false)
+			endIf
+
+			bSettingLightRadius = false
+			UnregisterForUpdate()	; Cancel any pending updates
+
+			PlayerRef.UnequipItemEx(currentItemForm)
+		else
+			PlayerRef.UnequipSpell(Candlelight, 0)
+		endIf
+
+		if bPreviously2HOrRanged
+			targetSlot = 1		; Right hand
+			WC.aiCurrentQueuePosition[0] = previousLeftHandIndex
+			WC.asCurrentlyEquipped[0] = previousLeftHandName
+			WC.updateWidget(0, previousLeftHandIndex, true)
+		elseIf previousItemForm as Armor || previousItemForm as spell
+			targetSlot = 0		; Default, for shields only, 0 for spells with EquipSpell (left)
+		else
+			targetSlot = 2		; Left hand
+		endIf
+
+		bJustCalledQuickLight = true
+		
+		if previousItemHandle != 0xFFFF
+			iEquip_InventoryExt.EquipItem(previousItemForm, previousItemHandle, PlayerRef, targetSlot)
+		elseIf previousItemForm
+			if previousItemForm as spell
+				PlayerRef.EquipSpell(previousItemForm as Spell, targetSlot)
+			else
+				PlayerRef.EquipItemEx(previousItemForm, targetSlot)
+			endIf
+		else
+			WC.setSlotToEmpty(0, true, jArray.count(WC.aiTargetQ[0]) > 0)
+		endIf
+
+	else
+		bool playerHasATorch = PlayerRef.GetItemCount(realTorchForm) > 0
+		bool playerKnowsSpell = PlayerRef.HasSpell(Candlelight)
+
+		if playerHasATorch || playerKnowsSpell
+		
+			WC.hidePoisonInfo(0)
+
+			if WC.ai2HWeaponTypesAlt.Find(currentItemType) > -1
+				bPreviously2HOrRanged = true
+				previousLeftHandIndex = WC.aiCurrentQueuePosition[0]
+				previousLeftHandName = WC.asCurrentlyEquipped[0]
+			else
+				bPreviously2HOrRanged = false
+			endIf
+
+			if AM.bAmmoMode
+				AM.toggleAmmoMode(true, true)
+				if !AM.bSimpleAmmoMode
+					bool[] args = new bool[3]
+					args[2] = true
+					UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
+					args = new bool[4]
+					UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+				endIf
+			endIf
+
+			if currentItemType == 10 ; Shield
+				targetSlot = 2
+			else
+				targetSlot = bPreviously2HOrRanged as int
+			endIf
+
+			previousItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(targetSlot)
+			previousItemForm = currentItemForm
+			bJustCalledQuickLight = true
+
+			if playerKnowsSpell && (bQuickLightPreferMagic || !playerHasATorch) && (PlayerRef.GetActorValue("Magicka") > Candlelight.GetEffectiveMagickaCost(PlayerRef) || (PO.getRestoreCount(1) > 0 && bQuickLightConsumePotion))
+				if PlayerRef.GetActorValue("Magicka") < Candlelight.GetEffectiveMagickaCost(PlayerRef)
+					PO.selectAndConsumePotion(1, 0)
+				endIf
+				PlayerRef.EquipSpell(Candlelight, 0)
+			elseIf playerHasATorch
+				PlayerRef.EquipItemEx(realTorchForm) ; This should then be caught by EH.onObjectEquipped and trigger all the relevant widget/torch/RH stuff as required
+			endIf
+		else
+			debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TO_not_noTorch"))
+		endIf
+	endIf
+	debug.trace("iEquip_TorchScript quickLight end")
+endFunction
+
+;/function toggleTorch()
 
 	form currentItemForm = PlayerRef.GetEquippedObject(0)
 	int currentItemType = PlayerRef.GetEquippedItemType(0)
@@ -312,6 +425,7 @@ function toggleTorch()
 			updateTorchMeterVisibility(false)
 		endIf
 
+		bSettingLightRadius = false
 		UnregisterForUpdate()	; Cancel any pending updates
 
 		PlayerRef.UnequipItemEx(currentItemForm)
@@ -379,7 +493,7 @@ function toggleTorch()
 		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TO_not_noTorch"))
 	endIf
 	debug.trace("iEquip_TorchScript toggleTorch end")
-endFunction
+endFunction/;
 
 ; Simple Drop Lit Torches - Courtesy of, and with full permission from, Snotgurg
 
