@@ -45,7 +45,6 @@ bool bSetInitialValues = true
 bool bFirstUpdateForCurrentTorch = true
 bool property bSettingLightRadius auto hidden
 bool bSettingDuration
-bool bFinalUpdateReceived
 
 bool property bJustToggledTorch auto hidden
 bool property bToggleTorchEquipRH = true auto hidden
@@ -236,20 +235,7 @@ endfunction
 
 function onTorchTimerExpired()
 	debug.trace("iEquip_TorchScript onTorchTimerExpired start")
-	;/Utility.Wait(1.0)			; Just in case the torch radius updates have stuck for some reason.
-	if !bFinalUpdateReceived && !bSettingLightRadius && !bSettingDuration
-		if PlayerRef.GetEquippedItemType(0) == 11 ; Torch
-			form equippedTorch = PlayerRef.GetEquippedObject(0)
-			if bShowTorchMeter
-				startTorchMeterFlash()
-				Utility.Wait(2.0)
-				updateTorchMeterVisibility(false)
-			endIf
-			iEquip_FormExt.SetLightRadius(equippedTorch, fTorchRadius as int)
-			PlayerRef.UnequipItemEx(equippedTorch)
-			PlayerRef.RemoveItem(equippedTorch)
-		endIf
-	endIf/;
+	
 	debug.trace("iEquip_TorchScript onTorchTimerExpired end")
 endFunction
 
@@ -257,12 +243,14 @@ event OnUpdate()
 	debug.trace("iEquip_TorchScript OnUpdate start - fCurrentTorchLife: " + fCurrentTorchLife + ", bFirstUpdateForCurrentTorch: " + bFirstUpdateForCurrentTorch)
 	
 	if bFirstUpdateForCurrentTorch
-		bFinalUpdateReceived = false
 		fCurrentTorchLife = 29.9
 		bFirstUpdateForCurrentTorch = false
 	else
 		fCurrentTorchLife -= 5.0
 	endIf
+
+	PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)	; Remove and reapply the spell to reset the timer so it gives the correct time elapsed value to remove from fCurrentTorchLife if the torch is unequipped during the burnout sequence
+	PlayerRef.AddSpell(iEquip_TorchTimerSpell)
 
 	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch
 		
@@ -285,7 +273,6 @@ event OnUpdate()
 		endIf
 		
 		if fCurrentTorchLife <= 0.0
-			bFinalUpdateReceived = true
 			if bShowTorchMeter
 				startTorchMeterFlash()
 				Utility.Wait(2.0)

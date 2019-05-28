@@ -894,16 +894,22 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 		endIf
 		;Finally, if we haven't found a preferred school or destruction spell look for another 1H item
 		if found == -1
-			while i < rightCount && found == -1
-				targetObject = jArray.getObj(targetArray, i)
-				itemType = jMap.getInt(targetObject, "iEquipType")
-				if itemType > 0 && itemType < 4 || (itemType == 4 && !(jMap.getStr(targetObject, "iEquipIcon") == "Grenade")) || itemType == 8
-					found = i
-				endIf
-				i += 1
-			endwhile
+			if WC.iLastRH1HItemIndex > -1 && jMap.getForm(jArray.getObj(WC.aiTargetQ[1], WC.iLastRH1HItemIndex), "iEquipForm") as weapon && WC.ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.iLastRH1HItemIndex), "iEquipType")) == -1
+				found = WC.iLastRH1HItemIndex
+			else
+				while i < rightCount && found == -1
+					targetObject = jArray.getObj(targetArray, i)
+					itemType = jMap.getInt(targetObject, "iEquipType")
+					if itemType > 0 && itemType < 4 || (itemType == 4 && !(jMap.getStr(targetObject, "iEquipIcon") == "Grenade")) || itemType == 8
+						found = i
+					endIf
+					i += 1
+				endwhile
+			endIf
 		endIf
 	;Otherwise look for any 1h item or destruction spell	
+	elseIf WC.iLastRH1HItemIndex > -1 && jMap.getForm(jArray.getObj(WC.aiTargetQ[1], WC.iLastRH1HItemIndex), "iEquipForm") as weapon && WC.ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.iLastRH1HItemIndex), "iEquipType")) == -1
+		found = WC.iLastRH1HItemIndex
 	else
 		while i < rightCount && found == -1
 			targetObject = jArray.getObj(targetArray, i)
