@@ -894,7 +894,7 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 		endIf
 		;Finally, if we haven't found a preferred school or destruction spell look for another 1H item
 		if found == -1
-			if WC.iLastRH1HItemIndex > -1 && jMap.getForm(jArray.getObj(WC.aiTargetQ[1], WC.iLastRH1HItemIndex), "iEquipForm") as weapon && WC.ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.iLastRH1HItemIndex), "iEquipType")) == -1
+			if WC.iLastRH1HItemIndex > -1 && jMap.getForm(jArray.getObj(WC.aiTargetQ[1], WC.iLastRH1HItemIndex), "iEquipForm") as weapon && WC.ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.iLastRH1HItemIndex), "iEquipType")) == -1 	; The 2H type check is just in case queue order has changed or items have been removed since we last stored a RH 1H index
 				found = WC.iLastRH1HItemIndex
 			else
 				while i < rightCount && found == -1
@@ -1548,18 +1548,12 @@ endFunction
 function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting = false, bool equippingOtherHand = false)
 	debug.trace("iEquip_ProMode quickHealEquipSpell start")
 	debug.trace("iEquip_ProMode quickHealEquipSpell - equipping healing spell to iEquipSlot: " + iEquipSlot + ", spell found in Q " + Q + " at index " + iIndex)
-	if WC.abPoisonInfoDisplayed[iEquipSlot]
-		WC.hidePoisonInfo(iEquipSlot)
-	endIf
-	if WC.CM.abIsChargeMeterShown[iEquipSlot]
-		WC.CM.updateChargeMeterVisibility(iEquipSlot, false)
-	endIf
-	if WC.abIsCounterShown[iEquipSlot]
-		WC.setCounterVisibility(iEquipSlot, false)
-	endIf
-	if WC.bLeftIconFaded
-		WC.checkAndFadeLeftIcon(1, 22)
-	endIf
+	
+	WC.hidePoisonInfo(iEquipSlot)
+	WC.CM.updateChargeMeterVisibility(iEquipSlot, false)
+	WC.setCounterVisibility(iEquipSlot, false)
+	WC.checkAndFadeLeftIcon(1, 22)
+	
 	int spellObject = jArray.getObj(WC.aiTargetQ[Q], iIndex)
 	string spellName = jMap.getStr(spellObject, "iEquipName")
 	if !dualCasting && !equippingOtherHand
@@ -1617,14 +1611,24 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 	bCurrentlyQuickHealing = false
 	WC.aiCurrentQueuePosition[0] = iPreviousLeftHandIndex
 	WC.aiCurrentQueuePosition[1] = iPreviousRightHandIndex
+	
 	int Q = iQuickHealSlotsEquipped
-	if Q < 2
+	bool previouslyUnarmed = jMap.getStr(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipName") == "$iEquip_common_Unarmed"
+	bool previously2H = WC.ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType")) == -1 || (jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)
+	
+	if previously2H
+		Q = 2
+	endIf
+	
+	if previouslyUnarmed
+		WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)
+		WC.goUnarmed()
+	elseIf Q < 2
 		WC.updateWidget(Q, WC.aiCurrentQueuePosition[Q], true) ;True overrides bPreselectMode to make sure we're updating the main slot if we're in Preselect
 		WC.checkAndEquipShownHandItem(Q)
 	elseIf Q == 2
 		WC.updateWidget(0, WC.aiCurrentQueuePosition[0], true)
-		int rightHandItemType = jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType")
-		if rightHandItemType != 5 && rightHandItemType != 6 && rightHandItemType != 7 && rightHandItemType != 9
+		if !previously2H
 			WC.checkAndEquipShownHandItem(0)
 		endIf
 		WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)
