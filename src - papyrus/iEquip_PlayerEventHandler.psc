@@ -3,6 +3,7 @@ Scriptname iEquip_PlayerEventHandler extends ReferenceAlias
 
 Import iEquip_FormExt
 import iEquip_ActorExt
+import iEquip_SpellExt
 import iEquip_StringExt
 import iEquip_InventoryExt
 Import Utility
@@ -11,6 +12,7 @@ import AhzMoreHudIE
 
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
+iEquip_ProMode Property PM Auto
 iEquip_BeastMode Property BM Auto
 iEquip_KeyHandler Property KH Auto
 iEquip_PotionScript Property PO Auto
@@ -818,7 +820,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	endIf
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
 																										; Check that the queuedForm isn't blacklisted for the slot it's been equipped to
-	if !blackListFLSTs[equippedSlot].HasForm(queuedForm)
+	if !blackListFLSTs[equippedSlot].HasForm(queuedForm) && !(WC.PM.bCurrentlyQuickHealing && itemType == 22 && iEquip_SpellExt.IsHealingSpell(queuedForm as spell))
 																										; If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
 		if !actionTaken && ((equippedSlot < 2 && bAutoAddNewItems) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers))))
 																										; First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
@@ -903,9 +905,8 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			WC.checkAndEquipShownHandItem(equippedSlot, false, true)
 		endIf
 	endIf
-	if equippedSlot == 1 && targetIndex > -1 && WC.ai2HWeaponTypes.Find(itemType) == -1
+	if equippedSlot == 1 && targetIndex > -1 && ((queuedForm as weapon && WC.ai2HWeaponTypes.Find(itemType) == -1) || queuedForm as scroll || (queuedForm as spell && jMap.getInt(jArray.getObj(WC.aiTargetQ[1], targetIndex), "iEquipSlot") != 3 && jMap.getStr(jArray.getObj(WC.aiTargetQ[1], targetIndex), "iEquipSchool") != "Restoration"))
 		WC.iLastRH1HItemIndex = targetIndex
-		debug.notification("iLastRH1HItemIndex set to " + targetIndex)
 	endIf
 	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
 endFunction

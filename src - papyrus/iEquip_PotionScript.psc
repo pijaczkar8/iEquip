@@ -105,6 +105,7 @@ bool property bNotificationOnLowRestorePotions = true auto hidden
 bool property bBlockIfRestEffectActive = true auto hidden
 bool property bSuspendChecksInCombat = true auto hidden
 bool property bBlockIfBuffEffectActive = true auto hidden
+int property iNotificationLevel = 2 auto hidden
 
 bool bInitialised
 
@@ -1125,7 +1126,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
     debug.trace("iEquip_PotionScript selectAndConsumePotion - potionGroup received: " + potionGroup + ", targetAV: " + sTargetAV)
     debug.trace("iEquip_PotionScript selectAndConsumePotion - GetAVDamage: " + currAVDamage + ", GetActorValue: " + PlayerRef.GetActorValue(sTargetAV))
     
-    if isRestore && currAVDamage == 0
+    if isRestore && currAVDamage == 0 && iNotificationLevel > 0
         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_AVFull{"+sTargetAV+"}"))
 
     else
@@ -1182,7 +1183,9 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                     debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is " + potionToConsume + ", " + potionToConsume.GetName())
                     ; Consume the potion
                     PlayerRef.EquipItemEx(potionToConsume)
-                    debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
+                    if iNotificationLevel == 2
+                        debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
+                    endIf
                     if isRestore
                         if bQuickHealing
                             PM.bQuickHealActionTaken = true
@@ -1198,7 +1201,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                 sortPotionQueue(Q, "iEquipStrengthTotal") ;Resort the queue by total magnitude ready for next time
                 bQueueSortedBy3sStrength = false
             endIf
-        else
+        elseIf iNotificationLevel > 0
             debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+sTargetAV+"}"))
         endIf
     endIf
@@ -1259,7 +1262,9 @@ function quickBuffFindAndConsumePotions(int potionGroup)
         if potionToConsume
             ; Consume the potion
             PlayerRef.EquipItemEx(potionToConsume)
-            debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
+            if iNotificationLevel == 2
+                debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
+            endIf
         	bFortifyConsumed = true
         endIf
     endIf
@@ -1274,7 +1279,9 @@ function quickBuffFindAndConsumePotions(int potionGroup)
         if potionToConsume
             ; Consume the potion
             PlayerRef.EquipItemEx(potionToConsume)
-            debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
+            if iNotificationLevel == 2
+                debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
+            endIf
         endIf
     endIf
     
@@ -1307,7 +1314,7 @@ bool function isEffectAlreadyActive(int Q, bool bIsRestore)
     	endIf
     endIf
 
-    if fActiveEffectMagnitude > 0.0
+    if fActiveEffectMagnitude > 0.0 && iNotificationLevel > 0
     	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive{"+asEffectNames[Q]+"}"))
     endIf
 

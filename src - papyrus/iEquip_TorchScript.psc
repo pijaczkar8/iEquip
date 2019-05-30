@@ -250,7 +250,7 @@ event OnUpdate()
 	endIf
 
 	PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)	; Remove and reapply the spell to reset the timer so it gives the correct time elapsed value to remove from fCurrentTorchLife if the torch is unequipped during the burnout sequence
-	PlayerRef.AddSpell(iEquip_TorchTimerSpell)
+	PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
 
 	if PlayerRef.GetEquippedItemType(0) == 11 ; Torch
 		
@@ -263,13 +263,13 @@ event OnUpdate()
 			iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 			
-			if !PlayerRef.IsWeaponDrawn()
+			;if !PlayerRef.IsWeaponDrawn()
 				bSettingLightRadius = true
 				if PlayerRef.GetItemCount(iEquipTorch) < 1
 					PlayerRef.AddItem(iEquipTorch, 1, true)
 				endIf
             	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
-            endIf
+            ;endIf
 		endIf
 		
 		if fCurrentTorchLife <= 0.0
@@ -394,93 +394,6 @@ function quickLight()
 	endIf
 	debug.trace("iEquip_TorchScript quickLight end")
 endFunction
-
-;/function toggleTorch()
-
-	form currentItemForm = PlayerRef.GetEquippedObject(0)
-	int currentItemType = PlayerRef.GetEquippedItemType(0)
-	bool torchEquipped = currentItemType == 11	; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
-	int targetSlot
-	
-	debug.trace("iEquip_TorchScript toggleTorch start - torch equipped: " + torchEquipped + ", currentItemForm: " + currentItemForm + ", currentItemType: " + currentItemType + ", bPreviously2HOrRanged: " + bPreviously2HOrRanged)
-	debug.trace("iEquip_TorchScript toggleTorch - previousLeftHandIndex: " + previousLeftHandIndex + ", previousLeftHandName: " + previousLeftHandName + ", previousItemForm: " + previousItemForm + ", previousItemHandle: " + previousItemHandle)
-
-	if torchEquipped
-		
-		WC.setCounterVisibility(0, false)
-		if bShowTorchMeter
-			updateTorchMeterVisibility(false)
-		endIf
-
-		bSettingLightRadius = false
-		UnregisterForUpdate()	; Cancel any pending updates
-
-		PlayerRef.UnequipItemEx(currentItemForm)
-
-		if bPreviously2HOrRanged
-			targetSlot = 1		; Right hand
-			WC.aiCurrentQueuePosition[0] = previousLeftHandIndex
-			WC.asCurrentlyEquipped[0] = previousLeftHandName
-			WC.updateWidget(0, previousLeftHandIndex, true)
-		elseIf previousItemForm as Armor || previousItemForm as spell
-			targetSlot = 0		; Default, for shields only, 0 for spells with EquipSpell (left)
-		else
-			targetSlot = 2		; Left hand
-		endIf
-
-		bJustToggledTorch = true
-		
-		if previousItemHandle != 0xFFFF
-			iEquip_InventoryExt.EquipItem(previousItemForm, previousItemHandle, PlayerRef, targetSlot)
-		elseIf previousItemForm
-			if previousItemForm as spell
-				PlayerRef.EquipSpell(previousItemForm as Spell, targetSlot)
-			else
-				PlayerRef.EquipItemEx(previousItemForm, targetSlot)
-			endIf
-		else
-			WC.setSlotToEmpty(0, true, jArray.count(WC.aiTargetQ[0]) > 0)
-		endIf
-
-	elseIf PlayerRef.GetItemCount(realTorchForm) > 0
-		
-		WC.hidePoisonInfo(0)
-
-		if WC.ai2HWeaponTypesAlt.Find(currentItemType) > -1
-			bPreviously2HOrRanged = true
-			previousLeftHandIndex = WC.aiCurrentQueuePosition[0]
-			previousLeftHandName = WC.asCurrentlyEquipped[0]
-		else
-			bPreviously2HOrRanged = false
-		endIf
-
-		if AM.bAmmoMode
-			AM.toggleAmmoMode(true, true)
-			if !AM.bSimpleAmmoMode
-				bool[] args = new bool[3]
-				args[2] = true
-				UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
-				args = new bool[4]
-				UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-			endIf
-		endIf
-
-		if currentItemType == 10 ; Shield
-			targetSlot = 2
-		else
-			targetSlot = bPreviously2HOrRanged as int
-		endIf
-
-		previousItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(targetSlot)
-		previousItemForm = currentItemForm
-		bJustToggledTorch = true
-		PlayerRef.EquipItemEx(realTorchForm) ; This should then be caught by EH.onObjectEquipped and trigger all the relevant widget/torch/RH stuff as required
-	
-	else
-		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TO_not_noTorch"))
-	endIf
-	debug.trace("iEquip_TorchScript toggleTorch end")
-endFunction/;
 
 ; Simple Drop Lit Torches - Courtesy of, and with full permission from, Snotgurg
 

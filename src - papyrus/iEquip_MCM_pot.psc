@@ -5,6 +5,7 @@ iEquip_PotionScript Property PO Auto
 string[] emptyPotionQueueOptions
 string[] potionSelectOptions
 string[] showSelectorOptions
+string[] notificationOptions
 
 ; #############
 ; ### SETUP ###
@@ -26,6 +27,11 @@ function initData()
     potionSelectOptions[0] = "$iEquip_MCM_pot_opt_alwaysStrongest"
     potionSelectOptions[1] = "$iEquip_MCM_pot_opt_smartSelect"
     potionSelectOptions[2] = "$iEquip_MCM_pot_opt_alwaysWeakest"
+
+    notificationOptions = new String[3]
+    notificationOptions[0] = "$iEquip_MCM_common_opt_disabled"
+    notificationOptions[1] = "$iEquip_MCM_common_opt_minimal"
+    notificationOptions[2] = "$iEquip_MCM_common_opt_verbose"
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -75,6 +81,11 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
+
+    notificationOptions = new String[3]
+    notificationOptions[0] = "$iEquip_MCM_common_opt_disabled"
+    notificationOptions[1] = "$iEquip_MCM_common_opt_minimal"
+    notificationOptions[2] = "$iEquip_MCM_common_opt_verbose"
 
 	MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potOpts")
 	MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)
@@ -126,6 +137,10 @@ function drawPage()
 	if PO.bEnableRestorePotionWarnings
 		MCM.AddToggleOptionST("pot_tgl_lowRestPotNot", "$iEquip_MCM_pot_lbl_lowRestPotNot", PO.bNotificationOnLowRestorePotions)
 	endIf
+
+    MCM.AddEmptyOption()
+    MCM.AddHeaderOption("$iEquip_MCM_common_lbl_NotifOptions")
+    MCM.AddMenuOptionST("pot_men_ConsumeNotifications", "$iEquip_MCM_pot_lbl_ConsumeNotifications", notificationOptions[PO.iNotificationLevel])
 endFunction
 
 ; ###############
@@ -381,6 +396,19 @@ State pot_tgl_lowRestPotNot
         elseIf currentEvent == "Select"
             PO.bNotificationOnLowRestorePotions = !PO.bNotificationOnLowRestorePotions
             MCM.SetToggleOptionValueST(PO.bNotificationOnLowRestorePotions)
+        endIf
+    endEvent
+endState
+
+State pot_men_ConsumeNotifications
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_ConsumeNotifications")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(PO.iNotificationLevel, notificationOptions, 2)
+        elseIf currentEvent == "Accept"
+            PO.iNotificationLevel = currentVar as int
+            MCM.SetMenuOptionValueST(notificationOptions[PO.iNotificationLevel])
         endIf
     endEvent
 endState

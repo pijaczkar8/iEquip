@@ -1051,6 +1051,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 	if found != -1
 		;if we're not in Preselect Mode, or we've selected Preselect Mode Equip in the MCM
 		if !bPreselectMode || iPreselectQuickRanged == 2
+			bCurrentlyQuickHealing = false
 			;Store current right hand index before switching in case user calls quickRangedSwitchOut() - we don't need left index as toggling out of ammo mode by switching right will take care of that.
 			iPreviousRightHandIndex = WC.aiCurrentQueuePosition[1]
 			bool foundWeaponIsPoisoned = WC.isWeaponPoisoned(1, found, true)
@@ -1406,7 +1407,7 @@ function quickRestore()
 	        	If PO.getPotionTypeCount(1) > 0 || PO.getPotionTypeCount(2) > 0
 		        	debug.trace("iEquip_ProMode quickRestore - calling quickBuff health")
 					PO.quickBuffFindAndConsumePotions(0)
-				else
+				elseIf PO.iNotificationLevel > 0
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noHealthBuffPotions"))
 				endIf
 			endIf
@@ -1423,7 +1424,7 @@ function quickRestore()
     		if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
 		    	PO.selectAndConsumePotion(2, 0) ;Stamina
-		    else
+		    elseIf PO.iNotificationLevel > 0
 		    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_StaminaFull"))
 		    endIf
 			
@@ -1431,7 +1432,7 @@ function quickRestore()
 				If PO.getPotionTypeCount(7) > 0 || PO.getPotionTypeCount(8) > 0
 					debug.trace("iEquip_ProMode quickRestore - calling quickBuff stamina")
 					PO.quickBuffFindAndConsumePotions(2)
-				else
+				elseIf PO.iNotificationLevel > 0
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noStaminaBuffPotions"))
 				endIf
 			endIf
@@ -1448,7 +1449,7 @@ function quickRestore()
 	    	if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
 		    	debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
 		    	PO.selectAndConsumePotion(1, 0) ;Magicka
-		    else
+		    elseIf PO.iNotificationLevel > 0
 		    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_MagickaFull"))
 		    endIf
 			
@@ -1456,7 +1457,7 @@ function quickRestore()
 				If PO.getPotionTypeCount(4) > 0 || PO.getPotionTypeCount(5) > 0
 					debug.trace("iEquip_ProMode quickRestore - calling quickBuff magicka")
 					PO.quickBuffFindAndConsumePotions(1)
-				else
+				elseIf PO.iNotificationLevel > 0
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noMagickaBuffPotions"))
 				endIf
 			endIf
@@ -1473,7 +1474,7 @@ function quickHeal()
     elseIf PO.getPotionTypeCount(0) > 0
     	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
 	    	PO.selectAndConsumePotion(0, 0, true)
-	   	else
+	   	elseIf PO.iNotificationLevel > 0
 			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
 			bQuickHealActionTaken = true
 	    endIf
@@ -1484,7 +1485,7 @@ function quickHeal()
         	If PO.getPotionTypeCount(0) > 0
 	        	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
 	            	PO.selectAndConsumePotion(0, 0, true)
-	            else
+	            elseIf PO.iNotificationLevel > 0
 	            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
 	            endIf
 	        endIf
@@ -1502,12 +1503,11 @@ function quickHealFindAndEquipSpell()
 	int count
 	int targetIndex = -1
 	int containingQ
-	int targetArray = WC.aiTargetQ[Q]
 	int targetObject
 	while Q < 2 && targetIndex == -1
-		count = jArray.count(targetArray)
+		count = jArray.count(WC.aiTargetQ[Q])
 		while i < count && targetIndex == -1
-			targetObject = jArray.getObj(targetArray, i)
+			targetObject = jArray.getObj(WC.aiTargetQ[Q], i)
 			if jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_SpellExt.IsHealingSpell(jMap.getForm(targetObject, "iEquipForm") as spell)
 				targetIndex = i
 				containingQ = Q
@@ -1530,24 +1530,39 @@ function quickHealFindAndEquipSpell()
 		if bQuickHealSwitchBackEnabled
 			iPreviousLeftHandIndex = WC.aiCurrentQueuePosition[0]
 			iPreviousRightHandIndex = WC.aiCurrentQueuePosition[1]
-			bCurrentlyQuickHealing = true
+			debug.trace("iEquip_ProMode quickHealFindAndEquipSpell - current queue positions stored for switch back, iPreviousLeftHandIndex: " + iPreviousLeftHandIndex + ", iPreviousRightHandIndex: " + iPreviousRightHandIndex)
 		endIf
 		iQuickHealSlotsEquipped = iEquipSlot
 		if iEquipSlot < 2
-			quickHealEquipSpell(iEquipSlot, containingQ, targetIndex, false, equippingOtherHand)
+			quickHealEquipSpell(iEquipSlot, containingQ, targetIndex, equippingOtherHand)
 		else
-			int otherHand = (containingQ + 1) % 2
-			quickHealEquipSpell(containingQ, containingQ, targetIndex)
-			quickHealEquipSpell(otherHand, containingQ, targetIndex, true)
+			quickHealEquipSpell(1, containingQ, targetIndex, containingQ == 0, true)
+			quickHealEquipSpell(0, containingQ, targetIndex, containingQ == 1)
 		endIf
+		bCurrentlyQuickHealing = true
 		bQuickHealActionTaken = true
 	endIf
 	debug.trace("iEquip_ProMode quickHealFindAndEquipSpell end")
 endFunction
 
-function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting = false, bool equippingOtherHand = false)
+function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool equippingOtherHand = false, bool dualCasting = false)
 	debug.trace("iEquip_ProMode quickHealEquipSpell start")
 	debug.trace("iEquip_ProMode quickHealEquipSpell - equipping healing spell to iEquipSlot: " + iEquipSlot + ", spell found in Q " + Q + " at index " + iIndex)
+
+	if AM.bAmmoMode
+		bCurrentlyQuickRanged = false
+		AM.toggleAmmoMode((!bPreselectMode || !abPreselectSlotEnabled[0]), !(iEquipSlot == 1 && !dualCasting)) 	; If we're toggling out of ammo mode only equip left if we're equipping the healing spell in only the right hand
+		;And if we're not in Preselect Mode we need to hide the left preselect elements
+		if !bPreselectMode && !AM.bSimpleAmmoMode
+			bool[] args = new bool[3]
+			args[2] = true
+			UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
+		endIf
+		ammo targetAmmo = AM.currentAmmoForm as Ammo
+		if WC.bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
+			PlayerRef.UnequipItemEx(targetAmmo)
+		endIf
+	endIf
 	
 	WC.hidePoisonInfo(iEquipSlot)
 	WC.CM.updateChargeMeterVisibility(iEquipSlot, false)
@@ -1556,7 +1571,8 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting
 	
 	int spellObject = jArray.getObj(WC.aiTargetQ[Q], iIndex)
 	string spellName = jMap.getStr(spellObject, "iEquipName")
-	if !dualCasting && !equippingOtherHand
+
+	if !equippingOtherHand
 		WC.aiCurrentQueuePosition[iEquipSlot] = iIndex
 		WC.asCurrentlyEquipped[iEquipSlot] = spellName
 		;Update the main right hand widget, if in Preselect Mode skipping the Preselect Mode check so we don't update the preselect slot
@@ -1566,8 +1582,8 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool dualCasting
 			cyclePreselectSlot(iEquipSlot, jArray.count(WC.aiTargetQ[iEquipSlot]), false)
 		endIf
 		WC.checkAndEquipShownHandItem(iEquipSlot, false)
-		bCurrentlyQuickHealing = true
 	else
+		WC.EH.bJustQuickDualCast = true
 		WC.bBlockSwitchBackToBoundSpell = true
 		int foundIndex = WC.findInQueue(iEquipSlot, spellName)
 		PlayerRef.EquipSpell(jMap.getForm(spellObject, "iEquipForm") as Spell, iEquipSlot)
@@ -1610,11 +1626,14 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 	debug.trace("iEquip_ProMode quickHealSwitchBack start")
 	bCurrentlyQuickHealing = false
 	WC.aiCurrentQueuePosition[0] = iPreviousLeftHandIndex
+	WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], iPreviousLeftHandIndex), "iEquipName")
 	WC.aiCurrentQueuePosition[1] = iPreviousRightHandIndex
+	int previousRHObject = jArray.getObj(WC.aiTargetQ[1], iPreviousRightHandIndex)
+	WC.asCurrentlyEquipped[1] = jMap.getStr(previousRHObject, "iEquipName")
 	
 	int Q = iQuickHealSlotsEquipped
-	bool previouslyUnarmed = jMap.getStr(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipName") == "$iEquip_common_Unarmed"
-	bool previously2H = WC.ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType")) == -1 || (jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)
+	bool previouslyUnarmed = WC.asCurrentlyEquipped[1] == "$iEquip_common_Unarmed"
+	bool previously2H = WC.ai2HWeaponTypes.Find(jMap.getInt(previousRHObject, "iEquipType")) > -1 || (jMap.getInt(previousRHObject, "iEquipType") == 22 && jMap.getInt(previousRHObject, "iEquipSlot") == 3)
 	
 	if previously2H
 		Q = 2
@@ -1630,6 +1649,8 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 		WC.updateWidget(0, WC.aiCurrentQueuePosition[0], true)
 		if !previously2H
 			WC.checkAndEquipShownHandItem(0)
+		elseIf jMap.getInt(previousRHObject, "iEquipType") == 7 || jMap.getInt(previousRHObject, "iEquipType") == 9
+			Utility.WaitMenuMode(0.4)
 		endIf
 		WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)
 		WC.checkAndEquipShownHandItem(1)

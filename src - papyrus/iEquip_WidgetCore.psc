@@ -4072,7 +4072,7 @@ function UnequipHand(int Q)
         elseif (Q == 1 && equippedItem as Ammo)
         	PlayerRef.UnequipItemEx(equippedItem as Ammo)
         else
-            PlayerRef.UnequipItemEx(equippedItem, QEx)
+            PlayerRef.UnequipItemEx(equippedItem, QEx, true)
         endIf
     endIf
     debug.trace("iEquip_WidgetCore UnequipHand end")
