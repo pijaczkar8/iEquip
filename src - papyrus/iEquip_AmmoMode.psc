@@ -112,7 +112,7 @@ function onAmmoAdded(form addedAmmo)
 	debug.trace("iEquip_AmmoMode onAmmoAdded - addedAmmo: " + addedAmmo.GetName())
 	int isBolt = (addedAmmo as ammo).isBolt() as int
 	int count = jArray.count(aiTargetQ[isBolt])
-	if bAmmoMode && currentAmmoForm == addedAmmo && count > 1
+	if bAmmoMode && currentAmmoForm == addedAmmo && count > 0
     	setSlotCount(PlayerRef.GetItemCount(addedAmmo))
     elseif !isAlreadyInAmmoQueue(addedAmmo, aiTargetQ[isBolt])
     	AddToAmmoQueue(addedAmmo, addedAmmo.GetName(), isBolt)

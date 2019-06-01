@@ -100,24 +100,25 @@ endFunction
 
 function drawPage()
 
-    MCM.AddToggleOptionST("gen_tgl_onOff", "$iEquip_MCM_gen_lbl_onOff", MCM.bEnabled)
+    MCM.AddToggleOptionST("gen_tgl_onOff", "<font color='#ff7417'>$iEquip_MCM_gen_lbl_onOff</font>", MCM.bEnabled)
     MCM.AddToggleOptionST("gen_tgl_showTooltips", "$iEquip_MCM_gen_lbl_showTooltips", WC.bShowTooltips)
+    MCM.AddEmptyOption()
 	
     if WC.isEnabled
-		MCM.AddHeaderOption("<font color='##C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
 		MCM.AddToggleOptionST("gen_tgl_enblShoutSlt", "$iEquip_MCM_gen_lbl_enblShoutSlt", WC.bShoutEnabled)
 		MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "$iEquip_MCM_gen_lbl_enblConsumSlt", WC.bConsumablesEnabled)
 		MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
 
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='##C1A57A'>$iEquip_MCM_gen_lbl_AmmoMode</font>")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_AmmoMode</font>")
 		MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
 		MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
 		MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
 
 		MCM.SetCursorPosition(1)
 				
-		MCM.AddHeaderOption("<font color='##C1A57A'>$iEquip_MCM_gen_lbl_Cycling</font>")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_Cycling</font>")
 		MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
 				
 		if WC.bEquipOnPause
@@ -133,12 +134,12 @@ function drawPage()
 		endIf
 
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='##C1A57A'>$iEquip_MCM_gen_lbl_VisGear</font>")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_VisGear</font>")
 		MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
 		MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
 
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='##C1A57A'>$iEquip_MCM_gen_lbl_BeastMode</font>")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_BeastMode</font>")
 		MCM.AddToggleOptionST("gen_tgl_BM_werewolf", "$iEquip_MCM_gen_lbl_BM_werewolf", BM.abShowInTransformedState[0])
 		if Game.GetModByName("Dawnguard.esm") != 255
 			MCM.AddToggleOptionST("gen_tgl_BM_vampLord", "$iEquip_MCM_gen_lbl_BM_vampLord", BM.abShowInTransformedState[1])
@@ -150,7 +151,6 @@ function drawPage()
             MCM.AddToggleOptionST("gen_tgl_BM_POTBoneTyrant", "$iEquip_MCM_gen_lbl_BM_POTBoneTyrant", BM.abShowInTransformedState[3])
         endIf
 	elseIf bFirstEnabled
-		MCM.AddEmptyOption()
 		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
 		MCM.AddTextOptionST("gen_txt_firstEnabled2", "$iEquip_MCM_common_lbl_firstEnabled2", "")
 		MCM.AddTextOptionST("gen_txt_firstEnabled3", "$iEquip_MCM_common_lbl_firstEnabled3", "")

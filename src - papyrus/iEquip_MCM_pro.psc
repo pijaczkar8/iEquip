@@ -179,15 +179,15 @@ function drawPage()
 	if bStillToEnableProMode
 		MCM.AddTextOptionST("pro_txt_dragEastr", "", "$iEquip_MCM_pro_txt_dragEastrA")
 	else
-		MCM.AddToggleOptionST("pro_tgl_enblProMode", "$iEquip_MCM_pro_lbl_enblProMode", WC.bProModeEnabled)
-		MCM.AddTextOptionST("pro_txt_whatProMode", "$iEquip_MCM_pro_lbl_whatIsProMode", "")
+		MCM.AddTextOptionST("pro_txt_whatProMode", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatIsProMode</font>", "")
+		MCM.AddToggleOptionST("pro_tgl_enblProMode", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblProMode</font>", WC.bProModeEnabled)
 	endIf
 	
 	if WC.bProModeEnabled
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("$iEquip_MCM_pro_lbl_preselectOpts")
-		MCM.AddTextOptionST("pro_txt_whatPreselect", "$iEquip_MCM_pro_lbl_whatPreselect", "")
-		MCM.AddToggleOptionST("pro_tgl_enblPreselect", "$iEquip_MCM_pro_lbl_enblPreselect", PM.bPreselectEnabled)
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_preselectOpts</font>")
+		MCM.AddTextOptionST("pro_txt_whatPreselect", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatPreselect</font>", "")
+		MCM.AddToggleOptionST("pro_tgl_enblPreselect", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblPreselect</font>", PM.bPreselectEnabled)
 				
 		if PM.bPreselectEnabled
 			MCM.AddToggleOptionST("pro_tgl_enblShoutPreselect", "$iEquip_MCM_pro_lbl_enblShoutPreselect", PM.bShoutPreselectEnabled)
@@ -196,9 +196,9 @@ function drawPage()
 		endIf
 				
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("$iEquip_MCM_pro_lbl_quickShieldOpts")
-		MCM.AddTextOptionST("pro_txt_whatQuickshield", "$iEquip_MCM_pro_lbl_whatQuickshield", "")
-		MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "$iEquip_MCM_pro_lbl_enblQuickshield", PM.bQuickShieldEnabled)
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickShieldOpts</font>")
+		MCM.AddTextOptionST("pro_txt_whatQuickshield", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickshield</font>", "")
+		MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
 				
 		if PM.bQuickShieldEnabled
 			MCM.AddToggleOptionST("pro_tgl_with2hReqp", "$iEquip_MCM_pro_lbl_with2hReqp", PM.bQuickShield2HSwitchAllowed)
@@ -212,9 +212,9 @@ function drawPage()
 		endIf
 				
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("$iEquip_MCM_pro_lbl_quickRestoreOpts")
-		MCM.AddTextOptionST("pro_txt_whatQuickRestore", "$iEquip_MCM_pro_lbl_whatQuickRestore", "")
-		MCM.AddToggleOptionST("pro_tgl_enblQuickRestore", "$iEquip_MCM_pro_lbl_enblQuickRestore", PM.bQuickRestoreEnabled)
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickRestoreOpts</font>")
+		MCM.AddTextOptionST("pro_txt_whatQuickRestore", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickRestore</font>", "")
+		MCM.AddToggleOptionST("pro_tgl_enblQuickRestore", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
 		
 		if PM.bQuickRestoreEnabled
 			;QuickHeal
@@ -237,7 +237,7 @@ function drawPage()
 			endIf
 			;QuickHeal Options
 			if PM.bQuickHealEnabled
-				MCM.AddHeaderOption("$iEquip_MCM_pro_lbl_quickHealOpts")
+				MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickHealOpts</font>")
 				MCM.AddToggleOptionST("pro_tgl_prefHealMag", "$iEquip_MCM_pro_lbl_prefMag", PM.bQuickHealPreferMagic)
 				MCM.AddToggleOptionST("pro_tgl_useFallback", "$iEquip_MCM_pro_lbl_useFallback", PM.bQuickHealUseFallback)
 						
@@ -256,9 +256,9 @@ function drawPage()
 				
 		MCM.SetCursorPosition(1)
 				
-		MCM.AddHeaderOption("$iEquip_MCM_pro_lbl_quickRangedOpts")
-		MCM.AddTextOptionST("pro_txt_whatQuickranged", "$iEquip_MCM_pro_lbl_whatQuickranged", "")
-		MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "$iEquip_MCM_pro_lbl_enblQuickranged", PM.bQuickRangedEnabled)
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickRangedOpts</font>")
+		MCM.AddTextOptionST("pro_txt_whatQuickranged", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickranged</font>", "")
+		MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
 				
 		if PM.bQuickRangedEnabled
 			MCM.AddMenuOptionST("pro_men_prefWepTyp", "$iEquip_MCM_pro_lbl_prefWepTyp", QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
@@ -272,9 +272,9 @@ function drawPage()
 		endIf
 				
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("$iEquip_MCM_pro_lbl_quickDCOpts")
-		MCM.AddTextOptionST("pro_txt_whatQuickdualcast", "$iEquip_MCM_pro_lbl_whatQuickdualcast", "")
-		MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "$iEquip_MCM_pro_lbl_enblQuickdualcast", WC.bQuickDualCastEnabled)
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickDCOpts</font>")
+		MCM.AddTextOptionST("pro_txt_whatQuickdualcast", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickdualcast</font>", "")
+		MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
 				
 		if WC.bQuickDualCastEnabled
 			MCM.AddTextOption("$iEquip_MCM_pro_lbl_enableQDCSchools", "")

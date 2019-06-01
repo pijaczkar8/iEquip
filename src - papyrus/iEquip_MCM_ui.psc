@@ -172,7 +172,7 @@ endFunction
 
 function drawPage()
 	if WC.bShowPositionIndicators
-		MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_posIndOpts")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_posIndOpts</font>")
 		MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
 		MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
 		MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
@@ -180,7 +180,7 @@ function drawPage()
 		MCM.AddEmptyOption()
 	endIf
 
-	MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_temperedItemOpts")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_temperedItemOpts</font>")
 	MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
 	
 	if TI.iTemperNameFormat > 0 && TI.iTemperNameFormat < 9
@@ -198,7 +198,7 @@ function drawPage()
 	endIf
 	MCM.AddEmptyOption()
 
-	MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_iconBgOpts")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_iconBgOpts</font>")
 	MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
 			
 	if WC.bFadeLeftIconWhen2HEquipped
@@ -211,7 +211,7 @@ function drawPage()
 	MCM.SetCursorPosition(1)
 	;We don't want drop shadow settings being messed around with while we are in Edit Mode
 	if !WC.EM.isEditMode
-		MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_txtShadOpts")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_txtShadOpts</font>")
 		MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
 		
 		if WC.bDropShadowEnabled
@@ -225,7 +225,7 @@ function drawPage()
 		MCM.AddEmptyOption()
 	endIf
 
-	MCM.AddHeaderOption("$iEquip_MCM_ui_lbl_fadeoutopts")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_fadeoutopts</font>")
 	MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
 			
 	if WC.bWidgetFadeoutEnabled

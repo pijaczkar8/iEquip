@@ -22,13 +22,13 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-    MCM.AddHeaderOption("$iEquip_MCM_lbl_Info")
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_lbl_Info</font>")
 	MCM.AddTextOptionST("inf_txt_iEquipVersion", "$iEquip_MCM_inf_lbl_version", MCM.GetVersion() as string)
     ;+++Dependency checks
     ;+++Supported mods detected
 
 	MCM.SetCursorPosition(1)
-	MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_presets")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_inf_lbl_presets</font>")
 	MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "")
 	if jMap.count(JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)) > 0
 		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
@@ -36,7 +36,7 @@ function drawPage()
 	endIf
 	MCM.AddEmptyOption()
 	
-	MCM.AddHeaderOption("$iEquip_MCM_inf_lbl_maintenance")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_inf_lbl_maintenance</font>")
 	MCM.AddTextOptionST("inf_txt_rstLayout", "$iEquip_MCM_inf_lbl_rstLayout", "")
 endFunction
 

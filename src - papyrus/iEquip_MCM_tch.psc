@@ -88,7 +88,7 @@ endFunction
 function drawPage()
 	if WC.isEnabled
 
-        MCM.AddHeaderOption("$iEquip_MCM_tch_lbl_quickLightOptions")
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_quickLightOptions</font>")
         MCM.AddKeyMapOptionST("tch_key_quickLight", "$iEquip_MCM_tch_lbl_quickLight", KH.iQuickLightKey, mcmUnmapFLAG)
         MCM.AddToggleOptionST("tch_tgl_quickLightPreferMagic", "$iEquip_MCM_tch_lbl_quickLightPreferMagic", TO.bQuickLightPreferMagic)
         MCM.AddToggleOptionST("tch_tgl_quickLightEquipRH", "$iEquip_MCM_tch_lbl_quickLightEquipRH", TO.bQuickLightEquipRH)
@@ -96,7 +96,7 @@ function drawPage()
 
 		MCM.AddEmptyOption()
 
-		MCM.AddHeaderOption("$iEquip_MCM_tch_lbl_torchLifeOptions")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchLifeOptions</font>")
 		MCM.AddSliderOptionST("tch_sld_torchDuration", "$iEquip_MCM_tch_lbl_torchDuration", (TO.fTorchDuration + 5.0) / 60, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
 		MCM.AddToggleOptionST("tch_tgl_finiteTorchLife", "$iEquip_MCM_tch_lbl_finiteTorchLife", TO.bFiniteTorchLife)
 		if TO.bFiniteTorchLife
@@ -113,7 +113,7 @@ function drawPage()
 
 		MCM.SetCursorPosition(1)
 
-        MCM.AddHeaderOption("$iEquip_MCM_tch_lbl_torchDropOptions")
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchDropOptions</font>")
         MCM.AddToggleOptionST("tch_tgl_dropLitTorches", "$iEquip_MCM_tch_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
         if TO.bDropLitTorchesEnabled
             MCM.AddMenuOptionST("tch_men_dropLitTorchBehavior", "$iEquip_MCM_tch_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
@@ -121,7 +121,7 @@ function drawPage()
 
         MCM.AddEmptyOption()
 
-		MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
         MCM.AddToggleOptionST("tch_tgl_showTorchMeter", "$iEquip_MCM_tch_lbl_showTorchMeter", TO.bShowTorchMeter)
         if TO.bShowTorchMeter
             MCM.AddColorOptionST("tch_col_torchMeterCol", "$iEquip_MCM_tch_lbl_torchMeterCol", TO.iTorchMeterFillColor)
@@ -130,7 +130,7 @@ function drawPage()
 
 		MCM.AddEmptyOption()
 
-		MCM.AddHeaderOption("$iEquip_MCM_lbl_Info")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_lbl_Info</font>")
 		MCM.AddTextOptionST("tch_txt_realisticTorches", "$iEquip_MCM_tch_lbl_realisticTorches", modStates[(Game.GetModByName("RealisticTorches.esp") != 255) as int])
 	endIf
 endFunction

@@ -87,7 +87,7 @@ function drawPage()
     notificationOptions[1] = "$iEquip_MCM_common_opt_minimal"
     notificationOptions[2] = "$iEquip_MCM_common_opt_verbose"
 
-	MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potOpts")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_potOpts</font>")
 	MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)
 			
 	if WC.bPotionGrouping
@@ -96,7 +96,7 @@ function drawPage()
 		MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
 		
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_thrshldFX")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_thrshldFX</font>")
 		if PO.iPotionSelectChoice == 1 ; Smart Select
 			MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartSelectThreshold*100, "{0} %")
 		endIf
@@ -121,13 +121,13 @@ function drawPage()
 	
 	MCM.SetCursorPosition(1)
 
-	MCM.AddHeaderOption("$iEquip_MCM_pot_lbl_potSelOpts")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_potSelOpts</font>")
 	MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
 	MCM.AddSliderOptionST("pot_sld_SmartConsumeThreshold", "$iEquip_MCM_pot_lbl_SmartConsumeThreshold", WC.fSmartConsumeThreshold*100, "{0} %")
 	MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 	MCM.AddEmptyOption()
 	
-	MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
 	MCM.AddMenuOptionST("pot_men_whenNoPotions", "$iEquip_MCM_pot_lbl_whenNoPotions", emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
 	if PO.iEmptyPotionQueueChoice == 0
 		MCM.AddSliderOptionST("pot_sld_consIcoFade", "$iEquip_MCM_pot_lbl_consIcoFade", WC.fconsIconFadeAmount, "{0}%")
@@ -139,7 +139,7 @@ function drawPage()
 	endIf
 
     MCM.AddEmptyOption()
-    MCM.AddHeaderOption("$iEquip_MCM_common_lbl_NotifOptions")
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_NotifOptions</font>")
     MCM.AddMenuOptionST("pot_men_ConsumeNotifications", "$iEquip_MCM_pot_lbl_ConsumeNotifications", notificationOptions[PO.iNotificationLevel])
 endFunction
 

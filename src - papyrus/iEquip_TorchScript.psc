@@ -265,10 +265,23 @@ event OnUpdate()
 			
 			;if !PlayerRef.IsWeaponDrawn()
 				bSettingLightRadius = true
+				
 				if PlayerRef.GetItemCount(iEquipTorch) < 1
 					PlayerRef.AddItem(iEquipTorch, 1, true)
 				endIf
+            	
             	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
+            	
+            	while !(PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping")
+				     Utility.WaitMenuMode(0.015)
+				     Debug.Trace("Waiting for Equip")
+				endWhile
+
+				while (PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping")
+				     Utility.WaitMenuMode(0.015)
+				     Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
+				     Debug.Trace("WeapEquip_Out Sent")
+				endWhile
             ;endIf
 		endIf
 		

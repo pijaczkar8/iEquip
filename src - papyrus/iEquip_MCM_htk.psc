@@ -57,17 +57,17 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-	MCM.AddTextOptionST("htk_txt_htkHelp", "$iEquip_MCM_htk_lbl_htkHelp", "")
+	MCM.AddTextOptionST("htk_txt_htkHelp", "<font color='#a6bffe'>$iEquip_MCM_htk_lbl_htkHelp</font>", "")
 		
 	MCM.AddEmptyOption()
-	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_MainHtks")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_htk_lbl_MainHtks</font>")
 	MCM.AddKeyMapOptionST("htk_key_leftHand", "$iEquip_MCM_htk_lbl_leftHand", KH.iLeftKey, mcmUnmapFLAG)
 	MCM.AddKeyMapOptionST("htk_key_rightHand", "$iEquip_MCM_htk_lbl_rightHand", KH.iRightKey, mcmUnmapFLAG)
 	MCM.AddKeyMapOptionST("htk_key_shout", "$iEquip_MCM_htk_lbl_shout", KH.iShoutKey, mcmUnmapFLAG)
 	MCM.AddKeyMapOptionST("htk_key_consumPoison", "$iEquip_MCM_htk_lbl_consumPoison", KH.iConsumableKey, mcmUnmapFLAG)
 	MCM.AddEmptyOption()
 			
-	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_UtHtkOpts")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_htk_lbl_UtHtkOpts</font>")
 	MCM.AddKeyMapOptionST("htk_key_util", "$iEquip_MCM_htk_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
     MCM.AddToggleOptionST("htk_tgl_blockUtilMenuInCombat", "$iEquip_MCM_htk_lbl_blockUtilMenuInCombat", KH.bNoUtilMenuInCombat)
 
@@ -77,12 +77,12 @@ function drawPage()
 	MCM.AddEmptyOption()
 	MCM.AddEmptyOption()
 	
-	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_KeyPressOpts")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_htk_lbl_KeyPressOpts</font>")
 	MCM.AddSliderOptionST("htk_sld_multiTapDelay", "$iEquip_MCM_htk_lbl_multiTapDelay", KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 	MCM.AddSliderOptionST("htk_sld_longPrsDelay", "$iEquip_MCM_htk_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 	MCM.AddEmptyOption()
 	
-	MCM.AddHeaderOption("$iEquip_MCM_htk_lbl_ExtKbCtrls")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_htk_lbl_ExtKbCtrls</font>")
 	MCM.AddToggleOptionST("htk_tgl_enblExtKbCtrls", "$iEquip_MCM_htk_lbl_enblExtKbCtrls", KH.bExtendedKbControlsEnabled)
 	if KH.bExtendedKbControlsEnabled
 		MCM.AddKeyMapOptionST("htk_key_consItem", "$iEquip_MCM_htk_lbl_consItem", KH.iConsumeItemKey, mcmUnmapFLAG)

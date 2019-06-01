@@ -114,18 +114,18 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-	MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "$iEquip_MCM_rep_lbl_showEnchRechHelp", "")
-	MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "$iEquip_MCM_rep_lbl_enblEnchRech", RC.bRechargingEnabled)
+	MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "<font color='#a6bffe'>$iEquip_MCM_rep_lbl_showEnchRechHelp</font>", "")
+	MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "<font color='#ff7417'>$iEquip_MCM_rep_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
 	MCM.AddEmptyOption()
 			
 	if RC.bRechargingEnabled
-		MCM.AddHeaderOption("$iEquip_MCM_rep_lbl_soulgemUseOpts")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_soulgemUseOpts</font>")
 		MCM.AddToggleOptionST("rep_tgl_useLargSoul", "$iEquip_MCM_rep_lbl_useLargSoul", RC.bUseLargestSoul)
 		MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "$iEquip_MCM_rep_lbl_useOvrsizSoul", RC.bAllowOversizedSouls)
 		MCM.AddToggleOptionST("rep_tgl_usePartGem", "$iEquip_MCM_rep_lbl_usePartGem", RC.bUsePartFilledGems)
 	   
 		MCM.AddEmptyOption()        
-		MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
 		MCM.AddMenuOptionST("rep_men_showEnchCharge", "$iEquip_MCM_rep_lbl_showEnchCharge", chargeDisplayOptions[CM.iChargeDisplayType])
 		if CM.iChargeDisplayType > 0
 			MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "$iEquip_MCM_rep_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
@@ -166,21 +166,21 @@ function drawPage()
 		MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled3", "")
 		MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled4", "")
 	 else
-		MCM.AddTextOptionST("rep_txt_showPoisonHelp", "$iEquip_MCM_rep_lbl_showPoisonHelp", "")
+		MCM.AddTextOptionST("rep_txt_showPoisonHelp", "<font color='#a6bffe'>$iEquip_MCM_rep_lbl_showPoisonHelp</font>", "")
 			   
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("$iEquip_MCM_rep_lbl_poisonUseOpts")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_poisonUseOpts</font>")
 		MCM.AddMenuOptionST("rep_men_confMsg", "$iEquip_MCM_rep_lbl_confMsg", poisonMessageOptions[WC.iShowPoisonMessages])
 		MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "$iEquip_MCM_rep_lbl_allowPoisonSwitch", WC.bAllowPoisonSwitching)
 		MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "$iEquip_MCM_rep_lbl_allowPoisonTopup", WC.bAllowPoisonTopUp)
 				
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("$iEquip_MCM_rep_lbl_poisonChargeOpts")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_poisonChargeOpts</font>")
 		MCM.AddSliderOptionST("rep_sld_chargePerVial", "$iEquip_MCM_rep_lbl_chargePerVial", WC.iPoisonChargesPerVial, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_chrgs"))
 		MCM.AddSliderOptionST("rep_sld_chargeMult", "$iEquip_MCM_rep_lbl_chargeMult", WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseChrgs"))
 				
 		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("$iEquip_MCM_common_lbl_WidgetOptions")
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
 		MCM.AddMenuOptionST("rep_men_poisonIndStyle", "$iEquip_MCM_rep_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
 	endIf
 endFunction
