@@ -1,5 +1,7 @@
 Scriptname iEquip_MCM_pro extends iEquip_MCM_Page
 
+import iEquip_StringExt
+
 iEquip_ProMode Property PM Auto
 iEquip_PotionScript Property PO Auto
 
@@ -180,110 +182,121 @@ function drawPage()
 		MCM.AddTextOptionST("pro_txt_dragEastr", "", "$iEquip_MCM_pro_txt_dragEastrA")
 	else
 		MCM.AddTextOptionST("pro_txt_whatProMode", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatIsProMode</font>", "")
-		MCM.AddToggleOptionST("pro_tgl_enblProMode", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblProMode</font>", WC.bProModeEnabled)
-	endIf
-	
-	if WC.bProModeEnabled
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_preselectOpts</font>")
-		MCM.AddTextOptionST("pro_txt_whatPreselect", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatPreselect</font>", "")
-		MCM.AddToggleOptionST("pro_tgl_enblPreselect", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblPreselect</font>", PM.bPreselectEnabled)
-				
-		if PM.bPreselectEnabled
-			MCM.AddToggleOptionST("pro_tgl_enblShoutPreselect", "$iEquip_MCM_pro_lbl_enblShoutPreselect", PM.bShoutPreselectEnabled)
-			MCM.AddToggleOptionST("pro_tgl_swapPreselectItm", "$iEquip_MCM_pro_lbl_swapPreselectItm", PM.bPreselectSwapItemsOnEquip)
-			MCM.AddToggleOptionST("pro_tgl_eqpAllExitPreselectMode", "$iEquip_MCM_pro_lbl_eqpAllExitPreselectMode", PM.bTogglePreselectOnEquipAll)
-		endIf
-				
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickShieldOpts</font>")
-		MCM.AddTextOptionST("pro_txt_whatQuickshield", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickshield</font>", "")
-		MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
-				
-		if PM.bQuickShieldEnabled
-			MCM.AddToggleOptionST("pro_tgl_with2hReqp", "$iEquip_MCM_pro_lbl_with2hReqp", PM.bQuickShield2HSwitchAllowed)
-			MCM.AddToggleOptionST("pro_tgl_prefShieldMag", "$iEquip_MCM_pro_lbl_prefMag", PM.bQuickShieldPreferMagic)
-					
-			if PM.bQuickShieldPreferMagic
-				MCM.AddMenuOptionST("pro_men_rightHandspllTyp", "$iEquip_MCM_pro_lbl_rightHandspllTyp", QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])
-			endIf         
-			MCM.AddToggleOptionST("pro_tgl_ifNotFound", "$iEquip_MCM_pro_lbl_ifNotFound", PM.bQuickShieldUnequipLeftIfNotFound)
-			MCM.AddMenuOptionST("pro_men_inPreselectQuickshieldMode", "$iEquip_MCM_pro_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
-		endIf
-				
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickRestoreOpts</font>")
-		MCM.AddTextOptionST("pro_txt_whatQuickRestore", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickRestore</font>", "")
-		MCM.AddToggleOptionST("pro_tgl_enblQuickRestore", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
+		if WC.bProModeEnabled
+			MCM.AddToggleOptionST("pro_tgl_enblProMode", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblProMode</font>", WC.bProModeEnabled)
+			MCM.AddEmptyOption()
+
+			MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_preselectOpts</font>")
+			MCM.AddTextOptionST("pro_txt_whatPreselect", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatPreselect</font>", "")
 		
-		if PM.bQuickRestoreEnabled
-			;QuickHeal
-			MCM.AddToggleOptionST("pro_tgl_enblQuickheal", "$iEquip_MCM_pro_lbl_enblQuickheal", PM.bQuickHealEnabled) 
-			;QuickMagicka
-			MCM.AddToggleOptionST("pro_tgl_enblQuickMagicka", "$iEquip_MCM_pro_lbl_enblQuickMagicka", PM.bQuickMagickaEnabled) 
-			;QuickStamina
-			MCM.AddToggleOptionST("pro_tgl_enblQuickStamina", "$iEquip_MCM_pro_lbl_enblQuickStamina", PM.bQuickStaminaEnabled)        
-			;Core settings
-			MCM.AddSliderOptionST("pro_sld_QuickRestoreThreshold", "$iEquip_MCM_pro_lbl_QuickRestoreThreshold", PM.fQuickRestoreThreshold*100, "{0} %")
-			MCM.AddToggleOptionST("pro_tgl_quickBuff", "$iEquip_MCM_pro_lbl_quickBuff", PM.bQuickBuffEnabled)
+			if PM.bPreselectEnabled
+				MCM.AddToggleOptionST("pro_tgl_enblPreselect", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblPreselect</font>", PM.bPreselectEnabled)
+				MCM.AddToggleOptionST("pro_tgl_enblShoutPreselect", "$iEquip_MCM_pro_lbl_enblShoutPreselect", PM.bShoutPreselectEnabled)
+				MCM.AddToggleOptionST("pro_tgl_swapPreselectItm", "$iEquip_MCM_pro_lbl_swapPreselectItm", PM.bPreselectSwapItemsOnEquip)
+				MCM.AddToggleOptionST("pro_tgl_eqpAllExitPreselectMode", "$iEquip_MCM_pro_lbl_eqpAllExitPreselectMode", PM.bTogglePreselectOnEquipAll)
+			else
+				MCM.AddToggleOptionST("pro_tgl_enblPreselect", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblPreselect</font>", PM.bPreselectEnabled)
+			endIf
+					
+			MCM.AddEmptyOption()
+			MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickShieldOpts</font>")
+			MCM.AddTextOptionST("pro_txt_whatQuickshield", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickshield</font>", "")
 			
-			if PM.bQuickBuffEnabled
-				MCM.AddMenuOptionST("pro_men_quickBuffControl", "$iEquip_MCM_pro_lbl_quickBuffControl", QBuffControlOptions[PM.iQuickBuffControl])
-				
-				if PM.iQuickBuffControl > 0
-					MCM.AddSliderOptionST("pro_sld_quickBuffDelay", "$iEquip_MCM_pro_lbl_quickBuffDelay", PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-				endIf
-				MCM.AddMenuOptionST("pro_men_buffsToApply", "$iEquip_MCM_pro_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
-			endIf
-			;QuickHeal Options
-			if PM.bQuickHealEnabled
-				MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickHealOpts</font>")
-				MCM.AddToggleOptionST("pro_tgl_prefHealMag", "$iEquip_MCM_pro_lbl_prefMag", PM.bQuickHealPreferMagic)
-				MCM.AddToggleOptionST("pro_tgl_useFallback", "$iEquip_MCM_pro_lbl_useFallback", PM.bQuickHealUseFallback)
+			if PM.bQuickShieldEnabled
+				MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
+				MCM.AddToggleOptionST("pro_tgl_with2hReqp", "$iEquip_MCM_pro_lbl_with2hReqp", PM.bQuickShield2HSwitchAllowed)
+				MCM.AddToggleOptionST("pro_tgl_prefShieldMag", "$iEquip_MCM_pro_lbl_prefMag", PM.bQuickShieldPreferMagic)
 						
-				if PM.bQuickHealPreferMagic
-					MCM.AddMenuOptionST("pro_men_alwysEqpSpll", "$iEquip_MCM_pro_lbl_alwysEqpSpll", QHEquipOptions[PM.iQuickHealEquipChoice])
-				endIf
-
-				MCM.AddToggleOptionST("pro_tgl_swtchBck", "$iEquip_MCM_pro_lbl_swtchBck", PM.bQuickHealSwitchBackEnabled)
-				
-				if PM.bQuickHealSwitchBackEnabled
-					MCM.AddToggleOptionST("pro_tgl_swtchBckRest", "$iEquip_MCM_pro_lbl_swtchBckRest", PM.bQuickHealSwitchBackAndRestore)
-				endIf
+				if PM.bQuickShieldPreferMagic
+					MCM.AddMenuOptionST("pro_men_rightHandspllTyp", "$iEquip_MCM_pro_lbl_rightHandspllTyp", QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])
+				endIf         
+				MCM.AddToggleOptionST("pro_tgl_ifNotFound", "$iEquip_MCM_pro_lbl_ifNotFound", PM.bQuickShieldUnequipLeftIfNotFound)
+				MCM.AddMenuOptionST("pro_men_inPreselectQuickshieldMode", "$iEquip_MCM_pro_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
+			else
+				MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
 			endIf
+					
+			MCM.AddEmptyOption()
+			MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickRestoreOpts</font>")
+			MCM.AddTextOptionST("pro_txt_whatQuickRestore", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickRestore</font>", "")
 
-		endIf
+			if PM.bQuickRestoreEnabled
+				MCM.AddToggleOptionST("pro_tgl_enblQuickRestore", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
+				;QuickHeal
+				MCM.AddToggleOptionST("pro_tgl_enblQuickheal", "$iEquip_MCM_pro_lbl_enblQuickheal", PM.bQuickHealEnabled) 
+				;QuickMagicka
+				MCM.AddToggleOptionST("pro_tgl_enblQuickMagicka", "$iEquip_MCM_pro_lbl_enblQuickMagicka", PM.bQuickMagickaEnabled) 
+				;QuickStamina
+				MCM.AddToggleOptionST("pro_tgl_enblQuickStamina", "$iEquip_MCM_pro_lbl_enblQuickStamina", PM.bQuickStaminaEnabled)        
+				;Core settings
+				MCM.AddSliderOptionST("pro_sld_QuickRestoreThreshold", "$iEquip_MCM_pro_lbl_QuickRestoreThreshold", PM.fQuickRestoreThreshold*100, "{0} %")
+				MCM.AddToggleOptionST("pro_tgl_quickBuff", "$iEquip_MCM_pro_lbl_quickBuff", PM.bQuickBuffEnabled)
 				
-		MCM.SetCursorPosition(1)
-				
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickRangedOpts</font>")
-		MCM.AddTextOptionST("pro_txt_whatQuickranged", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickranged</font>", "")
-		MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
-				
-		if PM.bQuickRangedEnabled
-			MCM.AddMenuOptionST("pro_men_prefWepTyp", "$iEquip_MCM_pro_lbl_prefWepTyp", QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
-			MCM.AddMenuOptionST("pro_men_swtchOut", "$iEquip_MCM_pro_lbl_swtchOut", QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
+				if PM.bQuickBuffEnabled
+					MCM.AddMenuOptionST("pro_men_quickBuffControl", "$iEquip_MCM_pro_lbl_quickBuffControl", QBuffControlOptions[PM.iQuickBuffControl])
+					
+					if PM.iQuickBuffControl > 0
+						MCM.AddSliderOptionST("pro_sld_quickBuffDelay", "$iEquip_MCM_pro_lbl_quickBuffDelay", PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+					endIf
+					MCM.AddMenuOptionST("pro_men_buffsToApply", "$iEquip_MCM_pro_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
+				endIf
+				;QuickHeal Options
+				if PM.bQuickHealEnabled
+					MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickHealOpts</font>")
+					MCM.AddToggleOptionST("pro_tgl_prefHealMag", "$iEquip_MCM_pro_lbl_prefMag", PM.bQuickHealPreferMagic)
+					MCM.AddToggleOptionST("pro_tgl_useFallback", "$iEquip_MCM_pro_lbl_useFallback", PM.bQuickHealUseFallback)
+							
+					if PM.bQuickHealPreferMagic
+						MCM.AddMenuOptionST("pro_men_alwysEqpSpll", "$iEquip_MCM_pro_lbl_alwysEqpSpll", QHEquipOptions[PM.iQuickHealEquipChoice])
+					endIf
 
-			if PM.iQuickRangedSwitchOutAction == 4
-				MCM.AddMenuOptionST("pro_men_prefMagSchl", "$iEquip_MCM_pro_lbl_prefMagSchl", QSPreferredMagicSchool[iCurrentQRPreferredMagicSchoolChoice])
+					MCM.AddToggleOptionST("pro_tgl_swtchBck", "$iEquip_MCM_pro_lbl_swtchBck", PM.bQuickHealSwitchBackEnabled)
+					
+					if PM.bQuickHealSwitchBackEnabled
+						MCM.AddToggleOptionST("pro_tgl_swtchBckRest", "$iEquip_MCM_pro_lbl_swtchBckRest", PM.bQuickHealSwitchBackAndRestore)
+					endIf
+				endIf
+			else
+				MCM.AddToggleOptionST("pro_tgl_enblQuickRestore", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
 			endIf
-		   
-			MCM.AddMenuOptionST("pro_men_inPreselectQuickrangedMode", "$iEquip_MCM_pro_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
-		endIf
-				
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickDCOpts</font>")
-		MCM.AddTextOptionST("pro_txt_whatQuickdualcast", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickdualcast</font>", "")
-		MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
-				
-		if WC.bQuickDualCastEnabled
-			MCM.AddTextOption("$iEquip_MCM_pro_lbl_enableQDCSchools", "")
-			MCM.AddToggleOptionST("pro_tgl_altSpll", "$iEquip_MCM_pro_lbl_altSpll", WC.abQuickDualCastSchoolAllowed[0])
-			MCM.AddToggleOptionST("pro_tgl_conjSpll", "$iEquip_MCM_pro_lbl_conjSpll", WC.abQuickDualCastSchoolAllowed[1])
-			MCM.AddToggleOptionST("pro_tgl_destSpll", "$iEquip_MCM_pro_lbl_destSpll", WC.abQuickDualCastSchoolAllowed[2])
-			MCM.AddToggleOptionST("pro_tgl_illSpll", "$iEquip_MCM_pro_lbl_illSpll", WC.abQuickDualCastSchoolAllowed[3])
-			MCM.AddToggleOptionST("pro_tgl_restSpll", "$iEquip_MCM_pro_lbl_restSpll", WC.abQuickDualCastSchoolAllowed[4])
-			MCM.AddToggleOptionST("pro_tgl_reqBothQue", "$iEquip_MCM_pro_lbl_reqBothQue", PM.bQuickDualCastMustBeInBothQueues)
+					
+			MCM.SetCursorPosition(1)
+					
+			MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickRangedOpts</font>")
+			MCM.AddTextOptionST("pro_txt_whatQuickranged", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickranged</font>", "")
+
+			if PM.bQuickRangedEnabled
+				MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
+				MCM.AddMenuOptionST("pro_men_prefWepTyp", "$iEquip_MCM_pro_lbl_prefWepTyp", QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
+				MCM.AddMenuOptionST("pro_men_swtchOut", "$iEquip_MCM_pro_lbl_swtchOut", QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
+
+				if PM.iQuickRangedSwitchOutAction == 4
+					MCM.AddMenuOptionST("pro_men_prefMagSchl", "$iEquip_MCM_pro_lbl_prefMagSchl", QSPreferredMagicSchool[iCurrentQRPreferredMagicSchoolChoice])
+				endIf
+			   
+				MCM.AddMenuOptionST("pro_men_inPreselectQuickrangedMode", "$iEquip_MCM_pro_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
+			else
+				MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
+			endIf
+					
+			MCM.AddEmptyOption()
+			MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickDCOpts</font>")
+			MCM.AddTextOptionST("pro_txt_whatQuickdualcast", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickdualcast</font>", "")
+		
+			if WC.bQuickDualCastEnabled
+				MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
+				MCM.AddTextOption("$iEquip_MCM_pro_lbl_enableQDCSchools", "")
+				MCM.AddToggleOptionST("pro_tgl_altSpll", "$iEquip_MCM_pro_lbl_altSpll", WC.abQuickDualCastSchoolAllowed[0])
+				MCM.AddToggleOptionST("pro_tgl_conjSpll", "$iEquip_MCM_pro_lbl_conjSpll", WC.abQuickDualCastSchoolAllowed[1])
+				MCM.AddToggleOptionST("pro_tgl_destSpll", "$iEquip_MCM_pro_lbl_destSpll", WC.abQuickDualCastSchoolAllowed[2])
+				MCM.AddToggleOptionST("pro_tgl_illSpll", "$iEquip_MCM_pro_lbl_illSpll", WC.abQuickDualCastSchoolAllowed[3])
+				MCM.AddToggleOptionST("pro_tgl_restSpll", "$iEquip_MCM_pro_lbl_restSpll", WC.abQuickDualCastSchoolAllowed[4])
+				MCM.AddToggleOptionST("pro_tgl_reqBothQue", "$iEquip_MCM_pro_lbl_reqBothQue", PM.bQuickDualCastMustBeInBothQueues)
+			else
+				MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
+			endIf
+		else
+			MCM.AddToggleOptionST("pro_tgl_enblProMode", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblProMode</font>", WC.bProModeEnabled)
 		endIf
 	endIf
 endFunction
@@ -301,20 +314,32 @@ State pro_txt_dragEastr
                 string msg
             
                 if iProModeEasterEggCounter == 5
-                    msg = "$iEquip_MCM_pro_txt_dragEastrB"
+                    msg = iEquip_StringExt.LocalizeString("$iEquip_MCM_pro_txt_dragEastrB")
+                    MCM.SetTextOptionValueST("<font color='#fda50f'>"+msg+"</font>")
                 elseIf iProModeEasterEggCounter == 4
-                    msg = "$iEquip_MCM_pro_txt_dragEastrC"
+                    ;msg = "<font color='#ffdb00'>$iEquip_MCM_pro_txt_dragEastrC</font>"
+                    msg = iEquip_StringExt.LocalizeString("$iEquip_MCM_pro_txt_dragEastrC")
+                    MCM.SetTextOptionValueST("<font color='#fda50f'>"+msg+"</font>")
                 elseIf iProModeEasterEggCounter == 3
-                    msg = "$iEquip_MCM_pro_txt_dragEastrD"
+                    ;msg = "<font color='#ff7417'>$iEquip_MCM_pro_txt_dragEastrD</font>"
+                    msg = iEquip_StringExt.LocalizeString("$iEquip_MCM_pro_txt_dragEastrD")
+                    MCM.SetTextOptionValueST("<font color='#ff7417'>"+msg+"</font>")
                 elseIf iProModeEasterEggCounter == 2
-                    msg = "$iEquip_MCM_pro_txt_dragEastrE"
+                    ;msg = "<font color='#ff7417'>$iEquip_MCM_pro_txt_dragEastrE</font>"
+                    msg = iEquip_StringExt.LocalizeString("$iEquip_MCM_pro_txt_dragEastrE")
+                    MCM.SetTextOptionValueST("<font color='#ff7417'>"+msg+"</font>")
                 elseIf iProModeEasterEggCounter == 1
-                    msg = "$iEquip_MCM_pro_txt_dragEastrF"
+                    ;msg = "<font color='#ff0000'>$iEquip_MCM_pro_txt_dragEastrF</font>"
+                    msg = iEquip_StringExt.LocalizeString("$iEquip_MCM_pro_txt_dragEastrF")
+                    MCM.SetTextOptionValueST("<font color='#ff0000'>"+msg+"</font>")
                 elseIf iProModeEasterEggCounter == 0
-                    msg = "$iEquip_MCM_pro_txt_dragEastrG"
+                    ;msg = "$iEquip_MCM_pro_txt_dragEastrG"
+                    ;MCM.SetTextOptionValueST("$iEquip_MCM_pro_txt_dragEastrG")
+                    msg = iEquip_StringExt.LocalizeString("$iEquip_MCM_pro_txt_dragEastrG")
+                    MCM.SetTextOptionValueST("<font color='#ff0000'>"+msg+"</font>")
                 endIf
                 
-                MCM.SetTextOptionValueST(msg)
+                ;MCM.SetTextOptionValueST(msg)
                 iProModeEasterEggCounter -= 1
             else
                 ; Wohoo, let's play an epic tune

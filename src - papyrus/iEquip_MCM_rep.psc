@@ -115,74 +115,72 @@ endFunction
 
 function drawPage()
 	MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "<font color='#a6bffe'>$iEquip_MCM_rep_lbl_showEnchRechHelp</font>", "")
-	MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "<font color='#ff7417'>$iEquip_MCM_rep_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
-	MCM.AddEmptyOption()
-			
-	if RC.bRechargingEnabled
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_soulgemUseOpts</font>")
-		MCM.AddToggleOptionST("rep_tgl_useLargSoul", "$iEquip_MCM_rep_lbl_useLargSoul", RC.bUseLargestSoul)
-		MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "$iEquip_MCM_rep_lbl_useOvrsizSoul", RC.bAllowOversizedSouls)
-		MCM.AddToggleOptionST("rep_tgl_usePartGem", "$iEquip_MCM_rep_lbl_usePartGem", RC.bUsePartFilledGems)
-	   
-		MCM.AddEmptyOption()        
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
-		MCM.AddMenuOptionST("rep_men_showEnchCharge", "$iEquip_MCM_rep_lbl_showEnchCharge", chargeDisplayOptions[CM.iChargeDisplayType])
-		if CM.iChargeDisplayType > 0
-			MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "$iEquip_MCM_rep_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
-			if CM.bChargeFadeoutEnabled
-				MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "$iEquip_MCM_rep_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds")))
-			endIf
-			
-			MCM.AddColorOptionST("rep_col_normFillCol", "$iEquip_MCM_rep_lbl_normFillCol", CM.iPrimaryFillColor)
-			MCM.AddToggleOptionST("rep_tgl_enableCustomFlashCol", "$iEquip_MCM_rep_lbl_enableCustomFlashCol", CM.bCustomFlashColor)
-			if CM.bCustomFlashColor
-				MCM.AddColorOptionST("rep_col_meterFlashCol", "$iEquip_MCM_rep_lbl_meterFlashCol", CM.iFlashColor)
-			endIf
-			
-			MCM.AddToggleOptionST("rep_tgl_changeColLowCharge", "$iEquip_MCM_rep_lbl_changeColLowCharge", CM.bEnableLowCharge)
-			if CM.bEnableLowCharge
-				MCM.AddSliderOptionST("rep_sld_setLowChargeTresh", "$iEquip_MCM_rep_lbl_setLowChargeTresh", CM.fLowChargeThreshold*100, "{0}%")
-				MCM.AddColorOptionST("rep_col_lowFillCol", "$iEquip_MCM_rep_lbl_lowFillCol", CM.iLowChargeFillColor)
-			endIf
-			
-			if CM.iChargeDisplayType == 1
-				MCM.AddToggleOptionST("rep_tgl_enableGradientFill", "$iEquip_MCM_rep_lbl_enableGradientFill", CM.bEnableGradientFill)
-				if CM.bEnableGradientFill
-					MCM.AddColorOptionST("rep_col_gradFillCol", "$iEquip_MCM_rep_lbl_gradFillCol", CM.iSecondaryFillColor)
-				endIf
-				
-				MCM.AddMenuOptionST("rep_men_leftFillDir", "$iEquip_MCM_rep_lbl_leftFillDir", meterFillDirectionOptions[meterFillDirection[0]])
-				MCM.AddMenuOptionST("rep_men_rightFillDir", "$iEquip_MCM_rep_lbl_rightFillDir", meterFillDirectionOptions[meterFillDirection[1]])
-			endIf
-		endIf
+    if RC.bRechargingEnabled
+        MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "<font color='#c7ea46'>$iEquip_MCM_rep_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
+        MCM.AddEmptyOption()
+
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_soulgemUseOpts</font>")
+        MCM.AddToggleOptionST("rep_tgl_useLargSoul", "$iEquip_MCM_rep_lbl_useLargSoul", RC.bUseLargestSoul)
+        MCM.AddToggleOptionST("rep_tgl_useOvrsizSoul", "$iEquip_MCM_rep_lbl_useOvrsizSoul", RC.bAllowOversizedSouls)
+        MCM.AddToggleOptionST("rep_tgl_usePartGem", "$iEquip_MCM_rep_lbl_usePartGem", RC.bUsePartFilledGems)
+       
+        MCM.AddEmptyOption()        
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+        MCM.AddMenuOptionST("rep_men_showEnchCharge", "$iEquip_MCM_rep_lbl_showEnchCharge", chargeDisplayOptions[CM.iChargeDisplayType])
+        if CM.iChargeDisplayType > 0
+            MCM.AddToggleOptionST("rep_tgl_enableChargeFadeout", "$iEquip_MCM_rep_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
+            if CM.bChargeFadeoutEnabled
+                MCM.AddSliderOptionST("rep_sld_chargeFadeDelay", "$iEquip_MCM_rep_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds")))
+            endIf
+            
+            MCM.AddColorOptionST("rep_col_normFillCol", "$iEquip_MCM_rep_lbl_normFillCol", CM.iPrimaryFillColor)
+            MCM.AddToggleOptionST("rep_tgl_enableCustomFlashCol", "$iEquip_MCM_rep_lbl_enableCustomFlashCol", CM.bCustomFlashColor)
+            if CM.bCustomFlashColor
+                MCM.AddColorOptionST("rep_col_meterFlashCol", "$iEquip_MCM_rep_lbl_meterFlashCol", CM.iFlashColor)
+            endIf
+            
+            MCM.AddToggleOptionST("rep_tgl_changeColLowCharge", "$iEquip_MCM_rep_lbl_changeColLowCharge", CM.bEnableLowCharge)
+            if CM.bEnableLowCharge
+                MCM.AddSliderOptionST("rep_sld_setLowChargeTresh", "$iEquip_MCM_rep_lbl_setLowChargeTresh", CM.fLowChargeThreshold*100, "{0}%")
+                MCM.AddColorOptionST("rep_col_lowFillCol", "$iEquip_MCM_rep_lbl_lowFillCol", CM.iLowChargeFillColor)
+            endIf
+            
+            if CM.iChargeDisplayType == 1
+                MCM.AddToggleOptionST("rep_tgl_enableGradientFill", "$iEquip_MCM_rep_lbl_enableGradientFill", CM.bEnableGradientFill)
+                if CM.bEnableGradientFill
+                    MCM.AddColorOptionST("rep_col_gradFillCol", "$iEquip_MCM_rep_lbl_gradFillCol", CM.iSecondaryFillColor)
+                endIf
+                
+                MCM.AddMenuOptionST("rep_men_leftFillDir", "$iEquip_MCM_rep_lbl_leftFillDir", meterFillDirectionOptions[meterFillDirection[0]])
+                MCM.AddMenuOptionST("rep_men_rightFillDir", "$iEquip_MCM_rep_lbl_rightFillDir", meterFillDirectionOptions[meterFillDirection[1]])
+            endIf
+        endIf
+	else
+        MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "<font color='#ff7417'>$iEquip_MCM_rep_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
 	endIf
 
 	MCM.SetCursorPosition(1)
-			
-	if !WC.bPoisonsEnabled
-		MCM.AddEmptyOption()
-		MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled1", "")
-		MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled2", "")
-		MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled3", "")
-		MCM.AddTextOption("$iEquip_MCM_rep_txt_PoisonsDisabled4", "")
-	 else
-		MCM.AddTextOptionST("rep_txt_showPoisonHelp", "<font color='#a6bffe'>$iEquip_MCM_rep_lbl_showPoisonHelp</font>", "")
-			   
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_poisonUseOpts</font>")
-		MCM.AddMenuOptionST("rep_men_confMsg", "$iEquip_MCM_rep_lbl_confMsg", poisonMessageOptions[WC.iShowPoisonMessages])
-		MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "$iEquip_MCM_rep_lbl_allowPoisonSwitch", WC.bAllowPoisonSwitching)
-		MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "$iEquip_MCM_rep_lbl_allowPoisonTopup", WC.bAllowPoisonTopUp)
-				
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_poisonChargeOpts</font>")
-		MCM.AddSliderOptionST("rep_sld_chargePerVial", "$iEquip_MCM_rep_lbl_chargePerVial", WC.iPoisonChargesPerVial, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_chrgs"))
-		MCM.AddSliderOptionST("rep_sld_chargeMult", "$iEquip_MCM_rep_lbl_chargeMult", WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseChrgs"))
-				
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
-		MCM.AddMenuOptionST("rep_men_poisonIndStyle", "$iEquip_MCM_rep_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
-	endIf
+
+    MCM.AddTextOptionST("rep_txt_showPoisonHelp", "<font color='#a6bffe'>$iEquip_MCM_rep_lbl_showPoisonHelp</font>", "")
+    if WC.bPoisonsEnabled
+        MCM.AddToggleOptionST("rep_tgl_enblPoisonSlt", "<font color='#c7ea46'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_poisonUseOpts</font>")
+        MCM.AddMenuOptionST("rep_men_confMsg", "$iEquip_MCM_rep_lbl_confMsg", poisonMessageOptions[WC.iShowPoisonMessages])
+        MCM.AddToggleOptionST("rep_tgl_allowPoisonSwitch", "$iEquip_MCM_rep_lbl_allowPoisonSwitch", WC.bAllowPoisonSwitching)
+        MCM.AddToggleOptionST("rep_tgl_allowPoisonTopup", "$iEquip_MCM_rep_lbl_allowPoisonTopup", WC.bAllowPoisonTopUp)
+                
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_poisonChargeOpts</font>")
+        MCM.AddSliderOptionST("rep_sld_chargePerVial", "$iEquip_MCM_rep_lbl_chargePerVial", WC.iPoisonChargesPerVial, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_chrgs"))
+        MCM.AddSliderOptionST("rep_sld_chargeMult", "$iEquip_MCM_rep_lbl_chargeMult", WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseChrgs"))
+                
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+        MCM.AddMenuOptionST("rep_men_poisonIndStyle", "$iEquip_MCM_rep_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
+    else
+        MCM.AddToggleOptionST("rep_tgl_enblPoisonSlt", "<font color='#ff7417'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
+    endIf
 endFunction
 
 ; ##############################
@@ -520,6 +518,18 @@ State rep_txt_showPoisonHelp
                 MCM.ShowMessage("$iEquip_help_poisoning2", false, "$iEquip_common_msg_Exit")
             endIf
         endIf 
+    endEvent
+endState
+
+State rep_tgl_enblPoisonSlt
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblPoisonSlt")
+        elseIf currentEvent == "Select" || ("Default" && !WC.bPoisonsEnabled)
+            WC.bPoisonsEnabled = !WC.bPoisonsEnabled
+            WC.bSlotEnabledOptionsChanged = true
+            MCM.ForcePageReset()
+        endIf
     endEvent
 endState
 
