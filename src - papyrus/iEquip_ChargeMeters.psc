@@ -204,6 +204,11 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 			updateChargeMeterVisibility(Q, false) ;Hide
 		endIf
 
+		;Just in case torch meter fill tween is still running
+		if Q == 0
+			UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.stopFillTween")
+		endIf
+
 		if !PlayerRef.IsWeaponDrawn()
 			Utility.WaitMenuMode(0.2)
 		endIf

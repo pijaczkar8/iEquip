@@ -155,6 +155,10 @@ function drawPage()
                 MCM.AddMenuOptionST("rep_men_rightFillDir", "$iEquip_MCM_rep_lbl_rightFillDir", meterFillDirectionOptions[meterFillDirection[1]])
             endIf
         endIf
+
+        MCM.AddEmptyOption()        
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_StaffCasting</font>")
+        MCM.AddToggleOptionST("rep_tgl_realTimeStaffMeters", "$iEquip_MCM_rep_lbl_realTimeStaffMeters", WC.EH.bRealTimeStaffMeters)
 	else
         MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "<font color='#ff7417'>$iEquip_MCM_rep_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
 	endIf
@@ -503,6 +507,21 @@ State rep_men_rightFillDir
             MCM.SetMenuOptionValueST(meterFillDirectionOptions[meterFillDirection[1]])
             CM.asMeterFillDirection[1] = rawMeterFillDirectionOptions[meterFillDirection[1]]
             CM.bSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+; ----------------------
+; -    Staff Casting   -
+; ----------------------
+
+State rep_tgl_realTimeStaffMeters
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_realTimeStaffMeters")
+        elseIf currentEvent == "Select" || ("Default" && !WC.EH.bRealTimeStaffMeters)
+            WC.EH.bRealTimeStaffMeters = !WC.EH.bRealTimeStaffMeters
+            MCM.SetToggleOptionValueST(WC.EH.bRealTimeStaffMeters)
         endIf 
     endEvent
 endState

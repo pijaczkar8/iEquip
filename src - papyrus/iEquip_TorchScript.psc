@@ -182,7 +182,6 @@ function onTorchEquipped()
 				
 				iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 				iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
-				;PlayerRef.SetActorValue("Paralysis", 1)
 				if !PlayerRef.IsWeaponDrawn()
 					bSettingLightRadius = true
 					if PlayerRef.GetItemCount(iEquipTorch) < 1
@@ -211,9 +210,8 @@ function onTorchEquipped()
 endfunction
 
 function onTorchUnequipped()
-	debug.trace("iEquip_TorchScript onTorchUnequipped start - bSettingLightRadius: " + bSettingLightRadius + ", bSettingDuration: " + bSettingDuration)
+	debug.trace("iEquip_TorchScript onTorchUnequipped start - bSettingLightRadius: " + bSettingLightRadius + ", bSettingDuration: " + bSettingDuration + ", fCurrentTorchLife: " + fCurrentTorchLife)
 	if !bSettingLightRadius
-		debug.trace("iEquip_TorchScript onTorchUnequipped - fCurrentTorchLife: " + fCurrentTorchLife + ", elapsed time: " + TorchTimer.GetTimeElapsed())
 		if bFiniteTorchLife
 			fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
 		else
@@ -223,9 +221,7 @@ function onTorchUnequipped()
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
 		UnregisterForUpdate()
 		stopTorchMeterAnim()
-		;if bShowTorchMeter && CM.abIsChargeMeterShown[0]
-		;	updateTorchMeterVisibility(false)
-		;endIf
+
 		if PlayerRef.GetItemCount(iEquipTorch) > 0
 			PlayerRef.RemoveItem(iEquipTorch, PlayerRef.GetItemCount(iEquipTorch), true)
 		endIf

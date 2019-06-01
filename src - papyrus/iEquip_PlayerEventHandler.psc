@@ -107,6 +107,8 @@ bool property bWaitingForTransform auto hidden
 
 bool[] property abSkipQueueObjectUpdate auto hidden
 
+bool property bRealTimeStaffMeters = true auto hidden
+
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
 int[] specificHandedItems
@@ -464,6 +466,9 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 			if PlayerRef.GetEquippedItemType(slot) == 8
 				if RC.bRechargingEnabled && CM.iChargeDisplayType > 0 && CM.abIsChargeMeterShown[slot]
 					CM.updateMeterPercent(slot)
+					if bRealTimeStaffMeters
+						updateMeterWhileStaffCasting(slot)
+					endIf
 				endIf
 			elseIf slot == 0
 				;Otherwise check if we've just cast Bound Shield (weapons are handled in BoundWeaponEventsListener)
@@ -501,6 +506,31 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	endIf
 	debug.trace("iEquip_PlayerEventHandler OnActorAction end")
 endEvent
+
+function updateMeterWhileStaffCasting(int slot)
+	debug.trace("iEquip_PlayerEventHandler updateMeterWhileStaffCasting start - slot: " + slot)
+	int fallback = 20
+	if slot == 0
+		while !(PlayerRef as objectReference).GetAnimationVariableBool("IsCastingLeft") && fallback > 0
+		     Utility.WaitMenuMode(0.1)
+		     fallback -= 1
+		endWhile
+		while (PlayerRef as objectReference).GetAnimationVariableBool("IsCastingLeft")
+		     Utility.WaitMenuMode(2.0)
+		     CM.updateMeterPercent(0)
+		endWhile
+	else
+		while !(PlayerRef as objectReference).GetAnimationVariableBool("IsCastingRight") && fallback > 0
+		     Utility.WaitMenuMode(0.1)
+		     fallback -= 1
+		endWhile
+		while (PlayerRef as objectReference).GetAnimationVariableBool("IsCastingRight")
+		     Utility.WaitMenuMode(2.0)
+		     CM.updateMeterPercent(1)
+		endWhile
+	endIf
+	debug.trace("iEquip_PlayerEventHandler updateMeterWhileStaffCasting end")
+endFunction
 
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent start")	
