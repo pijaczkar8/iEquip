@@ -4,16 +4,17 @@ Scriptname iEquip_ProMode extends Quest
 Import UI
 Import UICallback
 Import Utility
-import _Q2C_Functions
 import iEquip_ActorExt
 import iEquip_FormExt
 import iEquip_SpellExt
 import iEquip_StringExt
+import iEquip_ObjectReferenceExt
 
-iEquip_WidgetCore Property WC Auto
-iEquip_AmmoMode Property AM Auto
-iEquip_PotionScript Property PO Auto
-iEquip_TemperedItemHandler Property TI Auto
+iEquip_WidgetCore property WC auto
+iEquip_AmmoMode property AM auto
+iEquip_PotionScript property PO auto
+iEquip_TemperedItemHandler property TI auto
+iEquip_PlayerEventHandler property EH auto
 
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
@@ -27,7 +28,7 @@ bool bAllEquipped
 bool[] property abPreselectSlotEnabled auto hidden
 bool bAmmoModePreselectModeFirstLook = true
 
-bool property bWaitingForAmmoModeAnimation Auto Hidden
+bool property bWaitingForAmmoModeAnimation auto hidden
 bool bAmmoModeActiveOnTogglePreselect
 bool property bBlockQuickDualCast auto hidden
 
@@ -68,6 +69,7 @@ bool property bQuickHealPreferMagic auto hidden
 int property iQuickHealEquipChoice = 2 auto hidden
 bool property bQuickHealSwitchBackEnabled = true auto hidden
 bool property bQuickHealSwitchBackAndRestore = true auto hidden
+bool property bScanInventory = true auto hidden
 
 actor property PlayerRef auto
 
@@ -757,6 +759,9 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 				endIf
 				i += 1
 			endwhile
+			if found == -1 && bScanInventory && scanInventoryForItemOfType(26)
+				found = jArray.count(WC.aiTargetQ[0]) - 1
+			endIf
 		endIf
 	;Otherwise look for a shield first
 	else
@@ -768,6 +773,9 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 			endIf
 			i += 1
 		endwhile
+		if found == -1 && bScanInventory && scanInventoryForItemOfType(26)
+			found = jArray.count(WC.aiTargetQ[0]) - 1
+		endIf
 		;And if we haven't found a shield then look for a ward
 		if found == -1 && !forceSwitch
 			debug.trace("iEquip_ProMode quickShield() - shield not found, should now be looking for a ward spell")
@@ -1047,6 +1055,9 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 		else
 			debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon secondChoice weapon found at index " + found)
 		endIf
+	endIf
+	if found == -1 && bScanInventory && scanInventoryForItemOfType(41)
+		found = jArray.count(WC.aiTargetQ[0]) - 1
 	endIf
 	if found != -1
 		;if we're not in Preselect Mode, or we've selected Preselect Mode Equip in the MCM
@@ -1662,4 +1673,51 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 	endIf
 	iQuickHealSlotsEquipped = -1 ;Reset
 	debug.trace("iEquip_ProMode quickHealSwitchBack end")
+endFunction
+
+bool function scanInventoryForItemOfType(int itemType)
+	debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType start - item type to find: " + itemType)
+	; Possible itemType inputs are 26 - Armor (for shields) or 41 - Weapons (for ranged weapons)
+	int numFound = GetNumItemsOfType(PlayerRef, itemType)
+	int i
+	bool found
+	form formToCheck
+	while i < numFound && !found
+		formToCheck = GetNthFormOfType(PlayerRef, itemType, i)
+		if (itemType == 26 && (formToCheck as armor).IsShield()) || (itemType == 41 && (((formToCheck as weapon).GetWeaponType() == 7 && jArray.count(AM.aiTargetQ[0]) > 0) || ((formToCheck as weapon).GetWeaponType() == 9 && jArray.count(AM.aiTargetQ[1]) > 0)))
+			found = true
+		else
+			i += 1
+		endIf
+	endWhile
+
+	if found
+		int iEquipItem = jMap.object()
+		if itemType == 41
+			itemType = (formToCheck as weapon).GetWeaponType()
+		endIf
+		string itemName = formToCheck.GetName()
+		string itemIcon = WC.GetItemIconName(formToCheck, itemType, itemName)
+		jMap.setForm(iEquipItem, "iEquipForm", formToCheck)
+		jMap.setInt(iEquipItem, "iEquipType", itemType)
+		jMap.setStr(iEquipItem, "iEquipName", itemName)
+		jMap.setStr(iEquipItem, "iEquipBaseName", itemName)
+		jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+		jMap.setInt(iEquipItem, "iEquipautoAdded", 1)
+		jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
+		jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
+		jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)
+		if itemType != 26
+			jMap.setInt(iEquipItem, "isEnchanted", 0)
+			jMap.setInt(iEquipItem, "isPoisoned", 0)
+		endIf
+		jArray.addObj(WC.aiTargetQ[(itemType != 26) as int], iEquipItem)
+
+		EH.iEquip_AllCurrentItemsFLST.AddForm(formToCheck)
+		EH.updateEventFilter(EH.iEquip_AllCurrentItemsFLST)
+		WC.abQueueWasEmpty[(itemType != 26) as int] = false
+	endIf
+
+	return found
+	debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType end")
 endFunction
