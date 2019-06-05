@@ -783,7 +783,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		if targetIndex != -1
 			
 			if equippedSlot < 2 && !abSkipQueueObjectUpdate[equippedSlot]								; Update the item name in case the display name differs from the base item name, and store the new itemID
-				if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle") == 0xFFFF
+				if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", 0xFFFF) == 0xFFFF
 					JArray.AddInt(WC.iRefHandleArray, itemHandle)
 					JArray.unique(WC.iRefHandleArray)
 					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
