@@ -761,6 +761,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 			endwhile
 			if found == -1 && bScanInventory && scanInventoryForItemOfType(26)
 				found = jArray.count(WC.aiTargetQ[0]) - 1
+				foundType = 26
 			endIf
 		endIf
 	;Otherwise look for a shield first
@@ -775,6 +776,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 		endwhile
 		if found == -1 && bScanInventory && scanInventoryForItemOfType(26)
 			found = jArray.count(WC.aiTargetQ[0]) - 1
+			foundType = 26
 		endIf
 		;And if we haven't found a shield then look for a ward
 		if found == -1 && !forceSwitch
@@ -1057,7 +1059,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 		endIf
 	endIf
 	if found == -1 && bScanInventory && scanInventoryForItemOfType(41)
-		found = jArray.count(WC.aiTargetQ[0]) - 1
+		found = jArray.count(WC.aiTargetQ[1]) - 1
 	endIf
 	if found != -1
 		;if we're not in Preselect Mode, or we've selected Preselect Mode Equip in the MCM
@@ -1718,6 +1720,6 @@ bool function scanInventoryForItemOfType(int itemType)
 		WC.abQueueWasEmpty[(itemType != 26) as int] = false
 	endIf
 
+	debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType end - returning:" + found)
 	return found
-	debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType end")
 endFunction

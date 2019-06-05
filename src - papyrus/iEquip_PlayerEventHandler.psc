@@ -246,9 +246,6 @@ function registerForCoreAnimationEvents()
 	if bIsThunderchildLoaded || bIsWintersunLoaded
 		RegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
 		RegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
-		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
-		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
-		;RegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
 	endIf
 	RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 	RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
@@ -265,7 +262,6 @@ function registerForCoreAnimationEvents()
 endFunction
 
 function registerForCoreActorActions()
-	;RegisterForActorAction(1) ;Spell cast - spells and staves
 	RegisterForActorAction(2) ;Spell fire - spells and staves
 	RegisterForActorAction(7) ;Draw Begin - weapons only, not spells
 	RegisterForActorAction(8) ;Draw End - weapons and spells
@@ -276,9 +272,6 @@ function unregisterForCoreAnimationEvents()
 	if bIsThunderchildLoaded || bIsWintersunLoaded
 		UnRegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
 		UnRegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
-		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
-		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
-		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
 	endIf
 	UnRegisterForAnimationEvent(PlayerRef, "weaponSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
@@ -329,9 +322,6 @@ function unregisterForAllEvents()
 	if bIsThunderchildLoaded || bIsWintersunLoaded
 		UnRegisterForAnimationEvent(PlayerRef, "IdleChairSitting")
 		UnRegisterForAnimationEvent(PlayerRef, "idleChairGetUp")
-		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter") ;ToDo - correct animation event names need to be added here!
-		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnterInstant")
-		;UnRegisterForAnimationEvent(PlayerRef, "IdleGreybeardMeditateExit")
 	endIf
 	UnRegisterForAnimationEvent(PlayerRef, "weaponSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
@@ -351,7 +341,6 @@ function unregisterForAllEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
 	UnRegisterForAnimationEvent(PlayerRef, "RemoveCharacterControllerFromWorld")
    	;Actor actions
-   	;UnregisterForActorAction(1)
    	UnregisterForActorAction(2)
    	UnregisterForActorAction(7)
 	UnregisterForActorAction(8)
@@ -369,11 +358,6 @@ bool Property boundSpellEquipped
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set start")	
 		bIsBoundSpellEquipped = equipped
 		BW.bIsBoundSpellEquipped = equipped
-		;/if bIsBoundSpellEquipped
-			RegisterForActorAction(2) ;Spell fire
-		else
-			UnregisterForActorAction(2)
-		endIf/;
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - bIsBoundSpellEquipped: " + equipped)
 		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set end")
 	endFunction
@@ -538,16 +522,18 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     int iTmp
     if EventName == "Soundplay.NPCWerewolfTransformation"
     	BM.OnWerewolfTransformationStart()
-    ;ToDo - update meditation animation event names
-    ;if (EventName == "IdleGreybeardMeditateEnter" || EventName == "IdleGreybeardMeditateEnterInstant") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
-    elseIf (EventName == "IdleChairSitting") && (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
-    	bPlayerIsMeditating = true
-    	debug.trace("Look Ma, I'm meditating!")
-    	KH.bAllowKeyPress = false
-    elseIf bPlayerIsMeditating && EventName == "idleChairGetUp"
+
+    elseIf EventName == "IdleChairSitting" 											; We're checking here for Wintersun/Thunderchild meditation to disable iEquip controls while meditating
+    	Utility.WaitMenuMode(1.0) 													; Just in case the magic effect isn't added straight away - in testing this took less than 0.25s so 1s should be sufficient for most cases
+    	if (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
+	    	bPlayerIsMeditating = true
+	    	KH.bAllowKeyPress = false
+	    endIf
+
+    elseIf bPlayerIsMeditating && EventName == "idleChairGetUp" 					; Restore controls on exiting meditation
     	bPlayerIsMeditating = false
-    	debug.trace("OK Ma, I'm done meditating!")
     	KH.bAllowKeyPress = true
+
     elseIf EventName == "CastStop"													; No way to check which hand has just finished casting so we need to update meters in whichever hands we currently have staffs equipped
     	if RC.bRechargingEnabled && CM.iChargeDisplayType > 0
 	    	if PlayerRef.GetEquippedItemType(0) == 8 && CM.abIsChargeMeterShown[0]	; Staff

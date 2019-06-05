@@ -3050,7 +3050,7 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 
 		elseIf formToFind != none
 			debug.trace("iEquip_WidgetCore findInQueue - seaching by form")
-			if formToFind == jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm") && (itemHandle == 0xFFFF || jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle") == 0xFFFF)
+			if formToFind == jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm") && (itemHandle == 0xFFFF || jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle", 0xFFFF) == 0xFFFF)
 				found = true
 			else
 				iIndex += 1
