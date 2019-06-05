@@ -1447,6 +1447,39 @@ event OnMenuClose(string _sCurrentMenu)
 		endIf
 		i += 1
 	endWhile
+
+	if _sCurrentMenu == "Journal Menu" && Game.GetModByName("Bound Armory Extravaganza.esp") != 255 				; If we've just left journal menu check and update any queue objects containing Bound Armory spells in case they've just been renamed in the BAE MCM
+		i = 0
+		int Q
+		while Q < 2
+			int count = jArray.count(aiTargetQ[Q])
+			while i < count
+				if jMap.getInt(jArray.getObj(aiTargetQ[Q], i), "iEquipType") == 22
+					form spellForm = jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm")
+					if Game.GetModName(spellForm.GetFormID() / 0x1000000) == "Bound Armory Extravaganza.esp"		; If it's a Bound Armory Spell
+						string spellName = spellForm.GetName()														; Get the new spell name
+						jMap.setStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName", spellName)						; Update the queue object
+						if aiCurrentQueuePosition[Q] == i && PlayerRef.GetEquippedSpell(Q) == spellForm 			; Now check if the spell is currently displayed and equipped
+							int element = 8		; LeftName
+							if Q == 1
+								element = 22	; rightName
+							endIf
+							int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText") 			; And if so update the displayed name in the widget
+							If(iHandle)
+								UICallback.PushInt(iHandle, element)
+								UICallback.PushString(iHandle, spellName)
+								UICallback.Send(iHandle)
+							endIf
+						endIf
+					endIf
+				endIf
+				i += 1
+			endWhile
+			i = 0
+			Q += 1
+		endWhile
+	endIf
+
 	sCurrentMenu = ""
 	sEntryPath = ""
 	debug.trace("iEquip_WidgetCore OnMenuClose end")
