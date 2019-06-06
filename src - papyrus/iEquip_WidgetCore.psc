@@ -4175,12 +4175,12 @@ function addToQueue(int Q)
 			
 		elseIf itemType == 22
 			iEquipSlot = EquipSlots.Find((itemForm as spell).GetEquipType())
-			if iEquipSlot < 2 ;If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
+			if iEquipSlot < 2 ; If the spell has a specific EquipSlot (LeftHand, RightHand) then add it to that queue
 				Q = iEquipSlot
-			elseIf iEquipSlot == 3 || (iEquip_SpellExt.GetBoundSpellWeapType(itemForm as spell) > -1) ;If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
+			elseIf iEquipSlot == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(itemForm as spell)) > -1 ; If the spell is a two handed spell or a bound 2H weapon spell add it to right hand queue
 				Q = 1
 			endIf
-			if iEquip_FormExt.IsSpellWard(itemForm) ;The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
+			if iEquip_FormExt.IsSpellWard(itemForm) ; The only exception to this is any mod added spells flagged in the json patch to be considered a ward, ie Bound Shield, which need to be added to the left queue
 				Q = 0
 			endIf
 		endIf
