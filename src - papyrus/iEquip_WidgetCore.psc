@@ -1470,6 +1470,7 @@ event OnMenuClose(string _sCurrentMenu)
 								UICallback.PushString(iHandle, spellName)
 								UICallback.Send(iHandle)
 							endIf
+							asCurrentlyEquipped[Q] = spellName
 						endIf
 					endIf
 				endIf
