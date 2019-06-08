@@ -256,21 +256,8 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function startFillTween(a_duration: Number): Void
 	{
-		//skyui.util.Debug.log("iEquipMeter startFillTween - a_duration: " + a_duration);
-		//try {
 			TorchMeterTween = new TweenLite(_iEquipMeterBarAnim, a_duration*1.2, {frame:120, overwrite:1});
-			//TorchMeterTween = new TweenLite(_iEquipMeterBarAnim, a_duration*1.2, {frameLabel:"Empty"});
 			TorchMeterTween.play();
-			//return "Animation should be playing";
-		//}
-		//catch (e) {
-			/*var status_txt;
-			this.createTextField("status_txt", this.getNextHighestDepth(), 0, 0, 100, 22);
-			status_txt.autoSize = true;
-			status_txt.text = e.toString();*/
-			//skyui.util.Debug.log("iEquipMeter startFillTween - error caught: " + (e.toString()));
-			//return e.toString();
-		//}
 	}
 
 	public function pauseFillTween(): Void

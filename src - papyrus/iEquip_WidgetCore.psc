@@ -123,10 +123,17 @@ Keyword property MagicDamageFire auto
 Keyword property MagicDamageFrost auto
 Keyword property MagicDamageShock auto
 
+; Animated Armoury support
+bool bIsAALoaded
+Keyword property WeapTypePike auto hidden
+Keyword property WeapTypeHalberd auto hidden
+Keyword property WeapTypeQtrStaff auto hidden
+; Keyword property WeapTypeClaw auto hidden
+
 ; Arrays used by queue functions
-int[] property aiCurrentQueuePosition auto hidden ;Array containing the current index for each queue
-string[] property asCurrentlyEquipped auto hidden ;Array containing the itemName for whatever is currently equipped in each queue
-int[] property aiCurrentlyPreselected auto hidden ;Array containing current preselect queue positions
+int[] property aiCurrentQueuePosition auto hidden 	;Array containing the current index for each queue
+string[] property asCurrentlyEquipped auto hidden 	;Array containing the itemName for whatever is currently equipped in each queue
+int[] property aiCurrentlyPreselected auto hidden 	;Array containing current preselect queue positions
 
 ;Widget Properties
 string[] property asWidgetDescriptions auto hidden
@@ -634,6 +641,18 @@ function CheckDependencies()
 		aUniqueItems[48] = none
 		aUniqueItems[49] = none
 	endIf
+
+	if Game.GetModByName("NewArmoury.esp") != 255
+        bIsAALoaded = true
+        WeapTypePike = Game.GetFormFromFile(0x000E457E, "NewArmoury.esp") as Keyword
+		WeapTypeHalberd = Game.GetFormFromFile(0x000E4580, "NewArmoury.esp") as Keyword
+		WeapTypeQtrStaff = Game.GetFormFromFile(0x000E4581, "NewArmoury.esp") as Keyword
+    else
+        bIsAALoaded = false
+        WeapTypePike = none
+		WeapTypeHalberd = none
+		WeapTypeQtrStaff = none
+    endIf
 
 	if Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
         EH.bIsThunderchildLoaded = true
@@ -4390,19 +4409,35 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     string IconName = "Empty"
 
     if itemType < 13 														; It is a weapon
-    																		; First check if it is a Unique
-    	int uniqueItemIndex = aUniqueItems.Find(itemForm as weapon)
+
+    	int uniqueItemIndex = aUniqueItems.Find(itemForm as weapon)			; First check if it is a Unique
     	if uniqueItemIndex != -1
     		IconName = asUniqueItemIcons[uniqueItemIndex]
-    	else 																; Otherwise give it a base weapon name
-	        IconName = asWeaponTypeNames[itemType]
-	        																; 2H axes and maces have the same ID for some reason, so we have to differentiate them
-	        if itemType == 6 && (itemForm as Weapon).IsWarhammer()
-	            IconName = "Warhammer"
-	        elseif itemType == 1 && iEquip_FormExt.IsSpear(itemform) 		; Looking for spears here from Spears by Soolie which are classed as 1H swords
+    	
+    	elseIf bIsAALoaded 													; Next, if Animated Armoury is loaded check if it's a pike, halberd, quarterstaff or claw weapon (will also pick up Immersive Weapons and Heavy Armory weapons if the AA patches are loaded)
+        	if itemForm.HasKeyword(WeapTypeHalberd)
+        		IconName = "Halberd"
+        	elseIf itemForm.HasKeyword(WeapTypeQtrStaff)
+            	IconName = "Quarterstaff"
+            elseIf itemForm.HasKeyword(WeapTypePike)
+            	IconName = "Spear"
+            elseIf itemType == 2 && Game.GetModName(itemForm.GetFormID() / 0x1000000) == "NewArmoury.esp"
+            	IconName = "Claws"
+            endIf
+        endIf
+        
+        if IconName == "Empty"
+	        if itemType == 6 && (itemForm as Weapon).IsWarhammer()			; 2H axes and maces have the same weapon type for some reason, so we have to differentiate them
+	            	IconName = "Warhammer"
+
+	        elseif (itemType == 1 || itemType == 5 || itemType == 6) && iEquip_FormExt.IsSpear(itemform) 	; 1 is for weapons from SpearsBySoolie and True Spear Combat, 5 is for Heavy Armory, 6 is for Immersive Weapons
 	        	IconName = "Spear"
+	        
 	        elseif itemType == 4 && iEquip_FormExt.IsGrenade(itemform) 		; Looking for CACO grenades here which are classed as maces
 	        	IconName = "Grenade"
+
+	        else
+	        	IconName = asWeaponTypeNames[itemType]						; Otherwise give it a base weapon name
 	        endIf
 	    endIf
 

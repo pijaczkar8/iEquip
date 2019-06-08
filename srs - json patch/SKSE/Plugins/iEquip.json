@@ -203,6 +203,234 @@
 			"pluginName": "Spears.esp",
 			"formID": "0x0F3400",
 			"isLightMod": false
+		},
+		{
+			"name": "Iron Hunter's Spear",
+			"pluginName": "Immersive Weapons.esp",
+			"formID": "0x0022EE",
+			"isLightMod": false
+		},
+		{
+			"name": "Orcish Crippler Spear",
+			"pluginName": "Immersive Weapons.esp",
+			"formID": "0x002856",
+			"isLightMod": false
+		},
+		{
+			"name": "Honed Steel Nordic Spear",
+			"pluginName": "Immersive Weapons.esp",
+			"formID": "0x03ABCC",
+			"isLightMod": false
+		},
+		{
+			"name": "Steel Nordic Spear",
+			"pluginName": "Immersive Weapons.esp",
+			"formID": "0x062D62",
+			"isLightMod": false
+		},
+		{
+			"name": "Elven Glaive",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0094A2",
+			"isLightMod": false
+		},
+		{
+			"name": "Elven Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0094A3",
+			"isLightMod": false
+		},
+		{
+			"name": "Steel Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x009A0D",
+			"isLightMod": false
+		},
+		{
+			"name": "Orcish Glaive",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x009A10",
+			"isLightMod": false
+		},
+		{
+			"name": "Ebony Glaive",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x009A13",
+			"isLightMod": false
+		},
+		{
+			"name": "Daedric Glaive",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x009F80",
+			"isLightMod": false
+		},
+		{
+			"name": "Glass Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x00A4EA",
+			"isLightMod": false
+		},
+		{
+			"name": "Iron Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x00A4EB",
+			"isLightMod": false
+		},
+		{
+			"name": "Forsworn Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x00AA53",
+			"isLightMod": false
+		},
+		{
+			"name": "Dwarven Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x00AA62",
+			"isLightMod": false
+		},
+		{
+			"name": "Silver Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x00EB93",
+			"isLightMod": false
+		},
+		{
+			"name": "Imperial Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x010133",
+			"isLightMod": false
+		},
+		{
+			"name": "Ancient Nord Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x011171",
+			"isLightMod": false
+		},
+		{
+			"name": "Ancient Nord Honed Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x011172",
+			"isLightMod": false
+		},
+		{
+			"name": "Nord Hero Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x011174",
+			"isLightMod": false
+		},
+		{
+			"name": "Skyforge Steel Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0116D7",
+			"isLightMod": false
+		},
+		{
+			"name": "Steel Glaive",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x015D8F",
+			"isLightMod": false
+		},
+		{
+			"name": "Nordic Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0308FF",
+			"isLightMod": false
+		},
+		{
+			"name": "Stalhrim Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x030902",
+			"isLightMod": false
+		},
+		{
+			"name": "Dragonbone Spear",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x04EF97",
+			"isLightMod": false
+		},
+		{
+			"name": "Redguard Glaive",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x05E26C",
+			"isLightMod": false
+		},
+		{
+			"name": "Akaviri Glaive",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0633D0",
+			"isLightMod": false
+		},
+		{
+			"name": "Iron Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0D7B8C",
+			"isLightMod": false
+		},
+		{
+			"name": "Dwarven Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0D7B8D",
+			"isLightMod": false
+		},
+		{
+			"name": "Glass Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0DCC95",
+			"isLightMod": false
+		},
+		{
+			"name": "Orcish Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0E1D97",
+			"isLightMod": false
+		},
+		{
+			"name": "Elven Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0E6E9F",
+			"isLightMod": false
+		},
+		{
+			"name": "Ebony Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0EBFA7",
+			"isLightMod": false
+		},
+		{
+			"name": "Daedric Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0F10AD",
+			"isLightMod": false
+		},
+		{
+			"name": "Silver Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0F10AE",
+			"isLightMod": false
+		},
+		{
+			"name": "Nordic Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x0F10B6",
+			"isLightMod": false
+		},
+		{
+			"name": "Redguard Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x1054D7",
+			"isLightMod": false
+		},
+		{
+			"name": "Stalhrim Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x137F1D",
+			"isLightMod": false
+		},
+		{
+			"name": "Dragonbone Trident",
+			"pluginName": "PrvtI_HeavyArmory.esp",
+			"formID": "0x142126",
+			"isLightMod": false
 		}
 	],
 	"javelins": [
