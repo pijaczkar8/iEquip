@@ -69,6 +69,8 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, meterFillDirection[0])
     jArray.addInt(jPageObj, meterFillDirection[1])
 
+    jArray.addInt(jPageObj, WC.EH.bRealTimeStaffMeters as int)
+
 	jArray.addInt(jPageObj, WC.iShowPoisonMessages)
 	jArray.addInt(jPageObj, WC.bAllowPoisonSwitching as int)
 	jArray.addInt(jPageObj, WC.bAllowPoisonTopUp as int)
@@ -103,14 +105,17 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
     CM.asMeterFillDirection[0] = rawMeterFillDirectionOptions[meterFillDirection[0]]
 	meterFillDirection[1] = jArray.getInt(jPageObj, 16)
 	CM.asMeterFillDirection[1] = rawMeterFillDirectionOptions[meterFillDirection[1]]
-	WC.iShowPoisonMessages = jArray.getInt(jPageObj, 17)
-	WC.bAllowPoisonSwitching = jArray.getInt(jPageObj, 18)
-	WC.bAllowPoisonTopUp = jArray.getInt(jPageObj, 19)
+
+    WC.EH.bRealTimeStaffMeters = jArray.getInt(jPageObj, 17)
+
+	WC.iShowPoisonMessages = jArray.getInt(jPageObj, 18)
+	WC.bAllowPoisonSwitching = jArray.getInt(jPageObj, 19)
+	WC.bAllowPoisonTopUp = jArray.getInt(jPageObj, 20)
 	
-	WC.iPoisonChargesPerVial = jArray.getInt(jPageObj, 20)
-	WC.iPoisonChargeMultiplier = jArray.getInt(jPageObj, 21)
+	WC.iPoisonChargesPerVial = jArray.getInt(jPageObj, 21)
+	WC.iPoisonChargeMultiplier = jArray.getInt(jPageObj, 22)
 	
-	WC.iPoisonIndicatorStyle = jArray.getInt(jPageObj, 22)
+	WC.iPoisonIndicatorStyle = jArray.getInt(jPageObj, 23)
 endFunction
 
 function drawPage()

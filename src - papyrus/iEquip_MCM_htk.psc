@@ -102,13 +102,22 @@ State htk_txt_htkHelp
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_htk_txt_htkHelp")
         elseIf currentEvent == "Select"
-            bool bKeepReading = MCM.ShowMessage("$iEquip_help_controls1",  true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+            bool bKeepReading = MCM.ShowMessage("$iEquip_help_controls0",  true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
             if bKeepReading 
-                bKeepReading = MCM.ShowMessage("$iEquip_help_controls2",  true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                bKeepReading = MCM.ShowMessage("$iEquip_help_controls1",  true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
                 if bKeepReading
-                    bKeepReading = MCM.ShowMessage("$iEquip_help_controls3", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                     if bKeepReading
-                        MCM.ShowMessage("$iEquip_help_controls4", false, "$iEquip_common_msg_Exit")
+                    bKeepReading = MCM.ShowMessage("$iEquip_help_controls2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                    if bKeepReading
+                        bKeepReading = MCM.ShowMessage("$iEquip_help_controls3", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                        if bKeepReading
+                            bKeepReading = MCM.ShowMessage("$iEquip_help_controls4", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                            if bKeepReading
+                                bKeepReading = MCM.ShowMessage("$iEquip_help_controls5", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                                if bKeepReading
+                                    MCM.ShowMessage("$iEquip_help_controls6", false, "$iEquip_common_msg_Exit")
+                                endIf
+                            endIf
+                        endIf
                     endIf 
                 endIf
             endIf

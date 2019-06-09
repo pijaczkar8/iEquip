@@ -82,7 +82,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
     TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
     iTorchMeterFillDirection = jArray.getInt(jPageObj, 14)
     TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
-
+    TO.bTorchDurationSettingChanged = true
 endFunction
 
 function drawPage()

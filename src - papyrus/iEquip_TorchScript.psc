@@ -189,9 +189,6 @@ function onTorchEquipped()
 					endIf
 	            	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
 	            endIf
-				;PlayerRef.SetActorValue("Paralysis", 0)
-				;Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
-				;Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
 			endIf
 			RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
 		else
@@ -200,7 +197,8 @@ function onTorchEquipped()
 		
 		if bShowTorchMeter	; Show torch meter if enabled
 			if CM.abIsChargeMeterShown[0]
-				updateTorchMeterVisibility(false)
+				;updateTorchMeterVisibility(false)
+				CM.updateChargeMeterVisibility(0, false)
 				Utility.WaitMenuMode(0.2)
 			endIf
 			showTorchMeter()
@@ -259,16 +257,18 @@ event OnUpdate()
 			iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 			
-			;if !PlayerRef.IsWeaponDrawn()
-				bSettingLightRadius = true
-				
-				if PlayerRef.GetItemCount(iEquipTorch) < 1
-					PlayerRef.AddItem(iEquipTorch, 1, true)
-				endIf
-            	
-            	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
-            	
-            	while !(PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping")
+			bSettingLightRadius = true
+			
+			if PlayerRef.GetItemCount(iEquipTorch) < 1
+				PlayerRef.AddItem(iEquipTorch, 1, true)
+			endIf
+        	
+        	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
+            
+            if PlayerRef.IsWeaponDrawn()
+            	int countdown = 100
+            	while !(PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping") && countdown > 0
+				     countdown -= 1
 				     Utility.WaitMenuMode(0.015)
 				     Debug.Trace("Waiting for Equip")
 				endWhile
@@ -278,7 +278,7 @@ event OnUpdate()
 				     Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
 				     Debug.Trace("WeapEquip_Out Sent")
 				endWhile
-            ;endIf
+            endIf
 		endIf
 		
 		if fCurrentTorchLife <= 0.0

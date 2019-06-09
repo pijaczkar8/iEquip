@@ -211,6 +211,13 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				WC.checkAndFadeLeftIcon(0, 0)
 				Utility.WaitMenuMode(0.3)
 			endIf
+			;Show the background if required
+			if WC.abQueueWasEmpty[0] && WC.iBackgroundStyle > 0
+				int[] args = new int[2]
+				args[0] = 0
+				args[1] = WC.iBackgroundStyle
+				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)
+			endIf
 			;Hide the left hand poison elements if currently shown
 			if WC.abPoisonInfoDisplayed[0]
 				WC.hidePoisonInfo(0)

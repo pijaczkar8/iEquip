@@ -1601,20 +1601,6 @@ function addCurrentItemsOnFirstEnable()
 
 			itemHandle = getHandle(Q, itemType)
 
-			;/if TI.aiTemperedItemTypes.Find(itemType) > -1
-				if itemType == 26
-					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - shield from GetEquippedObject: " + equippedItem + ", from GetEquippedShield: " + PlayerRef.GetEquippedShield() as form)
-					debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - attempting to retrieve handle for shield from GetRefHandleFromWornObject(2)")
-					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)		; Shield
-				else
-					if itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9
-						itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)	; Need to check right hand for ranged weapon iHandle
-					else
-						itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)	; Left/Right hand
-					endIf
-				endIf
-			endIf/;
-
 			debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - Q: " + Q + ", itemHandle received: " + itemHandle)
 
 			if itemHandle != 0xFFFF
@@ -1623,15 +1609,10 @@ function addCurrentItemsOnFirstEnable()
 				itemName = iEquip_InventoryExt.GetLongName(equippedItem, itemHandle)
 				itemBaseName = iEquip_InventoryExt.GetShortName(equippedItem, itemHandle)
 				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
-			else
-				itemName = WornObject.GetDisplayName(PlayerRef, Q, 0)
-				;itemBaseName = equippedItem.getName()
-				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from WornObject, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 			endIf
 			
 			if itemName == ""
 				itemName = equippedItem.GetName()
-				;itemBaseName = itemName
 			endIf
 			
 			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(equippedItem.GetFormID(), 0x00FFFFFF))
@@ -1650,7 +1631,13 @@ function addCurrentItemsOnFirstEnable()
 	        		PlayerRef.EquipItemEx(equippedItem)
 	        	else
 		        	UnequipHand(1)
-		        	PlayerRef.EquipItemById(equippedItem, itemID, 1)
+		        	if itemHandle != 0xFFFF
+		        		iEquip_InventoryExt.EquipItem(equippedItem, itemHandle, PlayerRef, 1)
+		        	else
+		        		PlayerRef.EquipItemById(equippedItem, itemID, 1)
+		        	endIf
+		        	abQueueWasEmpty[0] = true
+		        	abQueueWasEmpty[1] = false
 		        	Q = 1
 		        endIf
 	        	Utility.WaitMenuMode(0.3)
@@ -4841,7 +4828,7 @@ function ApplyChanges()
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 		if iBackgroundStyle > 0
 			while i < 5
-				if abQueueWasEmpty[i] && !(i == 0 && UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text") == iEquip_StringExt.LocalizeString("$iEquip_common_Unarmed"))
+				if abQueueWasEmpty[i] && !(i == 0 && (UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text") == iEquip_StringExt.LocalizeString("$iEquip_common_Unarmed") || (AM.bAmmoMode && jArray.Count(AM.aiTargetQ[AM.Q]) > 0)))
 					int[] args = new int[2]
 					args[0] = i
 					args[1] = 0

@@ -68,6 +68,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, BM.abShowInTransformedState[0] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[1] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[2] as int)
+    jArray.addInt(jPageObj, BM.abShowInTransformedState[3] as int)
     
 	return jPageObj
 endFunction
@@ -96,6 +97,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 13)
 	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 14)
 	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 15)
+    BM.abShowInTransformedState[3] = jArray.getInt(jPageObj, 16)
 endFunction
 
 function drawPage()

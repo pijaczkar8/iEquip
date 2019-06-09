@@ -21,13 +21,22 @@ function showHelpMenuMain()
         
         if iAction != 7             ; Exit
             if iAction == 0         ; Controls
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls1"))
+                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls0"))
                 if iAction == 0
-                    iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls2"))
+                    iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls1"))
                     if iAction == 0
-                        iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls3"))
-                        if iAction == 0
-                            debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_controls4"))
+                        iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls2"))
+                        if iAction == 0         ; Controls
+                            iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls3"))
+                            if iAction == 0
+                                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls4"))
+                                if iAction == 0
+                                    iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls5"))
+                                    if iAction == 0
+                                        debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_controls6"))
+                                    endIf
+                                endIf
+                            endIf
                         endIf
                     endIf
                 endIf

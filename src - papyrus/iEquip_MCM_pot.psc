@@ -49,12 +49,14 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, PO.bBlockIfBuffEffectActive as int)
 	
 	jArray.addInt(jPageObj, WC.iPotionSelectorChoice)
+    jArray.addFlt(jPageObj, WC.fSmartConsumeThreshold)
 	jArray.addFlt(jPageObj, WC.fPotionSelectorFadeoutDelay)
 	jArray.addInt(jPageObj, PO.iEmptyPotionQueueChoice)
 	jArray.addFlt(jPageObj, WC.fconsIconFadeAmount)
 	jArray.addInt(jPageObj, PO.bFlashPotionWarning as int)
 	jArray.addInt(jPageObj, PO.bEnableRestorePotionWarnings as int)
 	jArray.addInt(jPageObj, PO.bNotificationOnLowRestorePotions as int)
+    jArray.addInt(jPageObj, PO.iNotificationLevel)
     
 	return jPageObj
 endFunction
@@ -72,12 +74,14 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	PO.bBlockIfBuffEffectActive = jArray.getInt(jPageObj, 7)
 
 	WC.iPotionSelectorChoice = jArray.getInt(jPageObj, 8)
-	WC.fPotionSelectorFadeoutDelay = jArray.getFlt(jPageObj, 9)
-	PO.iEmptyPotionQueueChoice = jArray.getInt(jPageObj, 10)
-	WC.fconsIconFadeAmount = jArray.getFlt(jPageObj, 11)
-	PO.bFlashPotionWarning = jArray.getInt(jPageObj, 12)
-	PO.bEnableRestorePotionWarnings = jArray.getInt(jPageObj, 13)
-	PO.bNotificationOnLowRestorePotions = jArray.getInt(jPageObj, 14)
+    WC.fSmartConsumeThreshold = jArray.getFlt(jPageObj, 9)
+	WC.fPotionSelectorFadeoutDelay = jArray.getFlt(jPageObj, 10)
+	PO.iEmptyPotionQueueChoice = jArray.getInt(jPageObj, 11)
+	WC.fconsIconFadeAmount = jArray.getFlt(jPageObj, 12)
+	PO.bFlashPotionWarning = jArray.getInt(jPageObj, 13)
+	PO.bEnableRestorePotionWarnings = jArray.getInt(jPageObj, 14)
+	PO.bNotificationOnLowRestorePotions = jArray.getInt(jPageObj, 15)
+    PO.iNotificationLevel = jArray.getInt(jPageObj, 16)
 endFunction
 
 function drawPage()
