@@ -257,28 +257,31 @@ event OnUpdate()
 			iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
 			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 			
-			bSettingLightRadius = true
-			
-			if PlayerRef.GetItemCount(iEquipTorch) < 1
-				PlayerRef.AddItem(iEquipTorch, 1, true)
-			endIf
-        	
-        	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
-            
-            if PlayerRef.IsWeaponDrawn()
-            	int countdown = 100
-            	while !(PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping") && countdown > 0
-				     countdown -= 1
-				     Utility.WaitMenuMode(0.015)
-				     Debug.Trace("Waiting for Equip")
-				endWhile
+			if !((PlayerRef as objectReference).GetAnimationVariableBool("IsCastingRight") || (PlayerRef as objectReference).GetAnimationVariableBool("IsAttacking") || (PlayerRef as objectReference).GetAnimationVariableBool("IsBlocking") || (PlayerRef as objectReference).GetAnimationVariableBool("IsBashing"))
 
-				while (PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping")
-				     Utility.WaitMenuMode(0.015)
-				     Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
-				     Debug.Trace("WeapEquip_Out Sent")
-				endWhile
-            endIf
+				bSettingLightRadius = true
+				
+				if PlayerRef.GetItemCount(iEquipTorch) < 1
+					PlayerRef.AddItem(iEquipTorch, 1, true)
+				endIf
+	        	
+	        	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
+	            
+	            if PlayerRef.IsWeaponDrawn()
+	            	int countdown = 100
+	            	while !(PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping") && countdown > 0
+					     countdown -= 1
+					     Utility.WaitMenuMode(0.015)
+					     Debug.Trace("Waiting for Equip")
+					endWhile
+
+					while (PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping")
+					     Utility.WaitMenuMode(0.015)
+					     Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
+					     Debug.Trace("WeapEquip_Out Sent")
+					endWhile
+	            endIf
+	        endIf
 		endIf
 		
 		if fCurrentTorchLife <= 0.0
