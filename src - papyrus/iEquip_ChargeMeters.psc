@@ -99,8 +99,7 @@ function initSoulGem(int Q)
 endFunction
 
 function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = false) ;Sets the meter percent, a_force sets the meter percent without animation
-	debug.trace("iEquip_ChargeMeters updateMeterPercent start")
-	debug.trace("iEquip_ChargeMeters updateMeterPercent - Q: " + Q + ", asItemCharge[Q]: " + asItemCharge[Q] + ", forceUpdate: " + forceUpdate + ", skipFlash: " + skipFlash)
+	debug.trace("iEquip_ChargeMeters updateMeterPercent start - Q: " + Q + ", asItemCharge[Q]: " + asItemCharge[Q] + ", forceUpdate: " + forceUpdate + ", skipFlash: " + skipFlash)
 	float currentCharge = PlayerRef.GetActorValue(asItemCharge[Q])
 	float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
 	float currPercent
@@ -147,8 +146,7 @@ function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = fa
 endFunction
 
 function startMeterFlash(int Q, bool forceFlash = false) ; Starts meter flashing. forceFlash starts the meter flashing if it's already animating
-	debug.trace("iEquip_ChargeMeters startMeterFlash start")
-	debug.trace("iEquip_ChargeMeters startMeterFlash - Q: " + Q)
+	debug.trace("iEquip_ChargeMeters startMeterFlash start - Q: " + Q)
 	int iHandle
 	if iChargeDisplayType == 1
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
@@ -165,8 +163,7 @@ function startMeterFlash(int Q, bool forceFlash = false) ; Starts meter flashing
 endFunction
 
 function updateChargeMeters(bool forceUpdate = false)
-	debug.trace("iEquip_ChargeMeters updateChargeMeters start")
-	debug.trace("iEquip_ChargeMeters updateChargeMeters - forceUpdate: " + forceUpdate)
+	debug.trace("iEquip_ChargeMeters updateChargeMeters start - forceUpdate: " + forceUpdate)
 	int Q
 	if iChargeDisplayType > 0
 		while Q < 2
@@ -196,8 +193,7 @@ function updateChargeMetersOnWeaponsDrawn()
 endFunction
 
 function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
-	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter start")
-	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", forceUpdate: " + forceUpdate + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
+	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter start - Q: " + Q + ", forceUpdate: " + forceUpdate + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
 	if !(Q == 0 && PlayerRef.GetEquippedItemType(0) == 11 && WC.TO.bShowTorchMeter)
 		;Hide first
 		if abIsChargeMeterShown[Q]
@@ -268,8 +264,7 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 endFunction
 
 function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false)
-	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility start")
-	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility - Q: " + Q + ", show: " + show)
+	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility start - Q: " + Q + ", show: " + show)
 	int element
 	int iHandle
 	if (show && !abIsChargeMeterShown[Q]) || (!show && abIsChargeMeterShown[Q]) || hideMeters || hideGems

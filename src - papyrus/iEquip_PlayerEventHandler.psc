@@ -349,36 +349,31 @@ endFunction
 
 bool Property boundSpellEquipped
 	bool function Get()
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get start")
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get end")
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get - bIsBoundSpellEquipped: " + bIsBoundSpellEquipped)
 		return bIsBoundSpellEquipped
 	endFunction
 
 	function Set(Bool equipped)
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set start")	
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set - bIsBoundSpellEquipped: " + equipped)
 		bIsBoundSpellEquipped = equipped
 		BW.bIsBoundSpellEquipped = equipped
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set called - bIsBoundSpellEquipped: " + equipped)
-		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set end")
 	endFunction
 endProperty
 
 bool property bJustQuickDualCast
 	bool function Get()
-		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Get start")
-		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Get end")
+		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Get - bDualCasting: " + bDualCasting)
 		return bDualCasting
 	endFunction
 
 	function set(bool dualCasting)
-		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Set start")	
 		bDualCasting = dualCasting
 		if dualCasting
 			dualCastCounter = 2
 		else
 			dualCastCounter = 0
 		endIf
-		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Set end")
+		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Set - bDualCasting: " + bDualCasting + ", dualCastCounter: " + dualCastCounter)
 	endFunction
 endProperty
 
@@ -399,8 +394,7 @@ function updateEventFilter(formlist listToUpdate)
 endFunction
 
 Event OnRaceSwitchComplete()
-	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start")
-	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current state: " + GetState())
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start - current state: " + GetState())
 	if UI.IsMenuOpen("RaceSex Menu")
 		PlayerRace = PlayerRef.GetRace()
 	else
@@ -437,13 +431,11 @@ Event OnRaceSwitchComplete()
 			endIf
 		endIf
 	endIf
-	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - new state: " + GetState())
-	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete end")
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete end - new state: " + GetState())
 EndEvent
 
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
-	debug.trace("iEquip_PlayerEventHandler OnActorAction start")	
-	debug.trace("iEquip_PlayerEventHandler OnActorAction - actionType: " + actionType + ", slot: " + slot)
+	debug.trace("iEquip_PlayerEventHandler OnActorAction start - actionType: " + actionType + ", slot: " + slot)	
 	if akActor == PlayerRef
 		if actionType == 2 ;Spell Cast/Spell Fire
 			;Check if the action has come from a hand with a staff currently equipped
@@ -517,8 +509,7 @@ function updateMeterWhileStaffCasting(int slot)
 endFunction
 
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
-	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent start")	
-    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
+	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
     int iTmp
     if EventName == "Soundplay.NPCWerewolfTransformation"
     	BM.OnWerewolfTransformationStart()
@@ -578,8 +569,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start")	
-	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)	
 	
 	int itemType = akBaseObject.GetType()
 	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - itemType: " + itemType)
@@ -613,8 +603,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 endEvent
 
 Event OnUpdate()
-	debug.trace("iEquip_PlayerEventHandler OnUpdate start")	
-	debug.trace("iEquip_PlayerEventHandler OnUpdate - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate + ", bWaitingForTransform: " + bWaitingForTransform)
+	debug.trace("iEquip_PlayerEventHandler OnUpdate start - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate + ", bWaitingForTransform: " + bWaitingForTransform)
 	if bWaitingForAnimationUpdate
 		bWaitingForAnimationUpdate = false
 		updateWidgetOnWeaponSwing()
@@ -666,8 +655,7 @@ endFunction
 
 ; This event handles auto-adding newly equipped items to the left, right and shout slots
 function processQueuedForms(int equippedSlot = -1)
-	debug.trace("iEquip_PlayerEventHandler processQueuedForms start - equippedSlot: " + equippedSlot)	
-	debug.trace("iEquip_PlayerEventHandler processQueuedForms - number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms start - equippedSlot: " + equippedSlot + ", number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())	
 	processingQueuedForms = true
 	int i
 	form queuedForm
@@ -729,14 +717,12 @@ function processQueuedForms(int equippedSlot = -1)
 		i += 1
 	endWhile
 	iEquip_OnObjectEquippedFLST.Revert()
-	debug.trace("iEquip_PlayerEventHandler processQueuedForms - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms end - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
 	processingQueuedForms = false
-	debug.trace("iEquip_PlayerEventHandler processQueuedForms end")
 endFunction
 
 function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
-	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start")
-	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", queuedForm: " + queuedForm + ", itemType: " + itemType + ", iEquipSlot: " + iEquipSlot)
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start - equippedSlot: " + equippedSlot + ", queuedForm: " + queuedForm + ", itemType: " + itemType + ", iEquipSlot: " + iEquipSlot)
 	bool actionTaken
 	int targetIndex
 	bool blockCall
@@ -935,8 +921,7 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
 endEvent
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
-	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start")	
-	debug.trace("iEquip_PlayerEventHandler OnItemRemoved - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)
+	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	
 	int i
 	int itemType = akBaseItem.GetType()
 	If itemType == 41 													; If it is a weapon get the weapon type
@@ -1007,8 +992,7 @@ EndEvent
 
 state BEASTMODE
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
-		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE start")	
-		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE - actionType: " + actionType + ", slot: " + slot)
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE start - actionType: " + actionType + ", slot: " + slot)	
 		if akActor == PlayerRef
 			if actionType == 7 || actionType == 8 ;Draw Begin or Draw End
 				if !WC.bIsWidgetShown && !bWaitingForTransform
@@ -1029,7 +1013,6 @@ state BEASTMODE
 	endEvent
 
 	event OnAnimationEvent(ObjectReference aktarg, string EventName)
-		debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE start")
 	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE received - EventName: " + EventName)
 	    if EventName == "LandStart"
 	    	BM.showClaws()

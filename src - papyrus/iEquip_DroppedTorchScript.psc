@@ -26,12 +26,6 @@ event OnUpdate()
 
 	BurntOutTorch.EnableNoWait()
 
-	;/Int Tries = 0 
-	While(Tries < 10 && (!BurntOutTorch.is3DLoaded() || !BurntOutTorch.IsEnabled()))
-		Utility.Wait(0.05)
-		Tries += 1
-	EndWhile/;
-
 	Self.Delete()	
 	Self.Disable()
 	TO.aDroppedTorches[TO.aDroppedTorches.Find(Self)] = BurntOutTorch

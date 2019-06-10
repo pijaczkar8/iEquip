@@ -31,8 +31,7 @@ endFunction
 
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	if akBaseItem as weapon || akBaseItem as ammo || akBaseItem as potion || akBaseItem as light || akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch || (akBaseItem as armor && (akBaseItem as armor).IsShield()) || akBaseItem as scroll
-		debug.trace("iEquip_AddedItemHandler OnItemAdded start")
-		debug.trace("iEquip_AddedItemHandler OnItemAdded - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
+		debug.trace("iEquip_AddedItemHandler OnItemAdded start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
 		if bSwitchingTorches && akBaseItem == TO.realTorchForm
 			bSwitchingTorches = false
 		elseIf !(akBaseItem == iEquipDroppedTorch as form && TO.bSettingLightRadius)
@@ -98,8 +97,7 @@ event OnUpdate()
 		i += 1
 	endWhile
 	iEquip_ItemsToAddFLST.Revert()
-	debug.trace("iEquip_AddedItemHandler OnUpdate - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
-	debug.trace("iEquip_AddedItemHandler OnUpdate end")
+	debug.trace("iEquip_AddedItemHandler OnUpdate end - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
 endEvent
 
 auto state DISABLED

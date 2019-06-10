@@ -124,8 +124,7 @@ bool property bPlayerIsABeast
 endProperty
 
 event OnMenuOpen(string MenuName)
-    debug.trace("iEquip_KeyHandler OnMenuOpen start")
-    debug.trace("iEquip KeyHandler Menu being opened: "+MenuName)
+    debug.trace("iEquip_KeyHandler OnMenuOpen start - Menu being opened: "+MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = false
     else
@@ -146,8 +145,7 @@ event OnMenuOpen(string MenuName)
 endEvent
 
 event OnMenuClose(string MenuName)
-    debug.trace("iEquip_KeyHandler OnMenuClose start")
-    debug.trace("iEquip KeyHandler Menu being closed: "+MenuName)
+    debug.trace("iEquip_KeyHandler OnMenuClose start - Menu being closed: "+MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = true
     elseIf !utility.IsInMenuMode()
@@ -161,13 +159,11 @@ event OnMenuClose(string MenuName)
     else 
         GotoState(sPreviousState)
     endIf
-    debug.trace("iEquip_KeyHandler OnMenuClose - state set to: " + GetState())
-    debug.trace("iEquip_KeyHandler OnMenuClose end")
+    debug.trace("iEquip_KeyHandler OnMenuClose end - state set to: " + GetState())
 endEvent
 
 event OnUpdate()
-    debug.trace("iEquip_KeyHandler OnUpdate start")
-    debug.trace("iEquip KeyHandler OnUpdate called multiTap: "+iMultiTap)
+    debug.trace("iEquip_KeyHandler OnUpdate start - multiTap: "+iMultiTap)
     bAllowKeyPress = false
     
     runUpdate()
@@ -183,8 +179,7 @@ endEvent
 ; ---------------------
 
 event OnKeyDown(int KeyCode)
-    debug.trace("iEquip_KeyHandler OnKeyDown start")
-    debug.trace("iEquip KeyHandler OnKeyDown called KeyCode: "+KeyCode)
+    debug.trace("iEquip_KeyHandler OnKeyDown start - KeyCode: "+KeyCode)
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = true
     endIf
@@ -217,8 +212,7 @@ event OnKeyDown(int KeyCode)
 endEvent
 
 event OnKeyUp(int KeyCode, Float HoldTime)
-    debug.trace("iEquip_KeyHandler OnKeyUp start")
-    debug.trace("iEquip KeyHandler OnKeyUp KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
+    debug.trace("iEquip_KeyHandler OnKeyUp start - KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = false
     endIf

@@ -53,8 +53,7 @@ event OnInit()
 endEvent
 
 function rechargeWeapon(int Q)
-    debug.trace("iEquip_RechargeScript rechargeWeapon start")
-	debug.trace("iEquip_RechargeScript rechargeWeapon - Q: " + Q)
+    debug.trace("iEquip_RechargeScript rechargeWeapon start - Q: " + Q)
     if bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
         debug.notification("$iEquip_RequiemEnchantingPerkMissing")
     else
@@ -96,8 +95,7 @@ function rechargeWeapon(int Q)
 endFunction
 
 int function getRequiredSoul(int Q, float requiredCharge)
-    debug.trace("iEquip_RechargeScript getRequiredSoul start")
-	debug.trace("iEquip_RechargeScript getRequiredSoul - Q: " + Q)
+    debug.trace("iEquip_RechargeScript getRequiredSoul start - Q: " + Q)
     int bestFitSoul
     if requiredCharge > 0
         if requiredCharge < 251.0
@@ -116,6 +114,5 @@ int function getRequiredSoul(int Q, float requiredCharge)
         bestFitSoul -= 1
     endIf
     debug.trace("iEquip_RechargeScript getRequiredSoul - returning bestFitSoul: " + bestFitSoul)
-    debug.trace("iEquip_RechargeScript getRequiredSoul end")
     return bestFitSoul
 endFunction    

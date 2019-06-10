@@ -90,8 +90,7 @@ endFunction
 
 ;This function is normally the first thing called in the Ammo Mode sequence
 function selectAmmoQueue(int weaponType)
-	debug.trace("iEquip_AmmoMode selectAmmoQueue start")
-	debug.trace("iEquip_AmmoMode selectAmmoQueue - weaponType: " + weaponType)
+	debug.trace("iEquip_AmmoMode selectAmmoQueue start - weaponType: " + weaponType)
 	Q = ((weaponType == 9) as int)
 	if iAmmoListSorting == 2 || iAmmoListSorting == 4
 		selectLastUsedAmmo(Q)
@@ -102,14 +101,11 @@ function selectAmmoQueue(int weaponType)
 endFunction
 
 int function getCurrentAmmoObject()
-	debug.trace("iEquip_AmmoMode getCurrentAmmoObject start")
-	debug.trace("iEquip_AmmoMode getCurrentAmmoObject end")
 	return jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
 endFunction
 
 function onAmmoAdded(form addedAmmo)
-	debug.trace("iEquip_AmmoMode onAmmoAdded start")
-	debug.trace("iEquip_AmmoMode onAmmoAdded - addedAmmo: " + addedAmmo.GetName())
+	debug.trace("iEquip_AmmoMode onAmmoAdded start - addedAmmo: " + addedAmmo.GetName())
 	int isBolt = (addedAmmo as ammo).isBolt() as int
 	int count = jArray.count(aiTargetQ[isBolt])
 	if bAmmoMode && currentAmmoForm == addedAmmo && count > 0
@@ -136,8 +132,7 @@ function onAmmoAdded(form addedAmmo)
 endFunction
 
 function onAmmoRemoved(form removedAmmo)
-	debug.trace("iEquip_AmmoMode onAmmoRemoved start")
-	debug.trace("iEquip_AmmoMode onAmmoRemoved - removedAmmo: " + removedAmmo.GetName())
+	debug.trace("iEquip_AmmoMode onAmmoRemoved start - removedAmmo: " + removedAmmo.GetName())
 	;If we've still got at least one of it left check if it's the current ammo and update the count
 	if PlayerRef.GetItemCount(removedAmmo) > 0
 		if bAmmoMode && currentAmmoForm == removedAmmo
@@ -190,8 +185,7 @@ function onAmmoRemoved(form removedAmmo)
 endFunction
 
 function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutEquipping = false)
-	debug.trace("iEquip_AmmoMode toggleAmmoMode start")
-	debug.trace("iEquip_AmmoMode toggleAmmoMode - toggleWithoutAnimation: " + toggleWithoutAnimation + ", toggleWithoutEquipping: " + toggleWithoutEquipping + ", bAmmoModePending: " + bAmmoModePending + ", bSimpleAmmoMode: " + bSimpleAmmoMode)
+	debug.trace("iEquip_AmmoMode toggleAmmoMode start - toggleWithoutAnimation: " + toggleWithoutAnimation + ", toggleWithoutEquipping: " + toggleWithoutEquipping + ", bAmmoModePending: " + bAmmoModePending + ", bSimpleAmmoMode: " + bSimpleAmmoMode)
 	if !bAmmoMode && jArray.count(aiTargetQ[Q]) < 1
 		debug.trace("iEquip_AmmoMode toggleAmmoMode - no ammo for the selected weapon, setting bAmmoModePending to true")
 		debug.Notification("$iEquip_AM_not_noAmmo")
@@ -458,8 +452,7 @@ function selectLastUsedAmmo(int thisQ)
 endFunction
 
 function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate = true, bool equip = true, form equippedAmmo = none)
-	debug.trace("iEquip_AmmoMode checkAndEquipAmmo start")
-	debug.trace("iEquip_AmmoMode checkAndEquipAmmo - reverse: " + reverse + ", ignoreEquipOnPause: " + ignoreEquipOnPause + ", animate: " + animate + ", equippedAmmo: " + equippedAmmo)
+	debug.trace("iEquip_AmmoMode checkAndEquipAmmo start - reverse: " + reverse + ", ignoreEquipOnPause: " + ignoreEquipOnPause + ", animate: " + animate + ", equippedAmmo: " + equippedAmmo)
 
 	if equippedAmmo
 		if equippedAmmo != currentAmmoForm		; Runs if function has been called from PlayerEventHandler OnObjectEquipped sequence to catch ammo being manually equipped through the Inventory Menu
@@ -557,8 +550,7 @@ function removeAmmoFromQueue(int isBolt, int i)
 endFunction
 
 function setSlotCount(int count)
-	debug.trace("iEquip_AmmoMode setSlotCount start")
-	debug.trace("iEquip_AmmoMode setSlotCount - count: " + count)
+	debug.trace("iEquip_AmmoMode setSlotCount start - count: " + count)
 	int[] widgetData = new int[2]
 	widgetData[1] = count
 	UI.invokeIntA(HUD_MENU, WidgetRoot + ".updateCounter", widgetData)
@@ -566,8 +558,6 @@ function setSlotCount(int count)
 endFunction
 
 bool function switchingRangedWeaponType(int itemType)
-	debug.trace("iEquip_AmmoMode switchingRangedWeaponType start")
-	debug.trace("iEquip_AmmoMode switchingRangedWeaponType end")
 	return Q != ((itemType == 9) as int)
 endFunction
 
@@ -608,8 +598,7 @@ function onBoundRangedWeaponEquipped(int weaponType)
 endFunction
 
 function addBoundAmmoToQueue(form boundAmmo, string ammoName)
-	debug.trace("iEquip_AmmoMode addBoundAmmoToQueue start")
-	debug.trace("iEquip_AmmoMode addBoundAmmoToQueue - ammoName: " + ammoName)
+	debug.trace("iEquip_AmmoMode addBoundAmmoToQueue start - ammoName: " + ammoName)
 	Q = (boundAmmo as ammo).isBolt() as int
 	;If we've already added a dummy object to the ammo queue we only need to add the form
 	int targetObject = jArray.getObj(aiTargetQ[Q], jArray.count(aiTargetQ[Q]) - 1)
@@ -657,8 +646,6 @@ function checkAndRemoveBoundAmmo(int weaponType)
 	abBoundAmmoInQueue[Q] = false
 	debug.trace("iEquip_AmmoMode checkAndRemoveBoundAmmo end")
 endFunction
-
-;Functions previously in AmmoScript
 
 function updateAmmoLists()
 	debug.trace("iEquip_AmmoMode updateAmmoLists start")
@@ -769,16 +756,14 @@ function updateAmmoListsOnSettingChange()
 endFunction
 
 bool function isAlreadyInAmmoQueue(form itemForm, int targetQ)
-	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue start")
-	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue - itemForm: " + itemForm)
+	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue start - itemForm: " + itemForm)
 	bool found
 	int i
 	while i < JArray.count(targetQ) && !found
 		found = (itemform == jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm"))
 		i += 1
 	endWhile
-	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue() - returning found: " + found)
-	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue end")
+	debug.trace("iEquip_AmmoMode isAlreadyInAmmoQueue end - returning found: " + found)
 	return found
 endFunction
 
@@ -805,8 +790,7 @@ function AddToAmmoQueue(form ammoForm, string ammoName, int isBolt)
 endFunction
 
 String function getAmmoIcon(form ammoForm, string AmmoName, int isBolt)
-	debug.trace("iEquip_AmmoMode getAmmoIcon start")
-	debug.trace("iEquip_AmmoMode getAmmoIcon - AmmoName: " + AmmoName)
+	debug.trace("iEquip_AmmoMode getAmmoIcon start - AmmoName: " + AmmoName)
 	String iconName
 	if iEquip_FormExt.IsSpear(ammoForm) || iEquip_FormExt.IsJavelin(ammoForm)
 		iconName = "Spear"
@@ -828,8 +812,7 @@ String function getAmmoIcon(form ammoForm, string AmmoName, int isBolt)
 			incrementDamage = true
 		endIf
 	endIf
-	debug.trace("iEquip_AmmoMode getAmmoIcon returning iconName: " + iconName)
-	debug.trace("iEquip_AmmoMode getAmmoIcon end")
+	debug.trace("iEquip_AmmoMode getAmmoIcon end - returning iconName: " + iconName)
 	return iconName
 endFunction
 
@@ -874,9 +857,8 @@ function sortAmmoQueueByName(int targetQ, int thisQ)
 endFunction
 
 function sortAmmoQueue(string theKey, int targetQ, int thisQ)
-	debug.trace("iEquip_AmmoMode sortAmmoQueue start")
     int n = jArray.count(targetQ)
-    debug.trace("iEquip_AmmoMode sortAmmoQueue - thisQ: " + thisQ + ", count: " + n + ", Sort by: " + theKey)
+    debug.trace("iEquip_AmmoMode sortAmmoQueue start - thisQ: " + thisQ + ", count: " + n + ", Sort by: " + theKey)
     int i
     While (n > 1)
         i = 1

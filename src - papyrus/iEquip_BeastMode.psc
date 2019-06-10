@@ -345,8 +345,7 @@ function resetWidgetOnTransformBack()
 endFunction
 
 function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
-	debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped start")
-	debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot)
+	debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped start - equippedSlot: " + equippedSlot)
 	int targetQ = (currRace * 3) + equippedSlot
 	bool blockCall
 	bool actionTaken
