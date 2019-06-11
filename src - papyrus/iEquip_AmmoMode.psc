@@ -292,6 +292,10 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 					WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"), jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType"), bSimpleAmmoMode)
 				endIf
 			endIf
+			ammo currentAmmo = currentAmmoForm as Ammo
+			if currentAmmo && PlayerRef.isEquipped(currentAmmo) && WC.bUnequipAmmo
+				PlayerRef.UnequipItemEx(currentAmmo)
+			endIf
 			;Show the left name if previously faded out on timer
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[0] ;Left Name
 				WC.showName(0)
