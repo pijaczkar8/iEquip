@@ -1133,29 +1133,6 @@ function ResetElement()
     EndIf
 endFunction
 
-function ResetDefaults()
-    debug.trace("iEquip_EditMode ResetDefaults start")
-    ; Resets all widget data
-    debug.Notification("$iEquip_EM_not_resetting")
-    WC.updateWidgetVisibility(false)
-    UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-    WC.ResetWidgetArrays()
-    ;UpdateElementsAll(false)
-    UpdateElementsAll()
-    
-    if isEditMode
-        iSelectedElement = 0
-        LoadAllElements()
-        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
-        HighlightElement(true)
-    endIf
-    
-    PM.updateAnimationTargetValues()
-    WC.updateWidgetVisibility()
-    debug.Notification("$iEquip_EM_not_doneResetting")
-    debug.trace("iEquip_EditMode ResetDefaults end")
-endFunction
-
 ; #####################
 ; ### MISCELLANEOUS ###
 

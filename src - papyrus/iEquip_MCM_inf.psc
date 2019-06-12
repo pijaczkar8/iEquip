@@ -1,7 +1,7 @@
 Scriptname iEquip_MCM_inf extends iEquip_MCM_Page
 
-import StringUtil
 import iEquip_StringExt
+import StringUtil
 
 iEquip_KeyHandler Property KH Auto
 iEquip_EditMode Property EM Auto
@@ -37,6 +37,7 @@ function drawPage()
 	MCM.AddEmptyOption()
 	
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_inf_lbl_maintenance</font>")
+	MCM.AddTextOptionST("inf_txt_dumpJcontainer", "$iEquip_MCM_inf_lbl_dumpJcontainer", "")
 	MCM.AddTextOptionST("inf_txt_rstLayout", "$iEquip_MCM_inf_lbl_rstLayout", "")
 endFunction
 
@@ -66,16 +67,7 @@ State inf_men_loadpreset
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_loadpreset")
         elseIf currentEvent == "Open"
-			int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)
-			string[] tmpStrArr = jMap.allKeysPArray(jObj)
-			jValue.zeroLifetime(jObj)
-			int i
-			saPresets = Utility.CreateStringArray(tmpStrArr.length + 1, "$iEquip_MCM_inf_lbl_noLoad")
-			while(i < tmpStrArr.length)
-				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], MCM.FileExtMCM))
-				i += 1
-			EndWhile
-			
+			MCM.getPresets(saPresets, "$iEquip_MCM_inf_lbl_noLoad")
 			MCM.fillMenu(0, saPresets, 0)
         elseIf currentEvent == "Accept"
 			if (currentVar as int != 0)
@@ -90,16 +82,7 @@ State inf_men_deletepreset
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_deletepreset")
         elseIf currentEvent == "Open"
-			int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)
-			string[] tmpStrArr = jMap.allKeysPArray(jObj)
-			jValue.zeroLifetime(jObj)
-			int i
-			saPresets = Utility.CreateStringArray(tmpStrArr.length + 1, "$iEquip_MCM_inf_lbl_noDelete")
-			while(i < tmpStrArr.length)
-				saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], MCM.FileExtMCM))
-				i += 1
-			EndWhile
-			
+			MCM.getPresets(saPresets, "$iEquip_MCM_inf_lbl_noDelete")
 			MCM.fillMenu(0, saPresets, 0)
         elseIf currentEvent == "Accept"
 			if (currentVar as int != 0)
@@ -114,13 +97,26 @@ endState
 ; - Maintenance -
 ; ---------------
 
+State inf_txt_dumpJcontainer
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_dumpJcontainer")
+        elseIf currentEvent == "Select"
+			jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")
+        endIf 
+    endEvent
+endState
+
 State inf_txt_rstLayout
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_rstLayout")
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstLayout", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
-                EM.ResetDefaults()
+				int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCMDef)
+				string[] tmpStrArr = jMap.allKeysPArray(jObj)
+				jValue.zeroLifetime(jObj)
+				MCM.loadPreset(saPresets[0], true)
             endIf
         endIf 
     endEvent
