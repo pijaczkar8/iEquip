@@ -116,7 +116,7 @@ State inf_txt_rstLayout
 				int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCMDef)
 				string[] tmpStrArr = jMap.allKeysPArray(jObj)
 				jValue.zeroLifetime(jObj)
-				MCM.loadPreset(saPresets[0], true)
+				MCM.loadPreset(tmpStrArr[0], true)
             endIf
         endIf 
     endEvent
