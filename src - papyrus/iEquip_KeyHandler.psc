@@ -271,8 +271,12 @@ function runUpdate()
                         WC.openQueueManagerMenu()
                     elseif iAction == 2     ; Edit Mode
                         toggleEditMode()
-                    elseif iAction == 3     ; Help Menu
+                    else;if iAction == 3     ; Help Menu
                         HM.showHelpMenuMain()
+                    ;/elseif iAction == 4     ; Refresh Widget
+                        WC.refreshWidget()
+                    elseif iAction == 5     ; Debug option
+                        jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")/;
                     endIf
                 endIf
             endIf         
