@@ -1,5 +1,8 @@
 Scriptname iEquip_MCM extends SKI_ConfigBase
 
+import Utility
+import StringUtil
+
 iEquip_WidgetCore property WC auto
 iEquip_KeyHandler property KH auto
 
@@ -16,9 +19,12 @@ iEquip_MCM_inf property inf auto
 
 bool property bEnabled auto hidden
 bool property bUpdateKeyMaps auto hidden
+bool bNotBusy
 
 string property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
 string property FileExtMCM = ".IEQS" autoReadOnly
+string property FileExtMCMDef = ".IEQD" autoReadOnly
+
 string sCurrentPage
 
 ; ###########################
@@ -250,31 +256,55 @@ function savePreset(string presetName)	; Save data to JContainer file
 	jValue.zeroLifetime(jMCMPreset)
 endFunction
 
-function loadPreset(string presetName)	; Load MCM data
-	int jMCMPreset = jValue.readFromFile(MCMSettingsPath + presetName + FileExtMCM)
-	
-	if (jMap.getInt(jMCMPreset, "Version") == GetVersion())
-		gen.loadData(jMap.getObj(jMCMPreset, "General"))
-		htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"))
-		que.loadData(jMap.getObj(jMCMPreset, "Queue"))
-		pot.loadData(jMap.getObj(jMCMPreset, "Potions"))
-		poi.loadData(jMap.getObj(jMCMPreset, "Poisons&"))
-        tch.loadData(jMap.getObj(jMCMPreset, "Torch"))
-		uii.loadData(jMap.getObj(jMCMPreset, "Ui"))
-		pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
-		edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
-		inf.loadData(jMap.getObj(jMCMPreset, "Info"))
-		bUpdateKeyMaps = true
-		WC.bMCMPresetLoaded = true
+function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
+	if (bNotBusy)
+		int jMCMPreset
+		bNotBusy = false
+		
+		if (bNoExt)
+			jMCMPreset = jValue.readFromFile(MCMSettingsPath + presetName)
+		else
+			jMCMPreset = jValue.readFromFile(MCMSettingsPath + presetName + FileExtMCM)
+		endIf
+		
+		if (jMap.getInt(jMCMPreset, "Version") == GetVersion())
+			gen.loadData(jMap.getObj(jMCMPreset, "General"))
+			htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"))
+			que.loadData(jMap.getObj(jMCMPreset, "Queue"))
+			pot.loadData(jMap.getObj(jMCMPreset, "Potions"))
+			poi.loadData(jMap.getObj(jMCMPreset, "Poisons&"))
+			tch.loadData(jMap.getObj(jMCMPreset, "Torch"))
+			uii.loadData(jMap.getObj(jMCMPreset, "Ui"))
+			pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
+			edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
+			inf.loadData(jMap.getObj(jMCMPreset, "Info"))
+			bUpdateKeyMaps = true
+			WC.bMCMPresetLoaded = true
+		else
+			ShowMessage("$iEquip_common_LoadPresetError")
+		endIf
+		
+		jValue.zeroLifetime(jMCMPreset)
+		bNotBusy = true
 	else
-		ShowMessage("$iEquip_common_LoadPresetError")
+		ShowMessage("$iEquip_common_LoadPresetBusy")
 	endIf
-	
-	jValue.zeroLifetime(jMCMPreset)
 endFunction
 
 function deletePreset(string presetName)
 	JContainers.removeFileAtPath(MCMSettingsPath + presetName + FileExtMCM)
+endFunction
+
+function getPresets(string[] saPresets, string defFill)
+	int jObj = JValue.readFromDirectory(MCMSettingsPath, FileExtMCM)
+	string[] tmpStrArr = jMap.allKeysPArray(jObj)
+	jValue.zeroLifetime(jObj)
+	int i
+	saPresets = CreateStringArray(tmpStrArr.length + 1, defFill)
+	while(i < tmpStrArr.length)
+		saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], FileExtMCM))
+		i += 1
+	endWhile
 endFunction
 
 ; -----------
@@ -303,11 +333,11 @@ endFunction
 ; -------------------
 
 string[] function cutStrArray(string[] stringArray, int cutIndex)
-	if stringArray.length == 0
+	if stringArray.length < 2
 		return stringArray
 	endIf
 
-	string[] newStringArray = Utility.CreateStringArray(stringArray.length - 1)
+	string[] newStringArray = CreateStringArray(stringArray.length - 1)
 	int oldAIndex
 	int newAIndex
 		
