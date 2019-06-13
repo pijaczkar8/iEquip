@@ -19,7 +19,7 @@ iEquip_MCM_inf property inf auto
 
 bool property bEnabled auto hidden
 bool property bUpdateKeyMaps auto hidden
-bool bNotBusy
+bool bNotBusy = true
 
 string property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
 string property FileExtMCM = ".IEQS" autoReadOnly

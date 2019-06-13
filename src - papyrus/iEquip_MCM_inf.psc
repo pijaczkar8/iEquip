@@ -39,6 +39,7 @@ function drawPage()
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_inf_lbl_maintenance</font>")
 	MCM.AddTextOptionST("inf_txt_dumpJcontainer", "$iEquip_MCM_inf_lbl_dumpJcontainer", "")
 	MCM.AddTextOptionST("inf_txt_rstLayout", "$iEquip_MCM_inf_lbl_rstLayout", "")
+	MCM.AddTextOptionST("inf_txt_rstMCM", "$iEquip_MCM_inf_lbl_rstMCM", "")
 endFunction
 
 ; ########################
@@ -113,6 +114,18 @@ State inf_txt_rstLayout
             MCM.SetInfoText("$iEquip_MCM_inf_txt_rstLayout")
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstLayout", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
+				EM.ResetDefaults()
+            endIf
+        endIf 
+    endEvent
+endState
+
+State inf_txt_rstMCM
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_rstMCM")
+        elseIf currentEvent == "Select"
+            if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstMCM", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
 				int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCMDef)
 				string[] tmpStrArr = jMap.allKeysPArray(jObj)
 				jValue.zeroLifetime(jObj)
@@ -121,3 +134,4 @@ State inf_txt_rstLayout
         endIf 
     endEvent
 endState
+
