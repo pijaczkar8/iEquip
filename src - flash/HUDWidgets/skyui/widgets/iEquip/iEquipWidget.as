@@ -1659,10 +1659,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 			}
 	}
 
-	public function updateQueuePositionIndicator(Q: Number, currentQueueLength: Number, currPosition: Number, newPosition: Number, bCycling: Boolean): Void
+	public function updateQueuePositionIndicator(Q: Number, currentQueueLength: Number, currPosition: Number, newPosition: Number, bCycling: Boolean, bPreselectMode: Boolean, currPreselectPosition: Number): Void
 	{
 		var targetIndicator: iEquipPositionIndicator = posIndArray[Q];
-		targetIndicator.update(currentQueueLength, currPosition, newPosition, bCycling);
+		targetIndicator.update(currentQueueLength, currPosition, newPosition, bCycling, bPreselectMode, currPreselectPosition);
 	}
 
 	public function hideQueuePositionIndicator(Q: Number): Void
@@ -1741,7 +1741,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	{
 		if (isText == 1){
 			selectedText = textElementArray[arrayIndex];
-			selectedText.textColor = highlightColor;
+			var format:TextFormat = selectedText.getTextFormat();
+			format.color = highlightColor;
+			selectedText.setTextFormat(format);
+			//selectedText.textColor = highlightColor;
 		}
 		else {
 			colorTrans.rgb = highlightColor;
@@ -1754,7 +1757,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	{
 		if (isText == 1){
 			selectedText = textElementArray[textElement];
-			selectedText.textColor = currentColor;
+			var format:TextFormat = selectedText.getTextFormat();
+			format.color = currentColor;
+			selectedText.setTextFormat(format);
+			//selectedText.textColor = currentColor;
 		} else {
 			colorTrans = new ColorTransform(1,1,1,1,0,0,0,0);
 			var trans:Transform = new Transform(clip);
@@ -1764,21 +1770,27 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	
 	public function setTextColor(textElement: Number, currentColor: Number): Void
 	{
+		var format:TextFormat = new TextFormat();
 		//potionSelector_mc
 		if (textElement == 45){
-			potionSelector_mc.restoreText.textColor = currentColor;
-			potionSelector_mc.fortifyText.textColor = currentColor;
-			potionSelector_mc.regenText.textColor = currentColor;
+			format = potionSelector_mc.restoreText.getTextFormat();
+			format.color = currentColor;
+			potionSelector_mc.restoreText.setTextFormat(format);
+			potionSelector_mc.fortifyText.setTextFormat(format);
+			potionSelector_mc.regenText.setTextFormat(format);
 		} else {
 			selectedText = textElementArray[textElement];
-			selectedText.textColor = currentColor;
+			format = selectedText.getTextFormat();
+			format.color = currentColor;
+			selectedText.setTextFormat(format);
 		}
 	}
 
 	public function setTextAlignment(textElement: Number, a_align: Number): Void
 	{
 		//skyui.util.Debug.log("iEquipEditMode setTextAlignment - textElement: " + textElement)
-		var format:TextFormat = new TextFormat();
+		selectedText = textElementArray[textElement];
+		var format:TextFormat = selectedText.getTextFormat();
 		if (a_align == 0){
 			format.align = "left";
 		}
@@ -1788,7 +1800,6 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		else {
 			format.align = "right";
 		}
-		selectedText = textElementArray[textElement];
 		selectedText.setTextFormat(format);
 	}
 }

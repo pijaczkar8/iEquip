@@ -1031,8 +1031,11 @@ function resetWidgetsToPreviousState()
     	i += 1
     endWhile
 																		; Reset Preselect Mode
-	if bPreselectMode && EM.preselectEnabledOnEnter
-        PM.togglePreselectMode(true)
+	PM.togglePreselectMode(true)
+
+	if EM.preselectEnabledOnEnter
+		Utility.WaitMenuMode(0.8)
+        PM.togglePreselectMode()
 		EM.preselectEnabledOnEnter = false
 	endIf
 																		; Reset enchantment meters and soulgems
@@ -2325,7 +2328,11 @@ function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
 		UICallback.PushInt(iHandle, count)
 		UICallback.PushInt(iHandle, currPos)
 		UICallback.PushInt(iHandle, newPos)
-		UICallback.PushBool(iHandle, (abCyclingQueue[Q] || bPreselectMode))
+		UICallback.PushBool(iHandle, abCyclingQueue[Q])
+		UICallback.PushBool(iHandle, bPreselectMode)
+		if bPreselectMode
+			UICallback.PushInt(iHandle, WC.aiCurrentlyPreselected[Q])
+		endIf
 		UICallback.Send(iHandle)
 	endIf
 	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator end")

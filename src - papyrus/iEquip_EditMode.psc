@@ -27,7 +27,7 @@ float[] afWidget_CurA
 int[] aiWidget_CurD
 int[] aiWidget_CurTC
 string[] asWidget_CurTA
-bool[] abWidget_CurV
+;bool[] abWidget_CurV
 
 ; - Bools -
 
@@ -199,7 +199,7 @@ function EnableEditmode()
         aiWidget_CurD[iIndex] = WC.aiWidget_D[iIndex]
         asWidget_CurTA[iIndex] = WC.asWidget_TA[iIndex]
         aiWidget_CurTC[iIndex] = WC.aiWidget_TC[iIndex]
-        abWidget_CurV[iIndex] = WC.abWidget_V[iIndex]
+        ;abWidget_CurV[iIndex] = WC.abWidget_V[iIndex]
         
         iIndex += 1
     EndWhile
@@ -221,10 +221,13 @@ function EnableEditmode()
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeHighlightColor", iHighlightColor)
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setEditModeCurrentValueColor", iCurrentColorValue)
   
-    if !WC.bPreselectMode
+    if WC.bPreselectMode                    ; If we're currently in Preselect Mode exit now and re-enable with every element showing, just in case some slots were disabled
         preselectEnabledOnEnter = true
-        PM.togglePreselectMode(true)
+        PM.togglePreselectMode()
+        Utility.WaitMenuMode(0.8)
     endIf
+
+    PM.togglePreselectMode(true)
 
     UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", WC.afWidget_A[45])
 
@@ -635,7 +638,8 @@ endFunction
 
 ; - Update Data -
 
-function UpdateElementData(int iIndex, bool bVisible, bool bUpdateAlpha = true)
+;function UpdateElementData(int iIndex, bool bVisible, bool bUpdateAlpha = true)
+function UpdateElementData(int iIndex, bool bUpdateAlpha = true)
     UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._x", WC.afWidget_X[iIndex])
     UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._y", WC.afWidget_Y[iIndex])
     UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._xscale", WC.afWidget_S[iIndex])
@@ -646,7 +650,7 @@ function UpdateElementData(int iIndex, bool bVisible, bool bUpdateAlpha = true)
         UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._alpha", WC.afWidget_A[iIndex])
     endIf
     
-    UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._visible", bVisible)
+    ;UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._visible", bVisible)
 endFunction
 
 function UpdateElementText(int[] iArgs, int iNewColor) 
@@ -724,7 +728,8 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
             iArgs[0] = iIndex
             UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
         endIf
-        UpdateElementData(iIndex, WC.abWidget_V[iIndex], bUpdateAlpha)
+        ;UpdateElementData(iIndex, WC.abWidget_V[iIndex], bUpdateAlpha)
+        UpdateElementData(iIndex, bUpdateAlpha)
         iIndex += 1
     endWhile
     
@@ -978,7 +983,7 @@ function SavePreset()
         jMap.setObj(jSavePreset, "_D", jArray.objectWithInts(WC.aiWidget_D))
         jMap.setObj(jSavePreset, "_TC", jArray.objectWithInts(WC.aiWidget_TC))
         jMap.setObj(jSavePreset, "_TA", jArray.objectWithStrings(WC.asWidget_TA))
-        jMap.setObj(jSavePreset, "_V", jArray.objectWithBooleans(WC.abWidget_V))
+        ;jMap.setObj(jSavePreset, "_V", jArray.objectWithBooleans(WC.abWidget_V))
 		jMap.setInt(jSavePreset, "potionSelectorAlignment", bPotionSelectorOnLeft as int)
 		jMap.setInt(jSavePreset, "chargeDisplayType", CM.iChargeDisplayType)
 		jMap.setInt(jSavePreset, "backgroundStyle", WC.iBackgroundStyle)
@@ -1001,16 +1006,16 @@ function LoadPreset(int jPreset)
     JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_D"), WC.aiWidget_D, 0, -1, 0, 0)
     JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_TC"), WC.aiWidget_TC, 0, -1, 0, 0)
     JArray.writeToStringPArray(JMap.getObj(jPreset, "_TA"), WC.asWidget_TA, 0, -1, 0, 0)
-    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_V"), abWidget_V_temp, 0, -1, 0, 0)
+    ;JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_V"), abWidget_V_temp, 0, -1, 0, 0)
 	bPotionSelectorOnLeft = jMap.getInt(jPreset, "potionSelectorAlignment") as bool
 	CM.iChargeDisplayType = jMap.getInt(jPreset, "chargeDisplayType")
 	WC.iBackgroundStyle = jMap.getInt(jPreset, "backgroundStyle")
     
-    int iIndex = WC.asWidgetDescriptions.Length
+    int iIndex ;/= WC.asWidgetDescriptions.Length
     while iIndex > 0
         iIndex -= 1
         WC.abWidget_V[iIndex] = abWidget_V_temp[iIndex] as bool
-    endwhile
+    endwhile/;
     
     WC.updateWidgetVisibility(false)
     Wait(0.2)
@@ -1018,7 +1023,8 @@ function LoadPreset(int jPreset)
     UpdateElementsAll()
 	
 	CM.updateChargeMeters(true) ;forceUpdate will make sure updateMeterPercent runs in full
-	if CM.iChargeDisplayType > 0
+	
+    if CM.iChargeDisplayType > 0
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD Alt Charge Meter
@@ -1027,7 +1033,9 @@ function LoadPreset(int jPreset)
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
 	endIf
-	if WC.iBackgroundStyle > 0
+
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+	;/if WC.iBackgroundStyle > 0
 		while iIndex < 5
 			if WC.abQueueWasEmpty[iIndex]
 				int[] args = new int[2]
@@ -1037,7 +1045,7 @@ function LoadPreset(int jPreset)
 			endIf
 			iIndex += 1
 		endWhile
-	endIf
+	endIf/;
     Wait(0.1)
     WC.updateWidgetVisibility()
 endFunction
@@ -1064,7 +1072,7 @@ function DiscardChanges()
             WC.aiWidget_D[iIndex] = aiWidget_CurD[iIndex]
             WC.aiWidget_TC[iIndex] = aiWidget_CurTC[iIndex]
             WC.asWidget_TA[iIndex] = asWidget_CurTA[iIndex]
-            WC.abWidget_V[iIndex] = abWidget_CurV[iIndex]
+            ;WC.abWidget_V[iIndex] = abWidget_CurV[iIndex]
             iIndex += 1
         EndWhile
         
@@ -1089,7 +1097,8 @@ function ResetElementIndex(int[] iArgs, int iIndex)
         UpdateElementText(iArgs, 0xFFFFFF)
     endIf
 
-    UpdateElementData(iIndex, true, false)
+    ;UpdateElementData(iIndex, true, false)
+    UpdateElementData(iIndex, false)
     SetElementDepthOrder(iIndex, false)
 endFunction
 
