@@ -62,7 +62,8 @@ string previousLeftHandName
 
 ; MCM Properties
 bool property bQuickLightPreferMagic auto hidden
-bool property bQuickLightConsumePotion = true auto hidden
+bool property bQuickLightUseMagicIfNoTorch auto hidden
+bool property bQuickLightConsumePotion auto hidden
 bool property bShowTorchMeter = true auto hidden
 int property iTorchMeterFillColor = 0xFFF8AC auto hidden
 int property iTorchMeterFillColorDark = 0x686543 auto hidden
@@ -392,7 +393,7 @@ function quickLight()
 			previousItemForm = currentItemForm
 			bJustCalledQuickLight = true
 
-			if playerKnowsSpell && (bQuickLightPreferMagic || !playerHasATorch) && (PlayerRef.GetActorValue("Magicka") > Candlelight.GetEffectiveMagickaCost(PlayerRef) || (PO.getRestoreCount(1) > 0 && bQuickLightConsumePotion))
+			if playerKnowsSpell && (bQuickLightPreferMagic || (!playerHasATorch && bQuickLightUseMagicIfNoTorch)) && (PlayerRef.GetActorValue("Magicka") > Candlelight.GetEffectiveMagickaCost(PlayerRef) || (PO.getRestoreCount(1) > 0 && bQuickLightConsumePotion))
 				if PlayerRef.GetActorValue("Magicka") < Candlelight.GetEffectiveMagickaCost(PlayerRef)
 					PO.selectAndConsumePotion(1, 0)
 				endIf

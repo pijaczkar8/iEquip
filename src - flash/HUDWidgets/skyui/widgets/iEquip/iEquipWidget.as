@@ -1768,7 +1768,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		}
 	}
 	
-	public function setTextColor(textElement: Number, currentColor: Number): Void
+	public function setTextColor(textElement: Number, currentColor: Number, a_align: Number): Void
 	{
 		var format:TextFormat = new TextFormat();
 		//potionSelector_mc
@@ -1800,6 +1800,24 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		else {
 			format.align = "right";
 		}
+		selectedText.setTextFormat(format);
+	}
+
+	public function setTextColorAndAlignment(textElement: Number, a_align: Number, currentColor: Number): Void
+	{
+		selectedText = textElementArray[textElement];
+		var format:TextFormat = selectedText.getTextFormat();
+
+		if (a_align == 0){
+			format.align = "left";
+		}
+		else if (a_align == 1){
+			format.align = "center";
+		}
+		else {
+			format.align = "right";
+		}
+		format.color = currentColor;
 		selectedText.setTextFormat(format);
 	}
 }

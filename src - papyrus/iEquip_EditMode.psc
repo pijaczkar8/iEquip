@@ -654,7 +654,10 @@ function UpdateElementData(int iIndex, bool bUpdateAlpha = true)
 endFunction
 
 function UpdateElementText(int[] iArgs, int iNewColor) 
-    if !iArgs[0] == 45 ;potionSelector_mc
+    if !iArgs[0] == 45                  ; potionSelector_mc - Only setting text colour here as alignment handled by .setPotionSelectorAlignment
+        iArgs[1] = iNewColor
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".SetTextColor", iArgs)
+    else                                ; For every other text element update colour and alignment together
         if WC.asWidget_TA[iArgs[0]] == "Left"
             iArgs[1] = 0
         elseIf WC.asWidget_TA[iArgs[0]] == "Center"
@@ -663,10 +666,9 @@ function UpdateElementText(int[] iArgs, int iNewColor)
             iArgs[1] = 2
         endIf
         
-        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextAlignment", iArgs)
+        iArgs[2] = iNewColor
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".SetTextColorAndAlignment", iArgs)
     endIf
-    iArgs[1] = iNewColor
-    UI.InvokeIntA(HUD_MENU, WidgetRoot + ".SetTextColor", iArgs)
 endFunction
 
 function UpdateEditModeGuide()
@@ -720,7 +722,7 @@ function UpdateEditModeGuide()
 endFunction
 
 function UpdateElementsAll(bool bUpdateAlpha = true)
-    int[] iArgs = new int[2]
+    int[] iArgs = new int[3]
     int iIndex
     
     while iIndex < WC.asWidgetDescriptions.Length  
@@ -1034,6 +1036,7 @@ function LoadPreset(int jPreset)
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
 	endIf
 
+    UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 	;/if WC.iBackgroundStyle > 0
 		while iIndex < 5
@@ -1117,7 +1120,7 @@ function ResetElement()
         
         ; Confirm choice
         if WC.showTranslatedMessage(theMessage, theString) == 1
-            int[] iArgs = new int[2]
+            int[] iArgs = new int[3]
             HighlightElement(false)
             TweenElement(5, 0, 0.15)
             Wait(0.15)
@@ -1140,29 +1143,6 @@ function ResetElement()
             HighlightElement(true)
         endIf
     EndIf
-endFunction
-
-function ResetDefaults()
-    debug.trace("iEquip_EditMode ResetDefaults start")
-    ; Resets all widget data
-    debug.Notification("$iEquip_EM_not_resetting")
-    WC.updateWidgetVisibility(false)
-    UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-    WC.ResetWidgetArrays()
-    ;UpdateElementsAll(false)
-    UpdateElementsAll()
-
-    if isEditMode
-        iSelectedElement = 0
-        LoadAllElements()
-        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
-        HighlightElement(true)
-    endIf
-
-    PM.updateAnimationTargetValues()
-    WC.updateWidgetVisibility()
-    debug.Notification("$iEquip_EM_not_doneResetting")
-    debug.trace("iEquip_EditMode ResetDefaults end")
 endFunction
 
 ; #####################

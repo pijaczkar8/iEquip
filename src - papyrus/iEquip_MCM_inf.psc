@@ -134,4 +134,3 @@ State inf_txt_rstMCM
         endIf 
     endEvent
 endState
-

@@ -46,6 +46,7 @@ int function saveData()             ; Save page data and return jObject
 
     jArray.addInt(jPageObj, KH.iQuickLightKey)
     jArray.addInt(jPageObj, TO.bQuickLightPreferMagic as int)
+    jArray.addInt(jPageObj, TO.bQuickLightUseMagicIfNoTorch as int)
     jArray.addInt(jPageObj, TO.bQuickLightEquipRH as int)
     jArray.addInt(jPageObj, TO.bQuickLightConsumePotion as int)
     jArray.addFlt(jPageObj, TO.fTorchDuration)
@@ -67,20 +68,21 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 
 	KH.iQuickLightKey = jArray.getInt(jPageObj, 0)
     TO.bQuickLightPreferMagic = jArray.getInt(jPageObj, 1)
-    TO.bQuickLightEquipRH = jArray.getInt(jPageObj, 2)
-    TO.bQuickLightConsumePotion = jArray.getInt(jPageObj, 3)
-    TO.fTorchDuration = jArray.getInt(jPageObj, 4)
-    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 5)
-    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 6)
-    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 7)
-    TO.bRealisticReEquip = jArray.getInt(jPageObj, 8)
-    TO.fRealisticReEquipDelay = jArray.getFlt(jPageObj, 9)
-    TO.bDropLitTorchesEnabled = jArray.getInt(jPageObj, 10)
-    TO.iDropLitTorchBehavior = jArray.getInt(jPageObj, 11)
-    TO.bShowTorchMeter = jArray.getInt(jPageObj, 12)
-    TO.iTorchMeterFillColor = jArray.getInt(jPageObj, 13)
+    TO.bQuickLightUseMagicIfNoTorch = jArray.getInt(jPageObj, 2)
+    TO.bQuickLightEquipRH = jArray.getInt(jPageObj, 3)
+    TO.bQuickLightConsumePotion = jArray.getInt(jPageObj, 4)
+    TO.fTorchDuration = jArray.getInt(jPageObj, 5)
+    TO.bFiniteTorchLife = jArray.getInt(jPageObj, 6)
+    TO.bReduceLightAsTorchRunsOut = jArray.getInt(jPageObj, 7)
+    TO.bAutoReEquipTorch = jArray.getInt(jPageObj, 8)
+    TO.bRealisticReEquip = jArray.getInt(jPageObj, 9)
+    TO.fRealisticReEquipDelay = jArray.getFlt(jPageObj, 10)
+    TO.bDropLitTorchesEnabled = jArray.getInt(jPageObj, 11)
+    TO.iDropLitTorchBehavior = jArray.getInt(jPageObj, 12)
+    TO.bShowTorchMeter = jArray.getInt(jPageObj, 13)
+    TO.iTorchMeterFillColor = jArray.getInt(jPageObj, 14)
     TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
-    iTorchMeterFillDirection = jArray.getInt(jPageObj, 14)
+    iTorchMeterFillDirection = jArray.getInt(jPageObj, 15)
     TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
     TO.bTorchDurationSettingChanged = true
 endFunction
@@ -91,6 +93,7 @@ function drawPage()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_quickLightOptions</font>")
         MCM.AddKeyMapOptionST("tch_key_quickLight", "$iEquip_MCM_tch_lbl_quickLight", KH.iQuickLightKey, mcmUnmapFLAG)
         MCM.AddToggleOptionST("tch_tgl_quickLightPreferMagic", "$iEquip_MCM_tch_lbl_quickLightPreferMagic", TO.bQuickLightPreferMagic)
+        MCM.AddToggleOptionST("tch_tgl_quickLightUseMagicIfNoTorch", "$iEquip_MCM_tch_lbl_quickLightUseMagicIfNoTorch", TO.bQuickLightUseMagicIfNoTorch)
         MCM.AddToggleOptionST("tch_tgl_quickLightEquipRH", "$iEquip_MCM_tch_lbl_quickLightEquipRH", TO.bQuickLightEquipRH)
         MCM.AddToggleOptionST("tch_tgl_quickLightConsumePotion", "$iEquip_MCM_tch_lbl_quickLightConsumePotion", TO.bQuickLightConsumePotion)
 
@@ -160,9 +163,20 @@ State tch_tgl_quickLightPreferMagic
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightPreferMagic")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bQuickLightPreferMagic)
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && TO.bQuickLightPreferMagic)
             TO.bQuickLightPreferMagic = !TO.bQuickLightPreferMagic
             MCM.SetToggleOptionValueST(TO.bQuickLightPreferMagic)
+        endIf
+    endEvent
+endState
+
+State tch_tgl_quickLightUseMagicIfNoTorch
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightUseMagicIfNoTorch")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && TO.bQuickLightUseMagicIfNoTorch)
+            TO.bQuickLightUseMagicIfNoTorch = !TO.bQuickLightUseMagicIfNoTorch
+            MCM.SetToggleOptionValueST(TO.bQuickLightUseMagicIfNoTorch)
         endIf
     endEvent
 endState
