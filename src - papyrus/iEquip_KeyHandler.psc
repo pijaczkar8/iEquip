@@ -499,7 +499,9 @@ state EDITMODE
             endIf
             
         elseIf iMultiTap == 1   ; Single tap
-            if iWaitingKeyCode == iEditUpKey
+			if iWaitingKeyCode == iUtilityKey
+				ToggleEditMode()
+            elseIf iWaitingKeyCode == iEditUpKey
                 EM.MoveElement(0)
             elseIf iWaitingKeyCode == iEditDownKey
                 EM.MoveElement(1)
@@ -533,8 +535,6 @@ state EDITMODE
                 EM.ToggleRulers()
             elseIf iWaitingKeyCode == iEditDiscardKey
                 EM.DiscardChanges()
-            elseIf iWaitingKeyCode == iUtilityKey
-                ToggleEditMode()
             endIf
             
         elseIf iMultiTap == 2  ; Double tap
