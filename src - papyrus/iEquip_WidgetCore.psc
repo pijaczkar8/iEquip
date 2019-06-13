@@ -128,14 +128,13 @@ bool bIsAALoaded
 Keyword property WeapTypePike auto hidden
 Keyword property WeapTypeHalberd auto hidden
 Keyword property WeapTypeQtrStaff auto hidden
-; Keyword property WeapTypeClaw auto hidden
 
 ; Arrays used by queue functions
-int[] property aiCurrentQueuePosition auto hidden 	;Array containing the current index for each queue
-string[] property asCurrentlyEquipped auto hidden 	;Array containing the itemName for whatever is currently equipped in each queue
-int[] property aiCurrentlyPreselected auto hidden 	;Array containing current preselect queue positions
+int[] property aiCurrentQueuePosition auto hidden 	; Array containing the current index for each queue
+string[] property asCurrentlyEquipped auto hidden 	; Array containing the itemName for whatever is currently equipped in each queue
+int[] property aiCurrentlyPreselected auto hidden 	; Array containing current preselect queue positions
 
-;Widget Properties
+; Widget Properties
 string[] property asWidgetDescriptions auto hidden
 string[] property asWidgetElements auto hidden
 string[] property asWidget_TA auto hidden
@@ -176,15 +175,15 @@ bool property bShowQueueConfirmationMessages = true auto hidden
 bool property bRefreshingWidget auto hidden
 bool property bMCMPresetLoaded auto hidden
 
-;Ammo Mode properties and variables
+; Ammo Mode properties and variables
 bool property bAmmoMode auto hidden
 bool bJustLeftAmmoMode
 bool bAmmoModeFirstLook = true
 
-;auto Unequip Ammo
+; Auto Unequip Ammo
 bool property bUnequipAmmo = true auto hidden
 
-;Geared Up properties and variables
+; Geared Up properties and variables
 bool property bEnableGearedUp auto hidden
 Form boots
 float property fEquipOnPauseDelay = 1.6 auto hidden
@@ -344,10 +343,6 @@ bool property b2HSpellEquipped auto hidden
 bool property bJustDroppedTorch auto hidden
 int property iLastRH1HItemIndex = -1 auto hidden
 
-bool bWaitingForFlash
-bool bGotID
-int iReceivedID
-
 bool property bEquipOnPause = true auto hidden
 
 string function GetWidgetType()
@@ -391,8 +386,6 @@ Event OnWidgetInit()
 				aiCurrentlyPreselected[i] = -1
 				abQueueWasEmpty[i] = true
 				abPotionGroupEmpty[i] = true
-			;else
-				;abIsCounterShown[i] = true
 			endIf
 		endIf
 		i += 1
@@ -760,7 +753,6 @@ state ENABLED
 		
 		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
 		CheckDependencies()
-		;AM.updateAmmoLists()
 		addFists()
 
 		OnWidgetLoad()
@@ -825,7 +817,7 @@ state ENABLED
 			endIf
 			args[3] = bAmmoMode
 			initQueuePositionIndicators()
-            updatePotionSelector(true) ;Hide the potion selector
+            updatePotionSelector(true) ; Hide the potion selector
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 			UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
@@ -835,12 +827,12 @@ state ENABLED
 		bRefreshingWidget = false
 		
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
-		updateWidgetVisibility() ;Show the widget
+		updateWidgetVisibility() ; Show the widget
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
 		if CM.iChargeDisplayType > 0
 			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
 			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ;SkyHUD alt charge meter
+			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ; SkyHUD alt charge meter
 		endIf
 		
 		Utility.WaitMenuMode(0.5)
@@ -880,7 +872,7 @@ Auto state DISABLED
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 100)
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 100)
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 100)
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100) ;SkyHUD alt charge meter
+		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100) ; SkyHUD alt charge meter
 		
 		if EM.isEditMode
 			updateWidgetVisibility(false)
@@ -895,8 +887,6 @@ Auto state DISABLED
 
 	; Disabled Events
 	event OnWidgetLoad()
-		debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
-		debug.trace("iEquip_WidgetCore OnWidgetLoad end")
 	endEvent
 	
 	event OnWidgetReset()
@@ -911,7 +901,7 @@ function refreshWidgetOnLoad()
 	form fItem
 	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
-	updatePotionSelector(true) ;Hide the potion selectors
+	updatePotionSelector(true) ; Hide the potion selectors
 	if bDropShadowEnabled
 		updateTextFieldDropShadow()
 	else
@@ -958,7 +948,7 @@ function refreshWidgetOnLoad()
 						if count < 1
 							handleEmptyPoisonQueue()
 						else
-							setSlotCount(4, PlayerRef.GetItemCount(fItem)) ;line 589
+							setSlotCount(4, PlayerRef.GetItemCount(fItem))
 							if bPoisonIconFaded
 								checkAndFadePoisonIcon(false)
 							endIf
@@ -969,7 +959,7 @@ function refreshWidgetOnLoad()
 				endIf
 			endIf
 		else
-			updateWidget(Q, aiCurrentlyPreselected[Q - 5]) ;line 600
+			updateWidget(Q, aiCurrentlyPreselected[Q - 5])
 		endIf
 		Q += 1
 	endwhile
@@ -991,7 +981,7 @@ endFunction
 
 ; FEEDBACK - Look into reusing reload widget on load instead of this (FUTURE SUGGESTION)
 ; ToDo - This function is still to finish/review
-function refreshWidget()
+;/function refreshWidget()
 	debug.trace("iEquip_WidgetCore refreshWidget start")
 	bRefreshingWidget = true
 	KH.bAllowKeyPress = false
@@ -1030,16 +1020,7 @@ function refreshWidget()
 					i = 1
 				endIf
 			endIf
-			;/int itemHandle = 0xFFFF
-			if i < 2 && TI.aiTemperedItemTypes.Find(itemType) > -1
-				if itemType == 26
-					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)
-				elseIf (itemType > 4 && itemType < 8) || itemType == 9
-					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)
-				else
-					itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(i)
-				endIf
-			endIf/;
+	
 			int itemHandle = getHandle(i, itemType)
 			int foundAt = findInQueue(i, "", equippedForm, itemHandle)
 			; If we've found the item in the queue then set the queue position and name
@@ -1178,35 +1159,35 @@ function refreshWidget()
 	bRefreshingWidget = false
 	debug.Notification("$iEquip_WC_not_doneRefreshing")
 	debug.trace("iEquip_WidgetCore refreshWidget end")
-endFunction
+endFunction/;
 
-;Called from EditMode when toggling back out
+; Called from EditMode when toggling back out
 function resetWidgetsToPreviousState()
 	debug.trace("iEquip_WidgetCore resetWidgetsToPreviousState start")
+    																	; Reset visiblity on all elements
 	int i = asWidgetDescriptions.Length
-    ;Reset visiblity on all elements
-	While i > 0
+	while i > 0
         i -= 1
 		UI.SetBool(HUD_MENU, WidgetRoot + asWidgetElements[i] + "._visible", abWidget_V[i])
-	EndWhile
+	endWhile
 
 	i = 0
+																		; Reset all names and reregister for fades if required
 	while i < 8
-		;Reset all names and reregister for fades if required
 		showName(i, true, false, 0.0)
 		if i < 5
-			;Reset the counters
+																		; Reset the counters
             if !EM.abWasCounterShown[i]
 				setCounterVisibility(i, false)
 			else
 				setSlotCount(i, EM.aiPreviousCount[i])
 			endIf
             if i < 2
-                ; Check and fade in left icon if currently faded
+                														; Check and fade in left icon if currently faded
                 if i == 0 && bLeftIconFaded
                     checkAndFadeLeftIcon(0,0)
                 endIf
-                ;Reset poison elements
+                														; Reset poison elements
 				if !abPoisonInfoDisplayed[i]
 					hidePoisonInfo(i, true)
 				else
@@ -1215,34 +1196,31 @@ function resetWidgetsToPreviousState()
 						TI.checkAndUpdateTemperLevelInfo(i)
 					endIf
 				endIf
-				;Reset attribute icons
+																		; Reset attribute icons
 				hideAttributeIcons(i)
-				;/if bPreselectMode && EM.preselectEnabledOnEnter
-					updateAttributeIcons(i, 0)
-				endIf/;
-            ; Handle empty shout,consumable and poison queues to ensure all temporary elements are removed
+            															; Handle empty shout,consumable and poison queues to ensure all temporary elements are removed
             elseIf jArray.count(aiTargetQ[i]) < 1
                 if i < 4
                     setSlotToEmpty(i)
                 else
                 	handleEmptyPoisonQueue()
                 endIf
-            ; Check if there are any potion groups shown...
+            															; Check if there are any potion groups shown...
             elseIf i == 3 && jArray.count(aiTargetQ[i]) >= EM.iEnabledPotionGroupCount && asPotionGroups.Find(asCurrentlyEquipped[3]) > -1 && PO.getPotionGroupCount(asPotionGroups.Find(asCurrentlyEquipped[3])) == 0
-                ;...and handle fade if required
+                														; ...and handle fade if required
                 checkAndFadeConsumableIcon(true)
             endIf
         endIf
     	i += 1
     endWhile
-	;Reset Preselect Mode
+																		; Reset Preselect Mode
 	if bPreselectMode && EM.preselectEnabledOnEnter
         PM.togglePreselectMode(true)
 		EM.preselectEnabledOnEnter = false
 	endIf
-	;Reset enchantment meters and soulgems
+																		; Reset enchantment meters and soulgems
 	CM.updateChargeMeters(true)
-	;Update the torch meter if needed
+																		; Update the torch meter if needed
 	if PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
 		TO.updateTorchMeterOnSettingsChanged()
 	endIf
