@@ -57,10 +57,10 @@ bool property bPreselectSwapItemsOnEquip auto hidden
 bool property bTogglePreselectOnEquipAll auto hidden
 bool property bQuickShield2HSwitchAllowed = true auto hidden
 bool property bQuickShieldUnequipLeftIfNotFound auto hidden
-int property iPreselectQuickShield = 1 auto hidden
+int property iPreselectQuickShield = 2 auto hidden
 bool property bQuickShieldPreferMagic auto hidden
 string property sQuickShieldPreferredMagicSchool = "Destruction" auto hidden
-int property iPreselectQuickRanged = 1 auto hidden
+int property iPreselectQuickRanged = 2 auto hidden
 int property iQuickRangedPreferredWeaponType auto hidden
 int property iQuickRangedSwitchOutAction = 1 auto hidden
 string property sQuickRangedPreferredMagicSchool = "Destruction" auto hidden

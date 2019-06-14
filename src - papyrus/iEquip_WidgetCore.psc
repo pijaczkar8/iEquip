@@ -2336,7 +2336,7 @@ function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
 		UICallback.PushBool(iHandle, abCyclingQueue[Q])
 		UICallback.PushBool(iHandle, bPreselectMode)
 		if bPreselectMode
-			UICallback.PushInt(iHandle, WC.aiCurrentlyPreselected[Q])
+			UICallback.PushInt(iHandle, aiCurrentlyPreselected[Q])
 		endIf
 		UICallback.Send(iHandle)
 	endIf

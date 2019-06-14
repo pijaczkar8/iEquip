@@ -88,6 +88,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
+<<<<<<< HEAD
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_quickLightOptions</font>")
 	MCM.AddKeyMapOptionST("tch_key_quickLight", "$iEquip_MCM_tch_lbl_quickLight", KH.iQuickLightKey, mcmUnmapFLAG)
 	MCM.AddToggleOptionST("tch_tgl_quickLightPreferMagic", "$iEquip_MCM_tch_lbl_quickLightPreferMagic", TO.bQuickLightPreferMagic)
@@ -103,6 +104,27 @@ function drawPage()
 	if TO.bFiniteTorchLife
 		MCM.AddToggleOptionST("tch_tgl_torchesFade", "$iEquip_MCM_tch_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
 	endIf
+=======
+	if WC.isEnabled
+
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_quickLightOptions</font>")
+        MCM.AddKeyMapOptionST("tch_key_quickLight", "$iEquip_MCM_tch_lbl_quickLight", KH.iQuickLightKey, mcmUnmapFLAG)
+        MCM.AddToggleOptionST("tch_tgl_quickLightPreferMagic", "$iEquip_MCM_tch_lbl_quickLightPreferMagic", TO.bQuickLightPreferMagic)
+        if !TO.bQuickLightPreferMagic
+            MCM.AddToggleOptionST("tch_tgl_quickLightUseMagicIfNoTorch", "$iEquip_MCM_tch_lbl_quickLightUseMagicIfNoTorch", TO.bQuickLightUseMagicIfNoTorch)
+        endIf
+        MCM.AddToggleOptionST("tch_tgl_quickLightEquipRH", "$iEquip_MCM_tch_lbl_quickLightEquipRH", TO.bQuickLightEquipRH)
+        MCM.AddToggleOptionST("tch_tgl_quickLightConsumePotion", "$iEquip_MCM_tch_lbl_quickLightConsumePotion", TO.bQuickLightConsumePotion)
+
+		MCM.AddEmptyOption()
+
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchLifeOptions</font>")
+		MCM.AddSliderOptionST("tch_sld_torchDuration", "$iEquip_MCM_tch_lbl_torchDuration", (TO.fTorchDuration + 5.0) / 60, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
+		MCM.AddToggleOptionST("tch_tgl_finiteTorchLife", "$iEquip_MCM_tch_lbl_finiteTorchLife", TO.bFiniteTorchLife)
+		if TO.bFiniteTorchLife
+			MCM.AddToggleOptionST("tch_tgl_torchesFade", "$iEquip_MCM_tch_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
+		endIf
+>>>>>>> b47e62c6e0b8aafb32c3c4f94a7796a553f2bf78
 
 	MCM.AddToggleOptionST("tch_tgl_reequipTorch", "$iEquip_MCM_tch_lbl_reequipTorch", TO.bAutoReEquipTorch)
 	if TO.bAutoReEquipTorch
@@ -162,7 +184,7 @@ State tch_tgl_quickLightPreferMagic
             MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightPreferMagic")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && TO.bQuickLightPreferMagic)
             TO.bQuickLightPreferMagic = !TO.bQuickLightPreferMagic
-            MCM.SetToggleOptionValueST(TO.bQuickLightPreferMagic)
+            MCM.forcePageReset()
         endIf
     endEvent
 endState

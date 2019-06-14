@@ -764,7 +764,9 @@ endState
 
 State pro_men_prefWepTyp
     event OnBeginState()
-        if currentEvent == "Open"
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_QRprefWepTyp")
+        elseIf currentEvent == "Open"
             MCM.fillMenu(PM.iQuickRangedPreferredWeaponType, QRPreferredWeaponType, 0)
         elseIf currentEvent == "Accept"
             PM.iQuickRangedPreferredWeaponType = currentVar as int
@@ -775,7 +777,9 @@ endState
 
 State pro_men_swtchOut
     event OnBeginState()
-        if currentEvent == "Open"
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_QRswtchOut")
+        elseIf currentEvent == "Open"
             MCM.fillMenu(PM.iQuickRangedSwitchOutAction, QRSwitchOutOptions, 1)
         elseIf currentEvent == "Accept"
             PM.iQuickRangedSwitchOutAction = currentVar as int
@@ -786,7 +790,9 @@ endState
 
 State pro_men_prefMagSchl
     event OnBeginState()
-        if currentEvent == "Open"
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_QRprefMagSchl")
+        elseIf currentEvent == "Open"
             MCM.fillMenu(iCurrentQRPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
         elseIf currentEvent == "Accept"
             iCurrentQRPreferredMagicSchoolChoice = currentVar as int
@@ -799,7 +805,9 @@ endState
 
 State pro_men_inPreselectQuickrangedMode
     event OnBeginState()
-        if currentEvent == "Open"
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_QRInPreselectMode")
+        elseIf currentEvent == "Open"
             MCM.fillMenu(PM.iPreselectQuickRanged, preselectQuickFunctionOptions, 1)
         elseIf currentEvent == "Accept"
             PM.iPreselectQuickRanged = currentVar as int

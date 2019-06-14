@@ -124,7 +124,7 @@ function OnInit()
     aiWidget_CurD = new Int[50]
     asWidget_CurTA = new string[50]
     aiWidget_CurTC = new int[50]
-    abWidget_CurV = new bool[50]
+    ;abWidget_CurV = new bool[50]
     
     iCustomColors = new int[14]
     int iIndex = iCustomColors.length
@@ -1035,7 +1035,7 @@ function LoadPreset(int jPreset)
 	endIf
 
     UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
-    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", WC.iBackgroundStyle)
 	;/if WC.iBackgroundStyle > 0
 		while iIndex < 5
 			if WC.abQueueWasEmpty[iIndex]
