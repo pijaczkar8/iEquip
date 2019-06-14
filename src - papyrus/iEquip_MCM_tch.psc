@@ -93,7 +93,9 @@ function drawPage()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_quickLightOptions</font>")
         MCM.AddKeyMapOptionST("tch_key_quickLight", "$iEquip_MCM_tch_lbl_quickLight", KH.iQuickLightKey, mcmUnmapFLAG)
         MCM.AddToggleOptionST("tch_tgl_quickLightPreferMagic", "$iEquip_MCM_tch_lbl_quickLightPreferMagic", TO.bQuickLightPreferMagic)
-        MCM.AddToggleOptionST("tch_tgl_quickLightUseMagicIfNoTorch", "$iEquip_MCM_tch_lbl_quickLightUseMagicIfNoTorch", TO.bQuickLightUseMagicIfNoTorch)
+        if !TO.bQuickLightPreferMagic
+            MCM.AddToggleOptionST("tch_tgl_quickLightUseMagicIfNoTorch", "$iEquip_MCM_tch_lbl_quickLightUseMagicIfNoTorch", TO.bQuickLightUseMagicIfNoTorch)
+        endIf
         MCM.AddToggleOptionST("tch_tgl_quickLightEquipRH", "$iEquip_MCM_tch_lbl_quickLightEquipRH", TO.bQuickLightEquipRH)
         MCM.AddToggleOptionST("tch_tgl_quickLightConsumePotion", "$iEquip_MCM_tch_lbl_quickLightConsumePotion", TO.bQuickLightConsumePotion)
 
@@ -165,7 +167,7 @@ State tch_tgl_quickLightPreferMagic
             MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightPreferMagic")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && TO.bQuickLightPreferMagic)
             TO.bQuickLightPreferMagic = !TO.bQuickLightPreferMagic
-            MCM.SetToggleOptionValueST(TO.bQuickLightPreferMagic)
+            MCM.forcePageReset()
         endIf
     endEvent
 endState
