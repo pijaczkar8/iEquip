@@ -200,7 +200,7 @@ endEvent
 ; HOTKEYS
 
 event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
-    if (conflictControl != "" && keyCode != -1)
+    if (conflictControl != "" && keyCode != -1) ; CHECK IF THIS IS ACTUALLY WORKING
         string msg
         
         if (conflictName != "")
@@ -299,7 +299,7 @@ function getPresets(string[] saPresets, string defFill)
 	int i
 	saPresets = CreateStringArray(tmpStrArr.length + 1, defFill)
 	while(i < tmpStrArr.length)
-		saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], WC.FileExt))
+		saPresets[i + 1] = Substring(tmpStrArr[i], 0, find(tmpStrArr[i], WC.FileExt))
 		i += 1
 	endWhile
 endFunction

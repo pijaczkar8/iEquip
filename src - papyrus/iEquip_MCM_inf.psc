@@ -22,6 +22,8 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
+	int jObj = JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExt)
+
     MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_lbl_Info</font>")
 	MCM.AddTextOptionST("inf_txt_iEquipVersion", "$iEquip_MCM_inf_lbl_version", MCM.GetVersion() as string)
     ;+++Dependency checks
@@ -30,10 +32,11 @@ function drawPage()
 	MCM.SetCursorPosition(1)
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_inf_lbl_presets</font>")
 	MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "")
-	if jMap.count(JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExt)) > 0
+	if jMap.count(jObj) > 0
 		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
 		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "")
 	endIf
+	jValue.zeroLifetime(jObj)
 	MCM.AddEmptyOption()
 	
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_inf_lbl_maintenance</font>")
@@ -112,26 +115,24 @@ State inf_txt_rstLayout
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_rstLayout")
-        elseIf currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstLayout", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
-				if (MCM.bBusy)
-					ShowMessage("$iEquip_common_LoadPresetBusy")
-				else
-					int jObj = JValue.readFromDirectory(WC.WidgetPresetPath, WC.FileExtDef)
-					int jPreset = JMap.getObj(jObj, JMap.getNthKey(jObj, 0))
+        elseIf (currentEvent == "Select" && MCM.ShowMessage("$iEquip_MCM_inf_msg_rstLayout", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel"))
+			if (MCM.bBusy)
+				ShowMessage("$iEquip_common_LoadPresetBusy")
+			else
+				int jObj = JValue.readFromDirectory(WC.WidgetPresetPath, WC.FileExtDef)
+				int jPreset = JMap.getObj(jObj, JMap.getNthKey(jObj, 0))
 
-					if (jMap.getInt(jPreset, "Version") != EM.GetVersion())
-						ShowMessage("$iEquip_common_LoadPresetError")
-					else
-						MCM.bBusy = true
-						
-						EM.LoadPreset(jPreset)
-						
-						MCM.bBusy = false
-					endIf
-				
-					jValue.zeroLifetime(jObj)
+				if (jMap.getInt(jPreset, "Version") != EM.GetVersion())
+					ShowMessage("$iEquip_common_LoadPresetError")
+				else
+					MCM.bBusy = true
+					
+					EM.LoadPreset(jPreset)
+					
+					MCM.bBusy = false
 				endIf
+			
+				jValue.zeroLifetime(jObj)
 			endIf
         endIf 
     endEvent
@@ -141,13 +142,11 @@ State inf_txt_rstMCM
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_rstMCM")
-        elseIf currentEvent == "Select"
-            if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstMCM", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
-				int jObj = JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExtDef)
-				string[] tmpStrArr = jMap.allKeysPArray(jObj)
-				jValue.zeroLifetime(jObj)
-				MCM.loadPreset(tmpStrArr[0], true)
-            endIf
+        elseIf (currentEvent == "Select" && MCM.ShowMessage("$iEquip_MCM_inf_msg_rstMCM", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel"))
+			int jObj = JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExtDef)
+			string[] tmpStrArr = jMap.allKeysPArray(jObj)
+			jValue.zeroLifetime(jObj)
+			MCM.loadPreset(tmpStrArr[0], true)
         endIf 
     endEvent
 endState

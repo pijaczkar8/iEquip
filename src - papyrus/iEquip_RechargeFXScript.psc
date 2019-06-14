@@ -1,4 +1,3 @@
-
 Scriptname iEquip_RechargeFXScript extends ReferenceAlias Hidden
 
 Actor Property PlayerRef Auto
@@ -10,7 +9,7 @@ function showRechargeFX()
 	debug.trace("iEquip_RechargeFXScript showRechargeFX called")
 	if !bIsSpellEquipped	
 		PlayerRef.AddSpell(iEquip_RechargeFXSpell, false)
-		Self.RegisterForSingleUpdate(2.0)
+		RegisterForSingleUpdate(2.0)
 		bIsSpellEquipped = true
 	endIf
 endFunction

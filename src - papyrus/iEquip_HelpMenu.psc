@@ -134,10 +134,12 @@ bool function showHelpMenuProMode() ; Return false to exit
 endFunction
 
 int function showTranslatedMessage(int theMenu, string theString)
+	int iButton
+
     iEquip_MessageObjectReference = PlayerRef.PlaceAtMe(iEquip_MessageObject)
     iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
     iEquip_MessageAlias.GetReference().GetBaseObject().SetName(theString)
-    int iButton
+
     if theMenu == 0
         iButton = iEquip_HelpMenuMain.Show()
     elseIf theMenu == 1
@@ -145,8 +147,10 @@ int function showTranslatedMessage(int theMenu, string theString)
     else
         iButton = iEquip_MessageNextPageExit.Show()
     endIf
+	
     iEquip_MessageAlias.Clear()
     iEquip_MessageObjectReference.Disable()
     iEquip_MessageObjectReference.Delete()
+	
     return iButton
 endFunction
