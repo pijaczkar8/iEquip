@@ -353,6 +353,11 @@ string function GetWidgetSource()
 	Return "iEquip/iEquipWidget.swf"
 endFunction
 
+string property WidgetPresetPath = "Data/iEquip/Widget Presets/" autoReadonly
+string property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
+string property FileExtDef = ".IEQD" autoReadOnly
+string property FileExt = ".IEQP" autoReadonly
+
 
 ; ###############################
 ; ### Initialization & Checks ###

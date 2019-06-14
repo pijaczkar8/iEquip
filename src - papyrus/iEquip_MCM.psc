@@ -19,12 +19,7 @@ iEquip_MCM_inf property inf auto
 
 bool property bEnabled auto hidden
 bool property bUpdateKeyMaps auto hidden
-bool bNotBusy = true
-
-string property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
-string property FileExtMCM = ".IEQS" autoReadOnly
-string property FileExtMCMDef = ".IEQD" autoReadOnly
-
+bool property bBusy auto hidden
 string sCurrentPage
 
 ; ###########################
@@ -252,22 +247,27 @@ function savePreset(string presetName)	; Save data to JContainer file
 	jMap.setObj(jMCMPreset, "Editmode", edt.saveData())
 	jMap.setObj(jMCMPreset, "Info", inf.saveData())		
 	
-	jValue.writeTofile(jMCMPreset, MCMSettingsPath + presetName + FileExtMCM)
+	jValue.writeTofile(jMCMPreset, WC.MCMSettingsPath + presetName + WC.FileExt)
 	jValue.zeroLifetime(jMCMPreset)
 endFunction
 
 function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
-	if (bNotBusy)
+	if (bBusy)
+		ShowMessage("$iEquip_common_LoadPresetBusy")
+	else
 		int jMCMPreset
-		bNotBusy = false
 		
 		if (bNoExt)
-			jMCMPreset = jValue.readFromFile(MCMSettingsPath + presetName)
+			jMCMPreset = jValue.readFromFile(WC.MCMSettingsPath + presetName)
 		else
-			jMCMPreset = jValue.readFromFile(MCMSettingsPath + presetName + FileExtMCM)
+			jMCMPreset = jValue.readFromFile(WC.MCMSettingsPath + presetName + WC.FileExt)
 		endIf
 		
-		if (jMap.getInt(jMCMPreset, "Version") == GetVersion())
+		if (jMap.getInt(jMCMPreset, "Version") != GetVersion())
+			ShowMessage("$iEquip_common_LoadPresetError")
+		else
+			bBusy = true
+			
 			gen.loadData(jMap.getObj(jMCMPreset, "General"))
 			htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"))
 			que.loadData(jMap.getObj(jMCMPreset, "Queue"))
@@ -278,31 +278,28 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
 			pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
 			edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
 			inf.loadData(jMap.getObj(jMCMPreset, "Info"))
+			
 			bUpdateKeyMaps = true
 			WC.bMCMPresetLoaded = true
-		else
-			ShowMessage("$iEquip_common_LoadPresetError")
+			bBusy = false
 		endIf
 		
 		jValue.zeroLifetime(jMCMPreset)
-		bNotBusy = true
-	else
-		ShowMessage("$iEquip_common_LoadPresetBusy")
 	endIf
 endFunction
 
 function deletePreset(string presetName)
-	JContainers.removeFileAtPath(MCMSettingsPath + presetName + FileExtMCM)
+	JContainers.removeFileAtPath(WC.MCMSettingsPath + presetName + WC.FileExt)
 endFunction
 
 function getPresets(string[] saPresets, string defFill)
-	int jObj = JValue.readFromDirectory(MCMSettingsPath, FileExtMCM)
+	int jObj = JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExt)
 	string[] tmpStrArr = jMap.allKeysPArray(jObj)
 	jValue.zeroLifetime(jObj)
 	int i
 	saPresets = CreateStringArray(tmpStrArr.length + 1, defFill)
 	while(i < tmpStrArr.length)
-		saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], FileExtMCM))
+		saPresets[i + 1] = Substring(tmpStrArr[i], 0, Find(tmpStrArr[i], WC.FileExt))
 		i += 1
 	endWhile
 endFunction

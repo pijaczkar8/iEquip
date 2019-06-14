@@ -30,7 +30,7 @@ function drawPage()
 	MCM.SetCursorPosition(1)
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_inf_lbl_presets</font>")
 	MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "")
-	if jMap.count(JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCM)) > 0
+	if jMap.count(JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExt)) > 0
 		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
 		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "")
 	endIf
@@ -114,8 +114,25 @@ State inf_txt_rstLayout
             MCM.SetInfoText("$iEquip_MCM_inf_txt_rstLayout")
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstLayout", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
-				EM.ResetDefaults()
-            endIf
+				if (MCM.bBusy)
+					ShowMessage("$iEquip_common_LoadPresetBusy")
+				else
+					int jObj = JValue.readFromDirectory(WC.WidgetPresetPath, WC.FileExtDef)
+					int jPreset = JMap.getObj(jObj, JMap.getNthKey(jObj, 0))
+
+					if (jMap.getInt(jPreset, "Version") != EM.GetVersion())
+						ShowMessage("$iEquip_common_LoadPresetError")
+					else
+						MCM.bBusy = true
+						
+						EM.LoadPreset(jPreset)
+						
+						MCM.bBusy = false
+					endIf
+				
+					jValue.zeroLifetime(jObj)
+				endIf
+			endIf
         endIf 
     endEvent
 endState
@@ -126,7 +143,7 @@ State inf_txt_rstMCM
             MCM.SetInfoText("$iEquip_MCM_inf_txt_rstMCM")
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstMCM", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
-				int jObj = JValue.readFromDirectory(MCM.MCMSettingsPath, MCM.FileExtMCMDef)
+				int jObj = JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExtDef)
 				string[] tmpStrArr = jMap.allKeysPArray(jObj)
 				jValue.zeroLifetime(jObj)
 				MCM.loadPreset(tmpStrArr[0], true)

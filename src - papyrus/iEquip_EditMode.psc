@@ -65,8 +65,6 @@ int RulersShown = 1
 
 ; - Strings -
 
-string property WidgetPresetPath = "Data/iEquip/Widget Presets/" autoReadonly
-string property FileExtWP = ".IEQP" autoReadonly
 string[] WidgetGroups
 string[] sTextAlignment
 string[] asCounterTextPath
@@ -869,7 +867,7 @@ function ShowPresetList()
     bool bDontExit = true
     
     while bDontExit
-        string[] sPresetList = JMap.allKeysPArray(JValue.readFromDirectory(WidgetPresetPath, FileExtWP))
+        string[] sPresetList = JMap.allKeysPArray(JValue.readFromDirectory(WC.WidgetPresetPath, WC.FileExt))
     
         if 0 < sPresetList.length
             int i = 0
@@ -882,11 +880,11 @@ function ShowPresetList()
             int[] MenuReturnArgs = ((Self as Form) as iEquip_UILIB).ShowList("$iEquip_EM_lbl_presetListTitle", sPresetList, 0, 0)
             
             if MenuReturnArgs[1] == 0       ; Load preset
-				int jPreset = jValue.readFromFile(WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + FileExtWP)
+				int jPreset = jValue.readFromFile(WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
 				
 				if (jMap.getInt(jPreset, "Version") == GetVersion())
 					LoadPreset(jPreset)
-					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + FileExtWP)
+					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
 				else
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_common_LoadPresetError"))
 				endIf
@@ -895,7 +893,7 @@ function ShowPresetList()
                 bDontExit = false
             elseIf MenuReturnArgs[1] == 1   ; Delete preset
                 bDontExit = true
-                JContainers.removeFileAtPath(WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + FileExtWP)
+                JContainers.removeFileAtPath(WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
             elseIf MenuReturnArgs[1] == 2   ; Delete preset cancelled
                 bDontExit = true
             else                            ; Exit
@@ -990,8 +988,8 @@ function SavePreset()
 		jMap.setInt(jSavePreset, "chargeDisplayType", CM.iChargeDisplayType)
 		jMap.setInt(jSavePreset, "backgroundStyle", WC.iBackgroundStyle)
 
-        jValue.writeTofile(jSavePreset, WidgetPresetPath + textInput + FileExtWP)
-        Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_savedAs") + " " + textInput + FileExtWP)
+        jValue.writeTofile(jSavePreset, WC.WidgetPresetPath + textInput + WC.FileExt)
+        Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_savedAs") + " " + textInput + WC.FileExt)
     endIf
 endFunction
 
