@@ -115,13 +115,13 @@ State inf_txt_rstLayout
         elseIf currentEvent == "Select"
             if MCM.ShowMessage("$iEquip_MCM_inf_msg_rstLayout", true, "$iEquip_MCM_common_reset", "$iEquip_MCM_common_cancel")
 				if (MCM.bBusy)
-					ShowMessage("$iEquip_common_LoadPresetBusy")
+					MCM.ShowMessage("$iEquip_common_LoadPresetBusy")
 				else
 					int jObj = JValue.readFromDirectory(WC.WidgetPresetPath, WC.FileExtDef)
 					int jPreset = JMap.getObj(jObj, JMap.getNthKey(jObj, 0))
 
 					if (jMap.getInt(jPreset, "Version") != EM.GetVersion())
-						ShowMessage("$iEquip_common_LoadPresetError")
+						MCM.ShowMessage("$iEquip_common_LoadPresetError")
 					else
 						MCM.bBusy = true
 						
