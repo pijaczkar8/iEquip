@@ -665,12 +665,18 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 			preselectNames.push(rightPreselectName_mc)
 		}
 		//Set up the animation timeline
-		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:prepareForPreselectAnimation});
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:PreselectModeAnimateInComplete});
+		//var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		tl.staggerTo(preselectIcons, 0.6, {_rotation:"+=360", _alpha:100, _xscale:100, _yscale:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0)
 		tl.staggerTo(preselectBackgrounds, 0.6, {_rotation:180, _alpha:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
 		tl.staggerTo(preselectNames, 0.25, {_alpha:100, immediateRender:false}, 0.2, 0.4);
 		//And action!
 		tl.play();
+	}
+
+	public function PreselectModeAnimateInComplete(): Void
+	{		
+		skse.SendModEvent("iEquip_PreselectModeAnimationComplete", null);
 	}
 
 	public function PreselectModeAnimateOut(rightEnabled: Boolean, shoutEnabled: Boolean, leftEnabled: Boolean): Void
@@ -705,8 +711,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function prepareForPreselectAnimation(): Void
 	{
-		//Called once PreselectModeAnimateIn completes
+		//Called on load from Papyrus and when entering Preselect Mode (preselectAnimateIn onComplete)
 		//This function checks if the preselect icons are to the left or right of their main icon and sets the animate out direction to the opposite side. It also stores current main icon x/y as the target values for the preselect icons to animate to. Finally it gets and stores all necessary current scale and alpha values to ensure everything returns to the exact state it was in prior to starting the animation
+		
+		skyui.util.Debug.log("iEquipWidget prepareForPreselectAnimation called")
 		
 		var leftIconLTG:Object = {x:0, y:0};
 		var leftPreselectIconLTG:Object = {x:0, y:0};
@@ -780,7 +788,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		shoutNameAlpha = shoutName_mc._alpha;
 		shoutPNameAlpha = shoutPreselectName_mc._alpha;
 
-		skse.SendModEvent("iEquip_ReadyForPreselectAnimation", null);
+		//skse.SendModEvent("iEquip_ReadyForPreselectAnimation", null);
 	}
 
 	/*public function updateLeftTargetAlphaValues(): Void
@@ -791,7 +799,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function equipPreselectedItem(iSlot: Number, currIcon: String, newIcon: String, newName: String, currPIcon: String, newPIcon: String, newPName: String): Void
 	{
-		//skyui.util.Debug.log("iEquipWidget equipPreselectedItem - iSlot: " + iSlot + ", currIcon: " + currIcon + ", newIcon: " + newIcon + ", newName: " + newName + ", currPIcon: " + currPIcon + ", newPIcon: " + newPIcon + ", newPName: " + newPName)
+		skyui.util.Debug.log("iEquipWidget equipPreselectedItem - iSlot: " + iSlot + ", currIcon: " + currIcon + ", newIcon: " + newIcon + ", newName: " + newName + ", currPIcon: " + currPIcon + ", newPIcon: " + newPIcon + ", newPName: " + newPName)
 
 		var iconClip: MovieClip;
 		var iconClip_mc: MovieClip;
@@ -1805,6 +1813,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function setTextColorAndAlignment(textElement: Number, a_align: Number, currentColor: Number): Void
 	{
+		skyui.util.Debug.log("iEquipEditMode setTextColorAndAlignment - textElement: " + textElement + ", a_align: " + a_align + ", currentColor: " + currentColor)
 		selectedText = textElementArray[textElement];
 		var format:TextFormat = selectedText.getTextFormat();
 

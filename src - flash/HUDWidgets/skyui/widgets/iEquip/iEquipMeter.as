@@ -167,7 +167,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function setColors(a_primaryColor: Number, a_secondaryColor: Number, a_flashColor: Number): Void
 	{
-		skyui.util.Debug.log("iEquipMeter setColors called - a_primaryColor:" + a_primaryColor + ", a_secondaryColor: " + a_secondaryColor + ", a_flashColor: " + a_flashColor);
+		//skyui.util.Debug.log("iEquipMeter setColors called - a_primaryColor:" + a_primaryColor + ", a_secondaryColor: " + a_secondaryColor + ", a_flashColor: " + a_flashColor);
 		// Wasteful checking..
 		//if (a_primaryColor != undefined && _primaryColor == a_primaryColor && _secondaryColor == a_secondaryColor)
 		//	return;
@@ -223,7 +223,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function setFillDirection(a_fillDirection: String, a_restorePercent: Boolean): Void
 	{
-		skyui.util.Debug.log("iEquipMeter setFillDirection called - a_fillDirection: " + a_fillDirection + ", a_restorePercent: " + a_restorePercent);
+		//skyui.util.Debug.log("iEquipMeter setFillDirection called - a_fillDirection: " + a_fillDirection + ", a_restorePercent: " + a_restorePercent);
 		var fillDirection: String = a_fillDirection.toLowerCase();
 		if (_fillDirection == fillDirection && !a_restorePercent)
 			return;
@@ -244,7 +244,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function setPercent(a_percent: Number, a_force: Boolean): Void
 	{
-		skyui.util.Debug.log("iEquipMeter setPercent called - a_percent: " + a_percent + ", a_force: " + a_force);
+		//skyui.util.Debug.log("iEquipMeter setPercent called - a_percent: " + a_percent + ", a_force: " + a_force);
 		_targetPercent = Math.min(1, Math.max(a_percent, 0));
 
 		if (a_force) {
@@ -262,25 +262,25 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function pauseFillTween(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter pauseFillTween called");
+		//skyui.util.Debug.log("iEquipMeter pauseFillTween called");
 		TorchMeterTween.pause()
 	}
 
 	public function resumeFillTween(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter resumeFillTween called");
+		//skyui.util.Debug.log("iEquipMeter resumeFillTween called");
 		TorchMeterTween.resume()
 	}
 
 	public function stopFillTween(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter stopFillTween called");
+		//skyui.util.Debug.log("iEquipMeter stopFillTween called");
 		TweenLite.killTweensOf(_iEquipMeterBarAnim)
 	}
 
 	public function startFlash(a_force: Boolean): Void
 	{
-		skyui.util.Debug.log("iEquipMeter startFlash called");
+		//skyui.util.Debug.log("iEquipMeter startFlash called");
 		// meterFlashing is set on the timeline and is false once the animation has finished
 		if (_iEquipMeterFlashAnim.meterFlashing && !a_force) {
 			return;
@@ -293,7 +293,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function invalidateSize(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter invalidateSize called");
+		//skyui.util.Debug.log("iEquipMeter invalidateSize called");
 		var safeWidth: Number = _originalCapWidth * 3; // Safe width is 3* size of cap
 		var safeHeight: Number;
 
@@ -324,7 +324,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function invalidateFillDirection(a_restorePercent: Boolean): Void
 	{
-		skyui.util.Debug.log("iEquipMeter invalidateFillDirection called");
+		//skyui.util.Debug.log("iEquipMeter invalidateFillDirection called");
 		switch(_fillDirection) {
 			case FILL_DIRECTION_LEFT:
 			case FILL_DIRECTION_BOTH:
@@ -351,7 +351,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function drawMeterGradients(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter drawMeterGradients called");
+		//skyui.util.Debug.log("iEquipMeter drawMeterGradients called");
 		// Draws the meter
 		var w: Number = _iEquipMeterBar._width;
 		var h: Number = _iEquipMeterBar._height;
@@ -384,7 +384,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function invalidateColor(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter invalidateColor called");
+		//skyui.util.Debug.log("iEquipMeter invalidateColor called");
 		var colors: Array;
 		var alphas: Array;
 		var ratios: Array;
@@ -436,7 +436,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function invalidateFlashColor(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter invalidateFlashColor called");
+		//skyui.util.Debug.log("iEquipMeter invalidateFlashColor called");
 		var tf: Transform = new Transform(_iEquipMeterFlashAnim);
 		var colorTf: ColorTransform = new ColorTransform();
 		colorTf.rgb = _flashColor;
@@ -445,7 +445,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	private function enterFrameHandler(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter enterFrameHandler called");
+		//skyui.util.Debug.log("iEquipMeter enterFrameHandler called");
 		/*if (!_initialized) {
 			_currentPercent = _targetPercent;
 		} else*/ if (_targetPercent == _currentPercent) {

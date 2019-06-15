@@ -107,8 +107,6 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool ena
 		WC.bPreselectMode = bPreselectMode
 		bool[] args = new bool[5]
 		if bPreselectMode
-			;bReadyForPreselectAnim = false
-			Self.RegisterForModEvent("iEquip_ReadyForPreselectAnimation", "ReadyForPreselectAnimation")
 			int Q
 			if AM.bAmmoMode
 				bAmmoModeActiveOnTogglePreselect = true
@@ -189,7 +187,6 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool ena
 			args[3] = AM.bAmmoMode
 			Utility.WaitMenuMode(2.0)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-			Self.UnregisterForModEvent("iEquip_ReadyForPreselectAnimation")
 		endIf
 	endIf
 	debug.trace("iEquip_ProMode togglePreselectMode end")
@@ -197,6 +194,7 @@ endFunction
 
 function PreselectModeAnimateIn()
 	debug.trace("iEquip_ProMode PreselectModeAnimateIn start")
+	Self.RegisterForModEvent("iEquip_PreselectModeAnimationComplete", "onPreselectModeAnimationComplete")
 	bool[] args = new bool[3]
 	if !AM.bAmmoMode
 		args[0] = abPreselectSlotEnabled[0] ;Only animate the left icon if not already shown in ammo mode
@@ -227,6 +225,15 @@ function PreselectModeAnimateIn()
 	endIf
 	debug.trace("iEquip_ProMode PreselectModeAnimateIn end")
 endFunction
+
+event onPreselectModeAnimationComplete(string sEventName, string sStringArg, Float fNumArg, Form kSender)
+	debug.trace("iEquip_ProMode onPreselectModeAnimationComplete start")
+	If(sEventName == "iEquip_PreselectModeAnimationComplete")
+		updateAnimationTargetValues()
+		Self.UnregisterForModEvent("iEquip_PreselectModeAnimationComplete")
+	endIf
+	debug.trace("iEquip_ProMode onPreselectModeAnimationComplete end")
+endEvent
 
 function PreselectModeAnimateOut()
 	debug.trace("iEquip_ProMode PreselectModeAnimateOut start")
@@ -544,6 +551,7 @@ function equipPreselectedItem(int Q)
 endFunction
 
 function updateAnimationTargetValues()
+	debug.trace("iEquip_ProMode updateAnimationTargetValues start")
 	UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
 endFunction
 

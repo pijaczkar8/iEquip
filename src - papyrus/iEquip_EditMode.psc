@@ -159,8 +159,7 @@ function DisableEditMode()
     iSelectedElement = -1
 
     WC.resetWidgetsToPreviousState()
-    PM.updateAnimationTargetValues()
-    
+        
     ; Restore DropShadowFilter to all text elements when leaving Edit Mode
     if WC.bDropShadowEnabled
         UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", false)
@@ -417,9 +416,7 @@ endFunction
 
 function SetElementDepthOrder(int DepthIndexA, bool bSet = true)
     int DepthIndexB
-
-    debug.notification("$iEquip_EM_not_settingDepth")
-    
+   
     if bSet       ; SET
         DepthIndexB = WC.aiWidget_D[DepthIndexA]
         if DepthIndexA >= DepthIndexB
@@ -665,7 +662,7 @@ function UpdateElementText(int[] iArgs, int iNewColor)
         endIf
         
         iArgs[2] = iNewColor
-        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".SetTextColorAndAlignment", iArgs)
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColorAndAlignment", iArgs)
     endIf
 endFunction
 
@@ -1035,6 +1032,7 @@ function LoadPreset(int jPreset)
 	endIf
 
     UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
+    WC.updatePotionSelector(true)
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", WC.iBackgroundStyle)
 	;/if WC.iBackgroundStyle > 0
 		while iIndex < 5

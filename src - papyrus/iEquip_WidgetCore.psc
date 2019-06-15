@@ -827,7 +827,6 @@ state ENABLED
 			UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
 			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", !bDropShadowEnabled)
 		endIf
-		PM.updateAnimationTargetValues()
 		bRefreshingWidget = false
 		
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
@@ -1049,6 +1048,7 @@ function resetWidgetsToPreviousState()
 	if PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
 		TO.updateTorchMeterOnSettingsChanged()
 	endIf
+
 	debug.trace("iEquip_WidgetCore resetWidgetsToPreviousState end")
 endFunction
 
@@ -1602,7 +1602,7 @@ function PopulateWidgetArrays()
 	;Shout Preselect widget components
 	AddWidget("$iEquip_WC_lbl_ShoutPreBg", ".widgetMaster.ShoutWidget.shoutPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
 	AddWidget("$iEquip_WC_lbl_ShoutPreIcon", ".widgetMaster.ShoutWidget.shoutPreselectIcon_mc", 0, 0, 0, 0, 0, 38, 0, None, true, false, false, false, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutPreName", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 39, 16777215, "Center", true, false, true, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPreName", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 39, 16777215, "Right", true, false, true, false, "Shout")
 	;Consumable widget components
 	AddWidget("$iEquip_WC_lbl_ConsBg", ".widgetMaster.ConsumableWidget.consumableBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Consumable")
 	AddWidget("$iEquip_WC_lbl_ConsIcon", ".widgetMaster.ConsumableWidget.consumableIcon_mc", 0, 0, 0, 0, 0, 41, 0, None, true, false, false, false, "Consumable")
