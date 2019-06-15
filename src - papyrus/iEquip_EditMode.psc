@@ -2,6 +2,7 @@ ScriptName iEquip_EditMode Extends Quest
 
 ; - IMPORTS
 
+import Game
 import Utility
 import StringUtil
 import iEquip_UILIB
@@ -50,8 +51,8 @@ int property iEnabledPotionGroupCount auto hidden
 int property previousLeftCount auto hidden
 int property previousRightCount auto hidden
 int[] iCustomColors
-int[] iFirstElementInGroup
-int iFirstElement
+int[] ifirstElementInGroup
+int ifirstElement
 int iLastElement
 int iHighlightColor = 0x0099FF
 int iCurrentColorValue = 0xEAAB00
@@ -108,13 +109,13 @@ function OnInit()
     asPoisonNamePath[0] = ".widgetMaster.LeftHandWidget.leftPoisonName_mc.leftPoisonName.text"
     asPoisonNamePath[1] = ".widgetMaster.RightHandWidget.rightPoisonName_mc.rightPoisonName.text"
 
-    iFirstElementInGroup = new int[6]
-    iFirstElementInGroup[0] = 6  ; leftBg_mc
-    iFirstElementInGroup[1] = 6  ; leftBg_mc
-    iFirstElementInGroup[2] = 20 ; rightBg_mc
-    iFirstElementInGroup[3] = 34 ; shoutBg_mc
-    iFirstElementInGroup[4] = 41 ; consumableBg_mc
-    iFirstElementInGroup[5] = 46 ; poisonBg_mc
+    ifirstElementInGroup = new int[6]
+    ifirstElementInGroup[0] = 6  ; leftBg_mc
+    ifirstElementInGroup[1] = 6  ; leftBg_mc
+    ifirstElementInGroup[2] = 20 ; rightBg_mc
+    ifirstElementInGroup[3] = 34 ; shoutBg_mc
+    ifirstElementInGroup[4] = 41 ; consumableBg_mc
+    ifirstElementInGroup[5] = 46 ; poisonBg_mc
 
     afWidget_CurX = new Float[50]
     afWidget_CurY = new Float[50]
@@ -128,10 +129,10 @@ function OnInit()
     
     iCustomColors = new int[14]
     int iIndex = iCustomColors.length
-    While iIndex > 0
+    while iIndex > 0
         iIndex -= 1
         iCustomColors[iIndex] = -1
-    endWhile
+    endwhile
 endFunction
 
 ; #######################
@@ -172,9 +173,9 @@ function DisableEditMode()
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
     
     ; Reset Vanity Camera delay back to previous value on leaving Edit Mode
-    SetINIFloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay)
+    SetINifloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay)
     
-    Game.GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
+    GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
 endFunction
 
 function EnableEditmode()
@@ -182,12 +183,12 @@ function EnableEditmode()
     isEditMode = true
 
     ; Save and disable Vanity Camera whilst in Edit Mode
-    CurrentVanityModeDelay = GetINIFloat("fAutoVanityModeDelay:Camera")
-    SetINIFloat("fAutoVanityModeDelay:Camera", 9999999)
+    CurrentVanityModeDelay = GetINifloat("fAutoVanityModeDelay:Camera")
+    SetINifloat("fAutoVanityModeDelay:Camera", 9999999)
 
     ; StoreOpeningValues
     int iIndex   
-    While iIndex < WC.asWidgetDescriptions.Length
+    while iIndex < WC.asWidgetDescriptions.Length
         afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
         afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
         afWidget_CurS[iIndex] = WC.afWidget_S[iIndex]
@@ -196,12 +197,11 @@ function EnableEditmode()
         aiWidget_CurD[iIndex] = WC.aiWidget_D[iIndex]
         asWidget_CurTA[iIndex] = WC.asWidget_TA[iIndex]
         aiWidget_CurTC[iIndex] = WC.aiWidget_TC[iIndex]
-        ;abWidget_CurV[iIndex] = WC.abWidget_V[iIndex]
         
         iIndex += 1
-    EndWhile
+    endWhile
     
-    iFirstElement = 0
+    ifirstElement = 0
     iLastElement = 5
     iSelectedElement = 0
     iSelectedElementFront = -1
@@ -218,7 +218,7 @@ function EnableEditmode()
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setEditModeHighlightColor", iHighlightColor)
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".EditModeGuide.setEditModeCurrentValueColor", iCurrentColorValue)
   
-    if WC.bPreselectMode                    ; If we're currently in Preselect Mode exit now and re-enable with every element showing, just in case some slots were disabled
+    if WC.bPreselectMode                    ; if we're currently in Preselect Mode exit now and re-enable with every element showing, just in case some slots were disabled
         preselectEnabledOnEnter = true
         PM.togglePreselectMode()
         Utility.WaitMenuMode(0.8)
@@ -233,7 +233,7 @@ function EnableEditmode()
     HighlightElement(true)
     UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", true)
     
-    If RulersShown == 1
+    if RulersShown == 1
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", true)
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
     elseIf RulersShown == 2
@@ -244,17 +244,18 @@ function EnableEditmode()
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
     endIf
     
-    Game.GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
+    GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
 endFunction
 
+; SHOULD PROBABLY BE CLEANED UP AT SOME POINT -> MAKE IT PRETTY
 function LoadAllElements()
     int i = WC.asWidgetDescriptions.Length - 1
     
-    While i >= 0
+    while i >= 0
         UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._visible", true)               ; Everything needs to be visible in Edit Mode
         UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[i] + "._alpha", WC.afWidget_A[i])
         i -= 1
-    EndWhile
+    endWhile
 
     UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", true)
     
@@ -333,18 +334,21 @@ function LoadAllElements()
             endIf
         endIf
         i += 1
-    endWhile
+    endwhile
     
     UpdateEditModeGuide()
 endFunction
 
 function setTempItemInWidget(int Q, string iconName, string itemName)
     float fNameAlpha = WC.afWidget_A[WC.aiNameElements[Q]]
+    
     if fNameAlpha < 1
         fNameAlpha = 100
     endIf
+    
     int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
-    If(iHandle)
+    
+    if(iHandle)
         UICallback.PushInt(iHandle, Q)
         UICallback.PushString(iHandle, iconName)
         UICallback.PushString(iHandle, itemName)
@@ -430,7 +434,7 @@ function SetElementDepthOrder(int DepthIndexA, bool bSet = true)
             ; Find iIndex with default value for DepthIndexA
             while WC.aiWidget_D[iIndex] != WC.aiWidget_DefD[DepthIndexA]
                 iIndex += 1
-            endWhile
+            endwhile
             DepthIndexB = iIndex
         else
             DepthIndexB = -1
@@ -520,7 +524,7 @@ function RotateElement()
         if sRotation == "$iEquip_EM_clockwise"
             iRotation = iRotation + RotateStep
        
-            If iRotation >= 360
+            if iRotation >= 360
                 iRotation = 0
             endIf
         else
@@ -536,13 +540,13 @@ function RotateElement()
         WC.afWidget_R[iSelectedElement] = iRotation as float
         TweenElement(3, WC.afWidget_R[iSelectedElement], fDuration)
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.RotationText.text", iRotation as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_degrees"))
-    EndIf 
+    endIf 
 endFunction
 
 ; - Transparency -
 
 function SetElementAlpha()
-    If iSelectedElement != -1
+    if iSelectedElement != -1
         WC.afWidget_A[iSelectedElement] = WC.afWidget_A[iSelectedElement] - AlphaStep
         if WC.afWidget_A[iSelectedElement] < 0
             WC.afWidget_A[iSelectedElement] = 100
@@ -550,7 +554,7 @@ function SetElementAlpha()
         
         TweenElement(4, WC.afWidget_A[iSelectedElement], 0.01 * AlphaStep)
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlphaText.text", (WC.afWidget_A[iSelectedElement] as int) as String + "%")
-    EndIf
+    endIf
 endFunction
 
 ; ########################
@@ -585,13 +589,13 @@ function ToggleCycleRange()
     ; Toggle between cycling groups/single enlements
     HighlightElement(false)
     
-    if 0 <= iSelectedElement && iSelectedElement  <= 5           ; If group is selected, find first child
-        iSelectedElement = iFirstElementInGroup[iSelectedElement]
-        iFirstElement = 6
+    if 0 <= iSelectedElement && iSelectedElement  <= 5           ; if group is selected, find first child
+        iSelectedElement = ifirstElementInGroup[iSelectedElement]
+        ifirstElement = 6
         iLastElement = 49
     else                                    ; Else find parent group
         iSelectedElement = WidgetGroups.Find(WC.asWidgetGroup[iSelectedElement])
-        iFirstElement = 0
+        ifirstElement = 0
         iLastElement = 5
     endIf
     
@@ -614,10 +618,10 @@ function CycleElements(int iNextPrev)
     iSelectedElement += iNextPrev
     if iNextPrev == 1   ; Next
         if iSelectedElement > iLastElement
-            iSelectedElement = iFirstElement
+            iSelectedElement = ifirstElement
         endIf
     else                ; Previous
-        if iSelectedElement < iFirstElement
+        if iSelectedElement < ifirstElement
             iSelectedElement = iLastElement
         endIf
     endIf
@@ -633,7 +637,6 @@ endFunction
 
 ; - Update Data -
 
-;function UpdateElementData(int iIndex, bool bVisible, bool bUpdateAlpha = true)
 function UpdateElementData(int iIndex, bool bUpdateAlpha = true)
     UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._x", WC.afWidget_X[iIndex])
     UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._y", WC.afWidget_Y[iIndex])
@@ -644,8 +647,6 @@ function UpdateElementData(int iIndex, bool bUpdateAlpha = true)
     if bUpdateAlpha
         UI.SetFloat(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._alpha", WC.afWidget_A[iIndex])
     endIf
-    
-    ;UI.SetBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[iIndex] + "._visible", bVisible)
 endFunction
 
 function UpdateElementText(int[] iArgs, int iNewColor) 
@@ -668,14 +669,13 @@ endFunction
 
 function UpdateEditModeGuide()
     if iSelectedElement != -1
+        string tmpStr
         
-        if iSelectedElement == 45 ;potionSelector_mc
+        if iSelectedElement == 45 ; potionSelector_mc
             UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentInstructionText.text", iEquip_StringExt.LocalizeString("$iEquip_swf_potSelAlignInstTxt"))
         else
             UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentInstructionText.text", iEquip_StringExt.LocalizeString("$iEquip_swf_AlignmentInstructionText"))
         endIf
-        
-        string tmpStr
     
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.SelectedElementText.text", WC.asWidgetDescriptions[iSelectedElement])
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.MoveIncrementText.text", MoveStep as String + " " + iEquip_StringExt.LocalizeString("$iEquip_EM_pixels"))
@@ -694,7 +694,7 @@ function UpdateEditModeGuide()
             else
                 tmpStr = "$iEquip_EM_centreAligned"
             endIf
-        elseif iSelectedElement == 45 ;potionSelector_mc
+        elseIf iSelectedElement == 45 ; potionSelector_mc
             if bPotionSelectorOnLeft
                 tmpStr = "$iEquip_EM_potSelLeft"
             else
@@ -705,7 +705,7 @@ function UpdateEditModeGuide()
         endIf
         UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", tmpStr)
         
-        If RulersShown == 1
+        if RulersShown == 1
             tmpStr = "$iEquip_EM_edgeGrid"
         elseIf RulersShown == 2
             tmpStr = "$iEquip_EM_fullGrid"
@@ -721,14 +721,14 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
     int iIndex
     
     while iIndex < WC.asWidgetDescriptions.Length  
-        if WC.abWidget_isText[iIndex] || iIndex == 45 ;potionSelector_mc
+        if WC.abWidget_isText[iIndex] || iIndex == 45 ; potionSelector_mc
             iArgs[0] = iIndex
             UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
         endIf
-        ;UpdateElementData(iIndex, WC.abWidget_V[iIndex], bUpdateAlpha)
+        
         UpdateElementData(iIndex, bUpdateAlpha)
         iIndex += 1
-    endWhile
+    endwhile
     
     if !WC.bRefreshingWidget
         iIndex = 1
@@ -736,7 +736,8 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
         while iIndex < WC.asWidgetDescriptions.Length
             SetElementDepthOrder(iIndex)
             iIndex += 1
-        endWhile
+        endwhile
+        
         if isEditMode
             HighlightElement(true)
         endIf
@@ -757,7 +758,7 @@ function ToggleTextAlignment()
         
         TweenElement(5, 0, 0.15)                                 ; Fade out before changing alignment
         
-        If WC.asWidget_TA[iArgs[0]] == "Left"
+        if WC.asWidget_TA[iArgs[0]] == "Left"
             iArgs[1] = 1
             tmpStr = "$iEquip_EM_centreAligned"
         elseIf WC.asWidget_TA[iArgs[0]] == "Center"
@@ -777,16 +778,19 @@ function ToggleTextAlignment()
 endfunction
 
 function togglePotionSelectorAlignment()
+    string tmpStr
     bPotionSelectorOnLeft = !bPotionSelectorOnLeft
+    
     TweenElement(5, 0, 0.15)                                 ; Fade out before changing alignment
     UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
     TweenElement(5, WC.afWidget_A[iSelectedElement], 0.15)   ; Fade back in
-    string tmpStr
+    
     if bPotionSelectorOnLeft
         tmpStr = "$iEquip_EM_potSelLeft"
     else
         tmpStr = "$iEquip_EM_potSelRight"
     endIf
+    
     UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentText.text", tmpStr)
 endFunction
 
@@ -872,7 +876,7 @@ function ShowPresetList()
             while(i < sPresetList.length)
                 sPresetList[i] = Substring(sPresetList[i], 0, Find(sPresetList[i], "."))
                 i += 1
-            EndWhile
+            endWhile
         
             int[] MenuReturnArgs = ((Self as Form) as iEquip_UILIB).ShowList("$iEquip_EM_lbl_presetListTitle", sPresetList, 0, 0)
             
@@ -900,7 +904,7 @@ function ShowPresetList()
             Debug.Notification("$iEquip_EM_not_noPresets")
             bDontExit = false
         endIf
-    endWhile
+    endwhile
 endFunction
 
 function ShowColorSelection(int iType)
@@ -917,15 +921,12 @@ function ShowColorSelection(int iType)
         sText = "$iEquip_EM_lbl_showColorTitle2"
         iColor = iCurrentColorValue
         iDefColor = 0xEAAB00
-    else                ; Selected text colour
-        ; Make sure element is text
-        if WC.abWidget_isText[iSelectedElement] || iSelectedElement == 45 ;potionSelector_mc
-            sText = "$iEquip_EM_lbl_showColorTitle3"
-            iColor = WC.aiWidget_TC[iSelectedElement]
-            iDefColor = 0xFFFFFF
-        else
-            sText = ""
-        endIf
+    elseIf (WC.abWidget_isText[iSelectedElement] || iSelectedElement == 45) ; Selected text colour
+        sText = "$iEquip_EM_lbl_showColorTitle3"
+        iColor = WC.aiWidget_TC[iSelectedElement]
+        iDefColor = 0xFFFFFF
+    else
+        sText = ""
     endIf
     
     ; Show color menu
@@ -954,7 +955,7 @@ function DeleteCustomColor(int iDeleteIndex)
     while iDeleteIndex < iArrayIndexes
         iCustomColors[iDeleteIndex] = iCustomColors[iDeleteIndex + 1]
         iDeleteIndex += 1
-    endWhile
+    endwhile
 
     iNextColorIndex = (iNextColorIndex - 1) % iCustomColors.length
     ShowColorSelection(iLastColorSelection)
@@ -986,6 +987,7 @@ function SavePreset()
 		jMap.setInt(jSavePreset, "backgroundStyle", WC.iBackgroundStyle)
 
         jValue.writeTofile(jSavePreset, WC.WidgetPresetPath + textInput + WC.FileExt)
+        jValue.zeroLifetime(jSavePreset)
         Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_savedAs") + " " + textInput + WC.FileExt)
     endIf
 endFunction
@@ -1043,7 +1045,7 @@ function LoadPreset(int jPreset)
 				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Hide the background if it was previously hidden
 			endIf
 			iIndex += 1
-		endWhile
+		endwhile
 	endIf/;
     Wait(0.1)
     WC.updateWidgetVisibility()
@@ -1062,7 +1064,7 @@ function DiscardChanges()
         WC.updateWidgetVisibility(false)
         Wait(0.2)
         
-        While iIndex < WC.asWidgetDescriptions.Length
+        while iIndex < WC.asWidgetDescriptions.Length
             WC.afWidget_X[iIndex] = afWidget_CurX[iIndex]
             WC.afWidget_Y[iIndex] = afWidget_CurY[iIndex]
             WC.afWidget_S[iIndex] = afWidget_CurS[iIndex]
@@ -1073,7 +1075,7 @@ function DiscardChanges()
             WC.asWidget_TA[iIndex] = asWidget_CurTA[iIndex]
             ;WC.abWidget_V[iIndex] = abWidget_CurV[iIndex]
             iIndex += 1
-        EndWhile
+        endWhile
         
         UpdateElementsAll()
         UpdateEditModeGuide()
@@ -1102,11 +1104,11 @@ function ResetElementIndex(int[] iArgs, int iIndex)
 endFunction
 
 function ResetElement()
-    If iSelectedElement > 0
+    if iSelectedElement > 0
         int theMessage
         string theString
     
-        If WC.abWidget_isParent[iSelectedElement]
+        if WC.abWidget_isParent[iSelectedElement]
             theMessage = 8 ;iEquip_ConfirmResetParent
             theString = iEquip_StringExt.LocalizeString("$iEquip_msg_confReset")
         else
@@ -1126,19 +1128,19 @@ function ResetElement()
             if WC.abWidget_isParent[iSelectedElement]
                 int iIndex = 6
                 
-                While iIndex < WC.asWidgetDescriptions.Length
+                while iIndex < WC.asWidgetDescriptions.Length
                     if WC.asWidgetGroup[iIndex] == WC.asWidgetGroup[iSelectedElement]
                         ResetElementIndex(iArgs, iIndex)
                     endIf
                     iIndex += 1
-                EndWhile
+                endWhile
             endIf
             
             TweenElement(5, WC.afWidget_A[iSelectedElement], 0.2)
             UpdateEditModeGuide()
             HighlightElement(true)
         endIf
-    EndIf
+    endIf
 endFunction
 
 ; #####################
@@ -1156,7 +1158,7 @@ bool function CreateHandleIntStr(string func, int i, string str)
         return true
     else
         return false
-    endif
+    endIf
 endFunction
 
 ; - HexToInt -
@@ -1171,15 +1173,15 @@ int function HexStringToInt(string sHex)
         string sChar = SubString(sHex, iIndex, 1)
         int iSubNumber
         
-        If IsDigit(sChar)
+        if IsDigit(sChar)
             iSubNumber = sChar as int
         Else
             iSubNumber = AsOrd(sChar) - 55
-        EndIf
+        endIf
         
         iDec += iSubNumber * iPlace
         iPlace *= 16
-    endWhile
+    endwhile
     
     Return iDec
 endFunction
