@@ -88,23 +88,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-<<<<<<< HEAD
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_quickLightOptions</font>")
-	MCM.AddKeyMapOptionST("tch_key_quickLight", "$iEquip_MCM_tch_lbl_quickLight", KH.iQuickLightKey, mcmUnmapFLAG)
-	MCM.AddToggleOptionST("tch_tgl_quickLightPreferMagic", "$iEquip_MCM_tch_lbl_quickLightPreferMagic", TO.bQuickLightPreferMagic)
-	MCM.AddToggleOptionST("tch_tgl_quickLightUseMagicIfNoTorch", "$iEquip_MCM_tch_lbl_quickLightUseMagicIfNoTorch", TO.bQuickLightUseMagicIfNoTorch)
-	MCM.AddToggleOptionST("tch_tgl_quickLightEquipRH", "$iEquip_MCM_tch_lbl_quickLightEquipRH", TO.bQuickLightEquipRH)
-	MCM.AddToggleOptionST("tch_tgl_quickLightConsumePotion", "$iEquip_MCM_tch_lbl_quickLightConsumePotion", TO.bQuickLightConsumePotion)
 
-	MCM.AddEmptyOption()
-
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchLifeOptions</font>")
-	MCM.AddSliderOptionST("tch_sld_torchDuration", "$iEquip_MCM_tch_lbl_torchDuration", (TO.fTorchDuration + 5.0) / 60, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
-	MCM.AddToggleOptionST("tch_tgl_finiteTorchLife", "$iEquip_MCM_tch_lbl_finiteTorchLife", TO.bFiniteTorchLife)
-	if TO.bFiniteTorchLife
-		MCM.AddToggleOptionST("tch_tgl_torchesFade", "$iEquip_MCM_tch_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
-	endIf
-=======
 	if WC.isEnabled
 
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_quickLightOptions</font>")
@@ -124,37 +108,37 @@ function drawPage()
 		if TO.bFiniteTorchLife
 			MCM.AddToggleOptionST("tch_tgl_torchesFade", "$iEquip_MCM_tch_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
 		endIf
->>>>>>> b47e62c6e0b8aafb32c3c4f94a7796a553f2bf78
 
-	MCM.AddToggleOptionST("tch_tgl_reequipTorch", "$iEquip_MCM_tch_lbl_reequipTorch", TO.bAutoReEquipTorch)
-	if TO.bAutoReEquipTorch
-		MCM.AddToggleOptionST("tch_tgl_realisticEquip", "$iEquip_MCM_tch_lbl_realisticEquip", TO.bRealisticReEquip)
-		if TO.bRealisticReEquip
-			MCM.AddSliderOptionST("tch_sld_realisticEquipDelay", "$iEquip_MCM_tch_lbl_realisticEquipDelay", TO.fRealisticReEquipDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+		MCM.AddToggleOptionST("tch_tgl_reequipTorch", "$iEquip_MCM_tch_lbl_reequipTorch", TO.bAutoReEquipTorch)
+		if TO.bAutoReEquipTorch
+			MCM.AddToggleOptionST("tch_tgl_realisticEquip", "$iEquip_MCM_tch_lbl_realisticEquip", TO.bRealisticReEquip)
+			if TO.bRealisticReEquip
+				MCM.AddSliderOptionST("tch_sld_realisticEquipDelay", "$iEquip_MCM_tch_lbl_realisticEquipDelay", TO.fRealisticReEquipDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+			endIf
 		endIf
+
+		MCM.SetCursorPosition(1)
+
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchDropOptions</font>")
+		MCM.AddToggleOptionST("tch_tgl_dropLitTorches", "$iEquip_MCM_tch_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
+		if TO.bDropLitTorchesEnabled
+			MCM.AddMenuOptionST("tch_men_dropLitTorchBehavior", "$iEquip_MCM_tch_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
+		endIf
+
+		MCM.AddEmptyOption()
+
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+		MCM.AddToggleOptionST("tch_tgl_showTorchMeter", "$iEquip_MCM_tch_lbl_showTorchMeter", TO.bShowTorchMeter)
+		if TO.bShowTorchMeter
+			MCM.AddColorOptionST("tch_col_torchMeterCol", "$iEquip_MCM_tch_lbl_torchMeterCol", TO.iTorchMeterFillColor)
+			MCM.AddMenuOptionST("tch_men_torchMeterFillDir", "$iEquip_MCM_tch_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
+		endIf
+
+		MCM.AddEmptyOption()
+
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_lbl_Info</font>")
+		MCM.AddTextOptionST("tch_txt_realisticTorches", "$iEquip_MCM_tch_lbl_realisticTorches", modStates[(Game.GetModByName("RealisticTorches.esp") != 255) as int])
 	endIf
-
-	MCM.SetCursorPosition(1)
-
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchDropOptions</font>")
-	MCM.AddToggleOptionST("tch_tgl_dropLitTorches", "$iEquip_MCM_tch_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
-	if TO.bDropLitTorchesEnabled
-		MCM.AddMenuOptionST("tch_men_dropLitTorchBehavior", "$iEquip_MCM_tch_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
-	endIf
-
-	MCM.AddEmptyOption()
-
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
-	MCM.AddToggleOptionST("tch_tgl_showTorchMeter", "$iEquip_MCM_tch_lbl_showTorchMeter", TO.bShowTorchMeter)
-	if TO.bShowTorchMeter
-		MCM.AddColorOptionST("tch_col_torchMeterCol", "$iEquip_MCM_tch_lbl_torchMeterCol", TO.iTorchMeterFillColor)
-		MCM.AddMenuOptionST("tch_men_torchMeterFillDir", "$iEquip_MCM_tch_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
-	endIf
-
-	MCM.AddEmptyOption()
-
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_lbl_Info</font>")
-	MCM.AddTextOptionST("tch_txt_realisticTorches", "$iEquip_MCM_tch_lbl_realisticTorches", modStates[(Game.GetModByName("RealisticTorches.esp") != 255) as int])
 endFunction
 
 ; -----------------

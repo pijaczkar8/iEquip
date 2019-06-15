@@ -3158,10 +3158,15 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    ; Equip target item
 		    debug.trace("iEquip_WidgetCore cycleHand - about to equip " + jMap.getStr(targetObject, "iEquipName") + " into slot " + Q)
 		    Utility.WaitMenuMode(0.1)
+		    int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
 		    if (Q == 1 && itemType == 42) 																		; Ammo in the right hand queue, so in this case grenades and other throwing weapons
 		    	PlayerRef.EquipItemEx(targetItem as Ammo)
 		    elseif ((Q == 0 && itemType == 26) || jMap.getStr(targetObject, "iEquipName") == "Rocket Launcher") ; Shield in the left hand queue
-		    	PlayerRef.EquipItemEx(targetItem as Armor)
+		    	if refHandle != 0xFFFF
+		    		iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef)
+		    	else
+		    		PlayerRef.EquipItemEx(targetItem as Armor)
+		    	endIf
 		    elseIf targetItem as light
 		    	debug.trace("iEquip_WidgetCore cycleHand - this is a torch so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, 0)
@@ -3169,18 +3174,17 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    	debug.trace("iEquip_WidgetCore cycleHand - not a weapon, or we only have one of these so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 		    else
-		    	if TI.aiTemperedItemTypes.Find(itemType) != -1													; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
-		    		int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+		    	;if TI.aiTemperedItemTypes.Find(itemType) != -1													; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
 		    		if refHandle != 0xFFFF
 		    			debug.trace("iEquip_WidgetCore cycleHand - we have more than one of these and a refHandle so attempting to equip by handle")
 		    			debug.trace("iEquip_WidgetCore cycleHand - args being passed to EquipItem are targetItem: " + targetItem + ", refHandle: " + refHandle + ", PlayerRef: " + PlayerRef + ", equip slot: " + iEquipSlotId)
 		    			iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef, iEquipSlotId)
 		    			Utility.WaitMenuMode(0.2)
 		    		endIf
-		    	endIf
+		    	;endIf
 		    	
 		    	if !PlayerRef.GetEquippedObject(Q)													; If we haven't successfully equipped anything next check if the queue object is enchanted or poisoned and attempt to equip the correct item using that information
-	    			debug.trace("iEquip_WidgetCore cycleHand - we haven't succeeded in equipping anything yet, trying other methods")
+	    			;/debug.trace("iEquip_WidgetCore cycleHand - we haven't succeeded in equipping anything yet, trying other methods")
 	    			Enchantment tempEnchantment = jMap.getForm(targetObject, "lastKnownEnchantment") as Enchantment
 	    			Potion tempPoison = jMap.getForm(targetObject, "lastKnownPoison") as Potion
 	    			if tempEnchantment
@@ -3194,15 +3198,16 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	    			elseIf tempPoison
 	    				debug.trace("iEquip_WidgetCore cycleHand - the item is poisoned so attempting to EquipPoisonedItemEx")
 	    				iEquip_ActorExt.EquipPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempPoison)										; Poisoned only
-	    			else 																															; If it's not enchanted or poisoned then if we have an itemID for it try equipping it that way
+	    			else/;																														; If it's not enchanted or poisoned then if we have an itemID for it try equipping it that way
 	    				int itemID = jMap.getInt(targetObject, "iEquipItemID")
 				    	if itemID as bool 																		; If we have an itemID then try equipping by that first.  This will fail if the display name has changed since we last equipped it,
-				    		debug.trace("iEquip_WidgetCore cycleHand - the item isn't enchanted or poisoned but we have an itemID so attempting to EquipItemByID")
+				    		;debug.trace("iEquip_WidgetCore cycleHand - the item isn't enchanted or poisoned but we have an itemID so attempting to EquipItemByID")
+				    		debug.trace("iEquip_WidgetCore cycleHand - we have an itemID so attempting to EquipItemByID")
 				    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)							; for example if the item has been renamed or a temper level has changed
 				    	endIf
-	    			endIf
+	    			;endIf
 	    			Utility.WaitMenuMode(0.2)
-		    		if !PlayerRef.GetEquippedObject(Q)												; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
+		    		if !PlayerRef.GetEquippedObject(Q)															; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
 		    			debug.trace("iEquip_WidgetCore cycleHand - We still haven't succeeded in equipping anything so falling back on EquipItemEx and taking pot luck")
 		    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; So fall back on EquipItemEX and take pot luck as to which one is equipped
 	    				EH.abSkipQueueObjectUpdate[Q] = true 	

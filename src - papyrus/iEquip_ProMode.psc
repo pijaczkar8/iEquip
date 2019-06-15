@@ -817,7 +817,12 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 			if foundType == 22
 				PlayerRef.EquipSpell(targetForm as Spell, 0)
 			elseif foundType == 26
-				PlayerRef.EquipItemEx(targetForm as Armor)
+				int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+				if refHandle != 0xFFFF
+		    		iEquip_InventoryExt.EquipItem(targetForm, refHandle, PlayerRef)
+		    	else
+		    		PlayerRef.EquipItemEx(targetForm as Armor)
+		    	endIf
 			endIf
 			WC.setCounterVisibility(0, false)
 			WC.hidePoisonInfo(0)
@@ -939,7 +944,12 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 			if itemType == 22
 				PlayerRef.EquipSpell(formToEquip as Spell, 1)
 			else
-				PlayerRef.EquipItemEx(formToEquip, 1)
+				int refHandle = jMap.getInt(jArray.getObj(WC.aiTargetQ[1], found), "iEquipHandle", 0xFFFF)
+				if refHandle != 0xFFFF
+		    		iEquip_InventoryExt.EquipItem(formToEquip, refHandle, PlayerRef, 1)
+		    	else
+		    		PlayerRef.EquipItemEx(formToEquip, 1)
+		    	endIf
 			endIf
 			WC.bBlockSwitchBackToBoundSpell = false
 		;if in Preselect Mode then update the right hand preselect slot
@@ -1072,7 +1082,12 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 				if !AM.bAmmoMode
 					AM.toggleAmmoMode(abPreselectSlotEnabled[0], false)
 				endIf
-				PlayerRef.EquipItemEx(jMap.getForm(targetObject, "iEquipForm"), 1, false, false)
+				int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+				if refHandle != 0xFFFF
+		    		iEquip_InventoryExt.EquipItem(jMap.getForm(targetObject, "iEquipForm"), refHandle, PlayerRef, 1)
+		    	else
+		    		PlayerRef.EquipItemEx(jMap.getForm(targetObject, "iEquipForm"), 1, false, false)
+		    	endIf
 				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
 				if bPreselectMode && WC.aiCurrentlyPreselected[1] == found
 					cyclePreselectSlot(1, rightCount, false)
@@ -1270,7 +1285,12 @@ function quickRangedSwitchOut(bool force1H = false)
 		WC.bBlockSwitchBackToBoundSpell = true
 		AM.toggleAmmoMode(abPreselectSlotEnabled[0], false)
 		form formToEquip = jMap.getForm(targetObject, "iEquipForm")
-		PlayerRef.EquipItemEx(formToEquip, 1, false, false)
+		int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+		if refHandle != 0xFFFF
+    		iEquip_InventoryExt.EquipItem(formToEquip, refHandle, PlayerRef, 1)
+    	else
+    		PlayerRef.EquipItemEx(formToEquip, 1, false, false)
+    	endIf
 		WC.checkAndUpdatePoisonInfo(1)
 		WC.CM.checkAndUpdateChargeMeter(1)
 		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
@@ -1281,7 +1301,13 @@ function quickRangedSwitchOut(bool force1H = false)
 		endIf
 		if WC.ai2HWeaponTypes.Find(jMap.getInt(targetObject, "iEquipType")) == -1
 			targetArray = WC.aiTargetQ[0]
-			PlayerRef.EquipItemEx(jMap.getForm(jArray.getObj(targetArray, WC.aiCurrentQueuePosition[0]), "iEquipForm"), 2, false, false)
+			targetObject = jArray.getObj(targetArray, WC.aiCurrentQueuePosition[0])
+			refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+			if refHandle != 0xFFFF
+	    		iEquip_InventoryExt.EquipItem(jMap.getForm(targetObject, "iEquipForm"), refHandle, PlayerRef, 2)
+	    	else
+	    		PlayerRef.EquipItemEx(jMap.getForm(targetObject, "iEquipForm"), 2, false, false)
+	    	endIf
 			WC.checkAndUpdatePoisonInfo(0)
 			WC.CM.checkAndUpdateChargeMeter(0)
 			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
