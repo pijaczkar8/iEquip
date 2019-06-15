@@ -11,7 +11,6 @@ event OnLoad()
 endEvent
 
 event OnUpdate()
-
 	ObjectReference BurntOutTorch = Self.PlaceAtMe(iEquipBurntOutTorch, 1, false, true)
 
 	BurntOutTorch.SetActorOwner(PlayerRef.GetActorBase())
@@ -26,8 +25,7 @@ event OnUpdate()
 
 	BurntOutTorch.EnableNoWait()
 
-	Self.Delete()	
+	Self.Delete()
 	Self.Disable()
 	TO.aDroppedTorches[TO.aDroppedTorches.Find(Self)] = BurntOutTorch
-
 endEvent
