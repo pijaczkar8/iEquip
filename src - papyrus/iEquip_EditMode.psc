@@ -51,8 +51,8 @@ int property iEnabledPotionGroupCount auto hidden
 int property previousLeftCount auto hidden
 int property previousRightCount auto hidden
 int[] iCustomColors
-int[] ifirstElementInGroup
-int ifirstElement
+int[] iFirstElementInGroup
+int iFirstElement
 int iLastElement
 int iHighlightColor = 0x0099FF
 int iCurrentColorValue = 0xEAAB00
@@ -109,13 +109,13 @@ function OnInit()
     asPoisonNamePath[0] = ".widgetMaster.LeftHandWidget.leftPoisonName_mc.leftPoisonName.text"
     asPoisonNamePath[1] = ".widgetMaster.RightHandWidget.rightPoisonName_mc.rightPoisonName.text"
 
-    ifirstElementInGroup = new int[6]
-    ifirstElementInGroup[0] = 6  ; leftBg_mc
-    ifirstElementInGroup[1] = 6  ; leftBg_mc
-    ifirstElementInGroup[2] = 20 ; rightBg_mc
-    ifirstElementInGroup[3] = 34 ; shoutBg_mc
-    ifirstElementInGroup[4] = 41 ; consumableBg_mc
-    ifirstElementInGroup[5] = 46 ; poisonBg_mc
+    iFirstElementInGroup = new int[6]
+    iFirstElementInGroup[0] = 6  ; leftBg_mc
+    iFirstElementInGroup[1] = 6  ; leftBg_mc
+    iFirstElementInGroup[2] = 20 ; rightBg_mc
+    iFirstElementInGroup[3] = 34 ; shoutBg_mc
+    iFirstElementInGroup[4] = 41 ; consumableBg_mc
+    iFirstElementInGroup[5] = 46 ; poisonBg_mc
 
     afWidget_CurX = new Float[50]
     afWidget_CurY = new Float[50]
@@ -201,7 +201,7 @@ function EnableEditmode()
         iIndex += 1
     endWhile
     
-    ifirstElement = 0
+    iFirstElement = 0
     iLastElement = 5
     iSelectedElement = 0
     iSelectedElementFront = -1
@@ -590,12 +590,12 @@ function ToggleCycleRange()
     HighlightElement(false)
     
     if 0 <= iSelectedElement && iSelectedElement  <= 5           ; if group is selected, find first child
-        iSelectedElement = ifirstElementInGroup[iSelectedElement]
-        ifirstElement = 6
+        iSelectedElement = iFirstElementInGroup[iSelectedElement]
+        iFirstElement = 6
         iLastElement = 49
     else                                    ; Else find parent group
         iSelectedElement = WidgetGroups.Find(WC.asWidgetGroup[iSelectedElement])
-        ifirstElement = 0
+        iFirstElement = 0
         iLastElement = 5
     endIf
     
@@ -618,10 +618,10 @@ function CycleElements(int iNextPrev)
     iSelectedElement += iNextPrev
     if iNextPrev == 1   ; Next
         if iSelectedElement > iLastElement
-            iSelectedElement = ifirstElement
+            iSelectedElement = iFirstElement
         endIf
     else                ; Previous
-        if iSelectedElement < ifirstElement
+        if iSelectedElement < iFirstElement
             iSelectedElement = iLastElement
         endIf
     endIf
