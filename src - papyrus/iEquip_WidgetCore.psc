@@ -3827,6 +3827,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 		endIf
 		;Hide the counter, it'll be shown again below if needed
 		setCounterVisibility(Q, false)
+		setSlotCount(Q, charges)
 		;Update poison counter
 		if iPoisonIndicatorStyle < 2 ;Count Only or Single Drop & Count
 			;Set counter text colour to match poison name
@@ -3840,7 +3841,6 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
-			setSlotCount(Q, charges)
 			;Re-show the counter
 			setCounterVisibility(Q, true)
 		endIf

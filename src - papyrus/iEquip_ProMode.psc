@@ -1613,6 +1613,9 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool equippingOt
 		if WC.bNameFadeoutEnabled && !WC.abIsNameShown[iEquipSlot]
 			WC.showName(iEquipSlot)
 		endIf
+		WC.hidePoisonInfo(iEquipSlot, true)
+		WC.CM.updateChargeMeterVisibility(iEquipSlot, false)
+		WC.setCounterVisibility(iEquipSlot, false)
 		if foundIndex > -1
 			WC.aiCurrentQueuePosition[iEquipSlot] = foundIndex
 			WC.asCurrentlyEquipped[iEquipSlot] = spellName

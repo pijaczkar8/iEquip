@@ -98,6 +98,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	//Potion Selector Elements
 	public var potionSelector_mc: MovieClip;
 	public var selector: MovieClip;
+	//public var selectorRight: MovieClip;
 	public var restoreText: TextField;
 	public var fortifyText: TextField;
 	public var regenText: TextField;
@@ -214,10 +215,12 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//Set up the potion selector paths
 		potionSelector_mc = widgetMaster.ConsumableWidget.potionSelector_mc;
 		selector = widgetMaster.ConsumableWidget.potionSelector_mc.selector;
+		//selectorRight = widgetMaster.ConsumableWidget.potionSelector_mc.selectorRight;
 		restoreText = widgetMaster.ConsumableWidget.potionSelector_mc.restoreText;
 		fortifyText = widgetMaster.ConsumableWidget.potionSelector_mc.fortifyText;
 		regenText = widgetMaster.ConsumableWidget.potionSelector_mc.regenText;
-		potionSelector_mc.gotoAndStop("right");
+		potionSelector_mc.gotoAndStop("left");
+		selector.gotoAndStop("_left");
 
 		//Set up the preselect icon and text field holder MovieClips
 		leftPreselectIcon_mc = widgetMaster.LeftHandWidget.leftPreselectIcon_mc;
@@ -1374,6 +1377,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
             }
  
         TweenLite.to(selector, 0.2, {_y:targetY, ease:Quad.easeOut});
+        //TweenLite.to(selectorRight, 0.2, {_y:targetY, ease:Quad.easeOut});
     }
 
 	public function runPotionFlashAnimation(potionType: Number): Void
@@ -1494,13 +1498,19 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function updatePoisonIcon(iTarget: Number, sIcon: String): Void
 	{
-		var poisonIcon: MovieClip = iTarget == 0 ? leftPoisonIcon : rightPoisonIcon;
-		var poisonIcon_mc: MovieClip = iTarget == 0 ? leftPoisonIcon_mc : rightPoisonIcon_mc;
-		var currAlpha = poisonIcon_mc._alpha; 
+		var _poisonIcon: MovieClip = iTarget == 0 ? leftPoisonIcon : rightPoisonIcon;
+		var _poisonIcon_mc: MovieClip = iTarget == 0 ? leftPoisonIcon_mc : rightPoisonIcon_mc;
+		var currAlpha = _poisonIcon_mc._alpha; 
+
+		skyui.util.Debug.log("iEquipWidget updatePoisonIcon - currAlpha: " + currAlpha)
+
+		if (currAlpha < 1.0){
+			currAlpha = 100
+		}
 		
-		TweenLite.to(poisonIcon_mc, 0.15, {_alpha:0, ease:Quad.easeOut});
-		poisonIcon.gotoAndStop(sIcon);
-		TweenLite.to(poisonIcon_mc, 0.2, {_alpha:currAlpha, ease:Quad.easeOut});
+		TweenLite.to(_poisonIcon_mc, 0.15, {_alpha:0, ease:Quad.easeOut});
+		_poisonIcon.gotoAndStop(sIcon);
+		TweenLite.to(_poisonIcon_mc, 0.2, {_alpha:currAlpha, ease:Quad.easeOut});
 	}
 	
 	// @overrides WidgetBase
