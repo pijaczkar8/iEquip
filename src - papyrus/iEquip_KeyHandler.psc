@@ -66,12 +66,22 @@ bool _bPlayerIsABeast
 int iWaitingKeyCode
 int iMultiTap
 
+int[] aiGPPComboKeys
+
 ; Strings
 string sPreviousState
 
 ; ------------------
 ; - GENERAL EVENTS -
 ; ------------------
+
+event onInit()
+	aiGPPComboKeys = new int[4]
+	aiGPPComboKeys[0] = -1
+	aiGPPComboKeys[1] = -1
+	aiGPPComboKeys[2] = -1
+	aiGPPComboKeys[3] = -1
+endEvent
 
 function GameLoaded()
     debug.trace("iEquip_KeyHandler GameLoaded start")
@@ -103,6 +113,49 @@ function GameLoaded()
     bIsUtilityKeyHeld = false
     bNotInLootMenu = true
     debug.trace("iEquip_KeyHandler GameLoaded end")
+endFunction
+
+function registerForGPP(bool bGPPLoaded)
+	if bGPPLoaded
+		bIsGPPLoaded = true
+		Self.RegisterForModEvent("GPP_ComboKeysUpdated", "onGPPComboKeysUpdated")
+		registerForGPPKeys()
+	else
+		bIsGPPLoaded = false
+		unregisterForGPPKeys()
+		Self.UnregisterForModEvent("GPP_ComboKeysUpdated")
+	endIf
+endFunction
+
+event onGPPComboKeysUpdated(string sEventName, string sStringArg, Float fNumArg, Form kSender)
+	debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated start")
+	If(sEventName == "GPP_ComboKeysUpdated")
+		registerForGPPKeys()
+	endIf
+	debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated end")
+endEvent
+
+function registerForGPPKeys()
+	unregisterForGPPKeys()
+	aiGPPComboKeys[0] = (Game.GetFormFromFile(0x00000001, "GPP.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[1] = (Game.GetFormFromFile(0x00000002, "GPP.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[2] = (Game.GetFormFromFile(0x00000003, "GPP.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[3] = (Game.GetFormFromFile(0x00000004, "GPP.esp") as GlobalVariable).GetValueInt()
+	RegisterForKey(aiGPPComboKeys[0])
+	RegisterForKey(aiGPPComboKeys[1])
+	RegisterForKey(aiGPPComboKeys[2])
+	RegisterForKey(aiGPPComboKeys[3])
+endFunction
+
+function unregisterForGPPKeys()
+	int i
+	while i < 4
+		if aiGPPComboKeys[i] != -1
+			UnregisterForKey(aiGPPComboKeys[i])
+			aiGPPComboKeys[i] = -1
+		endIf
+		i += 1
+	endWhile
 endFunction
 
 bool property bPlayerIsABeast
@@ -180,6 +233,8 @@ endEvent
 
 event OnKeyDown(int KeyCode)
     debug.trace("iEquip_KeyHandler OnKeyDown start - KeyCode: "+KeyCode)
+    ;if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
+
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = true
     endIf
