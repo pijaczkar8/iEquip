@@ -292,16 +292,19 @@ function deletePreset(string presetName)
 	JContainers.removeFileAtPath(WC.MCMSettingsPath + presetName + WC.FileExt)
 endFunction
 
-function getPresets(string[] saPresets, string defFill)
+function getPresets(string defFill)
 	int jObj = JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExt)
-	string[] tmpStrArr = jMap.allKeysPArray(jObj)
-	jValue.zeroLifetime(jObj)
 	int i
-	saPresets = CreateStringArray(tmpStrArr.length + 1, defFill)
+	string[] tmpStrArr = jMap.allKeysPArray(jObj)
+	string[] saPresets = CreateStringArray(tmpStrArr.length + 1, defFill)
+	jValue.zeroLifetime(jObj)
+	
 	while(i < tmpStrArr.length)
 		saPresets[i + 1] = Substring(tmpStrArr[i], 0, find(tmpStrArr[i], WC.FileExt))
 		i += 1
 	endWhile
+	
+	return saPresets
 endFunction
 
 ; -----------
