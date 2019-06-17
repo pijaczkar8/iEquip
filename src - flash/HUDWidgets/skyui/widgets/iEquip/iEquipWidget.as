@@ -98,6 +98,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	//Potion Selector Elements
 	public var potionSelector_mc: MovieClip;
 	public var selector: MovieClip;
+	//public var selectorRight: MovieClip;
 	public var restoreText: TextField;
 	public var fortifyText: TextField;
 	public var regenText: TextField;
@@ -214,10 +215,12 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//Set up the potion selector paths
 		potionSelector_mc = widgetMaster.ConsumableWidget.potionSelector_mc;
 		selector = widgetMaster.ConsumableWidget.potionSelector_mc.selector;
+		//selectorRight = widgetMaster.ConsumableWidget.potionSelector_mc.selectorRight;
 		restoreText = widgetMaster.ConsumableWidget.potionSelector_mc.restoreText;
 		fortifyText = widgetMaster.ConsumableWidget.potionSelector_mc.fortifyText;
 		regenText = widgetMaster.ConsumableWidget.potionSelector_mc.regenText;
-		potionSelector_mc.gotoAndStop("right");
+		potionSelector_mc.gotoAndStop("left");
+		selector.gotoAndStop("_left");
 
 		//Set up the preselect icon and text field holder MovieClips
 		leftPreselectIcon_mc = widgetMaster.LeftHandWidget.leftPreselectIcon_mc;
@@ -665,12 +668,18 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 			preselectNames.push(rightPreselectName_mc)
 		}
 		//Set up the animation timeline
-		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:prepareForPreselectAnimation});
+		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:PreselectModeAnimateInComplete});
+		//var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		tl.staggerTo(preselectIcons, 0.6, {_rotation:"+=360", _alpha:100, _xscale:100, _yscale:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0)
 		tl.staggerTo(preselectBackgrounds, 0.6, {_rotation:180, _alpha:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
 		tl.staggerTo(preselectNames, 0.25, {_alpha:100, immediateRender:false}, 0.2, 0.4);
 		//And action!
 		tl.play();
+	}
+
+	public function PreselectModeAnimateInComplete(): Void
+	{		
+		skse.SendModEvent("iEquip_PreselectModeAnimationComplete", null);
 	}
 
 	public function PreselectModeAnimateOut(rightEnabled: Boolean, shoutEnabled: Boolean, leftEnabled: Boolean): Void
@@ -705,8 +714,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function prepareForPreselectAnimation(): Void
 	{
-		//Called once PreselectModeAnimateIn completes
+		//Called on load from Papyrus and when entering Preselect Mode (preselectAnimateIn onComplete)
 		//This function checks if the preselect icons are to the left or right of their main icon and sets the animate out direction to the opposite side. It also stores current main icon x/y as the target values for the preselect icons to animate to. Finally it gets and stores all necessary current scale and alpha values to ensure everything returns to the exact state it was in prior to starting the animation
+		
+		skyui.util.Debug.log("iEquipWidget prepareForPreselectAnimation called")
 		
 		var leftIconLTG:Object = {x:0, y:0};
 		var leftPreselectIconLTG:Object = {x:0, y:0};
@@ -780,7 +791,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		shoutNameAlpha = shoutName_mc._alpha;
 		shoutPNameAlpha = shoutPreselectName_mc._alpha;
 
-		skse.SendModEvent("iEquip_ReadyForPreselectAnimation", null);
+		//skse.SendModEvent("iEquip_ReadyForPreselectAnimation", null);
 	}
 
 	/*public function updateLeftTargetAlphaValues(): Void
@@ -791,7 +802,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function equipPreselectedItem(iSlot: Number, currIcon: String, newIcon: String, newName: String, currPIcon: String, newPIcon: String, newPName: String): Void
 	{
-		//skyui.util.Debug.log("iEquipWidget equipPreselectedItem - iSlot: " + iSlot + ", currIcon: " + currIcon + ", newIcon: " + newIcon + ", newName: " + newName + ", currPIcon: " + currPIcon + ", newPIcon: " + newPIcon + ", newPName: " + newPName)
+		skyui.util.Debug.log("iEquipWidget equipPreselectedItem - iSlot: " + iSlot + ", currIcon: " + currIcon + ", newIcon: " + newIcon + ", newName: " + newName + ", currPIcon: " + currPIcon + ", newPIcon: " + newPIcon + ", newPName: " + newPName)
 
 		var iconClip: MovieClip;
 		var iconClip_mc: MovieClip;
@@ -1366,6 +1377,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
             }
  
         TweenLite.to(selector, 0.2, {_y:targetY, ease:Quad.easeOut});
+        //TweenLite.to(selectorRight, 0.2, {_y:targetY, ease:Quad.easeOut});
     }
 
 	public function runPotionFlashAnimation(potionType: Number): Void
@@ -1486,13 +1498,19 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function updatePoisonIcon(iTarget: Number, sIcon: String): Void
 	{
-		var poisonIcon: MovieClip = iTarget == 0 ? leftPoisonIcon : rightPoisonIcon;
-		var poisonIcon_mc: MovieClip = iTarget == 0 ? leftPoisonIcon_mc : rightPoisonIcon_mc;
-		var currAlpha = poisonIcon_mc._alpha; 
+		var _poisonIcon: MovieClip = iTarget == 0 ? leftPoisonIcon : rightPoisonIcon;
+		var _poisonIcon_mc: MovieClip = iTarget == 0 ? leftPoisonIcon_mc : rightPoisonIcon_mc;
+		var currAlpha = _poisonIcon_mc._alpha; 
+
+		skyui.util.Debug.log("iEquipWidget updatePoisonIcon - currAlpha: " + currAlpha)
+
+		if (currAlpha < 1.0){
+			currAlpha = 100
+		}
 		
-		TweenLite.to(poisonIcon_mc, 0.15, {_alpha:0, ease:Quad.easeOut});
-		poisonIcon.gotoAndStop(sIcon);
-		TweenLite.to(poisonIcon_mc, 0.2, {_alpha:currAlpha, ease:Quad.easeOut});
+		TweenLite.to(_poisonIcon_mc, 0.15, {_alpha:0, ease:Quad.easeOut});
+		_poisonIcon.gotoAndStop(sIcon);
+		TweenLite.to(_poisonIcon_mc, 0.2, {_alpha:currAlpha, ease:Quad.easeOut});
 	}
 	
 	// @overrides WidgetBase
@@ -1805,6 +1823,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function setTextColorAndAlignment(textElement: Number, a_align: Number, currentColor: Number): Void
 	{
+		skyui.util.Debug.log("iEquipEditMode setTextColorAndAlignment - textElement: " + textElement + ", a_align: " + a_align + ", currentColor: " + currentColor)
 		selectedText = textElementArray[textElement];
 		var format:TextFormat = selectedText.getTextFormat();
 
