@@ -225,6 +225,8 @@ function onTorchUnequipped()
 			PlayerRef.RemoveItem(iEquipTorch, PlayerRef.GetItemCount(iEquipTorch), true)
 		endIf
 	endIf
+	Utility.WaitMenuMode(0.5)
+	WC.EH.unlockOnObjectUnequippedEvent()
 	debug.trace("iEquip_TorchScript onTorchUnequipped end")
 endfunction
 
@@ -597,7 +599,7 @@ function updateTorchMeterVisibility(bool show)
 			UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc._visible", false)
 		endIf
 	endIf
-	debug.trace("iEquip_TorchScript updateChargeMeterVisibility end")
+	debug.trace("iEquip_TorchScript updateTorchMeterVisibility end")
 endFunction
 
 function updateTorchMeterOnSettingsChanged()

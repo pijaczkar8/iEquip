@@ -71,10 +71,10 @@ State inf_men_loadpreset
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_loadpreset")
         elseIf currentEvent == "Open"
-			saPresets = MCM.getPresets("$iEquip_MCM_inf_lbl_noLoad")
+			MCM.getPresets(saPresets, "$iEquip_MCM_inf_lbl_noLoad")
 			MCM.fillMenu(0, saPresets, 0)
         elseIf currentEvent == "Accept"
-			if (currentVar as int > 0)
+			if (currentVar as int != 0)
 				MCM.loadPreset(saPresets[currentVar as int])
 			endIf
         endIf 
@@ -86,10 +86,10 @@ State inf_men_deletepreset
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_deletepreset")
         elseIf currentEvent == "Open"
-			saPresets = MCM.getPresets("$iEquip_MCM_inf_lbl_noDelete")
+			MCM.getPresets(saPresets, "$iEquip_MCM_inf_lbl_noDelete")
 			MCM.fillMenu(0, saPresets, 0)
         elseIf currentEvent == "Accept"
-			if (currentVar as int > 0)
+			if (currentVar as int != 0)
 				MCM.deletePreset(saPresets[currentVar as int])
 				MCM.ForcePageReset()
 			endIf
@@ -147,6 +147,7 @@ State inf_txt_rstMCM
 			string[] tmpStrArr = jMap.allKeysPArray(jObj)
 			jValue.zeroLifetime(jObj)
 			MCM.loadPreset(tmpStrArr[0], true)
+			WC.bMCMPresetLoaded = true
         endIf 
     endEvent
 endState

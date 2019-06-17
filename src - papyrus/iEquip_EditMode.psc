@@ -1013,8 +1013,6 @@ function LoadPreset(int jPreset)
 	UpdateEditModeGuide()
     UpdateElementsAll()
 	
-	CM.updateChargeMeters(true) ;forceUpdate will make sure updateMeterPercent runs in full
-	
     if CM.iChargeDisplayType > 0
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
@@ -1026,8 +1024,13 @@ function LoadPreset(int jPreset)
 	endIf
 
     UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
-    WC.updatePotionSelector(true)
-    UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", WC.iBackgroundStyle)
+
+    if !isEditMode                          ; The only time this will be the case is if the user has selected Reset Layout in the MCM, and we're loading the default layout preset
+        WC.refreshWidgetOnLoad()
+    else
+        WC.updatePotionSelector(true)
+        UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", WC.iBackgroundStyle)
+    endIf
     Wait(0.1)
     WC.updateWidgetVisibility()
 endFunction

@@ -918,9 +918,15 @@ endFunction
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
   	if akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable
   		debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
+  		GoToState("PROCESSING")
     	TO.onTorchUnequipped()
   	endIf
 endEvent
+
+; Called from TorchScript when previous onTorchUnequipped call has completed to guard against OnObjectEquipped event firing twice
+function unlockOnObjectUnequippedEvent()
+		GotoState("")
+endFunction
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	
@@ -1028,6 +1034,11 @@ state BEASTMODE
 	endEvent
 endState
 
+state PROCESSING
+	event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
+	endEvent
+endState
+
 auto state DISABLED
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 	endEvent
@@ -1042,6 +1053,9 @@ auto state DISABLED
 	endEvent
 
 	event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
+	endEvent
+
+	event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
 	endEvent
 
 	event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)

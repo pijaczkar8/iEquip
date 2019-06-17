@@ -108,7 +108,7 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool ena
 		bool[] args = new bool[5]
 		if bPreselectMode
 			int Q
-			if AM.bAmmoMode
+			if AM.bAmmoMode && !AM.bSimpleAmmoMode
 				bAmmoModeActiveOnTogglePreselect = true
 				Q = 1 ;Skip updating left hand preselect if currently in ammo mode as it's already set
 			endIf
@@ -160,7 +160,7 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool ena
 			args[0] = abPreselectSlotEnabled[0] ;Show left
 			args[1] = abPreselectSlotEnabled[1] ;Show right
 			args[2] = abPreselectSlotEnabled[2] ;Show shout if not hidden in edit mode or bShoutPreselectEnabled disabled in MCM
-			args[3] = AM.bAmmoMode
+			args[3] = (AM.bAmmoMode && !AM.bSimpleAmmoMode)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			debug.trace("iEquip_ProMode togglePreselectMode, left slot enabled: " + args[0] + ", right slot enabled: " + args[1] + ", shout slot enabled: " + args[2] + ", ammo mode: " + AM.bAmmoMode)
 			PreselectModeAnimateIn()
@@ -181,10 +181,10 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool ena
 		else
 			;Hide preselect widget elements
 			PreselectModeAnimateOut()
-			if AM.bAmmoMode || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2)
+			if (AM.bAmmoMode && !AM.bSimpleAmmoMode) || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2)
 				args[0] = true ;Show left
 			endIf
-			args[3] = AM.bAmmoMode
+			args[3] = (AM.bAmmoMode && !AM.bSimpleAmmoMode)
 			Utility.WaitMenuMode(2.0)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 		endIf
@@ -196,7 +196,7 @@ function PreselectModeAnimateIn()
 	debug.trace("iEquip_ProMode PreselectModeAnimateIn start")
 	Self.RegisterForModEvent("iEquip_PreselectModeAnimationComplete", "onPreselectModeAnimationComplete")
 	bool[] args = new bool[3]
-	if !AM.bAmmoMode
+	if !AM.bAmmoMode || AM.bSimpleAmmoMode
 		args[0] = abPreselectSlotEnabled[0] ;Only animate the left icon if not already shown in ammo mode
 	endIf
 	args[1] = abPreselectSlotEnabled[2]
@@ -241,14 +241,14 @@ function PreselectModeAnimateOut()
 		bool[] args = new bool[3]
 		args[0] = abPreselectSlotEnabled[1]
 		args[1] = abPreselectSlotEnabled[2]
-		if !(AM.bAmmoMode || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2))
+		if !((AM.bAmmoMode && !AM.bSimpleAmmoMode) || (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2))
 			args[2] = abPreselectSlotEnabled[0] ;Only animate out left slot if we don't currently have a ranged weapon equipped in the right hand or are in ammo mode as we still need it to show in regular mode
 		endIf
 		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
 	endIf
 	int i
 	while i < 3
-		if (i == 0 && !AM.bAmmoMode) || i == 1
+		if (i == 0 && !AM.bAmmoMode || AM.bSimpleAmmoMode) || i == 1
 			WC.hideAttributeIcons(i + 5)
 		endIf
 		if WC.bNameFadeoutEnabled && !WC.abIsNameShown[i]
