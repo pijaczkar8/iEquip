@@ -375,6 +375,7 @@ function runUpdate()
         endIf
         
     elseIf iMultiTap == 2  ; Double tap
+        int LHItemType
         if iWaitingKeyCode == iConsumableKey 
             if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
@@ -388,10 +389,16 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     if AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
                         WC.cycleSlot(0, false, false, false, true)
-                    elseIf PlayerRef.GetEquippedItemType(0) == 11 ; Torch
-                        TO.DropTorch()
                     else
-                        WC.applyPoison(0)
+                        LHItemType = PlayerRef.GetEquippedItemType(0)
+                    
+                        if LHItemType == 9 ; Spell
+                            PM.quickDualCastOnDoubleTap(0)
+                        elseIf LHItemType == 11 ; Torch
+                            TO.DropTorch()
+                        else
+                            WC.applyPoison(0)
+                        endIf
                     endIf
                 elseIf PM.abPreselectSlotEnabled[0]
                     debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling equipPreselectedItem")
@@ -419,7 +426,7 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     WC.openQueueManagerMenu(1)
                 elseIf !AM.bAmmoMode
-					int LHItemType = PlayerRef.GetEquippedItemType(0)
+					LHItemType = PlayerRef.GetEquippedItemType(0)
 				
                     if LHItemType == 9 ; Spell
                         PM.quickDualCastOnDoubleTap(0)

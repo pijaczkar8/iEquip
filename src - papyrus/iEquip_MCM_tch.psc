@@ -88,6 +88,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
+
 	if WC.isEnabled
 
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_quickLightOptions</font>")
@@ -118,20 +119,20 @@ function drawPage()
 
 		MCM.SetCursorPosition(1)
 
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchDropOptions</font>")
-        MCM.AddToggleOptionST("tch_tgl_dropLitTorches", "$iEquip_MCM_tch_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
-        if TO.bDropLitTorchesEnabled
-            MCM.AddMenuOptionST("tch_men_dropLitTorchBehavior", "$iEquip_MCM_tch_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
-        endIf
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchDropOptions</font>")
+		MCM.AddToggleOptionST("tch_tgl_dropLitTorches", "$iEquip_MCM_tch_lbl_dropLitTorches", TO.bDropLitTorchesEnabled)
+		if TO.bDropLitTorchesEnabled
+			MCM.AddMenuOptionST("tch_men_dropLitTorchBehavior", "$iEquip_MCM_tch_lbl_dropLitTorchBehavior", dropLitTorchBehaviour[TO.iDropLitTorchBehavior])
+		endIf
 
-        MCM.AddEmptyOption()
+		MCM.AddEmptyOption()
 
 		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
-        MCM.AddToggleOptionST("tch_tgl_showTorchMeter", "$iEquip_MCM_tch_lbl_showTorchMeter", TO.bShowTorchMeter)
-        if TO.bShowTorchMeter
-            MCM.AddColorOptionST("tch_col_torchMeterCol", "$iEquip_MCM_tch_lbl_torchMeterCol", TO.iTorchMeterFillColor)
-            MCM.AddMenuOptionST("tch_men_torchMeterFillDir", "$iEquip_MCM_tch_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
-        endIf
+		MCM.AddToggleOptionST("tch_tgl_showTorchMeter", "$iEquip_MCM_tch_lbl_showTorchMeter", TO.bShowTorchMeter)
+		if TO.bShowTorchMeter
+			MCM.AddColorOptionST("tch_col_torchMeterCol", "$iEquip_MCM_tch_lbl_torchMeterCol", TO.iTorchMeterFillColor)
+			MCM.AddMenuOptionST("tch_men_torchMeterFillDir", "$iEquip_MCM_tch_lbl_torchMeterFillDir", meterFillDirectionOptions[iTorchMeterFillDirection])
+		endIf
 
 		MCM.AddEmptyOption()
 

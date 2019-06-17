@@ -754,18 +754,20 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		targetIndex = WC.findInQueue(equippedSlot, itemName, queuedForm, itemHandle)
 		if targetIndex != -1
 			
-			if equippedSlot < 2 && !abSkipQueueObjectUpdate[equippedSlot]								; Update the item name in case the display name differs from the base item name, and store the new itemID
-				if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", 0xFFFF) == 0xFFFF
-					JArray.AddInt(WC.iRefHandleArray, itemHandle)
-					JArray.unique(WC.iRefHandleArray)
-					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
+			if equippedSlot < 2
+				if !abSkipQueueObjectUpdate[equippedSlot]								; Update the item name in case the display name differs from the base item name, and store the new itemID
+					if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", 0xFFFF) == 0xFFFF
+						JArray.AddInt(WC.iRefHandleArray, itemHandle)
+						JArray.unique(WC.iRefHandleArray)
+						jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
+					endIf
+					jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
+					jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipBaseName", itemBaseName)
+					jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
+					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
+				else
+					abSkipQueueObjectUpdate[equippedSlot] = false
 				endIf
-				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
-				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipBaseName", itemBaseName)
-				jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
-				jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
-			else
-				abSkipQueueObjectUpdate[equippedSlot] = false
 			endIf
 			
 			if WC.bMoreHUDLoaded																		; Send to moreHUD if loaded

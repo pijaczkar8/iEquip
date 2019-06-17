@@ -119,13 +119,6 @@ class skyui.widgets.iEquip.iEquipPositionIndicator extends MovieClip
 
 	public function update(i_queueLength: Number, i_currPosition: Number, i_newPosition: Number, bCycling: Boolean, bPreselectMode: Boolean, currPreselectPosition: Number): Void
 	{
-		// If somehow we've called this and nothing has changed in terms of queue length or target position then show the indicator and do nothing else
-		if ((queueLength == i_queueLength) && (currentPosition == i_newPosition)){
-			if (!_shown){
-				showIndicator();
-			}
-			return;
-		}
 		// If the queue length has changed since last called update the indicator width
 		if (queueLength != i_queueLength){
 			queueLength = i_queueLength;
@@ -181,11 +174,11 @@ class skyui.widgets.iEquip.iEquipPositionIndicator extends MovieClip
 		currentPositionMarker._x = positionMarker._width * currentPosition + (positionMarker._width/2) - (maxWidth/2);
 		
 		var startingPosition: Number = currentPosition;
-		if(bPreselectMode)
+		if(bPreselectMode){
 			startingPosition = currPreselectPosition;
-		
+		}
+
 		positionMarker._x = positionMarker._width * startingPosition + (positionMarker._width/2) - (maxWidth/2);
-		
 	}
 
 	private function invalidateColor(): Void

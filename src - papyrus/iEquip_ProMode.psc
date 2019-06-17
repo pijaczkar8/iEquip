@@ -107,8 +107,6 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool ena
 		WC.bPreselectMode = bPreselectMode
 		bool[] args = new bool[5]
 		if bPreselectMode
-			;bReadyForPreselectAnim = false
-			Self.RegisterForModEvent("iEquip_ReadyForPreselectAnimation", "ReadyForPreselectAnimation")
 			int Q
 			if AM.bAmmoMode
 				bAmmoModeActiveOnTogglePreselect = true
@@ -189,7 +187,6 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool ena
 			args[3] = AM.bAmmoMode
 			Utility.WaitMenuMode(2.0)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-			Self.UnregisterForModEvent("iEquip_ReadyForPreselectAnimation")
 		endIf
 	endIf
 	debug.trace("iEquip_ProMode togglePreselectMode end")
@@ -197,6 +194,7 @@ endFunction
 
 function PreselectModeAnimateIn()
 	debug.trace("iEquip_ProMode PreselectModeAnimateIn start")
+	Self.RegisterForModEvent("iEquip_PreselectModeAnimationComplete", "onPreselectModeAnimationComplete")
 	bool[] args = new bool[3]
 	if !AM.bAmmoMode
 		args[0] = abPreselectSlotEnabled[0] ;Only animate the left icon if not already shown in ammo mode
@@ -227,6 +225,15 @@ function PreselectModeAnimateIn()
 	endIf
 	debug.trace("iEquip_ProMode PreselectModeAnimateIn end")
 endFunction
+
+event onPreselectModeAnimationComplete(string sEventName, string sStringArg, Float fNumArg, Form kSender)
+	debug.trace("iEquip_ProMode onPreselectModeAnimationComplete start")
+	If(sEventName == "iEquip_PreselectModeAnimationComplete")
+		updateAnimationTargetValues()
+		Self.UnregisterForModEvent("iEquip_PreselectModeAnimationComplete")
+	endIf
+	debug.trace("iEquip_ProMode onPreselectModeAnimationComplete end")
+endEvent
 
 function PreselectModeAnimateOut()
 	debug.trace("iEquip_ProMode PreselectModeAnimateOut start")
@@ -544,6 +551,7 @@ function equipPreselectedItem(int Q)
 endFunction
 
 function updateAnimationTargetValues()
+	debug.trace("iEquip_ProMode updateAnimationTargetValues start")
 	UI.Invoke(HUD_MENU, WidgetRoot + ".prepareForPreselectAnimation")
 endFunction
 
@@ -809,7 +817,12 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 			if foundType == 22
 				PlayerRef.EquipSpell(targetForm as Spell, 0)
 			elseif foundType == 26
-				PlayerRef.EquipItemEx(targetForm as Armor)
+				int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+				if refHandle != 0xFFFF
+		    		iEquip_InventoryExt.EquipItem(targetForm, refHandle, PlayerRef)
+		    	else
+		    		PlayerRef.EquipItemEx(targetForm as Armor)
+		    	endIf
 			endIf
 			WC.setCounterVisibility(0, false)
 			WC.hidePoisonInfo(0)
@@ -931,7 +944,12 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 			if itemType == 22
 				PlayerRef.EquipSpell(formToEquip as Spell, 1)
 			else
-				PlayerRef.EquipItemEx(formToEquip, 1)
+				int refHandle = jMap.getInt(jArray.getObj(WC.aiTargetQ[1], found), "iEquipHandle", 0xFFFF)
+				if refHandle != 0xFFFF
+		    		iEquip_InventoryExt.EquipItem(formToEquip, refHandle, PlayerRef, 1)
+		    	else
+		    		PlayerRef.EquipItemEx(formToEquip, 1)
+		    	endIf
 			endIf
 			WC.bBlockSwitchBackToBoundSpell = false
 		;if in Preselect Mode then update the right hand preselect slot
@@ -1064,7 +1082,12 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 				if !AM.bAmmoMode
 					AM.toggleAmmoMode(abPreselectSlotEnabled[0], false)
 				endIf
-				PlayerRef.EquipItemEx(jMap.getForm(targetObject, "iEquipForm"), 1, false, false)
+				int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+				if refHandle != 0xFFFF
+		    		iEquip_InventoryExt.EquipItem(jMap.getForm(targetObject, "iEquipForm"), refHandle, PlayerRef, 1)
+		    	else
+		    		PlayerRef.EquipItemEx(jMap.getForm(targetObject, "iEquipForm"), 1, false, false)
+		    	endIf
 				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
 				if bPreselectMode && WC.aiCurrentlyPreselected[1] == found
 					cyclePreselectSlot(1, rightCount, false)
@@ -1262,7 +1285,12 @@ function quickRangedSwitchOut(bool force1H = false)
 		WC.bBlockSwitchBackToBoundSpell = true
 		AM.toggleAmmoMode(abPreselectSlotEnabled[0], false)
 		form formToEquip = jMap.getForm(targetObject, "iEquipForm")
-		PlayerRef.EquipItemEx(formToEquip, 1, false, false)
+		int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+		if refHandle != 0xFFFF
+    		iEquip_InventoryExt.EquipItem(formToEquip, refHandle, PlayerRef, 1)
+    	else
+    		PlayerRef.EquipItemEx(formToEquip, 1, false, false)
+    	endIf
 		WC.checkAndUpdatePoisonInfo(1)
 		WC.CM.checkAndUpdateChargeMeter(1)
 		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
@@ -1273,7 +1301,13 @@ function quickRangedSwitchOut(bool force1H = false)
 		endIf
 		if WC.ai2HWeaponTypes.Find(jMap.getInt(targetObject, "iEquipType")) == -1
 			targetArray = WC.aiTargetQ[0]
-			PlayerRef.EquipItemEx(jMap.getForm(jArray.getObj(targetArray, WC.aiCurrentQueuePosition[0]), "iEquipForm"), 2, false, false)
+			targetObject = jArray.getObj(targetArray, WC.aiCurrentQueuePosition[0])
+			refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+			if refHandle != 0xFFFF
+	    		iEquip_InventoryExt.EquipItem(jMap.getForm(targetObject, "iEquipForm"), refHandle, PlayerRef, 2)
+	    	else
+	    		PlayerRef.EquipItemEx(jMap.getForm(targetObject, "iEquipForm"), 2, false, false)
+	    	endIf
 			WC.checkAndUpdatePoisonInfo(0)
 			WC.CM.checkAndUpdateChargeMeter(0)
 			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
@@ -1579,6 +1613,9 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool equippingOt
 		if WC.bNameFadeoutEnabled && !WC.abIsNameShown[iEquipSlot]
 			WC.showName(iEquipSlot)
 		endIf
+		WC.hidePoisonInfo(iEquipSlot, true)
+		WC.CM.updateChargeMeterVisibility(iEquipSlot, false)
+		WC.setCounterVisibility(iEquipSlot, false)
 		if foundIndex > -1
 			WC.aiCurrentQueuePosition[iEquipSlot] = foundIndex
 			WC.asCurrentlyEquipped[iEquipSlot] = spellName
