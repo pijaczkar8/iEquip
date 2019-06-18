@@ -923,11 +923,6 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
   	endIf
 endEvent
 
-; Called from TorchScript when previous onTorchUnequipped call has completed to guard against OnObjectEquipped event firing twice
-function unlockOnObjectUnequippedEvent()
-		GotoState("")
-endFunction
-
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	
 	int i

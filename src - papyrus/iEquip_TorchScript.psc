@@ -120,11 +120,11 @@ event OnMenuClose(string MenuName)											; This is purely to handle custom t
 		if PlayerRef.GetEquippedItemType(0) == 11 && !PlayerRef.GetEquippedObject(0) == iEquipTorch as form		; If the player currently has a torch equipped we need to unequip it, check and change fCurrentTorchLife if required, and re-equip it
 			debug.trace("iEquip_TorchScript OnMenuClose - player has a torch equipped")
 			form torchForm = PlayerRef.GetEquippedObject(0)
-			while Utility.IsInMenuMode()
-				Utility.Wait(0.1)
+			while IsInMenuMode()
+				Wait(0.1)
 			endWhile
 			PlayerRef.UnequipItemEx(torchForm)
-			Utility.Wait(1.0)
+			Wait(1.0)
 			If fCurrentTorchLife > fTorchDuration
 				debug.trace("iEquip_TorchScript OnMenuClose - fCurrentTorchLife: " + fCurrentTorchLife + ", fTorchDuration: " + fTorchDuration + ", setting current torch life to new duration")
 				fCurrentTorchLife = fTorchDuration
@@ -134,7 +134,7 @@ event OnMenuClose(string MenuName)											; This is purely to handle custom t
 			debug.trace("iEquip_TorchScript OnMenuClose - fCurrentTorchLife: " + fCurrentTorchLife + ", fTorchDuration: " + fTorchDuration + ", setting current torch life to new duration")
 			fCurrentTorchLife = fTorchDuration
 		endIf
-		Utility.Wait(0.5)
+		Wait(0.5)
 		bSettingDuration = false
 		bTorchDurationSettingChanged = false
 	endIf
@@ -150,7 +150,7 @@ function onTorchRemoved(form torchForm)
 		debug.trace("iEquip_TorchScript onTorchRemoved - WC.asCurrentlyEquipped[0]: " + WC.asCurrentlyEquipped[0] + ", torchForm.GetName(): " + torchForm.GetName())
 		if !bJustDroppedTorch && WC.asCurrentlyEquipped[0] == torchForm.GetName() && bautoReEquipTorch && PlayerRef.GetItemCount(torchForm) > 0
 			if bRealisticReEquip
-				Utility.Wait(fRealisticReEquipDelay)
+				Wait(fRealisticReEquipDelay)
 			endIf
 			PlayerRef.EquipItemEx(torchForm)
 		endIf
@@ -162,7 +162,7 @@ endfunction
 function onTorchEquipped()
 	debug.trace("iEquip_TorchScript onTorchEquipped start - bSettingLightRadius: " + bSettingLightRadius)
 	if bSettingLightRadius
-		Utility.Wait(1.0) ; Just in case the unequipped event is received after this one
+		Wait(1.0) ; Just in case the unequipped event is received after this one
 		bSettingLightRadius = false
 	else
 		iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
@@ -200,7 +200,7 @@ function onTorchEquipped()
 			if CM.abIsChargeMeterShown[0]
 				;updateTorchMeterVisibility(false)
 				CM.updateChargeMeterVisibility(0, false)
-				Utility.WaitMenuMode(0.2)
+				WaitMenuMode(0.2)
 			endIf
 			showTorchMeter()
 		endIf
@@ -225,8 +225,8 @@ function onTorchUnequipped()
 			PlayerRef.RemoveItem(iEquipTorch, PlayerRef.GetItemCount(iEquipTorch), true)
 		endIf
 	endIf
-	Utility.WaitMenuMode(0.5)
-	WC.EH.unlockOnObjectUnequippedEvent()
+	WaitMenuMode(0.5)
+	WC.EH.GotoState("")
 	debug.trace("iEquip_TorchScript onTorchUnequipped end")
 endfunction
 
@@ -274,12 +274,12 @@ event OnUpdate()
 	            	int countdown = 100
 	            	while !(PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping") && countdown > 0
 					     countdown -= 1
-					     Utility.WaitMenuMode(0.015)
+					     WaitMenuMode(0.015)
 					     Debug.Trace("Waiting for Equip")
 					endWhile
 
 					while (PlayerRef as objectReference).GetAnimationVariableBool("IsEquipping")
-					     Utility.WaitMenuMode(0.015)
+					     WaitMenuMode(0.015)
 					     Debug.SendAnimationEvent(PlayerRef, "WeapEquip_Out")
 					     Debug.Trace("WeapEquip_Out Sent")
 					endWhile
@@ -290,7 +290,7 @@ event OnUpdate()
 		if fCurrentTorchLife <= 0.0
 			if bShowTorchMeter
 				startTorchMeterFlash()
-				Utility.Wait(2.0)
+				Wait(2.0)
 				updateTorchMeterVisibility(false)
 			endIf
 			iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
@@ -463,7 +463,7 @@ Function DropTorch()
 
 		Int Tries = 0 
 		While(Tries < 10 && (!DroppedTorch.is3DLoaded() || !DroppedTorch.IsEnabled()))
-			Utility.Wait(0.05)
+			Wait(0.05)
 			Tries += 1
 		EndWhile
 		
@@ -479,7 +479,7 @@ Function DropTorch()
 		if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || ((iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3) && queueLength == 0)	; Do Nothing and set left hand to empty
 			WC.setSlotToEmpty(0, false, true)
 		elseIf iDropLitTorchBehavior == 1 || (iDropLitTorchBehavior == 2 && remainingTorches > 0)																					; Equip another torch
-			Utility.Wait(fRealisticReEquipDelay)
+			Wait(fRealisticReEquipDelay)
 			PlayerRef.EquipItemEx(realTorchForm, 0)
 		elseIf iDropLitTorchBehavior < 4																																			; Cycle left hand
 			WC.cycleSlot(0, false, true)
@@ -607,7 +607,7 @@ function updateTorchMeterOnSettingsChanged()
 	stopTorchMeterAnim()
 	if CM.abIsChargeMeterShown[0]
 		updateTorchMeterVisibility(false)
-		Utility.WaitMenuMode(0.2)
+		WaitMenuMode(0.2)
 	endIf
 	showTorchMeter()
 	bSettingsChanged = false
