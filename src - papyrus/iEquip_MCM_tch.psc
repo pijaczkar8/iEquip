@@ -152,7 +152,7 @@ State tch_key_quickLight
                 KH.iQuickLightKey = -1
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iQuickLightKey)        
         endIf
     endEvent

@@ -18,7 +18,7 @@ iEquip_PlayerEventHandler property EH auto
 actor property PlayerRef auto
 FormList property iEquip_AmmoItemsFLST auto
 
-string property sAmmoIconSuffix auto hidden
+int property iAmmoIconStyle auto hidden
 int property iAmmoListSorting = 1 auto hidden
 int property iActionOnLastAmmoUsed = 1 auto hidden
 bool property bSimpleAmmoMode auto hidden
@@ -45,6 +45,7 @@ string[] asBoundAmmoNames
 string[] asBoundAmmoIcons
 
 string[] asAmmoIcons
+string[] asAmmoIconSuffix
 
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
@@ -68,6 +69,10 @@ event onInit()
 	asAmmoIcons = new string[2]
 	asAmmoIcons[0] = "Arrow"
 	asAmmoIcons[1] = "Bolt"
+	asAmmoIconSuffix = new string[3]
+	asAmmoIconSuffix[1] = "Triple"
+	asAmmoIconSuffix[2] = "Quiver"
+	
 	debug.trace("iEquip_AmmoMode onInit end")
 endEvent
 
@@ -346,7 +351,7 @@ function AmmoModeAnimateIn()
 		widgetData[0] = "Fist"
 		widgetData[1] = "$iEquip_common_Unarmed"
 	endIf
-	widgetData[2] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipIcon") + sAmmoIconSuffix
+	widgetData[2] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipIcon") + asAmmoIconSuffix[iAmmoIconStyle]
 	widgetData[3] = asCurrentAmmo[Q]
 	;Set the left preselect index to whatever is currently equipped in the left hand ready for cycling the preselect slot in ammo mode
 	WC.aiCurrentlyPreselected[0] = WC.aiCurrentQueuePosition[0]
@@ -366,7 +371,7 @@ function AmmoModeAnimateOut()
 	if jArray.count(aiTargetQ[Q]) < 1
 		widgetData[0] = "Empty"
 	else	
-		widgetData[0] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipIcon") + sAmmoIconSuffix
+		widgetData[0] = jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipIcon") + asAmmoIconSuffix[iAmmoIconStyle]
 	endIf
 	;Get icon and item name for item currently showing in the left preselect slot ready to update the main slot
 	if jArray.count(WC.aiTargetQ[0]) > 0
@@ -506,7 +511,7 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 			If(iHandle)
 				UICallback.PushInt(iHandle, 0) ;Left hand widget
-				UICallback.PushString(iHandle, jMap.getStr(ammoObject, "iEquipIcon") + sAmmoIconSuffix) ;New icon
+				UICallback.PushString(iHandle, jMap.getStr(ammoObject, "iEquipIcon") + asAmmoIconSuffix[iAmmoIconStyle]) ;New icon
 				UICallback.PushString(iHandle, asCurrentAmmo[Q]) ;New name
 				UICallback.PushFloat(iHandle, fNameAlpha) ;Current item name alpha value
 				UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[0]])

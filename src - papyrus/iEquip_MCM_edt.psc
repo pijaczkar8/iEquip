@@ -129,7 +129,7 @@ State edt_men_chooseHtKey
             
             if iCurrentEMKeysChoice == 0
                 KH.resetEditModeKeys()
-                MCM.bUpdateKeyMaps = true
+                WC.bUpdateKeyMaps = true
             endIf
             
             MCM.ForcePageReset()
@@ -150,7 +150,7 @@ State edt_key_nextElem
                 KH.iEditNextKey = 55
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditNextKey)
         endIf
     endEvent
@@ -165,7 +165,7 @@ State edt_key_prevElem
                 KH.iEditPrevKey = 181
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditPrevKey)        
         endIf
     endEvent
@@ -180,7 +180,7 @@ State edt_key_moveUp
                 KH.iEditUpKey = 200
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditUpKey)      
         endIf
     endEvent
@@ -195,7 +195,7 @@ State edt_key_moveDown
                 KH.iEditDownKey = 208
             endIf
 
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditDownKey)
         endIf
     endEvent
@@ -210,7 +210,7 @@ State edt_key_moveLeft
                 KH.iEditLeftKey = 203
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditLeftKey)   
         endIf
     endEvent
@@ -225,7 +225,7 @@ State edt_key_moveRight
                 KH.iEditRightKey = 205
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditRightKey)
         endIf
     endEvent
@@ -240,7 +240,7 @@ State edt_key_sclUp
                 KH.iEditScaleUpKey = 78
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditScaleUpKey)
         endIf
     endEvent
@@ -255,7 +255,7 @@ State edt_key_sclDown
                 KH.iEditScaleDownKey = 74
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditScaleDownKey)
         endIf
     endEvent
@@ -270,7 +270,7 @@ State edt_key_rotate
                 KH.iEditRotateKey = 80
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditRotateKey)
         endIf
     endEvent
@@ -285,7 +285,7 @@ State edt_key_adjTransp
                 KH.iEditAlphaKey = 81
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditAlphaKey)
         endIf
     endEvent
@@ -300,7 +300,7 @@ State edt_key_bringFrnt
                 KH.iEditDepthKey = 72
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditDepthKey)
         endIf
     endEvent
@@ -315,7 +315,7 @@ State edt_key_setTxtAlCo
                 KH.iEditTextKey = 79
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditTextKey)
         endIf
     endEvent
@@ -330,7 +330,7 @@ State edt_key_tglRulers
                 KH.iEditRulersKey = 77
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditRulersKey)
         endIf
     endEvent
@@ -345,7 +345,7 @@ State edt_key_rstSelElem
                 KH.iEditResetKey = 82
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditResetKey)
         endIf
     endEvent
@@ -360,7 +360,7 @@ State edt_key_loadPrst
                 KH.iEditLoadPresetKey = 75
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditLoadPresetKey)
         endIf
     endEvent
@@ -375,7 +375,7 @@ State edt_key_savePrst
                 KH.iEditSavePresetKey = 76
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditSavePresetKey)
         endIf
     endEvent
@@ -390,7 +390,7 @@ State edt_key_discChangs
                 KH.iEditDiscardKey = 83
             endIf 
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iEditDiscardKey)
         endIf
     endEvent

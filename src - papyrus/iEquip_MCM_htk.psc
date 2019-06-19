@@ -140,7 +140,7 @@ State htk_key_leftHand
                 KH.iLeftKey = 34
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iLeftKey)
         endIf
     endEvent
@@ -157,7 +157,7 @@ State htk_key_rightHand
                 KH.iRightKey = 35
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iRightKey)
         endIf
     endEvent
@@ -174,7 +174,7 @@ State htk_key_shout
                 KH.iShoutKey = 21
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iShoutKey)
         endIf
     endEvent
@@ -191,7 +191,7 @@ State htk_key_consumPoison
                 KH.iConsumableKey = 48
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iConsumableKey)
         endIf
     endEvent
@@ -212,7 +212,7 @@ State htk_key_util
                 KH.iUtilityKey = 37
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iUtilityKey)        
         endIf
     endEvent
@@ -285,7 +285,7 @@ State htk_key_consItem
                 KH.iConsumeItemKey = -1
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iConsumeItemKey)        
         endIf
     endEvent
@@ -302,7 +302,7 @@ State htk_key_cyclePoison
                 KH.iCyclePoisonKey = -1
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iCyclePoisonKey)        
         endIf
     endEvent
@@ -319,7 +319,7 @@ State htk_key_quickRestore
                 KH.iQuickRestoreKey = -1
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iQuickRestoreKey)        
         endIf
     endEvent
@@ -336,7 +336,7 @@ State htk_key_quickShield
                 KH.iQuickShieldKey = -1
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iQuickShieldKey)        
         endIf
     endEvent
@@ -353,7 +353,7 @@ State htk_key_quickRanged
                 KH.iQuickRangedKey = -1
             endIf
             
-            MCM.bUpdateKeyMaps = true
+            WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iQuickRangedKey)        
         endIf
     endEvent

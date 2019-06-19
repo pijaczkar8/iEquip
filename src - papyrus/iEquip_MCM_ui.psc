@@ -13,10 +13,6 @@ string[] tempLvlThresholdOptions
 
 int[] aiDropShadowBlurValues
 
-int iCurrentWidgetFadeoutChoice = 1
-int iCurrentNameFadeoutChoice = 1
-int iAmmoIconStyle
-
 ; #############
 ; ### SETUP ###
 
@@ -96,7 +92,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, TI.bFadeIconOnDegrade as int)
 	jArray.addInt(jPageObj, TI.iColoredIconStyle)
     jArray.addInt(jPageObj, TI.iColoredIconLevels)
-	jArray.addInt(jPageObj, iAmmoIconStyle)
+	jArray.addInt(jPageObj, AM.iAmmoIconStyle)
 	jArray.addInt(jPageObj, WC.iBackgroundStyle) ; Save in preset also
 	
 	jArray.addInt(jPageObj, WC.bDropShadowEnabled as int)
@@ -108,7 +104,7 @@ int function saveData()             ; Save page data and return jObject
 	
 	jArray.addInt(jPageObj, WC.bWidgetFadeoutEnabled as int)
 	jArray.addFlt(jPageObj, WC.fWidgetFadeoutDelay)
-	jArray.addInt(jPageObj, iCurrentWidgetFadeoutChoice)
+	jArray.addInt(jPageObj, WC.iCurrentWidgetFadeoutChoice)
 	jArray.addFlt(jPageObj, WC.fWidgetFadeoutDuration)
 	jArray.addInt(jPageObj, WC.bAlwaysVisibleWhenWeaponsDrawn as int)
 	
@@ -116,7 +112,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addFlt(jPageObj, WC.fMainNameFadeoutDelay)
 	jArray.addFlt(jPageObj, WC.fPoisonNameFadeoutDelay)
 	jArray.addFlt(jPageObj, WC.fPreselectNameFadeoutDelay)
-	jArray.addInt(jPageObj, iCurrentNameFadeoutChoice)
+	jArray.addInt(jPageObj, WC.iCurrentNameFadeoutChoice)
 	jArray.addFlt(jPageObj, WC.fNameFadeoutDuration)
 	jArray.addInt(jPageObj, WC.bFirstPressShowsName as int)
     jArray.addInt(jPageObj, WC.bLeftRightNameFadeEnabled as int)
@@ -139,8 +135,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 8)
 	TI.iColoredIconStyle = jArray.getInt(jPageObj, 9)
     TI.iColoredIconLevels = jArray.getInt(jPageObj, 10)
-	iAmmoIconStyle = jArray.getInt(jPageObj, 11)
-    setAmmoStyle()
+	AM.iAmmoIconStyle = jArray.getInt(jPageObj, 11)
 	WC.iBackgroundStyle = jArray.getInt(jPageObj, 12)
 	
 	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 13)
@@ -152,8 +147,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	
 	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 19)
 	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 20)
-	iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 21)
-    setWidgetFadeout()
+	WC.iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 21)
 	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 22)
 	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 23)
 	
@@ -161,8 +155,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 25)
 	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 26)
 	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 27)
-	iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 28)
-    setNameFadeout()
+	WC.iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 28)
 	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 29)
 	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 30)
     WC.bLeftRightNameFadeEnabled = jArray.getInt(jPageObj, 31)
@@ -205,7 +198,7 @@ function drawPage()
 		MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
 	endIf
 
-	MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[iAmmoIconStyle])
+	MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[AM.iAmmoIconStyle])
 	MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
 	
 	MCM.SetCursorPosition(1)
@@ -230,9 +223,9 @@ function drawPage()
 			
 	if WC.bWidgetFadeoutEnabled
 		MCM.AddSliderOptionST("ui_sld_wdgetFadeDelay", "$iEquip_MCM_ui_lbl_wdgetFadeDelay", WC.fWidgetFadeoutDelay, "{0}")
-		MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "$iEquip_MCM_ui_lbl_wdgetFadeSpeed", fadeoutOptions[iCurrentWidgetFadeoutChoice])
+		MCM.AddMenuOptionST("ui_men_wdgetFadeSpeed", "$iEquip_MCM_ui_lbl_wdgetFadeSpeed", fadeoutOptions[WC.iCurrentWidgetFadeoutChoice])
 				
-		if iCurrentWidgetFadeoutChoice == 3
+		if WC.iCurrentWidgetFadeoutChoice == 3
 			MCM.AddSliderOptionST("ui_sld_wdgetFadeDur", "$iEquip_MCM_ui_lbl_wdgetFadeDur", WC.fWidgetFadeoutDuration, "{1}")
 		endIf
 
@@ -255,9 +248,9 @@ function drawPage()
 			MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "$iEquip_MCM_ui_lbl_preselectNameFadeDelay", WC.fPreselectNameFadeoutDelay, "{1}")
 		endIf
 				
-		MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "$iEquip_MCM_ui_lbl_nameFadeSpeed", fadeoutOptions[iCurrentNameFadeoutChoice])
+		MCM.AddMenuOptionST("ui_men_nameFadeSpeed", "$iEquip_MCM_ui_lbl_nameFadeSpeed", fadeoutOptions[WC.iCurrentNameFadeoutChoice])
 				
-		if (iCurrentNameFadeoutChoice == 3)
+		if (WC.iCurrentNameFadeoutChoice == 3)
 			MCM.AddSliderOptionST("ui_sld_nameFadeDur", "$iEquip_MCM_ui_lbl_nameFadeDur", WC.fNameFadeoutDuration, "{1}")
 		endIf
 				
@@ -440,13 +433,11 @@ State ui_men_ammoIcoStyle
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_ammoIcoStyle")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(iAmmoIconStyle, ammoIconOptions, 0)
+            MCM.fillMenu(AM.iAmmoIconStyle, ammoIconOptions, 0)
         elseIf currentEvent == "Accept"
-            iAmmoIconStyle = currentVar as int
-            setAmmoStyle()
-            
-            MCM.SetMenuOptionValueST(ammoIconOptions[iAmmoIconStyle])
+            AM.iAmmoIconStyle = currentVar as int
             WC.bAmmoIconChanged = true
+			MCM.SetMenuOptionValueST(ammoIconOptions[AM.iAmmoIconStyle])
         endIf 
     endEvent
 endState
@@ -459,8 +450,8 @@ State ui_men_bckgroundStyle
             MCM.fillMenu(WC.iBackgroundStyle, backgroundStyleOptions, 0)
         elseIf currentEvent == "Accept"
             WC.iBackgroundStyle = currentVar as int
-            MCM.SetMenuOptionValueST(backgroundStyleOptions[WC.iBackgroundStyle])
             WC.bBackgroundStyleChanged = true
+			MCM.SetMenuOptionValueST(backgroundStyleOptions[WC.iBackgroundStyle])
         endIf 
     endEvent
 endState
@@ -475,9 +466,10 @@ State ui_tgl_dropShadow
             elseIf currentEvent == "Default"
                 WC.bDropShadowEnabled = true
             endIf
-            MCM.SetToggleOptionValueST(WC.bDropShadowEnabled)
-            MCM.forcePageReset()
+			
             WC.bDropShadowSettingChanged = true
+			MCM.SetToggleOptionValueST(WC.bDropShadowEnabled)
+            MCM.forcePageReset()
         endIf
     endEvent
 endState
@@ -504,8 +496,8 @@ State ui_sld_dropShadowAngle
             MCM.fillSlider(WC.fDropShadowAngle, 0.0, 360.0, 15.0, 105.0)
         elseIf currentEvent == "Accept"
             WC.fDropShadowAngle = currentVar
-            MCM.SetSliderOptionValueST(WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
             WC.bDropShadowSettingChanged = true
+			MCM.SetSliderOptionValueST(WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
         endIf 
     endEvent
 endState
@@ -520,9 +512,10 @@ State ui_txt_dropShadowBlur
             if i > 5
                 i = 0
             endIf
+			
             WC.iDropShadowBlur = aiDropShadowBlurValues[i]
-            MCM.SetTextOptionValueST(aiDropShadowBlurValues[i] as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
             WC.bDropShadowSettingChanged = true
+			MCM.SetTextOptionValueST(aiDropShadowBlurValues[i] as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
         endIf
     endEvent
 endState
@@ -535,8 +528,8 @@ State ui_sld_dropShadowDistance
             MCM.fillSlider(WC.fDropShadowDistance, 0.0, 10.0, 1.0, 2.0)
         elseIf currentEvent == "Accept"
             WC.fDropShadowDistance = currentVar
-            MCM.SetSliderOptionValueST(WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
             WC.bDropShadowSettingChanged = true
+			MCM.SetSliderOptionValueST(WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
         endIf 
     endEvent
 endState
@@ -549,8 +542,8 @@ State ui_sld_dropShadowStrength
             MCM.fillSlider(WC.fDropShadowStrength*100, 25.0, 2000.0, 25.0, 100.0)
         elseIf currentEvent == "Accept"
             WC.fDropShadowStrength = currentVar/100
-            MCM.SetSliderOptionValueST(WC.fDropShadowStrength*100, "{0}%")
             WC.bDropShadowSettingChanged = true
+			MCM.SetSliderOptionValueST(WC.fDropShadowStrength*100, "{0}%")
         endIf 
     endEvent
 endState
@@ -569,8 +562,9 @@ State ui_tgl_enblWdgetFade
             elseIf currentEvent == "Default"
                 WC.bWidgetFadeoutEnabled = false
             endIf
-            MCM.forcePageReset()
+
             WC.bFadeOptionsChanged = true
+			MCM.forcePageReset()
         endIf 
     endEvent
 endState
@@ -591,11 +585,10 @@ endState
 State ui_men_wdgetFadeSpeed
     event OnBeginState()
         if currentEvent == "Open"
-            MCM.fillMenu(iCurrentWidgetFadeoutChoice, fadeoutOptions, 1)
+            MCM.fillMenu(WC.iCurrentWidgetFadeoutChoice, fadeoutOptions, 1)
         elseIf currentEvent == "Accept"
-            iCurrentWidgetFadeoutChoice = currentVar as int
-            setWidgetFadeout()
-            MCM.SetMenuOptionValueST(fadeoutOptions[iCurrentWidgetFadeoutChoice])
+            WC.iCurrentWidgetFadeoutChoice = currentVar as int
+            MCM.SetMenuOptionValueST(fadeoutOptions[WC.iCurrentWidgetFadeoutChoice])
         endIf 
     endEvent
 endState
@@ -624,8 +617,8 @@ State ui_tgl_visWhenWeapDrawn
                 WC.bAlwaysVisibleWhenWeaponsDrawn = true
             endIf
 			
+			WC.bFadeOptionsChanged = true
             MCM.SetToggleOptionValueST(WC.bAlwaysVisibleWhenWeaponsDrawn)
-            WC.bFadeOptionsChanged = true
         endIf 
     endEvent
 endState
@@ -658,8 +651,8 @@ State ui_tgl_leftRightNameFade
                 WC.bLeftRightNameFadeEnabled = true
             endIf
 			
+			WC.bFadeOptionsChanged = true
 			MCM.SetToggleOptionValueST(WC.bLeftRightNameFadeEnabled)
-            WC.bFadeOptionsChanged = true
         endIf 
     endEvent
 endState
@@ -675,8 +668,8 @@ State ui_tgl_shoutNameFade
                 WC.bShoutNameFadeEnabled = true
             endIf
 			
+			WC.bFadeOptionsChanged = true
 			MCM.SetToggleOptionValueST(WC.bShoutNameFadeEnabled)
-            WC.bFadeOptionsChanged = true
         endIf 
     endEvent
 endState
@@ -692,8 +685,8 @@ State ui_tgl_consPoisNameFade
                 WC.bConsPoisNameFadeEnabled = true
             endIf
 			
+			WC.bFadeOptionsChanged = true
 			MCM.SetToggleOptionValueST(WC.bConsPoisNameFadeEnabled)
-            WC.bFadeOptionsChanged = true
         endIf 
     endEvent
 endState
@@ -742,11 +735,10 @@ State ui_men_nameFadeSpeed
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_nameFadeSpeed")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(iCurrentNameFadeoutChoice, fadeoutOptions, 1)
+            MCM.fillMenu(WC.iCurrentNameFadeoutChoice, fadeoutOptions, 1)
         elseIf currentEvent == "Accept"
-            iCurrentNameFadeoutChoice = currentVar as int
-            setNameFadeout()
-            MCM.SetMenuOptionValueST(fadeoutOptions[iCurrentNameFadeoutChoice])
+            WC.iCurrentNameFadeoutChoice = currentVar as int
+            MCM.SetMenuOptionValueST(fadeoutOptions[WC.iCurrentNameFadeoutChoice])
         endIf 
     endEvent
 endState
@@ -774,33 +766,3 @@ State ui_men_firstPressNameHidn
         endIf 
     endEvent
 endState
-
-function setAmmoStyle()
-    if iAmmoIconStyle == 0
-        AM.sAmmoIconSuffix = ""
-    elseIf iAmmoIconStyle == 1
-        AM.sAmmoIconSuffix = "Triple"
-    elseIf iAmmoIconStyle == 2
-        AM.sAmmoIconSuffix = "Quiver"
-    endIf
-endFunction
-
-function setWidgetFadeout()
-    if iCurrentWidgetFadeoutChoice == 0
-        WC.fWidgetFadeoutDuration = 3.0 ;Slow
-    elseIf iCurrentWidgetFadeoutChoice == 1
-        WC.fWidgetFadeoutDuration = 1.5 ;Normal
-    elseIf iCurrentWidgetFadeoutChoice == 2
-        WC.fWidgetFadeoutDuration = 0.5 ;Fast
-    endIf
-endFunction
-
-function setNameFadeout()
-    if iCurrentNameFadeoutChoice == 0
-        WC.fNameFadeoutDuration = 3.0 ;Slow
-    elseIf iCurrentNameFadeoutChoice == 1
-        WC.fNameFadeoutDuration = 1.5 ;Normal
-    elseIf iCurrentNameFadeoutChoice == 2
-        WC.fNameFadeoutDuration = 0.5 ;Fast
-    endIf
-endFunction

@@ -4,8 +4,6 @@ import Utility
 import StringUtil
 
 iEquip_WidgetCore property WC auto
-iEquip_KeyHandler property KH auto
-
 iEquip_MCM_gen property gen auto
 iEquip_MCM_htk property htk auto
 iEquip_MCM_que property que auto
@@ -18,7 +16,6 @@ iEquip_MCM_edt property edt auto
 iEquip_MCM_inf property inf auto
 
 bool property bEnabled auto hidden
-bool property bUpdateKeyMaps auto hidden
 bool property bBusy auto hidden
 string sCurrentPage
 
@@ -76,11 +73,7 @@ endEvent
 
 function updateSettings()
     if WC.isEnabled
-        debug.Notification("$iEquip_MCM_not_ApplyingSettings")
-        if bUpdateKeyMaps
-            KH.updateKeyMaps()
-			bUpdateKeyMaps = false
-        endIf        
+        debug.Notification("$iEquip_MCM_not_ApplyingSettings")  
         WC.ApplyChanges()
     endIf
 endFunction
@@ -279,7 +272,6 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
 			edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
 			inf.loadData(jMap.getObj(jMCMPreset, "Info"))
 			
-			bUpdateKeyMaps = true
 			WC.bMCMPresetLoaded = true
 			bBusy = false
 		endIf

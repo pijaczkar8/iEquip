@@ -173,6 +173,7 @@ bool bIsFirstFailedToAdd = true
 bool property bShowTooltips = true auto hidden
 bool property bShowQueueConfirmationMessages = true auto hidden
 bool property bRefreshingWidget auto hidden
+bool property bUpdateKeyMaps auto hidden
 bool property bMCMPresetLoaded auto hidden
 
 ; Ammo Mode properties and variables
@@ -219,11 +220,59 @@ int property iMaxCachedItems = 60 auto hidden
 bool property bBlacklistEnabled auto hidden
 bool property bShowAutoAddedFlag auto hidden
 
+int property iCurrentWidgetFadeoutChoice
+	int function Get()
+		if fWidgetFadeoutDuration = 3.0
+			return 0
+		elseIf fWidgetFadeoutDuration = 3.0
+			return 1
+		elseIf fWidgetFadeoutDuration = 3.0
+			return 2
+		else
+			return 3
+		endIf
+	endFunction
+	
+	function Set(int iChoice)
+		if iChoice == 0
+			fWidgetFadeoutDuration = 3.0 ;Slow
+		elseIf iChoice == 1
+			fWidgetFadeoutDuration = 1.5 ;Normal
+		elseIf iChoice == 2
+			fWidgetFadeoutDuration = 0.5 ;Fast
+		endIf
+	endFunction
+endProperty
+
 float property fWidgetFadeoutDelay = 20.0 auto hidden
 float property fWidgetFadeoutDuration = 1.5 auto hidden
 bool property bAlwaysVisibleWhenWeaponsDrawn = true auto hidden
 bool property bIsWidgetShown auto hidden
 bool bFadingWidgetOut
+
+int property iCurrentNameFadeoutChoice
+	int function Get()
+		if fNameFadeoutDuration = 3.0
+			return 0
+		elseIf fNameFadeoutDuration = 3.0
+			return 1
+		elseIf fNameFadeoutDuration = 3.0
+			return 2
+		else
+			return 3
+		endIf
+	endFunction
+	
+	function Set(int iChoice)
+		if iChoice == 0
+			fNameFadeoutDuration = 3.0 ;Slow
+		elseIf iChoice == 1
+			fNameFadeoutDuration = 1.5 ;Normal
+		elseIf iChoice == 2
+			fNameFadeoutDuration = 0.5 ;Fast
+		endIf
+	endFunction
+endProperty
 
 float property fMainNameFadeoutDelay = 5.0 auto hidden
 float property fPoisonNameFadeoutDelay = 5.0 auto hidden
@@ -255,6 +304,34 @@ int property iShowPoisonMessages auto hidden
 int property iPoisonIndicatorStyle = 1 auto hidden
 bool property bPoisonIndicatorStyleChanged auto hidden
 bool property bBeastModeOptionsChanged auto hidden
+
+
+int property iPosIndChoice
+	int function Get()
+		if bShowPositionIndicators
+			if bPermanentPositionIndicators
+				return 0
+			else
+				return 1
+			endIf
+		elseIf bPermanentPositionIndicators
+			return 2
+		endIf
+	endFunction
+	
+	function Set(int iChoice)
+		if iChoice == 0
+			bShowPositionIndicators = false
+		else
+			bShowPositionIndicators = true
+		endIf
+		if iChoice == 2
+			bPermanentPositionIndicators = true
+		else
+			bPermanentPositionIndicators = false
+		endIf
+	endFunction
+endProperty
 
 bool property bShowPositionIndicators = true auto hidden
 bool property bPermanentPositionIndicators auto hidden
@@ -365,6 +442,10 @@ string property FileExt = ".IEQP" autoReadonly
 Event OnWidgetInit()
 	debug.trace("iEquip_WidgetCore OnWidgetInit start - current state: " + GetState())
 	PopulateWidgetArrays()
+	
+	iCurrentWidgetFadeoutChoice = 1
+	iCurrentNameFadeoutChoice = 1
+	iPosIndChoice = 1
 
 	abIsNameShown = new bool[8]
 	aiTargetQ = new int[5]
@@ -4601,8 +4682,32 @@ endFunction
 function ApplyChanges()
 	debug.trace("iEquip_WidgetCore ApplyChanges start - bMCMPresetLoaded: " + bMCMPresetLoaded)
 	int i
-    
-	if bBackgroundStyleChanged || bMCMPresetLoaded
+	
+    if bMCMPresetLoaded
+		bUpdateKeyMaps = true
+		bBackgroundStyleChanged = true
+		bDropShadowSettingChanged = true
+		bFadeOptionsChanged = true
+		bPositionIndicatorSettingsChanged = true
+		bBeastModeOptionsChanged = true
+		bSlotEnabledOptionsChanged = true
+		bGearedUpOptionChanged = true
+		bAmmoSortingChanged = true
+		bAmmoIconChanged = true
+		bAttributeIconsOptionChanged = true
+		bPoisonIndicatorStyleChanged = true
+		CM.bSettingsChanged = true
+		TO.bSettingsChanged = true
+		bTemperDisplaySettingChanged = true
+		bPotionGroupingOptionsChanged = true
+		bRestorePotionWarningSettingChanged = true
+	endIf
+	
+	if bUpdateKeyMaps
+        KH.updateKeyMaps()
+		bUpdateKeyMaps = false
+	endIf
+	if bBackgroundStyleChanged
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 		if iBackgroundStyle > 0
 			while i < 5
@@ -4617,11 +4722,11 @@ function ApplyChanges()
 		endIf
         bBackgroundStyleChanged = false
 	endIf
-	if (bDropShadowSettingChanged || bMCMPresetLoaded) && !EM.isEditMode
+	if bDropShadowSettingChanged && !EM.isEditMode
 		updateTextFieldDropShadow()
         bDropShadowSettingChanged = false
 	endIf
-	if bFadeOptionsChanged || bMCMPresetLoaded
+	if bFadeOptionsChanged
 		updateWidgetVisibility()
 		i = 0
         while i < 8
@@ -4633,7 +4738,7 @@ function ApplyChanges()
         endwhile
         bFadeOptionsChanged = false
     endIf
-    if bPositionIndicatorSettingsChanged || bMCMPresetLoaded
+    if bPositionIndicatorSettingsChanged
     	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionMarkers")
 		If(iHandle)
 			UICallback.PushInt(iHandle, iPositionIndicatorColor)
@@ -4664,12 +4769,12 @@ function ApplyChanges()
     	bPositionIndicatorSettingsChanged = false
     endIf
     if EH.bPlayerIsABeast
-    	if bBeastModeOptionsChanged || bMCMPresetLoaded
+    	if bBeastModeOptionsChanged
     		BM.updateWidgetVisOnSettingsChanged()
     		bBeastModeOptionsChanged = false
     	endIf
     else
-	    if bSlotEnabledOptionsChanged || bMCMPresetLoaded
+	    if bSlotEnabledOptionsChanged
 			updateSlotsEnabled()
 	        bSlotEnabledOptionsChanged = false
 		endIf
@@ -4681,7 +4786,7 @@ function ApplyChanges()
 	    	reduceMaxQueueLength()
 	        bReduceMaxQueueLengthPending = false
 	    endIf
-	    if bGearedUpOptionChanged || bMCMPresetLoaded
+	    if bGearedUpOptionChanged
 	    	Utility.SetINIbool("bDisableGearedUp:General", True)
 			refreshVisibleItems()
 			if bEnableGearedUp
@@ -4701,11 +4806,11 @@ function ApplyChanges()
 	    endIf
 	    if bAmmoMode
 	    	debug.trace("iEquip_WidgetCore ApplyChanges - bSimpleAmmoMode: " + AM.bSimpleAmmoMode + ", bSimpleAmmoModeOnEnter: " + AM.bSimpleAmmoModeOnEnter + ", bPreselectMode: " + bPreselectMode)
-		    if bAmmoSortingChanged || bMCMPresetLoaded
+		    if bAmmoSortingChanged
 		    	AM.updateAmmoListsOnSettingChange()
 	            bAmmoSortingChanged = false
 		    endIf
-		    if bAmmoIconChanged || bMCMPresetLoaded
+		    if bAmmoIconChanged
 		    	AM.checkAndEquipAmmo(false, false, true, false)
 	            bAmmoIconChanged = false
 		    endIf
@@ -4742,7 +4847,7 @@ function ApplyChanges()
 				AM.bSimpleAmmoModeOnEnter = false
 		    endIf
 		endIf
-		if bPreselectMode || bAttributeIconsOptionChanged || bMCMPresetLoaded
+		if bPreselectMode || bAttributeIconsOptionChanged
 			i = 0
 			while i < 2
 				if bShowAttributeIcons
@@ -4754,7 +4859,7 @@ function ApplyChanges()
 			endwhile
 	        bAttributeIconsOptionChanged = false
 		endIf
-		if bPoisonIndicatorStyleChanged || bMCMPresetLoaded
+		if bPoisonIndicatorStyleChanged
 			i = 0
 			while i < 2
 				if abPoisonInfoDisplayed[i]
@@ -4764,7 +4869,7 @@ function ApplyChanges()
 			endwhile
 	        bPoisonIndicatorStyleChanged = false
 		endIf
-		if CM.bSettingsChanged || bMCMPresetLoaded
+		if CM.bSettingsChanged
 			CM.bSettingsChanged = false
 			CM.updateChargeMeters(true) ;forceUpdate will make sure updateMeterPercent runs in full
 			if CM.iChargeDisplayType > 0
@@ -4777,10 +4882,10 @@ function ApplyChanges()
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 100)
 			endIf
 		endIf
-		if (TO.bSettingsChanged || bMCMPresetLoaded) && PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
+		if TO.bSettingsChanged && PlayerRef.GetEquippedItemType(0) == 11 && TO.bShowTorchMeter
 			TO.updateTorchMeterOnSettingsChanged()
 		endIf
-		if bTemperDisplaySettingChanged || bMCMPresetLoaded
+		if bTemperDisplaySettingChanged
 			i = 0
 			while i < 2
 				TI.checkAndUpdateTemperLevelInfo(i)
@@ -4788,7 +4893,7 @@ function ApplyChanges()
 			endWhile
 			bTemperDisplaySettingChanged = false
 		endIf
-		if bPotionGroupingOptionsChanged || bMCMPresetLoaded
+		if bPotionGroupingOptionsChanged
 		    if !bPotionGrouping
 		    	;If we've just turned potion grouping off remove any of the three groups still in the consumable queue and advance the widget if one of them is currently shown
 		    	removePotionGroups()
@@ -4810,7 +4915,7 @@ function ApplyChanges()
 		    endIf
 	        bPotionGroupingOptionsChanged = false
 		endIf
-		if bRestorePotionWarningSettingChanged || bMCMPresetLoaded
+		if bRestorePotionWarningSettingChanged
 			bRestorePotionWarningSettingChanged = false
 			int potionGroup = asPotionGroups.Find(asCurrentlyEquipped[3])
 			if (potionGroup > -1)
