@@ -3720,7 +3720,9 @@ function applyPoison(int Q)
             ApplyWithoutUpdatingWidget = true
         endIf
 
-        Potion currentPoison = iEquip_InventoryExt.GetPoison(currentWeapon as form, GetRefHandleFromWornObject(Q)) 
+        int refHandle = GetRefHandleFromWornObject(Q)
+
+        Potion currentPoison = iEquip_InventoryExt.GetPoison(currentWeapon as form, refHandle) 
         debug.trace("iEquip_WidgetCore applyPoison - Q: " + Q + ", isLeftHand: " + isLeftHand + ", current weapon: " + currentWeapon + ", current poison: " + currentPoison)
         if currentPoison
             string currentPoisonName = currentPoison.GetName()
@@ -3735,7 +3737,7 @@ function applyPoison(int Q)
                             return
                         endIf
                     endIf
-                    RemovePoison(currentWeapon as form, GetRefHandleFromWornObject(Q))
+                    RemovePoison(currentWeapon as form, refHandle)
                 endIf	
             elseif iShowPoisonMessages < 2
                 iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"))
@@ -3762,9 +3764,9 @@ function applyPoison(int Q)
         endIf
         
         if currentPoison == poisonToApply
-            SetPoisonCount(currentWeapon as form, GetRefHandleFromWornObject(Q), chargesToApply + GetPoisonCount(currentWeapon as form, GetRefHandleFromWornObject(Q)))
+            SetPoisonCount(currentWeapon as form, refHandle, chargesToApply + GetPoisonCount(currentWeapon as form, refHandle))
         else
-            SetPoison(currentWeapon as form, GetRefHandleFromWornObject(Q), poisonToApply, chargesToApply)
+            SetPoison(currentWeapon as form, refHandle, poisonToApply, chargesToApply)
         endIf
         ;Remove one item from the player
         PlayerRef.RemoveItem(poisonToApply, 1, true)
@@ -3772,7 +3774,7 @@ function applyPoison(int Q)
         jMap.setInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "isPoisoned", 1)
         jMap.setForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "lastKnownPoison", poisonToApply as Form)
         if !ApplyWithoutUpdatingWidget
-            checkAndUpdatePoisonInfo(Q)
+            checkAndUpdatePoisonInfo(Q, false, false, refHandle)
         endIf
         ;Play sound
         debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison sound")
@@ -3797,22 +3799,29 @@ function hidePoisonInfo(int Q, bool forceHide = false)
 	debug.trace("iEquip_WidgetCore hidePoisonInfo end")
 endFunction
 
-function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = false)
+function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = false, int refHandle = 0xFFFF)
 	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	int itemType = jMap.getInt(targetObject, "iEquipType")
 	Form equippedItem = PlayerRef.GetEquippedObject(Q)
+
+	if refHandle == 0xFFFF
+		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetRefHandleFromWornObject, Q: " + Q)
+		refHandle = GetRefHandleFromWornObject(Q)
+	endIf
 	
 	if !forceHide && !equippedItem && !bGoneUnarmed && !(Q == 0 && (b2HSpellEquipped || itemType == 26))
 		return
 	endIf
 
-	int charges = GetPoisonCount(equippedItem, GetRefHandleFromWornObject(Q))
+	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetPoisonCount, equippedItem: " + equippedItem + ", refHandle: " + refHandle)
+
+	int charges = GetPoisonCount(equippedItem, refHandle)
 	Potion currentPoison
 	
 	if charges > 0
 		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call WornGetPoison, PlayerRef: " + PlayerRef + ", equip slot: " + Q)
-		currentPoison = iEquip_InventoryExt.GetPoison(equippedItem, GetRefHandleFromWornObject(Q))
+		currentPoison = iEquip_InventoryExt.GetPoison(equippedItem, refHandle)
 	endIf
 	
 	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", cycling: " + cycling + ", itemType: " + itemType + ", currentPoison: " + currentPoison + ", charges: " + charges)
