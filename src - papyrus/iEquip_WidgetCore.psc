@@ -306,35 +306,7 @@ bool property bPoisonIndicatorStyleChanged auto hidden
 bool property bBeastModeOptionsChanged auto hidden
 
 
-int property iPosIndChoice
-	int function Get()
-		if bShowPositionIndicators
-			if bPermanentPositionIndicators
-				return 0
-			else
-				return 1
-			endIf
-		elseIf bPermanentPositionIndicators
-			return 2
-		endIf
-	endFunction
-	
-	function Set(int iChoice)
-		if iChoice == 0
-			bShowPositionIndicators = false
-		else
-			bShowPositionIndicators = true
-		endIf
-		if iChoice == 2
-			bPermanentPositionIndicators = true
-		else
-			bPermanentPositionIndicators = false
-		endIf
-	endFunction
-endProperty
-
-bool property bShowPositionIndicators = true auto hidden
-bool property bPermanentPositionIndicators auto hidden
+int property iPosInd = 1 auto hidden
 int property iPositionIndicatorColor = 0xFFFFFF auto hidden
 float property fPositionIndicatorAlpha = 100.0 auto hidden
 int property iCurrPositionIndicatorColor = 0xCCCCCC auto hidden
@@ -1002,7 +974,7 @@ function refreshWidgetOnLoad()
 			if Q < 3 && (count < 1 || !PlayerRef.GetEquippedObject(Q))
 				setSlotToEmpty(Q, true, (count > 0))
 			else
-				if Q < 3 && bPermanentPositionIndicators
+				if Q < 3 && iPosInd == 2
 					updateQueuePositionIndicator(Q, count, aiCurrentQueuePosition[Q], aiCurrentQueuePosition[Q])
 				endIf
 				if Q < 2
@@ -2039,7 +2011,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			Utility.WaitMenuMode(0.3)
 		endIf
 		;Show the queue position indicator if required (only if cycleSlot was called as a result of a cycle hotkey key press)
-		if Q < 3 && onKeyPress && bShowPositionIndicators
+		if Q < 3 && onKeyPress && iPosInd > 0
 			updateQueuePositionIndicator(Q, queueLength, aiCurrentQueuePosition[Q], targetIndex)
 			abCyclingQueue[Q] = true
 		endIf
@@ -2059,7 +2031,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			;Otherwise carry on and equip/cycle
 			else
 				checkAndEquipShownHandItem(Q, Reverse)
-				if onKeyPress && bShowPositionIndicators
+				if onKeyPress && iPosInd > 0
 					if Q == 0
 						LHPosUpdate.registerForFadeoutUpdate()
 					else
@@ -2086,7 +2058,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
 		abCyclingQueue[Q] = false
-		if !bPermanentPositionIndicators
+		if iPosInd < 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
 		endIf
 	endIf
@@ -3528,7 +3500,7 @@ function cycleShout(int Q, int targetIndex, form targetItem)
     else
         PlayerRef.EquipShout(targetItem as Shout)
     endIf
-    if bShowPositionIndicators
+    if iPosInd > 0
     	SPosUpdate.registerForFadeoutUpdate()
     endIf
     debug.trace("iEquip_WidgetCore cycleShout end")
@@ -4756,7 +4728,7 @@ function ApplyChanges()
 			UICallback.PushFloat(iHandle, fCurrPositionIndicatorAlpha)
 			UICallback.Send(iHandle)
 		endIf
-		if bPermanentPositionIndicators
+		if iPosInd == 2
 			i = 0
 			int newPos
 			while i < 3

@@ -248,7 +248,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			;Update the left hand counter
 			WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipForm")))
 			;If queue position indicators are on and permanent update the left indicator
-			if WC.bShowPositionIndicators && WC.bPermanentPositionIndicators
+			if WC.iPosInd == 2
 				WC.updateQueuePositionIndicator(0, jArray.count(aiTargetQ[Q]), aiCurrentAmmoIndex[Q], aiCurrentAmmoIndex[Q])
 			endIf
 			;Show the counter if previously hidden
@@ -416,7 +416,7 @@ function cycleAmmo(bool reverse, bool ignoreEquipOnPause = false, bool onKeyPres
 		endIf
 	endIf
 	if targetIndex != aiCurrentAmmoIndex[Q]
-		if onKeyPress && WC.bShowPositionIndicators
+		if onKeyPress && WC.iPosInd > 0
 			WC.updateQueuePositionIndicator(0, queueLength, aiCurrentAmmoIndex[Q], targetIndex)
 			WC.abCyclingQueue[Q] = true
 		endIf
@@ -534,7 +534,7 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 			else
 				debug.trace("iEquip_AmmoMode checkAndEquipAmmo - about to equip " + asCurrentAmmo[Q])
 				PlayerRef.EquipItemEx(currentAmmoForm as Ammo)
-				if WC.bShowPositionIndicators
+				if WC.iPosInd > 0
 					WC.LHPosUpdate.registerForFadeoutUpdate()
 				endIf
 			endIf
@@ -574,7 +574,7 @@ function equipAmmo()
 	debug.trace("iEquip_AmmoMode equipAmmo start")
 	if WC.bEquipOnPause
 		WC.abCyclingQueue[0] = false
-		if !WC.bPermanentPositionIndicators
+		if WC.iPosInd > 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", 0)
 		endIf
 	endIf

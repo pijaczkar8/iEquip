@@ -316,13 +316,17 @@ State que_tgl_skipAutoAddedItems
             elseIf currentEvent == "Default"
                 WC.bSkipAutoAddedItems = false
             endIf
-            MCM.SetToggleOptionValueST(WC.bSkipAutoAddedItems)
+
             if WC.bSkipAutoAddedItems
-                WC.bShowPositionIndicators = false
-                if WC.bPermanentPositionIndicators
-                    WC.bPositionIndicatorSettingsChanged = true
-                endIf
+				if WC.iPosInd == 2
+					WC.iPosInd = 1
+					WC.bPositionIndicatorSettingsChanged = true
+				elseIf WC.iPosInd == 1
+					WC.iPosInd = 0
+				endIf
             endIf
+			
+			MCM.SetToggleOptionValueST(WC.bSkipAutoAddedItems)
         endIf 
     endEvent
 endState

@@ -164,7 +164,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-	if WC.bShowPositionIndicators
+	if WC.iPosInd > 0
 		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_posIndOpts</font>")
 		MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
 		MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")

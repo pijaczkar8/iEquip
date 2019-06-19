@@ -289,10 +289,10 @@ function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool a
 				endIf
 			endIf
 		endIf
-		if WC.bShowPositionIndicators && (onKeyPress || WC.bPermanentPositionIndicators)
+		if WC.iPosInd > 0 && (onKeyPress || WC.iPosInd == 2)
 			WC.abCyclingQueue[Q] = false
 			WC.updateQueuePositionIndicator(Q, queueLength, WC.aiCurrentQueuePosition[Q], targetIndex)
-			if !WC.bPermanentPositionIndicators
+			if WC.iPosInd > 2
 				if Q == 0
 					WC.LHPosUpdate.registerForFadeoutUpdate()
 				elseIf Q == 1
@@ -507,7 +507,7 @@ function equipPreselectedItem(int Q)
 	endIf
 	WC.aiCurrentQueuePosition[Q] = itemToEquip
 	WC.asCurrentlyEquipped[Q] = newName
-	if WC.bShowPositionIndicators && WC.bPermanentPositionIndicators
+	if WC.iPosInd == 2
 		WC.abCyclingQueue[Q] = false
 		WC.updateQueuePositionIndicator(Q, jArray.count(targetArray), WC.aiCurrentQueuePosition[Q], WC.aiCurrentlyPreselected[Q])
 	endIf

@@ -57,7 +57,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, WC.bEquipOnPause as int)
 	jArray.addFlt(jPageObj, WC.fEquipOnPauseDelay)
 	
-	jArray.addInt(jPageObj, WC.iPosIndChoice)
+	jArray.addInt(jPageObj, WC.iPosInd)
 	jArray.addInt(jPageObj, WC.bShowAttributeIcons as int)
 	
 	jArray.addInt(jPageObj, WC.bEnableGearedUp as int)
@@ -84,7 +84,7 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	WC.bEquipOnPause = jArray.getInt(jPageObj, 7)
 	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 8)
 	
-	WC.iPosIndChoice = jArray.getInt(jPageObj, 9)
+	WC.iPosInd = jArray.getInt(jPageObj, 9)
 
 	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 10)
 	
@@ -128,7 +128,7 @@ function drawPage()
 			MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 		endIf
 
-		MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[WC.iPosIndChoice])
+		MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[WC.iPosInd])
 
 		MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
 
@@ -333,10 +333,10 @@ State gen_men_showPosInd
     	if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_showPosInd")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(WC.iPosIndChoice, posIndBehaviour, 1)
+            MCM.fillMenu(WC.iPosInd, posIndBehaviour, 1)
         elseIf currentEvent == "Accept"
-            WC.iPosIndChoice = currentVar as int
-            MCM.SetMenuOptionValueST(posIndBehaviour[WC.iPosIndChoice])
+            WC.iPosInd = currentVar as int
+            MCM.SetMenuOptionValueST(posIndBehaviour[WC.iPosInd])
         endIf
     endEvent
 endState

@@ -454,7 +454,7 @@ function cycleSlot(int Q, bool Reverse = false, bool onKeyPress = false)
 		else
 			targetIndex = 0
 		endIf
-		if onKeyPress && WC.bShowPositionIndicators
+		if onKeyPress && WC.iPosInd > 0
 			WC.updateQueuePositionIndicator(Q, queueLength, aiCurrentBMQueuePosition[targetQ], targetIndex)
 			WC.abCyclingQueue[Q] = true
 		endIf
@@ -474,7 +474,7 @@ function cycleSlot(int Q, bool Reverse = false, bool onKeyPress = false)
 			;Otherwise carry on and equip/cycle
 			else
 				checkAndEquipShownHandItem(Q, false)
-				if onKeyPress && WC.bShowPositionIndicators
+				if onKeyPress && WC.iPosInd > 0
 					if Q == 0
 						WC.LHPosUpdate.registerForFadeoutUpdate()
 					else
@@ -493,7 +493,7 @@ function checkAndEquipShownHandItem(int hand, bool equippingOnAutoAdd = false)
 	debug.trace("iEquip_BeastMode checkAndEquipShownHandItem start")
 	if WC.bEquipOnPause
 		WC.abCyclingQueue[hand] = false
-		if !WC.bPermanentPositionIndicators
+		if WC.iPosInd > 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", hand)
 		endIf
 	endIf
@@ -657,7 +657,7 @@ function checkAndEquipShownPower(int Q)
     else
         PlayerRef.EquipShout(targetItem as Shout)
     endIf
-    if WC.bShowPositionIndicators
+    if WC.iPosInd > 0
     	WC.SPosUpdate.registerForFadeoutUpdate()
     endIf
     debug.trace("iEquip_BeastMode checkAndEquipShownPower end")

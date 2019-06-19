@@ -26,7 +26,7 @@ event OnUpdate()
 	if bWaitingForFadeoutUpdate ;Failsafe bool to block OnUpdate if triggered from another script on the quest
 		bWaitingForFadeoutUpdate = false
 		WC.abCyclingQueue[Q] = false
-		if !WC.bPermanentPositionIndicators
+		if WC.iPosInd > 2
 			UI.invokeInt("HUD Menu", WidgetRoot + ".hideQueuePositionIndicator", Q)
 		endIf
 	endIf
