@@ -61,6 +61,7 @@ bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
 bool _bPlayerIsABeast
+bool bIsGPPLoaded
 
 ; Ints
 int iWaitingKeyCode
@@ -315,7 +316,6 @@ function runUpdate()
             
     elseIf iMultiTap == 1   ; Single tap
         if iWaitingKeyCode == iUtilityKey
-            ;if PlayerRef.IsWeaponDrawn()
             if PlayerRef.IsInCombat() && bNoUtilMenuInCombat
                 debug.notification(iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_notWithWeaponsDrawn"))
             else
@@ -411,7 +411,11 @@ function runUpdate()
             else
                 if bIsUtilityKeyHeld
                     if iWaitingKeyCode == iRightKey
-                        WC.applyPoison(1)
+                        if PlayerRef.GetEquippedItemType(1) == 9 ; Spell
+                            PM.quickDualCastOnDoubleTap(1)
+                        else
+                            WC.applyPoison(1)
+                        endIf
                     endIf
                 else
                     if iWaitingKeyCode == iRightKey && (PM.abPreselectSlotEnabled[1] || AM.bAmmoMode)
