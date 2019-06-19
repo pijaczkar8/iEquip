@@ -248,7 +248,10 @@ function PreselectModeAnimateOut()
 	endIf
 	int i
 	while i < 3
-		if (i == 0 && !AM.bAmmoMode || AM.bSimpleAmmoMode) || i == 1
+		if i == 0 && AM.bAmmoMode && !AM.bSimpleAmmoMode
+			WC.bCyclingLHPreselectInAmmoMode = true
+			WC.updateAttributeIcons(0, 0)
+		elseIf i < 2
 			WC.hideAttributeIcons(i + 5)
 		endIf
 		if WC.bNameFadeoutEnabled && !WC.abIsNameShown[i]
@@ -570,7 +573,7 @@ function equipAllPreselectedItems(bool handsOnly = false)
 	form rightTargetItem = jMap.getForm(targetObject, "iEquipForm")
 	int rightHandItemType = jMap.getInt(targetObject, "iEquipType")
 		
-	if bTogglePreselectOnEquipAll
+	if bTogglePreselectOnEquipAll && !handsOnly
 		leftData = new string[3]
 		rightData = new string[3]
 		shoutData = new string[3]
@@ -597,9 +600,6 @@ function equipAllPreselectedItems(bool handsOnly = false)
 			Utility.WaitMenuMode(0.2)
 		endIf
 	endIf
-
-	targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1])
-	rightHandItemType = jMap.getInt(targetObject, "iEquipType")
 
 	bool equipLeft
 	if abPreselectSlotEnabled[0] && !(abPreselectSlotEnabled[1] && ((WC.ai2HWeaponTypes.Find(rightHandItemType) > -1) || rightHandItemType == 0 || (rightHandItemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3) || (leftTargetItem == rightTargetItem && itemCount < 2 && rightHandItemType != 22)))

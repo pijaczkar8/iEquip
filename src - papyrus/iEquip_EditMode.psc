@@ -1010,7 +1010,9 @@ function LoadPreset(int jPreset)
     
     WC.updateWidgetVisibility(false)
     Wait(0.2)
-	UpdateEditModeGuide()
+    if isEditMode
+	   UpdateEditModeGuide()
+    endIf
     UpdateElementsAll()
 	
     if CM.iChargeDisplayType > 0
