@@ -1026,7 +1026,9 @@ function LoadPreset(int jPreset)
     UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
 
     if !isEditMode                          ; The only time this will be the case is if the user has selected Reset Layout in the MCM, and we're loading the default layout preset
+        WC.bRefreshingWidget = true
         WC.refreshWidgetOnLoad()
+        WC.bRefreshingWidget = false
     else
         WC.updatePotionSelector(true)
         UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", WC.iBackgroundStyle)
