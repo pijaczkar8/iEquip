@@ -2058,7 +2058,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
 		abCyclingQueue[Q] = false
-		if iPosInd < 2
+		if iPosInd != 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
 		endIf
 	endIf

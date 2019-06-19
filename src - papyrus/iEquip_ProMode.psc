@@ -292,7 +292,7 @@ function cyclePreselectSlot(int Q, int queueLength, bool Reverse = false, bool a
 		if WC.iPosInd > 0 && (onKeyPress || WC.iPosInd == 2)
 			WC.abCyclingQueue[Q] = false
 			WC.updateQueuePositionIndicator(Q, queueLength, WC.aiCurrentQueuePosition[Q], targetIndex)
-			if WC.iPosInd > 2
+			if WC.iPosInd != 2
 				if Q == 0
 					WC.LHPosUpdate.registerForFadeoutUpdate()
 				elseIf Q == 1

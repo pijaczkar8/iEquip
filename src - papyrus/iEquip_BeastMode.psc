@@ -493,7 +493,7 @@ function checkAndEquipShownHandItem(int hand, bool equippingOnAutoAdd = false)
 	debug.trace("iEquip_BeastMode checkAndEquipShownHandItem start")
 	if WC.bEquipOnPause
 		WC.abCyclingQueue[hand] = false
-		if WC.iPosInd > 2
+		if WC.iPosInd != 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", hand)
 		endIf
 	endIf

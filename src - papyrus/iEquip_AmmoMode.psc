@@ -574,7 +574,7 @@ function equipAmmo()
 	debug.trace("iEquip_AmmoMode equipAmmo start")
 	if WC.bEquipOnPause
 		WC.abCyclingQueue[0] = false
-		if WC.iPosInd > 2
+		if WC.iPosInd != 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", 0)
 		endIf
 	endIf

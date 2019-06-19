@@ -167,7 +167,7 @@ function DisableEditMode()
     endIf
 
     UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", 0.0)
-    if WC.iPosInd > 2
+    if WC.iPosInd != 2
         UI.invokeBool(HUD_MENU, WidgetRoot + ".showQueuePositionIndicators", false)
     endIf
     UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
