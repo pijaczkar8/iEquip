@@ -1029,8 +1029,23 @@ function LoadPreset(int jPreset)
 
     if !isEditMode                          ; The only time this will be the case is if the user has selected Reset Layout in the MCM, and we're loading the default layout preset
         WC.bRefreshingWidget = true
+        bool bWasPreselectMode = WC.bPreselectMode
+        WC.bPreselectMode = false
+        bool[] args = new bool[5]
+        if WC.bAmmoMode
+            args[0] = true
+        endIf
+        args[3] = WC.bAmmoMode
+        UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
         WC.refreshWidgetOnLoad()
         WC.bRefreshingWidget = false
+        if !WC.EH.bPlayerIsABeast
+            WC.checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType"))
+        endIf
+
+        if bWasPreselectMode
+            PM.togglePreselectMode(false, true)
+        endIf
     else
         WC.updatePotionSelector(true)
         UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", WC.iBackgroundStyle)
