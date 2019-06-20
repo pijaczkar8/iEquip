@@ -857,10 +857,8 @@ state ENABLED
 		if !bIsFirstEnabled
 			CheckDependencies()
 			EM.UpdateElementsAll()
-			if bAmmoMode
-				args[0] = true
-			endIf
-			args[3] = bAmmoMode
+			args[0] = (bAmmoMode && !AM.bSimpleAmmoMode)
+			args[3] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			refreshWidgetOnLoad()
 		else

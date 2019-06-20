@@ -1017,7 +1017,7 @@ state BEASTMODE
 
 	event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE received - EventName: " + EventName)
-	    if EventName == "LandStart"
+	    if EventName == "LandStart" || EventName == "GroundStart"
 	    	BM.showClaws()
 	    elseIf EventName == "LiftoffStart"
 	    	BM.showPreviousItems()
