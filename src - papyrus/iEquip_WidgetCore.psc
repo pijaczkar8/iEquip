@@ -225,11 +225,11 @@ bool property bShowAutoAddedFlag auto hidden
 
 int property iCurrentWidgetFadeoutChoice
 	int function Get()
-		if fWidgetFadeoutDuration = 3.0
+		if fWidgetFadeoutDuration == 3.0
 			return 0
-		elseIf fWidgetFadeoutDuration = 3.0
+		elseIf fWidgetFadeoutDuration == 1.5
 			return 1
-		elseIf fWidgetFadeoutDuration = 3.0
+		elseIf fWidgetFadeoutDuration == 0.5
 			return 2
 		else
 			return 3
@@ -255,11 +255,11 @@ bool bFadingWidgetOut
 
 int property iCurrentNameFadeoutChoice
 	int function Get()
-		if fNameFadeoutDuration = 3.0
+		if fNameFadeoutDuration == 3.0
 			return 0
-		elseIf fNameFadeoutDuration = 3.0
+		elseIf fNameFadeoutDuration == 1.5
 			return 1
-		elseIf fNameFadeoutDuration = 3.0
+		elseIf fNameFadeoutDuration == 0.5
 			return 2
 		else
 			return 3
@@ -420,7 +420,7 @@ Event OnWidgetInit()
 	
 	iCurrentWidgetFadeoutChoice = 1
 	iCurrentNameFadeoutChoice = 1
-	iPosIndChoice = 1
+	iPosInd = 1
 
 	abIsNameShown = new bool[8]
 	aiTargetQ = new int[5]
@@ -860,10 +860,8 @@ state ENABLED
 		if !bIsFirstEnabled
 			CheckDependencies()
 			EM.UpdateElementsAll()
-			if bAmmoMode
-				args[0] = true
-			endIf
-			args[3] = bAmmoMode
+			args[0] = (bAmmoMode && !AM.bSimpleAmmoMode)
+			args[3] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			refreshWidgetOnLoad()
 		else
@@ -959,7 +957,6 @@ function refreshWidgetOnLoad()
 	
 	bLeftIconFaded = false
 	int Q
-	form fItem
 	int potionGroup = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
 	UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 	updatePotionSelector(true) ; Hide the potion selectors
@@ -991,32 +988,36 @@ function refreshWidgetOnLoad()
 				else
 					updateWidget(Q, aiCurrentQueuePosition[Q])
 				endIf
-				if abIsCounterShown[Q]
-					if Q == 0 && bAmmoMode
-						fItem = AM.currentAmmoForm
-					else
-						fItem = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")
-					endIf
-					if Q == 3 && potionGroup != -1
-						count = PO.getPotionGroupCount(potionGroup)
-						setSlotCount(3, count)
-						if count < 1
-							checkAndFadeConsumableIcon(true)
-						elseIf bConsumableIconFaded
-							checkAndFadeConsumableIcon(false)
-						endIf
-					elseIf Q == 4
-						if count < 1
-							handleEmptyPoisonQueue()
-						else
-							setSlotCount(4, PlayerRef.GetItemCount(fItem))
-							if bPoisonIconFaded
-								checkAndFadePoisonIcon(false)
+				if Q < 2
+					if abIsCounterShown[Q]
+						if !abPoisonInfoDisplayed[Q]
+							if Q == 0 && bAmmoMode
+								setSlotCount(Q, PlayerRef.GetItemCount(AM.currentAmmoForm))
+							else
+								setSlotCount(Q, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")))
 							endIf
 						endIf
-					elseIf fItem && !(Q < 2 && abPoisonInfoDisplayed[Q])
-						setSlotCount(Q, PlayerRef.GetItemCount(fItem))
+					else
+						setCounterVisibility(Q, false)
 					endIf
+				
+				elseIf Q == 3 && potionGroup != -1
+					count = PO.getPotionGroupCount(potionGroup)
+					setSlotCount(3, count)
+					if count < 1
+						checkAndFadeConsumableIcon(true)
+					elseIf bConsumableIconFaded
+						checkAndFadeConsumableIcon(false)
+					endIf
+				elseIf Q == 4
+					if count < 1
+						handleEmptyPoisonQueue()
+					else
+						setSlotCount(4, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")))
+						if bPoisonIconFaded
+							checkAndFadePoisonIcon(false)
+						endIf
+					endIf			
 				endIf
 			endIf
 		else
@@ -2454,8 +2455,8 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	endIf
 
 	sIcon = jMap.getStr(targetObject, "iEquipIcon")
-	if Q == 0 && bAmmoMode && !bCyclingLHPreselectInAmmoMode && AM.sAmmoIconSuffix != ""
-		sIcon += AM.sAmmoIconSuffix
+	if Q == 0 && bAmmoMode && !bCyclingLHPreselectInAmmoMode && AM.asAmmoIconSuffix[AM.iAmmoIconStyle] != ""
+		sIcon += AM.asAmmoIconSuffix[AM.iAmmoIconStyle]
 	endIf
 
 	float fNameAlpha = afWidget_A[aiNameElements[Slot]]
@@ -2839,7 +2840,7 @@ function updateAttributeIcons(int Q, int iIndex, bool overridePreselect = false,
 				targetObject = jArray.getObj(aiTargetQ[Q], iIndex)
 			endIf
 		endIf
-		if targetObject == -1 || (Q == 0 && bAmmoMode)
+		if targetObject == -1 || (Slot == 0 && bAmmoMode)
 			isPoisoned = false
 			isEnchanted = false
 		else
@@ -3830,7 +3831,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			;Hide the poison name
 			showName(Q, false, true, 0.15)
 			;Hide the counter if it's still showing and not needed
-			if !(itemRequiresCounter(Q, jMap.getInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipType")))
+			if !(itemRequiresCounter(Q, jMap.getInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipType")) || (Q == 0 && bAmmoMode && !(AM.bAmmoModePending || jArray.Count(AM.aiTargetQ[AM.Q]) == 0)))
 				setCounterVisibility(Q, false)
 			endIf
 			;Reset the counter text colour

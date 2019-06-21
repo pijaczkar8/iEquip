@@ -45,7 +45,7 @@ string[] asBoundAmmoNames
 string[] asBoundAmmoIcons
 
 string[] asAmmoIcons
-string[] asAmmoIconSuffix
+string[] property asAmmoIconSuffix auto hidden
 
 String HUD_MENU = "HUD Menu"
 String WidgetRoot
@@ -362,7 +362,6 @@ function AmmoModeAnimateIn()
 	debug.trace("iEquip_AmmoMode AmmoModeAnimateIn end")
 endFunction
 
-;function AmmoModeAnimateOut(bool toggleWithoutEquipping = false)
 function AmmoModeAnimateOut()
 	debug.trace("iEquip_AmmoMode AmmoModeAnimateOut start")
 	WC.hideAttributeIcons(5)

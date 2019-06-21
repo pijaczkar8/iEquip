@@ -142,19 +142,22 @@ function registerForGPPKeys()
 	aiGPPComboKeys[1] = (Game.GetFormFromFile(0x00000002, "GPP.esp") as GlobalVariable).GetValueInt()
 	aiGPPComboKeys[2] = (Game.GetFormFromFile(0x00000003, "GPP.esp") as GlobalVariable).GetValueInt()
 	aiGPPComboKeys[3] = (Game.GetFormFromFile(0x00000004, "GPP.esp") as GlobalVariable).GetValueInt()
-	RegisterForKey(aiGPPComboKeys[0])
-	RegisterForKey(aiGPPComboKeys[1])
-	RegisterForKey(aiGPPComboKeys[2])
-	RegisterForKey(aiGPPComboKeys[3])
+    int i
+    while i < 4
+        if aiGPPComboKeys[i] != -1 && aiGPPComboKeys[i] != iUtilityKey
+            RegisterForKey(aiGPPComboKeys[i])
+        endIf
+        i += 1
+    endWhile
 endFunction
 
 function unregisterForGPPKeys()
 	int i
 	while i < 4
-		if aiGPPComboKeys[i] != -1
-			UnregisterForKey(aiGPPComboKeys[i])
-			aiGPPComboKeys[i] = -1
+		if aiGPPComboKeys[i] != -1 && aiGPPComboKeys[i] != iUtilityKey
+            UnregisterForKey(aiGPPComboKeys[i])
 		endIf
+        aiGPPComboKeys[i] = -1
 		i += 1
 	endWhile
 endFunction
@@ -234,9 +237,10 @@ endEvent
 
 event OnKeyDown(int KeyCode)
     debug.trace("iEquip_KeyHandler OnKeyDown start - KeyCode: "+KeyCode)
-    ;if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
-
-    if KeyCode == iUtilityKey
+    
+    if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
+        bAllowKeyPress = false
+    elseIf KeyCode == iUtilityKey
         bIsUtilityKeyHeld = true
     endIf
 
@@ -269,7 +273,10 @@ endEvent
 
 event OnKeyUp(int KeyCode, Float HoldTime)
     debug.trace("iEquip_KeyHandler OnKeyUp start - KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
-    if KeyCode == iUtilityKey
+    
+    if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
+        bAllowKeyPress = true
+    elseIf KeyCode == iUtilityKey
         bIsUtilityKeyHeld = false
     endIf
 
@@ -505,8 +512,12 @@ endState
 state INVENTORYMENU
     event OnKeyDown(int KeyCode)
         debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start")
-        if KeyCode == iUtilityKey
-            bIsUtilityKeyHeld = true
+        ;if KeyCode == iUtilityKey
+        ;    bIsUtilityKeyHeld = true
+        ;endIf
+
+        if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
+            bAllowKeyPress = false
         endIf
      
         if bAllowKeyPress

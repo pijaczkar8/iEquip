@@ -572,29 +572,34 @@ function updateOtherHandOn2HSpellEquipped(int Q, int hand, int otherHand)
 	debug.trace("iEquip_BeastMode updateOtherHandOn2HSpellEquipped end")
 endFunction
 
+bool bClawsShown
+
 function showClaws()
 	debug.trace("iEquip_BeastMode showClaws start")
-	int i
-	float fNameAlpha
-	int iHandle
-	while i < 2
-		fNameAlpha = WC.afWidget_A[WC.aiNameElements[i]]
-		if fNameAlpha < 1
-			fNameAlpha = 100
-		endIf
-		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
-		If(iHandle)
-			debug.trace("iEquip_BeastMode showClaws - got iHandle, i: " + i)
-			UICallback.PushInt(iHandle, i)
-			UICallback.PushString(iHandle, "Claws")
-			UICallback.PushString(iHandle, "$iEquip_common_Claws")
-			UICallback.PushFloat(iHandle, fNameAlpha)
-			UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[i]])
-			UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[i]])
-			UICallback.Send(iHandle)
-		endIf
-		i += 1
-	endWhile
+	if !bClawsShown
+		bClawsShown = true
+		int i
+		float fNameAlpha
+		int iHandle
+		while i < 2
+			fNameAlpha = WC.afWidget_A[WC.aiNameElements[i]]
+			if fNameAlpha < 1
+				fNameAlpha = 100
+			endIf
+			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+			If(iHandle)
+				debug.trace("iEquip_BeastMode showClaws - got iHandle, i: " + i)
+				UICallback.PushInt(iHandle, i)
+				UICallback.PushString(iHandle, "Claws")
+				UICallback.PushString(iHandle, "$iEquip_common_Claws")
+				UICallback.PushFloat(iHandle, fNameAlpha)
+				UICallback.PushFloat(iHandle, WC.afWidget_A[WC.aiIconClips[i]])
+				UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[i]])
+				UICallback.Send(iHandle)
+			endIf
+			i += 1
+		endWhile
+	endIf
 	debug.trace("iEquip_BeastMode showClaws end")
 endFunction
 
@@ -623,6 +628,7 @@ function showPreviousItems()
 		endIf
 		i += 1
 	endWhile
+	bClawsShown = false
 	debug.trace("iEquip_BeastMode showPreviousItems end")
 endFunction
 

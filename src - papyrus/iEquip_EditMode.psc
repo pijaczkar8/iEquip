@@ -1010,7 +1010,9 @@ function LoadPreset(int jPreset)
     
     WC.updateWidgetVisibility(false)
     Wait(0.2)
-	UpdateEditModeGuide()
+    if isEditMode
+	   UpdateEditModeGuide()
+    endIf
     UpdateElementsAll()
 	
     if CM.iChargeDisplayType > 0
@@ -1026,7 +1028,22 @@ function LoadPreset(int jPreset)
     UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
 
     if !isEditMode                          ; The only time this will be the case is if the user has selected Reset Layout in the MCM, and we're loading the default layout preset
+        WC.bRefreshingWidget = true
+        bool bWasPreselectMode = WC.bPreselectMode
+        WC.bPreselectMode = false
+        bool[] args = new bool[5]
+        args[0] = (WC.bAmmoMode && !WC.AM.bSimpleAmmoMode)
+        args[3] = (WC.bAmmoMode && !WC.AM.bSimpleAmmoMode)
+        UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
         WC.refreshWidgetOnLoad()
+        WC.bRefreshingWidget = false
+        if !WC.EH.bPlayerIsABeast
+            WC.checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType"))
+        endIf
+
+        if bWasPreselectMode
+            PM.togglePreselectMode(false, true)
+        endIf
     else
         WC.updatePotionSelector(true)
         UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", WC.iBackgroundStyle)
