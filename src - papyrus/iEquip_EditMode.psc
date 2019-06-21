@@ -1032,10 +1032,8 @@ function LoadPreset(int jPreset)
         bool bWasPreselectMode = WC.bPreselectMode
         WC.bPreselectMode = false
         bool[] args = new bool[5]
-        if WC.bAmmoMode
-            args[0] = true
-        endIf
-        args[3] = WC.bAmmoMode
+        args[0] = (WC.bAmmoMode && !WC.AM.bSimpleAmmoMode)
+        args[3] = (WC.bAmmoMode && !WC.AM.bSimpleAmmoMode)
         UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
         WC.refreshWidgetOnLoad()
         WC.bRefreshingWidget = false
