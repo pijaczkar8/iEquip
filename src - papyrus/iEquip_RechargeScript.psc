@@ -5,8 +5,6 @@ import iEquip_SoulSeeker
 import iEquip_StringExt
 
 iEquip_ChargeMeters Property CM Auto
-iEquip_RechargeLeftFXScript Property LFX Auto
-iEquip_RechargeRightFXScript Property RFX Auto
 
 actor Property PlayerRef Auto
 sound Property iEquip_Recharge_SFX Auto

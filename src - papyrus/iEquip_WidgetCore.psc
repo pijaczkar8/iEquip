@@ -51,8 +51,6 @@ iEquip_ConsumableNameUpdateScript property CNUpdate auto
 iEquip_ConsumableFadeUpdateScript property CFUpdate auto
 iEquip_PotionSelectorUpdateScript property PSUpdate auto
 iEquip_PoisonNameUpdateScript property PNUpdate auto
-iEquip_ApplyPoisonLeftFXScript property PLFX auto
-iEquip_ApplyPoisonRightFXScript property PRFX auto
 
 Spell property PLFX Auto
 Spell property PRFX Auto
