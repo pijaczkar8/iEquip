@@ -54,6 +54,9 @@ iEquip_PoisonNameUpdateScript property PNUpdate auto
 iEquip_ApplyPoisonLeftFXScript property PLFX auto
 iEquip_ApplyPoisonRightFXScript property PRFX auto
 
+Spell property PLFX Auto
+Spell property PRFX Auto
+
 ;CK-filled Properties
 Actor property PlayerRef auto
 Armor property Shoes auto
@@ -3754,9 +3757,9 @@ function applyPoison(int Q)
         ;Add Poison FX to weapon
         debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison VFX")
         if Q == 0
-            PLFX.ShowPoisonFX()
+			PLFX.cast(PlayerRef, PlayerRef)
         else
-            PRFX.ShowPoisonFX()
+			PRFX.cast(PlayerRef, PlayerRef)
         endIf
     endIf
     debug.trace("iEquip_WidgetCore applyPoison end")
@@ -4686,7 +4689,6 @@ function ApplyChanges()
 	
 	if bUpdateKeyMaps
         KH.updateKeyMaps()
-		bUpdateKeyMaps = false
 	endIf
 	if bBackgroundStyleChanged
 		UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
@@ -4701,11 +4703,9 @@ function ApplyChanges()
 				i += 1
 			endWhile
 		endIf
-        bBackgroundStyleChanged = false
 	endIf
 	if bDropShadowSettingChanged && !EM.isEditMode
 		updateTextFieldDropShadow()
-        bDropShadowSettingChanged = false
 	endIf
 	if bFadeOptionsChanged
 		updateWidgetVisibility()
@@ -4717,7 +4717,6 @@ function ApplyChanges()
             endIf
             i += 1
         endwhile
-        bFadeOptionsChanged = false
     endIf
     if bPositionIndicatorSettingsChanged
     	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionMarkers")
@@ -4747,25 +4746,20 @@ function ApplyChanges()
 				i += 1
 			endWhile
 		endIf
-    	bPositionIndicatorSettingsChanged = false
     endIf
     if EH.bPlayerIsABeast
     	if bBeastModeOptionsChanged
     		BM.updateWidgetVisOnSettingsChanged()
-    		bBeastModeOptionsChanged = false
     	endIf
     else
 	    if bSlotEnabledOptionsChanged
 			updateSlotsEnabled()
-	        bSlotEnabledOptionsChanged = false
 		endIf
 	    if bRefreshQueues
 	    	purgeQueue()
-	        bRefreshQueues = false
 	    endIf
 	    if bReduceMaxQueueLengthPending
 	    	reduceMaxQueueLength()
-	        bReduceMaxQueueLengthPending = false
 	    endIf
 	    if bGearedUpOptionChanged
 	    	Utility.SetINIbool("bDisableGearedUp:General", True)
@@ -4774,7 +4768,6 @@ function ApplyChanges()
 				Utility.SetINIbool("bDisableGearedUp:General", False)
 				refreshVisibleItems()
 			endIf
-	        bGearedUpOptionChanged = false
 	    endIf
 	    ammo targetAmmo = AM.currentAmmoForm as ammo
 	    if !bAmmoMode && bUnequipAmmo && targetAmmo && PlayerRef.isEquipped(targetAmmo)
@@ -4789,11 +4782,9 @@ function ApplyChanges()
 	    	debug.trace("iEquip_WidgetCore ApplyChanges - bSimpleAmmoMode: " + AM.bSimpleAmmoMode + ", bSimpleAmmoModeOnEnter: " + AM.bSimpleAmmoModeOnEnter + ", bPreselectMode: " + bPreselectMode)
 		    if bAmmoSortingChanged
 		    	AM.updateAmmoListsOnSettingChange()
-	            bAmmoSortingChanged = false
 		    endIf
 		    if bAmmoIconChanged
 		    	AM.checkAndEquipAmmo(false, false, true, false)
-	            bAmmoIconChanged = false
 		    endIf
 		    if AM.bSimpleAmmoMode && !AM.bSimpleAmmoModeOnEnter
 		    	if !bPreselectMode
@@ -4838,7 +4829,6 @@ function ApplyChanges()
 				endIf
 				i += 1
 			endwhile
-	        bAttributeIconsOptionChanged = false
 		endIf
 		if bPoisonIndicatorStyleChanged
 			i = 0
@@ -4848,10 +4838,8 @@ function ApplyChanges()
 				endIf
 				i += 1
 			endwhile
-	        bPoisonIndicatorStyleChanged = false
 		endIf
 		if CM.bSettingsChanged
-			CM.bSettingsChanged = false
 			CM.updateChargeMeters(true) ;forceUpdate will make sure updateMeterPercent runs in full
 			if CM.iChargeDisplayType > 0
 				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
@@ -4872,7 +4860,6 @@ function ApplyChanges()
 				TI.checkAndUpdateTemperLevelInfo(i)
 				i += 1
 			endWhile
-			bTemperDisplaySettingChanged = false
 		endIf
 		if bPotionGroupingOptionsChanged
 		    if !bPotionGrouping
@@ -4894,10 +4881,8 @@ function ApplyChanges()
 		    		i += 1
 		    	endWhile
 		    endIf
-	        bPotionGroupingOptionsChanged = false
 		endIf
 		if bRestorePotionWarningSettingChanged
-			bRestorePotionWarningSettingChanged = false
 			int potionGroup = asPotionGroups.Find(asCurrentlyEquipped[3])
 			if (potionGroup > -1)
 	        	setSlotCount(3, PO.getPotionGroupCount(potionGroup))
@@ -4908,6 +4893,25 @@ function ApplyChanges()
 	        EM.LoadAllElements()
 	    endIf
 	endIf
+	
 	bMCMPresetLoaded = false
+	bUpdateKeyMaps = false
+	bBackgroundStyleChanged = false
+	bDropShadowSettingChanged = false
+	bFadeOptionsChanged = false
+	bPositionIndicatorSettingsChanged = false
+	bBeastModeOptionsChanged = false
+	bSlotEnabledOptionsChanged = false
+	bRefreshQueues = false
+	bReduceMaxQueueLengthPending = false
+	bGearedUpOptionChanged = false
+	bAmmoSortingChanged = false
+	bAmmoIconChanged = false
+	bAttributeIconsOptionChanged = false
+	bPoisonIndicatorStyleChanged = false
+	CM.bSettingsChanged = false
+	bTemperDisplaySettingChanged = false
+	bPotionGroupingOptionsChanged = false
+	bRestorePotionWarningSettingChanged = false
     debug.trace("iEquip_WidgetCore ApplyChanges end")
 endFunction

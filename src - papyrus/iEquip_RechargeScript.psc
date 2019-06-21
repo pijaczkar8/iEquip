@@ -10,6 +10,8 @@ iEquip_RechargeRightFXScript Property RFX Auto
 
 actor Property PlayerRef Auto
 sound Property iEquip_Recharge_SFX Auto
+Spell property LFX Auto
+Spell property RFX Auto
 Perk Property Enchanter00 Auto ; Used if Requiem detected - Requiem renames this perk to REQ_Perk_Enchanting_EnchantersInsight1
 
 bool Property bRechargingEnabled = true Auto Hidden
@@ -72,9 +74,9 @@ function rechargeWeapon(int Q)
                 if soulSize > 0
                     iEquip_Recharge_SFX.Play(PlayerRef)
                     if Q == 0
-                        LFX.ShowRechargeFX()
+						LFX.cast(PlayerRef, PlayerRef)
                     else
-                        RFX.ShowRechargeFX()
+						RFX.cast(PlayerRef, PlayerRef)
                     endIf
                     ;Just in case it's possible to overcharge a weapon ensure we never recharge more than requiredCharge
                     if afAmountToRecharge[soulSize] < requiredCharge

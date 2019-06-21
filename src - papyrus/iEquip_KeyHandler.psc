@@ -251,7 +251,7 @@ event OnKeyDown(int KeyCode)
             endIf
         endIf
         iWaitingKeyCode = KeyCode
-    
+   	
         if iMultiTap == 0       ; This is the first time the key has been pressed
             RegisterForSingleUpdate(fLongPressDelay)
         elseIf iMultiTap == 1   ; This is the second time the key has been pressed.
