@@ -146,10 +146,10 @@ endEvent
 
 function registerForGPPKeys()
 	unregisterForGPPKeys()
-	aiGPPComboKeys[0] = (Game.GetFormFromFile(0x00000001, "GamepadPlusPlus.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[1] = (Game.GetFormFromFile(0x00000002, "GamepadPlusPlus.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[2] = (Game.GetFormFromFile(0x00000003, "GamepadPlusPlus.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[3] = (Game.GetFormFromFile(0x00000004, "GamepadPlusPlus.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[0] = (Game.GetFormFromFile(0x00000001, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[1] = (Game.GetFormFromFile(0x00000002, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[2] = (Game.GetFormFromFile(0x00000003, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[3] = (Game.GetFormFromFile(0x00000004, "Gamepad++.esp") as GlobalVariable).GetValueInt()
     int i
     while i < 4
         if aiGPPComboKeys[i] != -1 && aiGPPComboKeys[i] != iUtilityKey
