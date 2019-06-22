@@ -649,7 +649,7 @@ function CheckDependencies()
 		bMoreHUDLoaded = false
 	endIf
 
-	KH.registerForGPP(Game.GetModByName("GPP.esp") != 255)
+	KH.registerForGPP(Game.GetModByName("GamepadPlusPlus.esp") != 255)
 	
     if Game.GetModByName("Requiem.esp") != 255
         RC.bIsRequiemLoaded = true

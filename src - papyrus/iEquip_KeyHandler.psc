@@ -62,12 +62,14 @@ bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
 bool _bPlayerIsABeast
 bool bIsGPPLoaded
+bool bGPPKeyHeld
 
 ; Ints
 int iWaitingKeyCode
 int iMultiTap
 
 int[] aiGPPComboKeys
+int[] aiExtKbKeys
 
 ; Strings
 string sPreviousState
@@ -78,10 +80,15 @@ string sPreviousState
 
 event onInit()
 	aiGPPComboKeys = new int[4]
-	aiGPPComboKeys[0] = -1
-	aiGPPComboKeys[1] = -1
-	aiGPPComboKeys[2] = -1
-	aiGPPComboKeys[3] = -1
+    aiExtKbKeys = new int[6]
+    int i
+    while i < 6
+        if i < 4
+    	   aiGPPComboKeys[i] = -1
+        endIf
+        aiExtKbKeys[i] = -1
+        i += 1
+    endWhile
 endEvent
 
 function GameLoaded()
@@ -109,7 +116,8 @@ function GameLoaded()
     RegisterForMenu("TweenMenu")
     RegisterForMenu("Quantity Menu")
     
-    UnregisterForAllKeys() ;Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
+    UnregisterForAllKeys() ; Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
+    updateExtKbKeysArray()
     
     bIsUtilityKeyHeld = false
     bNotInLootMenu = true
@@ -138,10 +146,10 @@ endEvent
 
 function registerForGPPKeys()
 	unregisterForGPPKeys()
-	aiGPPComboKeys[0] = (Game.GetFormFromFile(0x00000001, "GPP.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[1] = (Game.GetFormFromFile(0x00000002, "GPP.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[2] = (Game.GetFormFromFile(0x00000003, "GPP.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[3] = (Game.GetFormFromFile(0x00000004, "GPP.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[0] = (Game.GetFormFromFile(0x00000001, "GamepadPlusPlus.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[1] = (Game.GetFormFromFile(0x00000002, "GamepadPlusPlus.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[2] = (Game.GetFormFromFile(0x00000003, "GamepadPlusPlus.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[3] = (Game.GetFormFromFile(0x00000004, "GamepadPlusPlus.esp") as GlobalVariable).GetValueInt()
     int i
     while i < 4
         if aiGPPComboKeys[i] != -1 && aiGPPComboKeys[i] != iUtilityKey
@@ -160,6 +168,15 @@ function unregisterForGPPKeys()
         aiGPPComboKeys[i] = -1
 		i += 1
 	endWhile
+endFunction
+
+function updateExtKbKeysArray()
+    aiExtKbKeys[0] = iQuickLightKey
+    aiExtKbKeys[1] = iQuickShieldKey
+    aiExtKbKeys[2] = iQuickRangedKey
+    aiExtKbKeys[3] = iQuickRestoreKey
+    aiExtKbKeys[4] = iCyclePoisonKey
+    aiExtKbKeys[5] = iConsumeItemKey
 endFunction
 
 bool property bPlayerIsABeast
@@ -239,12 +256,12 @@ event OnKeyDown(int KeyCode)
     debug.trace("iEquip_KeyHandler OnKeyDown start - KeyCode: "+KeyCode)
     
     if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
-        bAllowKeyPress = false
+        bGPPKeyHeld = true
     elseIf KeyCode == iUtilityKey
         bIsUtilityKeyHeld = true
     endIf
 
-    if bAllowKeyPress
+    if bAllowKeyPress && (!bGPPKeyHeld || aiExtKbKeys.Find(KeyCode) > -1)
         if KeyCode != iWaitingKeyCode && iWaitingKeyCode != 0
             if iWaitingKeyCode != iUtilityKey 
                 ; The player pressed a different key, so force the current one to process if there is one
@@ -275,7 +292,7 @@ event OnKeyUp(int KeyCode, Float HoldTime)
     debug.trace("iEquip_KeyHandler OnKeyUp start - KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
     
     if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
-        bAllowKeyPress = true
+        bGPPKeyHeld = false
     elseIf KeyCode == iUtilityKey
         bIsUtilityKeyHeld = false
     endIf
@@ -517,10 +534,10 @@ state INVENTORYMENU
         ;endIf
 
         if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
-            bAllowKeyPress = false
+            bGPPKeyHeld = true
         endIf
      
-        if bAllowKeyPress
+        if bAllowKeyPress && !bGPPKeyHeld
             bAllowKeyPress = false
         
             if KeyCode == iLeftKey
@@ -545,6 +562,8 @@ state EDITMODE
         debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
         if KeyCode == iUtilityKey
             bIsUtilityKeyHeld = false
+        elseIf bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
+            bGPPKeyHeld = false
         endIf
         if bAllowKeyPress
             if KeyCode == iWaitingKeyCode && iMultiTap == 0

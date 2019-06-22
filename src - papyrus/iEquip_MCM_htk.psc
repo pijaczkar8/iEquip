@@ -284,7 +284,7 @@ State htk_key_consItem
             else
                 KH.iConsumeItemKey = -1
             endIf
-            
+            KH.updateExtKbKeysArray()
             WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iConsumeItemKey)        
         endIf
@@ -301,7 +301,7 @@ State htk_key_cyclePoison
             else
                 KH.iCyclePoisonKey = -1
             endIf
-            
+            KH.updateExtKbKeysArray()
             WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iCyclePoisonKey)        
         endIf
@@ -318,7 +318,7 @@ State htk_key_quickRestore
             else
                 KH.iQuickRestoreKey = -1
             endIf
-            
+            KH.updateExtKbKeysArray()
             WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iQuickRestoreKey)        
         endIf
@@ -335,7 +335,7 @@ State htk_key_quickShield
             else
                 KH.iQuickShieldKey = -1
             endIf
-            
+            KH.updateExtKbKeysArray()
             WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iQuickShieldKey)        
         endIf
@@ -352,7 +352,7 @@ State htk_key_quickRanged
             else
                 KH.iQuickRangedKey = -1
             endIf
-            
+            KH.updateExtKbKeysArray()
             WC.bUpdateKeyMaps = true
             MCM.SetKeyMapOptionValueST(KH.iQuickRangedKey)        
         endIf
