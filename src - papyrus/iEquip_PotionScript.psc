@@ -110,7 +110,7 @@ int property iNotificationLevel = 2 auto hidden
 bool bInitialised
 
 event OnInit()
-    debug.trace("iEquip_PotionScript OnInit start")
+    ;debug.trace("iEquip_PotionScript OnInit start")
     GotoState("")
     
     aiPotionQ = new int[9]
@@ -206,12 +206,12 @@ event OnInit()
 
    
     bInitialised = true
-    debug.trace("iEquip_PotionScript OnInit end")
+    ;debug.trace("iEquip_PotionScript OnInit end")
 endEvent
 
 ; Called from WidgetCore ENABLED OnBeginState
 function InitialisePotionQueueArrays(int jHolderObj, int consQ, int poisQ)
-    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays start")
+    ;debug.trace("iEquip_PotionScript InitialisePotionQueueArrays start")
     iConsumableQ = consQ
     iPoisonQ = poisQ
     aiPotionQ[0] = JArray.object()
@@ -232,12 +232,12 @@ function InitialisePotionQueueArrays(int jHolderObj, int consQ, int poisQ)
     JMap.setObj(jHolderObj, "staminaFortifyQ", aiPotionQ[7])
     aiPotionQ[8] = JArray.object()
     JMap.setObj(jHolderObj, "staminaRegenQ", aiPotionQ[8])
-    debug.trace("iEquip_PotionScript InitialisePotionQueueArrays end")
+    ;debug.trace("iEquip_PotionScript InitialisePotionQueueArrays end")
 endfunction
 
 ; Called from PlayerEventHandler OnPlayerLoadGame
 function initialise()
-    debug.trace("iEquip_PotionScript initialise start")
+    ;debug.trace("iEquip_PotionScript initialise start")
     while !bInitialised
         Utility.WaitMenuMode(0.01)
     endWhile
@@ -274,13 +274,13 @@ function initialise()
     else
         bIsPAFLoaded = false
     endIf
-    debug.trace("iEquip_PotionScript initialise - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
+    ;debug.trace("iEquip_PotionScript initialise - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
     findAndSortPotions()
 endFunction
 
 ; Called from WidgetCore initialisemoreHUDArray
 function initialisemoreHUDArray()
-    debug.trace("iEquip_PotionScript initialisemoreHUDArray start")
+    ;debug.trace("iEquip_PotionScript initialisemoreHUDArray start")
     int jItemIDs = jArray.object()
     int jIconNames = jArray.object()
     int Q = 0
@@ -288,7 +288,7 @@ function initialisemoreHUDArray()
     while Q < 9
         int queueLength = JArray.count(aiPotionQ[Q])
         int i = 0
-        debug.trace("iEquip_PotionScript initialisemoreHUDArray - Q" + Q + " contains " + queueLength + " potions")
+        ;debug.trace("iEquip_PotionScript initialisemoreHUDArray - Q" + Q + " contains " + queueLength + " potions")
         
         while i < queueLength
             form itemForm = jMap.getForm(jArray.getObj(aiPotionQ[Q], i), "iEquipForm")
@@ -297,7 +297,7 @@ function initialisemoreHUDArray()
                 queueLength -= 1
             endIf
             int itemID = jMap.getInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID")
-            debug.trace("iEquip_PotionScript initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiPotionQ[Q], i), "iEquipName"))
+            ;debug.trace("iEquip_PotionScript initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiPotionQ[Q], i), "iEquipName"))
             if itemID == 0
                 itemID = CalcCRC32Hash(itemForm.GetName(), Math.LogicalAND(itemForm.GetFormID(), 0x00FFFFFF))
                 jMap.setInt(jArray.getObj(aiPotionQ[Q], i), "iEquipItemID", itemID)
@@ -311,24 +311,24 @@ function initialisemoreHUDArray()
 
         Q += 1
     endWhile
-    debug.trace("iEquip_PotionScript initialisemoreHUDArray - jItemIds contains " + jArray.count(jItemIDs) + " entries")
-    debug.trace("iEquip_PotionScript initialisemoreHUDArray - jIconNames contains " + jArray.count(jIconNames) + " entries")
+    ;debug.trace("iEquip_PotionScript initialisemoreHUDArray - jItemIds contains " + jArray.count(jItemIDs) + " entries")
+    ;debug.trace("iEquip_PotionScript initialisemoreHUDArray - jIconNames contains " + jArray.count(jIconNames) + " entries")
     if jArray.count(jItemIDs) > 0
         int[] itemIDs = utility.CreateIntArray(jArray.count(jItemIDs))
         string[] iconNames = utility.CreateStringArray(jArray.count(jIconNames))
         jArray.writeToIntegerPArray(jItemIDs, itemIDs)
         jArray.writeToStringPArray(jIconNames, iconNames)
-        debug.trace("iEquip_PotionScript initialisemoreHUDArray - itemIDs contains " + itemIDs.Length + " entries with " + itemIDs[0] + " in index 0")
-        debug.trace("iEquip_PotionScript initialisemoreHUDArray - iconNames contains " + iconNames.Length + " entries with " + iconNames[0] + " in index 0")
+        ;debug.trace("iEquip_PotionScript initialisemoreHUDArray - itemIDs contains " + itemIDs.Length + " entries with " + itemIDs[0] + " in index 0")
+        ;debug.trace("iEquip_PotionScript initialisemoreHUDArray - iconNames contains " + iconNames.Length + " entries with " + iconNames[0] + " in index 0")
         AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
     endIf
-    debug.trace("iEquip_PotionScript initialisemoreHUDArray end")
+    ;debug.trace("iEquip_PotionScript initialisemoreHUDArray end")
 endFunction
 
 function findAndSortPotions()
     ;Count the number of potion items currently in the players inventory
     int numFound = GetNumItemsOfType(PlayerRef, 46)
-    debug.trace("iEquip_PotionScript findAndSortPotions start - there are " + numFound + " potions in the player's inventory")
+    ;debug.trace("iEquip_PotionScript findAndSortPotions start - there are " + numFound + " potions in the player's inventory")
     ;If any potions found
     if numFound > 0
         int i = 0
@@ -363,7 +363,7 @@ function findAndSortPotions()
         while i < numFound
             foundPotion = GetNthFormOfType(PlayerRef, 46, i) as potion
             if foundPotion
-                debug.trace("iEquip_PotionScript findAndSortPotions - " + i + " is a " + foundPotion.GetName())
+                ;debug.trace("iEquip_PotionScript findAndSortPotions - " + i + " is a " + foundPotion.GetName())
                 checkAndAddToPotionQueue(foundPotion, true)
             endIf
             i += 1
@@ -371,7 +371,7 @@ function findAndSortPotions()
         ;Now check if anything has been added to each potion queue and resort each if required
         i = 0
         while i < 9
-            debug.trace("iEquip_PotionScript findAndSortPotions - aiPotionQ: " + i + ", openingQSizes: " + openingQSizes[i] + ", new count: " + jArray.count(aiPotionQ[i]))
+            ;debug.trace("iEquip_PotionScript findAndSortPotions - aiPotionQ: " + i + ", openingQSizes: " + openingQSizes[i] + ", new count: " + jArray.count(aiPotionQ[i]))
             if jArray.count(aiPotionQ[i]) > openingQSizes[i]
                 sortPotionQueue(i, "iEquipStrengthTotal")
             endIf
@@ -386,19 +386,19 @@ function findAndSortPotions()
             numFound = getPotionGroupCount(i)
             if numFound > 0
                 WC.abPotionGroupEmpty[i] = false
-                debug.trace("iEquip_PotionScript findAndSortPotions - potionGroup: " + i + ", numFound: " + numFound + ", potionGroupEmpty[" + i + "]: " + WC.abPotionGroupEmpty[i])
+                ;debug.trace("iEquip_PotionScript findAndSortPotions - potionGroup: " + i + ", numFound: " + numFound + ", potionGroupEmpty[" + i + "]: " + WC.abPotionGroupEmpty[i])
             endIf
             i += 1
         endWhile
     else
-        debug.trace("iEquip_PotionScript findAndSortPotions - No health, stamina or magicka potions found in players inventory")
+        ;debug.trace("iEquip_PotionScript findAndSortPotions - No health, stamina or magicka potions found in players inventory")
     endIf
     bIsFirstRun = false
-    debug.trace("iEquip_PotionScript findAndSortPotions end")
+    ;debug.trace("iEquip_PotionScript findAndSortPotions end")
 endFunction
 
 function onPotionAdded(form newPotion)
-    debug.trace("iEquip_PotionScript onPotionAdded start - newPotion: " + newPotion.GetName())
+    ;debug.trace("iEquip_PotionScript onPotionAdded start - newPotion: " + newPotion.GetName())
     checkAndAddToPotionQueue(newPotion as potion)
     if bAddedToQueue && iQueueToSort != -1
         if iQueueToSort == iPoisonQ
@@ -407,17 +407,17 @@ function onPotionAdded(form newPotion)
             sortPotionQueue(iQueueToSort, "iEquipStrengthTotal")
         endIf
     endIf
-    debug.trace("iEquip_PotionScript onPotionAdded end")
+    ;debug.trace("iEquip_PotionScript onPotionAdded end")
 endFunction
 
 function onPotionRemoved(form removedPotion)
-    debug.trace("iEquip_PotionScript onPotionRemoved start - removedPotion: " + removedPotion.GetName())
+    ;debug.trace("iEquip_PotionScript onPotionRemoved start - removedPotion: " + removedPotion.GetName())
     GotoState("PROCESSING")
     potion thePotion = removedPotion as potion
     int foundPotion
     int itemCount = PlayerRef.GetItemCount(removedPotion)
     if thePotion.isPoison()
-        debug.trace("iEquip_PotionScript onPotionRemoved - removedPotion is a poison")
+        ;debug.trace("iEquip_PotionScript onPotionRemoved - removedPotion is a poison")
         if itemCount < 1
             foundPotion = findInQueue(iPoisonQ, removedPotion)
             if foundPotion != -1
@@ -469,11 +469,11 @@ function onPotionRemoved(form removedPotion)
 	    endIf
     endIf
     GotoState("")
-    debug.trace("iEquip_PotionScript onPotionRemoved end")
+    ;debug.trace("iEquip_PotionScript onPotionRemoved end")
 endFunction
 
 function removePotionFromQueue(int Q, int targetPotion)
-    debug.trace("iEquip_PotionScript removePotionFromQueue start - Q: " + Q + ", targetPotion: " + targetPotion)
+    ;debug.trace("iEquip_PotionScript removePotionFromQueue start - Q: " + Q + ", targetPotion: " + targetPotion)
     if bMoreHUDLoaded
         AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipItemID"))
     endIf
@@ -496,31 +496,31 @@ function removePotionFromQueue(int Q, int targetPotion)
     endIf
     ;Check if it's the currently shown item in the consumable slot
     if WC.asCurrentlyEquipped[3] == potionGroup
-        debug.trace("iEquip_PotionScript removePotionFromQueue - potion group is currently shown")
+        ;debug.trace("iEquip_PotionScript removePotionFromQueue - potion group is currently shown")
         if WC.abPotionGroupEmpty[Q]
             ;Check and flash empty warning if enabled
             if bFlashPotionWarning
-                debug.trace("iEquip_PotionScript removePotionFromQueue - should be flashing empty warning now - Q: " + Q)
+                ;debug.trace("iEquip_PotionScript removePotionFromQueue - should be flashing empty warning now - Q: " + Q)
                 UI.InvokeInt(HUD_MENU, WidgetRoot + ".runPotionFlashAnimation", Q)
                 Utility.WaitMenuMode(1.4)
             endIf
             ;Finally check if we're fading icon or cycling to next slot
             if iEmptyPotionQueueChoice == 0 ;Fade icon
-                debug.trace("iEquip_PotionScript removePotionFromQueue - should be fading now")
+                ;debug.trace("iEquip_PotionScript removePotionFromQueue - should be fading now")
                 WC.checkAndFadeConsumableIcon(true)
             elseIf iEmptyPotionQueueChoice == 1 ;Hide icon
-                debug.trace("iEquip_PotionScript removePotionFromQueue - should be cycling forward now")
+                ;debug.trace("iEquip_PotionScript removePotionFromQueue - should be cycling forward now")
                 WC.cycleSlot(3)
             endIf
         else
             WC.setSlotCount(3, count)
         endIf
     endIf
-    debug.trace("iEquip_PotionScript removePotionFromQueue end")
+    ;debug.trace("iEquip_PotionScript removePotionFromQueue end")
 endFunction
 
 function removeRestoreAllPotionsFromGroups()
-    debug.trace("iEquip_PotionScript removeRestoreAllPotionsFromQueues start")
+    ;debug.trace("iEquip_PotionScript removeRestoreAllPotionsFromQueues start")
     int Q
     while Q < 7
         int count = jArray.count(aiPotionQ[Q])
@@ -538,11 +538,11 @@ function removeRestoreAllPotionsFromGroups()
         endWhile
         Q += 3
     endWhile
-    debug.trace("iEquip_PotionScript removeRestoreAllPotionsFromQueues end")
+    ;debug.trace("iEquip_PotionScript removeRestoreAllPotionsFromQueues end")
 endFunction
 
 function removeGroupedPotionsFromConsumableQueue(int potionGroup)
-    debug.trace("iEquip_PotionScript removeGroupedPotionsFromConsumableQueue start")
+    ;debug.trace("iEquip_PotionScript removeGroupedPotionsFromConsumableQueue start")
     int Q = potionGroup * 3
     int maxQ = Q + 3
     int i
@@ -562,11 +562,11 @@ function removeGroupedPotionsFromConsumableQueue(int potionGroup)
         i = 0
         Q += 1
     endWhile
-    debug.trace("iEquip_PotionScript removeGroupedPotionsFromConsumableQueue end")
+    ;debug.trace("iEquip_PotionScript removeGroupedPotionsFromConsumableQueue end")
 endFunction
 
 function addIndividualPotionsToQueue(int potionGroup)
-    debug.trace("iEquip_PotionScript addIndividualPotionsToQueue start")
+    ;debug.trace("iEquip_PotionScript addIndividualPotionsToQueue start")
     int Q = potionGroup * 3
     int maxQ = Q + 3
     int i
@@ -584,11 +584,11 @@ function addIndividualPotionsToQueue(int potionGroup)
         i = 0
         Q += 1
     endWhile
-    debug.trace("iEquip_PotionScript addIndividualPotionsToQueue end")
+    ;debug.trace("iEquip_PotionScript addIndividualPotionsToQueue end")
 endFunction
 
 int function getPotionGroupCount(int potionGroup)
-    debug.trace("iEquip_PotionScript getPotionGroupCount start - potionGroup: " + potionGroup)
+    ;debug.trace("iEquip_PotionScript getPotionGroupCount start - potionGroup: " + potionGroup)
     int count
     int Q = potionGroup * 3
     int maxQ = Q + 3
@@ -599,22 +599,22 @@ int function getPotionGroupCount(int potionGroup)
     while Q < maxQ
         targetArray = aiPotionQ[Q]
         queueLength = jArray.count(targetArray)
-        debug.trace("iEquip_PotionScript getPotionGroupCount - currently checking Q: " + Q + ", queueLength: " + queueLength)
+        ;debug.trace("iEquip_PotionScript getPotionGroupCount - currently checking Q: " + Q + ", queueLength: " + queueLength)
         while i < queueLength
             currentCount = count
             count += PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm"))
-            debug.trace("iEquip_PotionScript getPotionGroupCount - " + (count - currentCount) + " potions found in index " + i + " in potion queue " + Q)
+            ;debug.trace("iEquip_PotionScript getPotionGroupCount - " + (count - currentCount) + " potions found in index " + i + " in potion queue " + Q)
             i += 1
         endWhile
         i = 0
         Q += 1
     endWhile
-    debug.trace("iEquip_PotionScript getPotionGroupCount returning count: " + count)
+    ;debug.trace("iEquip_PotionScript getPotionGroupCount returning count: " + count)
     return count
 endFunction
 
 int function getCountForSelector(int potionGroup, int potionType)
-    debug.trace("iEquip_PotionScript getCountForSelector start")
+    ;debug.trace("iEquip_PotionScript getCountForSelector start")
     int i
     int count
     int Q = aiPotionQ[(potionGroup*3) + potionType]
@@ -623,12 +623,12 @@ int function getCountForSelector(int potionGroup, int potionType)
         count += PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(Q, i), "iEquipForm"))
         i += 1
     endWhile
-    debug.trace("iEquip_PotionScript getCountForSelector end - potionGroup: " + potionGroup + ", potionType: " + potionType + ", count: " + count)
+    ;debug.trace("iEquip_PotionScript getCountForSelector end - potionGroup: " + potionGroup + ", potionType: " + potionType + ", count: " + count)
     return count
 endFunction
 
 int function getRestoreCount(int potionGroup)
-    debug.trace("iEquip_PotionScript getRestoreCount start - potionGroup: " + potionGroup)
+    ;debug.trace("iEquip_PotionScript getRestoreCount start - potionGroup: " + potionGroup)
     int count
     int targetArray = aiPotionQ[potionGroup * 3]
     int queueLength = jArray.count(targetArray)
@@ -637,7 +637,7 @@ int function getRestoreCount(int potionGroup)
         count += PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm"))
         i += 1
     endWhile
-    debug.trace("iEquip_PotionScript getRestoreCount returning count: " + count)
+    ;debug.trace("iEquip_PotionScript getRestoreCount returning count: " + count)
     return count
 endFunction
 
@@ -646,16 +646,16 @@ int function getPotionTypeCount(int Q)
 endFunction
 
 int function getPotionQueue(potion potionToCheck, bool bAdding = false)
-    debug.trace("iEquip_PotionScript getPotionQueue start")
+    ;debug.trace("iEquip_PotionScript getPotionQueue start")
     int selectedEffIndx = potionToCheck.GetCostliestEffectIndex()
     magicEffect effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
     int Q = checkEffects(effectToCheck)
-    debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + selectedEffIndx + ", strongest magic effect: " + effectToCheck as string)
+    ;debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + selectedEffIndx + ", strongest magic effect: " + effectToCheck as string)
     
     ; If the strongest effect isn't a restore/fortify/regen effect then if the potion has more than one effect check if any of the other effects are
     if Q < 0
         int numEffects = potionToCheck.GetNumEffects()
-        debug.trace("iEquip_PotionScript getPotionQueue - costliest effect isn't a health, magicka or stamina effect, checking for additional effects - numEffects: " + numEffects + ", other index: " + (!selectedEffIndx as bool) as int)
+        ;debug.trace("iEquip_PotionScript getPotionQueue - costliest effect isn't a health, magicka or stamina effect, checking for additional effects - numEffects: " + numEffects + ", other index: " + (!selectedEffIndx as bool) as int)
         if numEffects == 2      ; If potion has two effects then check the other for any restore/fortify/regen effect
             selectedEffIndx = (!selectedEffIndx as bool) as int
             effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
@@ -690,14 +690,14 @@ int function getPotionQueue(potion potionToCheck, bool bAdding = false)
     endIf
     ;If it doesn't have a health, magicka or stamina restore/fortify/regen effect then there's nothing to do here
     if Q < 0
-        debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
+        ;debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
     ;Otherwise store the strength and duration in the temp variables
     elseIf bAdding
         fTempStrength = potionToCheck.GetNthEffectMagnitude(selectedEffIndx)
         iTempDuration = potionToCheck.GetNthEffectDuration(selectedEffIndx)
     endIf
     
-    debug.trace("iEquip_PotionScript getPotionQueue - returning: Q = " + Q)
+    ;debug.trace("iEquip_PotionScript getPotionQueue - returning: Q = " + Q)
     return Q
 endFunction
 
@@ -713,7 +713,7 @@ int function checkEffects(magicEffect effectToCheck, bool restoreOnly = false)
     ;If we've not found a vanilla effect check if CACO is loaded and if so check for a CACO restore effect
     if Q < 0 && bIsCACOLoaded
         Q = aCACO_RestoreEffects.find(effectToCheck) ;Returns -1 if not found
-        debug.trace("iEquip_PotionScript checkEffects - checking for a CACO restore effect, Q = " + Q)
+        ;debug.trace("iEquip_PotionScript checkEffects - checking for a CACO restore effect, Q = " + Q)
         if Q != -1
             if Q < 3 ;AlchRestoreHealth_1sec, AlchRestoreHealth_5sec, AlchRestoreHealth_10sec
                 Q = 0 ;Health Restore
@@ -723,12 +723,12 @@ int function checkEffects(magicEffect effectToCheck, bool restoreOnly = false)
                 Q = 6 ;Stamina Restore
             endIf
         endIf
-        debug.trace("iEquip_PotionScript checkEffects - CACO restore effect, final Q value = " + Q)
+        ;debug.trace("iEquip_PotionScript checkEffects - CACO restore effect, final Q value = " + Q)
     endIf
     ;Finally check if PotionAnimatedFix is loaded and check for one of its DUPLICATE restore effects
     if Q < 0 && bIsPAFLoaded
         Q = aPAF_RestoreEffects.find(effectToCheck)
-        debug.trace("iEquip_PotionScript checkEffects - checking for a PAF restore effect, Q = " + Q)
+        ;debug.trace("iEquip_PotionScript checkEffects - checking for a PAF restore effect, Q = " + Q)
         if Q != -1
             if Q < 2 ;AlchRestoreHealthDUPLICATE001 or AlchRestoreHealthAllDUPLICATE001
                 Q = 0 ;Health Restore
@@ -738,7 +738,7 @@ int function checkEffects(magicEffect effectToCheck, bool restoreOnly = false)
                 Q = 6 ;Stamina Restore
             endIf
         endIf
-        debug.trace("iEquip_PotionScript checkEffects - PAF restore effect, final Q value = " + Q)
+        ;debug.trace("iEquip_PotionScript checkEffects - PAF restore effect, final Q value = " + Q)
     endIf
     if restoreOnly && !(Q == 0 || Q == 3 || Q == 6)
         Q = -1
@@ -747,7 +747,7 @@ int function checkEffects(magicEffect effectToCheck, bool restoreOnly = false)
 endFunction
 
 function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
-    debug.trace("iEquip_PotionScript checkAndAddToPotionQueue start")
+    ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue start")
     ;Check if the nth potion is a poison or a food and switch functions if required
     bAddedToQueue = false
     if foundPotion.isPoison()
@@ -761,7 +761,7 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
         endIf
 
     else
-        debug.trace("iEquip_PotionScript checkAndAddToPotionQueue - foundPotion: " + foundPotion.GetName())
+        ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue - foundPotion: " + foundPotion.GetName())
         int Q = getPotionQueue(foundPotion, true)
         int group ; Q < 3 defaults to 0
         if Q > 2
@@ -822,7 +822,7 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
             if bMoreHUDLoaded
                 AhzMoreHudIE.AddIconItem(itemID, "iEquipQ.png")
             endIf
-            debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + potionName + " added to the " + aStrongestEffects[Q].GetName() + " queue")
+            ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue -" + potionName + " added to the " + aStrongestEffects[Q].GetName() + " queue")
             bAddedToQueue = true
             iQueueToSort = Q
             WC.abPotionGroupEmpty[group] = false
@@ -838,15 +838,15 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
         endIf
 
     endIf
-    debug.trace("iEquip_PotionScript checkAndAddToPotionQueue end")
+    ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue end")
 endFunction
 
 function checkAndAddToPoisonQueue(potion foundPoison)
     string poisonName = foundPoison.GetName()
-    debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue start - foundPoison: " + poisonName)
+    ;debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue start - foundPoison: " + poisonName)
     form poisonForm = foundPoison as form
     if findInQueue(iPoisonQ, poisonForm) != -1
-        debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue -" + poisonName + " is already in the poison queue")
+        ;debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue -" + poisonName + " is already in the poison queue")
         if WC.asCurrentlyEquipped[4] == poisonName
             WC.setSlotCount(4, PlayerRef.GetItemCount(poisonForm))
         endIf
@@ -882,19 +882,19 @@ function checkAndAddToPoisonQueue(potion foundPoison)
             WC.updateWidget(4, 0, false, true)
             WC.setSlotCount(4, PlayerRef.GetItemCount(poisonForm))
         endIf
-        debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue - Form: " + poisonForm + ", " + poisonName + " added to the poison queue")
+        ;debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue - Form: " + poisonForm + ", " + poisonName + " added to the poison queue")
         bAddedToQueue = true
         iQueueToSort = iPoisonQ
     endIf
-    debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue end")
+    ;debug.trace("iEquip_PotionScript checkAndAddToPoisonQueue end")
 endFunction
 
 function checkAndAddToConsumableQueue(potion foundConsumable, bool isPotion = false)
     string consumableName = foundConsumable.GetName()
-    debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue start - foundConsumable: " + consumableName)
+    ;debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue start - foundConsumable: " + consumableName)
     form consumableForm = foundConsumable as form
     if findInQueue(iConsumableQ, consumableForm) != -1
-        debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue -" + consumableName + " is already in the consumable queue")
+        ;debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue -" + consumableName + " is already in the consumable queue")
         if WC.asCurrentlyEquipped[3] == consumableName
             WC.setSlotCount(3, PlayerRef.GetItemCount(consumableForm))
         endIf
@@ -948,13 +948,13 @@ function checkAndAddToConsumableQueue(potion foundConsumable, bool isPotion = fa
             WC.updateWidget(3, count - 1, false, true)
             WC.setSlotCount(3, PlayerRef.GetItemCount(consumableForm))
         endIf
-        debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + consumableName + " added to the consumable queue")
+        ;debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue - Form: " + consumableForm + ", " + consumableName + " added to the consumable queue")
     endIf
-    debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue end")
+    ;debug.trace("iEquip_PotionScript checkAndAddToConsumableQueue end")
 endFunction
 
 int function findInQueue(int Q, form formToFind)
-    debug.trace("iEquip_PotionScript findInQueue start - Q: " + Q + ", formToFind: " + formToFind)
+    ;debug.trace("iEquip_PotionScript findInQueue start - Q: " + Q + ", formToFind: " + formToFind)
     int i = 0
     int foundAt = -1
     while i < jArray.count(Q) && foundAt == -1
@@ -963,12 +963,12 @@ int function findInQueue(int Q, form formToFind)
         endIf
         i += 1
     endwhile
-    debug.trace("iEquip_PotionScript findInQueue - returning " + foundAt)
+    ;debug.trace("iEquip_PotionScript findInQueue - returning " + foundAt)
     return foundAt
 endFunction
 
 string function getPoisonIcon(potion foundPoison)
-    debug.trace("iEquip_PotionScript getPoisonIcon start")
+    ;debug.trace("iEquip_PotionScript getPoisonIcon start")
     string IconName
     if iEquip_FormExt.isWax(foundPoison as form)
         IconName = "PoisonWax"
@@ -983,12 +983,12 @@ string function getPoisonIcon(potion foundPoison)
             IconName = asPoisonIconNames[i]
         endIf
     endIf
-    debug.trace("iEquip_PotionScript getPoisonIcon returning IconName as " + IconName)
+    ;debug.trace("iEquip_PotionScript getPoisonIcon returning IconName as " + IconName)
     return IconName
 endFunction
 
 string function getConsumableIcon(potion foundConsumable)
-    debug.trace("iEquip_PotionScript getConsumableIcon start")
+    ;debug.trace("iEquip_PotionScript getConsumableIcon start")
     string IconName
     if foundConsumable.GetUseSound() == Game.GetForm(0x0010E2EA) ;NPCHumanEatSoup
         IconName = "Soup"
@@ -997,12 +997,12 @@ string function getConsumableIcon(potion foundConsumable)
     else
         IconName = "Food"
     endIf
-    debug.trace("iEquip_PotionScript getConsumableIcon end")
+    ;debug.trace("iEquip_PotionScript getConsumableIcon end")
     return IconName
 endFunction
 
 string function getPotionIcon(potion foundPotion)
-	debug.trace("iEquip_PotionScript getPotionIcon start")
+	;debug.trace("iEquip_PotionScript getPotionIcon start")
 	string IconName
 	string pStr = foundPotion.GetNthEffectMagicEffect(foundPotion.GetCostliestEffectIndex()).GetName()
     if(pStr == "Health" || pStr == "Restore Health" || pStr == "Health Restoration" || pStr == "Regenerate Health" || pStr == "Health Regeneration" || pStr == "Fortify Health" || pStr == "Health Fortification")
@@ -1020,12 +1020,12 @@ string function getPotionIcon(potion foundPotion)
     else
     	IconName = "Potion"
     endIf
-	debug.trace("iEquip_PotionScript getPotionIcon end")
+	;debug.trace("iEquip_PotionScript getPotionIcon end")
 	return IconName
 endFunction
 
 function sortPotionQueue(int Q, string theKey)
-    debug.trace("iEquip_PotionScript sortPotionQueue start - Q: " + Q)
+    ;debug.trace("iEquip_PotionScript sortPotionQueue start - Q: " + Q)
     ;This should sort strongest to weakest by the float value held in the Strength key on each object in the array
     int targetArray = aiPotionQ[Q]
     jArray.unique(targetArray)
@@ -1049,7 +1049,7 @@ function sortPotionQueue(int Q, string theKey)
     ;/i = 0
     n = jArray.count(targetArray)
     while i < n
-        debug.trace("iEquip_PotionScript - sortPotionQueue, sorted " + aStrongestEffects[Q].GetName() + " array - i: " + i + ", " + jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm").GetName() + ", "+theKey+": " + jMap.getFlt(jArray.getObj(targetArray, i), theKey))
+        ;debug.trace("iEquip_PotionScript - sortPotionQueue, sorted " + aStrongestEffects[Q].GetName() + " array - i: " + i + ", " + jMap.getForm(jArray.getObj(targetArray, i), "iEquipForm").GetName() + ", "+theKey+": " + jMap.getFlt(jArray.getObj(targetArray, i), theKey))
         i += 1
     endWhile/;
     iQueueToSort = -1 ;Reset
@@ -1058,11 +1058,11 @@ function sortPotionQueue(int Q, string theKey)
     else
         bQueueSortedBy3sStrength = false
     endIf
-    debug.trace("iEquip_PotionScript sortPotionQueue end")
+    ;debug.trace("iEquip_PotionScript sortPotionQueue end")
 EndFunction
 
 function sortPoisonQueue()
-    debug.trace("iEquip_PotionScript sortPoisonQueue start")
+    ;debug.trace("iEquip_PotionScript sortPoisonQueue start")
     form currentlyShownPoison = jMap.getForm(jArray.getObj(iPoisonQ, WC.aiCurrentQueuePosition[4]), "iEquipForm")
     int queueLength = jArray.count(iPoisonQ)
     int tempPoisonQ = jArray.objectWithSize(queueLength)
@@ -1094,7 +1094,7 @@ function sortPoisonQueue()
     endIf
     
     WC.setCurrentQueuePosition(4, iIndex)
-    debug.trace("iEquip_PotionScript sortPoisonQueue end")
+    ;debug.trace("iEquip_PotionScript sortPoisonQueue end")
 endFunction
 
 function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHealing = false)
@@ -1105,14 +1105,14 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
     int Q = (potionGroup * 3) + potionType
     bool isRestore = (Q == 0 || Q == 3 || Q == 6)
     
-    debug.trace("iEquip_PotionScript selectAndConsumePotion start - potionGroup: " + potionGroup + ", potionType: " + potionType + ", bQuickHealing: " + bQuickHealing + ", targetAV: " + sTargetAV)
-    debug.trace("iEquip_PotionScript selectAndConsumePotion - GetAVDamage: " + currAVDamage + ", GetActorValue: " + PlayerRef.GetActorValue(sTargetAV))
+    ;debug.trace("iEquip_PotionScript selectAndConsumePotion start - potionGroup: " + potionGroup + ", potionType: " + potionType + ", bQuickHealing: " + bQuickHealing + ", targetAV: " + sTargetAV)
+    ;debug.trace("iEquip_PotionScript selectAndConsumePotion - GetAVDamage: " + currAVDamage + ", GetActorValue: " + PlayerRef.GetActorValue(sTargetAV))
     
     if isRestore && currAVDamage == 0 && iNotificationLevel > 0
         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_AVFull{"+sTargetAV+"}"))
 
     else
-        debug.trace("iEquip_PotionScript selectAndConsumePotion - potionQ selected: " + Q + ", iPotionSelectChoice: " + iPotionSelectChoice + ", in combat: " + PlayerRef.IsInCombat())
+        ;debug.trace("iEquip_PotionScript selectAndConsumePotion - potionQ selected: " + Q + ", iPotionSelectChoice: " + iPotionSelectChoice + ", in combat: " + PlayerRef.IsInCombat())
         int count = jArray.count(aiPotionQ[Q])
         if count > 0
             int targetPotion ;Default value is 0 which is the array index for the strongest potion of the type requested. If iPotionSelectChoice is 0 (Use Strongest) this will stay at 0 unless we fail the active effects checks below
@@ -1121,13 +1121,13 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                 ;ToDo - remove the next few lines of debug
                 float currAV = PlayerRef.GetActorValue(sTargetAV)
                 ;float currAVMax = currAV + currAVDamage
-                ;debug.trace("iEquip_PotionScript selectAndConsumePotion - current AV: " + currAV + ", current max: " + currAVMax + ", current %: " + (currAV/currAVMax) + ", threshold: " + fSmartSelectThreshold + ", in combat: " + PlayerRef.IsInCombat())
+                ;;debug.trace("iEquip_PotionScript selectAndConsumePotion - current AV: " + currAV + ", current max: " + currAVMax + ", current %: " + (currAV/currAVMax) + ", threshold: " + fSmartSelectThreshold + ", in combat: " + PlayerRef.IsInCombat())
                 bool bInCombat = PlayerRef.IsInCombat()
                 ;bool bBelowThreshold = ((currAV/currAVMax) <= fSmartSelectThreshold)
                 bool bBelowThreshold = currAV/(currAV + currAVDamage) <= fSmartSelectThreshold
                 bool bEffectActive = bBlockIfRestEffectActive && isEffectAlreadyActive(Q, isRestore)
                 bool bSkipEffectCheck = bInCombat && bSuspendChecksInCombat && bBelowThreshold
-                debug.trace("iEquip_PotionScript selectAndConsumePotion - bBelowThreshold: " + bBelowThreshold + ", bEffectActive: " + bEffectActive + ", bSkipEffectCheck: " + bSkipEffectCheck)
+                ;debug.trace("iEquip_PotionScript selectAndConsumePotion - bBelowThreshold: " + bBelowThreshold + ", bEffectActive: " + bEffectActive + ", bSkipEffectCheck: " + bSkipEffectCheck)
                 if bEffectActive && !bSkipEffectCheck
                     targetPotion = -1
 
@@ -1162,7 +1162,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
             if targetPotion > -1
                 form potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipForm")
                 if potionToConsume
-                    debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is " + potionToConsume + ", " + potionToConsume.GetName())
+                    ;debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is " + potionToConsume + ", " + potionToConsume.GetName())
                     ; Consume the potion
                     PlayerRef.EquipItemEx(potionToConsume)
                     if iNotificationLevel == 2
@@ -1187,18 +1187,18 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
             debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+sTargetAV+"}"))
         endIf
     endIf
-    debug.trace("iEquip_PotionScript selectAndConsumePotion end")
+    ;debug.trace("iEquip_PotionScript selectAndConsumePotion end")
 endFunction
 
 int function smartSelectRestorePotion(int Q, float currAVDamage)
     int targetPotion
     int queueLength = jArray.Count(aiPotionQ[Q])
-    debug.trace("iEquip_PotionScript smartSelectRestorePotion - looking for the best fit restore potion in Q " + Q + ", current stat damage is " + currAVDamage + ", strongest potion has a magnitude of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrengthTotal"))
+    ;debug.trace("iEquip_PotionScript smartSelectRestorePotion - looking for the best fit restore potion in Q " + Q + ", current stat damage is " + currAVDamage + ", strongest potion has a magnitude of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrengthTotal"))
     if jMap.getFlt(jArray.getObj(aiPotionQ[Q], 0), "iEquipStrengthTotal") > currAVDamage && queueLength > 1 ;If the strongest potion in the queue has a greater strength than required to fully restore the target AV then check through the array until we find the best fit 
         int i = 1
-        debug.trace("iEquip_PotionScript smartSelectRestorePotion - queueLength: " + queueLength + ", strongest potion magnitude is greater than currAVDamage, looking for a better fit")
+        ;debug.trace("iEquip_PotionScript smartSelectRestorePotion - queueLength: " + queueLength + ", strongest potion magnitude is greater than currAVDamage, looking for a better fit")
         while i < queueLength
-            debug.trace("iEquip_PotionScript smartSelectRestorePotion - magnitude of potion in index " + i + ": " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal"))
+            ;debug.trace("iEquip_PotionScript smartSelectRestorePotion - magnitude of potion in index " + i + ": " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal"))
             if jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal") < currAVDamage
                 if (currAVDamage - jMap.getFlt(jArray.getObj(aiPotionQ[Q], i), "iEquipStrengthTotal")) > (jMap.getFlt(jArray.getObj(aiPotionQ[Q], i - 1), "iEquipStrengthTotal") - currAVDamage)
                     targetPotion = i - 1
@@ -1214,23 +1214,23 @@ int function smartSelectRestorePotion(int Q, float currAVDamage)
             endIf
         endWhile
     endIf
-    debug.trace("iEquip_PotionScript smartSelectRestorePotion - selected potion in index " + targetPotion + " is a " + jMap.getStr(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipName") + " with a strength of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipStrengthTotal"))
+    ;debug.trace("iEquip_PotionScript smartSelectRestorePotion - selected potion in index " + targetPotion + " is a " + jMap.getStr(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipName") + " with a strength of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipStrengthTotal"))
     return targetPotion
 endFunction
 
 int function selectRestorePotionBy3sMag(int Q, bool bFastActing)
-    debug.trace("iEquip_PotionScript selectRestorePotionBy3sMag - Q " + Q + ", bFastActing: " + bFastActing)
+    ;debug.trace("iEquip_PotionScript selectRestorePotionBy3sMag - Q " + Q + ", bFastActing: " + bFastActing)
     sortPotionQueue(Q, "iEquipStrength3s")
     int targetPotion
     if !bFastActing
         targetPotion = jArray.count(aiPotionQ[Q]) - 1
     endIf
-    debug.trace("iEquip_PotionScript selectRestorePotionBy3sMag - selected potion in index " + targetPotion + " is a " + jMap.getStr(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipName") + " with a 3s magnitude of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipStrength3s"))
+    ;debug.trace("iEquip_PotionScript selectRestorePotionBy3sMag - selected potion in index " + targetPotion + " is a " + jMap.getStr(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipName") + " with a 3s magnitude of " + jMap.getFlt(jArray.getObj(aiPotionQ[Q], targetPotion), "iEquipStrength3s"))
     return targetPotion
 endFunction
 
 function quickBuffFindAndConsumePotions(int potionGroup)
-    debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions start - potionGroup: " + potionGroup + ", iQuickBuffsToApply: " + iQuickBuffsToApply)
+    ;debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions start - potionGroup: " + potionGroup + ", iQuickBuffsToApply: " + iQuickBuffsToApply)
 
     int Q = (potionGroup * 3) + 1 ;Fortify
     int count = jArray.count(aiPotionQ[Q])
@@ -1239,7 +1239,7 @@ function quickBuffFindAndConsumePotions(int potionGroup)
 
     ;Fortify first if MCM conditions are met, we have at least one fortify potion for the given group, and we don't currently have the effect active
     if iQuickBuffsToApply != 2 && count > 0 && !(bBlockIfBuffEffectActive && isEffectAlreadyActive(Q, false))
-        debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions - about to consume a fortify potion")
+        ;debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions - about to consume a fortify potion")
 		potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], 0), "iEquipForm")
         if potionToConsume
             ; Consume the potion
@@ -1256,7 +1256,7 @@ function quickBuffFindAndConsumePotions(int potionGroup)
 
     ;Now do the same checks for regen remembering if iQuickBuffsToApply is set to Either to check if we've already found and consumed a fortify potion
     if !(iQuickBuffsToApply == 1 || (iQuickBuffsToApply == 0 && bFortifyConsumed)) && count > 0 && !(bBlockIfBuffEffectActive && isEffectAlreadyActive(Q, false))
-        debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions - about to consume a regen potion")
+        ;debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions - about to consume a regen potion")
 		potionToConsume = jMap.getForm(jArray.getObj(aiPotionQ[Q], 0), "iEquipForm")
         if potionToConsume
             ; Consume the potion
@@ -1267,11 +1267,11 @@ function quickBuffFindAndConsumePotions(int potionGroup)
         endIf
     endIf
     
-    debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions end")
+    ;debug.trace("iEquip_PotionScript quickBuffFindAndConsumePotions end")
 endFunction
 
 bool function isEffectAlreadyActive(int Q, bool bIsRestore)
-	debug.trace("iEquip_PotionScript isEffectAlreadyActive start")
+	;debug.trace("iEquip_PotionScript isEffectAlreadyActive start")
     fActiveEffectMagnitude = 0.0 ;Reset
     ;Check for the main potion effect corresponding to the queue from which the potion is being selected
     fActiveEffectMagnitude = iEquip_ActorExt.GetMagicEffectMagnitude(PlayerRef, aStrongestEffects[Q])
@@ -1300,12 +1300,12 @@ bool function isEffectAlreadyActive(int Q, bool bIsRestore)
     	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive{"+asEffectNames[Q]+"}"))
     endIf
 
-    debug.trace("iEquip_PotionScript isEffectAlreadyActive - returning: " + fActiveEffectMagnitude > 0.0)
+    ;debug.trace("iEquip_PotionScript isEffectAlreadyActive - returning: " + fActiveEffectMagnitude > 0.0)
     return fActiveEffectMagnitude > 0.0
 endFunction
 
 function warnOnLowRestorePotionCount(int restoreCount, int potionGroup)
-    debug.trace("iEquip_PotionScript warnOnLowRestorePotionCount start")
+    ;debug.trace("iEquip_PotionScript warnOnLowRestorePotionCount start")
     if bEnableRestorePotionWarnings
 	    string sPotionGroup = asPotionGroups[potionGroup]
 	    ;If we've just dropped into one of the early warning thresholds and the consumable widget is currently displaying the Potion Group for the restore potion we've just consumed check and flash
@@ -1326,7 +1326,7 @@ function warnOnLowRestorePotionCount(int restoreCount, int potionGroup)
 	    endIf
 	endIf
     ;NB - the count colour will already have been set through WC.setSlotCount()
-    debug.trace("iEquip_PotionScript warnOnLowRestorePotionCount end")
+    ;debug.trace("iEquip_PotionScript warnOnLowRestorePotionCount end")
 endFunction
 
 state PROCESSING

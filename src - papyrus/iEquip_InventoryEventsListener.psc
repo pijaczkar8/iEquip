@@ -13,12 +13,9 @@ function initialise(bool bEnabled)
 endFunction
 
 Event OnRefHandleInvalidated(Form a_item, Int a_refHandle)
-	debug.trace("iEquip_InventoryEventsListener OnRefHandleInvalidated event received - form: " + a_item + "(" + a_item.GetName() + "), refHandle: " + a_refHandle)
+	;debug.trace("iEquip_InventoryEventsListener OnRefHandleInvalidated event received - form: " + a_item + "(" + a_item.GetName() + "), refHandle: " + a_refHandle)
 	int foundAt = JArray.FindInt(WC.iRefHandleArray, a_refHandle)
-	if foundAt == -1
-		debug.trace("iEquip_InventoryEventsListener OnRefHandleInvalidated - refHandle not found in iRefHandleArray")
-	else
-		debug.trace("iEquip_InventoryEventsListener OnRefHandleInvalidated - refHandle found in iRefHandleArray at index " + foundAt)
+	if foundAt != -1
 		int i
 		int index
 		while i < 2

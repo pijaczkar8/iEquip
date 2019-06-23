@@ -8,7 +8,7 @@ bool bWaitingForEquipOnPauseUpdate
 bool bBeastMode
 
 function registerForEquipOnPauseUpdate(bool Reverse, bool beastMode = false)
-	debug.trace("iEquip_RightHandEquipUpdateScript registerForEquipOnPauseUpdate called")
+	;debug.trace("iEquip_RightHandEquipUpdateScript registerForEquipOnPauseUpdate called")
 	bReverse = Reverse
 	bBeastMode = beastMode
 	RegisterForSingleUpdate(WC.fEquipOnPauseDelay)
@@ -16,7 +16,7 @@ function registerForEquipOnPauseUpdate(bool Reverse, bool beastMode = false)
 endFunction
 
 event OnUpdate()
-	debug.trace("iEquip_RightHandEquipUpdateScript OnUpdate called")
+	;debug.trace("iEquip_RightHandEquipUpdateScript OnUpdate called")
 	if bWaitingForEquipOnPauseUpdate ;Failsafe bool to block OnUpdate if triggered from another script on the quest
 		bWaitingForEquipOnPauseUpdate = false
 		if bBeastMode

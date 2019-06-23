@@ -10,7 +10,7 @@ bool bCyclingAmmo
 bool bBeastMode
 
 function registerForEquipOnPauseUpdate(bool Reverse, bool CyclingAmmo = false, bool beastMode = false)
-	debug.trace("iEquip_LeftHandEquipUpdateScript registerForEquipOnPauseUpdate called")
+	;debug.trace("iEquip_LeftHandEquipUpdateScript registerForEquipOnPauseUpdate called")
 	bReverse = Reverse
 	bCyclingAmmo = CyclingAmmo
 	bBeastMode = beastMode
@@ -19,7 +19,7 @@ function registerForEquipOnPauseUpdate(bool Reverse, bool CyclingAmmo = false, b
 endFunction
 
 event OnUpdate()
-	debug.trace("iEquip_LeftHandEquipUpdateScript OnUpdate called")
+	;debug.trace("iEquip_LeftHandEquipUpdateScript OnUpdate called")
 	if bWaitingForEquipOnPauseUpdate ;Failsafe bool to block OnUpdate if triggered from another script on the quest
 		bWaitingForEquipOnPauseUpdate = false
 		if bCyclingAmmo

@@ -52,9 +52,6 @@ iEquip_ConsumableFadeUpdateScript property CFUpdate auto
 iEquip_PotionSelectorUpdateScript property PSUpdate auto
 iEquip_PoisonNameUpdateScript property PNUpdate auto
 
-Spell property PLFX Auto
-Spell property PRFX Auto
-
 ;CK-filled Properties
 Actor property PlayerRef auto
 Armor property Shoes auto
@@ -75,6 +72,8 @@ Message property iEquip_ConfirmDeletePreset auto
 Message property iEquip_ConfirmReset auto
 Message property iEquip_ConfirmResetParent auto
 Message property iEquip_ConfirmDiscardChanges auto
+Spell property PLFX Auto
+Spell property PRFX Auto
 
 Weapon[] property aUniqueItems auto hidden
 string[] asUniqueItemIcons
@@ -123,6 +122,8 @@ FormList property iEquip_RemovedItemsFLST auto
 Keyword property MagicDamageFire auto
 Keyword property MagicDamageFrost auto
 Keyword property MagicDamageShock auto
+
+SoundCategory _audioCategoryUI						; Used to mute equip sound when cycling shouts/powers
 
 ; Animated Armoury support
 bool bIsAALoaded
@@ -408,12 +409,11 @@ string property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
 string property FileExtDef = ".IEQD" autoReadOnly
 string property FileExt = ".IEQP" autoReadonly
 
-
 ; ###############################
 ; ### Initialization & Checks ###
 
 Event OnWidgetInit()
-	debug.trace("iEquip_WidgetCore OnWidgetInit start - current state: " + GetState())
+	;debug.trace("iEquip_WidgetCore OnWidgetInit start - current state: " + GetState())
 	PopulateWidgetArrays()
 	
 	iCurrentWidgetFadeoutChoice = 1
@@ -536,6 +536,8 @@ Event OnWidgetInit()
 	EquipSlots[3] = Game.GetForm(0x00013F45) As EquipSlot ; BothHands
 	EquipSlots[4] = Game.GetForm(0x00025BEE) As EquipSlot ; Voice
 
+	_audioCategoryUI = Game.GetFormFromFile(0x00064451, "Skyrim.esm") as SoundCategory
+
 	asActorValues = new string[3]
     asActorValues[0] = "Health"
     asActorValues[1] = "Magicka"
@@ -638,7 +640,7 @@ Event OnWidgetInit()
 	asUniqueItemIcons[48] = "MiraaksSword"
 	asUniqueItemIcons[49] = "MiraaksSword"
 
-	debug.trace("iEquip_WidgetCore OnWidgetInit end")
+	;debug.trace("iEquip_WidgetCore OnWidgetInit end")
 EndEvent
 
 function CheckDependencies()
@@ -761,7 +763,7 @@ bool property isEnabled
 	endFunction
 	
 	function Set(bool enabled)
-		debug.trace("iEquip_WidgetCore isEnabled Set start - enabled: " + enabled)
+		;debug.trace("iEquip_WidgetCore isEnabled Set start - enabled: " + enabled)
 		if (Ready)
             bEnabled = enabled
             
@@ -776,7 +778,7 @@ EndProperty
 
 state ENABLED
 	event OnBeginState()
-		debug.trace("iEquip_WidgetCore ENABLED OnBeginState start")
+		;debug.trace("iEquip_WidgetCore ENABLED OnBeginState start")
 
 		if bIsFirstEnabled
 			getAndStoreDefaultWidgetValues()
@@ -815,6 +817,19 @@ state ENABLED
 		CheckDependencies()
 		addFists()
 
+		if KH.bIsGPPLoaded && Game.UsingGamepad() && showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_setDefaultKeysForGPP")) == 0
+			KH.iLeftKey = 268						; Dpad Left
+			KH.iEquipLeftKey.SetValueInt(268)
+			KH.iRightKey = 269						; DPad Right
+			KH.iEquipRightKey.SetValueInt(269)
+			KH.iShoutKey = 266						; DPad Up
+			KH.iEquipShoutKey.SetValueInt(266)
+			KH.iConsumableKey = 267					; DPad Down
+			KH.iEquipConsumableKey.SetValueInt(267)
+			KH.iUtilityKey = 277					; B
+			KH.iEquipUtilityKey.SetValueInt(277)
+		endIf
+
 		OnWidgetLoad()
 		
 		bIsFirstEnabled = false
@@ -824,12 +839,13 @@ state ENABLED
 			Utility.Wait(1.5)
 			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_addingItems"))
 		endIf
-		debug.trace("iEquip_WidgetCore ENABLED OnBeginState end")
+
+		;debug.trace("iEquip_WidgetCore ENABLED OnBeginState end")
 	endEvent
 	
 	; Enabled events
 	Event OnWidgetLoad()
-		debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
+		;debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
 
 		bool bPreselectEnabledOnLoad = bPreselectMode
 
@@ -905,14 +921,14 @@ state ENABLED
 		KH.RegisterForGameplayKeys()
 		debug.notification("$iEquip_WC_not_controlsUnlocked")
 		
-		debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
+		;debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
 	endEvent
 
 	Event OnWidgetReset()
-		debug.trace("iEquip_WidgetCore OnWidgetReset called")
+		;debug.trace("iEquip_WidgetCore OnWidgetReset called")
 		RequireExtend = false
 		parent.OnWidgetReset()
-		debug.trace("iEquip_WidgetCore OnWidgetReset finished")
+		;debug.trace("iEquip_WidgetCore OnWidgetReset finished")
 	EndEvent
 endState
 
@@ -951,7 +967,7 @@ Auto state DISABLED
 endState
 
 function refreshWidgetOnLoad()
-	debug.trace("iEquip_WidgetCore refreshWidgetOnLoad start")
+	;debug.trace("iEquip_WidgetCore refreshWidgetOnLoad start")
 	
 	bLeftIconFaded = false
 	int Q
@@ -1036,12 +1052,12 @@ function refreshWidgetOnLoad()
 		updateSlotsEnabled()
 	endIf
 	
-	debug.trace("iEquip_WidgetCore refreshWidgetOnLoad end")
+	;debug.trace("iEquip_WidgetCore refreshWidgetOnLoad end")
 endFunction
 
 ;Called from EditMode when toggling back out
 function resetWidgetsToPreviousState()
-	debug.trace("iEquip_WidgetCore resetWidgetsToPreviousState start")
+	;debug.trace("iEquip_WidgetCore resetWidgetsToPreviousState start")
     																	; Reset visiblity on all elements
 	int i = asWidgetDescriptions.Length
 	while i > 0
@@ -1106,11 +1122,11 @@ function resetWidgetsToPreviousState()
 		TO.updateTorchMeterOnSettingsChanged()
 	endIf
 
-	debug.trace("iEquip_WidgetCore resetWidgetsToPreviousState end")
+	;debug.trace("iEquip_WidgetCore resetWidgetsToPreviousState end")
 endFunction
 
 function initQueuePositionIndicators()
-	debug.trace("iEquip_WidgetCore initQueuePositionIndicators start")
+	;debug.trace("iEquip_WidgetCore initQueuePositionIndicators start")
 	int i
 	while i < 3
 		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".initQueuePositionIndicator")
@@ -1126,11 +1142,11 @@ function initQueuePositionIndicators()
 		endIf
 		i += 1
 	endWhile
-	debug.trace("iEquip_WidgetCore initQueuePositionIndicators end")
+	;debug.trace("iEquip_WidgetCore initQueuePositionIndicators end")
 endFunction
 
 function initialisemoreHUDArray()
-	debug.trace("iEquip_WidgetCore initialisemoreHUDArray start")
+	;debug.trace("iEquip_WidgetCore initialisemoreHUDArray start")
 
     int jItemIDs = jArray.object()
     int jIconNames = jArray.object()
@@ -1138,7 +1154,7 @@ function initialisemoreHUDArray()
     
     while Q < 5
         int queueLength = JArray.count(aiTargetQ[Q])
-        debug.trace("iEquip_WidgetCore initialisemoreHUDArray processing Q: " + Q + ", queueLength: " + queueLength)
+        ;debug.trace("iEquip_WidgetCore initialisemoreHUDArray processing Q: " + Q + ", queueLength: " + queueLength)
         int i
         
         while i < queueLength
@@ -1164,7 +1180,7 @@ function initialisemoreHUDArray()
 	        endIf
 	        if i < queueLength
 	            int itemID = jMap.getInt(jArray.getObj(aiTargetQ[Q], i), "iEquipItemID")
-	            debug.trace("iEquip_WidgetCore initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName"))
+	            ;debug.trace("iEquip_WidgetCore initialisemoreHUDArray Q: " + Q + ", i: " + i + ", itemID: " + itemID + ", " + jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName"))
 	            if itemID == 0
 	            	itemID = CalcCRC32Hash(jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName"), Math.LogicalAND((jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm").GetFormID()), 0x00FFFFFF))
 	            	jMap.setInt(jArray.getObj(aiTargetQ[Q], i), "iEquipItemID", itemID)
@@ -1175,16 +1191,16 @@ function initialisemoreHUDArray()
 		            	foundAt = jArray.findInt(jItemIDs, itemID)
 		            endIf
 		            if Q == 1 && foundAt != -1
-		            	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - itemID " + itemID + " already found at index " + foundAt + ", updating icon name to " + asMoreHUDIcons[3])
+		            	;debug.trace("iEquip_WidgetCore initialisemoreHUDArray - itemID " + itemID + " already found at index " + foundAt + ", updating icon name to " + asMoreHUDIcons[3])
 		                jArray.setStr(jIconNames, foundAt, asMoreHUDIcons[3])
 		            else
-		            	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding itemID " + itemID + " to jItemIDs")
+		            	;debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding itemID " + itemID + " to jItemIDs")
 		                jArray.addInt(jItemIDs, itemID)
 		                if Q < 2
-		                	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + asMoreHUDIcons[Q] + " to jIconNames")
+		                	;debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + asMoreHUDIcons[Q] + " to jIconNames")
 		                	jArray.addStr(jIconNames, asMoreHUDIcons[Q])
 		                else
-		                	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + asMoreHUDIcons[2] + " to jIconNames")
+		                	;debug.trace("iEquip_WidgetCore initialisemoreHUDArray - adding " + asMoreHUDIcons[2] + " to jIconNames")
 		                	jArray.addStr(jIconNames, asMoreHUDIcons[2])
 		                endIf
 		            endIf
@@ -1195,23 +1211,23 @@ function initialisemoreHUDArray()
 
         Q += 1
     endWhile
-    debug.trace("iEquip_WidgetCore initialisemoreHUDArray - jItemIds contains " + jArray.count(jItemIDs) + " entries")
-    debug.trace("iEquip_WidgetCore initialisemoreHUDArray - jIconNames contains " + jArray.count(jIconNames) + " entries")
+    ;debug.trace("iEquip_WidgetCore initialisemoreHUDArray - jItemIds contains " + jArray.count(jItemIDs) + " entries")
+    ;debug.trace("iEquip_WidgetCore initialisemoreHUDArray - jIconNames contains " + jArray.count(jIconNames) + " entries")
     if jArray.count(jItemIDs) > 0
 	    int[] itemIDs = utility.CreateIntArray(jArray.count(jItemIDs))
         string[] iconNames = utility.CreateStringArray(jArray.count(jIconNames))
 	    jArray.writeToIntegerPArray(jItemIDs, itemIDs)
 	    jArray.writeToStringPArray(jIconNames, iconNames)
-	    debug.trace("iEquip_WidgetCore initialisemoreHUDArray - itemIDs contains " + itemIDs.Length + " entries with " + itemIDs[0] + " in index 0")
-    	debug.trace("iEquip_WidgetCore initialisemoreHUDArray - iconNames contains " + iconNames.Length + " entries with " + iconNames[0] + " in index 0")
+	    ;debug.trace("iEquip_WidgetCore initialisemoreHUDArray - itemIDs contains " + itemIDs.Length + " entries with " + itemIDs[0] + " in index 0")
+    	;debug.trace("iEquip_WidgetCore initialisemoreHUDArray - iconNames contains " + iconNames.Length + " entries with " + iconNames[0] + " in index 0")
 	    AhzMoreHudIE.AddIconItems(itemIDs, iconNames)
 	endIf
     PO.initialisemoreHUDArray()
-    debug.trace("iEquip_WidgetCore initialisemoreHUDArray end")
+    ;debug.trace("iEquip_WidgetCore initialisemoreHUDArray end")
 endFunction
 
 function addPotionGroups(int groupToAdd = -1)
-	debug.trace("iEquip_WidgetCore addPotionGroups start - groupToAdd: " + groupToAdd)
+	;debug.trace("iEquip_WidgetCore addPotionGroups start - groupToAdd: " + groupToAdd)
 	int potionGroup
 	
 	if groupToAdd == -1 || (groupToAdd == 0 && !abPotionGroupEnabled[0])
@@ -1238,11 +1254,11 @@ function addPotionGroups(int groupToAdd = -1)
 		jArray.addObj(aiTargetQ[3], potionGroup)
 		abPotionGroupEnabled[2] = true
 	endIf
-	debug.trace("iEquip_WidgetCore addPotionGroups end")
+	;debug.trace("iEquip_WidgetCore addPotionGroups end")
 endFunction
 
 function removePotionGroups()
-	debug.trace("iEquip_WidgetCore removePotionGroups start")
+	;debug.trace("iEquip_WidgetCore removePotionGroups start")
 	int i
 	while i < 3
 		if abPotionGroupEnabled[i]
@@ -1257,11 +1273,11 @@ function removePotionGroups()
 		endIf
 		i += 1
 	endWhile
-	debug.trace("iEquip_WidgetCore removePotionGroups end")
+	;debug.trace("iEquip_WidgetCore removePotionGroups end")
 endFunction
 
 function addFists()
-	debug.trace("iEquip_WidgetCore addFists start")
+	;debug.trace("iEquip_WidgetCore addFists start")
 	if findInQueue(1, "$iEquip_common_Unarmed") == -1
 		int Fists = jMap.object()
 		jMap.setInt(Fists, "iEquipType", 0)
@@ -1270,11 +1286,11 @@ function addFists()
 		jMap.setInt(Fists, "iEquipAutoAdded", 0)
 		jArray.addObj(aiTargetQ[1], Fists)
 	endIf
-	debug.trace("iEquip_WidgetCore addFists end")
+	;debug.trace("iEquip_WidgetCore addFists end")
 endFunction
 
 event OnMenuOpen(string _sCurrentMenu)
-	debug.trace("iEquip_WidgetCore OnMenuOpen start - current menu: " + _sCurrentMenu)
+	;debug.trace("iEquip_WidgetCore OnMenuOpen start - current menu: " + _sCurrentMenu)
 	sCurrentMenu = _sCurrentMenu
 	if (sCurrentMenu == "InventoryMenu" || sCurrentMenu == "MagicMenu" || sCurrentMenu == "FavoritesMenu") ;if in inventory or magic menu switch states so cycle hotkeys now assign selected item to the relevant queue array
 		if  bIsFirstInventoryMenu
@@ -1301,11 +1317,11 @@ event OnMenuOpen(string _sCurrentMenu)
 			refreshVisibleItems()
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore OnMenuOpen end")
+	;debug.trace("iEquip_WidgetCore OnMenuOpen end")
 endEvent
 
 event OnMenuClose(string _sCurrentMenu)
-	debug.trace("iEquip_WidgetCore OnMenuClose start - current menu: " + _sCurrentMenu)
+	;debug.trace("iEquip_WidgetCore OnMenuClose start - current menu: " + _sCurrentMenu)
 	int i
 	if ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(0)) > -1
 		i = 1
@@ -1360,21 +1376,21 @@ event OnMenuClose(string _sCurrentMenu)
 
 	sCurrentMenu = ""
 	sEntryPath = ""
-	debug.trace("iEquip_WidgetCore OnMenuClose end")
+	;debug.trace("iEquip_WidgetCore OnMenuClose end")
 endEvent
 
 function refreshGearedUp()
-	debug.trace("iEquip_WidgetCore refreshGearedUp start")
+	;debug.trace("iEquip_WidgetCore refreshGearedUp start")
 	Utility.SetINIbool("bDisableGearedUp:General", True)
 	refreshVisibleItems()
 	Utility.WaitMenuMode(0.05)
 	Utility.SetINIbool("bDisableGearedUp:General", False)
 	refreshVisibleItems()
-	debug.trace("iEquip_WidgetCore refreshGearedUp end")
+	;debug.trace("iEquip_WidgetCore refreshGearedUp end")
 endFunction
 
 function refreshVisibleItems()
-	debug.trace("iEquip_WidgetCore refreshVisibleItems start")
+	;debug.trace("iEquip_WidgetCore refreshVisibleItems start")
 	if !PlayerRef.IsOnMount()
 		PlayerRef.QueueNiNodeUpdate()
 	else
@@ -1391,18 +1407,17 @@ function refreshVisibleItems()
 			PlayerRef.RemoveItem(Shoes, 1, true)
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore refreshVisibleItems end")
+	;debug.trace("iEquip_WidgetCore refreshVisibleItems end")
 endFunction
 
 function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
-	debug.trace("iEquip_WidgetCore updateWidgetVisibility start - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
+	;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
 	if show
 		if !bIsWidgetShown
 			while bFadingWidgetOut
 				Utility.WaitMenuMode(0.05)
 			endWhile
 			bIsWidgetShown = true
-			;UpdateWidgetModes()
 			FadeTo(100, 0.2)
 		endif
 		;Register for widget fadeout if enabled
@@ -1416,7 +1431,7 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 		Utility.WaitMenuMode(fDuration)
 		bFadingWidgetOut = false
 	endIf
-	debug.trace("iEquip_WidgetCore updateWidgetVisibility end")
+	;debug.trace("iEquip_WidgetCore updateWidgetVisibility end")
 endFunction
 
 function updateTextFieldDropShadow()
@@ -1433,7 +1448,7 @@ function updateTextFieldDropShadow()
 endFunction
 
 function addCurrentItemsOnFirstEnable()
-	debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable start")
+	;debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable start")
 	int Q
 	form equippedItem
 	string itemName
@@ -1459,14 +1474,14 @@ function addCurrentItemsOnFirstEnable()
 
 			itemHandle = getHandle(Q, itemType)
 
-			debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - Q: " + Q + ", itemHandle received: " + itemHandle)
+			;debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - Q: " + Q + ", itemHandle received: " + itemHandle)
 
 			if itemHandle != 0xFFFF
 				JArray.AddInt(iRefHandleArray, itemHandle)
 				JArray.unique(iRefHandleArray)
 				itemName = iEquip_InventoryExt.GetLongName(equippedItem, itemHandle)
 				itemBaseName = iEquip_InventoryExt.GetShortName(equippedItem, itemHandle)
-				debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+				;debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 			endIf
 			
 			if itemName == ""
@@ -1587,11 +1602,11 @@ function addCurrentItemsOnFirstEnable()
 		Q += 1
 	endWhile
 	
-	debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable end")
+	;debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable end")
 endFunction
 
 function PopulateWidgetArrays()
-	debug.trace("iEquip_WidgetCore PopulateWidgetArrays start")
+	;debug.trace("iEquip_WidgetCore PopulateWidgetArrays start")
 	asWidgetDescriptions = new string[50]
 	asWidgetElements = new string[50]
 	asWidget_TA = new string[50]
@@ -1674,11 +1689,11 @@ function PopulateWidgetArrays()
 	AddWidget("$iEquip_WC_lbl_PoisonCount", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 48, 16777215, "Center", true, false, true, false, "Poison")
 
 	;getAndStoreDefaultWidgetValues()
-	debug.trace("iEquip_WidgetCore PopulateWidgetArrays end")
+	;debug.trace("iEquip_WidgetCore PopulateWidgetArrays end")
 endFunction
 
 function AddWidget( string sDescription, string sPath, float fX, float fY, float fS, float fR, float fA, int iD, int iTC, string sTA, bool bV, bool bIsParent, bool bIsText, bool bIsBg, string sGroup)
-	debug.trace("iEquip_WidgetCore AddWidget start")
+	;debug.trace("iEquip_WidgetCore AddWidget start")
 	int iIndex
 	while iIndex < asWidgetDescriptions.Length && asWidgetDescriptions[iIndex] != ""
 		iIndex += 1
@@ -1702,11 +1717,11 @@ function AddWidget( string sDescription, string sPath, float fX, float fY, float
 		abWidget_isBg[iIndex] = bIsBg
 		asWidgetGroup[iIndex] = sGroup
 	endIf
-	debug.trace("iEquip_WidgetCore AddWidget end")
+	;debug.trace("iEquip_WidgetCore AddWidget end")
 endFunction
 
 function getAndStoreDefaultWidgetValues()
-	debug.trace("iEquip_WidgetCore getAndStoreDefaultWidgetValues start")
+	;debug.trace("iEquip_WidgetCore getAndStoreDefaultWidgetValues start")
 	afWidget_DefX = new float[50]
 	afWidget_DefY = new float[50]
 	afWidget_DefS = new float[50]
@@ -1737,11 +1752,11 @@ function getAndStoreDefaultWidgetValues()
 		abWidget_DefV[iIndex] = abWidget_V[iIndex]
 		iIndex += 1
 	endWhile
-	debug.trace("iEquip_WidgetCore getAndStoreDefaultWidgetValues end")
+	;debug.trace("iEquip_WidgetCore getAndStoreDefaultWidgetValues end")
 endFunction
 
 function ResetWidgetArrays()
-	debug.trace("iEquip_WidgetCore ResetWidgetArrays start")
+	;debug.trace("iEquip_WidgetCore ResetWidgetArrays start")
 	int iIndex
 	while iIndex < asWidgetDescriptions.Length
 		afWidget_X[iIndex] = afWidget_DefX[iIndex]
@@ -1755,25 +1770,25 @@ function ResetWidgetArrays()
 		abWidget_V[iIndex] = abWidget_DefV[iIndex]
 		iIndex += 1
 	endWhile
-	debug.trace("iEquip_WidgetCore ResetWidgetArrays end")
+	;debug.trace("iEquip_WidgetCore ResetWidgetArrays end")
 endFunction
 
 int function getHandle(int Q, int itemType = -1)
-	debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType)
+	;debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType)
 	int itemHandle = 0xFFFF
 	if Q < 2
 		if itemType == -1
 			form equippedItem = PlayerRef.GetEquippedObject(Q)
 			if equippedItem
-				debug.trace("iEquip_WidgetCore getHandle - equippedItem: " + equippedItem + " (" + equippedItem.GetName() + ")")
+				;debug.trace("iEquip_WidgetCore getHandle - equippedItem: " + equippedItem + " (" + equippedItem.GetName() + ")")
 				itemType = equippedItem.GetType()
 				if itemType == 41 														; If it is a weapon get the weapon type
 		        	itemType = (equippedItem as Weapon).GetWeaponType()
 		        endIf
-	        else
-				debug.trace("iEquip_WidgetCore getHandle - nothing returned by GetEquippedObject")
+	        ;else
+				;debug.trace("iEquip_WidgetCore getHandle - nothing returned by GetEquippedObject")
 			endIf
-	        debug.trace("iEquip_WidgetCore getHandle - itemType: " + itemType)
+	        ;debug.trace("iEquip_WidgetCore getHandle - itemType: " + itemType)
 		endIf
 		if TI.aiTemperedItemTypes.Find(itemType) > -1
 			if itemType == 26														; Shield
@@ -1785,42 +1800,42 @@ int function getHandle(int Q, int itemType = -1)
 			endIf
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore getHandle end - returning itemHandle: " + itemHandle)
+	;debug.trace("iEquip_WidgetCore getHandle end - returning itemHandle: " + itemHandle)
 	return itemHandle
 endFunction
 
 function setCurrentQueuePosition(int Q, int iIndex)
-	debug.trace("iEquip_WidgetCore setCurrentQueuePosition start - Q: " + Q + ", iIndex: " + iIndex)
+	;debug.trace("iEquip_WidgetCore setCurrentQueuePosition start - Q: " + Q + ", iIndex: " + iIndex)
 	if iIndex == -1
 		iIndex = 0
 	endIf
 	aiCurrentQueuePosition[Q] = iIndex
 	asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipName")
-	debug.trace("iEquip_WidgetCore setCurrentQueuePosition end")
+	;debug.trace("iEquip_WidgetCore setCurrentQueuePosition end")
 endFunction
 
 bool function itemRequiresCounter(int Q, int itemType = -1, string itemName = "")
-	debug.trace("iEquip_WidgetCore itemRequiresCounter start")
+	;debug.trace("iEquip_WidgetCore itemRequiresCounter start")
 	bool requiresCounter
 	int itemObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	if itemType == -1
 		itemType = jMap.getInt(itemObject, "iEquipType")
 	endIf
 	;ToDo - itemName is only for debug, remove when done
-	if itemName == ""
-		itemName = jMap.getStr(itemObject, "iEquipName")
-	endIf
-	debug.trace("iEquip_WidgetCore itemRequiresCounter itemType: " + itemType + ", itemName: " + itemName)
+	;if itemName == ""
+	;	itemName = jMap.getStr(itemObject, "iEquipName")
+	;endIf
+	;debug.trace("iEquip_WidgetCore itemRequiresCounter itemType: " + itemType + ", itemName: " + itemName)
 	if asCurrentlyEquipped[Q] != "" && ((itemType == 42 || itemType == 23 || itemType == 31) || (itemType == 4 && iEquip_FormExt.isGrenade(jMap.getForm(itemObject, "iEquipForm")))) ;Ammo (which takes in Throwing Weapons), scroll, torch, or CACO grenades here which are classed as maces
 		requiresCounter = true
     endIf
-    debug.trace("iEquip_WidgetCore itemRequiresCounter returning " + requiresCounter)
-    debug.trace("iEquip_WidgetCore itemRequiresCounter end")
+    ;debug.trace("iEquip_WidgetCore itemRequiresCounter returning " + requiresCounter)
+    ;debug.trace("iEquip_WidgetCore itemRequiresCounter end")
     return requiresCounter
 endFunction
 
 function setSlotCount(int Q, int count)
-	debug.trace("iEquip_WidgetCore setSlotCount start - Q: " + Q + ", count: " + count)
+	;debug.trace("iEquip_WidgetCore setSlotCount start - Q: " + Q + ", count: " + count)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateCounter")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q) ;Which slot we're updating
@@ -1841,7 +1856,7 @@ function setSlotCount(int Q, int count)
 		endIf
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_WidgetCore setSlotCount end")
+	;debug.trace("iEquip_WidgetCore setSlotCount end")
 endFunction
 
 ;-----------------------------------------------------------------------------------------------------------------------
@@ -1849,7 +1864,7 @@ endFunction
 ;-----------------------------------------------------------------------------------------------------------------------
 
 function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false, bool onItemRemoved = false, bool onKeyPress = false)
-	debug.trace("iEquip_WidgetCore cycleSlot start - Q: " + Q + ", Reverse: " + Reverse + " ,abIsNameShown[Q]: " + abIsNameShown[Q])
+	;debug.trace("iEquip_WidgetCore cycleSlot start - Q: " + Q + ", Reverse: " + Reverse + " ,abIsNameShown[Q]: " + abIsNameShown[Q])
 	;Q: 0 = Left hand, 1 = Right hand, 2 = Shout, 3 = Consumables, 4 = Poisons
 	if onKeyPress
 		bSwitchingHands = false
@@ -1858,7 +1873,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	;Check if queue contains anything and return out if not
 	int targetArray = aiTargetQ[Q]
 	int queueLength = JArray.count(targetArray)
-	debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
+	;debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
 	if queueLength == 0
 		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}"))
 	;If we're cycling the consumable slot and the potion type selector is currently shown cycle the selector instead of the main slot
@@ -1867,7 +1882,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	;if Preselect Mode is enabled then left/right/shout needs to cycle the preselect slot not the main widget. if shout preselect is disabled cycle main shout slot
 	elseif (bPreselectMode && !bPreselectSwitchingHands && (Q < 2 || (Q == 2 && PM.bShoutPreselectEnabled))) || (Q == 0 && bAmmoMode)
 		;if preselect name not shown then first cycle press shows name without advancing the queue
-		debug.trace("iEquip_WidgetCore cycleSlot - abIsNameShown[Q + 5]: " + abIsNameShown[Q + 5])
+		;debug.trace("iEquip_WidgetCore cycleSlot - abIsNameShown[Q + 5]: " + abIsNameShown[Q + 5])
 		if bFirstPressShowsName && !abIsNameShown[Q + 5]
 			showName(Q + 5)
 		else
@@ -1971,7 +1986,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		endIf
 
 		if Q < 2 && (bSwitchingHands || bPreselectSwitchingHands)
-			debug.trace("iEquip_WidgetCore cycleSlot - Q: " + Q + ", bSwitchingHands: " + bSwitchingHands)
+			;debug.trace("iEquip_WidgetCore cycleSlot - Q: " + Q + ", bSwitchingHands: " + bSwitchingHands)
 			ignoreEquipOnPause = true
 			;if we're forcing the left hand to switch equipped items because we're switching left to right, make sure we don't leave the left hand unarmed
 			if Q == 1
@@ -2052,11 +2067,11 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			checkAndEquipShownShoutOrConsumable(Q, Reverse, targetIndex, targetItem, isPotionGroup)
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore cycleSlot end")
+	;debug.trace("iEquip_WidgetCore cycleSlot end")
 endFunction
 
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false, bool calledByQuickRanged = false)
-	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
+	;debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
 	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
 		abCyclingQueue[Q] = false
@@ -2118,9 +2133,9 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 		endIf
 	endIf
 	if !doneHere && targetItem
-		debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - player still has item, Q: " + Q + ", aiCurrentQueuePosition: " + aiCurrentQueuePosition[Q] + ", itemName: " + jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipName"))
+		;debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - player still has item, Q: " + Q + ", aiCurrentQueuePosition: " + aiCurrentQueuePosition[Q] + ", itemName: " + jMap.getStr(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipName"))
 		;if we're about to equip a ranged weapon and we're not already in Ammo Mode or we're switching ranged weapon type set the ammo queue to the first ammo in the array and then animate in if needed
-		debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - bAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
+		;debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem - bAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
 		if Q == 1
 			;if we're equipping a ranged weapon
 			if (itemType == 7 || itemType == 9)
@@ -2193,11 +2208,11 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 		endIf
 		checkAndFadeLeftIcon(Q, itemType)
 	endIf
-	debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem end")
+	;debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem end")
 endFunction
 
 function checkAndFadeLeftIcon(int Q, int itemType)
-	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon start - Q: " + Q + ", itemType: " + itemType + ", bFadeLeftIconWhen2HEquipped: " + bFadeLeftIconWhen2HEquipped + ", bLeftIconFaded: " + bLeftIconFaded + ", AM.bAmmoModePending: " + AM.bAmmoModePending)
+	;debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon start - Q: " + Q + ", itemType: " + itemType + ", bFadeLeftIconWhen2HEquipped: " + bFadeLeftIconWhen2HEquipped + ", bLeftIconFaded: " + bLeftIconFaded + ", AM.bAmmoModePending: " + AM.bAmmoModePending)
 	;if we're equipping 2H or ranged then check and fade left icon
 	float[] widgetData = new float[8]
 	if Q == 1 && bFadeLeftIconWhen2HEquipped && (itemType == 5 || itemType == 6) && !bLeftIconFaded
@@ -2224,7 +2239,7 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 				widgetData[7] = afWidget_A[14] * adjustment ;leftSoulgem_mc
 			endIf
 		endIf
-		debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading out")
+		;debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading out")
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
 		bLeftIconFaded = true
 	;For anything else check if it is currently faded and if so fade it back in
@@ -2251,15 +2266,15 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 				widgetData[7] = afWidget_A[14]
 			endIf
 		endIf
-		debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading in")
+		;debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading in")
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
 		bLeftIconFaded = false
 	endIf
-	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon end")
+	;debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon end")
 endFunction
 
 function checkAndEquipShownShoutOrConsumable(int Q, bool Reverse, int targetIndex, form targetItem, bool isPotionGroup)
-	debug.trace("iEquip_WidgetCore checkAndEquipShownShoutOrConsumable start - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", isPotionGroup: " + isPotionGroup)
+	;debug.trace("iEquip_WidgetCore checkAndEquipShownShoutOrConsumable start - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", isPotionGroup: " + isPotionGroup)
 	if (targetItem && !playerStillHasItem(targetItem)) || (Q == 3 && !targetItem && !isPotionGroup)
 		if bEnableRemovedItemCaching
 			AddItemToLastRemovedCache(Q, targetIndex)
@@ -2280,15 +2295,15 @@ function checkAndEquipShownShoutOrConsumable(int Q, bool Reverse, int targetInde
 			cycleConsumable(targetItem, targetIndex, isPotionGroup)
 		elseif Q == 4 && bPoisonsEnabled
 			cyclePoison(targetItem)
-		else
-			debug.trace("iEquip_WidgetCore - Something went wrong!")
+		;else
+			;debug.trace("iEquip_WidgetCore - Something went wrong!")
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore checkAndEquipShownShoutOrConsumable end")
+	;debug.trace("iEquip_WidgetCore checkAndEquipShownShoutOrConsumable end")
 endFunction
 
 function checkAndFadeConsumableIcon(bool fadeOut)
-	debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon start - fadeOut: " + fadeOut + ", bConsumableIconFaded: " + bConsumableIconFaded)
+	;debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon start - fadeOut: " + fadeOut + ", bConsumableIconFaded: " + bConsumableIconFaded)
 	float[] widgetData = new float[4]
 	if fadeOut
 		if PO.iEmptyPotionQueueChoice == 0 									; Fade
@@ -2312,11 +2327,11 @@ function checkAndFadeConsumableIcon(bool fadeOut)
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenConsumableIconAlpha", widgetData)
 		bConsumableIconFaded = false
 	endIf
-	debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon end")
+	;debug.trace("iEquip_WidgetCore checkAndFadeConsumableIcon end")
 endFunction
 
 function checkAndFadePoisonIcon(bool fadeOut)
-	debug.trace("iEquip_WidgetCore checkAndFadePoisonIcon start - fadeOut: " + fadeOut + ", bPoisonIconFaded: " + bPoisonIconFaded)
+	;debug.trace("iEquip_WidgetCore checkAndFadePoisonIcon start - fadeOut: " + fadeOut + ", bPoisonIconFaded: " + bPoisonIconFaded)
 	float[] widgetData = new float[4]
 	if fadeOut
 		float adjustment = (1 - (fconsIconFadeAmount * 0.01)) 				; Use same value as consumable icon fade for consistency
@@ -2339,16 +2354,16 @@ function checkAndFadePoisonIcon(bool fadeOut)
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenPoisonIconAlpha", widgetData)
 		bPoisonIconFaded = false
 	endIf
-	debug.trace("iEquip_WidgetCore checkAndFadePoisonIcon end")
+	;debug.trace("iEquip_WidgetCore checkAndFadePoisonIcon end")
 endFunction
 
 function setCounterVisibility(int Q, bool show)
-	debug.trace("iEquip_WidgetCore setCounterVisibility start - Q: " + Q + ", show: " + show)
+	;debug.trace("iEquip_WidgetCore setCounterVisibility start - Q: " + Q + ", show: " + show)
 	if show || abIsCounterShown[Q] || bRefreshingWidget
 		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenWidgetCounterAlpha")
 		if iHandle
 			UICallback.PushInt(iHandle, Q) 										; Which counter _mc we're fading out
-			if show ;&& !abIsCounterShown[Q]
+			if show
 				float targetAlpha = afWidget_A[aiCounterClips[Q]] 				; Get target count _mc alpha
 				if targetAlpha < 1
 					targetAlpha = 100
@@ -2363,11 +2378,11 @@ function setCounterVisibility(int Q, bool show)
 			UICallback.Send(iHandle)
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore setCounterVisibility end")
+	;debug.trace("iEquip_WidgetCore setCounterVisibility end")
 endFunction
 
 function updateSlotsEnabled()
-	debug.trace("iEquip_WidgetCore updateSlotsEnabled start - bShoutEnabled: " + bShoutEnabled + ", bConsumablesEnabled: " + bConsumablesEnabled + ", bPoisonsEnabled: " + bPoisonsEnabled)
+	;debug.trace("iEquip_WidgetCore updateSlotsEnabled start - bShoutEnabled: " + bShoutEnabled + ", bConsumablesEnabled: " + bConsumablesEnabled + ", bPoisonsEnabled: " + bPoisonsEnabled)
 	UI.Setbool(HUD_MENU, WidgetRoot + ".widgetMaster.ShoutWidget._visible", bShoutEnabled)
 	abWidget_V[3] = bShoutEnabled
 	UI.Setbool(HUD_MENU, WidgetRoot + ".widgetMaster.ConsumableWidget._visible", bConsumablesEnabled)
@@ -2380,11 +2395,11 @@ function updateSlotsEnabled()
 		hidePoisonInfo(0)
 		hidePoisonInfo(1)
 	endIf
-	debug.trace("iEquip_WidgetCore updateSlotsEnabled end")
+	;debug.trace("iEquip_WidgetCore updateSlotsEnabled end")
 endFunction
 
 function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
-	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator start - Q: " + Q + ", count: " + count + ", currPos: " + currPos + ", newPos: " + newPos)
+	;debug.trace("iEquip_WidgetCore updateQueuePositionIndicator start - Q: " + Q + ", count: " + count + ", currPos: " + currPos + ", newPos: " + newPos)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateQueuePositionIndicator")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q)
@@ -2398,11 +2413,11 @@ function updateQueuePositionIndicator(int Q, int count, int currPos, int newPos)
 		endIf
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_WidgetCore updateQueuePositionIndicator end")
+	;debug.trace("iEquip_WidgetCore updateQueuePositionIndicator end")
 endFunction
 
 function updatePotionSelector(bool bHide = false)
-	debug.trace("iEquip_WidgetCore updatePotionSelector start - bHide: " + bHide + ", bPotionSelectorShown: " + bPotionSelectorShown)
+	;debug.trace("iEquip_WidgetCore updatePotionSelector start - bHide: " + bHide + ", bPotionSelectorShown: " + bPotionSelectorShown)
 	;If we've just received the fadeout update then hide the selector and reset the currently selected type to restore
 	if bHide
 		UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", 0.0)
@@ -2426,11 +2441,11 @@ function updatePotionSelector(bool bHide = false)
 			PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore updatePotionSelector end")
+	;debug.trace("iEquip_WidgetCore updatePotionSelector end")
 endFunction
 
 function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cycling = false)
-	debug.trace("iEquip_WidgetCore updateWidget start - Q: " + Q + ", iIndex: " + iIndex + ", bPreselectMode: " + bPreselectMode + ", bAmmoMode: " + bAmmoMode + ", overridePreselect: " + overridePreselect + ", bPreselectSwitchingHands: " + bPreselectSwitchingHands + ", bCyclingLHPreselectInAmmoMode: " + bCyclingLHPreselectInAmmoMode + ", cycling: " + cycling)
+	;debug.trace("iEquip_WidgetCore updateWidget start - Q: " + Q + ", iIndex: " + iIndex + ", bPreselectMode: " + bPreselectMode + ", bAmmoMode: " + bAmmoMode + ", overridePreselect: " + overridePreselect + ", bPreselectSwitchingHands: " + bPreselectSwitchingHands + ", bCyclingLHPreselectInAmmoMode: " + bCyclingLHPreselectInAmmoMode + ", cycling: " + cycling)
 	;if we are in Preselect Mode make sure we update the preselect icon and name, otherwise update the main icon and name
 	string sIcon
 	string sName
@@ -2438,17 +2453,17 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	int Slot = Q
 
 	if bRefreshingWidget && Q > 4
-		debug.trace("iEquip_WidgetCore updateWidget - 1st option")
+		;debug.trace("iEquip_WidgetCore updateWidget - 1st option")
 		targetObject = jArray.getObj(aiTargetQ[Q - 5], iIndex)
 	elseif (bPreselectMode && !overridePreselect && !bPreselectSwitchingHands && (Q < 2 || Q == 2 && PM.bShoutPreselectEnabled)) || bCyclingLHPreselectInAmmoMode
-		debug.trace("iEquip_WidgetCore updateWidget - 2nd option")
+		;debug.trace("iEquip_WidgetCore updateWidget - 2nd option")
 		Slot += 5
 		targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentlyPreselected[Q])
 	elseif Q == 0 && bAmmoMode
-		debug.trace("iEquip_WidgetCore updateWidget - 3rd option")
+		;debug.trace("iEquip_WidgetCore updateWidget - 3rd option")
 		targetObject = AM.getCurrentAmmoObject()
 	else
-		debug.trace("iEquip_WidgetCore updateWidget - 4th option")
+		;debug.trace("iEquip_WidgetCore updateWidget - 4th option")
 		targetObject = jArray.getObj(aiTargetQ[Q], iIndex)
 	endIf
 
@@ -2471,7 +2486,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		sName =  jMap.getStr(targetObject, "iEquipName")									; New name
 	endIf
 
-	debug.trace("iEquip_WidgetCore updateWidget about to call .updateWidget - Slot: " + Slot + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
+	;debug.trace("iEquip_WidgetCore updateWidget about to call .updateWidget - Slot: " + Slot + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Slot) 													; Which slot we're updating
@@ -2506,18 +2521,18 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 			SPNUpdate.registerForNameFadeoutUpdate()
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore updateWidget end")
+	;debug.trace("iEquip_WidgetCore updateWidget end")
 endFunction
 
 function updateWidgetBM(int Q, string sIcon, string sName)
-	debug.trace("iEquip_WidgetCore updateWidgetBM start")
+	;debug.trace("iEquip_WidgetCore updateWidgetBM start")
 	
 	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
 
-	debug.trace("iEquip_WidgetCore updateWidgetBM about to call .updateWidget - Slot: " + Q + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
+	;debug.trace("iEquip_WidgetCore updateWidgetBM about to call .updateWidget - Slot: " + Q + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q) 								; Which slot we're updating
@@ -2538,11 +2553,11 @@ function updateWidgetBM(int Q, string sIcon, string sName)
 			SNUpdate.registerForNameFadeoutUpdate()
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore updateWidgetBM end")
+	;debug.trace("iEquip_WidgetCore updateWidgetBM end")
 endFunction
 
 function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = false)
-	debug.trace("iEquip_WidgetCore setSlotToEmpty start - bIsFirstEnabled: " + bIsFirstEnabled)
+	;debug.trace("iEquip_WidgetCore setSlotToEmpty start - bIsFirstEnabled: " + bIsFirstEnabled)
 	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
@@ -2556,11 +2571,11 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 		UICallback.PushInt(iHandle, Q) 										; Which slot we're updating
 		if (Q == 0 && !bAmmoMode) || Q == 1
 			bLeaveBackground = true
-			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Unarmed")
+			;debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Unarmed")
 			UICallback.PushString(iHandle, "Fist") 							; New icon
 			UICallback.PushString(iHandle, "$iEquip_common_Unarmed") 		; New name
 		else
-			debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Empty")
+			;debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Empty")
 			UICallback.PushString(iHandle, "Empty") 						; New icon
 			UICallback.PushString(iHandle, "") 								; New name
 		endIf
@@ -2607,11 +2622,11 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 	if Q < 5 && !leaveFlag
 		abQueueWasEmpty[Q] = true
 	endIf
-	debug.trace("iEquip_WidgetCore setSlotToEmpty end")
+	;debug.trace("iEquip_WidgetCore setSlotToEmpty end")
 endFunction
 
 function handleEmptyPoisonQueue()
-	debug.trace("iEquip_WidgetCore handleEmptyPoisonQueue called")
+	;debug.trace("iEquip_WidgetCore handleEmptyPoisonQueue called")
 	float fNameAlpha = afWidget_A[aiNameElements[4]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
@@ -2641,11 +2656,11 @@ function handleEmptyPoisonQueue()
 	else
 		setSlotToEmpty(4, false)
 	endIf
-	debug.trace("iEquip_WidgetCore handleEmptyPoisonQueue end")
+	;debug.trace("iEquip_WidgetCore handleEmptyPoisonQueue end")
 endFunction
 
 function checkIfBoundSpellEquipped()
-	debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped start")
+	;debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped start")
 	bool boundSpellEquipped
 	int hand
 	while hand < 2
@@ -2654,15 +2669,15 @@ function checkIfBoundSpellEquipped()
 		endIf
 		hand += 1
 	endWhile
-	debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped called - boundSpellEquipped: " + boundSpellEquipped)
+	;debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped called - boundSpellEquipped: " + boundSpellEquipped)
 	; If the player has a bound spell equipped in either hand the event handler script registers for ActorAction 2 - Spell Fire, if not it unregisters for the action
 	EH.boundSpellEquipped = boundSpellEquipped
-	debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped end")
+	;debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped end")
 endFunction
 
 ; Called from iEquip_PlayerEventHandler when OnActorAction receives actionType 2 (should only ever happen when the player has a 'Bound' spell equipped in either hand)
 function onBoundWeaponEquipped(Int weaponType, Int hand)
-	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped start")
+	;debug.trace("iEquip_WidgetCore onBoundWeaponEquipped start")
 	string iconName = "Bound"
 	if weaponType == 6 && (PlayerRef.GetEquippedObject(hand) as Weapon).IsWarhammer()
         iconName += "Warhammer"
@@ -2673,7 +2688,7 @@ function onBoundWeaponEquipped(Int weaponType, Int hand)
     else
 		iconName += asWeaponTypeNames[weaponType]
     endIf
-    debug.trace("iEquip_WidgetCore onBoundWeaponEquipped - iconName: " + iconName + ", weaponType: " + weaponType)
+    ;debug.trace("iEquip_WidgetCore onBoundWeaponEquipped - iconName: " + iconName + ", weaponType: " + weaponType)
     int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIconOnly")
 													; Replace the spell icon with the correct bound weapon icon without updating the name as it should be the same anyway
 	if(iHandle)
@@ -2687,11 +2702,11 @@ function onBoundWeaponEquipped(Int weaponType, Int hand)
     elseIf weaponType == 5 || weaponType == 6 		; Bound 2H weapon
     	checkAndFadeLeftIcon(hand, weaponType)
 	endIf
-	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped end")
+	;debug.trace("iEquip_WidgetCore onBoundWeaponEquipped end")
 endFunction
 
 function onBoundWeaponUnequipped(int hand, bool isBoundShield = false)
-	debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped start - bBlockSwitchBackToBoundSpell: " + bBlockSwitchBackToBoundSpell)
+	;debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped start - bBlockSwitchBackToBoundSpell: " + bBlockSwitchBackToBoundSpell)
 	if bBlockSwitchBackToBoundSpell
 		bBlockSwitchBackToBoundSpell = false
 	else
@@ -2709,15 +2724,15 @@ function onBoundWeaponUnequipped(int hand, bool isBoundShield = false)
 			if bLeftIconFaded
 				checkAndFadeLeftIcon(hand, 9)
 			endIf
-		else
-			debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped - couldn't match removed bound weapon to an equipped spell")
+		;else
+			;debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped - couldn't match removed bound weapon to an equipped spell")
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped end")
+	;debug.trace("iEquip_WidgetCore onBoundWeaponUnequipped end")
 endFunction
 
 function showName(int Q, bool fadeIn = true, bool targetingPoisonName = false, float fadeoutDuration = 0.3)
-	debug.trace("iEquip_WidgetCore showName start - Q: " + Q + ", fadeIn: " + fadeIn + ", targetingPoisonName: " + targetingPoisonName + ", fadeoutDuration: " + fadeoutDuration)
+	;debug.trace("iEquip_WidgetCore showName start - Q: " + Q + ", fadeIn: " + fadeIn + ", targetingPoisonName: " + targetingPoisonName + ", fadeoutDuration: " + fadeoutDuration)
 
 	float fNameAlpha
 	if !fadeIn
@@ -2814,11 +2829,11 @@ function showName(int Q, bool fadeIn = true, bool targetingPoisonName = false, f
 			SPNUpdate.unregisterForNameFadeoutUpdate()
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore showName end")
+	;debug.trace("iEquip_WidgetCore showName end")
 endFunction
 
 function updateAttributeIcons(int Q, int iIndex, bool overridePreselect = false, bool cycling = false)
-	debug.trace("iEquip_WidgetCore updateAttributeIcons start - Q: " + Q + ", iIndex: " + iIndex + ", bPreselectMode: " + bPreselectMode + ", bAmmoMode: " + bAmmoMode + ", overridePreselect: " + overridePreselect + ", bCyclingLHPreselectInAmmoMode: " + bCyclingLHPreselectInAmmoMode + ", cycling: " + cycling)
+	;debug.trace("iEquip_WidgetCore updateAttributeIcons start - Q: " + Q + ", iIndex: " + iIndex + ", bPreselectMode: " + bPreselectMode + ", bAmmoMode: " + bAmmoMode + ", overridePreselect: " + overridePreselect + ", bCyclingLHPreselectInAmmoMode: " + bCyclingLHPreselectInAmmoMode + ", cycling: " + cycling)
 	if bShowAttributeIcons
 		string sAttributes
 		bool isPoisoned
@@ -2858,7 +2873,7 @@ function updateAttributeIcons(int Q, int iIndex, bool overridePreselect = false,
 			else
 				sAttributes = "hidden"
 			endIf
-			debug.trace("iEquip_WidgetCore updateAttributeIcons - about to update icons in Slot " + Slot + " to " + sAttributes)
+			;debug.trace("iEquip_WidgetCore updateAttributeIcons - about to update icons in Slot " + Slot + " to " + sAttributes)
 			int iHandle2 = UICallback.Create(HUD_MENU, WidgetRoot + ".updateAttributeIcons")
 			if(iHandle2)
 				UICallback.PushInt(iHandle2, Slot) 				; Which slot we're updating
@@ -2869,27 +2884,27 @@ function updateAttributeIcons(int Q, int iIndex, bool overridePreselect = false,
 	else
 		bCyclingLHPreselectInAmmoMode = false
 	endIf
-	debug.trace("iEquip_WidgetCore updateAttributeIcons end")
+	;debug.trace("iEquip_WidgetCore updateAttributeIcons end")
 endFunction
 
 function hideAttributeIcons(int Q)
-	debug.trace("iEquip_WidgetCore hideAttributeIcons start - Q: "+ Q)
+	;debug.trace("iEquip_WidgetCore hideAttributeIcons start - Q: "+ Q)
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateAttributeIcons")
 	if(iHandle)
 		UICallback.PushInt(iHandle, Q) 				; Which slot we're updating
 		UICallback.PushString(iHandle, "hidden") 	; Hide attributes
 		UICallback.Send(iHandle)
 	endif
-	debug.trace("iEquip_WidgetCore hideAttributeIcons end")
+	;debug.trace("iEquip_WidgetCore hideAttributeIcons end")
 endFunction
 
 int function findInQueue(int Q, string itemToFind, form formToFind = none, int itemHandle = 0xFFFF)
-	debug.trace("iEquip_WidgetCore findInQueue start - Q: " + Q + ", formToFind: " + formToFind + ", itemToFind: " + itemToFind + ", itemHandle: " + itemHandle)
+	;debug.trace("iEquip_WidgetCore findInQueue start - Q: " + Q + ", formToFind: " + formToFind + ", itemToFind: " + itemToFind + ", itemHandle: " + itemHandle)
 	int iIndex
 	bool found
 	while iIndex < jArray.count(aiTargetQ[Q]) && !found
 		if itemHandle != 0xFFFF && JArray.FindInt(iRefHandleArray, itemHandle) != -1
-			debug.trace("iEquip_WidgetCore findInQueue - seaching by handle")
+			;debug.trace("iEquip_WidgetCore findInQueue - seaching by handle")
 			if itemHandle == jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle", 0xFFFF)
 				found = true
 			else
@@ -2897,7 +2912,7 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 			endIf
 
 		elseIf formToFind != none
-			debug.trace("iEquip_WidgetCore findInQueue - seaching by form")
+			;debug.trace("iEquip_WidgetCore findInQueue - seaching by form")
 			if formToFind == jMap.getForm(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipForm") && (itemHandle == 0xFFFF || jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipHandle", 0xFFFF) == 0xFFFF)
 				found = true
 			else
@@ -2905,7 +2920,7 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 			endIf
 
 		else
-			debug.trace("iEquip_WidgetCore findInQueue - seaching by name")
+			;debug.trace("iEquip_WidgetCore findInQueue - seaching by name")
 			if itemToFind == jMap.getStr(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipName")
 				found = true
 			else
@@ -2916,12 +2931,12 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 	if !found
 		iIndex = -1
 	endIf
-	debug.trace("iEquip_WidgetCore findInQueue end - returning index: " + iIndex)
+	;debug.trace("iEquip_WidgetCore findInQueue end - returning index: " + iIndex)
 	return iIndex
 endFunction
 
 function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cyclingAmmo = false, bool onItemRemoved = false, bool addToCache = true)
-	debug.trace("iEquip_WidgetCore removeItemFromQueue start - Q: " + Q + ", iIndex: " + iIndex + ", purging: " + purging + ", cyclingAmmo: " + cyclingAmmo + ", onItemRemoved: " + onItemRemoved + ", addToCache: " + addToCache)
+	;debug.trace("iEquip_WidgetCore removeItemFromQueue start - Q: " + Q + ", iIndex: " + iIndex + ", purging: " + purging + ", cyclingAmmo: " + cyclingAmmo + ", onItemRemoved: " + onItemRemoved + ", addToCache: " + addToCache)
 	if bEnableRemovedItemCaching && addToCache && !purging
 		AddItemToLastRemovedCache(Q, iIndex)
 	endIf
@@ -2945,16 +2960,16 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
             i += 1
         endWhile
 	endIf
-	debug.trace("iEquip_WidgetCore removeItemFromQueue - queueLength: " + queueLength + ", enabledPotionGroupCount: " + enabledPotionGroupCount)
+	;debug.trace("iEquip_WidgetCore removeItemFromQueue - queueLength: " + queueLength + ", enabledPotionGroupCount: " + enabledPotionGroupCount)
 	; In the case of the consumables queue count will never drop below 3 because of the Potion Group slots, so either count has to be greater than 3 or at least one of the Potion Groups needs to be shown, otherwise hide the consumable widget
 	if (Q != 3 && queueLength > 0) || (Q == 3 && (queueLength > 3 || enabledPotionGroupCount > 0))
 		if aiCurrentQueuePosition[Q] > iIndex 			; If the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
-			debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] > iIndex")
+			;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] > iIndex")
 			aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
 		elseif aiCurrentQueuePosition[Q] == iIndex 		; If you have removed the currently equipped item then if it was the last in the queue advance to index 0 and cycle the slot
-			debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] == iIndex")
+			;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] == iIndex")
 			if aiCurrentQueuePosition[Q] == queueLength
-				debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] == queueLength")
+				;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] == queueLength")
 				aiCurrentQueuePosition[Q] = 0
 			endIf
 			if !cyclingAmmo
@@ -2996,11 +3011,11 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 			PM.cyclePreselectSlot(Q, jArray.count(aiTargetQ[Q]))
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore removeItemFromQueue end")
+	;debug.trace("iEquip_WidgetCore removeItemFromQueue end")
 endFunction
 
 function reduceMaxQueueLength()
-	debug.trace("iEquip_WidgetCore reduceMaxQueueLength start")
+	;debug.trace("iEquip_WidgetCore reduceMaxQueueLength start")
 	if iMaxQueueLength < 3 && bPreselectMode
 		PM.togglePreselectMode()
 	endIf
@@ -3015,11 +3030,11 @@ function reduceMaxQueueLength()
 		endIf
 		i += 1
 	endWhile
-	debug.trace("iEquip_WidgetCore reduceMaxQueueLength end")
+	;debug.trace("iEquip_WidgetCore reduceMaxQueueLength end")
 endFunction
 
 function AddItemToLastRemovedCache(int Q, int iIndex)
-	debug.trace("iEquip_WidgetCore AddItemToLastRemovedCache start")
+	;debug.trace("iEquip_WidgetCore AddItemToLastRemovedCache start")
 	int cacheSize = jArray.count(iRemovedItemsCacheObj)
 	if cacheSize == iMaxCachedItems ; Max number of removed items to cache for re-adding
 		form formToRemove = jMap.getForm(jArray.getObj(iRemovedItemsCacheObj, 0), "iEquipForm")
@@ -3040,11 +3055,11 @@ function AddItemToLastRemovedCache(int Q, int iIndex)
 	jMap.setInt(objToCache, "PrevQ", Q)
 	jArray.addObj(iRemovedItemsCacheObj, objToCache)
 	iEquip_RemovedItemsFLST.AddForm(jMap.getForm(objToCache, "iEquipForm"))
-	debug.trace("iEquip_WidgetCore AddItemToLastRemovedCache end")
+	;debug.trace("iEquip_WidgetCore AddItemToLastRemovedCache end")
 endFunction
 
 function addBackCachedItem(form addedForm)
-	debug.trace("iEquip_WidgetCore addBackCachedItem start")
+	;debug.trace("iEquip_WidgetCore addBackCachedItem start")
 	int iIndex
 	int targetObject
 	bool found
@@ -3082,11 +3097,11 @@ function addBackCachedItem(form addedForm)
 			iIndex += 1
 		endIf
 	endwhile
-	debug.trace("iEquip_WidgetCore addBackCachedItem end")
+	;debug.trace("iEquip_WidgetCore addBackCachedItem end")
 endFunction
 
 bool function playerStillHasItem(form itemForm, int itemHandle = 0xFFFF)
-	debug.trace("iEquip_WidgetCore playerStillHasItem start - itemForm: " + itemForm + ", itemHandle: " + itemHandle)
+	;debug.trace("iEquip_WidgetCore playerStillHasItem start - itemForm: " + itemForm + ", itemHandle: " + itemHandle)
     int itemType = itemForm.GetType()
     bool stillHasItem
     ; This is a Spell or Shout and can't be counted like an item
@@ -3098,13 +3113,13 @@ bool function playerStillHasItem(form itemForm, int itemHandle = 0xFFFF)
     else
         stillHasItem = (PlayerRef.GetItemCount(itemForm) > 0)
     endIf
-    debug.trace("iEquip_WidgetCore playerStillHasItem returning " + stillHasItem)
-    debug.trace("iEquip_WidgetCore playerStillHasItem end")
+    ;debug.trace("iEquip_WidgetCore playerStillHasItem returning " + stillHasItem)
+    ;debug.trace("iEquip_WidgetCore playerStillHasItem end")
     return stillHasItem
 endFunction
 
 function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, bool equippingOnAutoAdd = false)
-	debug.trace("iEquip_WidgetCore cycleHand start - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", itemType: " + itemType + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
+	;debug.trace("iEquip_WidgetCore cycleHand start - Q: " + Q + ", targetIndex: " + targetIndex + ", targetItem: " + targetItem + ", itemType: " + itemType + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
    	
    	bool otherHandUnequipped
     bool justSwitchedHands
@@ -3142,7 +3157,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     ; Hide the attribute icons ready to show full poison and enchantment elements if required
     hideAttributeIcons(Q)
 
-	debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", iEquipSlotId = " + iEquipSlotId + ", otherHand = " + otherHand + ", bSwitchingHands = " + bSwitchingHands + ", bGoneUnarmed = " + bGoneUnarmed + ", currRHType: " + currRHType + ", previously2H: " + previously2H)
+	;debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", iEquipSlotId = " + iEquipSlotId + ", otherHand = " + otherHand + ", bSwitchingHands = " + bSwitchingHands + ", bGoneUnarmed = " + bGoneUnarmed + ", currRHType: " + currRHType + ", previously2H: " + previously2H)
 	; if we're switching hands we can reset to false now, and we don't need to unequip here because we already did so when we started switching hands
 	if bSwitchingHands
 		bSwitchingHands = false
@@ -3159,7 +3174,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     	if bGoneUnarmed || b2HSpellEquipped
     		previouslyUnarmedOr2HSpell = true
     	endIf
-    	debug.trace("iEquip_WidgetCore cycleHand - RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypesAlt.Find(currRHType) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands + ", targetObjectIs2hOrRanged: " + targetObjectIs2hOrRanged)
+    	;debug.trace("iEquip_WidgetCore cycleHand - RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypesAlt.Find(currRHType) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands + ", targetObjectIs2hOrRanged: " + targetObjectIs2hOrRanged)
     	;if !bGoneUnarmed && !b2HSpellEquipped && !equippingOnAutoAdd && (ai2HWeaponTypesAlt.Find(currRHType) == -1 || targetObjectIs2hOrRanged)
     	;	if PlayerRef.GetEquippedObject(otherHand)
     			;UnequipHand(otherHand)
@@ -3177,22 +3192,22 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			targetObject = jArray.getObj(aiTargetQ[0], aiCurrentQueuePosition[0])
 			PM.bBlockQuickDualCast = (jMap.getInt(targetObject, "iEquipType") == 22)
 			bSwitchingHands = true
-			debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", bJustLeftAmmoMode: " + bJustLeftAmmoMode + ", about to equip left hand item of type: " + jMap.getInt(targetObject, "iEquipType") + ", blockQuickDualCast: " + PM.bBlockQuickDualCast)
+			;debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", bJustLeftAmmoMode: " + bJustLeftAmmoMode + ", about to equip left hand item of type: " + jMap.getInt(targetObject, "iEquipType") + ", blockQuickDualCast: " + PM.bBlockQuickDualCast)
 			cycleHand(0, aiCurrentQueuePosition[0], jMap.getForm(targetObject, "iEquipForm"))
 		endIf
 		; If target item is a spell equip straight away
 		if itemType == 22
 			PlayerRef.EquipSpell(targetItem as Spell, Q)
-			debug.trace("iEquip_WidgetCore cycleHand - just equipped a spell, equip type: " + jMap.getInt(targetObject, "iEquipSlot") + ", bProModeEnabled: " + bProModeEnabled + ", bQuickDualCastEnabled: " + bQuickDualCastEnabled + ", justSwitchedHands: " + justSwitchedHands + ", bPreselectMode: " + bPreselectMode)
+			;debug.trace("iEquip_WidgetCore cycleHand - just equipped a spell, equip type: " + jMap.getInt(targetObject, "iEquipSlot") + ", bProModeEnabled: " + bProModeEnabled + ", bQuickDualCastEnabled: " + bQuickDualCastEnabled + ", justSwitchedHands: " + justSwitchedHands + ", bPreselectMode: " + bPreselectMode)
 			if jMap.getInt(targetObject, "iEquipSlot") == 3 ; 2H spells
 				updateLeftSlotOn2HSpellEquipped()
 			elseIf bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
 				spell targetSpell = targetItem as spell
 				string spellSchool = jMap.getStr(targetObject, "iEquipSchool")
-				debug.trace("iEquip_WidgetCore cycleHand - spellSchool: " + spellSchool + ", QuickDualCast allowed: " + abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)])
+				;debug.trace("iEquip_WidgetCore cycleHand - spellSchool: " + spellSchool + ", QuickDualCast allowed: " + abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)])
 				; Only allow QuickDualCast is the feature is enabled for this school, and if the equipped spell is GetEquipType == 2 (EitherHand), and as long as it's not a Bound 2H item or shield
 				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !(iEquip_FormExt.IsSpellWard(targetItem) || (ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(targetSpell)) > -1) || (Game.GetModName(targetItem.GetFormID() / 0x1000000) == "Bound Shield.esp"))
-					debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
+					;debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
 					if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "iEquipName"), spellSchool)
 						bSwitchingHands = false ; Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
 					endIf
@@ -3202,11 +3217,11 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			; If item is anything other than a spell check if it is already equipped, possibly in the other hand, and there is only 1 of it
 			int itemCount = PlayerRef.GetItemCount(targetItem)
 		    if !otherHandUnequipped && (targetItem == PlayerRef.GetEquippedObject(otherHand)) && itemCount < 2
-		    	debug.trace("iEquip_WidgetCore cycleHand - targetItem found in other hand and only one of them")
+		    	;debug.trace("iEquip_WidgetCore cycleHand - targetItem found in other hand and only one of them")
 		    	; If it is already equipped and player has allowed switching hands then unequip the other hand first before equipping the target item in this hand
 		        if bAllowWeaponSwitchHands
 		        	bSwitchingHands = true
-		        	debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands: " + bSwitchingHands)
+		        	;debug.trace("iEquip_WidgetCore cycleHand - bSwitchingHands: " + bSwitchingHands)
 		        	UnequipHand(otherHand)
 		        else
 		        	debug.notification(jMap.getStr(targetObject, "iEquipName") + " " + iEquip_StringExt.LocalizeString("$iEquip_WC_not_inOtherhand"))
@@ -3214,7 +3229,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		        endIf
 		    endIf
 		    ; Equip target item
-		    debug.trace("iEquip_WidgetCore cycleHand - about to equip " + jMap.getStr(targetObject, "iEquipName") + " into slot " + Q)
+		    ;debug.trace("iEquip_WidgetCore cycleHand - about to equip " + jMap.getStr(targetObject, "iEquipName") + " into slot " + Q)
 		    Utility.WaitMenuMode(0.1)
 		    int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
 		    if (Q == 1 && itemType == 42) 																		; Ammo in the right hand queue, so in this case grenades and other throwing weapons
@@ -3226,54 +3241,36 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    		PlayerRef.EquipItemEx(targetItem as Armor)
 		    	endIf
 		    elseIf targetItem as light
-		    	debug.trace("iEquip_WidgetCore cycleHand - this is a torch so equip using EquipItemEx")
+		    	;debug.trace("iEquip_WidgetCore cycleHand - this is a torch so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, 0)
 		    elseIf !(targetItem as weapon) || itemCount == 1													; If it's not a weapon, or we only have one of them there's no risk of equipping the wrong one so safe to use EquipItemEx
-		    	debug.trace("iEquip_WidgetCore cycleHand - not a weapon, or we only have one of these so equip using EquipItemEx")
+		    	;debug.trace("iEquip_WidgetCore cycleHand - not a weapon, or we only have one of these so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
-		    else
-		    	;if TI.aiTemperedItemTypes.Find(itemType) != -1													; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
-		    		if refHandle != 0xFFFF
-		    			debug.trace("iEquip_WidgetCore cycleHand - we have more than one of these and a refHandle so attempting to equip by handle")
-		    			debug.trace("iEquip_WidgetCore cycleHand - args being passed to EquipItem are targetItem: " + targetItem + ", refHandle: " + refHandle + ", PlayerRef: " + PlayerRef + ", equip slot: " + iEquipSlotId)
-		    			iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef, iEquipSlotId)
-		    			Utility.WaitMenuMode(0.2)
-		    		endIf
-		    	;endIf
+		    else												; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
+	    		if refHandle != 0xFFFF
+	    			;debug.trace("iEquip_WidgetCore cycleHand - we have more than one of these and a refHandle so attempting to equip by handle")
+	    			;debug.trace("iEquip_WidgetCore cycleHand - args being passed to EquipItem are targetItem: " + targetItem + ", refHandle: " + refHandle + ", PlayerRef: " + PlayerRef + ", equip slot: " + iEquipSlotId)
+	    			iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef, iEquipSlotId)
+	    			Utility.WaitMenuMode(0.2)
+	    		endIf
 		    	
-		    	if !PlayerRef.GetEquippedObject(Q)													; If we haven't successfully equipped anything next check if the queue object is enchanted or poisoned and attempt to equip the correct item using that information
-	    			;/debug.trace("iEquip_WidgetCore cycleHand - we haven't succeeded in equipping anything yet, trying other methods")
-	    			Enchantment tempEnchantment = jMap.getForm(targetObject, "lastKnownEnchantment") as Enchantment
-	    			Potion tempPoison = jMap.getForm(targetObject, "lastKnownPoison") as Potion
-	    			if tempEnchantment
-	    				if tempPoison
-	    					debug.trace("iEquip_WidgetCore cycleHand - the item is enchanted and poisoned so attempting to EquipEnchantedAndPoisonedItemEx")
-	    					iEquip_ActorExt.EquipEnchantedAndPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment, tempPoison)		; Enchanted and poisoned
-	    				else
-	    					debug.trace("iEquip_WidgetCore cycleHand - the item is enchanted so attempting to EquipEnchantedItemEx")
-	    					iEquip_ActorExt.EquipEnchantedItemEx(PlayerRef, targetItem, iEquipSlotID, tempEnchantment)								; Enchanted only
-	    				endIf
-	    			elseIf tempPoison
-	    				debug.trace("iEquip_WidgetCore cycleHand - the item is poisoned so attempting to EquipPoisonedItemEx")
-	    				iEquip_ActorExt.EquipPoisonedItemEx(PlayerRef, targetItem, iEquipSlotID, tempPoison)										; Poisoned only
-	    			else/;																														; If it's not enchanted or poisoned then if we have an itemID for it try equipping it that way
-	    				int itemID = jMap.getInt(targetObject, "iEquipItemID")
-				    	if itemID as bool 																		; If we have an itemID then try equipping by that first.  This will fail if the display name has changed since we last equipped it,
-				    		;debug.trace("iEquip_WidgetCore cycleHand - the item isn't enchanted or poisoned but we have an itemID so attempting to EquipItemByID")
-				    		debug.trace("iEquip_WidgetCore cycleHand - we have an itemID so attempting to EquipItemByID")
-				    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)							; for example if the item has been renamed or a temper level has changed
-				    	endIf
-	    			;endIf
+		    	if !PlayerRef.GetEquippedObject(Q)																														; If it's not enchanted or poisoned then if we have an itemID for it try equipping it that way
+    				int itemID = jMap.getInt(targetObject, "iEquipItemID")
+			    	if itemID as bool 																		; If we have an itemID then try equipping by that first.  This will fail if the display name has changed since we last equipped it,
+			    		;;debug.trace("iEquip_WidgetCore cycleHand - the item isn't enchanted or poisoned but we have an itemID so attempting to EquipItemByID")
+			    		;debug.trace("iEquip_WidgetCore cycleHand - we have an itemID so attempting to EquipItemByID")
+			    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)							; for example if the item has been renamed or a temper level has changed
+			    	endIf
 	    			Utility.WaitMenuMode(0.2)
 		    		if !PlayerRef.GetEquippedObject(Q)															; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
-		    			debug.trace("iEquip_WidgetCore cycleHand - We still haven't succeeded in equipping anything so falling back on EquipItemEx and taking pot luck")
+		    			;debug.trace("iEquip_WidgetCore cycleHand - We still haven't succeeded in equipping anything so falling back on EquipItemEx and taking pot luck")
 		    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; So fall back on EquipItemEX and take pot luck as to which one is equipped
 	    				EH.abSkipQueueObjectUpdate[Q] = true 	
-	    			else
-	    				debug.trace("iEquip_WidgetCore cycleHand - item successfully equipped")
+	    			;else
+	    				;debug.trace("iEquip_WidgetCore cycleHand - item successfully equipped")
 		    		endIf
-		    	else
-		    		debug.trace("iEquip_WidgetCore cycleHand - item successfully equipped")
+		    	;else
+		    		;debug.trace("iEquip_WidgetCore cycleHand - item successfully equipped")
 		    	endIf
 		    endIf
 		endIf
@@ -3299,7 +3296,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		bAmmoModeFirstLook = false
 	endIf
 	bool forceRight = (Q == 0 && TO.bJustCalledQuickLight && TO.bQuickLightEquipRH)
-	debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", TO.bJustCalledQuickLight: " + TO.bJustCalledQuickLight + ", TO.bQuickLightEquipRH: " + TO.bQuickLightEquipRH + ", forceRight: " + forceRight)
+	;debug.trace("iEquip_WidgetCore cycleHand - Q: " + Q + ", TO.bJustCalledQuickLight: " + TO.bJustCalledQuickLight + ", TO.bQuickLightEquipRH: " + TO.bQuickLightEquipRH + ", forceRight: " + forceRight)
 	; If we've just left ammo mode as a result of equipping on auto-add, check the other hand and if it's empty set the other hand slot to unarmed
 	if bJustLeftAmmoMode && equippingOnAutoAdd && !forceRight
 		if !PlayerRef.GetEquippedObject(otherHand)
@@ -3333,11 +3330,11 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	TO.bJustCalledQuickLight = false
 	EH.bJustQuickDualCast = false
 	bBlockSwitchBackToBoundSpell = false
-	debug.trace("iEquip_WidgetCore cycleHand end")
+	;debug.trace("iEquip_WidgetCore cycleHand end")
 endFunction
 
 function goUnarmed()
-	debug.trace("iEquip_WidgetCore goUnarmed start")
+	;debug.trace("iEquip_WidgetCore goUnarmed start")
 	EH.bGoingUnarmed = true
 	bBlockSwitchBackToBoundSpell = true
 	UnequipHand(1)
@@ -3377,7 +3374,7 @@ function goUnarmed()
 	if bNameFadeoutEnabled && bLeftRightNameFadeEnabled
 		LNUpdate.registerForNameFadeoutUpdate()
 	endIf
-	debug.trace("iEquip_WidgetCore goUnarmed - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
+	;debug.trace("iEquip_WidgetCore goUnarmed - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
 	if bAmmoMode && !bPreselectMode
 		AM.toggleAmmoMode(true, true)
 		if !AM.bSimpleAmmoMode
@@ -3411,11 +3408,11 @@ function goUnarmed()
 	endIf
 	EH.bGoingUnarmed = false
 	bBlockSwitchBackToBoundSpell = false
-	debug.trace("iEquip_WidgetCore goUnarmed end")
+	;debug.trace("iEquip_WidgetCore goUnarmed end")
 endFunction
 
 function updateLeftSlotOn2HSpellEquipped()
-	debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped start")
+	;debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped start")
 	bBlockSwitchBackToBoundSpell = true
 	;And now we need to update the left hand widget
 	float fNameAlpha = afWidget_A[aiNameElements[0]]
@@ -3443,7 +3440,7 @@ function updateLeftSlotOn2HSpellEquipped()
 	if bNameFadeoutEnabled && bLeftRightNameFadeEnabled
 		LNUpdate.registerForNameFadeoutUpdate()
 	endIf
-	debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
+	;debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
 	if bAmmoMode && !bPreselectMode
 		AM.toggleAmmoMode(true, true)
 		bool[] args = new bool[3]
@@ -3467,11 +3464,11 @@ function updateLeftSlotOn2HSpellEquipped()
 		refreshGearedUp()
 	endIf
 	bBlockSwitchBackToBoundSpell = false
-	debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped end")
+	;debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped end")
 endFunction
 
 function reequipOtherHand(int Q, bool equip = true)
-	debug.trace("iEquip_WidgetCore reequipOtherHand start")
+	;debug.trace("iEquip_WidgetCore reequipOtherHand start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
@@ -3491,25 +3488,34 @@ function reequipOtherHand(int Q, bool equip = true)
 		cycleHand(Q, aiCurrentQueuePosition[Q], jMap.getForm(targetObject, "iEquipForm"), jMap.getInt(targetObject, "iEquipType"))
 		;cycleHand(Q, aiCurrentQueuePosition[Q], jMap.getForm(targetObject, "iEquipForm"), jMap.getInt(targetObject, "iEquipType"), true)
 	endIf
-	debug.trace("iEquip_WidgetCore reequipOtherHand end")
+	;debug.trace("iEquip_WidgetCore reequipOtherHand end")
 endFunction
 
 function cycleShout(int Q, int targetIndex, form targetItem)
-    debug.trace("iEquip_WidgetCore cycleShout start")
+    ;debug.trace("iEquip_WidgetCore cycleShout start")
+
+    ; Turn off UI sounds to avoid annoying clicking noise while swapping spells
+	_audioCategoryUI.Mute()
+    
     int itemType = jMap.getInt(jArray.getObj(aiTargetQ[Q], targetIndex), "iEquipType")
     if itemType == 22
         PlayerRef.EquipSpell(targetItem as Spell, 2)
     else
         PlayerRef.EquipShout(targetItem as Shout)
     endIf
+    
+	; Turn UI sounds back on
+	_audioCategoryUI.UnMute() 
+
     if iPosInd > 0
     	SPosUpdate.registerForFadeoutUpdate()
     endIf
-    debug.trace("iEquip_WidgetCore cycleShout end")
+
+    ;debug.trace("iEquip_WidgetCore cycleShout end")
 endFunction
 
 function cyclePotionSelector(bool reverse)
-	debug.trace("iEquip_WidgetCore cyclePotionSelector start")
+	;debug.trace("iEquip_WidgetCore cyclePotionSelector start")
 	
 	if !reverse
 		iPotionTypeChoice += 1
@@ -3527,16 +3533,16 @@ function cyclePotionSelector(bool reverse)
 
 	PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
 
-	debug.trace("iEquip_WidgetCore cyclePotionSelector end")
+	;debug.trace("iEquip_WidgetCore cyclePotionSelector end")
 endFunction
 
 function cycleConsumable(form targetItem, int targetIndex, bool isPotionGroup)
-	debug.trace("iEquip_WidgetCore cycleConsumable start")
+	;debug.trace("iEquip_WidgetCore cycleConsumable start")
     int potionGroupIndex
     if isPotionGroup
     	potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], targetIndex), "iEquipName"))
     endIf
-    debug.trace("iEquip_WidgetCore cycleConsumable - potionGroupIndex: " + potionGroupIndex + ", bConsumableIconFaded: " + bConsumableIconFaded)
+    ;debug.trace("iEquip_WidgetCore cycleConsumable - potionGroupIndex: " + potionGroupIndex + ", bConsumableIconFaded: " + bConsumableIconFaded)
     int count
     if isPotionGroup
     	count = PO.getPotionGroupCount(potionGroupIndex)
@@ -3557,11 +3563,11 @@ function cycleConsumable(form targetItem, int targetIndex, bool isPotionGroup)
     	endIf
     	CFUpdate.registerForConsumableFadeUpdate(fDelay, potionGroupIndex)	
    	endIf
-   	debug.trace("iEquip_WidgetCore cycleConsumable end")
+   	;debug.trace("iEquip_WidgetCore cycleConsumable end")
 endFunction
 
 function handleConsumableIconFadeAndFlash(int potionGroupIndex)
-	debug.trace("iEquip_WidgetCore handleConsumableIconFadeAndFlash start - potionGroup is empty, flash potion warning")
+	;debug.trace("iEquip_WidgetCore handleConsumableIconFadeAndFlash start - potionGroup is empty, flash potion warning")
 	if bConsumableIconFaded
 		checkAndFadeConsumableIcon(false)
 		;Utility.WaitMenuMode(0.3)
@@ -3572,27 +3578,27 @@ function handleConsumableIconFadeAndFlash(int potionGroupIndex)
     if PO.getPotionGroupCount(potionGroupIndex) < 1
 		checkAndFadeConsumableIcon(true)
 	endIf
-	debug.trace("iEquip_WidgetCore handleConsumableIconFadeAndFlash end")
+	;debug.trace("iEquip_WidgetCore handleConsumableIconFadeAndFlash end")
 endFunction
 
 function cyclePoison(form targetItem)
-   	debug.trace("iEquip_WidgetCore cyclePoison start")
+   	;debug.trace("iEquip_WidgetCore cyclePoison start")
 	if bPoisonIconFaded
 		checkAndFadePoisonIcon(false)
 	endIf
     setSlotCount(4, PlayerRef.GetItemCount(targetItem))
-    debug.trace("iEquip_WidgetCore cyclePoison end")
+    ;debug.trace("iEquip_WidgetCore cyclePoison end")
 endFunction
 
 ;Uses the equipped item / potion in the consumable slot - no need to set counts here as this is done through OnItemRemoved in PlayerEventHandler > PO.onPotionRemoved
 function consumeItem()
-    debug.trace("iEquip_WidgetCore consumeItem start")
+    ;debug.trace("iEquip_WidgetCore consumeItem start")
     if bConsumablesEnabled
         int potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
         if potionGroupIndex != -1
         	bool statDamaged = iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]) > 0
-        	debug.trace("iEquip_WidgetCore consumeItem - stat: " + asActorValues[potionGroupIndex] + ", current damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]) + ", statDamaged: " + statDamaged + ", potion selector shown: " + bPotionSelectorShown)
-        	debug.trace("iEquip_WidgetCore consumeItem - iPotionSelectorChoice: " + iPotionSelectorChoice + ", current stat %: " + (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) + ", threshold: " + fSmartConsumeThreshold)
+        	;debug.trace("iEquip_WidgetCore consumeItem - stat: " + asActorValues[potionGroupIndex] + ", current damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]) + ", statDamaged: " + statDamaged + ", potion selector shown: " + bPotionSelectorShown)
+        	;debug.trace("iEquip_WidgetCore consumeItem - iPotionSelectorChoice: " + iPotionSelectorChoice + ", current stat %: " + (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) + ", threshold: " + fSmartConsumeThreshold)
         	; If the potion selector is currently shown then select and consume a potion of the selected type
         	if bPotionSelectorShown
         		PO.selectAndConsumePotion(potionGroupIndex, iPotionTypeChoice)
@@ -3615,11 +3621,11 @@ function consumeItem()
             endIf
         endIf
     endIf
-    debug.trace("iEquip_WidgetCore consumeItem end")
+    ;debug.trace("iEquip_WidgetCore consumeItem end")
 endFunction
 
 int function showTranslatedMessage(int theMenu, string theString)
-	debug.trace("iEquip_WidgetCore showTranslatedMessage start - message type: " + theMenu)
+	;debug.trace("iEquip_WidgetCore showTranslatedMessage start - message type: " + theMenu)
 	iEquip_MessageObjectReference = PlayerRef.PlaceAtMe(iEquip_MessageObject)
 	iEquip_MessageAlias.ForceRefTo(iEquip_MessageObjectReference)
 	iEquip_MessageAlias.GetReference().GetBaseObject().SetName(theString)
@@ -3648,12 +3654,12 @@ int function showTranslatedMessage(int theMenu, string theString)
 	iEquip_MessageAlias.Clear()
 	iEquip_MessageObjectReference.Disable()
 	iEquip_MessageObjectReference.Delete()
-	debug.trace("iEquip_WidgetCore showTranslatedMessage end")
+	;debug.trace("iEquip_WidgetCore showTranslatedMessage end")
 	return iButton
 endFunction
 
 function applyPoison(int Q)
-	debug.trace("iEquip_WidgetCore applyPoison start")
+	;debug.trace("iEquip_WidgetCore applyPoison start")
     if bPoisonsEnabled
         int targetObject = jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4])
         Potion poisonToApply = jMap.getForm(targetObject, "iEquipForm") as Potion
@@ -3697,7 +3703,7 @@ function applyPoison(int Q)
         int refHandle = GetRefHandleFromWornObject(Q)
 
         Potion currentPoison = iEquip_InventoryExt.GetPoison(currentWeapon as form, refHandle) 
-        debug.trace("iEquip_WidgetCore applyPoison - Q: " + Q + ", isLeftHand: " + isLeftHand + ", current weapon: " + currentWeapon + ", current poison: " + currentPoison)
+        ;debug.trace("iEquip_WidgetCore applyPoison - Q: " + Q + ", isLeftHand: " + isLeftHand + ", current weapon: " + currentWeapon + ", current poison: " + currentPoison)
         if currentPoison
             string currentPoisonName = currentPoison.GetName()
             if currentPoison != poisonToApply
@@ -3751,36 +3757,36 @@ function applyPoison(int Q)
             checkAndUpdatePoisonInfo(Q, false, false, refHandle)
         endIf
         ;Play sound
-        debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison sound")
+        ;debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison sound")
         iEquip_ITMPoisonUse.Play(PlayerRef)
         ;Add Poison FX to weapon
-        debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison VFX")
+        ;debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison VFX")
         if Q == 0
 			PLFX.cast(PlayerRef, PlayerRef)
         else
 			PRFX.cast(PlayerRef, PlayerRef)
         endIf
     endIf
-    debug.trace("iEquip_WidgetCore applyPoison end")
+    ;debug.trace("iEquip_WidgetCore applyPoison end")
 endFunction
 
 ;Convenience function
 function hidePoisonInfo(int Q, bool forceHide = false)
-	debug.trace("iEquip_WidgetCore hidePoisonInfo start")
+	;debug.trace("iEquip_WidgetCore hidePoisonInfo start")
 	if abPoisonInfoDisplayed[Q] || forceHide
 		checkAndUpdatePoisonInfo(Q, true, forceHide)
 	endIf
-	debug.trace("iEquip_WidgetCore hidePoisonInfo end")
+	;debug.trace("iEquip_WidgetCore hidePoisonInfo end")
 endFunction
 
 function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = false, int refHandle = 0xFFFF)
-	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo start")
+	;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo start")
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	int itemType = jMap.getInt(targetObject, "iEquipType")
 	Form equippedItem = PlayerRef.GetEquippedObject(Q)
 
 	if refHandle == 0xFFFF
-		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetRefHandleFromWornObject, Q: " + Q)
+		;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetRefHandleFromWornObject, Q: " + Q)
 		refHandle = GetRefHandleFromWornObject(Q)
 	endIf
 	
@@ -3788,21 +3794,21 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 		return
 	endIf
 
-	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetPoisonCount, equippedItem: " + equippedItem + ", refHandle: " + refHandle)
+	;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetPoisonCount, equippedItem: " + equippedItem + ", refHandle: " + refHandle)
 
 	int charges = GetPoisonCount(equippedItem, refHandle)
 	Potion currentPoison
 	
 	if charges > 0
-		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call WornGetPoison, PlayerRef: " + PlayerRef + ", equip slot: " + Q)
+		;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call WornGetPoison, PlayerRef: " + PlayerRef + ", equip slot: " + Q)
 		currentPoison = iEquip_InventoryExt.GetPoison(equippedItem, refHandle)
 	endIf
 	
-	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", cycling: " + cycling + ", itemType: " + itemType + ", currentPoison: " + currentPoison + ", charges: " + charges)
+	;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", cycling: " + cycling + ", itemType: " + itemType + ", currentPoison: " + currentPoison + ", charges: " + charges)
 	
 	;if item isn't poisoned remove the poisoned flag
 	if equippedItem && (equippedItem == jMap.getForm(targetObject, "iEquipForm"))
-		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - setting isPoisoned flag")
+		;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - setting isPoisoned flag")
 		if currentPoison
 			jMap.setInt(targetObject, "isPoisoned", 1)
 		else
@@ -3818,7 +3824,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	;if the currently equipped item isn't poisonable, or if it isn't currently poisoned check and remove poison info is showing
 	if cycling || !isPoisonable(itemType) || !currentPoison || (Q == 0 && bAmmoMode) || charges == 0
 		if abPoisonInfoDisplayed[Q] || forceHide || bRefreshingWidget || !currentPoison
-			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - should be hiding poison icon and name now")
+			;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - should be hiding poison icon and name now")
 			;Hide the poison icon
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updatePoisonIcon")
 			if(iHandle)
@@ -3841,7 +3847,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				args[0] = 23 ;rightCount
 				args[1] = aiWidget_TC[23] ;rightCount text colour
 			endIf
-			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
+			;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
 			abPoisonInfoDisplayed[Q] = false
 		endIf
@@ -3859,7 +3865,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 		else
 			iconName = "MoreDrops"
 		endIf
-		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - poisonName: " + poisonName + ", charges: " + charges + ", iconName: " + iconName)
+		;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - poisonName: " + poisonName + ", charges: " + charges + ", iconName: " + iconName)
 		if(iHandle)
 			UICallback.PushInt(iHandle, Q) ;Which slot we're updating
 			UICallback.PushString(iHandle, iconName) ;New icon
@@ -3876,7 +3882,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			poisonNameElement = 25
 		endIf
 		string currentlyDisplayedPoison = UI.GetString(HUD_MENU, WidgetRoot + poisonNamePath)
-		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - currentlyDisplayedPoison: " + currentlyDisplayedPoison + ", poisonName: " + poisonName)
+		;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - currentlyDisplayedPoison: " + currentlyDisplayedPoison + ", poisonName: " + poisonName)
 		if currentlyDisplayedPoison != poisonName
 			if abIsPoisonNameShown[Q]
 				showName(Q, false, true, 0.15)
@@ -3906,14 +3912,14 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				args[0] = 23 ;rightCount
 				args[1] = aiWidget_TC[25] ;rightPoisonName text colour
 			endIf
-			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
+			;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
 			;Re-show the counter
 			setCounterVisibility(Q, true)
 		endIf
 		abPoisonInfoDisplayed[Q] = true
 	endIf
-	debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo end")
+	;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo end")
 endFunction
 
 bool function isPoisonable(int itemType)
@@ -3921,7 +3927,7 @@ bool function isPoisonable(int itemType)
 endFunction
 
 bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
-	debug.trace("iEquip_WidgetCore isWeaponPoisoned start")
+	;debug.trace("iEquip_WidgetCore isWeaponPoisoned start")
 	bool isPoisoned
 	;if we're checking the left hand item but we currently have a 2H or ranged weapon equipped, or if we're cycling we need to check the object data for the last know poison info
 	if cycling || (Q == 0 && (ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1))
@@ -3935,22 +3941,22 @@ bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 			isPoisoned = false
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore isWeaponPoisoned - Q: " + Q + ", iIndex: " + iIndex + ", isPoisoned: " + isPoisoned)
-	debug.trace("iEquip_WidgetCore isWeaponPoisoned end")
+	;debug.trace("iEquip_WidgetCore isWeaponPoisoned - Q: " + Q + ", iIndex: " + iIndex + ", isPoisoned: " + isPoisoned)
+	;debug.trace("iEquip_WidgetCore isWeaponPoisoned end")
 	return isPoisoned
 endFunction
 
 ;Unequips item in hand
 function UnequipHand(int Q)
-	debug.trace("iEquip_WidgetCore UnequipHand start")
-    debug.trace("iEquip_WidgetCore UnequipHand - Q: " + Q)
+	;debug.trace("iEquip_WidgetCore UnequipHand start")
+    ;debug.trace("iEquip_WidgetCore UnequipHand - Q: " + Q)
     int QEx = 1
     if (Q == 0)
         QEx = 2 ; UnequipSpell and UnequipItemEx need different hand arguments
     endIf
     Armor equippedShield = PlayerRef.GetEquippedShield()
     Form equippedItem = PlayerRef.GetEquippedObject(Q)
-    debug.trace("iEquip_WidgetCore UnequipHand - equippedShield: " + equippedShield + ", equippedItem: " + equippedItem)
+    ;debug.trace("iEquip_WidgetCore UnequipHand - equippedShield: " + equippedShield + ", equippedItem: " + equippedItem)
     if Q == 0 && equippedShield
     	PlayerRef.UnequipItemEx(equippedShield)
     elseif equippedItem
@@ -3962,7 +3968,7 @@ function UnequipHand(int Q)
             PlayerRef.UnequipItemEx(equippedItem, QEx, true)
         endIf
     endIf
-    debug.trace("iEquip_WidgetCore UnequipHand end")
+    ;debug.trace("iEquip_WidgetCore UnequipHand end")
 endFunction
 
 ;/ Here we are creating JMap objects for each queue item, containing all of the data we will need later on when cycling the widgets and equipping/unequipping
@@ -3970,7 +3976,7 @@ including formID, itemID, display name, itemType, isEnchanted, etc. These JMap o
 This means that when we cycle later on none of this has to be done on the fly saving time when time is of the essence /;
 
 function addToQueue(int Q)
-	debug.trace("iEquip_WidgetCore addToQueue start")
+	;debug.trace("iEquip_WidgetCore addToQueue start")
 	;Q - 0 = Left Hand, 1 = Right Hand, 2 = Shout, 3 = Consumable/Poison
 	int itemFormID
 	int itemID
@@ -3997,7 +4003,7 @@ function addToQueue(int Q)
 			itemID = CalcCRC32Hash(itemName, Math.LogicalAND(itemFormID, 0x00FFFFFF))
 		
 		else
-			debug.trace("iEquip_WidgetCore addToQueue something went wrong...")
+			;debug.trace("iEquip_WidgetCore addToQueue something went wrong...")
 			return
 		endIf
 	endIf
@@ -4007,7 +4013,7 @@ function addToQueue(int Q)
 	;int listLength = UI.GetInt("InventoryMenu", "_root.Menu_mc.inventoryLists.itemList.entryList.length")
 	
 	if itemForm
-		debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check, itemForm: " + itemForm + ", " + itemName + ", itemID: " + itemID)
+		;debug.trace("iEquip_WidgetCore addToQueue - passed the itemForm check, itemForm: " + itemForm + ", " + itemName + ", itemID: " + itemID)
 		int itemType = itemForm.GetType()
 		int iEquipSlot
 		int itemHandle = 0xFFFF
@@ -4017,7 +4023,7 @@ function addToQueue(int Q)
 		if itemType == 41 || itemType == 26 ; Weapons and shields only
 			if listIndex > -1
 				itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
-				debug.trace("iEquip_WidgetCore addToQueue - listIndex: " + listIndex + ", itemHandle: " + itemHandle)
+				;debug.trace("iEquip_WidgetCore addToQueue - listIndex: " + listIndex + ", itemHandle: " + itemHandle)
 				if itemHandle != 0xFFFF
 					JArray.AddInt(iRefHandleArray, itemHandle)
 					JArray.unique(iRefHandleArray)
@@ -4065,7 +4071,7 @@ function addToQueue(int Q)
 			        endIf
 
 					string itemIcon = GetItemIconName(itemForm, itemType, itemName)
-					debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + iEquip_StringExt.LocalizeString(asQueueName[Q]) + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
+					;debug.trace("iEquip_WidgetCore addToQueue(): Adding " + itemName + " to the " + iEquip_StringExt.LocalizeString(asQueueName[Q]) + ", formID = " + itemform + ", itemID = " + itemID as string + ", icon = " + itemIcon + ", isEnchanted = " + isEnchanted)
 
 					if bShowQueueConfirmationMessages
 						if foundInOtherHandQueue && itemType != 22 && (PlayerRef.GetItemCount(itemForm) < 2)
@@ -4101,7 +4107,7 @@ function addToQueue(int Q)
 								jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
 								if itemHandle != 0xFFFF
 									jMap.setStr(iEquipItem, "iEquipBaseName", iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
-									debug.trace("iEquip_WidgetCore addToQueue - itemBaseName retrieved from itemHandle " + itemHandle + ": " + iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
+									;debug.trace("iEquip_WidgetCore addToQueue - itemBaseName retrieved from itemHandle " + itemHandle + ": " + iEquip_InventoryExt.GetShortName(itemForm, itemHandle))
 								else
 									jMap.setStr(iEquipItem, "iEquipBaseName", "")
 								endIf
@@ -4169,11 +4175,11 @@ function addToQueue(int Q)
 			endIf
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore addToQueue end")
+	;debug.trace("iEquip_WidgetCore addToQueue end")
 endFunction
 
 bool function isItemValidForSlot(int Q, form itemForm, int itemType, string itemName)
-	debug.trace("iEquip_WidgetCore isItemValidForSlot start - slot: " + Q + ", itemType: " + itemType)
+	;debug.trace("iEquip_WidgetCore isItemValidForSlot start - slot: " + Q + ", itemType: " + itemType)
 	bool isValid
 	bool isShout
 	if itemType == 22
@@ -4209,12 +4215,12 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
     		isValid = true
     	endIf
     endIf
-    debug.trace("iEquip_WidgetCore isItemValidForSlot end - returning " + isValid)
+    ;debug.trace("iEquip_WidgetCore isItemValidForSlot end - returning " + isValid)
     return isValid
 endFunction
 
 bool function isAlreadyInQueue(int Q, form itemForm, int itemID, int itemHandle = 0xFFFF)
-	debug.trace("iEquip_WidgetCore isAlreadyInQueue start - Q: " + Q + ", itemForm: " + itemForm + ", itemID: " + itemID)
+	;debug.trace("iEquip_WidgetCore isAlreadyInQueue start - Q: " + Q + ", itemForm: " + itemForm + ", itemID: " + itemID)
 	bool found
 	int i
 	int targetArray = aiTargetQ[Q]
@@ -4230,12 +4236,12 @@ bool function isAlreadyInQueue(int Q, form itemForm, int itemID, int itemHandle 
 		endIf
 		i += 1
 	endWhile
-	debug.trace("iEquip_WidgetCore isAlreadyInQueue end")
+	;debug.trace("iEquip_WidgetCore isAlreadyInQueue end")
 return found
 endFunction
 
 string function GetItemIconName(form itemForm, int itemType, string itemName)
-	debug.trace("iEquip_WidgetCore GetItemIconName start - itemType: " + itemType + ", itemName: " + itemName)
+	;debug.trace("iEquip_WidgetCore GetItemIconName start - itemType: " + itemType + ", itemName: " + itemName)
     string IconName = "Empty"
 
     if itemType < 13 														; It is a weapon
@@ -4303,7 +4309,7 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
         	MagicEffect sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())
         	IconName = sEffect.GetAssociatedSkill()
         	if IconName == "Destruction"
-        		debug.trace("iEquip_WidgetCore GetItemIconString - IconName: " + IconName + ", strongest magic effect: " + sEffect + ", " + (sEffect as form).GetName())
+        		;debug.trace("iEquip_WidgetCore GetItemIconString - IconName: " + IconName + ", strongest magic effect: " + sEffect + ", " + (sEffect as form).GetName())
         		if sEffect.HasKeyword(MagicDamageFire)
         			IconName += "Fire"
         		elseIf sEffect.HasKeyword(MagicDamageFrost)
@@ -4368,17 +4374,17 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
 	        endIf
 	    endIf
     endIf
-    debug.trace("iEquip_WidgetCore GetItemIconName end - returning IconName as " + IconName)
+    ;debug.trace("iEquip_WidgetCore GetItemIconName end - returning IconName as " + IconName)
     return IconName
 endFunction
 
 ; Called by MCM if user has disabled Allow Single Items In Both Queues to remove duplicate 1h items from the right hand queue
 function purgeQueue()
-	debug.trace("iEquip_WidgetCore purgeQueue start")
+	;debug.trace("iEquip_WidgetCore purgeQueue start")
 	int i
 	int targetArray = aiTargetQ[1]
 	int count = jArray.count(targetArray)
-	debug.trace("iEquip_WidgetCore purgeQueue - " + count + " items in right hand queue")
+	;debug.trace("iEquip_WidgetCore purgeQueue - " + count + " items in right hand queue")
 	form itemForm
 	int itemType
 	int itemID
@@ -4390,7 +4396,7 @@ function purgeQueue()
 		itemType = jMap.getInt(targetObject, "iEquipType")
 		itemID = jMap.getInt(targetObject, "iEquipItemID")
 		itemHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
-		debug.trace("iEquip_WidgetCore purgeQueue - index: " + i + ", itemForm: " + itemForm + ", itemID: " + itemID)
+		;debug.trace("iEquip_WidgetCore purgeQueue - index: " + i + ", itemForm: " + itemForm + ", itemID: " + itemID)
 		if isAlreadyInQueue(0, itemForm, itemID, itemHandle) && PlayerRef.GetItemCount(itemForm) < 2 && itemType != 22
 			removeItemFromQueue(1, i, true)
 			count -= 1
@@ -4398,11 +4404,11 @@ function purgeQueue()
 		endIf
 		i += 1
 	endwhile
-	debug.trace("iEquip_WidgetCore purgeQueue end")
+	;debug.trace("iEquip_WidgetCore purgeQueue end")
 endFunction
 
 function openQueueManagerMenu(int Q = -1)
-	debug.trace("iEquip_WidgetCore openQueueManagerMenu start")
+	;debug.trace("iEquip_WidgetCore openQueueManagerMenu start")
 	if Q == -1
 		Q = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_queuemenu_title")) ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue
 	else
@@ -4428,11 +4434,11 @@ function openQueueManagerMenu(int Q = -1)
 			initQueueMenu(Q, queueLength)
 		endIf
 	endIf
-	debug.trace("iEquip_WidgetCore openQueueManagerMenu end")
+	;debug.trace("iEquip_WidgetCore openQueueManagerMenu end")
 endFunction
 
 function initQueueMenu(int Q, int queueLength, bool update = false, int iIndex = -1)
-	debug.trace("iEquip_WidgetCore initQueueMenu start")
+	;debug.trace("iEquip_WidgetCore initQueueMenu start")
 	int targetArray = aiTargetQ[Q]
 	string[] iconNames = Utility.CreateStringArray(queueLength)
 	string[] itemNames = Utility.CreateStringArray(queueLength)
@@ -4466,28 +4472,28 @@ function initQueueMenu(int Q, int queueLength, bool update = false, int iIndex =
 		string title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_titleWithCount{" + queueLength + "}{" + asQueueName[Q] + "}")
 		((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNames, itemNames, enchFlags, poisonFlags, 0, 0, bJustUsedQueueMenuDirectAccess)
 	endIf
-	debug.trace("iEquip_WidgetCore initQueueMenu end")
+	;debug.trace("iEquip_WidgetCore initQueueMenu end")
 endFunction
 
 function recallQueueMenu()
-	debug.trace("iEquip_WidgetCore recallQueueMenu start")
+	;debug.trace("iEquip_WidgetCore recallQueueMenu start")
 	if bJustUsedQueueMenuDirectAccess
 		bJustUsedQueueMenuDirectAccess = false
 	else
 		Utility.WaitMenuMode(0.05)
 		openQueueManagerMenu()
 	endIf
-	debug.trace("iEquip_WidgetCore recallQueueMenu end")
+	;debug.trace("iEquip_WidgetCore recallQueueMenu end")
 endFunction
 
 function recallPreviousQueueMenu()
-	debug.trace("iEquip_WidgetCore recallPreviousQueueMenu start")
+	;debug.trace("iEquip_WidgetCore recallPreviousQueueMenu start")
 	initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
-	debug.trace("iEquip_WidgetCore recallPreviousQueueMenu end")
+	;debug.trace("iEquip_WidgetCore recallPreviousQueueMenu end")
 endFunction
 
 function QueueMenuSwap(int upDown, int iIndex)
-	debug.trace("iEquip_WidgetCore QueueMenuSwap start")
+	;debug.trace("iEquip_WidgetCore QueueMenuSwap start")
 	;upDown - 0 = Move Up, 1 = Move Down
 	int targetArray = aiTargetQ[iQueueMenuCurrentQueue]
 	int i = jArray.count(targetArray)
@@ -4503,11 +4509,11 @@ function QueueMenuSwap(int upDown, int iIndex)
 		endIf
 	endIf
 	QueueMenuUpdate(i, iIndex)
-	debug.trace("iEquip_WidgetCore QueueMenuSwap end")
+	;debug.trace("iEquip_WidgetCore QueueMenuSwap end")
 endFunction
 
 function QueueMenuRemoveFromQueue(int iIndex)
-	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue start")
+	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue start")
 	int targetArray = aiTargetQ[iQueueMenuCurrentQueue]
 	int targetObject = jArray.getObj(targetArray, iIndex)
 	string itemName = JMap.getStr(targetObject, "iEquipName")
@@ -4576,11 +4582,11 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	else
 		QueueMenuUpdate(queueLength, iIndex)
 	endIf
-	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue end")
+	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue end")
 endFunction
 
 function QueueMenuUpdate(int iCount, int iIndex)
-	debug.trace("iEquip_WidgetCore QueueMenuUpdate start")
+	;debug.trace("iEquip_WidgetCore QueueMenuUpdate start")
 	string title
 	if iCount <= 0
 		title = iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[iQueueMenuCurrentQueue] + "}")
@@ -4589,11 +4595,11 @@ function QueueMenuUpdate(int iCount, int iIndex)
 	endIf
 	QueueMenu_RefreshTitle(title)
 	initQueueMenu(iQueueMenuCurrentQueue, iCount, true, iIndex)
-	debug.trace("iEquip_WidgetCore QueueMenuUpdate end")
+	;debug.trace("iEquip_WidgetCore QueueMenuUpdate end")
 endFunction
 
 function QueueMenuClearQueue()
-	debug.trace("iEquip_WidgetCore QueueMenuClearQueue start")
+	;debug.trace("iEquip_WidgetCore QueueMenuClearQueue start")
 	int targetArray = aiTargetQ[iQueueMenuCurrentQueue]
 	int targetObject
 	string itemName
@@ -4659,11 +4665,11 @@ function QueueMenuClearQueue()
 	endIf
 	debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_QCleared{" + asQueueName[iQueueMenuCurrentQueue] + "}"))
 	recallQueueMenu()
-	debug.trace("iEquip_WidgetCore QueueMenuClearQueue end")
+	;debug.trace("iEquip_WidgetCore QueueMenuClearQueue end")
 endFunction
 
 function ApplyChanges()
-	debug.trace("iEquip_WidgetCore ApplyChanges start - bMCMPresetLoaded: " + bMCMPresetLoaded)
+	;debug.trace("iEquip_WidgetCore ApplyChanges start - bMCMPresetLoaded: " + bMCMPresetLoaded)
 	int i
 	
     if bMCMPresetLoaded
@@ -4772,13 +4778,13 @@ function ApplyChanges()
 	    if !bAmmoMode && bUnequipAmmo && targetAmmo && PlayerRef.isEquipped(targetAmmo)
 			PlayerRef.UnequipItemEx(targetAmmo)
 		endIf
-		debug.trace("iEquip_WidgetCore ApplyChanges - bPreselectMode: " + bPreselectMode + ", bProModeEnabled: " + bProModeEnabled + ", PM.bPreselectEnabled: " + PM.bPreselectEnabled)
+		;debug.trace("iEquip_WidgetCore ApplyChanges - bPreselectMode: " + bPreselectMode + ", bProModeEnabled: " + bProModeEnabled + ", PM.bPreselectEnabled: " + PM.bPreselectEnabled)
 	    if bPreselectMode && !(bProModeEnabled && PM.bPreselectEnabled)
-	    	debug.trace("iEquip_WidgetCore ApplyChanges - should be toggling out of Preselect Mode")
+	    	;debug.trace("iEquip_WidgetCore ApplyChanges - should be toggling out of Preselect Mode")
 	    	PM.togglePreselectMode(true)
 	    endIf
 	    if bAmmoMode
-	    	debug.trace("iEquip_WidgetCore ApplyChanges - bSimpleAmmoMode: " + AM.bSimpleAmmoMode + ", bSimpleAmmoModeOnEnter: " + AM.bSimpleAmmoModeOnEnter + ", bPreselectMode: " + bPreselectMode)
+	    	;debug.trace("iEquip_WidgetCore ApplyChanges - bSimpleAmmoMode: " + AM.bSimpleAmmoMode + ", bSimpleAmmoModeOnEnter: " + AM.bSimpleAmmoModeOnEnter + ", bPreselectMode: " + bPreselectMode)
 		    if bAmmoSortingChanged
 		    	AM.updateAmmoListsOnSettingChange()
 		    endIf
@@ -4794,10 +4800,10 @@ function ApplyChanges()
 				AM.bSimpleAmmoModeOnEnter = true
 		    elseIf !AM.bSimpleAmmoMode && AM.bSimpleAmmoModeOnEnter
 		    	if !bPreselectMode
-		    		debug.trace("iEquip_WidgetCore ApplyChanges - switching from simple to advanced ammo mode, should be about to animate in the left preselect")
+		    		;debug.trace("iEquip_WidgetCore ApplyChanges - switching from simple to advanced ammo mode, should be about to animate in the left preselect")
 		    		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 					If(iHandle)
-						debug.trace("iEquip_WidgetCore ApplyChanges - got iHandle")
+						;debug.trace("iEquip_WidgetCore ApplyChanges - got iHandle")
 						UICallback.PushInt(iHandle, 5) 													; Which slot we're updating
 						if jArray.count(aiTargetQ[0]) > 0
 							UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiTargetQ[0], aiCurrentQueuePosition[0]), "iEquipIcon"))
@@ -4912,5 +4918,5 @@ function ApplyChanges()
 	bTemperDisplaySettingChanged = false
 	bPotionGroupingOptionsChanged = false
 	bRestorePotionWarningSettingChanged = false
-    debug.trace("iEquip_WidgetCore ApplyChanges end")
+    ;debug.trace("iEquip_WidgetCore ApplyChanges end")
 endFunction

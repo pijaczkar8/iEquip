@@ -39,7 +39,7 @@ bool property bTorchMeterShown auto hidden
 
 ; EVENTS ------------------------------------------------------------------------------------------
 event OnInit()
-	debug.trace("iEquip_ChargeMeters OnInit start")
+	;debug.trace("iEquip_ChargeMeters OnInit start")
 	abIsChargeMeterShown = new bool[2]
 
 	asMeterFillDirection = new string[2]
@@ -51,22 +51,22 @@ event OnInit()
 	asItemCharge = new string[2]
 	asItemCharge[0] = "LeftItemCharge"
 	asItemCharge[1] = "RightItemCharge"
-	debug.trace("iEquip_ChargeMeters OnInit end")
+	;debug.trace("iEquip_ChargeMeters OnInit end")
 endEvent
 
 function OnWidgetLoad() ;Called from WidgetCore
-	debug.trace("iEquip_ChargeMeters OnWidgetLoad start")
+	;debug.trace("iEquip_ChargeMeters OnWidgetLoad start")
 	WidgetRoot = WC.WidgetRoot
-	debug.trace("iEquip_ChargeMeters OnWidgetLoad end")
+	;debug.trace("iEquip_ChargeMeters OnWidgetLoad end")
 endFunction
 
 ; FUNCTIONS ---------------------------------------------------------------------------------------
 
 function initChargeMeter(int Q)
-	debug.trace("iEquip_ChargeMeters initChargeMeter start")
+	;debug.trace("iEquip_ChargeMeters initChargeMeter start")
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".initChargeMeter")	
 	If(iHandle)
-		debug.trace("iEquip_ChargeMeters initChargeMeter - got iHandle for .initChargeMeter")
+		;debug.trace("iEquip_ChargeMeters initChargeMeter - got iHandle for .initChargeMeter")
 		UICallback.PushInt(iHandle, Q)
 		UICallback.PushFloat(iHandle, 250.0)
 		UICallback.PushFloat(iHandle, 30.6)
@@ -79,14 +79,14 @@ function initChargeMeter(int Q)
 		UICallback.PushBool(iHandle, abIsChargeMeterShown[Q])
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_ChargeMeters initChargeMeter end")
+	;debug.trace("iEquip_ChargeMeters initChargeMeter end")
 endFunction
 
 function initSoulGem(int Q)
-	debug.trace("iEquip_ChargeMeters initSoulGem start")
+	;debug.trace("iEquip_ChargeMeters initSoulGem start")
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".initSoulGem")	
 	If(iHandle)
-		debug.trace("iEquip_ChargeMeters initSoulGem - got iHandle for .initSoulGem")
+		;debug.trace("iEquip_ChargeMeters initSoulGem - got iHandle for .initSoulGem")
 		UICallback.PushInt(iHandle, Q)
 		UICallback.PushInt(iHandle, iPrimaryFillColor)
 		UICallback.PushInt(iHandle, -1)
@@ -95,18 +95,18 @@ function initSoulGem(int Q)
 		UICallback.PushBool(iHandle, abIsChargeMeterShown[Q])
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_ChargeMeters initSoulGem end")
+	;debug.trace("iEquip_ChargeMeters initSoulGem end")
 endFunction
 
 function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = false) ;Sets the meter percent, a_force sets the meter percent without animation
-	debug.trace("iEquip_ChargeMeters updateMeterPercent start - Q: " + Q + ", asItemCharge[Q]: " + asItemCharge[Q] + ", forceUpdate: " + forceUpdate + ", skipFlash: " + skipFlash)
+	;debug.trace("iEquip_ChargeMeters updateMeterPercent start - Q: " + Q + ", asItemCharge[Q]: " + asItemCharge[Q] + ", forceUpdate: " + forceUpdate + ", skipFlash: " + skipFlash)
 	float currentCharge = PlayerRef.GetActorValue(asItemCharge[Q])
 	float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
 	float currPercent
 	if maxCharge > 0.0 && currentCharge > 0.0
 		currPercent = currentCharge / maxCharge
 	endIf
-	debug.trace("iEquip_ChargeMeters updateMeterPercent - currentCharge: " + currentCharge + ", maxCharge: " + maxCharge + ", currPercent: " + currPercent + ". fLowChargeThreshold: " + fLowChargeThreshold)
+	;debug.trace("iEquip_ChargeMeters updateMeterPercent - currentCharge: " + currentCharge + ", maxCharge: " + maxCharge + ", currPercent: " + currPercent + ". fLowChargeThreshold: " + fLowChargeThreshold)
 	if (currPercent != afCurrCharge[Q]) || forceUpdate
 		afCurrCharge[Q] = currPercent
 		int fillColor = iPrimaryFillColor
@@ -142,11 +142,11 @@ function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = fa
 			startMeterFlash(Q, true)
 		endIf
 	endIf
-	debug.trace("iEquip_ChargeMeters updateMeterPercent end")
+	;debug.trace("iEquip_ChargeMeters updateMeterPercent end")
 endFunction
 
 function startMeterFlash(int Q, bool forceFlash = false) ; Starts meter flashing. forceFlash starts the meter flashing if it's already animating
-	debug.trace("iEquip_ChargeMeters startMeterFlash start - Q: " + Q)
+	;debug.trace("iEquip_ChargeMeters startMeterFlash start - Q: " + Q)
 	int iHandle
 	if iChargeDisplayType == 1
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
@@ -159,11 +159,11 @@ function startMeterFlash(int Q, bool forceFlash = false) ; Starts meter flashing
 		UICallback.PushBool(iHandle, forceFlash)
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_ChargeMeters startMeterFlash end")
+	;debug.trace("iEquip_ChargeMeters startMeterFlash end")
 endFunction
 
 function updateChargeMeters(bool forceUpdate = false)
-	debug.trace("iEquip_ChargeMeters updateChargeMeters start - forceUpdate: " + forceUpdate)
+	;debug.trace("iEquip_ChargeMeters updateChargeMeters start - forceUpdate: " + forceUpdate)
 	int Q
 	if iChargeDisplayType > 0
 		while Q < 2
@@ -179,21 +179,21 @@ function updateChargeMeters(bool forceUpdate = false)
 		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[27] + "._visible", false) ;rightEnchantmentMeter_mc
 		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[28] + "._visible", false) ;rightSoulgem_mc
 	endIf
-	debug.trace("iEquip_ChargeMeters updateChargeMeters end")
+	;debug.trace("iEquip_ChargeMeters updateChargeMeters end")
 endFunction
 
 function updateChargeMetersOnWeaponsDrawn()
-	debug.trace("iEquip_ChargeMeters updateChargeMetersOnWeaponsDrawn start")
+	;debug.trace("iEquip_ChargeMeters updateChargeMetersOnWeaponsDrawn start")
 	int Q
 	while Q < 2
 		checkAndUpdateChargeMeter(Q, true)
 		Q += 1
 	endWhile
-	debug.trace("iEquip_ChargeMeters updateChargeMetersOnWeaponsDrawn end")
+	;debug.trace("iEquip_ChargeMeters updateChargeMetersOnWeaponsDrawn end")
 endFunction
 
 function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
-	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter start - Q: " + Q + ", forceUpdate: " + forceUpdate + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
+	;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter start - Q: " + Q + ", forceUpdate: " + forceUpdate + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
 	if !(Q == 0 && PlayerRef.GetEquippedItemType(0) == 11 && WC.TO.bShowTorchMeter)
 		;Hide first
 		if abIsChargeMeterShown[Q]
@@ -216,21 +216,21 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 			bool isBound
 			if currentWeapon
 				isBound = iEquip_WeaponExt.IsWeaponBound(currentWeapon)
-				debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - weapon name: " + currentWeapon.GetName() + ", isBound: " + isBound)
+				;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - weapon name: " + currentWeapon.GetName() + ", isBound: " + isBound)
 			endIf
 			enchantment currentEnchantment
 			if currentWeapon && !isBound
-				debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + isLeftHand + ", currentWeapon: " + currentWeapon.GetName())
+				;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + isLeftHand + ", currentWeapon: " + currentWeapon.GetName())
 				currentEnchantment = currentWeapon.GetEnchantment()
 				if !currentEnchantment
 					currentEnchantment = wornobject.GetEnchantment(PlayerRef, Q, 0)
 				endIf
 				if currentEnchantment
-					debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", currentEnchantment: " + currentEnchantment.GetName())
+					;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", currentEnchantment: " + currentEnchantment.GetName())
 					isEnchanted = 1
 				endIf
 			endIf
-			debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", abIsChargeMeterShown[" + Q + "]: " + abIsChargeMeterShown[Q])
+			;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - isEnchanted: " + isEnchanted + ", isBound: " + isBound + ", abIsChargeMeterShown[" + Q + "]: " + abIsChargeMeterShown[Q])
 			;Now as long as meters aren't disabled, and the item is enchanted, and it's not an infinite charge item carry on and update the meters
 			if iChargeDisplayType > 0 && isEnchanted == 1 && WornObject.GetItemMaxCharge(PlayerRef, Q, 0) > 0.0
 				;Update values
@@ -238,7 +238,7 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 				if iChargeDisplayType == 1
 					int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
 					if(iHandle)
-						debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection, Q: " + Q + ", fill direction: " + asMeterFillDirection[Q])
+						;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - got iHandle for .setChargeMeterFillDirection, Q: " + Q + ", fill direction: " + asMeterFillDirection[Q])
 						UICallback.PushInt(iHandle, Q)
 						UICallback.PushString(iHandle, asMeterFillDirection[Q])
 						UICallback.Send(iHandle)
@@ -260,11 +260,11 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 			WC.EH.bWaitingForEnchantedWeaponDrawn = true
 		endIf
 	endIf
-	debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter end")
+	;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter end")
 endFunction
 
 function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false)
-	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility start - Q: " + Q + ", show: " + show)
+	;debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility start - Q: " + Q + ", show: " + show)
 	int element
 	int iHandle
 	if (show && !abIsChargeMeterShown[Q]) || (!show && abIsChargeMeterShown[Q]) || hideMeters || hideGems
@@ -316,6 +316,6 @@ function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, 
 			UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[element] + "._visible", false)
 		endIf
 	endIf
-	debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility end")
+	;debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility end")
 endFunction
 

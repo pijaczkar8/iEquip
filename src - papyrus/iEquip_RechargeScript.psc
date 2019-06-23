@@ -24,7 +24,7 @@ float[] afSkillPointsToAdd
 string[] asSoulNames
 
 event OnInit()
-	debug.trace("iEquip_RechargeScript OnInit start")
+	;debug.trace("iEquip_RechargeScript OnInit start")
 
 	afAmountToRecharge = new float[6]
 	afAmountToRecharge[0] = 0.0 ;Empty
@@ -49,11 +49,11 @@ event OnInit()
     asSoulNames[3] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_common")
     asSoulNames[4] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_greater")
     asSoulNames[5] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_grand")
-    debug.trace("iEquip_RechargeScript OnInit end")
+    ;debug.trace("iEquip_RechargeScript OnInit end")
 endEvent
 
 function rechargeWeapon(int Q)
-    debug.trace("iEquip_RechargeScript rechargeWeapon start - Q: " + Q)
+    ;debug.trace("iEquip_RechargeScript rechargeWeapon start - Q: " + Q)
     if bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
         debug.notification("$iEquip_RequiemEnchantingPerkMissing")
     else
@@ -61,14 +61,14 @@ function rechargeWeapon(int Q)
         float currentCharge = PlayerRef.GetActorValue(weaponToRecharge)
         float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
         float requiredCharge = maxCharge - currentCharge
-        debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
+        ;debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
         if requiredCharge < 1.0
             debug.Notification("$iEquip_RC_not_alreadyFull")
         else
             int requiredSoul = getRequiredSoul(Q, requiredCharge)
             if requiredSoul > 0
                 int soulSize = iEquip_SoulSeeker.bringMeASoul(requiredSoul, bUseLargestSoul as int, bUsePartFilledGems, bAllowOversizedSouls)
-                debug.trace("iEquip_RechargeScript rechargeWeapon - bringMeASoul returned me a size " + soulSize + " soul")
+                ;debug.trace("iEquip_RechargeScript rechargeWeapon - bringMeASoul returned me a size " + soulSize + " soul")
                 if soulSize > 0
                     iEquip_Recharge_SFX.Play(PlayerRef)
                     if Q == 0
@@ -91,11 +91,11 @@ function rechargeWeapon(int Q)
             endIf
         endIf
     endIf
-    debug.trace("iEquip_RechargeScript rechargeWeapon end")
+    ;debug.trace("iEquip_RechargeScript rechargeWeapon end")
 endFunction
 
 int function getRequiredSoul(int Q, float requiredCharge)
-    debug.trace("iEquip_RechargeScript getRequiredSoul start - Q: " + Q)
+    ;debug.trace("iEquip_RechargeScript getRequiredSoul start - Q: " + Q)
     int bestFitSoul
     if requiredCharge > 0
         if requiredCharge < 251.0
@@ -113,6 +113,6 @@ int function getRequiredSoul(int Q, float requiredCharge)
     if bestFitSoul > 1 && !bAllowOversizedSouls
         bestFitSoul -= 1
     endIf
-    debug.trace("iEquip_RechargeScript getRequiredSoul - returning bestFitSoul: " + bestFitSoul)
+    ;debug.trace("iEquip_RechargeScript getRequiredSoul - returning bestFitSoul: " + bestFitSoul)
     return bestFitSoul
 endFunction    

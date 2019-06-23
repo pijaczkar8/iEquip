@@ -17,7 +17,7 @@ function initialise(bool bEnabled)
 endFunction
 
 Event OnBoundWeaponEquipped(Int a_weaponType, Int a_equipSlot)
-	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped event received - weapon type: " + a_weaponType + ", slot: " + a_equipSlot)
+	;debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped event received - weapon type: " + a_weaponType + ", slot: " + a_equipSlot)
 	if bIsBoundSpellEquipped && a_equipSlot != 0
 		int otherHand = 1
 		bool equipBoth = a_equipSlot == 3 && (a_weaponType < 5 || a_weaponType == 8)
@@ -32,11 +32,11 @@ Event OnBoundWeaponEquipped(Int a_weaponType, Int a_equipSlot)
 			WC.onBoundWeaponEquipped(a_weaponType, otherHand)
 		endIf
 	endIf
-	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped end")
+	;debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped end")
 EndEvent
 
 Event OnBoundWeaponUnequipped(Weapon a_weap, Int a_unequipSlot)
-	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponUnequipped event received - weapon: " + a_weap.GetName() + ", slot: " + a_unequipSlot)
+	;debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponUnequipped event received - weapon: " + a_weap.GetName() + ", slot: " + a_unequipSlot)
 	if bIsBoundSpellEquipped && a_unequipSlot != 0
 		if a_unequipSlot == 2
 			a_unequipSlot = 0
@@ -45,5 +45,5 @@ Event OnBoundWeaponUnequipped(Weapon a_weap, Int a_unequipSlot)
 		endIf
 		WC.onBoundWeaponUnequipped(a_unequipSlot)
 	endIf
-	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponUnequipped end")
+	;debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponUnequipped end")
 EndEvent

@@ -50,7 +50,7 @@ String HUD_MENU = "HUD Menu"
 String WidgetRoot
 
 event OnInit()
-	debug.trace("iEquip_BeastMode OnInit start")
+	;debug.trace("iEquip_BeastMode OnInit start")
 	
 	arBeastRaces = new race[3]
 	arBeastRaces[0] = WerewolfBeastRace
@@ -71,18 +71,18 @@ event OnInit()
 		i += 1
 	endWhile
 
-	debug.trace("iEquip_BeastMode OnInit end")
+	;debug.trace("iEquip_BeastMode OnInit end")
 endEvent
 
 function initialise()
-	debug.trace("iEquip_BeastMode initialise start")
+	;debug.trace("iEquip_BeastMode initialise start")
 	WidgetRoot = WC.WidgetRoot
 	initialiseQueueArrays()
-	debug.trace("iEquip_BeastMode initialise end")
+	;debug.trace("iEquip_BeastMode initialise end")
 endFunction
 
 function initialiseQueueArrays()
-    debug.trace("iEquip_BeastMode initialiseQueueArrays start")
+    ;debug.trace("iEquip_BeastMode initialiseQueueArrays start")
     if aiBMQueues[0] == 0
         aiBMQueues[0] = JArray.object()
         JMap.setObj(WC.iEquipQHolderObj, "werewolfLeftQ", aiBMQueues[0])
@@ -131,19 +131,19 @@ function initialiseQueueArrays()
         aiBMQueues[11] = JArray.object()
         JMap.setObj(WC.iEquipQHolderObj, "boneTyrantPowerQ", aiBMQueues[11])
     endIf
-    debug.trace("iEquip_BeastMode initialiseQueueArrays end")
+    ;debug.trace("iEquip_BeastMode initialiseQueueArrays end")
 endfunction
 
 function OnWerewolfTransformationStart()
-	debug.trace("iEquip_BeastMode OnWerewolfTransformationStart start")
+	;debug.trace("iEquip_BeastMode OnWerewolfTransformationStart start")
 	KH.bAllowKeyPress = false
 	WC.updateWidgetVisibility(false)
 	bAlreadyHidden = true
-	debug.trace("iEquip_BeastMode OnWerewolfTransformationStart end")
+	;debug.trace("iEquip_BeastMode OnWerewolfTransformationStart end")
 endFunction
 
 function onPlayerTransform(race newRace, bool bPlayerIsAVampireOrLich, bool bLoading = false)
-	debug.trace("iEquip_BeastMode onPlayerTransform start")
+	;debug.trace("iEquip_BeastMode onPlayerTransform start")
 	;Lock out controls and hide the widget while we switch.  If we've switched to an unsupported form the widget will stay hidden until we switch back
 	if !bAlreadyHidden && !bLoading
 		KH.bAllowKeyPress = false
@@ -271,11 +271,11 @@ function onPlayerTransform(race newRace, bool bPlayerIsAVampireOrLich, bool bLoa
 		bInSupportedBeastForm = false
 	endIf
 	EH.bWaitingForTransform = false
-	debug.trace("iEquip_BeastMode onPlayerTransform end")
+	;debug.trace("iEquip_BeastMode onPlayerTransform end")
 endFunction
 
 function updateWidgetVisOnSettingsChanged()
-	debug.trace("iEquip_BeastMode updateWidgetVisOnSettingsChanged end")
+	;debug.trace("iEquip_BeastMode updateWidgetVisOnSettingsChanged end")
 	if WC.bIsWidgetShown
 		if !abShowInTransformedState[currRace]
 			WC.updateWidgetVisibility(false)
@@ -285,11 +285,11 @@ function updateWidgetVisOnSettingsChanged()
 		WC.updateWidgetVisibility()
 		KH.bAllowKeyPress = true
 	endIf
-	debug.trace("iEquip_BeastMode updateWidgetVisOnSettingsChanged end")
+	;debug.trace("iEquip_BeastMode updateWidgetVisOnSettingsChanged end")
 endFunction
 
 function resetWidgetOnTransformBack()
-	debug.trace("iEquip_BeastMode resetWidgetOnTransformBack start")
+	;debug.trace("iEquip_BeastMode resetWidgetOnTransformBack start")
 	;Return the consumable, poison and shout slots to their previous state
 	WC.bConsumablesEnabled = bConsumableSlotEnabled
 	WC.bPoisonsEnabled = bPoisonSlotEnabled
@@ -341,11 +341,11 @@ function resetWidgetOnTransformBack()
 	if bPreselectEnabled
 		PM.togglePreselectMode()
 	endIf
-	debug.trace("iEquip_BeastMode resetWidgetOnTransformBack end")
+	;debug.trace("iEquip_BeastMode resetWidgetOnTransformBack end")
 endFunction
 
 function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
-	debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped start - equippedSlot: " + equippedSlot)
+	;debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped start - equippedSlot: " + equippedSlot)
 	int targetQ = (currRace * 3) + equippedSlot
 	bool blockCall
 	bool actionTaken
@@ -368,7 +368,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			actionTaken = true
 		endIf
 	endIf
-	debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex)
+	;debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex)
 	;If it isn't already contained in the BeastModeItems formlist, or it is but findInQueue has returned -1 meaning it is already contained in the other hand queue
 	if !actionTaken
 		int iEquipItem = jMap.object()
@@ -394,11 +394,11 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	if !blockCall && equippedSlot < 2
 		checkAndEquipShownHandItem(equippedSlot, true)
 	endIf
-	debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped end")
+	;debug.trace("iEquip_BeastMode updateSlotOnObjectEquipped end")
 endFunction
 
 int function findInQueue(int Q, string itemToFind)
-	debug.trace("iEquip_BeastMode findInQueue start")
+	;debug.trace("iEquip_BeastMode findInQueue start")
 	int i
 	bool found
 	while i < jArray.count(Q) && !found
@@ -408,7 +408,7 @@ int function findInQueue(int Q, string itemToFind)
 			found = true
 		endIf
 	endwhile
-	debug.trace("iEquip_BeastMode findInQueue end")
+	;debug.trace("iEquip_BeastMode findInQueue end")
 	if found
 		return i
 	else
@@ -421,7 +421,7 @@ function cycleSlot(int Q, bool Reverse = false, bool onKeyPress = false)
 	int targetQ = (currRace * 3) + Q
 	int targetArray = aiBMQueues[targetQ]
 	int queueLength = JArray.count(targetArray)
-	debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
+	;debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
 	if WC.bFirstPressShowsName && !WC.abIsNameShown[Q]
 		WC.showName(Q)
 
@@ -485,12 +485,12 @@ function cycleSlot(int Q, bool Reverse = false, bool onKeyPress = false)
 		else
 			checkAndEquipShownPower(targetQ)
 		endIf
-		debug.trace("iEquip_BeastMode cycleSlot end")
+		;debug.trace("iEquip_BeastMode cycleSlot end")
 	endIf
 endFunction
 
 function checkAndEquipShownHandItem(int hand, bool equippingOnAutoAdd = false)
-	debug.trace("iEquip_BeastMode checkAndEquipShownHandItem start")
+	;debug.trace("iEquip_BeastMode checkAndEquipShownHandItem start")
 	if WC.bEquipOnPause
 		WC.abCyclingQueue[hand] = false
 		if WC.iPosInd != 2
@@ -501,7 +501,7 @@ function checkAndEquipShownHandItem(int hand, bool equippingOnAutoAdd = false)
    	int targetObject = jArray.getObj(aiBMQueues[Q], aiCurrentBMQueuePosition[Q])
     int itemType = jMap.getInt(targetObject, "iEquipType")
     form targetItem = jMap.getForm(targetObject, "iEquipForm")
-    debug.trace("iEquip_BeastMode checkAndEquipShownHandItem - Q: " + Q + ", targetIndex: " + aiCurrentBMQueuePosition[Q] + ", targetItem: " + targetItem + ", itemType: " + itemType + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
+    ;debug.trace("iEquip_BeastMode checkAndEquipShownHandItem - Q: " + Q + ", targetIndex: " + aiCurrentBMQueuePosition[Q] + ", targetItem: " + targetItem + ", itemType: " + itemType + ", equippingOnAutoAdd: " + equippingOnAutoAdd)
     ;When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
    	int iEquipSlotId = 1
    	int otherHand = (hand + 1) % 2
@@ -525,7 +525,7 @@ function checkAndEquipShownHandItem(int hand, bool equippingOnAutoAdd = false)
 			endIf
 		else
 		    ;Equip target item
-		    debug.trace("iEquip_BeastMode checkAndEquipShownHandItem - about to equip " + jMap.getStr(targetObject, "iEquipName") + " into slot " + hand)
+		    ;debug.trace("iEquip_BeastMode checkAndEquipShownHandItem - about to equip " + jMap.getStr(targetObject, "iEquipName") + " into slot " + hand)
 		    Utility.WaitMenuMode(0.1)
 	    	int itemID = jMap.getInt(targetObject, "iEquipItemID")
 	    	if itemID as bool
@@ -545,11 +545,11 @@ function checkAndEquipShownHandItem(int hand, bool equippingOnAutoAdd = false)
 		reequipOtherHand(otherHand)
 	endIf
 	
-	debug.trace("iEquip_BeastMode checkAndEquipShownHandItem end")
+	;debug.trace("iEquip_BeastMode checkAndEquipShownHandItem end")
 endFunction
 
 function updateOtherHandOn2HSpellEquipped(int Q, int hand, int otherHand)
-	debug.trace("iEquip_BeastMode updateOtherHandOn2HSpellEquipped start")
+	;debug.trace("iEquip_BeastMode updateOtherHandOn2HSpellEquipped start")
 	;And now we need to update the left hand widget
 	float fNameAlpha = WC.afWidget_A[WC.aiNameElements[0]]
 	if fNameAlpha < 1
@@ -569,13 +569,13 @@ function updateOtherHandOn2HSpellEquipped(int Q, int hand, int otherHand)
 		WC.LNUpdate.registerForNameFadeoutUpdate()
 	endIf
 	b2HSpellEquipped = true
-	debug.trace("iEquip_BeastMode updateOtherHandOn2HSpellEquipped end")
+	;debug.trace("iEquip_BeastMode updateOtherHandOn2HSpellEquipped end")
 endFunction
 
 bool bClawsShown
 
 function showClaws()
-	debug.trace("iEquip_BeastMode showClaws start")
+	;debug.trace("iEquip_BeastMode showClaws start")
 	if !bClawsShown
 		bClawsShown = true
 		int i
@@ -588,7 +588,7 @@ function showClaws()
 			endIf
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 			If(iHandle)
-				debug.trace("iEquip_BeastMode showClaws - got iHandle, i: " + i)
+				;debug.trace("iEquip_BeastMode showClaws - got iHandle, i: " + i)
 				UICallback.PushInt(iHandle, i)
 				UICallback.PushString(iHandle, "Claws")
 				UICallback.PushString(iHandle, "$iEquip_common_Claws")
@@ -600,11 +600,11 @@ function showClaws()
 			i += 1
 		endWhile
 	endIf
-	debug.trace("iEquip_BeastMode showClaws end")
+	;debug.trace("iEquip_BeastMode showClaws end")
 endFunction
 
 function showPreviousItems()
-	debug.trace("iEquip_BeastMode showPreviousItems start")
+	;debug.trace("iEquip_BeastMode showPreviousItems start")
 	int i
 	float fNameAlpha
 	int iHandle
@@ -617,7 +617,7 @@ function showPreviousItems()
 		endIf
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 		If(iHandle)
-			debug.trace("iEquip_BeastMode showClaws - got iHandle, i: " + i)
+			;debug.trace("iEquip_BeastMode showClaws - got iHandle, i: " + i)
 			UICallback.PushInt(iHandle, i)
 			UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiBMQueues[Q], aiCurrentBMQueuePosition[Q]), "iEquipIcon"))
 			UICallback.PushString(iHandle, asCurrentlyEquipped[Q])
@@ -629,11 +629,11 @@ function showPreviousItems()
 		i += 1
 	endWhile
 	bClawsShown = false
-	debug.trace("iEquip_BeastMode showPreviousItems end")
+	;debug.trace("iEquip_BeastMode showPreviousItems end")
 endFunction
 
 function reequipOtherHand(int otherHand)
-	debug.trace("iEquip_BeastMode reequipOtherHand start")
+	;debug.trace("iEquip_BeastMode reequipOtherHand start")
 	int Q = (currRace * 3) + otherHand
 	int targetObject = jArray.getObj(aiBMQueues[Q], aiCurrentBMQueuePosition[Q])
 	float fNameAlpha = WC.afWidget_A[WC.aiNameElements[otherHand]]
@@ -650,11 +650,11 @@ function reequipOtherHand(int otherHand)
 		UICallback.PushFloat(iHandle, WC.afWidget_S[WC.aiIconClips[Q]])
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_BeastMode reequipOtherHand end")
+	;debug.trace("iEquip_BeastMode reequipOtherHand end")
 endFunction
 
 function checkAndEquipShownPower(int Q)
-    debug.trace("iEquip_BeastMode checkAndEquipShownPower start")
+    ;debug.trace("iEquip_BeastMode checkAndEquipShownPower start")
     int targetObject = jArray.getObj(aiBMQueues[Q], aiCurrentBMQueuePosition[Q])
     int itemType = jMap.getInt(targetObject, "iEquipType")
     form targetItem = jMap.getForm(targetObject, "iEquipForm")
@@ -666,5 +666,5 @@ function checkAndEquipShownPower(int Q)
     if WC.iPosInd > 0
     	WC.SPosUpdate.registerForFadeoutUpdate()
     endIf
-    debug.trace("iEquip_BeastMode checkAndEquipShownPower end")
+    ;debug.trace("iEquip_BeastMode checkAndEquipShownPower end")
 endFunction

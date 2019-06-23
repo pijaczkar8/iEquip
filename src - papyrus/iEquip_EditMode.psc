@@ -365,7 +365,7 @@ endFunction
 ; - Highlight -
 
 function HighlightElement(bool bAdd)
-    debug.trace("iEquip EditMode HighlightElement called")
+    ;debug.trace("iEquip EditMode HighlightElement called")
     int[] iArgs = new int[3]
     iArgs[0] = WC.abWidget_isText[iSelectedElement] as int   ; Is text element
     iArgs[1] = iSelectedElement                              ; iSelectedElement                

@@ -17,11 +17,17 @@ iEquip_TorchScript property TO auto
 Actor property PlayerRef  auto
 
 ; Main gameplay keys
-int property iShoutKey = 21 auto hidden ;Y
 int property iLeftKey = 34 auto hidden ;G
 int property iRightKey = 35 auto hidden ;H
+int property iShoutKey = 21 auto hidden ;Y
 int property iConsumableKey = 48 auto hidden ;B
 int property iUtilityKey = 37 auto hidden ;K - Active in all modes
+
+globalvariable property iEquipLeftKey auto
+globalvariable property iEquipRightKey auto
+globalvariable property iEquipShoutKey auto
+globalvariable property iEquipConsumableKey auto
+globalvariable property iEquipUtilityKey auto
 
 ; Optional hotkeys
 int property iConsumeItemKey = -1 auto hidden
@@ -61,7 +67,7 @@ bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
 bool bNotInLootMenu = true
 bool _bPlayerIsABeast
-bool bIsGPPLoaded
+bool property bIsGPPLoaded auto hidden
 bool bGPPKeyHeld
 
 ; Ints
@@ -92,7 +98,7 @@ event onInit()
 endEvent
 
 function GameLoaded()
-    debug.trace("iEquip_KeyHandler GameLoaded start")
+    ;debug.trace("iEquip_KeyHandler GameLoaded start")
     GotoState("")
     
     RegisterForMenu("InventoryMenu")
@@ -121,7 +127,7 @@ function GameLoaded()
     
     bIsUtilityKeyHeld = false
     bNotInLootMenu = true
-    debug.trace("iEquip_KeyHandler GameLoaded end")
+    ;debug.trace("iEquip_KeyHandler GameLoaded end")
 endFunction
 
 function registerForGPP(bool bGPPLoaded)
@@ -137,19 +143,19 @@ function registerForGPP(bool bGPPLoaded)
 endFunction
 
 event onGPPComboKeysUpdated(string sEventName, string sStringArg, Float fNumArg, Form kSender)
-	debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated start")
+	;debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated start")
 	If(sEventName == "GPP_ComboKeysUpdated")
 		registerForGPPKeys()
 	endIf
-	debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated end")
+	;debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated end")
 endEvent
 
 function registerForGPPKeys()
 	unregisterForGPPKeys()
-	aiGPPComboKeys[0] = (Game.GetFormFromFile(0x00000001, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[1] = (Game.GetFormFromFile(0x00000002, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[2] = (Game.GetFormFromFile(0x00000003, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-	aiGPPComboKeys[3] = (Game.GetFormFromFile(0x00000004, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[0] = (Game.GetFormFromFile(0x00003DE2, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[1] = (Game.GetFormFromFile(0x00003DE3, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[2] = (Game.GetFormFromFile(0x00003DE4, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+	aiGPPComboKeys[3] = (Game.GetFormFromFile(0x00003DE5, "Gamepad++.esp") as GlobalVariable).GetValueInt()
     int i
     while i < 4
         if aiGPPComboKeys[i] != -1 && aiGPPComboKeys[i] != iUtilityKey
@@ -185,20 +191,20 @@ bool property bPlayerIsABeast
     endFunction
 
     function Set(bool inBeastForm)
-        debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() start")
+        ;debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() start")
         _bPlayerIsABeast = inBeastForm
-         debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() - bPlayerIsABeast: " + inBeastForm)
+         ;debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() - bPlayerIsABeast: " + inBeastForm)
         if inBeastForm
             gotoState("BEASTMODE")
         else
             gotoState("")
         endIf
-        debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() - state set to: " + GetState())
+        ;debug.trace("iEquip_KeyHandler bPlayerIsABeast Set() - state set to: " + GetState())
     endFunction
 endProperty
 
 event OnMenuOpen(string MenuName)
-    debug.trace("iEquip_KeyHandler OnMenuOpen start - Menu being opened: "+MenuName)
+    ;debug.trace("iEquip_KeyHandler OnMenuOpen start - Menu being opened: "+MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = false
     else
@@ -210,16 +216,16 @@ event OnMenuOpen(string MenuName)
         else
             GoToState("DISABLED")
         endIf
-        debug.trace("iEquip_KeyHandler OnMenuOpen - state set to: " + GetState())
+        ;debug.trace("iEquip_KeyHandler OnMenuOpen - state set to: " + GetState())
         UnregisterForUpdate()
         iWaitingKeyCode = 0
         iMultiTap = 0
     endIf
-    debug.trace("iEquip_KeyHandler OnMenuOpen end")
+    ;debug.trace("iEquip_KeyHandler OnMenuOpen end")
 endEvent
 
 event OnMenuClose(string MenuName)
-    debug.trace("iEquip_KeyHandler OnMenuClose start - Menu being closed: "+MenuName)
+    ;debug.trace("iEquip_KeyHandler OnMenuClose start - Menu being closed: "+MenuName)
     if MenuName == "LootMenu"
         bNotInLootMenu = true
     elseIf !utility.IsInMenuMode()
@@ -233,11 +239,11 @@ event OnMenuClose(string MenuName)
     else 
         GotoState(sPreviousState)
     endIf
-    debug.trace("iEquip_KeyHandler OnMenuClose end - state set to: " + GetState())
+    ;debug.trace("iEquip_KeyHandler OnMenuClose end - state set to: " + GetState())
 endEvent
 
 event OnUpdate()
-    debug.trace("iEquip_KeyHandler OnUpdate start - multiTap: "+iMultiTap)
+    ;debug.trace("iEquip_KeyHandler OnUpdate start - multiTap: "+iMultiTap)
     bAllowKeyPress = false
     
     runUpdate()
@@ -245,7 +251,7 @@ event OnUpdate()
     iMultiTap = 0
     iWaitingKeyCode = 0
     bAllowKeyPress = true
-    debug.trace("iEquip_KeyHandler OnUpdate end")
+    ;debug.trace("iEquip_KeyHandler OnUpdate end")
 endEvent
 
 ; ---------------------
@@ -253,7 +259,7 @@ endEvent
 ; ---------------------
 
 event OnKeyDown(int KeyCode)
-    debug.trace("iEquip_KeyHandler OnKeyDown start - KeyCode: "+KeyCode)
+    ;debug.trace("iEquip_KeyHandler OnKeyDown start - KeyCode: "+KeyCode)
     
     if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
         bGPPKeyHeld = true
@@ -285,11 +291,11 @@ event OnKeyDown(int KeyCode)
             RegisterForSingleUpdate(0.0)
         endIf
     endif
-    debug.trace("iEquip_KeyHandler OnKeyDown end")
+    ;debug.trace("iEquip_KeyHandler OnKeyDown end")
 endEvent
 
 event OnKeyUp(int KeyCode, Float HoldTime)
-    debug.trace("iEquip_KeyHandler OnKeyUp start - KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
+    ;debug.trace("iEquip_KeyHandler OnKeyUp start - KeyCode: "+KeyCode+", HoldTime: "+HoldTime)
     
     if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
         bGPPKeyHeld = false
@@ -301,11 +307,11 @@ event OnKeyUp(int KeyCode, Float HoldTime)
         iMultiTap = 1
         RegisterForSingleUpdate(fMultiTapDelay)
     endIf
-    debug.trace("iEquip_KeyHandler OnKeyUp end")
+    ;debug.trace("iEquip_KeyHandler OnKeyUp end")
 endEvent
 
 function runUpdate()
-    debug.trace("iEquip_KeyHandler runUpdate start")
+    ;debug.trace("iEquip_KeyHandler runUpdate start")
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
     
@@ -425,10 +431,10 @@ function runUpdate()
                         endIf
                     endIf
                 elseIf PM.abPreselectSlotEnabled[0]
-                    debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling equipPreselectedItem")
+                    ;debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling equipPreselectedItem")
                     PM.equipPreselectedItem(0)
                 elseIf AM.bAmmoMode
-                    debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling toggleAmmoMode")
+                    ;debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling toggleAmmoMode")
                     AM.toggleAmmoMode()
                     WC.bPreselectSwitchingHands = false
                 endIf
@@ -498,7 +504,7 @@ function runUpdate()
             endIf
         endIf
     endIf
-    debug.trace("iEquip_KeyHandler runUpdate end")
+    ;debug.trace("iEquip_KeyHandler runUpdate end")
 endFunction
 
 ; --------------------
@@ -508,7 +514,7 @@ endFunction
 ;Beast Mode - while player is in werewolf, vampire lord or lich form
 state BEASTMODE
     function runUpdate()
-        debug.trace("iEquip_KeyHandler runUpdate BEASTMODE start")
+        ;debug.trace("iEquip_KeyHandler runUpdate BEASTMODE start")
         ;Handle widget visibility update on any registered key press
         WC.updateWidgetVisibility()
         ;There are only single press cycle actions in Beast Mode so treat any update as single press, and completely ignore utility/consumable/iOptHtKey/poison key presses
@@ -521,14 +527,14 @@ state BEASTMODE
         elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu
             BM.cycleSlot(2, bIsUtilityKeyHeld, true)
         endIf
-        debug.trace("iEquip_KeyHandler runUpdate BEASTMODE end")
+        ;debug.trace("iEquip_KeyHandler runUpdate BEASTMODE end")
     endFunction
 endState
 
 ; - Inventory
 state INVENTORYMENU
     event OnKeyDown(int KeyCode)
-        debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start")
+        ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start")
         ;if KeyCode == iUtilityKey
         ;    bIsUtilityKeyHeld = true
         ;endIf
@@ -552,14 +558,14 @@ state INVENTORYMENU
             
             bAllowKeyPress = true
         endIf
-        debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU end")
+        ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU end")
     endEvent
 endState
 
 ; - Editmode
 state EDITMODE
     event OnKeyUp(int KeyCode, Float HoldTime)
-        debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
+        ;debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
         if KeyCode == iUtilityKey
             bIsUtilityKeyHeld = false
         elseIf bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
@@ -577,11 +583,11 @@ state EDITMODE
                 RegisterForSingleUpdate(updateTime)
             endIf
         endIf
-        debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE end")
+        ;debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE end")
     endEvent
 
     function runUpdate()
-        debug.trace("iEquip_KeyHandler runUpdate EDITMODE start")
+        ;debug.trace("iEquip_KeyHandler runUpdate EDITMODE start")
         if iMultiTap == 0       ; Long press
             if iWaitingKeyCode == iEditNextKey || iWaitingKeyCode == iEditPrevKey
                 EM.ToggleCycleRange()
@@ -645,7 +651,7 @@ state EDITMODE
             endIf
             
         endIf
-        debug.trace("iEquip_KeyHandler runUpdate EDITMODE end")
+        ;debug.trace("iEquip_KeyHandler runUpdate EDITMODE end")
     endFunction
 endState
 
@@ -665,7 +671,7 @@ endState
 ; -----------------
 
 function ToggleEditMode()
-    debug.trace("iEquip KeyHandler toggleEditMode start")
+    ;debug.trace("iEquip KeyHandler toggleEditMode start")
     if EM.isEditMode
         GoToState("")
     else
@@ -673,11 +679,11 @@ function ToggleEditMode()
     endIf
     EM.ToggleEditMode()
     updateKeyMaps()
-    debug.trace("iEquip_KeyHandler toggleEditMode end")
+    ;debug.trace("iEquip_KeyHandler toggleEditMode end")
 endFunction
 
 function updateKeyMaps()
-    debug.trace("iEquip_KeyHandler updateKeyMaps start")
+    ;debug.trace("iEquip_KeyHandler updateKeyMaps start")
     UnregisterForAllKeys()   
     if EM.isEditMode
         int[] keys = new int[18]
@@ -705,11 +711,11 @@ function updateKeyMaps()
     else
         RegisterForGameplayKeys()
     endIf
-    debug.trace("iEquip_KeyHandler updateKeyMaps end")
+    ;debug.trace("iEquip_KeyHandler updateKeyMaps end")
 endFunction
 
 function resetEditModeKeys()
-    debug.trace("iEquip_KeyHandler resetEditModeKeys start")
+    ;debug.trace("iEquip_KeyHandler resetEditModeKeys start")
     iEditNextKey = 55
     iEditPrevKey = 181
     iEditUpKey = 200
@@ -727,11 +733,11 @@ function resetEditModeKeys()
     iEditLoadPresetKey = 76
     iEditSavePresetKey = 77
     iEditDiscardKey = 83
-    debug.trace("iEquip_KeyHandler resetEditModeKeys end")
+    ;debug.trace("iEquip_KeyHandler resetEditModeKeys end")
 endFunction
 
 function RegisterForGameplayKeys()
-    debug.trace("iEquip_KeyHandler RegisterForGameplayKeys start")
+    ;debug.trace("iEquip_KeyHandler RegisterForGameplayKeys start")
     RegisterForKey(iShoutKey)
     RegisterForKey(iLeftKey)
     RegisterForKey(iRightKey)
@@ -757,11 +763,11 @@ function RegisterForGameplayKeys()
             RegisterForKey(iQuickRangedKey)
         endIf
     endIf
-    debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
+    ;debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
 endFunction
 
 function RegisterForEditModeKeys()
-    debug.trace("iEquip_KeyHandler RegisterForEditModeKeys start")
+    ;debug.trace("iEquip_KeyHandler RegisterForEditModeKeys start")
     RegisterForKey(iEditLeftKey)
     RegisterForKey(iEditRightKey)
     RegisterForKey(iEditUpKey)
@@ -780,5 +786,5 @@ function RegisterForEditModeKeys()
     RegisterForKey(iEditRulersKey)
     RegisterForKey(iEditDiscardKey)
     RegisterForKey(iUtilityKey)
-    debug.trace("iEquip_KeyHandler RegisterForEditModeKeys end")
+    ;debug.trace("iEquip_KeyHandler RegisterForEditModeKeys end")
 endFunction
