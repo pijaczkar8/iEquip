@@ -28,7 +28,7 @@ function drawPage()                 ; Draw page
     ;debug.trace("WARN: An iEquip MCM Page has no defined draw page")
 endFunction
 
-function jumpToState(string stateName, string eventName, float tmpVar = -1.0, string tmpStr = "")
+function jumpToState(string stateName, string eventName, float tmpVar, string tmpStr)
     currentEvent = eventName
 	currentVar = tmpVar
 	currentStrVar = tmpStr

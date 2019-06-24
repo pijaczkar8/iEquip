@@ -120,23 +120,23 @@ function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
     string sCurrentState = GetState()
     
     if sCurrentPage == "$iEquip_MCM_lbl_General"
-        gen.jumpToState(sCurrentState, eventName, tmpVar)
+        gen.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Hotkey"
-        htk.jumpToState(sCurrentState, eventName, tmpVar)
+        htk.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Queue"
-        que.jumpToState(sCurrentState, eventName, tmpVar)
+        que.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Potions"
-        pot.jumpToState(sCurrentState, eventName, tmpVar)
+        pot.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Recharging"
-        poi.jumpToState(sCurrentState, eventName, tmpVar)
+        poi.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Torch"
-        tch.jumpToState(sCurrentState, eventName, tmpVar)
+        tch.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Misc"
-        uii.jumpToState(sCurrentState, eventName, tmpVar)
+        uii.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Pro"
-        pro.jumpToState(sCurrentState, eventName, tmpVar)
+        pro.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Edit"
-        edt.jumpToState(sCurrentState, eventName, tmpVar)
+        edt.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_Info"
         inf.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     endIf
