@@ -828,6 +828,7 @@ state ENABLED
 			KH.iEquipConsumableKey.SetValueInt(267)
 			KH.iUtilityKey = 277					; B
 			KH.iEquipUtilityKey.SetValueInt(277)
+			SendModEvent("iEquip_KeysUpdated")
 		endIf
 
 		OnWidgetLoad()
