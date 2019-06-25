@@ -396,6 +396,8 @@ int property iLastRH1HItemIndex = -1 auto hidden
 
 bool property bEquipOnPause = true auto hidden
 
+bool bGPPMessageShown
+
 string function GetWidgetType()
 	Return "iEquip_WidgetCore"
 endFunction
@@ -817,19 +819,7 @@ state ENABLED
 		CheckDependencies()
 		addFists()
 
-		if KH.bIsGPPLoaded && Game.UsingGamepad() && showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_setDefaultKeysForGPP")) == 0
-			KH.iLeftKey = 268						; Dpad Left
-			KH.iEquipLeftKey.SetValueInt(268)
-			KH.iRightKey = 269						; DPad Right
-			KH.iEquipRightKey.SetValueInt(269)
-			KH.iShoutKey = 266						; DPad Up
-			KH.iEquipShoutKey.SetValueInt(266)
-			KH.iConsumableKey = 267					; DPad Down
-			KH.iEquipConsumableKey.SetValueInt(267)
-			KH.iUtilityKey = 277					; B
-			KH.iEquipUtilityKey.SetValueInt(277)
-			SendModEvent("iEquip_KeysUpdated")
-		endIf
+		checkAndSetKeysForGamepadPlusPlus()
 
 		OnWidgetLoad()
 		
@@ -843,7 +833,7 @@ state ENABLED
 
 		;debug.trace("iEquip_WidgetCore ENABLED OnBeginState end")
 	endEvent
-	
+
 	; Enabled events
 	Event OnWidgetLoad()
 		;debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
@@ -874,6 +864,7 @@ state ENABLED
 		
 		if !bIsFirstEnabled
 			CheckDependencies()
+			checkAndSetKeysForGamepadPlusPlus()
 			EM.UpdateElementsAll()
 			args[0] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			args[3] = (bAmmoMode && !AM.bSimpleAmmoMode)
@@ -966,6 +957,23 @@ Auto state DISABLED
 	event OnWidgetReset()
 	endEvent
 endState
+
+function checkAndSetKeysForGamepadPlusPlus()
+	if KH.bIsGPPLoaded && Game.UsingGamepad() && !bGPPMessageShown && showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_setDefaultKeysForGPP")) == 0
+		bGPPMessageShown = true
+		KH.iLeftKey = 268						; Dpad Left
+		KH.iEquipLeftKey.SetValueInt(268)
+		KH.iRightKey = 269						; DPad Right
+		KH.iEquipRightKey.SetValueInt(269)
+		KH.iShoutKey = 266						; DPad Up
+		KH.iEquipShoutKey.SetValueInt(266)
+		KH.iConsumableKey = 267					; DPad Down
+		KH.iEquipConsumableKey.SetValueInt(267)
+		KH.iUtilityKey = 277					; B
+		KH.iEquipUtilityKey.SetValueInt(277)
+		SendModEvent("iEquip_KeysUpdated")
+	endIf
+endFunction
 
 function refreshWidgetOnLoad()
 	;debug.trace("iEquip_WidgetCore refreshWidgetOnLoad start")
