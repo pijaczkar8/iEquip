@@ -598,9 +598,15 @@ state EDITMODE
         ;debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
         if KeyCode == iUtilityKey
             bIsUtilityKeyHeld = false
-        elseIf bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
+        elseIf bGPPKeyHeld && aiGPPComboKeys.Find(KeyCode) > -1
             bGPPKeyHeld = false
+            int i
+            while i < 4 && !bGPPKeyHeld
+                bGPPKeyHeld = IsKeyPressed(aiGPPComboKeys[i])
+                i += 1
+            endWhile
         endIf
+        
         if bAllowKeyPress
             if KeyCode == iWaitingKeyCode && iMultiTap == 0
                 float updateTime
