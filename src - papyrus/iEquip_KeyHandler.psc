@@ -126,6 +126,7 @@ function GameLoaded()
     updateExtKbKeysArray()
     
     bIsUtilityKeyHeld = false
+    bGPPKeyHeld = false
     bNotInLootMenu = true
     ;debug.trace("iEquip_KeyHandler GameLoaded end")
 endFunction
