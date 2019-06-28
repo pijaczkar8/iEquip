@@ -71,7 +71,7 @@ bool property bIsGPPLoaded auto hidden
 bool bGPPKeyHeld
 
 ; Ints
-int iWaitingKeyCode
+int iWaitingKeyCode = -1
 int iMultiTap
 
 int[] aiGPPComboKeys
@@ -125,6 +125,8 @@ function GameLoaded()
     UnregisterForAllKeys() ; Re-enabled by onWidgetLoad once widget is ready to prevent any wierdness with keys being pressed before the widget has refreshed
     updateExtKbKeysArray()
     
+    iWaitingKeyCode = -1
+    iMultiTap = 0
     bIsUtilityKeyHeld = false
     bGPPKeyHeld = false
     bNotInLootMenu = true
@@ -242,7 +244,7 @@ event OnMenuOpen(string MenuName)
         endIf
         ;debug.trace("iEquip_KeyHandler OnMenuOpen - state set to: " + GetState())
         UnregisterForUpdate()
-        iWaitingKeyCode = 0
+        iWaitingKeyCode = -1
         iMultiTap = 0
     endIf
     ;debug.trace("iEquip_KeyHandler OnMenuOpen end")
@@ -273,7 +275,7 @@ event OnUpdate()
     runUpdate()
     
     iMultiTap = 0
-    iWaitingKeyCode = 0
+    iWaitingKeyCode = -1
     bAllowKeyPress = true
     ;debug.trace("iEquip_KeyHandler OnUpdate end")
 endEvent
@@ -294,7 +296,7 @@ event OnKeyDown(int KeyCode)
     ;debug.trace("iEquip_KeyHandler OnKeyDown - bGPPKeyHeld: " + bGPPKeyHeld + ", bIsUtilityKeyHeld: " + bIsUtilityKeyHeld + ", bAllowKeyPress: " + bAllowKeyPress)
 
     if bAllowKeyPress && (!bGPPKeyHeld || aiExtKbKeys.Find(KeyCode) > -1)
-        if KeyCode != iWaitingKeyCode && iWaitingKeyCode != 0
+        if KeyCode != iWaitingKeyCode && iWaitingKeyCode != -1
             if iWaitingKeyCode != iUtilityKey 
                 ; The player pressed a different key, so force the current one to process if there is one
                 UnregisterForUpdate()
