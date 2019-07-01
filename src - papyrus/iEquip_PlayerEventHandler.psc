@@ -457,10 +457,7 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 			endIf
 		elseIf actionType == 7 || actionType == 8 ; Draw Begin or Draw End
 			;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
-			WVis.unregisterForWidgetFadeoutUpdate()
-			if !WC.bIsWidgetShown ;In case we're drawing a spell which won't have been caught by Draw Begin
-				WC.updateWidgetVisibility()
-			endIf
+			WC.updateWidgetVisibility()
 			int i = (PlayerRef.GetEquippedItemType(1) == 5 || PlayerRef.GetEquippedItemType(1) == 6) as int 		; Don't need to show the left hand name/poison name if we're drawing a 2H weapon here, if it's a ranged weapon we still need to show the ammo name
 			while i < 2
 				;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, abIsNameShown: " + WC.abIsNameShown[i] + ", abIsPoisonNameShown: " + WC.abIsPoisonNameShown[i])

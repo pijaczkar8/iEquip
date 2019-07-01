@@ -179,6 +179,8 @@ State gen_tgl_onOff
 				MCM.forcePageReset()
 			elseIf !JContainers.isInstalled()
 				MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontmissing", false, "$OK")
+            elseIf !(JContainers.APIVersion() >= 3 && JContainers.featureVersion() >= 3)
+                MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontoldversion", false, "$OK")
 			elseIf EH.bPlayerIsABeast
 				MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
 			else

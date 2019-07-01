@@ -1432,6 +1432,8 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 		;Register for widget fadeout if enabled
 		if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode
 			WVis.registerForWidgetFadeoutUpdate()
+		else
+			WVis.unregisterForWidgetFadeoutUpdate()
 		endIf
 	elseIf bIsWidgetShown
 		bIsWidgetShown = false

@@ -247,6 +247,9 @@ event OnMenuOpen(string MenuName)
         iWaitingKeyCode = -1
         iMultiTap = 0
     endIf
+    ; Just in case
+    bIsUtilityKeyHeld = false
+    bGPPKeyHeld = false
     ;debug.trace("iEquip_KeyHandler OnMenuOpen end")
 endEvent
 
@@ -265,6 +268,8 @@ event OnMenuClose(string MenuName)
     else 
         GotoState(sPreviousState)
     endIf
+    bIsUtilityKeyHeld = false
+    bGPPKeyHeld = false
     ;debug.trace("iEquip_KeyHandler OnMenuClose end - state set to: " + GetState())
 endEvent
 
