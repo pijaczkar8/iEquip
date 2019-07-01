@@ -717,7 +717,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//Called on load from Papyrus and when entering Preselect Mode (preselectAnimateIn onComplete)
 		//This function checks if the preselect icons are to the left or right of their main icon and sets the animate out direction to the opposite side. It also stores current main icon x/y as the target values for the preselect icons to animate to. Finally it gets and stores all necessary current scale and alpha values to ensure everything returns to the exact state it was in prior to starting the animation
 		
-		skyui.util.Debug.log("iEquipWidget prepareForPreselectAnimation called")
+		//skyui.util.Debug.log("iEquipWidget prepareForPreselectAnimation called")
 		
 		var leftIconLTG:Object = {x:0, y:0};
 		var leftPreselectIconLTG:Object = {x:0, y:0};
@@ -802,7 +802,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function equipPreselectedItem(iSlot: Number, currIcon: String, newIcon: String, newName: String, currPIcon: String, newPIcon: String, newPName: String): Void
 	{
-		skyui.util.Debug.log("iEquipWidget equipPreselectedItem - iSlot: " + iSlot + ", currIcon: " + currIcon + ", newIcon: " + newIcon + ", newName: " + newName + ", currPIcon: " + currPIcon + ", newPIcon: " + newPIcon + ", newPName: " + newPName)
+		//skyui.util.Debug.log("iEquipWidget equipPreselectedItem - iSlot: " + iSlot + ", currIcon: " + currIcon + ", newIcon: " + newIcon + ", newName: " + newName + ", currPIcon: " + currPIcon + ", newPIcon: " + newPIcon + ", newPName: " + newPName)
 
 		var iconClip: MovieClip;
 		var iconClip_mc: MovieClip;
@@ -1502,7 +1502,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		var _poisonIcon_mc: MovieClip = iTarget == 0 ? leftPoisonIcon_mc : rightPoisonIcon_mc;
 		var currAlpha = _poisonIcon_mc._alpha; 
 
-		skyui.util.Debug.log("iEquipWidget updatePoisonIcon - currAlpha: " + currAlpha)
+		//skyui.util.Debug.log("iEquipWidget updatePoisonIcon - currAlpha: " + currAlpha)
 
 		if (currAlpha < 1.0){
 			currAlpha = 100
@@ -1809,32 +1809,36 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//skyui.util.Debug.log("iEquipEditMode setTextAlignment - textElement: " + textElement)
 		selectedText = textElementArray[textElement];
 		var format:TextFormat = selectedText.getTextFormat();
-		if (a_align == 0){
-			format.align = "left";
-		}
-		else if (a_align == 1){
-			format.align = "center";
-		}
-		else {
-			format.align = "right";
+		switch(a_align) {
+			case 0:
+				format.align = "left";
+				break;
+			case 1:
+				format.align = "center";
+				break;
+			case 2:
+				format.align = "right";
+				break;
 		}
 		selectedText.setTextFormat(format);
 	}
 
 	public function setTextColorAndAlignment(textElement: Number, a_align: Number, currentColor: Number): Void
 	{
-		skyui.util.Debug.log("iEquipEditMode setTextColorAndAlignment - textElement: " + textElement + ", a_align: " + a_align + ", currentColor: " + currentColor)
+		//skyui.util.Debug.log("iEquipEditMode setTextColorAndAlignment - textElement: " + textElement + ", a_align: " + a_align + ", currentColor: " + currentColor)
 		selectedText = textElementArray[textElement];
 		var format:TextFormat = selectedText.getTextFormat();
 
-		if (a_align == 0){
-			format.align = "left";
-		}
-		else if (a_align == 1){
-			format.align = "center";
-		}
-		else {
-			format.align = "right";
+		switch(a_align) {
+			case 0:
+				format.align = "left";
+				break;
+			case 1:
+				format.align = "center";
+				break;
+			case 2:
+				format.align = "right";
+				break;
 		}
 		format.color = currentColor;
 		selectedText.setTextFormat(format);
