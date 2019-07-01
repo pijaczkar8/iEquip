@@ -656,9 +656,9 @@ function UpdateElementData(int iIndex, bool bUpdateAlpha = true)
 endFunction
 
 function UpdateElementText(int[] iArgs, int iNewColor) 
-    if !iArgs[0] == 45                  ; potionSelector_mc - Only setting text colour here as alignment handled by .setPotionSelectorAlignment
+    if iArgs[0] == 45                  ; potionSelector_mc - Only setting text colour here as alignment handled by .setPotionSelectorAlignment
         iArgs[1] = iNewColor
-        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".SetTextColor", iArgs)
+        UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", iArgs)
     else                                ; for every other text element update colour and alignment together
         if WC.asWidget_TA[iArgs[0]] == "Left"
             iArgs[1] = 0
