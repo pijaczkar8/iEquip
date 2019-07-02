@@ -160,6 +160,11 @@ function drawPage()
 		MCM.AddEmptyOption()
 		MCM.AddTextOptionST("gen_txt_firstEnabled4", "$iEquip_MCM_common_lbl_firstEnabled4", "")
 		MCM.AddTextOptionST("gen_txt_firstEnabled5", "$iEquip_MCM_common_lbl_firstEnabled5", "")
+    else
+        MCM.AddTextOptionST("gen_txt_altStartWarning1", "$iEquip_MCM_common_lbl_altStartWarning1", "")
+        MCM.AddTextOptionST("gen_txt_altStartWarning2", "$iEquip_MCM_common_lbl_altStartWarning2", "")
+        MCM.AddTextOptionST("gen_txt_altStartWarning3", "$iEquip_MCM_common_lbl_altStartWarning3", "")
+        MCM.AddTextOptionST("gen_txt_altStartWarning4", "$iEquip_MCM_common_lbl_altStartWarning4", "")
     endIf
 endFunction
 
