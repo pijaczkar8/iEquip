@@ -866,6 +866,7 @@ state ENABLED
 			CheckDependencies()
 			checkAndSetKeysForGamepadPlusPlus()
 			EM.UpdateElementsAll()
+			WaitMenuMode(2.0)	; Testing to see if this gets text formatting to update correctly on load
 			args[0] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			args[3] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)

@@ -160,6 +160,11 @@ function drawPage()
 		MCM.AddEmptyOption()
 		MCM.AddTextOptionST("gen_txt_firstEnabled4", "$iEquip_MCM_common_lbl_firstEnabled4", "")
 		MCM.AddTextOptionST("gen_txt_firstEnabled5", "$iEquip_MCM_common_lbl_firstEnabled5", "")
+    else
+        MCM.AddTextOptionST("gen_txt_altStartWarning1", "$iEquip_MCM_common_lbl_altStartWarning1", "")
+        MCM.AddTextOptionST("gen_txt_altStartWarning2", "$iEquip_MCM_common_lbl_altStartWarning2", "")
+        MCM.AddTextOptionST("gen_txt_altStartWarning3", "$iEquip_MCM_common_lbl_altStartWarning3", "")
+        MCM.AddTextOptionST("gen_txt_altStartWarning4", "$iEquip_MCM_common_lbl_altStartWarning4", "")
     endIf
 endFunction
 
@@ -177,16 +182,25 @@ State gen_tgl_onOff
 				MCM.bEnabled = false
 				bFirstEnabled = false
 				MCM.forcePageReset()
-			elseIf !JContainers.isInstalled()
+			elseIf !JContainers.isInstalled()                                               ; Dependency checks
 				MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontmissing", false, "$OK")
             elseIf !(JContainers.APIVersion() >= 3 && JContainers.featureVersion() >= 3)
                 MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontoldversion", false, "$OK")
-			elseIf EH.bPlayerIsABeast
-				MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
-			else
-				MCM.bEnabled = true
-				bFirstEnabled = true
-                MCM.forcePageReset()
+            else                                                                            ; Requirement checks
+                Quest LALChargen = Quest.GetQuest("ARTHLALChargenQuest")
+                Quest UnboundChargen = Quest.GetQuest("SkyrimUnbound")
+                
+                if (LALChargen && !LALChargen.IsCompleted())
+                    MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenFirst", false, "$OK")
+                elseIf (UnboundChargen && !UnboundChargen.IsCompleted())
+                    MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenUnboundFirst", false, "$OK")
+                elseIf EH.bPlayerIsABeast
+                    MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
+                else
+                    MCM.bEnabled = true
+                    bFirstEnabled = true
+                    MCM.forcePageReset()
+                endIf
 			endIf
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
