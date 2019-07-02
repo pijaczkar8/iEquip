@@ -183,9 +183,12 @@ State gen_tgl_onOff
                 MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontoldversion", false, "$OK")
             else                                                                            ; Requirement checks
                 Quest LALChargen = Quest.GetQuest("ARTHLALChargenQuest")
+                Quest UnboundChargen = Quest.GetQuest("SkyrimUnbound")
                 
                 if (LALChargen && !LALChargen.IsCompleted())
                     MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenFirst", false, "$OK")
+                elseIf (UnboundChargen && !UnboundChargen.IsCompleted())
+                    MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenUnboundFirst", false, "$OK")
                 elseIf EH.bPlayerIsABeast
                     MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
                 else
