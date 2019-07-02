@@ -866,6 +866,7 @@ state ENABLED
 			CheckDependencies()
 			checkAndSetKeysForGamepadPlusPlus()
 			EM.UpdateElementsAll()
+			WaitMenuMode(2.0)	; Testing to see if this gets text formatting to update correctly on load
 			args[0] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			args[3] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
@@ -3254,7 +3255,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    elseIf targetItem as light
 		    	;debug.trace("iEquip_WidgetCore cycleHand - this is a torch so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, 0)
-		    elseIf !(targetItem as weapon) || itemCount == 1													; If it's not a weapon, or we only have one of them there's no risk of equipping the wrong one so safe to use EquipItemEx
+		    elseIf !(targetItem as weapon) ;|| itemCount == 1													; If it's not a weapon, or we only have one of them there's no risk of equipping the wrong one so safe to use EquipItemEx
 		    	;debug.trace("iEquip_WidgetCore cycleHand - not a weapon, or we only have one of these so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 		    else												; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
