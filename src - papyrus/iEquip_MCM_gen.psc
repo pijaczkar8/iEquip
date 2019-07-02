@@ -177,16 +177,22 @@ State gen_tgl_onOff
 				MCM.bEnabled = false
 				bFirstEnabled = false
 				MCM.forcePageReset()
-			elseIf !JContainers.isInstalled()
+			elseIf !JContainers.isInstalled()                                               ; Dependency checks
 				MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontmissing", false, "$OK")
             elseIf !(JContainers.APIVersion() >= 3 && JContainers.featureVersion() >= 3)
                 MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontoldversion", false, "$OK")
-			elseIf EH.bPlayerIsABeast
-				MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
-			else
-				MCM.bEnabled = true
-				bFirstEnabled = true
-                MCM.forcePageReset()
+            else                                                                            ; Requirement checks
+                Quest LALChargen = Quest.GetQuest("ARTHLALChargenQuest")
+                
+                if (LALChargen && !LALChargen.IsCompleted())
+                    MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenFirst", false, "$OK")
+                elseIf EH.bPlayerIsABeast
+                    MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
+                else
+                    MCM.bEnabled = true
+                    bFirstEnabled = true
+                    MCM.forcePageReset()
+                endIf
 			endIf
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
