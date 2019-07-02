@@ -1430,6 +1430,7 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 			FadeTo(100, 0.2)
 		endif
 		;Register for widget fadeout if enabled
+		;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - bWidgetFadeoutEnabled: " + bWidgetFadeoutEnabled + ", fWidgetFadeoutDelay: " + fWidgetFadeoutDelay + ", bAlwaysVisibleWhenWeaponsDrawn: " + bAlwaysVisibleWhenWeaponsDrawn + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
 		if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode
 			WVis.registerForWidgetFadeoutUpdate()
 		else
@@ -3254,10 +3255,10 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    elseIf targetItem as light
 		    	;debug.trace("iEquip_WidgetCore cycleHand - this is a torch so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, 0)
-		    elseIf !(targetItem as weapon) || itemCount == 1													; If it's not a weapon, or we only have one of them there's no risk of equipping the wrong one so safe to use EquipItemEx
+		    elseIf !(targetItem as weapon) ;|| itemCount == 1													; If it's not a weapon, or we only have one of them there's no risk of equipping the wrong one so safe to use EquipItemEx
 		    	;debug.trace("iEquip_WidgetCore cycleHand - not a weapon, or we only have one of these so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
-		    else												; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
+		    else																								; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
 	    		if refHandle != 0xFFFF
 	    			;debug.trace("iEquip_WidgetCore cycleHand - we have more than one of these and a refHandle so attempting to equip by handle")
 	    			;debug.trace("iEquip_WidgetCore cycleHand - args being passed to EquipItem are targetItem: " + targetItem + ", refHandle: " + refHandle + ", PlayerRef: " + PlayerRef + ", equip slot: " + iEquipSlotId)
@@ -3265,17 +3266,17 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	    			Utility.WaitMenuMode(0.2)
 	    		endIf
 		    	
-		    	if !PlayerRef.GetEquippedObject(Q)																														; If it's not enchanted or poisoned then if we have an itemID for it try equipping it that way
+		    	if PlayerRef.GetEquippedObject(Q) != targetItem													; If nothing has been equipped check we have an itemID for it and try equipping it that way
     				int itemID = jMap.getInt(targetObject, "iEquipItemID")
-			    	if itemID as bool 																		; If we have an itemID then try equipping by that first.  This will fail if the display name has changed since we last equipped it,
+			    	if itemID as bool 																			; This will fail if the display name has changed since we last equipped it, for example if the item has been renamed or a temper level has changed
 			    		;;debug.trace("iEquip_WidgetCore cycleHand - the item isn't enchanted or poisoned but we have an itemID so attempting to EquipItemByID")
 			    		;debug.trace("iEquip_WidgetCore cycleHand - we have an itemID so attempting to EquipItemByID")
-			    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)							; for example if the item has been renamed or a temper level has changed
+			    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)
+			    		Utility.WaitMenuMode(0.2)
 			    	endIf
-	    			Utility.WaitMenuMode(0.2)
-		    		if !PlayerRef.GetEquippedObject(Q)															; Now check if we actually have something equipped.  If all the above have failed we will be empty handed at this point
+		    		if PlayerRef.GetEquippedObject(Q) != targetItem												; Final check to confirm we actually have something equipped.  If all the above have failed fall back on EquipItemEX and take pot luck as to which one is equipped
 		    			;debug.trace("iEquip_WidgetCore cycleHand - We still haven't succeeded in equipping anything so falling back on EquipItemEx and taking pot luck")
-		    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)											; So fall back on EquipItemEX and take pot luck as to which one is equipped
+		    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 	    				EH.abSkipQueueObjectUpdate[Q] = true 	
 	    			;else
 	    				;debug.trace("iEquip_WidgetCore cycleHand - item successfully equipped")
@@ -3952,15 +3953,13 @@ bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 			isPoisoned = false
 		endIf
 	endIf
-	;debug.trace("iEquip_WidgetCore isWeaponPoisoned - Q: " + Q + ", iIndex: " + iIndex + ", isPoisoned: " + isPoisoned)
-	;debug.trace("iEquip_WidgetCore isWeaponPoisoned end")
+	;debug.trace("iEquip_WidgetCore isWeaponPoisoned end - Q: " + Q + ", iIndex: " + iIndex + ", isPoisoned: " + isPoisoned)
 	return isPoisoned
 endFunction
 
 ;Unequips item in hand
 function UnequipHand(int Q)
-	;debug.trace("iEquip_WidgetCore UnequipHand start")
-    ;debug.trace("iEquip_WidgetCore UnequipHand - Q: " + Q)
+    ;debug.trace("iEquip_WidgetCore UnequipHand start - Q: " + Q)
     int QEx = 1
     if (Q == 0)
         QEx = 2 ; UnequipSpell and UnequipItemEx need different hand arguments

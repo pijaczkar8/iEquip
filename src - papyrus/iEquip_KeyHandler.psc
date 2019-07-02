@@ -254,7 +254,7 @@ event OnMenuOpen(string MenuName)
 endEvent
 
 event OnMenuClose(string MenuName)
-    ;debug.trace("iEquip_KeyHandler OnMenuClose start - Menu being closed: "+MenuName)
+    ;debug.trace("iEquip_KeyHandler OnMenuClose start - Menu being closed: "+MenuName+", IsInMenuMode: " + utility.IsInMenuMode() + ", previous state: " + sPreviousState)
     if MenuName == "LootMenu"
         bNotInLootMenu = true
     elseIf !utility.IsInMenuMode()
@@ -572,7 +572,7 @@ endState
 ; - Inventory
 state INVENTORYMENU
     event OnKeyDown(int KeyCode)
-        ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start")
+        ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start - keyCode: " + keyCode)
         ;if KeyCode == iUtilityKey
         ;    bIsUtilityKeyHeld = true
         ;endIf

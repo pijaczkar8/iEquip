@@ -61,6 +61,7 @@ function rechargeWeapon(int Q)
         float currentCharge = PlayerRef.GetActorValue(weaponToRecharge)
         float maxCharge = WornObject.GetItemMaxCharge(PlayerRef, Q, 0)
         float requiredCharge = maxCharge - currentCharge
+
         ;debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
         if requiredCharge < 1.0
             debug.Notification("$iEquip_RC_not_alreadyFull")
@@ -78,7 +79,7 @@ function rechargeWeapon(int Q)
                     endIf
                     ;Just in case it's possible to overcharge a weapon ensure we never recharge more than requiredCharge
                     if afAmountToRecharge[soulSize] < requiredCharge
-                       PlayerRef.ModActorValue(weaponToRecharge, afAmountToRecharge[soulSize])
+                        PlayerRef.ModActorValue(weaponToRecharge, afAmountToRecharge[soulSize])
                     else
                         PlayerRef.ModActorValue(weaponToRecharge, requiredCharge)
                     endIf
