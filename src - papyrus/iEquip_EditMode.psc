@@ -176,7 +176,8 @@ function DisableEditMode()
     SetINIfloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay)
     
     GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
-    ;game.EnablePlayerControls(true, true, true, true, true, true, true, true, 0)
+    game.EnablePlayerControls()
+    GetPlayer().SetDontMove(false)
 endFunction
 
 function EnableEditmode()
@@ -184,7 +185,8 @@ function EnableEditmode()
     isEditMode = true
 
     ; Disable player controls
-    ;game.DisablePlayerControls(true, true, true, true, true, true, true, true, 0)
+    game.DisablePlayerControls(false, true, true, true, true, true, true, true, 0)
+    GetPlayer().SetDontMove()
     ;Game.DisablePlayerControls(0, 1, 1, 0, 0, 1, 1, 1, 0)
 
     ; Save and disable Vanity Camera whilst in Edit Mode

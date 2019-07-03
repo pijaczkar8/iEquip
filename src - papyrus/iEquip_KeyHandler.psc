@@ -277,6 +277,11 @@ endEvent
 
 event OnMenuClose(string MenuName)
     ;debug.trace("iEquip_KeyHandler OnMenuClose start - Menu being closed: "+MenuName+", IsInMenuMode: " + utility.IsInMenuMode() + ", previous state: " + sPreviousState)
+    if menuName == "MessageBoxMenu"
+    	Utility.WaitMenuMode(0.5)
+    	sPreviousState = GetState()	; This catches having toggled into Edit Mode from the Utility Menu
+    endIf
+
     if MenuName == "LootMenu"
         bNotInLootMenu = true
     elseIf !utility.IsInMenuMode()
@@ -625,7 +630,7 @@ endState
 ; - Editmode
 state EDITMODE
     event OnKeyUp(int KeyCode, Float HoldTime)
-        ;debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start")
+        ;debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start - bAllowKeyPress: " + bAllowKeyPress + ", KeyCode: " + KeyCode)
         if KeyCode == iUtilityKey
             bIsUtilityKeyHeld = false
         elseIf bGPPKeyHeld && aiGPPComboKeys.Find(KeyCode) > -1
