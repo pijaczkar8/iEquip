@@ -121,7 +121,7 @@ bool function showHelpMenuProMode() ; Return false to exit
                     endIf
                 endIf
 
-            elseif iAction == 4     ; QuickDualCast
+            elseif iAction == 5     ; QuickDualCast
                 debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickdualcast"))
             endIf
         else

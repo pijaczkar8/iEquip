@@ -724,14 +724,13 @@ function UpdateEditModeGuide()
 endFunction
 
 function UpdateElementsAll(bool bUpdateAlpha = true)
-    int[] iArgs = new int[3]
     int iIndex
     
     while iIndex < WC.asWidgetDescriptions.Length  
-        if WC.abWidget_isText[iIndex] || iIndex == 45 ; potionSelector_mc
+        ;/if WC.abWidget_isText[iIndex] || iIndex == 45 ; potionSelector_mc
             iArgs[0] = iIndex
             UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
-        endIf
+        endIf/;
         
         UpdateElementData(iIndex, bUpdateAlpha)
         iIndex += 1
@@ -739,8 +738,13 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
     
     if !WC.bRefreshingWidget
         iIndex = 1
+        int[] iArgs = new int[3]
     
         while iIndex < WC.asWidgetDescriptions.Length
+            if WC.abWidget_isText[iIndex] || iIndex == 45 ; potionSelector_mc
+                iArgs[0] = iIndex
+                UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
+            endIf
             SetElementDepthOrder(iIndex)
             iIndex += 1
         endWhile
@@ -750,6 +754,19 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
         endIf
     endIf
 
+endFunction
+
+function UpdateAllTextFormatting()                      ; Only called from OnWidgetLoad
+    int iIndex = 8                                      ; leftName_mc is the first text element so no need to start earlier
+    int[] iArgs = new int[3]
+    
+    while iIndex < WC.asWidgetDescriptions.Length
+        if WC.abWidget_isText[iIndex] || iIndex == 45   ; potionSelector_mc
+            iArgs[0] = iIndex
+            UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
+        endIf
+        iIndex += 1
+    endWhile
 endFunction
 
 ; ####################

@@ -132,8 +132,12 @@ function drawPage()
 
 		MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
 
-		if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
-			MCM.AddTextOptionST("gen_txt_addFists", "$iEquip_MCM_gen_lbl_AddUnarmed", "")
+		if WC.findInQueue(0, "$iEquip_common_Unarmed") == -1
+            MCM.AddTextOptionST("gen_txt_addFistsLeft", "$iEquip_MCM_gen_lbl_AddUnarmedLeft", "")
+        endIf
+
+        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
+			MCM.AddTextOptionST("gen_txt_addFistsRight", "$iEquip_MCM_gen_lbl_AddUnarmedRight", "")
 		endIf
 
 		MCM.AddEmptyOption()
@@ -375,12 +379,23 @@ State gen_tgl_showAtrIco
     endEvent
 endState
 
-State gen_txt_addFists
+State gen_txt_addFistsLeft
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_addFists")
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_addFistsLeft")
         elseIf currentEvent == "Select"
-            WC.addFists()
+            WC.addFists(0)
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_txt_addFistsRight
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_addFistsRight")
+        elseIf currentEvent == "Select"
+            WC.addFists(1)
             MCM.forcePageReset()
         endIf
     endEvent

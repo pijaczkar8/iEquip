@@ -817,7 +817,8 @@ state ENABLED
 		
 		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
 		CheckDependencies()
-		addFists()
+		addFists(0)
+		addFists(1)
 
 		checkAndSetKeysForGamepadPlusPlus()
 
@@ -866,11 +867,11 @@ state ENABLED
 			CheckDependencies()
 			checkAndSetKeysForGamepadPlusPlus()
 			EM.UpdateElementsAll()
-			WaitMenuMode(2.0)	; Testing to see if this gets text formatting to update correctly on load
 			args[0] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			args[3] = (bAmmoMode && !AM.bSimpleAmmoMode)
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			refreshWidgetOnLoad()
+			EM.UpdateAllTextFormatting()
 		else
 			int i
 			while i < 2
@@ -1174,11 +1175,11 @@ function initialisemoreHUDArray()
         		queueLength -= 1
         	endIf
         	;Make sure we skip the dummy Unarmed and Potion Group items
-        	if Q == 1 || Q == 3
+        	if Q < 2 || Q == 3
 	        	bool isDummyItem = true
 	        	while isDummyItem
 	        		string itemName = jMap.getStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName")
-	        		if Q == 1
+	        		if Q < 2
 	        			isDummyItem = (itemName == "$iEquip_common_Unarmed")
 	        		else
 	        			isDummyItem = (asPotionGroups.Find(itemName) > -1)
@@ -1286,15 +1287,15 @@ function removePotionGroups()
 	;debug.trace("iEquip_WidgetCore removePotionGroups end")
 endFunction
 
-function addFists()
+function addFists(int Q)
 	;debug.trace("iEquip_WidgetCore addFists start")
-	if findInQueue(1, "$iEquip_common_Unarmed") == -1
+	if findInQueue(Q, "$iEquip_common_Unarmed") == -1
 		int Fists = jMap.object()
 		jMap.setInt(Fists, "iEquipType", 0)
 		jMap.setStr(Fists, "iEquipName", "$iEquip_common_Unarmed")
 		jMap.setStr(Fists, "iEquipIcon", "Fist")
 		jMap.setInt(Fists, "iEquipAutoAdded", 0)
-		jArray.addObj(aiTargetQ[1], Fists)
+		jArray.addObj(aiTargetQ[Q], Fists)
 	endIf
 	;debug.trace("iEquip_WidgetCore addFists end")
 endFunction
@@ -1584,9 +1585,7 @@ function addCurrentItemsOnFirstEnable()
 				checkAndEquipShownHandItem(Q, false, true)
 			endIf
 		; Otherwise set left/right slots to Unarmed
-		elseIf Q == 0
-			setSlotToEmpty(0)
-		elseIf Q == 1
+		elseIf Q < 2
 			aiCurrentQueuePosition[Q] = 0
 			asCurrentlyEquipped[Q] = "$iEquip_common_Unarmed"
 			updateWidget(Q, aiCurrentQueuePosition[Q], false, true)
@@ -1971,10 +1970,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
                     endWhile
 			    else
 			    	;If we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues we need to cycle until we find one that hasn't been Auto-Added 
-			    	if !(Q == 1 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed")
+			    	if !(Q < 2 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed")
 			    		targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
 			    		int countdown = queueLength - 1
-				        while !(Q == 1 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed") && ((Q < 2 && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipType") != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)) || (bSkipAutoAddedItems && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipAutoAdded") == 1)) && countdown > 0
+				        while !(Q < 2 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed") && ((Q < 2 && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipType") != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)) || (bSkipAutoAddedItems && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipAutoAdded") == 1)) && countdown > 0
 				            targetIndex = targetIndex + move
 				            if targetIndex < 0 && Reverse
 				                targetIndex = queueLength - 1
@@ -2110,8 +2109,12 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
     
     if !equippingOnAutoAdd
 	    ;if we're equipping Fists
-	    if Q == 1 && itemType == 0
-			goUnarmed()
+	    if itemType == 0
+	    	if Q == 0
+	    		UnequipHand(0)
+	    	else
+				goUnarmed()
+			endIf
 			doneHere = true  
 
 	    ;if you already have the item equipped in the slot you are cycling then refresh the poison, charge and count info and hide the attribute icons
@@ -4528,7 +4531,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	int targetArray = aiTargetQ[iQueueMenuCurrentQueue]
 	int targetObject = jArray.getObj(targetArray, iIndex)
 	string itemName = JMap.getStr(targetObject, "iEquipName")
-	if !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed") && !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
+	if !(iQueueMenuCurrentQueue < 2 && itemName == "$iEquip_common_Unarmed") && !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
 		bool keepInFLST
 		int itemID = JMap.getInt(targetObject, "iEquipItemID")
 		int itemHandle = JMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
@@ -4618,7 +4621,7 @@ function QueueMenuClearQueue()
 	while count > -1
 		targetObject = jArray.getObj(targetArray, count)
 		itemName = JMap.getStr(targetObject, "iEquipName")
-		if !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1)) && !(iQueueMenuCurrentQueue == 1 && itemName == "$iEquip_common_Unarmed")
+		if !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1)) && !(iQueueMenuCurrentQueue < 2 && itemName == "$iEquip_common_Unarmed")
 			bool keepInFLST
 			int itemID = JMap.getInt(targetObject, "iEquipItemID")
 			int itemHandle = JMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
