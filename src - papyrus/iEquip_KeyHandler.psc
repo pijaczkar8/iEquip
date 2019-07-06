@@ -177,36 +177,27 @@ event onGPPComboKeysUpdated(string sEventName, string sStringArg, Float fNumArg,
 endEvent
 
 function registerForGPPKeys()
-    ;debug.trace("iEquip_KeyHandler registerForGPPKeys")
+	;debug.trace("iEquip_KeyHandler registerForGPPKeys")
+	int i
+	int hexBase = 0x00003DE2
+	
 	unregisterForGPPKeys()
-    int tmpKey = (Game.GetFormFromFile(0x00003DE2, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-    if tmpKey != iUtilityKey
-	   aiGPPComboKeys[0] = tmpKey
-    endIf
-    tmpKey = (Game.GetFormFromFile(0x00003DE3, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-    if tmpKey != iUtilityKey
-       aiGPPComboKeys[1] = tmpKey
-    endIf
-    tmpKey = (Game.GetFormFromFile(0x00003DE4, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-    if tmpKey != iUtilityKey
-       aiGPPComboKeys[2] = tmpKey
-    endIf
-    tmpKey = (Game.GetFormFromFile(0x00003DE5, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-    if tmpKey != iUtilityKey
-       aiGPPComboKeys[3] = tmpKey
-    endIf
-    int i
-    while i < 4
-        if aiGPPComboKeys[i] != -1
-            ;debug.trace("iEquip_KeyHandler registerForGPPKeys - aiGPPComboKeys[" + i + "] contains " + aiGPPComboKeys[i])
-            RegisterForKey(aiGPPComboKeys[i])
-        endIf
-        i += 1
-    endWhile
+	
+	while i < 4
+		int tmpKey = (Game.GetFormFromFile(hexBase + i, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+		
+		if (tmpKey != iUtilityKey && tmpKey != -1)
+			aiGPPComboKeys[i] = tmpKey
+			RegisterForKey(tmpKey)
+		endIf
+		
+		i += 1
+	endWhile
 endFunction
 
 function unregisterForGPPKeys()
 	int i
+
 	while i < 4
 		if aiGPPComboKeys[i] != -1 && aiGPPComboKeys[i] != iUtilityKey
             UnregisterForKey(aiGPPComboKeys[i])
