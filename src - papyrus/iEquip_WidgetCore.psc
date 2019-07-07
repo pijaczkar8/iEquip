@@ -4431,13 +4431,19 @@ endFunction
 function openQueueManagerMenu(int Q = -1)
 	;debug.trace("iEquip_WidgetCore openQueueManagerMenu start")
 	if Q == -1
-		Q = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_queuemenu_title")) ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue
+		Q = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_queuemenu_title")) ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue, 6 = Arrow queue, 7 = Bolt queue
 	else
 		bJustUsedQueueMenuDirectAccess = true
 	endIf
 	if Q > 0
+		int targetArray
+		if Q > 5	; Ammo queues
+			targetArray = AM.aiTargetQ[Q - 6]
+		else
+			targetArray = aiTargetQ[Q - 1]
+		endIf
 		Q -= 1
-		int queueLength = jArray.count(aiTargetQ[Q])
+		int queueLength = jArray.count(targetArray)
 		if queueLength < 1
 			debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[Q] + "}"))
 			recallQueueMenu()
@@ -4445,8 +4451,8 @@ function openQueueManagerMenu(int Q = -1)
 			int i
 			;Remove any empty indices before creating the menu arrays
 			while i < queueLength
-				if !JMap.getStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName")
-					jArray.eraseIndex(aiTargetQ[Q], i)
+				if !JMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
+					jArray.eraseIndex(targetArray, i)
 					queueLength -= 1
 				endIf
 				i += 1
