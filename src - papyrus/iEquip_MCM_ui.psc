@@ -574,10 +574,10 @@ State ui_sld_wdgetFadeDelay
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_wdgetFadeDelay")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fWidgetFadeoutDelay, 0.0, 180.0, 5.0, 30.0)
+            MCM.fillSlider(WC.fWidgetFadeoutDelay, 0.0, 60.0, 0.5, 10.0)
         elseIf currentEvent == "Accept"
             WC.fWidgetFadeoutDelay = currentVar
-            MCM.SetSliderOptionValueST(WC.fWidgetFadeoutDelay, "{0}")
+            MCM.SetSliderOptionValueST(WC.fWidgetFadeoutDelay, "{1}")
         endIf 
     endEvent
 endState

@@ -178,6 +178,7 @@ function DisableEditMode()
     GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
     game.EnablePlayerControls()
     GetPlayer().SetDontMove(false)
+    GetPlayer().GetActorBase().SetInvulnerable(false)
 endFunction
 
 function EnableEditmode()
@@ -187,6 +188,7 @@ function EnableEditmode()
     ; Disable player controls
     game.DisablePlayerControls(false, true, true, true, true, true, true, true, 0)
     GetPlayer().SetDontMove()
+    GetPlayer().GetActorBase().SetInvulnerable()
     ;Game.DisablePlayerControls(0, 1, 1, 0, 0, 1, 1, 1, 0)
 
     ; Save and disable Vanity Camera whilst in Edit Mode

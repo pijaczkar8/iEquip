@@ -799,6 +799,10 @@ state ENABLED
 		JMap.setObj(iEquipQHolderObj, "consumableQ", aiTargetQ[3])
 		aiTargetQ[4] = JArray.object()
 		JMap.setObj(iEquipQHolderObj, "poisonQ", aiTargetQ[4])
+        AM.aiTargetQ[0] = JArray.object()
+        JMap.setObj(iEquipQHolderObj, "arrowQ", AM.aiTargetQ[0])
+        AM.aiTargetQ[1] = JArray.object()
+        JMap.setObj(iEquipQHolderObj, "boltQ", AM.aiTargetQ[1])
 		iRemovedItemsCacheObj = JArray.object()
 		JMap.setObj(iEquipQHolderObj, "lastRemovedCache", iRemovedItemsCacheObj)
 		iRefHandleArray = JArray.object()
@@ -1571,7 +1575,7 @@ function addCurrentItemsOnFirstEnable()
 				endIf
 			endIf
 			; Now update the widget to show the equipped item
-			if Q == 1
+			if Q < 2
 				aiCurrentQueuePosition[Q] = 1 ; Make sure we show the equipped item and not the Unarmed shortcut we've already added in index 0
 			else
 				aiCurrentQueuePosition[Q] = 0
@@ -3181,6 +3185,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	; Otherwise unequip current item if we need to
 	;elseif !bGoneUnarmed && !equippingOnAutoAdd ;&& !previously2H
 		;UnequipHand(Q)
+	elseIf ai2HWeaponTypes.Find(itemType) > -1 && !equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) == -1 ;&& jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "isEnchanted") == 1
+		UnequipHand(1)
+		WaitMenuMode(0.4)
 	endIf
 	; if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place, or we're about to equip a 2H/ranged item and we're currently unarmed or have a 2H spell equipped
     if (Q == 0 && ((equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) > -1) || (!equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) > -1))) && !justSwitchedHands ;|| targetObjectIs2hOrRanged
