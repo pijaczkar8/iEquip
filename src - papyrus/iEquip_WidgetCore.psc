@@ -1431,7 +1431,7 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 	if !bFadeRequestQueued 							; Terminate the fade request if there is already one in progress and one pending
 		bFadeRequestQueued = true					; Block any further fade requests while this one is pending
 		while bFadingWidget 						; Wait for the previous fade to complete
-			Utility.WaitMenuMode(0.05)
+			Utility.WaitMenuMode(0.1)
 		endWhile
 		bFadeRequestQueued = false					; Allow incoming fade requests
 		if !bRefreshingWidget						; Terminate request if we're refreshWidgetOnLoad
