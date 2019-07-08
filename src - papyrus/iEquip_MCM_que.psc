@@ -111,7 +111,7 @@ State que_sld_maxItmQue
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_que_txt_maxItmQue")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.iMaxQueueLength, 0.0, 30.0, 1.0, 12.0)
+            MCM.fillSlider(WC.iMaxQueueLength, 0.0, 100.0, 1.0, 25.0)
         elseIf currentEvent == "Accept"
             if currentVar as int < WC.iMaxQueueLength
                 if MCM.ShowMessage("$iEquip_MCM_que_msg_maxItmQue", true, "$OK", "$Cancel")

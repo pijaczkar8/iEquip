@@ -178,6 +178,7 @@ function DisableEditMode()
     GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
     game.EnablePlayerControls()
     GetPlayer().SetDontMove(false)
+    GetPlayer().GetActorBase().SetInvulnerable(false)
 endFunction
 
 function EnableEditmode()
@@ -187,6 +188,7 @@ function EnableEditmode()
     ; Disable player controls
     game.DisablePlayerControls(false, true, true, true, true, true, true, true, 0)
     GetPlayer().SetDontMove()
+    GetPlayer().GetActorBase().SetInvulnerable()
     ;Game.DisablePlayerControls(0, 1, 1, 0, 0, 1, 1, 1, 0)
 
     ; Save and disable Vanity Camera whilst in Edit Mode
@@ -243,12 +245,19 @@ function EnableEditmode()
     if RulersShown == 1
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", true)
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", false)
     elseIf RulersShown == 2
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", true)
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", false)
+    elseIf RulersShown == 3
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", true)
     else
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
+        UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", false)
     endIf
     
     GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
@@ -716,6 +725,8 @@ function UpdateEditModeGuide()
             tmpStr = "$iEquip_EM_edgeGrid"
         elseIf RulersShown == 2
             tmpStr = "$iEquip_EM_fullGrid"
+        elseIf RulersShown == 3
+            tmpStr = "$iEquip_EM_fullGridWide"
         else
             tmpStr = "$iEquip_common_Hidden"
         endIf
@@ -825,10 +836,14 @@ function ToggleRulers()
         UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", true)
     elseIf RulersShown == 2
         UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Rulers._visible", false)
-        Wait(0.5)
+        Wait(0.3)
         UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", true)
-    else
+    elseIf RulersShown == 3
         UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.Grid._visible", false)
+        Wait(0.3)
+        UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", true)
+    else
+        UI.SetBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", false)
         RulersShown = 0
     endIf
     

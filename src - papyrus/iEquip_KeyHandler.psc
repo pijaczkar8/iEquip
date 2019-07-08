@@ -65,7 +65,7 @@ bool property bNoUtilMenuInCombat auto hidden
 bool property bExtendedKbControlsEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
-bool bNotInLootMenu = true
+bool bIsUtilityMenu
 bool _bPlayerIsABeast
 bool property bIsGPPLoaded auto hidden
 bool bGPPKeyHeld
@@ -110,7 +110,6 @@ function GameLoaded()
     iMultiTap = 0
     bIsUtilityKeyHeld = false
     bGPPKeyHeld = false
-    bNotInLootMenu = true
     ;debug.trace("iEquip_KeyHandler GameLoaded end")
 endFunction
 
@@ -136,7 +135,6 @@ function RegisterForMenus()
     RegisterForMenu("LevelUp Menu")
     RegisterForMenu("Loading Menu")
     RegisterForMenu("Lockpicking Menu")
-    RegisterForMenu("LootMenu")         ; QuickLoot
     RegisterForMenu("MagicMenu")
     RegisterForMenu("Main Menu")
     RegisterForMenu("MapMenu")
@@ -177,32 +175,22 @@ event onGPPComboKeysUpdated(string sEventName, string sStringArg, Float fNumArg,
 endEvent
 
 function registerForGPPKeys()
-    ;debug.trace("iEquip_KeyHandler registerForGPPKeys")
+	;debug.trace("iEquip_KeyHandler registerForGPPKeys")
+	int i
+	int hexBase = 0x00003DE2
+	
 	unregisterForGPPKeys()
-    int tmpKey = (Game.GetFormFromFile(0x00003DE2, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-    if tmpKey != iUtilityKey
-	   aiGPPComboKeys[0] = tmpKey
-    endIf
-    tmpKey = (Game.GetFormFromFile(0x00003DE3, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-    if tmpKey != iUtilityKey
-       aiGPPComboKeys[1] = tmpKey
-    endIf
-    tmpKey = (Game.GetFormFromFile(0x00003DE4, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-    if tmpKey != iUtilityKey
-       aiGPPComboKeys[2] = tmpKey
-    endIf
-    tmpKey = (Game.GetFormFromFile(0x00003DE5, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-    if tmpKey != iUtilityKey
-       aiGPPComboKeys[3] = tmpKey
-    endIf
-    int i
-    while i < 4
-        if aiGPPComboKeys[i] != -1
-            ;debug.trace("iEquip_KeyHandler registerForGPPKeys - aiGPPComboKeys[" + i + "] contains " + aiGPPComboKeys[i])
-            RegisterForKey(aiGPPComboKeys[i])
-        endIf
-        i += 1
-    endWhile
+	
+	while i < 4
+		int tmpKey = (Game.GetFormFromFile(hexBase + i, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+		
+		if (tmpKey != iUtilityKey && tmpKey != -1)
+			aiGPPComboKeys[i] = tmpKey
+			RegisterForKey(tmpKey)
+		endIf
+		
+		i += 1
+	endWhile
 endFunction
 
 function unregisterForGPPKeys()
@@ -253,22 +241,20 @@ endProperty
 
 event OnMenuOpen(string MenuName)
     ;debug.trace("iEquip_KeyHandler OnMenuOpen start - Menu being opened: "+MenuName)
-    if MenuName == "LootMenu"
-        bNotInLootMenu = false
+
+    sPreviousState = GetState()
+    
+    if (MenuName == "FavoritesMenu" || MenuName == "MagicMenu" || MenuName == "InventoryMenu")
+        GotoState("INVENTORYMENU")
+        RegisterForMenuKeys()
     else
-        sPreviousState = GetState()
-        
-        if (MenuName == "FavoritesMenu" || MenuName == "MagicMenu" || MenuName == "InventoryMenu")
-            GotoState("INVENTORYMENU")
-            RegisterForGameplayKeys()
-        else
-            GoToState("DISABLED")
-        endIf
-        ;debug.trace("iEquip_KeyHandler OnMenuOpen - state set to: " + GetState())
-        UnregisterForUpdate()
-        iWaitingKeyCode = -1
-        iMultiTap = 0
+        GoToState("DISABLED")
     endIf
+    ;debug.trace("iEquip_KeyHandler OnMenuOpen - state set to: " + GetState())
+    UnregisterForUpdate()
+    iWaitingKeyCode = -1
+    iMultiTap = 0
+
     ; Just in case
     bIsUtilityKeyHeld = false
     bGPPKeyHeld = false
@@ -277,14 +263,13 @@ endEvent
 
 event OnMenuClose(string MenuName)
     ;debug.trace("iEquip_KeyHandler OnMenuClose start - Menu being closed: "+MenuName+", IsInMenuMode: " + utility.IsInMenuMode() + ", previous state: " + sPreviousState)
-    if menuName == "MessageBoxMenu"
-    	Utility.WaitMenuMode(0.5)
-    	sPreviousState = GetState()	; This catches having toggled into Edit Mode from the Utility Menu
+
+    if MenuName == "MessageBoxMenu" && bIsUtilityMenu
+        bIsUtilityMenu = false
+        Utility.WaitMenuMode(0.5)
     endIf
 
-    if MenuName == "LootMenu"
-        bNotInLootMenu = true
-    elseIf !utility.IsInMenuMode()
+    if !utility.IsInMenuMode()
         if EM.isEditMode
             GoToState("EDITMODE")
         elseIf _bPlayerIsABeast
@@ -292,9 +277,11 @@ event OnMenuClose(string MenuName)
         else
             GoToState("")
         endIf
-    else 
+    
+    else
         GotoState(sPreviousState)
     endIf
+    
     bIsUtilityKeyHeld = false
     bGPPKeyHeld = false
     ;debug.trace("iEquip_KeyHandler OnMenuClose end - state set to: " + GetState())
@@ -379,13 +366,13 @@ function runUpdate()
     ;debug.trace("iEquip_KeyHandler runUpdate start")
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
-    
+  
     if iMultiTap == 0 ; Long press
             if iWaitingKeyCode == iConsumableKey
-                if bNotInLootMenu
+                if !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true)
                     WC.consumeItem()
                 endIf
-            elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && PM.bPreselectMode && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
+            elseIf iWaitingKeyCode == iShoutKey && !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true) && PM.bPreselectMode && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
                 PM.equipAllPreselectedItems()
             elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
                 if PM.bPreselectMode
@@ -414,6 +401,7 @@ function runUpdate()
             if PlayerRef.IsInCombat() && bNoUtilMenuInCombat
                 debug.notification(iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_notWithWeaponsDrawn"))
             else
+                bIsUtilityMenu = true
                 int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
                 
                 if iAction != 0             ; Exit
@@ -423,10 +411,6 @@ function runUpdate()
                         toggleEditMode()
                     else;if iAction == 3     ; Help Menu
                         HM.showHelpMenuMain()
-                    ;/elseif iAction == 4     ; Refresh Widget
-                        WC.refreshWidget()
-                    elseif iAction == 5     ; Debug option
-                        jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")/;
                     endIf
                 endIf
             endIf         
@@ -455,7 +439,7 @@ function runUpdate()
         elseIf iWaitingKeyCode == iQuickRangedKey && bExtendedKbControlsEnabled
             PM.quickRanged()
 
-        elseIf bNotInLootMenu
+        elseIf !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true)
             if iWaitingKeyCode == iShoutKey
                 if WC.bShoutEnabled
                     WC.cycleSlot(2, bIsUtilityKeyHeld, false, false, true)
@@ -472,7 +456,7 @@ function runUpdate()
     elseIf iMultiTap == 2  ; Double tap
         int LHItemType
         if iWaitingKeyCode == iConsumableKey 
-            if bNotInLootMenu && WC.bConsumablesEnabled && WC.bPoisonsEnabled
+            if !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true) && WC.bConsumablesEnabled && WC.bPoisonsEnabled
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
             endIf
         elseIf iWaitingKeyCode == iQuickLightKey && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
@@ -515,7 +499,7 @@ function runUpdate()
                 else
                     if iWaitingKeyCode == iRightKey && (PM.abPreselectSlotEnabled[1] || AM.bAmmoMode)
                         PM.equipPreselectedItem(1)
-                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
+                    elseIf iWaitingKeyCode == iShoutKey && !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true) && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
                         PM.equipPreselectedItem(2)
                     endIf
                 endIf
@@ -541,7 +525,7 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     if iWaitingKeyCode == iRightKey
                         WC.openQueueManagerMenu(2)
-                    elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu
+                    elseIf iWaitingKeyCode == iShoutKey && !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true)
                         WC.openQueueManagerMenu(3)
                     endIf
                 else
@@ -561,7 +545,7 @@ function runUpdate()
             PM.quickShield()
         elseIf iWaitingKeyCode == iRightKey
             PM.quickRanged()
-        elseIf bNotInLootMenu
+        elseIf !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true)
             if iWaitingKeyCode == iConsumableKey
                 PM.quickRestore()
             elseIf iWaitingKeyCode == iShoutKey
@@ -589,7 +573,7 @@ state BEASTMODE
         elseIf iWaitingKeyCode == iRightKey
             BM.cycleSlot(1, bIsUtilityKeyHeld, true)
         
-        elseIf iWaitingKeyCode == iShoutKey && bNotInLootMenu
+        elseIf iWaitingKeyCode == iShoutKey && !IsMenuOpen("LootMenu")
             BM.cycleSlot(2, bIsUtilityKeyHeld, true)
         endIf
         ;debug.trace("iEquip_KeyHandler runUpdate BEASTMODE end")
@@ -600,15 +584,9 @@ endState
 state INVENTORYMENU
     event OnKeyDown(int KeyCode)
         ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start - keyCode: " + keyCode)
-        ;if KeyCode == iUtilityKey
-        ;    bIsUtilityKeyHeld = true
-        ;endIf
-
-        if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
-            bGPPKeyHeld = true
-        endIf
      
-        if bAllowKeyPress && !bGPPKeyHeld
+        ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU - bAllowKeyPress: " + bAllowKeyPress + ", bGPPKeyHeld: " + bGPPKeyHeld)
+        if bAllowKeyPress
             bAllowKeyPress = false
         
             if KeyCode == iLeftKey
@@ -631,16 +609,6 @@ endState
 state EDITMODE
     event OnKeyUp(int KeyCode, Float HoldTime)
         ;debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start - bAllowKeyPress: " + bAllowKeyPress + ", KeyCode: " + KeyCode)
-        if KeyCode == iUtilityKey
-            bIsUtilityKeyHeld = false
-        elseIf bGPPKeyHeld && aiGPPComboKeys.Find(KeyCode) > -1
-            bGPPKeyHeld = false
-            int i
-            while i < 4 && !bGPPKeyHeld
-                bGPPKeyHeld = IsKeyPressed(aiGPPComboKeys[i])
-                i += 1
-            endWhile
-        endIf
         
         if bAllowKeyPress
             if KeyCode == iWaitingKeyCode && iMultiTap == 0
@@ -836,6 +804,15 @@ function RegisterForGameplayKeys()
         endIf
     endIf
     ;debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
+endFunction
+
+function RegisterForMenuKeys()
+    ;debug.trace("iEquip_KeyHandler RegisterForMenuKeys start")
+    RegisterForKey(iShoutKey)
+    RegisterForKey(iLeftKey)
+    RegisterForKey(iRightKey)
+    RegisterForKey(iConsumableKey)
+    ;debug.trace("iEquip_KeyHandler RegisterForMenuKeys end")
 endFunction
 
 function RegisterForEditModeKeys()
