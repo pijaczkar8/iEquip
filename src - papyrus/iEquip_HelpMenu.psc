@@ -33,7 +33,10 @@ function showHelpMenuMain()
                                 if iAction == 0
                                     iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls5"))
                                     if iAction == 0
-                                        debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_controls6"))
+                                        iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls6"))
+                                        if iAction == 0
+                                            debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_controls7"))
+                                        endIf
                                     endIf
                                 endIf
                             endIf

@@ -114,7 +114,10 @@ State htk_txt_htkHelp
                             if bKeepReading
                                 bKeepReading = MCM.ShowMessage("$iEquip_help_controls5", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
                                 if bKeepReading
-                                    MCM.ShowMessage("$iEquip_help_controls6", false, "$iEquip_common_msg_Exit")
+                                    bKeepReading = MCM.ShowMessage("$iEquip_help_controls6", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                                    if bKeepReading
+                                        MCM.ShowMessage("$iEquip_help_controls7", false, "$iEquip_common_msg_Exit")
+                                    endIf
                                 endIf
                             endIf
                         endIf

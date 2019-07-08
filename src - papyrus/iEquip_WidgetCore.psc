@@ -250,7 +250,8 @@ float property fWidgetFadeoutDelay = 20.0 auto hidden
 float property fWidgetFadeoutDuration = 1.5 auto hidden
 bool property bAlwaysVisibleWhenWeaponsDrawn = true auto hidden
 bool property bIsWidgetShown auto hidden
-bool bFadingWidgetOut
+bool bFadingWidget
+bool bFadeRequestQueued
 
 int property iCurrentNameFadeoutChoice
 	int function Get()
@@ -847,7 +848,7 @@ state ENABLED
 		bCyclingLHPreselectInAmmoMode = false
 		bSwitchingHands = false
 		bPreselectSwitchingHands = false
-		bFadingWidgetOut = false
+		bFadingWidget = false	; Note - this will release any queued fade requests, however as we have just set bRefreshingWidget = true those requests will immediately terminate clearing the way for the updateWidgetVisibility call later in this function
 		PM.bBlockQuickDualCast = false
 		KH.GameLoaded()
 		PM.OnWidgetLoad()
@@ -1423,27 +1424,34 @@ endFunction
 
 function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 	;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
-	if show
-		if !bIsWidgetShown
-			while bFadingWidgetOut
-				Utility.WaitMenuMode(0.05)
-			endWhile
-			bIsWidgetShown = true
-			FadeTo(100, 0.2)
-		endif
-		;Register for widget fadeout if enabled
-		;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - bWidgetFadeoutEnabled: " + bWidgetFadeoutEnabled + ", fWidgetFadeoutDelay: " + fWidgetFadeoutDelay + ", bAlwaysVisibleWhenWeaponsDrawn: " + bAlwaysVisibleWhenWeaponsDrawn + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
-		if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode
-			WVis.registerForWidgetFadeoutUpdate()
-		else
-			WVis.unregisterForWidgetFadeoutUpdate()
+	if !bFadeRequestQueued 							; Terminate the fade request if there is already one in progress and one pending
+		bFadeRequestQueued = true					; Block any further fade requests while this one is pending
+		while bFadingWidget 						; Wait for the previous fade to complete
+			Utility.WaitMenuMode(0.05)
+		endWhile
+		bFadeRequestQueued = false					; Allow incoming fade requests
+		if !bRefreshingWidget						; Terminate request if we're refreshWidgetOnLoad
+			bFadingWidget = true					; Cause any incoming request to be queued pending completion of this request
+			if show 								; If it is a show request and the widget isn't currently shown then start fade in
+				if !bIsWidgetShown
+					bIsWidgetShown = true
+					FadeTo(100, 0.2)
+					WaitMenuMode(0.2)				; Wait for fade duration before continuing
+				endif
+													; Register for widget fadeout if enabled and weapons drawn settings allow
+				;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - bWidgetFadeoutEnabled: " + bWidgetFadeoutEnabled + ", fWidgetFadeoutDelay: " + fWidgetFadeoutDelay + ", bAlwaysVisibleWhenWeaponsDrawn: " + bAlwaysVisibleWhenWeaponsDrawn + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
+				if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode
+					WVis.registerForWidgetFadeoutUpdate()
+				else
+					WVis.unregisterForWidgetFadeoutUpdate()
+				endIf
+			elseIf bIsWidgetShown					; If it is a hide request and the widget is currently shown then start fade out
+				bIsWidgetShown = false
+				FadeTo(0, fDuration)
+				Utility.WaitMenuMode(fDuration)		; Wait for fade duration before continuing
+			endIf
+			bFadingWidget = false					; Release any pending request
 		endIf
-	elseIf bIsWidgetShown
-		bIsWidgetShown = false
-		bFadingWidgetOut = true
-		FadeTo(0, fDuration)
-		Utility.WaitMenuMode(fDuration)
-		bFadingWidgetOut = false
 	endIf
 	;debug.trace("iEquip_WidgetCore updateWidgetVisibility end")
 endFunction
