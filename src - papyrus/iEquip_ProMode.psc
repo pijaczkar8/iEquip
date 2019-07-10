@@ -55,6 +55,7 @@ float property fQuickBuff2ndPressDelay = 4.0 auto hidden
 bool property bPreselectEnabled auto hidden
 bool property bShoutPreselectEnabled = true auto hidden
 bool property bPreselectSwapItemsOnEquip auto hidden
+bool property bPreselectSwapItemsOnQuickAction = true auto hidden
 bool property bTogglePreselectOnEquipAll auto hidden
 bool property bQuickShield2HSwitchAllowed = true auto hidden
 bool property bQuickShieldUnequipLeftIfNotFound auto hidden
@@ -801,12 +802,16 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 					PlayerRef.UnequipItemEx(targetAmmo)
 				endIf
 			endIf
+			int tmpIndex = WC.aiCurrentQueuePosition[0]
 			WC.aiCurrentQueuePosition[0] = found
 			WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(targetArray, found), "iEquipName")
 			if bPreselectMode
 				WC.updateWidget(0, found, true)
+				if bPreselectSwapItemsOnQuickAction
+					WC.aiCurrentlyPreselected[0] = tmpIndex
+					WC.updateWidget(0, tmpIndex, false, true)
 				;if for some reason the found shield/ward being QuickEquipped is also the currently preselected item then advance the preselect queue by 1 as well
-				if WC.aiCurrentlyPreselected[0] == found
+				elseIf WC.aiCurrentlyPreselected[0] == found
 					cyclePreselectSlot(0, leftCount, false)
 				endIf
 			else
@@ -855,13 +860,11 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 		if forceSwitch || onTorchDropped
 			;If we've forced quickShield because a previously equipped shield was removed from the player, or we've just dropped a lit torch and we haven't been able to find another in the left queue we now need to cycle the left queue
 			WC.cycleSlot(0, false, true)
+		elseIf bQuickShieldUnequipLeftIfNotFound && (PlayerRef.GetEquippedObject(1) as weapon) && WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) == -1
+			WC.UnequipHand(0)
+			WC.setSlotToEmpty(0, true, true)
 		else
-			if bQuickShieldUnequipLeftIfNotFound && (PlayerRef.GetEquippedObject(1) as weapon) && !(WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1)
-				WC.UnequipHand(0)
-				WC.setSlotToEmpty(0, true, true)
-			else
-				debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QSNotFound"))
-			endIf
+			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QSNotFound"))
 		endIf
 	endIf
 	;debug.trace("iEquip_ProMode quickShield end")
@@ -934,12 +937,16 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 		if !bPreselectMode || iPreselectQuickShield == 2
 			WC.bBlockSwitchBackToBoundSpell = true
 			targetObject = jArray.getObj(WC.aiTargetQ[1], found)
+			int tmpIndex = WC.aiCurrentQueuePosition[1]
 			WC.aiCurrentQueuePosition[1] = found
 			WC.asCurrentlyEquipped[1] = jMap.getStr(targetObject, "iEquipName")
 			if bPreselectMode
 				WC.updateWidget(1, found, true)
+				if bPreselectSwapItemsOnQuickAction
+					WC.aiCurrentlyPreselected[1] = tmpIndex
+					WC.updateWidget(1, tmpIndex, false, true)
 				;if for some reason the found item being QuickEquipped is also the currently preselected item then advance the preselect queue by 1 as well
-				if WC.aiCurrentlyPreselected[1] == found
+				elseIf WC.aiCurrentlyPreselected[1] == found
 					cyclePreselectSlot(1, rightCount, false)
 				endIf
 			else
@@ -1099,9 +1106,14 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 		    	else
 		    		PlayerRef.EquipItemEx(jMap.getForm(targetObject, "iEquipForm"), 1, false, false)
 		    	endIf
-				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
-				if bPreselectMode && WC.aiCurrentlyPreselected[1] == found
-					cyclePreselectSlot(1, rightCount, false)
+		    	if bPreselectMode
+			    	if bPreselectSwapItemsOnQuickAction
+						WC.aiCurrentlyPreselected[1] = iPreviousRightHandIndex
+						WC.updateWidget(1, iPreviousRightHandIndex, false, true)
+					;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
+					elseIf WC.aiCurrentlyPreselected[1] == found
+						cyclePreselectSlot(1, rightCount, false)
+					endIf
 				endIf
 				if foundWeaponIsPoisoned
 					WC.checkAndUpdatePoisonInfo(1)
@@ -1187,8 +1199,14 @@ bool function quickRangedFindAndEquipSpell()
 			;Update the main right hand widget, if in Preselect Mode skipping the Preselect Mode check so we don't update the preselect slot
 			WC.updateWidget(1, found, true)
 			;If we're in Preselect Mode and the spell we're about to equip matches the right preselected item then cycle the preselect slot
-			if bPreselectMode && (WC.aiCurrentlyPreselected[1] == found)
-				cyclePreselectSlot(1, rightCount, false)
+			if bPreselectMode
+		    	if bPreselectSwapItemsOnQuickAction
+					WC.aiCurrentlyPreselected[1] = iPreviousRightHandIndex
+					WC.updateWidget(1, iPreviousRightHandIndex, false, true)
+				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
+				elseIf WC.aiCurrentlyPreselected[1] == found
+					cyclePreselectSlot(1, rightCount, false)
+				endIf
 			endIf
 			WC.checkAndEquipShownHandItem(1, false)
 			if !(iQuickRangedSwitchOutAction == 0)
@@ -1337,9 +1355,14 @@ endFunction
 
 function quickDualCastOnDoubleTap(int Q)
 	;debug.trace("iEquip_ProMode quickDualCastOnDoubleTap start - Q: " + Q)
+	int otherHand = (Q + 1) % 2
 	spell equippedSpell = PlayerRef.GetEquippedSpell(Q)
-	if WC.EquipSlots.Find(equippedSpell.GetEquipType()) == 2 && equippedSpell != PlayerRef.GetEquippedSpell((Q + 1) % 2)	; If it's an 'Either Hand' spell and isn't already equipped in the other hand
-		bool success = quickDualCastEquipSpellInOtherHand(Q, equippedSpell as form, equippedSpell.GetName(), jMap.getStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipIcon"), true)
+	if WC.EquipSlots.Find(equippedSpell.GetEquipType()) == 2 && equippedSpell != PlayerRef.GetEquippedSpell(otherHand)	; If it's an 'Either Hand' spell and isn't already equipped in the other hand
+		int tmpIndex = WC.aiCurrentQueuePosition[otherHand]
+		if quickDualCastEquipSpellInOtherHand(Q, equippedSpell as form, equippedSpell.GetName(), jMap.getStr(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q]), "iEquipIcon"), true) && bPreselectMode && bPreselectSwapItemsOnQuickAction
+			WC.aiCurrentlyPreselected[otherHand] = tmpIndex
+			WC.updateWidget(otherHand, tmpIndex, false, true)
+		endIf
 	endIf
 	;debug.trace("iEquip_ProMode quickDualCastOnDoubleTap end")
 endFunction

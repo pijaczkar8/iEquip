@@ -246,6 +246,9 @@ event OnMenuOpen(string MenuName)
     
     if (MenuName == "FavoritesMenu" || MenuName == "MagicMenu" || MenuName == "InventoryMenu")
         GotoState("INVENTORYMENU")
+        if MenuName == "FavoritesMenu" && bIsGPPLoaded
+            registerForGPPKeys()
+        endIf
         RegisterForMenuKeys()
     else
         GoToState("DISABLED")
@@ -584,9 +587,12 @@ endState
 state INVENTORYMENU
     event OnKeyDown(int KeyCode)
         ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start - keyCode: " + keyCode)
+        if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
+            bGPPKeyHeld = true
+        endIf
      
         ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU - bAllowKeyPress: " + bAllowKeyPress + ", bGPPKeyHeld: " + bGPPKeyHeld)
-        if bAllowKeyPress
+        if bAllowKeyPress && !bGPPKeyHeld
             bAllowKeyPress = false
         
             if KeyCode == iLeftKey

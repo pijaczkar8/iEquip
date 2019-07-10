@@ -125,6 +125,8 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, WC.abQuickDualCastSchoolAllowed[4] as int)
 	jArray.addInt(jPageObj, PM.bQuickDualCastMustBeInBothQueues as int)
 	
+	jArray.addInt(jPageObj, PM.bPreselectSwapItemsOnQuickAction as int)
+
     return jPageObj
 endFunction
 
@@ -175,6 +177,8 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 36)
 	WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 37)
 	PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 38)
+
+	PM.bPreselectSwapItemsOnQuickAction = jArray.getInt(jPageObj, 39)
 endFunction
 
 function drawPage()
@@ -193,6 +197,7 @@ function drawPage()
 				MCM.AddToggleOptionST("pro_tgl_enblPreselect", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblPreselect</font>", PM.bPreselectEnabled)
 				MCM.AddToggleOptionST("pro_tgl_enblShoutPreselect", "$iEquip_MCM_pro_lbl_enblShoutPreselect", PM.bShoutPreselectEnabled)
 				MCM.AddToggleOptionST("pro_tgl_swapPreselectItm", "$iEquip_MCM_pro_lbl_swapPreselectItm", PM.bPreselectSwapItemsOnEquip)
+				MCM.AddToggleOptionST("pro_tgl_swapPreselectAdv", "$iEquip_MCM_pro_lbl_swapPreselectAdv", PM.bPreselectSwapItemsOnQuickAction)
 				MCM.AddToggleOptionST("pro_tgl_eqpAllExitPreselectMode", "$iEquip_MCM_pro_lbl_eqpAllExitPreselectMode", PM.bTogglePreselectOnEquipAll)
 			else
 				MCM.AddToggleOptionST("pro_tgl_enblPreselect", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblPreselect</font>", PM.bPreselectEnabled)
@@ -431,6 +436,17 @@ State pro_tgl_swapPreselectItm
             MCM.SetToggleOptionValueST(PM.bPreselectSwapItemsOnEquip)
         elseIf currentEvent == "Default"
             PM.bPreselectSwapItemsOnEquip = false
+            MCM.SetToggleOptionValueST(PM.bPreselectSwapItemsOnEquip)
+        endIf
+    endEvent
+endState
+
+State pro_tgl_swapPreselectAdv
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_swapPreselectAdv")
+        elseIf currentEvent == "Select" || currentEvent == "Default" && !PM.bPreselectSwapItemsOnEquip
+            PM.bPreselectSwapItemsOnEquip = !PM.bPreselectSwapItemsOnEquip
             MCM.SetToggleOptionValueST(PM.bPreselectSwapItemsOnEquip)
         endIf
     endEvent
