@@ -750,6 +750,11 @@ function updateKeyMaps()
     else
         RegisterForGameplayKeys()
     endIf
+    iEquipLeftKey.SetValueInt(iLeftKey)
+    iEquipRightKey.SetValueInt(iRightKey)
+    iEquipShoutKey.SetValueInt(iShoutKey)
+    iEquipConsumableKey.SetValueInt(iConsumableKey)
+    iEquipUtilityKey.SetValueInt(iUtilityKey)
     SendModEvent("iEquip_KeysUpdated")
     ;debug.trace("iEquip_KeyHandler updateKeyMaps end")
 endFunction
