@@ -335,6 +335,7 @@ int iQueueMenuCurrentQueue = -1
 int iQueueMenuCurrentArray = -1
 bool bFirstAttemptToClearAmmoQueue = true
 bool bFirstAttemptToEditAmmoQueue = true
+bool bFirstAttemptToRemoveAmmo = true
 bool bFirstAttemptToDeletePotionGroup = true
 bool bJustUsedQueueMenuDirectAccess
 
@@ -4590,7 +4591,7 @@ endFunction
 
 function QueueMenuRemoveFromQueue(int iIndex)
 	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue start")
-	if Q > 4 	; Ammo queues
+	if iQueueMenuCurrentQueue > 4 	; Ammo queues
 		QueueMenuRemoveFromAmmoQueue(iIndex)
 	else
 		int targetObject = jArray.getObj(iQueueMenuCurrentArray, iIndex)
@@ -4665,6 +4666,14 @@ function QueueMenuRemoveFromQueue(int iIndex)
 endFunction
 
 function QueueMenuRemoveFromAmmoQueue(int iIndex)
+	if bFirstAttemptToRemoveAmmo
+		bFirstAttemptToRemoveAmmo = false
+		if bShowTooltips
+			((Self as Form) as iEquip_UILIB).closeQueueMenu()
+			int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_removeAmmo"))
+			recallPreviousQueueMenu()
+		endIf
+	endIf
 	AM.removeAmmoFromQueue(iQueueMenuCurrentQueue - 5, iIndex, true)
 	int queueLength = jArray.count(iQueueMenuCurrentArray)
 	if iIndex >= queueLength
