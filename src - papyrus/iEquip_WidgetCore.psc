@@ -455,12 +455,14 @@ Event OnWidgetInit()
 		i += 1
 	endwhile
 
-	asQueueName = new string[5]
+	asQueueName = new string[7]
 	asQueueName[0] = "$iEquip_WC_common_leftQ"
 	asQueueName[1] = "$iEquip_WC_common_rightQ"
 	asQueueName[2] = "$iEquip_WC_common_shoutQ"
 	asQueueName[3] = "$iEquip_WC_common_consQ"
 	asQueueName[4] = "$iEquip_WC_common_poisonQ"
+	asQueueName[5] = "$iEquip_WC_common_arrowQ"
+	asQueueName[6] = "$iEquip_WC_common_boltQ"
 
 	aiNameElements = new int[8]
 	aiNameElements[0] = 8 	; leftName_mc
@@ -648,6 +650,19 @@ Event OnWidgetInit()
 
 	;debug.trace("iEquip_WidgetCore OnWidgetInit end")
 EndEvent
+
+function updateVariables()
+	if asQueueName.length == 5
+		asQueueName = new string[7]
+		asQueueName[0] = "$iEquip_WC_common_leftQ"
+		asQueueName[1] = "$iEquip_WC_common_rightQ"
+		asQueueName[2] = "$iEquip_WC_common_shoutQ"
+		asQueueName[3] = "$iEquip_WC_common_consQ"
+		asQueueName[4] = "$iEquip_WC_common_poisonQ"
+		asQueueName[5] = "$iEquip_WC_common_arrowQ"
+		asQueueName[6] = "$iEquip_WC_common_boltQ"
+	endIf
+endFunction
 
 function CheckDependencies()
 	if AhzMoreHudIE.GetVersion() > 0
@@ -872,6 +887,7 @@ state ENABLED
 		bool[] args = new bool[5]
 		
 		if !bIsFirstEnabled
+			updateVariables()
 			CheckDependencies()
 			checkAndSetKeysForGamepadPlusPlus()
 			EM.UpdateElementsAll()
@@ -4201,6 +4217,9 @@ function addToQueue(int Q)
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AlreadyAdded{" + itemName + "}{" + asQueueName[Q] + "}"))
 				endIf
 			endIf
+		elseIf Q == 0 && itemType == 42 && AM.iEquip_AmmoBlacklistFLST.HasForm(itemForm)
+			AM.onAmmoAdded(itemForm, true)
+			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AmmoAdded{" + itemName + "}{" + asQueueName[(itemForm as ammo).IsBolt() as int + 5] + "}"))
 		else
 			if bIsFirstFailedToAdd
 				debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_failToAdd"))
@@ -4530,7 +4549,7 @@ endFunction
 
 function recallPreviousQueueMenu()
 	;debug.trace("iEquip_WidgetCore recallPreviousQueueMenu start")
-	initQueueMenu(iQueueMenuCurrentQueue, jArray.count(aiTargetQ[iQueueMenuCurrentQueue]))
+	initQueueMenu(iQueueMenuCurrentQueue, jArray.count(iQueueMenuCurrentArray))
 	;debug.trace("iEquip_WidgetCore recallPreviousQueueMenu end")
 endFunction
 
@@ -4539,12 +4558,12 @@ function QueueMenuSwap(int upDown, int iIndex)
 	;upDown - 0 = Move Up, 1 = Move Down
 	if iQueueMenuCurrentQueue > 4 && AM.iAmmoListSorting > 0
 		if bFirstAttemptToEditAmmoQueue
-			((Self as Form) as iEquip_UILIB).closeQueueMenu()
 			bFirstAttemptToEditAmmoQueue = false
 			if bShowTooltips
+				((Self as Form) as iEquip_UILIB).closeQueueMenu()
 				int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_editAmmoQueue"))
+				recallPreviousQueueMenu()
 			endIf
-			recallPreviousQueueMenu()
 		endIf	
 	else
 		int count = jArray.count(iQueueMenuCurrentArray)
@@ -4559,6 +4578,9 @@ function QueueMenuSwap(int upDown, int iIndex)
 				iIndex += 1
 			endIf
 		endIf
+		if iQueueMenuCurrentQueue > 4 	; If we've just edited an ammo queue make sure to set Ammo Sorting to manual now to block any re-sorting
+			AM.iAmmoListSorting = 0
+		endIf
 		QueueMenuUpdate(count, iIndex)
 	endIf
 	;debug.trace("iEquip_WidgetCore QueueMenuSwap end")
@@ -4568,74 +4590,87 @@ endFunction
 
 function QueueMenuRemoveFromQueue(int iIndex)
 	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue start")
-	int targetObject = jArray.getObj(iQueueMenuCurrentArray, iIndex)
-	string itemName = JMap.getStr(targetObject, "iEquipName")
-	if !(iQueueMenuCurrentQueue < 2 && itemName == "$iEquip_common_Unarmed") && !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
-		bool keepInFLST
-		int itemID = JMap.getInt(targetObject, "iEquipItemID")
-		int itemHandle = JMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
-		form itemForm = JMap.getForm(targetObject, "iEquipForm")
-		if bMoreHUDLoaded
-			AhzMoreHudIE.RemoveIconItem(itemID)
-		endIf
-		if iQueueMenuCurrentQueue < 2
-			int otherHandQueue = 1
-			if iQueueMenuCurrentQueue == 1
-				otherHandQueue = 0
+	if Q > 4 	; Ammo queues
+		QueueMenuRemoveFromAmmoQueue(iIndex)
+	else
+		int targetObject = jArray.getObj(iQueueMenuCurrentArray, iIndex)
+		string itemName = JMap.getStr(targetObject, "iEquipName")
+		if !(iQueueMenuCurrentQueue < 2 && itemName == "$iEquip_common_Unarmed") && !(iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
+			bool keepInFLST
+			int itemID = JMap.getInt(targetObject, "iEquipItemID")
+			int itemHandle = JMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
+			form itemForm = JMap.getForm(targetObject, "iEquipForm")
+			if bMoreHUDLoaded
+				AhzMoreHudIE.RemoveIconItem(itemID)
 			endIf
-			if isAlreadyInQueue(otherHandQueue, itemForm, itemID, itemHandle)
-				if bMoreHUDLoaded
-					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
+			if iQueueMenuCurrentQueue < 2
+				int otherHandQueue = 1
+				if iQueueMenuCurrentQueue == 1
+					otherHandQueue = 0
 				endIf
-				keepInFLST = true
-			endIf
-        endIf
-        ;Add manually removed items to the relevant blackList
-        if bBlacklistEnabled
-	        if iQueueMenuCurrentQueue < 2
-	        	EH.blackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
-	        else
-	        	EH.blackListFLSTs[2].AddForm(itemForm) ;iEquip_GeneralBlacklistFLST
+				if isAlreadyInQueue(otherHandQueue, itemForm, itemID, itemHandle)
+					if bMoreHUDLoaded
+						AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[otherHandQueue])
+					endIf
+					keepInFLST = true
+				endIf
+	        endIf
+	        ;Add manually removed items to the relevant blackList
+	        if bBlacklistEnabled
+		        if iQueueMenuCurrentQueue < 2
+		        	EH.blackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
+		        else
+		        	EH.blackListFLSTs[2].AddForm(itemForm) ;iEquip_GeneralBlacklistFLST
+		        endIf
+		    endIf
+	        if !keepInFLST
+	        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
+	        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+	        endIf
+	        if TI.aiTemperedItemTypes.Find(JMap.getInt(targetObject, "iEquipType")) != -1 && itemHandle != 0xFFFF
+	        	JArray.EraseIndex(iRefHandleArray, JArray.FindInt(iRefHandleArray, itemHandle))
 	        endIf
 	    endIf
-        if !keepInFLST
-        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
-        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
-        endIf
-        if TI.aiTemperedItemTypes.Find(JMap.getInt(targetObject, "iEquipType")) != -1 && itemHandle != 0xFFFF
-        	JArray.EraseIndex(iRefHandleArray, JArray.FindInt(iRefHandleArray, itemHandle))
-        endIf
-    endIf
-	jArray.eraseIndex(iQueueMenuCurrentArray, iIndex)
+		jArray.eraseIndex(iQueueMenuCurrentArray, iIndex)
+		int queueLength = jArray.count(iQueueMenuCurrentArray)
+		if iIndex >= queueLength
+			iIndex -= 1
+		endIf
+		if queueLength < 1
+			if iQueueMenuCurrentQueue == 4
+				handleEmptyPoisonQueue()
+			else
+				setSlotToEmpty(iQueueMenuCurrentQueue)
+			endIf
+		endIf
+		if (iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
+			abPotionGroupEnabled[asPotionGroups.Find(itemName)] = false
+			((Self as Form) as iEquip_UILIB).closeQueueMenu()
+			if bFirstAttemptToDeletePotionGroup
+				bFirstAttemptToDeletePotionGroup = false
+				if bShowTooltips
+					int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
+				endIf
+			endIf
+			int iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_PotionGroupRemoved{" + itemName + "}"))
+			if iButton == 0
+				PO.addIndividualPotionsToQueue(asPotionGroups.Find(itemName))
+			endIf
+			initQueueMenu(jArray.count(iQueueMenuCurrentArray))
+		else
+			QueueMenuUpdate(queueLength, iIndex)
+		endIf
+	endIf
+	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue end")
+endFunction
+
+function QueueMenuRemoveFromAmmoQueue(int iIndex)
+	AM.removeAmmoFromQueue(iQueueMenuCurrentQueue - 5, iIndex, true)
 	int queueLength = jArray.count(iQueueMenuCurrentArray)
 	if iIndex >= queueLength
 		iIndex -= 1
 	endIf
-	if queueLength < 1
-		if iQueueMenuCurrentQueue == 4
-			handleEmptyPoisonQueue()
-		else
-			setSlotToEmpty(iQueueMenuCurrentQueue)
-		endIf
-	endIf
-	if (iQueueMenuCurrentQueue == 3 && (asPotionGroups.Find(itemName) > -1))
-		abPotionGroupEnabled[asPotionGroups.Find(itemName)] = false
-		((Self as Form) as iEquip_UILIB).closeQueueMenu()
-		if bFirstAttemptToDeletePotionGroup
-			bFirstAttemptToDeletePotionGroup = false
-			if bShowTooltips
-				int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_deletePotionGroup"))
-			endIf
-		endIf
-		int iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_PotionGroupRemoved{" + itemName + "}"))
-		if iButton == 0
-			PO.addIndividualPotionsToQueue(asPotionGroups.Find(itemName))
-		endIf
-		initQueueMenu(jArray.count(iQueueMenuCurrentArray))
-	else
-		QueueMenuUpdate(queueLength, iIndex)
-	endIf
-	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue end")
+	QueueMenuUpdate(queueLength, iIndex)
 endFunction
 
 function QueueMenuUpdate(int iCount, int iIndex)
@@ -4654,14 +4689,18 @@ endFunction
 function QueueMenuClearQueue()
 	;debug.trace("iEquip_WidgetCore QueueMenuClearQueue start")
 	if iQueueMenuCurrentQueue > 4	; Ammo queues
+		bool bDontClear
 		if bFirstAttemptToClearAmmoQueue
-			((Self as Form) as iEquip_UILIB).closeQueueMenu()
 			bFirstAttemptToClearAmmoQueue = false
-			if bShowTooltips
-				int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_clearAmmoQueue"))
-			endIf
-			recallPreviousQueueMenu()
-		endIf	
+			((Self as Form) as iEquip_UILIB).closeQueueMenu()
+			int iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_clearAmmoQueue"))
+			bDontClear = iButton as bool
+		endIf
+		if !bDontClear
+			AM.iEquip_AmmoBlacklistFLST.Revert()
+			AM.updateAmmoLists(true)
+		endIf
+		recallPreviousQueueMenu()
 	else
 		int targetObject
 		string itemName

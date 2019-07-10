@@ -17,6 +17,7 @@ iEquip_PlayerEventHandler property EH auto
 
 actor property PlayerRef auto
 FormList property iEquip_AmmoItemsFLST auto
+FormList property iEquip_AmmoBlacklistFLST auto
 
 int property iAmmoIconStyle auto hidden
 int property iAmmoListSorting = 1 auto hidden
@@ -109,13 +110,16 @@ int function getCurrentAmmoObject()
 	return jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
 endFunction
 
-function onAmmoAdded(form addedAmmo)
+function onAmmoAdded(form addedAmmo, bool bManuallyAdded = false)
 	;debug.trace("iEquip_AmmoMode onAmmoAdded start - addedAmmo: " + addedAmmo.GetName())
+	if bManuallyAdded
+		iEquip_AmmoBlacklistFLST.RemoveAddedForm(addedAmmo)
+	endIf
 	int isBolt = (addedAmmo as ammo).isBolt() as int
 	int count = jArray.count(aiTargetQ[isBolt])
 	if bAmmoMode && currentAmmoForm == addedAmmo && count > 0
     	setSlotCount(PlayerRef.GetItemCount(addedAmmo))
-    elseif !isAlreadyInAmmoQueue(addedAmmo, aiTargetQ[isBolt])
+    elseif !iEquip_AmmoBlacklistFLST.HasForm(addedAmmo) && !isAlreadyInAmmoQueue(addedAmmo, aiTargetQ[isBolt])
     	AddToAmmoQueue(addedAmmo, addedAmmo.GetName(), isBolt)
     	count = jArray.count(aiTargetQ[isBolt])
     	if count > 1
@@ -542,16 +546,23 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 	;debug.trace("iEquip_AmmoMode checkAndEquipAmmo end")
 endFunction
 
-function removeAmmoFromQueue(int isBolt, int i)
+function removeAmmoFromQueue(int isBolt, int i, bool bInQueueMenu = false)
 	;debug.trace("iEquip_AmmoMode removeAmmoFromQueue start")
-	iEquip_AmmoItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiTargetQ[isBolt], i), "iEquipForm"))
+	form removedAmmo = jMap.getForm(jArray.getObj(aiTargetQ[isBolt], i), "iEquipForm")
+	
+	iEquip_AmmoItemsFLST.RemoveAddedForm(removedAmmo)
 	EH.updateEventFilter(iEquip_AmmoItemsFLST)
 	jArray.eraseIndex(aiTargetQ[isBolt], i)
-	if aiCurrentAmmoIndex[isBolt] > i ;if the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
-		aiCurrentAmmoIndex[isBolt] = aiCurrentAmmoIndex[isBolt] - 1
-	elseif aiCurrentAmmoIndex[isBolt] == i ;if you have removed the currently equipped item then if it was the last in the queue advance to index 0 and cycle the slot
-		if aiCurrentAmmoIndex[isBolt] == jArray.count(aiTargetQ[isBolt])
-			aiCurrentAmmoIndex[isBolt] = 0
+
+	if bInQueueMenu
+		iEquip_AmmoBlacklistFLST.AddForm(removedAmmo)
+	else
+		if aiCurrentAmmoIndex[isBolt] > i ;if the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
+			aiCurrentAmmoIndex[isBolt] = aiCurrentAmmoIndex[isBolt] - 1
+		elseif aiCurrentAmmoIndex[isBolt] == i ;if you have removed the currently equipped item then if it was the last in the queue advance to index 0 and cycle the slot
+			if aiCurrentAmmoIndex[isBolt] == jArray.count(aiTargetQ[isBolt])
+				aiCurrentAmmoIndex[isBolt] = 0
+			endIf
 		endIf
 	endIf
 	;debug.trace("iEquip_AmmoMode removeAmmoFromQueue end")
@@ -655,7 +666,7 @@ function checkAndRemoveBoundAmmo(int weaponType)
 	;debug.trace("iEquip_AmmoMode checkAndRemoveBoundAmmo end")
 endFunction
 
-function updateAmmoLists()
+function updateAmmoLists(bool bClearingQueue = false)
 	;debug.trace("iEquip_AmmoMode updateAmmoLists start")
 	int i
 	int aB
@@ -664,7 +675,7 @@ function updateAmmoLists()
 	while aB < 2
 		;First check if anything needs to be removed from either queue
 		count = jArray.count(aiTargetQ[aB])
-		if iAmmoListSorting == 3
+		if iAmmoListSorting == 3 || bClearingQueue
 			jArray.clear(aiTargetQ[aB])
 			iEquip_AmmoItemsFLST.Revert()
 			EH.updateEventFilter(iEquip_AmmoItemsFLST)
@@ -692,13 +703,15 @@ function updateAmmoLists()
 	int isBolt
 	while i < count && count > 0
 		ammoForm = GetNthFormOfType(PlayerRef, 42, i)
-		isBolt = (ammoForm as Ammo).isBolt() as int
-		AmmoName = ammoForm.GetName()
-		;Make sure we're not trying to add Throwing Weapons
-		if !((iEquip_FormExt.IsJavelin(ammoForm) && ammoName != "Javelin") || iEquip_FormExt.IsSpear(ammoForm) || iEquip_FormExt.IsGrenade(ammoForm) || iEquip_FormExt.IsThrowingKnife(ammoForm) || iEquip_FormExt.IsThrowingAxe(ammoForm))
-			if !isAlreadyInAmmoQueue(ammoForm, aiTargetQ[isBolt])
-				AddToAmmoQueue(ammoForm, AmmoName, isBolt)
-				abNeedsSorting[isBolt as int] = true
+		if !iEquip_AmmoBlacklistFLST.HasForm(ammoForm)
+			isBolt = (ammoForm as Ammo).isBolt() as int
+			AmmoName = ammoForm.GetName()
+			;Make sure we're not trying to add Throwing Weapons
+			if !((iEquip_FormExt.IsJavelin(ammoForm) && ammoName != "Javelin") || iEquip_FormExt.IsSpear(ammoForm) || iEquip_FormExt.IsGrenade(ammoForm) || iEquip_FormExt.IsThrowingKnife(ammoForm) || iEquip_FormExt.IsThrowingAxe(ammoForm))
+				if !isAlreadyInAmmoQueue(ammoForm, aiTargetQ[isBolt])
+					AddToAmmoQueue(ammoForm, AmmoName, isBolt)
+					abNeedsSorting[isBolt as int] = true
+				endIf
 			endIf
 		endIf
 		i += 1
