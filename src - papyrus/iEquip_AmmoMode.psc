@@ -785,6 +785,7 @@ function AddToAmmoQueue(form ammoForm, string ammoName, int isBolt)
 	jMap.setForm(AmmoItem, "iEquipForm", ammoForm)
 	jMap.setStr(AmmoItem, "iEquipIcon", getAmmoIcon(ammoForm, AmmoName, isBolt))
 	jMap.setStr(AmmoItem, "iEquipName", AmmoName)
+	jMap.setInt(AmmoItem, "isEnchanted", incrementDamage as int)
 	if incrementDamage
 		incrementDamage = false
 		jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage() + 1.0) ;If we've suffixed the ammo icon name in getAmmoIcon because it's enchanted ammo then +1 the damage so they sort ahead of the base ammo
