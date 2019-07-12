@@ -135,6 +135,8 @@ function RegisterForMenus()
     RegisterForMenu("LevelUp Menu")
     RegisterForMenu("Loading Menu")
     RegisterForMenu("Lockpicking Menu")
+    RegisterForMenu("LootMenu")
+    RegisterForMenu("Loot Menu")
     RegisterForMenu("MagicMenu")
     RegisterForMenu("Main Menu")
     RegisterForMenu("MapMenu")
@@ -369,6 +371,8 @@ function runUpdate()
     ;debug.trace("iEquip_KeyHandler runUpdate start")
     ;Handle widget visibility update on any registered key press
     WC.updateWidgetVisibility()
+
+    ;debug.trace("iEquip_KeyHandler runUpdate - is Loot Menu open: " + IsMenuOpen("Loot Menu") + ", is Loot Menu visible: " + UI.GetBool("Loot Menu", "_root.Menu_mc._visible"))
   
     if iMultiTap == 0 ; Long press
             if iWaitingKeyCode == iConsumableKey

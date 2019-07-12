@@ -335,6 +335,7 @@ int iQueueMenuCurrentQueue = -1
 int iQueueMenuCurrentArray = -1
 bool bFirstAttemptToClearAmmoQueue = true
 bool bFirstAttemptToEditAmmoQueue = true
+bool bFirstAttemptToRemoveAmmo = true
 bool bFirstAttemptToDeletePotionGroup = true
 bool bJustUsedQueueMenuDirectAccess
 
@@ -4556,33 +4557,32 @@ endFunction
 function QueueMenuSwap(int upDown, int iIndex)
 	;debug.trace("iEquip_WidgetCore QueueMenuSwap start")
 	;upDown - 0 = Move Up, 1 = Move Down
-	if iQueueMenuCurrentQueue > 4 && AM.iAmmoListSorting > 0
-		if bFirstAttemptToEditAmmoQueue
-			bFirstAttemptToEditAmmoQueue = false
-			if bShowTooltips
-				((Self as Form) as iEquip_UILIB).closeQueueMenu()
-				int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_editAmmoQueue"))
-				recallPreviousQueueMenu()
-			endIf
-		endIf	
+	if iQueueMenuCurrentQueue > 4 && AM.iAmmoListSorting > 0 && bFirstAttemptToEditAmmoQueue
+		bFirstAttemptToEditAmmoQueue = false
+		if bShowTooltips
+			((Self as Form) as iEquip_UILIB).closeQueueMenu()
+			int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_editAmmoQueue"))
+			recallPreviousQueueMenu()
+		endIf
+	endIf	
+
+	int count = jArray.count(iQueueMenuCurrentArray)
+	if upDown == 0
+		if iIndex != 0
+			jArray.swapItems(iQueueMenuCurrentArray, iIndex, iIndex - 1)
+			iIndex -= 1
+		endIf
 	else
-		int count = jArray.count(iQueueMenuCurrentArray)
-		if upDown == 0
-			if iIndex != 0
-				jArray.swapItems(iQueueMenuCurrentArray, iIndex, iIndex - 1)
-				iIndex -= 1
-			endIf
-		else
-			if iIndex != (count - 1)
-				jArray.swapItems(iQueueMenuCurrentArray, iIndex, iIndex + 1)
-				iIndex += 1
-			endIf
+		if iIndex != (count - 1)
+			jArray.swapItems(iQueueMenuCurrentArray, iIndex, iIndex + 1)
+			iIndex += 1
 		endIf
-		if iQueueMenuCurrentQueue > 4 	; If we've just edited an ammo queue make sure to set Ammo Sorting to manual now to block any re-sorting
-			AM.iAmmoListSorting = 0
-		endIf
-		QueueMenuUpdate(count, iIndex)
 	endIf
+	if iQueueMenuCurrentQueue > 4 	; If we've just edited an ammo queue make sure to set Ammo Sorting to manual now to block any re-sorting
+		AM.iAmmoListSorting = 0
+		AM.iLastSortType = 0
+	endIf
+	QueueMenuUpdate(count, iIndex)
 	;debug.trace("iEquip_WidgetCore QueueMenuSwap end")
 endFunction
 
@@ -4590,7 +4590,7 @@ endFunction
 
 function QueueMenuRemoveFromQueue(int iIndex)
 	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue start")
-	if Q > 4 	; Ammo queues
+	if iQueueMenuCurrentQueue > 4 	; Ammo queues
 		QueueMenuRemoveFromAmmoQueue(iIndex)
 	else
 		int targetObject = jArray.getObj(iQueueMenuCurrentArray, iIndex)
@@ -4665,6 +4665,14 @@ function QueueMenuRemoveFromQueue(int iIndex)
 endFunction
 
 function QueueMenuRemoveFromAmmoQueue(int iIndex)
+	if bFirstAttemptToRemoveAmmo
+		bFirstAttemptToRemoveAmmo = false
+		if bShowTooltips
+			((Self as Form) as iEquip_UILIB).closeQueueMenu()
+			int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_removeAmmo"))
+			recallPreviousQueueMenu()
+		endIf
+	endIf
 	AM.removeAmmoFromQueue(iQueueMenuCurrentQueue - 5, iIndex, true)
 	int queueLength = jArray.count(iQueueMenuCurrentArray)
 	if iIndex >= queueLength
@@ -4885,11 +4893,13 @@ function ApplyChanges()
 	    	;debug.trace("iEquip_WidgetCore ApplyChanges - should be toggling out of Preselect Mode")
 	    	PM.togglePreselectMode(true)
 	    endIf
+
+	    if bAmmoSortingChanged
+	    	AM.updateAmmoListsOnSettingChange()
+	    endIf
+	    
 	    if bAmmoMode
 	    	;debug.trace("iEquip_WidgetCore ApplyChanges - bSimpleAmmoMode: " + AM.bSimpleAmmoMode + ", bSimpleAmmoModeOnEnter: " + AM.bSimpleAmmoModeOnEnter + ", bPreselectMode: " + bPreselectMode)
-		    if bAmmoSortingChanged
-		    	AM.updateAmmoListsOnSettingChange()
-		    endIf
 		    if bAmmoIconChanged
 		    	AM.checkAndEquipAmmo(false, false, true, false)
 		    endIf
