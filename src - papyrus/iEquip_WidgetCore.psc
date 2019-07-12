@@ -4549,7 +4549,7 @@ endFunction
 
 function recallPreviousQueueMenu()
 	;debug.trace("iEquip_WidgetCore recallPreviousQueueMenu start")
-	initQueueMenu(iQueueMenuCurrentQueue, jArray.count(iQueueMenuCurrentArray))
+	initQueueMenu(jArray.count(iQueueMenuCurrentArray))
 	;debug.trace("iEquip_WidgetCore recallPreviousQueueMenu end")
 endFunction
 

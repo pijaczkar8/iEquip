@@ -335,36 +335,15 @@ Function ColorMenu_Release(Form akClient) Global
 EndFunction
 
 ;Queue
-Function QueueMenu_Open(Form akClient) Global
-	;debug.trace("iEquip_UILIB QueueMenu_Open start")
-	akClient.RegisterForModEvent("iEquip_queueMenuOpen", "OnQueueMenuOpen")
-	akClient.RegisterForModEvent("iEquip_queueMenuMoveUp", "OnQueueMenuMoveUp")
-	akClient.RegisterForModEvent("iEquip_queueMenuMoveDown", "OnQueueMenuMoveDown")
-	akClient.RegisterForModEvent("iEquip_queueMenuRemove", "OnQueueMenuRemove")
-	akClient.RegisterForModEvent("iEquip_queueMenuClear", "OnQueueMenuClear")
-	akClient.RegisterForModEvent("iEquip_queueMenuExit", "OnQueueMenuExit")
-	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_queuemenu")
-	;debug.trace("iEquip_UILIB QueueMenu_Open end")
-EndFunction
 
-Function QueueMenu_SetData(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex, bool directAccess) Global
+;/Function QueueMenu_SetData(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex, bool bDirectAccess = false, bool bShowingBlacklist = false) Global
 	;debug.trace("iEquip_UILIB QueueMenu_SetData start")
-	UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.setExitButtonText", directAccess)
+	bool[] buttonArgs = new bool[2]
+	buttonArgs[0] = bDirectAccess
+	buttonArgs[1] = bShowingBlacklist
+	UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.setButtons", buttonArgs)
 	UI.InvokeNumber("CustomMenu", "_root.iEquipQueueDialog.setPlatform", (Game.UsingGamepad() as Int))
-	Int iIndex
-	String iconName
-	bool isEnchanted
-	bool isPoisoned
-	While iIndex < asIconNameList.length
-		iconName = asIconNameList[iIndex]
-		isEnchanted = abEnchFlags[iIndex]
-		isPoisoned = abPoisonFlags[iIndex]
-		UI.InvokeString("CustomMenu", "_root.iEquipQueueDialog.initIconNameList", iconName)
-		UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.initIsEnchantedList", isEnchanted)
-		UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.initIsPoisonedList", isPoisoned)
-		iIndex += 1
-	endWhile
-	UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.initListData", asList)
+	sendListValues()
 	Int iHandle2 = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.initListParams")
 	If(iHandle2)
 		UICallback.PushString(iHandle2, asTitle)
@@ -373,7 +352,71 @@ Function QueueMenu_SetData(String asTitle, String[] asIconNameList, String[] asL
 		UICallback.Send(iHandle2)
 	EndIf
 	;debug.trace("iEquip_UILIB QueueMenu_SetData end")
+EndFunction/;
+
+Function ShowQueueMenu(String title, String[] iconList, String[] nameList, bool[] enchFlags, bool[] poisonFlags, Int startIndex, Int defaultIndex, bool directAccess = false, bool showingBlacklist = false)
+	;debug.trace("iEquip_UILIB ShowQueueMenu start")
+	If(bMenuOpen)
+		Return
+	EndIf
+	bMenuOpen = true
+	sTitle = title
+	asIconNameList = iconList
+	asList = nameList
+	abEnchFlags = enchFlags
+	abPoisonFlags = poisonFlags
+	iStartIndex = startIndex
+	iDefaultIndex = defaultIndex
+	bDirectAccess = directAccess
+	bShowingBlacklist = showingBlacklist
+	QueueMenu_Open(Self)
+	While(bMenuOpen)
+		Utility.WaitMenuMode(0.1)
+	EndWhile
+	QueueMenu_Release(Self)
+	;debug.trace("iEquip_UILIB ShowQueueMenu end")
 EndFunction
+
+Function QueueMenu_Open(Form akClient) Global
+	;debug.trace("iEquip_UILIB QueueMenu_Open start")
+	akClient.RegisterForModEvent("iEquip_queueMenuOpen", "OnQueueMenuOpen")
+	akClient.RegisterForModEvent("iEquip_queueMenuMoveUp", "OnQueueMenuMoveUp")
+	akClient.RegisterForModEvent("iEquip_queueMenuMoveDown", "OnQueueMenuMoveDown")
+	akClient.RegisterForModEvent("iEquip_queueMenuRemove", "OnQueueMenuRemove")
+	akClient.RegisterForModEvent("iEquip_queueMenuClear", "OnQueueMenuClear")
+	akClient.RegisterForModEvent("iEquip_queueMenuToggleList", "OnQueueMenuToggleList")
+	akClient.RegisterForModEvent("iEquip_queueMenuExit", "OnQueueMenuExit")
+	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_queuemenu")
+	;debug.trace("iEquip_UILIB QueueMenu_Open end")
+EndFunction
+
+Event OnQueueMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	;debug.trace("iEquip_UILIB OnQueueMenuOpen start")
+	If(asEventName == "iEquip_queueMenuOpen")
+		;QueueMenu_SetData(sTitle, sIconNameList, sList, bEnchFlags, bPoisonFlags, iStartIndex, iDefaultIndex, bDirectAccess)
+		bool[] buttonArgs = new bool[2]
+		buttonArgs[0] = bDirectAccess
+		buttonArgs[1] = bShowingBlacklist
+		UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.setButtons", buttonArgs)
+		UI.InvokeNumber("CustomMenu", "_root.iEquipQueueDialog.setPlatform", (Game.UsingGamepad() as Int))
+		sendListValues()
+		Int iHandle2 = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.initListParams")
+		If(iHandle2)
+			UICallback.PushString(iHandle2, asTitle)
+			UICallback.PushInt(iHandle2, aiStartIndex)
+			UICallback.PushInt(iHandle2, aiDefaultIndex)
+			UICallback.Send(iHandle2)
+		EndIf
+	EndIf
+	;debug.trace("iEquip_UILIB OnQueueMenuOpen end")
+EndEvent
+
+function sendListValues()
+		UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.initIconNameList", asIconNameList)
+		UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.initIsEnchantedList", abEnchFlags)
+		UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.initIsPoisonedList", abPoisonFlags)
+		UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.initListData", asList)
+endFunction
 
 Function QueueMenu_RefreshTitle(String asTitle) Global
 	;debug.trace("iEquip_UILIB QueueMenu_RefreshTitle start")
@@ -384,19 +427,7 @@ endFunction
 Function QueueMenu_RefreshList(String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, int iIndex) Global
 	;debug.trace("iEquip_UILIB QueueMenu_RefreshList start")
 	UI.Invoke("CustomMenu", "_root.iEquipQueueDialog.clearIconLists")
-	Int iIndex2
-	String iconName
-	bool isEnchanted
-	bool isPoisoned
-	While iIndex2 < asIconNameList.length
-		iconName = asIconNameList[iIndex2]
-		isEnchanted = abEnchFlags[iIndex2]
-		isPoisoned = abPoisonFlags[iIndex2]
-		UI.InvokeString("CustomMenu", "_root.iEquipQueueDialog.initIconNameList", iconName)
-		UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.initIsEnchantedList", isEnchanted)
-		UI.InvokeBool("CustomMenu", "_root.iEquipQueueDialog.initIsPoisonedList", isPoisoned)
-		iIndex2 += 1
-	endWhile
+	sendListValues()
 	UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.refreshList", asList)
 	UI.InvokeInt("CustomMenu", "_root.iEquipQueueDialog.redrawList", iIndex)
 	;debug.trace("iEquip_UILIB QueueMenu_RefreshList end")
@@ -409,45 +440,15 @@ Function QueueMenu_Release(Form akClient) Global
 	akClient.UnregisterForModEvent("iEquip_queueMenuMoveDown")
 	akClient.UnregisterForModEvent("iEquip_queueMenuRemove")
 	akClient.UnregisterForModEvent("iEquip_queueMenuClear")
+	akClient.UnregisterForModEvent("iEquip_queueMenuToggleList")
 	akClient.UnregisterForModEvent("iEquip_queueMenuExit")
 	;debug.trace("iEquip_UILIB QueueMenu_Release end")
 EndFunction
 
-Function ShowQueueMenu(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex, bool directAccess = false)
-	;debug.trace("iEquip_UILIB ShowQueueMenu start")
-	If(bMenuOpen)
-		Return
-	EndIf
-	bMenuOpen = True
-	sTitle = asTitle
-	sIconNameList = asIconNameList
-	sList = asList
-	bEnchFlags = abEnchFlags
-	bPoisonFlags = abPoisonFlags
-	iStartIndex = aiStartIndex
-	iDefaultIndex = aiDefaultIndex
-	bDirectAccess = directAccess
-	QueueMenu_Open(Self)
-	While(bMenuOpen)
-		Utility.WaitMenuMode(0.1)
-	EndWhile
-	QueueMenu_Release(Self)
-	;debug.trace("iEquip_UILIB ShowQueueMenu end")
-EndFunction
-
-Event OnQueueMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
-	;debug.trace("iEquip_UILIB OnQueueMenuOpen start")
-	If(asEventName == "iEquip_queueMenuOpen")
-		QueueMenu_SetData(sTitle, sIconNameList, sList, bEnchFlags, bPoisonFlags, iStartIndex, iDefaultIndex, bDirectAccess)
-	EndIf
-	;debug.trace("iEquip_UILIB OnQueueMenuOpen end")
-EndEvent
-
 Event OnQueueMenuMoveUp(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;debug.trace("iEquip_UILIB OnQueueMenuMoveUp start")
 	If(asEventName == "iEquip_queueMenuMoveUp")
-		int iIndex = afNumArg as int
-		WC.QueueMenuSwap(0, iIndex)
+		WC.QueueMenuSwap(0, afNumArg as int)
 	EndIf
 	;debug.trace("iEquip_UILIB OnQueueMenuMoveUp end")
 EndEvent
@@ -455,8 +456,7 @@ EndEvent
 Event OnQueueMenuMoveDown(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;debug.trace("iEquip_UILIB OnQueueMenuMoveDown start")
 	If(asEventName == "iEquip_queueMenuMoveDown")
-		int iIndex = afNumArg as int
-		WC.QueueMenuSwap(1, iIndex)
+		WC.QueueMenuSwap(1, afNumArg as int)
 	EndIf
 	;debug.trace("iEquip_UILIB OnQueueMenuMoveDown end")
 EndEvent
@@ -464,8 +464,7 @@ EndEvent
 Event OnQueueMenuRemove(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;debug.trace("iEquip_UILIB OnQueueMenuRemove start")
 	If(asEventName == "iEquip_queueMenuRemove")
-		int iIndex = afNumArg as int
-		WC.QueueMenuRemoveFromQueue(iIndex)
+		WC.QueueMenuRemoveFromQueue(afNumArg as int)
 	EndIf
 	;debug.trace("iEquip_UILIB OnQueueMenuRemove end")
 EndEvent
@@ -474,11 +473,23 @@ Event OnQueueMenuClear(String asEventName, String asStringArg, Float afNumArg, F
 	;debug.trace("iEquip_UILIB OnQueueMenuClear start")
 	If(asEventName == "iEquip_queueMenuClear")
 		bMenuOpen = False
-		int i = WC.showTranslatedMessage(5, iEquip_StringExt.LocalizeString("$iEquip_msg_clearQueue"))
-		if i == 0 ;Cancel
+		if WC.showTranslatedMessage(5, iEquip_StringExt.LocalizeString("$iEquip_msg_clearQueue")) == 0 ;Cancel
 			WC.recallPreviousQueueMenu()
 		else
 			WC.QueueMenuClearQueue()
+		endIf
+	EndIf
+	;debug.trace("iEquip_UILIB OnQueueMenuClear end")
+EndEvent
+
+Event OnQueueMenuToggleList(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	;debug.trace("iEquip_UILIB OnQueueMenuClear start")
+	If(asEventName == "iEquip_queueMenuToggleList")
+		bMenuOpen = False
+		if bShowingBlacklist
+			WC.recallPreviousQueueMenu()
+		else
+			WC.QueueMenuShowBlacklist()
 		endIf
 	EndIf
 	;debug.trace("iEquip_UILIB OnQueueMenuClear end")
