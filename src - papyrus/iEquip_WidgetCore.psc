@@ -118,6 +118,13 @@ Weapon property C06BladeOfYsgramor auto
 
 FormList property iEquip_AllCurrentItemsFLST auto
 FormList property iEquip_RemovedItemsFLST auto
+Formlist Property iEquip_LeftHandBlacklistFLST Auto
+Formlist Property iEquip_RightHandBlacklistFLST Auto
+Formlist Property iEquip_GeneralBlacklistFLST Auto ;Shout, Consumable and Poison Queues
+FormList property iEquip_AmmoBlacklistFLST auto
+
+FormList[] aBlacklistFLSTs
+string[] asBlacklistNames
 
 Keyword property MagicDamageFire auto
 Keyword property MagicDamageFrost auto
@@ -331,13 +338,15 @@ string[] asWeaponTypeNames
 int[] property ai2HWeaponTypes auto hidden
 int[] property ai2HWeaponTypesAlt auto hidden
 
-int iQueueMenuCurrentQueue = -1
+int property iQueueMenuCurrentQueue = -1 auto hidden
 int iQueueMenuCurrentArray = -1
-bool bFirstAttemptToClearAmmoQueue = true
+bool property bFirstAttemptToClearAmmoQueue = true auto hidden
 bool bFirstAttemptToEditAmmoQueue = true
 bool bFirstAttemptToRemoveAmmo = true
 bool bFirstAttemptToDeletePotionGroup = true
 bool bJustUsedQueueMenuDirectAccess
+bool property bBlacklistMenuShown auto hidden
+form[] afCurrentBlacklistForms
 
 string sCurrentMenu
 string sEntryPath
@@ -663,6 +672,24 @@ function updateVariables()
 		asQueueName[5] = "$iEquip_WC_common_arrowQ"
 		asQueueName[6] = "$iEquip_WC_common_boltQ"
 	endIf
+
+	aBlacklistFLSTs = new formlist[7]
+	aBlacklistFLSTs[0] = iEquip_LeftHandBlacklistFLST
+	aBlacklistFLSTs[1] = iEquip_RightHandBlacklistFLST
+	aBlacklistFLSTs[2] = iEquip_GeneralBlacklistFLST
+	aBlacklistFLSTs[3] = iEquip_GeneralBlacklistFLST
+	aBlacklistFLSTs[4] = iEquip_GeneralBlacklistFLST
+	aBlacklistFLSTs[5] = iEquip_AmmoBlacklistFLST
+	aBlacklistFLSTs[6] = iEquip_AmmoBlacklistFLST
+
+	asBlacklistNames = new string[7]
+	asBlacklistNames[0] = "$iEquip_WC_common_leftBlacklist"
+	asBlacklistNames[1] = "$iEquip_WC_common_rightBlacklist"
+	asBlacklistNames[2] = "$iEquip_WC_common_generalBlacklist"
+	asBlacklistNames[3] = "$iEquip_WC_common_generalBlacklist"
+	asBlacklistNames[4] = "$iEquip_WC_common_generalBlacklist"
+	asBlacklistNames[5] = "$iEquip_WC_common_ammoBlacklist"
+	asBlacklistNames[6] = "$iEquip_WC_common_ammoBlacklist"
 endFunction
 
 function CheckDependencies()
@@ -4463,7 +4490,7 @@ function purgeQueue()
 endFunction
 
 function openQueueManagerMenu(int Q = -1)
-	;debug.trace("iEquip_WidgetCore openQueueManagerMenu start")
+	debug.trace("iEquip_WidgetCore openQueueManagerMenu start")
 	if Q == -1
 		Q = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_queuemenu_title")) ;0 = Exit, 1 = Left hand queue, 2 = Right hand queue, 3 = Shout queue, 4 = Consumable queue, 5 = Poison queue, 6 = Arrow queue, 7 = Bolt queue
 	else
@@ -4494,11 +4521,62 @@ function openQueueManagerMenu(int Q = -1)
 			initQueueMenu(queueLength)
 		endIf
 	endIf
-	;debug.trace("iEquip_WidgetCore openQueueManagerMenu end")
+	debug.trace("iEquip_WidgetCore openQueueManagerMenu end")
 endFunction
 
-function initQueueMenu(int queueLength, bool update = false, int iIndex = -1)
-	;debug.trace("iEquip_WidgetCore initQueueMenu start")
+function QueueMenuSwitchView()
+	bBlacklistMenuShown = !bBlacklistMenuShown
+	if bBlacklistMenuShown
+		QueueMenuShowBlacklist()
+	else
+		QueueMenuUpdate(jArray.Count(iQueueMenuCurrentArray))
+	endIf
+	int count = aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize()
+	((Self as Form) as iEquip_UILIB).QueueMenu_UpdateButtons(count > 0, bBlacklistMenuShown, true, count)
+endFunction
+
+function QueueMenuShowBlacklist(int count = -1, bool update = false, int iIndex = 0)
+	debug.trace("iEquip_WidgetCore QueueMenuShowBlacklist start")
+
+	formlist targetList = aBlacklistFLSTs[iQueueMenuCurrentQueue]
+	if count == -1
+		count = targetList.GetSize()
+	endIf
+	string[] iconNames = Utility.CreateStringArray(count)
+	string[] itemNames = Utility.CreateStringArray(count)
+	bool[] enchFlags = Utility.CreateBoolArray(count)
+	bool[] poisonFlags = Utility.CreateBoolArray(count)
+	afCurrentBlacklistForms = Utility.CreateFormArray(count)
+	int i
+
+	while i < count
+		form tmpForm = targetList.GetAt(i)
+		string tmpName = tmpForm.GetName()
+		if iQueueMenuCurrentQueue > 4
+			tmpName += " (" + PlayerRef.GetItemCount(tmpForm) + ")"
+		endIf
+		iconNames[i] = "Empty"
+		itemNames[i] = tmpName
+		enchFlags[i] = false
+		poisonFlags[i] = false
+		afCurrentBlacklistForms[i] = tmpForm
+		i += 1
+	endWhile
+
+	((Self as Form) as iEquip_UILIB).QueueMenu_RefreshList(iconNames, itemNames, enchFlags, poisonFlags, iIndex)
+
+	if !update
+		string title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_blacklistTitleWithCount{" + count + "}{" + asBlacklistNames[iQueueMenuCurrentQueue] + "}")
+		QueueMenu_RefreshTitle(title)
+	endIf
+
+	debug.trace("iEquip_WidgetCore QueueMenuShowBlacklist end")
+endFunction
+
+function initQueueMenu(int queueLength, bool update = false, int iIndex = 0)
+	debug.trace("iEquip_WidgetCore initQueueMenu start")
+
+	bBlacklistMenuShown = false
 
 	string[] iconNames = Utility.CreateStringArray(queueLength)
 	string[] itemNames = Utility.CreateStringArray(queueLength)
@@ -4522,6 +4600,8 @@ function initQueueMenu(int queueLength, bool update = false, int iIndex = -1)
 		endIf
 		if iQueueMenuCurrentQueue < 3 && bShowAutoAddedFlag && JMap.getInt(targetObject, "iEquipAutoAdded") == 1
 			itemName = "(A) " + itemName
+		elseIf iQueueMenuCurrentQueue > 4
+			itemName += "(" + PlayerRef.GetItemCount(JMap.getForm(targetObject, "iEquipForm")) + ")"
 		endIf
 		itemNames[i] = itemName
 		enchFlags[i] = JMap.getInt(targetObject, "isEnchanted") as bool
@@ -4529,33 +4609,33 @@ function initQueueMenu(int queueLength, bool update = false, int iIndex = -1)
 		i += 1
 	endWhile
 	if update
-		QueueMenu_RefreshList(iconNames, itemNames, enchFlags, poisonFlags, iIndex)
+		((Self as Form) as iEquip_UILIB).QueueMenu_RefreshList(iconNames, itemNames, enchFlags, poisonFlags, iIndex)
 	else
 		string title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_titleWithCount{" + queueLength + "}{" + asQueueName[iQueueMenuCurrentQueue] + "}")
-		((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNames, itemNames, enchFlags, poisonFlags, 0, 0, bJustUsedQueueMenuDirectAccess)
+		((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNames, itemNames, enchFlags, poisonFlags, 0, 0, bJustUsedQueueMenuDirectAccess, aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize() > 0, iQueueMenuCurrentQueue > 4)
 	endIf
-	;debug.trace("iEquip_WidgetCore initQueueMenu end")
+	debug.trace("iEquip_WidgetCore initQueueMenu end")
 endFunction
 
 function recallQueueMenu()
-	;debug.trace("iEquip_WidgetCore recallQueueMenu start")
+	debug.trace("iEquip_WidgetCore recallQueueMenu start")
 	if bJustUsedQueueMenuDirectAccess
 		bJustUsedQueueMenuDirectAccess = false
 	else
 		Utility.WaitMenuMode(0.05)
 		openQueueManagerMenu()
 	endIf
-	;debug.trace("iEquip_WidgetCore recallQueueMenu end")
+	debug.trace("iEquip_WidgetCore recallQueueMenu end")
 endFunction
 
 function recallPreviousQueueMenu()
-	;debug.trace("iEquip_WidgetCore recallPreviousQueueMenu start")
+	debug.trace("iEquip_WidgetCore recallPreviousQueueMenu start")
 	initQueueMenu(jArray.count(iQueueMenuCurrentArray))
-	;debug.trace("iEquip_WidgetCore recallPreviousQueueMenu end")
+	debug.trace("iEquip_WidgetCore recallPreviousQueueMenu end")
 endFunction
 
 function QueueMenuSwap(int upDown, int iIndex)
-	;debug.trace("iEquip_WidgetCore QueueMenuSwap start")
+	debug.trace("iEquip_WidgetCore QueueMenuSwap start")
 	;upDown - 0 = Move Up, 1 = Move Down
 	if iQueueMenuCurrentQueue > 4 && AM.iAmmoListSorting > 0 && bFirstAttemptToEditAmmoQueue
 		bFirstAttemptToEditAmmoQueue = false
@@ -4578,19 +4658,26 @@ function QueueMenuSwap(int upDown, int iIndex)
 			iIndex += 1
 		endIf
 	endIf
+	
 	if iQueueMenuCurrentQueue > 4 	; If we've just edited an ammo queue make sure to set Ammo Sorting to manual now to block any re-sorting
 		AM.iAmmoListSorting = 0
 		AM.iLastSortType = 0
 	endIf
+	
 	QueueMenuUpdate(count, iIndex)
-	;debug.trace("iEquip_WidgetCore QueueMenuSwap end")
+	debug.trace("iEquip_WidgetCore QueueMenuSwap end")
 endFunction
 
 ;ToDo - Remove Ammo From Queue
 
 function QueueMenuRemoveFromQueue(int iIndex)
-	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue start")
-	if iQueueMenuCurrentQueue > 4 	; Ammo queues
+	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue start")
+
+	if bBlacklistMenuShown
+		aBlacklistFLSTs[iQueueMenuCurrentQueue].RemoveAddedForm(afCurrentBlacklistForms[iIndex])
+		BlacklistMenuUpdate(aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize(), iIndex)
+
+	elseIf iQueueMenuCurrentQueue > 4 	; Ammo queues
 		QueueMenuRemoveFromAmmoQueue(iIndex)
 	else
 		int targetObject = jArray.getObj(iQueueMenuCurrentArray, iIndex)
@@ -4617,11 +4704,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	        endIf
 	        ;Add manually removed items to the relevant blackList
 	        if bBlacklistEnabled
-		        if iQueueMenuCurrentQueue < 2
-		        	EH.blackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
-		        else
-		        	EH.blackListFLSTs[2].AddForm(itemForm) ;iEquip_GeneralBlacklistFLST
-		        endIf
+		        aBlackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
 		    endIf
 	        if !keepInFLST
 	        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
@@ -4634,7 +4717,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 		jArray.eraseIndex(iQueueMenuCurrentArray, iIndex)
 		int queueLength = jArray.count(iQueueMenuCurrentArray)
 		if iIndex >= queueLength
-			iIndex -= 1
+			iIndex = queueLength - 1
 		endIf
 		if queueLength < 1
 			if iQueueMenuCurrentQueue == 4
@@ -4661,10 +4744,11 @@ function QueueMenuRemoveFromQueue(int iIndex)
 			QueueMenuUpdate(queueLength, iIndex)
 		endIf
 	endIf
-	;debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue end")
+	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue end")
 endFunction
 
 function QueueMenuRemoveFromAmmoQueue(int iIndex)
+	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromAmmoQueue start")
 	if bFirstAttemptToRemoveAmmo
 		bFirstAttemptToRemoveAmmo = false
 		if bShowTooltips
@@ -4676,37 +4760,63 @@ function QueueMenuRemoveFromAmmoQueue(int iIndex)
 	AM.removeAmmoFromQueue(iQueueMenuCurrentQueue - 5, iIndex, true)
 	int queueLength = jArray.count(iQueueMenuCurrentArray)
 	if iIndex >= queueLength
-		iIndex -= 1
+		iIndex = queueLength - 1
 	endIf
 	QueueMenuUpdate(queueLength, iIndex)
+	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromAmmoQueue end")
 endFunction
 
-function QueueMenuUpdate(int iCount, int iIndex)
-	;debug.trace("iEquip_WidgetCore QueueMenuUpdate start")
+function QueueMenuUpdate(int iCount, int iIndex = 0)
+	debug.trace("iEquip_WidgetCore QueueMenuUpdate start")
 	string title
-	if iCount <= 0
+	if iCount < 1
 		title = iEquip_StringExt.LocalizeString("$iEquip_WC_common_EmptyQueue{" + asQueueName[iQueueMenuCurrentQueue] + "}")
 	else
 		title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_titleWithCount{" + iCount + "}{" + asQueueName[iQueueMenuCurrentQueue] + "}")
 	endIf
 	QueueMenu_RefreshTitle(title)
 	initQueueMenu(iCount, true, iIndex)
-	;debug.trace("iEquip_WidgetCore QueueMenuUpdate end")
+	int count = aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize()
+	if count > 0
+		((Self as Form) as iEquip_UILIB).QueueMenu_UpdateButtons(true, false, true, count)
+	endIf
+	debug.trace("iEquip_WidgetCore QueueMenuUpdate end")
+endFunction
+
+function BlacklistMenuUpdate(int iCount, int iIndex)
+	debug.trace("iEquip_WidgetCore QueueMenuUpdate start")
+	string title
+	if iCount < 1
+		title = iEquip_StringExt.LocalizeString("$iEquip_WC_common_emptyBlacklist{" + asBlacklistNames[iQueueMenuCurrentQueue] + "}")
+	else
+		title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_blacklistTitleWithCount{" + iCount + "}{" + asBlacklistNames[iQueueMenuCurrentQueue] + "}")
+	endIf
+	QueueMenu_RefreshTitle(title)
+	QueueMenuShowBlacklist(iCount, true, iIndex)
+	debug.trace("iEquip_WidgetCore QueueMenuUpdate end")
 endFunction
 
 function QueueMenuClearQueue()
-	;debug.trace("iEquip_WidgetCore QueueMenuClearQueue start")
-	if iQueueMenuCurrentQueue > 4	; Ammo queues
+	debug.trace("iEquip_WidgetCore QueueMenuClearQueue start")
+	if bBlacklistMenuShown && iQueueMenuCurrentQueue < 5
+		aBlacklistFLSTs[iQueueMenuCurrentQueue].Revert()
+		int iButton = showTranslatedMessage(4, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_QCleared{" + asBlacklistNames[iQueueMenuCurrentQueue] + "}"))
+		recallPreviousQueueMenu()
+
+	elseIf iQueueMenuCurrentQueue > 4	; Ammo queues
 		bool bDontClear
 		if bFirstAttemptToClearAmmoQueue
 			bFirstAttemptToClearAmmoQueue = false
-			((Self as Form) as iEquip_UILIB).closeQueueMenu()
-			int iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_clearAmmoQueue"))
+			;((Self as Form) as iEquip_UILIB).closeQueueMenu()
+			int iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_resetAmmoQueue"))
 			bDontClear = iButton as bool
 		endIf
 		if !bDontClear
+			KH.bAllowKeyPress = false
+			debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_resettingAmmoQueues"))
 			AM.iEquip_AmmoBlacklistFLST.Revert()
 			AM.updateAmmoLists(true)
+			KH.bAllowKeyPress = true
 		endIf
 		recallPreviousQueueMenu()
 	else
@@ -4775,7 +4885,7 @@ function QueueMenuClearQueue()
 		debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_WC_msg_QCleared{" + asQueueName[iQueueMenuCurrentQueue] + "}"))
 		recallQueueMenu()
 	endIf
-	;debug.trace("iEquip_WidgetCore QueueMenuClearQueue end")
+	debug.trace("iEquip_WidgetCore QueueMenuClearQueue end")
 endFunction
 
 function ApplyChanges()

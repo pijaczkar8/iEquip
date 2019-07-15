@@ -10,13 +10,16 @@ String sTitle
 String sInitialText
 String sInput
 String[] sOptions
-String[] sIconNameList
-String[] sList
-Bool[] bEnchFlags
-Bool[] bPoisonFlags
+String[] asIconNameList
+String[] asList
+Bool[] abEnchFlags
+Bool[] abPoisonFlags
+String sToggleButtonLabel
 Int iStartIndex
 Int iDefaultIndex
 Bool bDirectAccess
+bool bHasBlacklist
+bool bIsAmmoQueue
 Int iStartColor
 Int iDefaultColor
 Int[] aCustomColors
@@ -336,25 +339,7 @@ EndFunction
 
 ;Queue
 
-;/Function QueueMenu_SetData(String asTitle, String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, Int aiStartIndex, Int aiDefaultIndex, bool bDirectAccess = false, bool bShowingBlacklist = false) Global
-	;debug.trace("iEquip_UILIB QueueMenu_SetData start")
-	bool[] buttonArgs = new bool[2]
-	buttonArgs[0] = bDirectAccess
-	buttonArgs[1] = bShowingBlacklist
-	UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.setButtons", buttonArgs)
-	UI.InvokeNumber("CustomMenu", "_root.iEquipQueueDialog.setPlatform", (Game.UsingGamepad() as Int))
-	sendListValues()
-	Int iHandle2 = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.initListParams")
-	If(iHandle2)
-		UICallback.PushString(iHandle2, asTitle)
-		UICallback.PushInt(iHandle2, aiStartIndex)
-		UICallback.PushInt(iHandle2, aiDefaultIndex)
-		UICallback.Send(iHandle2)
-	EndIf
-	;debug.trace("iEquip_UILIB QueueMenu_SetData end")
-EndFunction/;
-
-Function ShowQueueMenu(String title, String[] iconList, String[] nameList, bool[] enchFlags, bool[] poisonFlags, Int startIndex, Int defaultIndex, bool directAccess = false, bool showingBlacklist = false)
+Function ShowQueueMenu(String title, String[] iconList, String[] nameList, bool[] enchFlags, bool[] poisonFlags, Int startIndex, Int defaultIndex, bool directAccess = false, bool hasBlacklist = false, bool isAmmoQueue = false, string toggleButtonLabel = "")
 	;debug.trace("iEquip_UILIB ShowQueueMenu start")
 	If(bMenuOpen)
 		Return
@@ -368,7 +353,9 @@ Function ShowQueueMenu(String title, String[] iconList, String[] nameList, bool[
 	iStartIndex = startIndex
 	iDefaultIndex = defaultIndex
 	bDirectAccess = directAccess
-	bShowingBlacklist = showingBlacklist
+	bHasBlacklist = hasBlacklist
+	bIsAmmoQueue = isAmmoQueue
+	sToggleButtonLabel = toggleButtonLabel
 	QueueMenu_Open(Self)
 	While(bMenuOpen)
 		Utility.WaitMenuMode(0.1)
@@ -393,29 +380,44 @@ EndFunction
 Event OnQueueMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;debug.trace("iEquip_UILIB OnQueueMenuOpen start")
 	If(asEventName == "iEquip_queueMenuOpen")
-		;QueueMenu_SetData(sTitle, sIconNameList, sList, bEnchFlags, bPoisonFlags, iStartIndex, iDefaultIndex, bDirectAccess)
-		bool[] buttonArgs = new bool[2]
-		buttonArgs[0] = bDirectAccess
-		buttonArgs[1] = bShowingBlacklist
-		UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.setButtons", buttonArgs)
+		QueueMenu_UpdateButtons(bHasBlacklist, false, false)
 		UI.InvokeNumber("CustomMenu", "_root.iEquipQueueDialog.setPlatform", (Game.UsingGamepad() as Int))
 		sendListValues()
-		Int iHandle2 = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.initListParams")
-		If(iHandle2)
-			UICallback.PushString(iHandle2, asTitle)
-			UICallback.PushInt(iHandle2, aiStartIndex)
-			UICallback.PushInt(iHandle2, aiDefaultIndex)
-			UICallback.Send(iHandle2)
+		Int iHandle = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.initListParams")
+		If(iHandle)
+			UICallback.PushString(iHandle, sTitle)
+			UICallback.PushInt(iHandle, iStartIndex)
+			UICallback.PushInt(iHandle, iDefaultIndex)
+			UICallback.Send(iHandle)
 		EndIf
 	EndIf
 	;debug.trace("iEquip_UILIB OnQueueMenuOpen end")
 EndEvent
 
-function sendListValues()
-		UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.initIconNameList", asIconNameList)
-		UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.initIsEnchantedList", abEnchFlags)
-		UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.initIsPoisonedList", abPoisonFlags)
+function sendListValues(bool refresh = false)
+	UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.initIconNameList", asIconNameList)
+	UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.initIsEnchantedList", abEnchFlags)
+	UI.InvokeBoolA("CustomMenu", "_root.iEquipQueueDialog.initIsPoisonedList", abPoisonFlags)
+	if refresh
+		UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.refreshList", asList)
+	else
 		UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.initListData", asList)
+	endIf
+endFunction
+
+function QueueMenu_UpdateButtons(bool hasBlacklist, bool showingBlacklist = false, bool updating = false)
+	debug.trace("iEquip_UILIB QueueMenu_UpdateButtons - hasBlacklist: " + hasBlacklist + ", showingBlacklist: " + showingBlacklist + ", bDirectAccess: " + bDirectAccess)
+
+	Int iHandle = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.setButtons")
+		If(iHandle)
+			UICallback.PushBool(iHandle, bDirectAccess)
+			UICallback.PushBool(iHandle, hasBlacklist)
+			UICallback.PushBool(iHandle, showingBlacklist)
+			UICallback.PushBool(iHandle, bIsAmmoQueue)
+			UICallback.PushBool(iHandle, updating)
+			UICallback.PushString(iHandle, sToggleButtonLabel)
+			UICallback.Send(iHandle)
+		EndIf
 endFunction
 
 Function QueueMenu_RefreshTitle(String asTitle) Global
@@ -424,12 +426,15 @@ Function QueueMenu_RefreshTitle(String asTitle) Global
 	;debug.trace("iEquip_UILIB QueueMenu_RefreshTitle end")
 endFunction
 
-Function QueueMenu_RefreshList(String[] asIconNameList, String[] asList, bool[] abEnchFlags, bool[] abPoisonFlags, int iIndex) Global
+Function QueueMenu_RefreshList(String[] iconList, String[] nameList, bool[] enchFlags, bool[] poisonFlags, int startIndex)
 	;debug.trace("iEquip_UILIB QueueMenu_RefreshList start")
-	UI.Invoke("CustomMenu", "_root.iEquipQueueDialog.clearIconLists")
-	sendListValues()
-	UI.InvokeStringA("CustomMenu", "_root.iEquipQueueDialog.refreshList", asList)
-	UI.InvokeInt("CustomMenu", "_root.iEquipQueueDialog.redrawList", iIndex)
+	asIconNameList = iconList
+	asList = nameList
+	abEnchFlags = enchFlags
+	abPoisonFlags = poisonFlags
+	iStartIndex = startIndex
+	sendListValues(true)
+	UI.InvokeInt("CustomMenu", "_root.iEquipQueueDialog.redrawList", startIndex)
 	;debug.trace("iEquip_UILIB QueueMenu_RefreshList end")
 endFunction
 
@@ -473,7 +478,7 @@ Event OnQueueMenuClear(String asEventName, String asStringArg, Float afNumArg, F
 	;debug.trace("iEquip_UILIB OnQueueMenuClear start")
 	If(asEventName == "iEquip_queueMenuClear")
 		bMenuOpen = False
-		if WC.showTranslatedMessage(5, iEquip_StringExt.LocalizeString("$iEquip_msg_clearQueue")) == 0 ;Cancel
+		if !WC.bBlacklistMenuShown && !(WC.iQueueMenuCurrentQueue > 4 && WC.bFirstAttemptToClearAmmoQueue) && WC.showTranslatedMessage(5, iEquip_StringExt.LocalizeString("$iEquip_msg_clearQueue")) == 0 ;Cancel
 			WC.recallPreviousQueueMenu()
 		else
 			WC.QueueMenuClearQueue()
@@ -485,12 +490,7 @@ EndEvent
 Event OnQueueMenuToggleList(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;debug.trace("iEquip_UILIB OnQueueMenuClear start")
 	If(asEventName == "iEquip_queueMenuToggleList")
-		bMenuOpen = False
-		if bShowingBlacklist
-			WC.recallPreviousQueueMenu()
-		else
-			WC.QueueMenuShowBlacklist()
-		endIf
+		WC.QueueMenuSwitchView()
 	EndIf
 	;debug.trace("iEquip_UILIB OnQueueMenuClear end")
 EndEvent
