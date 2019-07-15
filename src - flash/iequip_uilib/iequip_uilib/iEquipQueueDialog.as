@@ -12,6 +12,7 @@ import skyui.defines.Input;
 
 import skyui.util.GlobalFunctions;
 import skyui.util.Translator;
+//import skyui.util.Debug;
 
 
 class iEquip_uilib.iEquipQueueDialog extends MovieClip
@@ -25,22 +26,32 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	private var moveDownControls_: Object;
 	private var removeControls_: Object;
 	private var clearControls_: Object;
+	private var toggleListControls_: Object;
 	private var exitControls_: Object;
 	
 	private var moveUpKey_: Number = -1;
 	private var moveDownKey_: Number = -1;
 	private var removeKey_: Number = -1;
 	private var clearKey_: Number = -1;
+	private var toggleListKey_: Number = -1;
 	private var exitKey_: Number = -1;
+
+	private var removeControls_Y: Number;
+	private var clearControls_Y: Number;
+	private var titleText_Y: Number;
+
+	private var isGamepad: Boolean;
 
   /* STAGE ELEMENTS */
 	
 	public var menuList: ScrollingList;
 	public var titleTextField: TextField;
+	public var ammoSortTextField: TextField;
 	public var moveUpButtonPanel: ButtonPanel;
 	public var moveDownButtonPanel: ButtonPanel;
 	public var removeButtonPanel: ButtonPanel;
 	public var clearButtonPanel: ButtonPanel;
+	public var toggleListButtonPanel: ButtonPanel;
 	public var exitButtonPanel: ButtonPanel;
 	
   /* PROPERTIES */
@@ -49,6 +60,11 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
   	public var isPoisonedList: Array;
 
   	public var bDirectAccess: Boolean;
+  	public var bHasBlacklist: Boolean;
+  	public var bIsBlacklist: Boolean;
+  	public var bIsAmmoList: Boolean;
+  	public var sToggleListButtonLabel: String;
+  
   
   /* INITIALIZATION */
 
@@ -69,6 +85,12 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		
 		Mouse.addListener(this);
 		Key.addListener(this);
+
+		removeControls_Y = removeButtonPanel._y;
+		clearControls_Y = clearButtonPanel._y;
+		titleText_Y = titleTextField._y
+
+		ammoSortTextField.text = ""
 		
 		// SKSE functions not yet available and there's no InitExtensions...
 		// This should do the trick.
@@ -77,32 +99,28 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 
 	public function handleInput(details: InputDetails, pathToFocus: Array): Boolean
 	{		
-		var bHandledInput: Boolean = false;
+		var bHandledInput: Boolean;
 		if (GlobalFunc.IsKeyPressed(details)) {
-			if(details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_R2 || details.skseKeycode == 25) {
-				GameDelegate.call("PlaySound", ["UIMenuOK"]);
+			bHandledInput = true;
+			if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_R2 || details.skseKeycode == 25) {
 				onMoveUpPress();
-				bHandledInput = true;
 			} else if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_L2 || details.skseKeycode == 38) {
-				GameDelegate.call("PlaySound", ["UIMenuOK"]);
 				onMoveDownPress();
-				bHandledInput = true;
 			} else if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_X || details.skseKeycode == 19) {
-				GameDelegate.call("PlaySound", ["UIMenuOK"]);
 				onRemovePress();
-				bHandledInput = true;
 			} else if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_Y || details.skseKeycode == 20) {
-				GameDelegate.call("PlaySound", ["UIMenuOK"]);
 				onClearPress();
-				bHandledInput = true;
+			} else if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_R1 || details.skseKeycode == 48) {
+				onToggleListPress();
 			} else if (details.navEquivalent == NavigationCode.TAB) {
-				GameDelegate.call("PlaySound", ["UIMenuOK"]);
 				onExitPress();
-				bHandledInput = true;
+			} else {
+				bHandledInput = false;
 			}
 		}
 		
 		if(bHandledInput) {
+			GameDelegate.call("PlaySound", ["UIMenuOK"]);
 			return bHandledInput;
 		} else {
 			var nextClip = pathToFocus.shift();
@@ -124,47 +142,90 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	}
 
 	private function setupButtons(platform: Number): Void
-	{		
+	{	
+		
 		if (platform == 0) {
 			moveUpControls_ = {keyCode: 25}; //P
 			moveDownControls_ = {keyCode: 38}; //L
 			removeControls_ = {keyCode: 19}; //R
 			clearControls_ = {keyCode: 20}; //T
+			toggleListControls_ = {keyCode: 48}; //B
 			exitControls_ = {keyCode: 15}; //Tab
 		} else {
 			moveUpControls_ = {keyCode: 281}; //Gamepad RT
 			moveDownControls_ = {keyCode: 280}; //Gamepad LT
 			removeControls_ = {keyCode: 278}; //Gamepad X
 			clearControls_ = {keyCode: 279}; //Gamepad Y
+			toggleListControls_ = {keyCode: 275}; //Gamepad Right Shoulder
 			exitControls_ = {keyCode: 277}; //Gamepad B
 		}
+
+		var remStr: String;
+		var clrStr: String;
+		var togStr: String;
 		
 		moveUpButtonPanel.clearButtons();
-		var moveUpButton = moveUpButtonPanel.addButton({text: "Move up", controls: moveUpControls_});
-		moveUpButton.addEventListener("press", this, "onMoveUpPress");
-		moveUpButtonPanel.updateButtons();
-
 		moveDownButtonPanel.clearButtons();
-		var moveDownButton = moveDownButtonPanel.addButton({text: "Move down", controls: moveDownControls_});
-		moveDownButton.addEventListener("press", this, "onMoveDownPress");
-		moveDownButtonPanel.updateButtons();
-				
 		removeButtonPanel.clearButtons();
-		var removeButton = removeButtonPanel.addButton({text: "Remove from queue", controls: removeControls_});
+		clearButtonPanel.clearButtons();
+		toggleListButtonPanel.clearButtons();
+		exitButtonPanel.clearButtons();
+		
+		toggleListButtonPanel._visible = bHasBlacklist || bIsBlacklist;
+
+		if (bIsBlacklist) {
+			
+			moveUpButtonPanel._visible = false;
+			moveDownButtonPanel._visible = false;
+			removeButtonPanel._y = moveUpButtonPanel._y;
+			clearButtonPanel._y = moveDownButtonPanel._y;
+			remStr = "$iEquip_btn_removeFromList";
+			clrStr = "$iEquip_btn_clearBlacklist";
+			togStr = "$iEquip_btn_backToQueue";
+		
+		} else {
+			
+			moveUpButtonPanel._visible = true;
+			moveDownButtonPanel._visible = true;
+			removeButtonPanel._y = removeControls_Y;
+			clearButtonPanel._y = clearControls_Y;
+
+			var moveUpButton = moveUpButtonPanel.addButton({text: "$iEquip_btn_moveUp", controls: moveUpControls_});
+			moveUpButton.addEventListener("press", this, "onMoveUpPress");
+			moveUpButtonPanel.updateButtons();
+
+			var moveDownButton = moveDownButtonPanel.addButton({text: "$iEquip_btn_moveDown", controls: moveDownControls_});
+			moveDownButton.addEventListener("press", this, "onMoveDownPress");
+			moveDownButtonPanel.updateButtons();
+			
+			remStr = "$iEquip_btn_removeFromQueue";
+			clrStr = "$iEquip_btn_clearQueue";
+			togStr = sToggleListButtonLabel;
+		}
+		
+		var removeButton = removeButtonPanel.addButton({text: remStr, controls: removeControls_});
 		removeButton.addEventListener("press", this, "onRemovePress");
 		removeButtonPanel.updateButtons();
 
-		clearButtonPanel.clearButtons();
-		var clearButton = clearButtonPanel.addButton({text: "Clear queue", controls: clearControls_});
+		if (bIsAmmoList) {
+			clrStr = "$iEquip_btn_resetAmmoQueues"
+		}
+		
+		var clearButton = clearButtonPanel.addButton({text: clrStr, controls: clearControls_});
 		clearButton.addEventListener("press", this, "onClearPress");
 		clearButtonPanel.updateButtons();
 
-		exitButtonPanel.clearButtons();
+		if (bHasBlacklist || bIsBlacklist) {
+			var toggleListButton = toggleListButtonPanel.addButton({text: togStr, controls: toggleListControls_});
+			toggleListButton.addEventListener("press", this, "onToggleListPress");
+			toggleListButtonPanel.updateButtons();
+		}
+
 		var exitButton;
 		if (bDirectAccess) {
-			exitButton = exitButtonPanel.addButton({text: "Exit", controls: exitControls_});
+			exitButton = exitButtonPanel.addButton({text: "iEquip_btn_exit", controls: exitControls_});
 		} else {
-			exitButton = exitButtonPanel.addButton({text: "Back to menu", controls: exitControls_});
+			exitButton = exitButtonPanel.addButton({text: "$iEquip_btn_backToMenu", controls: exitControls_});
 		}
 		exitButton.addEventListener("press", this, "onExitPress");
 		exitButtonPanel.updateButtons();
@@ -172,12 +233,16 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	
 	private function onMoveUpPress(): Void
 	{
-		skse.SendModEvent("iEquip_queueMenuMoveUp", null, getActiveMenuIndex());
+		if (!bIsBlacklist) {
+			skse.SendModEvent("iEquip_queueMenuMoveUp", null, getActiveMenuIndex());
+		}
 	}
 
 	private function onMoveDownPress(): Void
 	{
-		skse.SendModEvent("iEquip_queueMenuMoveDown", null, getActiveMenuIndex());
+		if (!bIsBlacklist) {
+			skse.SendModEvent("iEquip_queueMenuMoveDown", null, getActiveMenuIndex());
+		}
 	}
 
 	private function onRemovePress(): Void
@@ -189,6 +254,14 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	{
 		skse.SendModEvent("iEquip_queueMenuClear", null);
 		skse.CloseMenu("CustomMenu");
+	}
+
+	private function onToggleListPress(): Void
+	{
+		if (bIsBlacklist || bHasBlacklist) {
+			skse.SendModEvent("iEquip_queueMenuToggleList", null);
+			//skse.CloseMenu("CustomMenu");
+		}
 	}
 
 	private function onExitPress(): Void
@@ -222,64 +295,86 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	
   /* PAPYRUS INTERFACE */
 
- 	public function setExitButtonText(directAccess: Boolean): Void
+ 	public function setButtons(directAccess: Boolean, hasBlacklist: Boolean, isBlacklist: Boolean, isAmmoList: Boolean, update: Boolean, toggleButtonLabel: String): Void
  	{
  		bDirectAccess = directAccess;
+ 		bHasBlacklist = hasBlacklist;
+ 		bIsBlacklist = isBlacklist;
+ 		bIsAmmoList = isAmmoList;
+ 		sToggleListButtonLabel = toggleButtonLabel;
+ 		if (update) {
+	 		var platform: Number = 0;
+	 		if (isGamepad) {
+	 			platform = 1;
+	 		}
+	 		setupButtons(platform);
+	 	}
+ 	}
+
+ 	// Only called if we're switching between views in an ammo queue
+ 	public function updateHeader(): Void
+ 	{
+ 		if (bIsBlacklist) {
+			titleTextField._y = titleText_Y;
+		} else {
+			titleTextField._y = titleText_Y - 6;
+		}
  	}
   
 	public function setPlatform(platform: Number): Void
 	{
-		var isGamepad = platform != 0;
+		isGamepad = platform != 0;
 		
 		moveUpKey_ = GlobalFunctions.getMappedKey("Right Attack/Block", Input.CONTEXT_GAMEPLAY, isGamepad);
 		moveDownKey_ = GlobalFunctions.getMappedKey("Left Attack/Block", Input.CONTEXT_GAMEPLAY, isGamepad);
 		removeKey_ = GlobalFunctions.getMappedKey("Ready Weapon", Input.CONTEXT_GAMEPLAY, isGamepad);
 		clearKey_ = GlobalFunctions.getMappedKey("Jump", Input.CONTEXT_GAMEPLAY, isGamepad);
+		toggleListControls_ = {keyCode: 275}; //Gamepad Right Shoulder
 		exitKey_ = GlobalFunctions.getMappedKey("Tween Menu", Input.CONTEXT_GAMEPLAY, isGamepad);
 		
 		moveUpButtonPanel.setPlatform(platform, false);
 		moveDownButtonPanel.setPlatform(platform, false);
 		removeButtonPanel.setPlatform(platform, false);
 		clearButtonPanel.setPlatform(platform, false);
+		toggleListButtonPanel.setPlatform(platform, false);
 		exitButtonPanel.setPlatform(platform, false);
 		setupButtons(platform);
 	}
 	
-	public function initIconNameList(iconName: String): Void
+	public function initIconNameList(/* values */): Void
 	{
-			if (iconNameList == null || iconNameList.length == 0){
-				iconNameList = ["Empty"]
-				iconNameList[0] = iconName
-				return;
-			}
+			iconNameList.length = 0;
+			iconNameList = ["Empty"];
+
+			for (var i=0; i<arguments.length; i++) {
+			var iconName = arguments[i];
+			
+			// Cut off rest of the buffer once the first emtpy string was found
+			if (iconName.toLowerCase() == "none" || iconName == "")
+				break;
+				
 			iconNameList.push(iconName);
-	}
-
-	public function initIsEnchantedList(bIsEnchanted: Boolean): Void
-	{
-			if (isEnchantedList == null || isEnchantedList.length == 0){
-				isEnchantedList = ["Empty"]
-				isEnchantedList[0] = bIsEnchanted
-				return;
 			}
-			isEnchantedList.push(bIsEnchanted);
 	}
 
-	public function initIsPoisonedList(bIsPoisoned: Boolean): Void
+	public function initIsEnchantedList(/* values */): Void
 	{
-			if (isPoisonedList == null || isPoisonedList.length == 0){
-				isPoisonedList = ["Empty"]
-				isPoisonedList[0] = bIsPoisoned
-				return;
+			isEnchantedList.length = 0;
+			isEnchantedList = ["Empty"];
+
+			for (var i=0; i<arguments.length; i++) {
+				isEnchantedList.push(arguments[i]);
 			}
-			isPoisonedList.push(bIsPoisoned);
 	}
 
-	public function clearIconLists(): Void
+	public function initIsPoisonedList(/* values */): Void
 	{
-			iconNameList.length = 0
-			isEnchantedList.length = 0
-			isPoisonedList.length = 0
+			isPoisonedList.length = 0;
+			isPoisonedList = ["Empty"];
+
+			for (var i=0; i<arguments.length; i++) {
+				isPoisonedList.push(arguments[i]);
+			}
 	}
 
 	public function initListData(/* values */): Void
@@ -302,17 +397,28 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		}
 		// Put options into list
 		for (var i=0; i<menuOptions.length; i++) {
-			var entry = {text: menuOptions[i], align: "left", enabled: true, iconName: iconNameList[i], isEnchanted: isEnchantedList[i], isPoisoned: isPoisonedList[i], state: "normal"};
+			var entry = {text: menuOptions[i], align: "left", enabled: true, iconName: iconNameList[i+1], isEnchanted: isEnchantedList[i+1], isPoisoned: isPoisonedList[i+1], state: "normal"};
 			menuList.entryList.push(entry);
 		}
 	}
 
-	public function initListParams(titleText: String, startIndex: Number, defaultIndex: Number): Void
+	public function initListParams(titleText: String, ammoSortingText: String, startIndex: Number, defaultIndex: Number): Void
 	{
 		// Title text
 		titleTextField.textAutoSize = "shrink";
 		titleText = Translator.translateNested(titleText);
 		titleTextField.SetText(titleText);
+
+		if (bIsAmmoList) {
+			titleTextField._y = titleText_Y - 6;
+		} else {
+			titleTextField._y = titleText_Y;
+		}
+
+		// Ammo Sorting Text
+		if (ammoSortingText != undefined && ammoSortingText != "") {
+			ammoSortTextField.text = ammoSortingText;
+		}
 		
 		// Store default index
 		defaultIndex_ = defaultIndex;
@@ -351,7 +457,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		menuList.clearList()
 		// Put options into list
 		for (var i=0; i<menuOptions.length; i++) {
-			var entry = {text: menuOptions[i], align: "center", enabled: true, iconName: iconNameList[i], isEnchanted: isEnchantedList[i], isPoisoned: isPoisonedList[i], state: "normal"};
+			var entry = {text: menuOptions[i], align: "center", enabled: true, iconName: iconNameList[i+1], isEnchanted: isEnchantedList[i+1], isPoisoned: isPoisonedList[i+1], state: "normal"};
 			menuList.entryList.push(entry);
 		}
 	}

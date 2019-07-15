@@ -347,6 +347,7 @@ bool bFirstAttemptToDeletePotionGroup = true
 bool bJustUsedQueueMenuDirectAccess
 bool property bBlacklistMenuShown auto hidden
 form[] afCurrentBlacklistForms
+string[] asAmmoSorting
 
 string sCurrentMenu
 string sEntryPath
@@ -690,6 +691,12 @@ function updateVariables()
 	asBlacklistNames[4] = "$iEquip_WC_common_generalBlacklist"
 	asBlacklistNames[5] = "$iEquip_WC_common_ammoBlacklist"
 	asBlacklistNames[6] = "$iEquip_WC_common_ammoBlacklist"
+
+	asAmmoSorting = new string[4]
+	asAmmoSorting[0] = "$iEquip_WC_ammoSorting_manually"
+	asAmmoSorting[1] = "$iEquip_WC_ammoSorting_byDamage"
+	asAmmoSorting[2] = "$iEquip_WC_ammoSorting_alphabetically"
+	asAmmoSorting[3] = "$iEquip_WC_ammoSorting_byQuantity"
 endFunction
 
 function CheckDependencies()
@@ -4526,13 +4533,23 @@ endFunction
 
 function QueueMenuSwitchView()
 	bBlacklistMenuShown = !bBlacklistMenuShown
+	string toggleButtonLabel
 	if bBlacklistMenuShown
 		QueueMenuShowBlacklist()
 	else
+		toggleButtonLabel = iEquip_StringExt.LocalizeString("$iEquip_btn_showBlacklist{" + aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize() + "}")
 		QueueMenuUpdate(jArray.Count(iQueueMenuCurrentArray))
 	endIf
-	int count = aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize()
-	((Self as Form) as iEquip_UILIB).QueueMenu_UpdateButtons(count > 0, bBlacklistMenuShown, true, count)
+
+	((Self as Form) as iEquip_UILIB).QueueMenu_UpdateButtons(count > 0, bBlacklistMenuShown, true, toggleButtonLabel)
+
+	if iQueueMenuCurrentQueue > 4
+		string ammoSortingText
+		if !bBlacklistMenuShown
+			ammoSortingText = iEquip_StringExt.LocalizeString("$iEquip_WC_ammoSorting_text{" + asAmmoSorting[AM.iAmmoListSorting] + "}")
+		endIf
+		QueueMenu_UpdateHeader(ammoSortingText)
+	endIf
 endFunction
 
 function QueueMenuShowBlacklist(int count = -1, bool update = false, int iIndex = 0)
@@ -4612,7 +4629,16 @@ function initQueueMenu(int queueLength, bool update = false, int iIndex = 0)
 		((Self as Form) as iEquip_UILIB).QueueMenu_RefreshList(iconNames, itemNames, enchFlags, poisonFlags, iIndex)
 	else
 		string title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_titleWithCount{" + queueLength + "}{" + asQueueName[iQueueMenuCurrentQueue] + "}")
-		((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNames, itemNames, enchFlags, poisonFlags, 0, 0, bJustUsedQueueMenuDirectAccess, aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize() > 0, iQueueMenuCurrentQueue > 4)
+		int blacklistCount = aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize() > 0
+		string toggleButtonLabel
+		if blacklistCount > 0
+			toggleButtonLabel = iEquip_StringExt.LocalizeString("$iEquip_btn_showBlacklist{" + blacklistCount + "}")
+		endIf
+		string ammoSortingText
+		if iQueueMenuCurrentQueue > 4
+			ammoSortingText = iEquip_StringExt.LocalizeString("$iEquip_WC_ammoSorting_text{" + asAmmoSorting[AM.iAmmoListSorting] + "}")
+		endIf
+		((Self as Form) as iEquip_UILIB).ShowQueueMenu(title, iconNames, itemNames, enchFlags, poisonFlags, 0, 0, bJustUsedQueueMenuDirectAccess, blacklistCount > 0, iQueueMenuCurrentQueue > 4, toggleButtonLabel, ammoSortingText)
 	endIf
 	debug.trace("iEquip_WidgetCore initQueueMenu end")
 endFunction
@@ -4662,6 +4688,7 @@ function QueueMenuSwap(int upDown, int iIndex)
 	if iQueueMenuCurrentQueue > 4 	; If we've just edited an ammo queue make sure to set Ammo Sorting to manual now to block any re-sorting
 		AM.iAmmoListSorting = 0
 		AM.iLastSortType = 0
+		QueueMenu_RefreshAmmoSortingText(iEquip_StringExt.LocalizeString("$iEquip_WC_ammoSorting_text{" + asAmmoSorting[AM.iAmmoListSorting] + "}"))
 	endIf
 	
 	QueueMenuUpdate(count, iIndex)
@@ -4778,7 +4805,7 @@ function QueueMenuUpdate(int iCount, int iIndex = 0)
 	initQueueMenu(iCount, true, iIndex)
 	int count = aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize()
 	if count > 0
-		((Self as Form) as iEquip_UILIB).QueueMenu_UpdateButtons(true, false, true, count)
+		((Self as Form) as iEquip_UILIB).QueueMenu_UpdateButtons(true, false, true, iEquip_StringExt.LocalizeString("$iEquip_btn_showBlacklist{" + count + "}"))
 	endIf
 	debug.trace("iEquip_WidgetCore QueueMenuUpdate end")
 endFunction
