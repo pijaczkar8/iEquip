@@ -79,10 +79,6 @@ function drawPage()
 	endIf
 
 	MCM.AddToggleOptionST("que_tgl_enblBlacklist", "$iEquip_MCM_que_lbl_enblBlacklist", WC.bBlacklistEnabled)
-			
-	if WC.bBlacklistEnabled && (EH.iEquip_LeftHandBlacklistFLST.GetSize() > 0 || EH.iEquip_RightHandBlacklistFLST.GetSize() > 0 || EH.iEquip_GeneralBlacklistFLST.GetSize() > 0)
-		MCM.AddTextOptionST("que_txt_clearBlacklist", "", "$iEquip_MCM_que_lbl_clearBlacklist")
-	endIf
 
 	MCM.SetCursorPosition(1)
 
@@ -365,26 +361,12 @@ State que_tgl_enblBlacklist
         elseIf currentEvent == "Select" || currentEvent == "Default" && WC.bBlacklistEnabled
             WC.bBlacklistEnabled = !WC.bBlacklistEnabled
             if !WC.bBlacklistEnabled
-                clearBlacklistFormlists()
+                EH.iEquip_LeftHandBlacklistFLST.Revert()
+                EH.iEquip_RightHandBlacklistFLST.Revert()
+                EH.iEquip_GeneralBlacklistFLST.Revert()
             endIf
             MCM.forcePageReset()
         endIf
     endEvent
 endState
 
-State que_txt_clearBlacklist
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_clearBlacklist")
-        elseIf currentEvent == "Select"
-            clearBlacklistFormlists()
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-function clearBlacklistFormlists()
-    EH.iEquip_LeftHandBlacklistFLST.Revert()
-    EH.iEquip_RightHandBlacklistFLST.Revert()
-    EH.iEquip_GeneralBlacklistFLST.Revert()
-endFunction
