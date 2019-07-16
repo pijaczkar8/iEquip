@@ -1895,23 +1895,18 @@ function setCurrentQueuePosition(int Q, int iIndex)
 	;debug.trace("iEquip_WidgetCore setCurrentQueuePosition end")
 endFunction
 
-bool function itemRequiresCounter(int Q, int itemType = -1, string itemName = "")
+bool function itemRequiresCounter(int Q, int itemType = -1)
 	;debug.trace("iEquip_WidgetCore itemRequiresCounter start")
 	bool requiresCounter
 	int itemObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	if itemType == -1
 		itemType = jMap.getInt(itemObject, "iEquipType")
 	endIf
-	;ToDo - itemName is only for debug, remove when done
-	;if itemName == ""
-	;	itemName = jMap.getStr(itemObject, "iEquipName")
-	;endIf
-	;debug.trace("iEquip_WidgetCore itemRequiresCounter itemType: " + itemType + ", itemName: " + itemName)
+
 	if asCurrentlyEquipped[Q] != "" && ((itemType == 42 || itemType == 23 || itemType == 31) || (itemType == 4 && iEquip_FormExt.isGrenade(jMap.getForm(itemObject, "iEquipForm")))) ;Ammo (which takes in Throwing Weapons), scroll, torch, or CACO grenades here which are classed as maces
 		requiresCounter = true
     endIf
     ;debug.trace("iEquip_WidgetCore itemRequiresCounter returning " + requiresCounter)
-    ;debug.trace("iEquip_WidgetCore itemRequiresCounter end")
     return requiresCounter
 endFunction
 
@@ -4569,7 +4564,7 @@ function QueueMenuShowBlacklist(int count = -1, bool update = false, int iIndex 
 	while i < count
 		form tmpForm = targetList.GetAt(i)
 		string tmpName = tmpForm.GetName()
-		if iQueueMenuCurrentQueue > 4
+		if iQueueMenuCurrentQueue > 2 || (iQueueMenuCurrentQueue < 2 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.isGrenade(tmpForm))))
 			tmpName += " (" + PlayerRef.GetItemCount(tmpForm) + ")"
 		endIf
 		iconNames[i] = "Empty"
@@ -4604,8 +4599,9 @@ function initQueueMenu(int queueLength, bool update = false, int iIndex = 0)
 	
 	while i < queueLength
 		int targetObject = jArray.getObj(iQueueMenuCurrentArray, i)
+		int itemType = JMap.getInt(targetObject, "iEquipType")
 		
-		if iQueueMenuCurrentQueue < 2 && TI.aiTemperedItemTypes.Find(JMap.getInt(targetObject, "iEquipType")) != -1
+		if iQueueMenuCurrentQueue < 2 && TI.aiTemperedItemTypes.Find(itemType) != -1
 			iconNames[i] = JMap.getStr(targetObject, "iEquipBaseIcon")
 			itemName = JMap.getStr(targetObject, "temperedNameForQueueMenu")
 			if itemName == ""
@@ -4617,8 +4613,9 @@ function initQueueMenu(int queueLength, bool update = false, int iIndex = 0)
 		endIf
 		if iQueueMenuCurrentQueue < 3 && bShowAutoAddedFlag && JMap.getInt(targetObject, "iEquipAutoAdded") == 1
 			itemName = "(A) " + itemName
-		elseIf iQueueMenuCurrentQueue > 4
-			itemName += "(" + PlayerRef.GetItemCount(JMap.getForm(targetObject, "iEquipForm")) + ")"
+		endIf
+		if iQueueMenuCurrentQueue > 3 || (iQueueMenuCurrentQueue == 3 && asPotionGroups.Find(itemName) == -1) || (iQueueMenuCurrentQueue < 2 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.isGrenade(jMap.getForm(targetObject, "iEquipForm")))))
+			itemName += " (" + PlayerRef.GetItemCount(JMap.getForm(targetObject, "iEquipForm")) + ")"
 		endIf
 		itemNames[i] = itemName
 		enchFlags[i] = JMap.getInt(targetObject, "isEnchanted") as bool
