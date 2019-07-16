@@ -427,8 +427,8 @@ Function QueueMenu_RefreshTitle(String asTitle) Global
 	UI.SetString("CustomMenu", "_root.iEquipQueueDialog.titleTextField.text", asTitle)
 endFunction
 
-function QueueMenu_RefreshAmmoSortingText(string sAmmoSorting) Global
-	UI.SetString("CustomMenu", "_root.iEquipQueueDialog.ammoSortTextField.text", sAmmoSorting)
+function QueueMenu_RefreshAmmoSortingText(string ammoSorting) Global
+	UI.SetString("CustomMenu", "_root.iEquipQueueDialog.ammoSortTextField.text", ammoSorting)
 endFunction
 
 function QueueMenu_UpdateHeader(string ammoSortingText) Global

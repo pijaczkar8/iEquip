@@ -4534,10 +4534,11 @@ endFunction
 function QueueMenuSwitchView()
 	bBlacklistMenuShown = !bBlacklistMenuShown
 	string toggleButtonLabel
+	int count = aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize()
 	if bBlacklistMenuShown
 		QueueMenuShowBlacklist()
 	else
-		toggleButtonLabel = iEquip_StringExt.LocalizeString("$iEquip_btn_showBlacklist{" + aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize() + "}")
+		toggleButtonLabel = iEquip_StringExt.LocalizeString("$iEquip_btn_showBlacklist{" + count + "}")
 		QueueMenuUpdate(jArray.Count(iQueueMenuCurrentArray))
 	endIf
 
@@ -4568,9 +4569,9 @@ function QueueMenuShowBlacklist(int count = -1, bool update = false, int iIndex 
 
 	while i < count
 		form tmpForm = targetList.GetAt(i)
-		string tmpName = tmpForm.GetName()
+		string tmpName = tmpForm.GetName() + " "
 		if iQueueMenuCurrentQueue > 4
-			tmpName += " (" + PlayerRef.GetItemCount(tmpForm) + ")"
+			tmpName += "(" + PlayerRef.GetItemCount(tmpForm) + ")"
 		endIf
 		iconNames[i] = "Empty"
 		itemNames[i] = tmpName
@@ -4629,7 +4630,7 @@ function initQueueMenu(int queueLength, bool update = false, int iIndex = 0)
 		((Self as Form) as iEquip_UILIB).QueueMenu_RefreshList(iconNames, itemNames, enchFlags, poisonFlags, iIndex)
 	else
 		string title = iEquip_StringExt.LocalizeString("$iEquip_WC_lbl_titleWithCount{" + queueLength + "}{" + asQueueName[iQueueMenuCurrentQueue] + "}")
-		int blacklistCount = aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize() > 0
+		int blacklistCount = aBlacklistFLSTs[iQueueMenuCurrentQueue].GetSize()
 		string toggleButtonLabel
 		if blacklistCount > 0
 			toggleButtonLabel = iEquip_StringExt.LocalizeString("$iEquip_btn_showBlacklist{" + blacklistCount + "}")
