@@ -14,6 +14,7 @@ import iEquip_ObjectReferenceExt
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
 iEquip_PlayerEventHandler property EH auto
+iEquip_TemperedItemHandler property TI auto
 
 actor property PlayerRef auto
 FormList property iEquip_AmmoItemsFLST auto
@@ -243,6 +244,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 
 			WC.bCyclingLHPreselectInAmmoMode = true
 			WC.updateAttributeIcons(0, WC.aiCurrentlyPreselected[0], false, true)
+			TI.updateTemperTierIndicator(0)
 			;If we've just equipped a bound weapon the ammo will already be equipped, otherwise go ahead and equip the ammo
 			if bBoundAmmoAdded
 				bBoundAmmoAdded = false ;Reset
@@ -326,8 +328,8 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			endIf
 			if !mainQueueIsEmpty
 				WC.CM.checkAndUpdateChargeMeter(0)
-				if WC.TI.bFadeIconOnDegrade || WC.TI.iTemperNameFormat > 0
-					WC.TI.checkAndUpdateTemperLevelInfo(0)
+				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
+					TI.checkAndUpdateTemperLevelInfo(0)
 				endIf
 			endIf
 		endIf
@@ -369,6 +371,7 @@ endFunction
 function AmmoModeAnimateOut()
 	debug.trace("iEquip_AmmoMode AmmoModeAnimateOut start")
 	WC.hideAttributeIcons(5)
+	TI.updateTemperTierIndicator(5)
 	int leftPreselectObject = -1
 	string[] widgetData = new string[3]
 	if jArray.count(aiTargetQ[Q]) < 1

@@ -623,7 +623,7 @@ function updateWidgetOnWeaponSwing()
 		if RC.bRechargingEnabled && CM.iChargeDisplayType > 0 && CM.abIsChargeMeterShown[iSlotToUpdate]
 			CM.updateMeterPercent(iSlotToUpdate)
 		endIf
-		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 			TI.checkAndUpdateTemperLevelInfo(iSlotToUpdate)
 		endIf
 	else
@@ -641,7 +641,7 @@ function updateWidgetOnWeaponSwing()
 				endIf
 			endIf
 		endIf
-		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 			TI.checkAndUpdateTemperLevelInfo(0)
 			TI.checkAndUpdateTemperLevelInfo(1)
 		endIf
@@ -786,7 +786,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 
 			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || TO.bJustCalledQuickLight)			; If it's somehow already shown in the widget
 				if equippedSlot < 2
-					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0																			; Update the name and temper level if required
+					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator																				; Update the name and temper level if required
 						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
 					else
 						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")

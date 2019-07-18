@@ -132,6 +132,9 @@ Keyword property MagicDamageShock auto
 
 SoundCategory _audioCategoryUI						; Used to mute equip sound when cycling shouts/powers
 
+; Archery Gameplay Overhaul
+bool property bIsAGOLoaded
+
 ; Animated Armoury support
 bool bIsAALoaded
 Keyword property WeapTypePike auto hidden
@@ -196,6 +199,7 @@ bool property bUnequipAmmo = true auto hidden
 ; Geared Up properties and variables
 bool property bEnableGearedUp auto hidden
 Form boots
+
 float property fEquipOnPauseDelay = 1.6 auto hidden
 
 bool property bPotionGrouping = true auto hidden
@@ -700,22 +704,8 @@ function updateVariables()
 endFunction
 
 function CheckDependencies()
-	if AhzMoreHudIE.GetVersion() > 0
-		bMoreHUDLoaded = true
-		initialisemoreHUDArray()
-	else
-		bMoreHUDLoaded = false
-	endIf
 
-	KH.registerForGPP(Game.GetModByName("Gamepad++.esp") != 255)
-	
-    if Game.GetModByName("Requiem.esp") != 255
-        RC.bIsRequiemLoaded = true
-    else
-        RC.bIsRequiemLoaded = false
-    endIf
-
-    if Game.GetModByName("Dawnguard.esm") != 255
+	 if Game.GetModByName("Dawnguard.esm") != 255
     	BM.arBeastRaces[1] = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race 	; DLC1VampireBeastRace
 		aUniqueItems[38] = Game.GetFormFromFile(0x00000800, "Dawnguard.esm") as Weapon 	; DLC1AurielsBow
 		aUniqueItems[39] = Game.GetFormFromFile(0x000067CF, "Dawnguard.esm") as Weapon 	; DLC1HarkonsSword
@@ -753,6 +743,30 @@ function CheckDependencies()
 		aUniqueItems[49] = none
 	endIf
 
+	; moreHUD Inventory Edition
+	if AhzMoreHudIE.GetVersion() > 0
+		bMoreHUDLoaded = true
+		initialisemoreHUDArray()
+	else
+		bMoreHUDLoaded = false
+	endIf
+
+	; Gamepad++
+	KH.registerForGPP(Game.GetModByName("Gamepad++.esp") != 255)
+	
+    ; Requiem
+    RC.bIsRequiemLoaded = Game.GetModByName("Requiem.esp") != 255
+
+    ; Archery Gameplay Overhaul
+    bIsAGOLoaded = Game.GetModByName("DSerArcheryGameplayOverhaul.esp") != 255
+
+    ; Thunderchild
+    EH.bIsThunderchildLoaded = Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
+
+    ; Wintersun
+    EH.bIsWintersunLoaded = Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255
+
+	; Animated Armory
 	if Game.GetModByName("NewArmoury.esp") != 255
         bIsAALoaded = true
         WeapTypePike = Game.GetFormFromFile(0x000E457E, "NewArmoury.esp") as Keyword
@@ -765,24 +779,14 @@ function CheckDependencies()
 		WeapTypeQtrStaff = none
     endIf
 
-	if Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
-        EH.bIsThunderchildLoaded = true
-    else
-        EH.bIsThunderchildLoaded = false
-    endIf
-
-    if Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255
-        EH.bIsWintersunLoaded = true
-    else
-        EH.bIsWintersunLoaded = false
-    endIf
-
+	; Undeath
 	if Game.GetModByName("Undeath.esp") != 255
 		BM.arBeastRaces[2] = Game.GetFormFromFile(0x0001772A, "Undeath.esp") as Race 		; NecroLichRace
 	else
 		BM.arBeastRaces[2] = none
 	endIf
 
+	; The Path of Transcendence
 	if Game.GetModByName("The Path of Transcendence.esp") != 255
 		BM.bPOTLoaded = true
 		BM.arPOTBoneTyrantRaces[0] = Game.GetFormFromFile(0x00038354, "The Path of Transcendence.esp") as Race 	; POT_ArgonianRaceBoneTyrant
@@ -1159,7 +1163,7 @@ function resetWidgetsToPreviousState()
 					hidePoisonInfo(i, true)
 				else
 					checkAndUpdatePoisonInfo(i)
-					if !(i == 0 && bAmmoMode) && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0)
+					if !(i == 0 && bAmmoMode) && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator)
 						TI.checkAndUpdateTemperLevelInfo(i)
 					endIf
 				endIf
@@ -1407,7 +1411,7 @@ event OnMenuClose(string _sCurrentMenu)
 		if equippedItem as Weapon && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
 			checkAndUpdatePoisonInfo(i)
 			CM.checkAndUpdateChargeMeter(i)
-			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 				TI.checkAndUpdateTemperLevelInfo(i)
 			endIf
 		endIf
@@ -2186,7 +2190,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	    	hideAttributeIcons(Q)
 	    	checkAndUpdatePoisonInfo(Q)
 			CM.checkAndUpdateChargeMeter(Q)
-			if TI.aiTemperedItemTypes.Find(itemType) > -1 && TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			if TI.aiTemperedItemTypes.Find(itemType) > -1 && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator)
 				TI.checkAndUpdateTemperLevelInfo(Q)
 			endIf
 			if itemRequiresCounter(Q, itemType)
@@ -2580,6 +2584,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 
 	if Q < 2 || Q == 5 || Q == 6
 		updateAttributeIcons(Q, iIndex, overridePreselect, cycling)
+		TI.updateTemperTierIndicator(Q, jMap.getInt(targetObject, "lastKnownTemperTier", 0))
 	endIf
 
 	if bNameFadeoutEnabled
@@ -2698,6 +2703,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 
 	elseIf Q == 5 || Q == 6
 		hideAttributeIcons(Q)
+		TI.updateTemperTierIndicator(Q)
 	endIf
 	if Q < 5 && !leaveFlag
 		abQueueWasEmpty[Q] = true
@@ -3367,7 +3373,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	if itemType != 31	; TorchScript already handles this if we've just equipped a torch
 		CM.checkAndUpdateChargeMeter(Q, true)
 	endIf
-	if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+	if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 		TI.checkAndUpdateTemperLevelInfo(Q)
 	endIf
 	if (itemType == 7 || itemType == 9) && bAmmoModeFirstLook
@@ -3472,6 +3478,7 @@ function goUnarmed()
 	int i
 	while i < 2
 		hideAttributeIcons(i)
+		TI.updateTemperTierIndicator(i)
 		setCounterVisibility(i, false)
 		hidePoisonInfo(i)
 		if CM.abIsChargeMeterShown[i]
@@ -3534,6 +3541,7 @@ function updateLeftSlotOn2HSpellEquipped()
 	endIf
 	b2HSpellEquipped = true
 	hideAttributeIcons(0)
+	TI.updateTemperTierIndicator(0)
 	setCounterVisibility(0, false)
 	hidePoisonInfo(0)
 	if CM.abIsChargeMeterShown[0]
@@ -3755,7 +3763,6 @@ function applyPoison(int Q)
         bool isLeftHand = !(Q as bool)
         string handName = "$iEquip_common_left"
         if Q == 1
-        	;isLeftHand = false
             handName = "$iEquip_common_right"
         endIf
         Weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
@@ -3815,15 +3822,23 @@ function applyPoison(int Q)
             endIf
         endIf
         
-        int ConcentratedPoisonMultiplier = iPoisonChargeMultiplier
-        if ConcentratedPoisonMultiplier == 1 && PlayerRef.HasPerk(ConcentratedPoison)
-            ConcentratedPoisonMultiplier = 2
+        int ConcentratedPoisonMultiplier = 1
+        
+        if PlayerRef.HasPerk(ConcentratedPoison)														; If the player has the Concentrated Poison perk apply the multiplier set in the iEquip MCM slider (default = 2 (vanilla))
+            ConcentratedPoisonMultiplier = iPoisonChargeMultiplier
         endIf
+        
         int chargesToApply
-        if iEquip_FormExt.isWax(poisonToApply as form) || iEquip_FormExt.isOil(poisonToApply as form)
+        
+        if iEquip_FormExt.isWax(poisonToApply as form) || iEquip_FormExt.isOil(poisonToApply as form)	; CACO waxes and Smithing Oils last for 10 uses so use that as the base value
             chargesToApply = 10 * ConcentratedPoisonMultiplier
         else
-            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier
+            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier						; Otherwise use the iEquip MCM 'Charges Per Vial' value as the base value (default = 1)
+        endIf
+
+        ; ToDo - add correct formID for the global
+        if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level charge multiplier
+        	chargesToApply *= (Game.GetFormFromFile(0x00000000, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt()
         endIf
         
         if currentPoison == poisonToApply
@@ -3831,18 +3846,18 @@ function applyPoison(int Q)
         else
             SetPoison(currentWeapon as form, refHandle, poisonToApply, chargesToApply)
         endIf
-        ;Remove one item from the player
+        ; Remove one item from the player
         PlayerRef.RemoveItem(poisonToApply, 1, true)
-        ;Flag the item as poisoned
+        ; Flag the item as poisoned
         jMap.setInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "isPoisoned", 1)
         jMap.setForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "lastKnownPoison", poisonToApply as Form)
         if !ApplyWithoutUpdatingWidget
             checkAndUpdatePoisonInfo(Q, false, false, refHandle)
         endIf
-        ;Play sound
+        ; Play sound
         ;debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison sound")
         iEquip_ITMPoisonUse.Play(PlayerRef)
-        ;Add Poison FX to weapon
+        ; Add Poison FX to weapon
         ;debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison VFX")
         if Q == 0
 			PLFX.cast(PlayerRef, PlayerRef)

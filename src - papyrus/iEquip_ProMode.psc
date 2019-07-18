@@ -209,6 +209,7 @@ function PreselectModeAnimateIn()
 		while i < 3
 			if i < 2
 				WC.updateAttributeIcons(i, WC.aiCurrentlyPreselected[i])
+				TI.updateTemperTierIndicator(i + 5, jMap.getInt(jArray.getObj(WC.aiTargetQ[i], WC.aiCurrentlyPreselected[i]), "lastKnownTemperTier", 0))
 			endIf
 			if !WC.abIsNameShown[i]
 				WC.showName(i)
@@ -255,6 +256,7 @@ function PreselectModeAnimateOut()
 			WC.updateAttributeIcons(0, 0)
 		elseIf i < 2
 			WC.hideAttributeIcons(i + 5)
+			TI.updateTemperTierIndicator(i + 5, 0)
 		endIf
 		if WC.bNameFadeoutEnabled && !WC.abIsNameShown[i]
 			WC.showName(i)
@@ -344,6 +346,7 @@ function equipPreselectedItem(int Q)
     endIf
     ;Update the attribute icons for the new item in the preselect slot
     WC.updateAttributeIcons(Q, WC.aiCurrentlyPreselected[Q], false, true)
+    TI.updateTemperTierIndicator(Q + 5, jMap.getInt(jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentlyPreselected[Q]), "lastKnownTemperTier", 0))
     ;Do widget animation here if not bEquippingAllPreselectedItems
     if !bEquippingAllPreselectedItems
 		targetObject = jArray.getObj(targetArray, WC.aiCurrentlyPreselected[Q])
@@ -538,7 +541,7 @@ function equipPreselectedItem(int Q)
 		if !(Q == 0 && targetItem as light)
 			WC.CM.checkAndUpdateChargeMeter(Q)
 		endIf
-		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 			TI.checkAndUpdateTemperLevelInfo(Q)
 		endIf
 		WC.checkIfBoundSpellEquipped()
@@ -954,7 +957,7 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 			endIf
 			WC.checkAndUpdatePoisonInfo(1)
 			WC.CM.checkAndUpdateChargeMeter(1)
-			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 				TI.checkAndUpdateTemperLevelInfo(1)
 			endIf
 			itemType = jMap.getInt(targetObject, "iEquipType")
@@ -1121,7 +1124,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 					WC.setCounterVisibility(1, false)
 				endIf
 				WC.CM.checkAndUpdateChargeMeter(1)
-				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 					TI.checkAndUpdateTemperLevelInfo(1)
 				endIf
 				if WC.bEnableGearedUp
@@ -1322,7 +1325,7 @@ function quickRangedSwitchOut(bool force1H = false)
     	endIf
 		WC.checkAndUpdatePoisonInfo(1)
 		WC.CM.checkAndUpdateChargeMeter(1)
-		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+		if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 			TI.checkAndUpdateTemperLevelInfo(1)
 		endIf
 		if WC.aiCurrentlyPreselected[1] == targetIndex
@@ -1339,7 +1342,7 @@ function quickRangedSwitchOut(bool force1H = false)
 	    	endIf
 			WC.checkAndUpdatePoisonInfo(0)
 			WC.CM.checkAndUpdateChargeMeter(0)
-			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0
+			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 				TI.checkAndUpdateTemperLevelInfo(0)
 			endIf
 			if WC.aiCurrentlyPreselected[0] == WC.aiCurrentQueuePosition[0]

@@ -25,6 +25,9 @@ int property iTemperNameFormat = 1 auto hidden
 bool property bTemperInfoBelowName auto hidden
 int property iColoredIconStyle = 1 auto Hidden
 int property iColoredIconLevels = 1 auto hidden
+bool property bShowTemperTierIndicator auto hidden
+int property iTemperTierDisplayChoice = 0 auto hidden
+bool property bShowFadedTiers = true auto hidden
 
 bool bFirstRun = true
 
@@ -112,13 +115,15 @@ function checkAndUpdateTemperLevelInfo(int Q)
 
 		;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo - fItemHealth: " + fItemHealth)
 		
+		int i
+
 		if fItemHealth < afTemperLevelMax[0]		; First check if the item is degraded below vanilla 1.0 (only mods like Loot & Degradation do this)
 			temperLevelName = iEquip_StringExt.LocalizeString("$iEquip_TI_lbl_Damaged")
 			currentTemperLevelPercent = Round(fItemHealth * 100)
 
 		elseIf fItemHealth > afTemperLevelMax[0] 	; Next check if the item has been improved
 
-			int i = 1								; Now if it has find which level range it is currently within
+			i = 1								; Now if it has find which level range it is currently within
 			while i < 6 && fItemHealth > afTemperLevelMax[i]
 				i += 1
 			endWhile
@@ -140,8 +145,10 @@ function checkAndUpdateTemperLevelInfo(int Q)
 		;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - temperLevelName: " + temperLevelName + ", currentTemperLevelPercent: " + currentTemperLevelPercent + "%")
 
 		updateIcon(Q, currentTemperLevelPercent, targetObject)
+		updateTemperTierIndicator(Q, i)
 		setTemperLevelName(Q, fItemHealth, temperLevelName, currentTemperLevelPercent, targetObject)
 		jMap.setInt(targetObject, "lastKnownItemHealth", currentTemperLevelPercent)
+		jMap.setInt(targetObject, "lastKnownTemperTier", i)
 	
 	endIf
 	;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo end")
@@ -189,6 +196,23 @@ function updateIcon(int Q, int temperLevelPercent, int targetObject)
 
 	endIf
 	;debug.trace("iEquip_TemperedItemHandler setTemperLevelFade end")
+endFunction
+
+function updateTemperTierIndicator(int Q, int tier = 0)
+	;debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator start - Q: " + Q + ", tier: " + tier + ", bShowTemperTierIndicator: " + bShowTemperTierIndicator + ", iTemperTierDisplayChoice: " + iTemperTierDisplayChoice + ", bShowFadedTiers: " + bShowFadedTiers)
+	if !bShowTemperTierIndicator && !EM.isEditMode
+		tier = 0
+	endIf
+
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateTemperTierIndicator")
+	if(iHandle)
+		UICallback.PushInt(iHandle, Q)
+		UICallback.PushInt(iHandle, tier)
+		UICallback.PushInt(iHandle, iTemperTierDisplayChoice)
+		UICallback.PushBool(iHandle, bShowFadedTiers)
+		UICallback.Send(iHandle)
+	endIf
+	;debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator end")
 endFunction
 
 function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, int temperLevelPercent, int targetObject)

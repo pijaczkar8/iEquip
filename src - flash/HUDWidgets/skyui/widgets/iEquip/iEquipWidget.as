@@ -17,6 +17,8 @@ import flash.geom.Transform;
 
 import flash.filters.DropShadowFilter;
 
+import skyui.util.Debug;
+
 class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 {	
   /* STAGE ELEMENTS */
@@ -46,17 +48,21 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public var leftAttributeIcons_mc: MovieClip;
 	public var leftEnchantmentMeter_mc: MovieClip;
 	public var leftSoulgem_mc: MovieClip;
+	public var leftTierIndicator_mc: MovieClip;
 	public var leftPositionIndicator_mc: MovieClip;
 	public var leftPreselectIcon_mc: MovieClip;
 	public var leftPreselectAttributeIcons_mc: MovieClip;
+	public var leftPreselectTierIndicator_mc: MovieClip;
 	public var rightIcon_mc: MovieClip;
 	public var rightPoisonIcon_mc: MovieClip;
 	public var rightAttributeIcons_mc: MovieClip;
 	public var rightEnchantmentMeter_mc: MovieClip;
 	public var rightSoulgem_mc: MovieClip;
+	public var rightTierIndicator_mc: MovieClip;
 	public var rightPositionIndicator_mc: MovieClip;
 	public var rightPreselectIcon_mc: MovieClip;
 	public var rightPreselectAttributeIcons_mc: MovieClip;
+	public var rightPreselectTierIndicator_mc: MovieClip;
 	public var shoutIcon_mc: MovieClip;
 	public var shoutPositionIndicator_mc: MovieClip;
 	public var shoutPreselectIcon_mc: MovieClip;
@@ -129,14 +135,23 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public var rightPositionIndicator: iEquipPositionIndicator;
 	public var shoutPositionIndicator: iEquipPositionIndicator;
 
-	//Edit Mode arrays
-	public var clip: MovieClip;
-	public var clipArray: Array;
-	public var selectedText: TextField;
-	public var textElementArray: Array;
+	public var leftTierIndicator: MovieClip;
+	public var rightTierIndicator: MovieClip;
+	public var leftPreselectTierIndicator: MovieClip;
+	public var rightPreselectTierIndicator: MovieClip;
 
+	// Variables containing the currently selected movieclip or textfield
+	public var clip: MovieClip;
+	public var selectedText: TextField;
+	
+	// Arrays containing every movieclip and textfield, etc
+	public var clipArray: Array;
+	public var textElementArray: Array;
 	public var textFieldArray: Array;
 	public var posIndArray: Array;
+	public var temperTierStyleArray: Array;
+	public var backgroundStyleArray: Array;
+	public var backgroundClipArray: Array;
 	
   /* INITIALIZATION */
 
@@ -183,12 +198,14 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		leftPoisonIcon_mc = widgetMaster.LeftHandWidget.leftPoisonIcon_mc;
 		leftAttributeIcons_mc = widgetMaster.LeftHandWidget.leftAttributeIcons_mc;
 		leftEnchantmentMeter_mc = widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc;
+		leftTierIndicator_mc = widgetMaster.LeftHandWidget.leftTierIndicator_mc;
 		leftPositionIndicator_mc = widgetMaster.LeftHandWidget.leftPositionIndicator_mc;
 		leftSoulgem_mc = widgetMaster.LeftHandWidget.leftSoulgem_mc;
 		rightIcon_mc = widgetMaster.RightHandWidget.rightIcon_mc;
 		rightPoisonIcon_mc = widgetMaster.RightHandWidget.rightPoisonIcon_mc;
 		rightAttributeIcons_mc = widgetMaster.RightHandWidget.rightAttributeIcons_mc;
 		rightEnchantmentMeter_mc = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc;
+		rightTierIndicator_mc = widgetMaster.RightHandWidget.rightTierIndicator_mc;
 		rightPositionIndicator_mc = widgetMaster.RightHandWidget.rightPositionIndicator_mc;
 		rightSoulgem_mc = widgetMaster.RightHandWidget.rightSoulgem_mc;
 		shoutIcon_mc = widgetMaster.ShoutWidget.shoutIcon_mc;
@@ -212,6 +229,12 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		rightPositionIndicator = widgetMaster.RightHandWidget.rightPositionIndicator_mc.rightPositionIndicator;
 		shoutPositionIndicator = widgetMaster.ShoutWidget.shoutPositionIndicator_mc.shoutPositionIndicator;
 
+		//Set up the temper tier indicator paths
+		leftTierIndicator = widgetMaster.LeftHandWidget.leftTierIndicator_mc.leftTierIndicator;
+		rightTierIndicator = widgetMaster.RightHandWidget.rightTierIndicator_mc.rightTierIndicator;
+		leftPreselectTierIndicator = widgetMaster.LeftHandWidget.leftPreselectTierIndicator_mc.leftPreselectTierIndicator;
+		rightPreselectTierIndicator = widgetMaster.RightHandWidget.rightPreselectTierIndicator_mc.rightPreselectTierIndicator;
+
 		//Set up the potion selector paths
 		potionSelector_mc = widgetMaster.ConsumableWidget.potionSelector_mc;
 		selector = widgetMaster.ConsumableWidget.potionSelector_mc.selector;
@@ -225,8 +248,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//Set up the preselect icon and text field holder MovieClips
 		leftPreselectIcon_mc = widgetMaster.LeftHandWidget.leftPreselectIcon_mc;
 		leftPreselectAttributeIcons_mc = widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc;
+		leftPreselectTierIndicator_mc = widgetMaster.LeftHandWidget.leftPreselectTierIndicator_mc;
 		rightPreselectIcon_mc = widgetMaster.RightHandWidget.rightPreselectIcon_mc;
 		rightPreselectAttributeIcons_mc = widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc;
+		rightPreselectTierIndicator_mc = widgetMaster.RightHandWidget.rightPreselectTierIndicator_mc;
 		shoutPreselectIcon_mc = widgetMaster.ShoutWidget.shoutPreselectIcon_mc;
 		leftPreselectName_mc = widgetMaster.LeftHandWidget.leftPreselectName_mc;
 		rightPreselectName_mc = widgetMaster.RightHandWidget.rightPreselectName_mc;
@@ -329,10 +354,16 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		
 		//Set up arrays of MovieClips and text elements ready for use in Edit Mode etc
 		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftPositionIndicator_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightPositionIndicator_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPositionIndicator_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, potionSelector_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
+		
 		textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, null, leftPreselectName, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, null, rightPreselectName, null, null, null, shoutName, null, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, null, poisonName, poisonCount);
 
 		textFieldArray = new Array(leftName, leftCount, leftPoisonName, leftPreselectName, rightName, rightCount, rightPoisonName, rightPreselectName, shoutName, shoutPreselectName, consumableName, consumableCount, restoreText, fortifyText, regenText, poisonName, poisonCount);
 		posIndArray = new Array(leftPositionIndicator, rightPositionIndicator, shoutPositionIndicator);
+
+		temperTierStyleArray = new Array("Hidden", "Uniform", "Increasing", "Diamond", "Star", "Hammer", "Anvil", "Asterisk", "Caret");
+		
+		backgroundStyleArray = new Array("Hidden", "Square", "SquareNoBorder", "Round", "RoundNoBorder", "RoundFade", "Dialogue");
+		backgroundClipArray = new Array(leftBg_mc, rightBg_mc, shoutBg_mc, leftPreselectBg_mc, rightPreselectBg_mc, shoutPreselectBg_mc, consumableBg_mc, poisonBg_mc);
 
 		handleTextFieldDropShadow(false);
 	}
@@ -423,7 +454,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 			currScale = iconClip._xscale;
 		}
 		
-		//skyui.util.Debug.log("iEquipWidget updateWidget - currAlpha: " + currAlpha + ", currScale: " + currScale)
+		//skyui.util.Debug.log("iEquipWidget updateWidget - iSlot: " + iSlot + ", currAlpha: " + currAlpha + ", currScale: " + currScale)
 		//Create the animation timeline
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		//Fade out and shrink the icon
@@ -466,15 +497,16 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//Store current alpha and scale values so we fade back in to the same settings
 		var currAttributesAlpha = attributesClip._alpha
 		//Fade out
-		TweenLite.to(attributesClip, 0.08, {_alpha:0, ease:Quad.easeOut});
+		TweenLite.to(attributesClip, 0.05, {_alpha:0, ease:Quad.easeOut});
 		//Set new attribute icons
 		attributeIcons.gotoAndStop(sAttributes);
 		//Fade in
-		TweenLite.to(attributesClip, 0.15, {_alpha:currAttributesAlpha, ease:Quad.easeOut});
+		TweenLite.to(attributesClip, 0.1, {_alpha:currAttributesAlpha, ease:Quad.easeOut});
 	}
 
 	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
 	{
+		//skyui.util.Debug.log("iEquipWidget updateIconAndName - iSlot: " + iSlot + ", sName: " + sName)
 		//Set the Icon
 		itemIcon.gotoAndStop(sIcon);
 		//Save the current text formatting to preserve any Edit Mode changes
@@ -487,6 +519,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function updateDisplayedText(iIndex: Number, sString: String): Void
 	{
+		//skyui.util.Debug.log("iEquipWidget updateDisplayedText - iSlot: " + iIndex + ", sString: " + sString)
+
 		if (sString == undefined){
 			sString = "";
 		}
@@ -502,6 +536,35 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	{
 		var itemIcon: MovieClip = iSlot == 0 ? leftIcon : rightIcon;
 		itemIcon.gotoAndStop(sIcon);
+	}
+
+	public function updateTemperTierIndicator(iSlot: Number, iTier: Number, iStyle: Number, bShowFade: Boolean): Void
+	{
+		var targetIndicator: MovieClip;
+		switch(iSlot) {
+			case 0:
+				targetIndicator = leftTierIndicator;
+				break;
+			case 1:
+				targetIndicator = rightTierIndicator;
+				break;
+			case 5:
+				targetIndicator = leftPreselectTierIndicator;
+				break;
+			case 6:
+				targetIndicator = rightPreselectTierIndicator;
+				break;
+			}
+
+		var sFrame: String = iTier == 0 ? "Hidden" : temperTierStyleArray[iStyle];
+		if (iTier > 0){
+			if (!bShowFade) {
+				sFrame += "NoFade";
+			}
+			sFrame += iTier.toString();
+		}
+
+		targetIndicator.gotoAndStop(sFrame);
 	}
 
 	// Used when a bound weapon is equipped to switch from the spell school icon to the bound weapon icon
@@ -521,48 +584,19 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		itemIcon.gotoAndStop(sIcon);
 	}
 
-	public function setBackgrounds(iOption: Number): Void
+	public function setBackgrounds(iStyle: Number): Void
 	{
-		var backgroundName: String;
+		var backgroundName: String = backgroundStyleArray[iStyle];
 
-		switch(iOption) {
-			case 0:
-				backgroundName = "Hidden";
-				break;
-			case 1:
-				backgroundName = "Square";
-				break;
-			case 2:
-				backgroundName = "SquareNoBorder";
-				break;
-			case 3:
-				backgroundName = "Round";
-				break;
-			case 4:
-				backgroundName = "RoundNoBorder";
-				break;
-			case 5:
-				backgroundName = "RoundFade";
-				break;
-			case 6:
-				backgroundName = "Dialogue";
-				break;
-			};
-
-		leftBg_mc.gotoAndStop(backgroundName);
-		rightBg_mc.gotoAndStop(backgroundName);
-		shoutBg_mc.gotoAndStop(backgroundName);
-		leftPreselectBg_mc.gotoAndStop(backgroundName);
-		rightPreselectBg_mc.gotoAndStop(backgroundName);
-		shoutPreselectBg_mc.gotoAndStop(backgroundName);
-		consumableBg_mc.gotoAndStop(backgroundName);
-		poisonBg_mc.gotoAndStop(backgroundName);
+		for (var i:Number = 0; i < backgroundClipArray.length; i++){
+			backgroundClipArray[i].gotoAndStop(backgroundName);
+		}
 	}
 
 	public function setWidgetBackground(iSlot: Number, iOption: Number): Void
 	{
 		var backgroundClip: MovieClip;
-		var backgroundName: String;
+		var backgroundName: String = backgroundStyleArray[iStyle];
 
 		switch(iSlot) {
 			case 0:
@@ -588,30 +622,6 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 				break;
 			case 7:
 				backgroundClip = shoutPreselectBg_mc;
-				break;
-			};
-
-		switch(iOption) {
-			case 0:
-				backgroundName = "Hidden";
-				break;
-			case 1:
-				backgroundName = "Square";
-				break;
-			case 2:
-				backgroundName = "SquareNoBorder";
-				break;
-			case 3:
-				backgroundName = "Round";
-				break;
-			case 4:
-				backgroundName = "RoundNoBorder";
-				break;
-			case 5:
-				backgroundName = "RoundFade";
-				break;
-			case 6:
-				backgroundName = "Dialogue";
 				break;
 			};
 
@@ -671,7 +681,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:PreselectModeAnimateInComplete});
 		//var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		tl.staggerTo(preselectIcons, 0.6, {_rotation:"+=360", _alpha:100, _xscale:100, _yscale:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0)
-		tl.staggerTo(preselectBackgrounds, 0.6, {_rotation:180, _alpha:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
+		tl.staggerTo(preselectBackgrounds, 0.6, {_rotation:"+=360", _alpha:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
 		tl.staggerTo(preselectNames, 0.25, {_alpha:100, immediateRender:false}, 0.2, 0.4);
 		//And action!
 		tl.play();
@@ -1759,9 +1769,9 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	{
 		if (isText == 1){
 			selectedText = textElementArray[arrayIndex];
-			var format:TextFormat = selectedText.getTextFormat();
-			format.color = highlightColor;
-			selectedText.setTextFormat(format);
+			var new_format:TextFormat = selectedText.getTextFormat();
+			new_format.color = highlightColor;
+			selectedText.setTextFormat(new_format);
 			//selectedText.textColor = highlightColor;
 		}
 		else {
@@ -1775,9 +1785,9 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	{
 		if (isText == 1){
 			selectedText = textElementArray[textElement];
-			var format:TextFormat = selectedText.getTextFormat();
-			format.color = currentColor;
-			selectedText.setTextFormat(format);
+			var new_format:TextFormat = selectedText.getTextFormat();
+			new_format.color = currentColor;
+			selectedText.setTextFormat(new_format);
 			//selectedText.textColor = currentColor;
 		} else {
 			colorTrans = new ColorTransform(1,1,1,1,0,0,0,0);
@@ -1786,61 +1796,64 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		}
 	}
 	
-	public function setTextColor(textElement: Number, currentColor: Number, a_align: Number): Void
+	public function setTextColor(textElement: Number, newColor: Number): Void
 	{
-		var format:TextFormat = new TextFormat();
+		//skyui.util.Debug.log("iEquipWidget setTextColor - textElement: " + textElement + ", newColor: " + newColor)
+		var new_format:TextFormat = new TextFormat();
 		//potionSelector_mc
 		if (textElement == 45){
-			format = potionSelector_mc.restoreText.getTextFormat();
-			format.color = currentColor;
-			potionSelector_mc.restoreText.setTextFormat(format);
-			potionSelector_mc.fortifyText.setTextFormat(format);
-			potionSelector_mc.regenText.setTextFormat(format);
+			new_format = potionSelector_mc.restoreText.getTextFormat();
+			new_format.color = newColor;
+			potionSelector_mc.restoreText.setTextFormat(new_format);
+			potionSelector_mc.fortifyText.setTextFormat(new_format);
+			potionSelector_mc.regenText.setTextFormat(new_format);
 		} else {
 			selectedText = textElementArray[textElement];
-			format = selectedText.getTextFormat();
-			format.color = currentColor;
-			selectedText.setTextFormat(format);
+			new_format = selectedText.getTextFormat();
+			new_format.color = newColor;
+			selectedText.setTextFormat(new_format);
 		}
 	}
 
 	public function setTextAlignment(textElement: Number, a_align: Number): Void
 	{
-		//skyui.util.Debug.log("iEquipEditMode setTextAlignment - textElement: " + textElement)
+		//skyui.util.Debug.log("iEquipWidget setTextAlignment - textElement: " + textElement + ", a_align: " + a_align)
 		selectedText = textElementArray[textElement];
-		var format:TextFormat = selectedText.getTextFormat();
+		var new_format:TextFormat = selectedText.getTextFormat();
 		switch(a_align) {
 			case 0:
-				format.align = "left";
+				new_format.align = "left";
 				break;
 			case 1:
-				format.align = "center";
+				new_format.align = "center";
 				break;
 			case 2:
-				format.align = "right";
+				new_format.align = "right";
 				break;
 		}
-		selectedText.setTextFormat(format);
+		selectedText.setTextFormat(new_format);
 	}
 
-	public function setTextColorAndAlignment(textElement: Number, a_align: Number, currentColor: Number): Void
+	public function setTextColorAndAlignment(textElement: Number, a_align: Number, newColor: Number): Void
 	{
-		//skyui.util.Debug.log("iEquipEditMode setTextColorAndAlignment - textElement: " + textElement + ", a_align: " + a_align + ", currentColor: " + currentColor)
+		//skyui.util.Debug.log("iEquipWidget setTextColorAndAlignment - textElement: " + textElement + ", a_align: " + a_align + ", newColor: " + newColor)
 		selectedText = textElementArray[textElement];
-		var format:TextFormat = selectedText.getTextFormat();
+		var new_format:TextFormat = selectedText.getTextFormat();
 
 		switch(a_align) {
 			case 0:
-				format.align = "left";
+				new_format.align = "left";
 				break;
 			case 1:
-				format.align = "center";
+				new_format.align = "center";
 				break;
 			case 2:
-				format.align = "right";
+				new_format.align = "right";
 				break;
 		}
-		format.color = currentColor;
-		selectedText.setTextFormat(format);
+		new_format.color = newColor;
+		selectedText.setTextFormat(new_format);
+		//setTextColor(textElement, newColor)
+		//setTextAlignment(textElement, a_align)
 	}
 }

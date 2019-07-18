@@ -32,15 +32,12 @@ string HUD_MENU = "HUD Menu"
 string WidgetRoot
 
 float property fMaxTorchDuration = 240.0 auto hidden
-float fLastMaxDuration
-bool bTorchValuesChanged
-float fTorchRadius
+float property fTorchRadius auto hidden
+float fDefaultRadius
 
 form property realTorchForm auto hidden
 
 float fCurrentTorchLife
-
-bool bSetInitialValues = true
 
 bool bFirstUpdateForCurrentTorch = true
 bool property bSettingLightRadius auto hidden
@@ -60,6 +57,8 @@ form previousItemForm
 int previousLeftHandIndex = -1
 string previousLeftHandName
 
+bool bFirstRun = true
+
 ; MCM Properties
 bool property bQuickLightPreferMagic auto hidden
 bool property bQuickLightUseMagicIfNoTorch auto hidden
@@ -71,6 +70,7 @@ string property sTorchMeterFillDirection = "left" auto hidden
 float property fTorchDuration = 235.0 auto hidden
 bool property bFiniteTorchLife = true auto hidden
 bool property bTorchDurationSettingChanged auto hidden
+bool property bTorchRadiusSettingChanged auto hidden
 bool property bautoReEquipTorch = true auto hidden
 bool property bRealisticReEquip = true auto hidden
 float property fRealisticReEquipDelay = 2.0 auto hidden
@@ -90,24 +90,24 @@ function initialise(bool bEnabled)
 			aDroppedTorches = new ObjectReference[4]
 		endIf
 		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
+		if bFirstRun
+			bFirstRun = false
+			fDefaultRadius = fTorchRadius
+		endIf
 		fMaxTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
-		if bSetInitialValues || fMaxTorchDuration < fTorchDuration
+		if fMaxTorchDuration < fTorchDuration
 			fTorchDuration = fMaxTorchDuration
 		endIf
-		if fMaxTorchDuration != fLastMaxDuration
-			fLastMaxDuration = fMaxTorchDuration
-			if bSetInitialValues
-				bSetInitialValues = false
-			else
-				bTorchValuesChanged = true
-			endIf
-		endIf
+
 		if fCurrentTorchLife > fTorchDuration || fCurrentTorchLife == 0.0
 			fCurrentTorchLife = fTorchDuration
 		endIf
 	else
 		UnregisterForAllMenus()
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
+		if fDefaultRadius > 0 && iEquip_FormExt.GetLightRadius(Torch01) as float != fDefaultRadius
+			iEquip_FormExt.SetLightRadius(Torch01, fDefaultRadius as int)
+		endIf
 		GoToState("DISABLED")
 	endIf
 	;debug.trace("iEquip_TorchScript initialise end")
@@ -305,6 +305,16 @@ event OnUpdate()
 	endIf
 	;debug.trace("iEquip_TorchScript OnUpdate end")
 endEvent
+
+; Called when adjusting the base torch radius from the MCM - affects all carried torches, including those carried by NPCs
+function setBaseTorchRadius()
+	iEquip_FormExt.SetLightRadius(Torch01, fTorchRadius as int)
+	if PlayerRef.GetEquippedObject(0) == TorchO1
+		bSettingLightRadius = true
+		PlayerRef.UnequipItemEx(Torch01)
+		PlayerRef.EquipItemEx(Torch01)
+	endIf
+endFunction
 
 function quickLight()
 
@@ -631,3 +641,8 @@ auto state DISABLED
 	event OnUpdate()
 	endEvent
 endState
+
+; Deprecated variables
+float fLastMaxDuration
+bool bTorchValuesChanged
+bool bSetInitialValues = true

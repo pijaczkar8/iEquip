@@ -60,6 +60,7 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, TO.bShowTorchMeter as int)
     jArray.addInt(jPageObj, TO.iTorchMeterFillColor)
     jArray.addInt(jPageObj, iTorchMeterFillDirection)
+    jArray.addFloat(jPageObj, TO.fTorchRadius)
 
     return jPageObj    
 endFunction
@@ -83,8 +84,12 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
     TO.iTorchMeterFillColor = jArray.getInt(jPageObj, 14)
     TO.iTorchMeterFillColorDark = multiplyRGB(TO.iTorchMeterFillColor, 0.4)
     iTorchMeterFillDirection = jArray.getInt(jPageObj, 15)
+    if jArray.getFlt(jPageObj, 16, 0) > 0
+        TO.fTorchRadius = jArray.getFlt(jPageObj, 16, 0)
+    endIf
     TO.sTorchMeterFillDirection = rawMeterFillDirectionOptions[iTorchMeterFillDirection]
     TO.bTorchDurationSettingChanged = true
+    TO.bTorchRadiusSettingChanged = true
 endFunction
 
 function drawPage()
@@ -99,12 +104,12 @@ function drawPage()
 
 	MCM.AddEmptyOption()
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchLifeOptions</font>")
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_tch_lbl_torchOptions</font>")
 	MCM.AddSliderOptionST("tch_sld_torchDuration", "$iEquip_MCM_tch_lbl_torchDuration", (TO.fTorchDuration + 5.0) / 60, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
 	MCM.AddToggleOptionST("tch_tgl_finiteTorchLife", "$iEquip_MCM_tch_lbl_finiteTorchLife", TO.bFiniteTorchLife)
-	if TO.bFiniteTorchLife
-		MCM.AddToggleOptionST("tch_tgl_torchesFade", "$iEquip_MCM_tch_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
-	endIf
+
+    MCM.AddSliderOptionST("tch_sld_torchRadius", "$iEquip_MCM_tch_lbl_torchRadius", TO.fTorchRadius, "{0}")
+	MCM.AddToggleOptionST("tch_tgl_torchesFade", "$iEquip_MCM_tch_lbl_torchesFade", TO.bReduceLightAsTorchRunsOut)
 
 	MCM.AddToggleOptionST("tch_tgl_reequipTorch", "$iEquip_MCM_tch_lbl_reequipTorch", TO.bAutoReEquipTorch)
 	if TO.bAutoReEquipTorch
@@ -208,7 +213,7 @@ State tch_sld_torchDuration
             MCM.SetInfoText("$iEquip_MCM_tch_txt_setTorchDuration")
         elseIf currentEvent == "Open"
             MCM.fillSlider((TO.fTorchDuration + 5.0) / 60.0, 1.0, TO.fMaxTorchDuration / 60.0, 0.5, TO.fMaxTorchDuration / 60.0)
-        elseIf currentEvent == "Accept"
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
             TO.fTorchDuration = currentVar * 60.0 - 5.0
             MCM.SetSliderOptionValueST((TO.fTorchDuration + 5.0) / 60.0, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
             TO.bTorchDurationSettingChanged = true
@@ -242,7 +247,7 @@ State tch_sld_realisticEquipDelay
     event OnBeginState()
         if currentEvent == "Open"
             MCM.fillSlider(TO.fRealisticReEquipDelay, 0.5, 5.0, 0.1, 2.0)
-        elseIf currentEvent == "Accept"
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
             TO.fRealisticReEquipDelay = currentVar
             MCM.SetSliderOptionValueST(TO.fRealisticReEquipDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         endIf
@@ -256,6 +261,20 @@ State tch_tgl_finiteTorchLife
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !TO.bFiniteTorchLife)
             TO.bFiniteTorchLife = !TO.bFiniteTorchLife
             MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State tch_sld_torchRadius
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_tch_txt_setTorchRadius")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(TO.fTorchRadius, 300.0, 2000.0, 20.0, TO.fDefaultRadius)
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            TO.fTorchRadius = currentVar
+            MCM.SetSliderOptionValueST(TO.fTorchRadius, "{0}")
+            TO.bTorchRadiusSettingChanged = true
         endIf
     endEvent
 endState

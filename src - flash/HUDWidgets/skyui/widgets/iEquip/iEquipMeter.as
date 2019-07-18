@@ -94,7 +94,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function onLoad(): Void
 	{
-		skyui.util.Debug.log("iEquipMeter onLoad called");
+		//skyui.util.Debug.log("iEquipMeter onLoad called");
 		invalidateSize();
 		invalidateFillDirection();
 

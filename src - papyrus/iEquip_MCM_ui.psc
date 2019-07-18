@@ -13,6 +13,9 @@ string[] tempLvlThresholdOptions
 
 int[] aiDropShadowBlurValues
 
+; From 1.1 onwards
+string[] temperTierIndicatorStyles
+
 ; #############
 ; ### SETUP ###
 
@@ -63,6 +66,16 @@ function initData()
     temperLevelTextOptions[10] = "$iEquip_MCM_ui_opt_tmpLvlTxt10"
     temperLevelTextOptions[11] = "$iEquip_MCM_ui_opt_tmpLvlTxt11"
     temperLevelTextOptions[12] = "$iEquip_MCM_ui_opt_tmpLvlTxt12"
+
+    temperTierIndicatorStyles = new string[8]
+    temperTierIndicatorStyles[0] = "$iEquip_MCM_ui_opt_tmpTierStyle1"
+    temperTierIndicatorStyles[1] = "$iEquip_MCM_ui_opt_tmpTierStyle2"
+    temperTierIndicatorStyles[2] = "$iEquip_MCM_ui_opt_tmpTierStyle3"
+    temperTierIndicatorStyles[3] = "$iEquip_MCM_ui_opt_tmpTierStyle4"
+    temperTierIndicatorStyles[4] = "$iEquip_MCM_ui_opt_tmpTierStyle5"
+    temperTierIndicatorStyles[5] = "$iEquip_MCM_ui_opt_tmpTierStyle6"
+    temperTierIndicatorStyles[6] = "$iEquip_MCM_ui_opt_tmpTierStyle7"
+    temperTierIndicatorStyles[7] = "$iEquip_MCM_ui_opt_tmpTierStyle8"
 
     coloredIconOptions = new string[3]
     coloredIconOptions[0] = "$iEquip_MCM_ui_opt_noColor"
@@ -178,6 +191,13 @@ function drawPage()
 	
 	if TI.iTemperNameFormat > 0 && TI.iTemperNameFormat < 9
 		MCM.AddToggleOptionST("ui_tgl_tempInfoBelow", "$iEquip_MCM_ui_lbl_tempInfoBelow", TI.bTemperInfoBelowName)
+	endIf
+
+	MCM.AddToggleOptionST("ui_tgl_tempTierDisplay", "$iEquip_MCM_ui_lbl_tempTierDisplay", TI.bShowTemperTierIndicator)
+
+	if TI.bShowTemperTierIndicator
+		MCM.AddMenuOptionST("ui_men_tempTierStyle", "$iEquip_MCM_ui_lbl_tempTierStyle", temperTierIndicatorStyles[TI.iTemperTierDisplayChoice])
+		MCM.AddToggleOptionST("ui_tgl_showFadedTiers", "$iEquip_MCM_ui_lbl_showFadedTiers", TI.bShowFadedTiers)
 	endIf
 	
 	MCM.AddToggleOptionST("ui_tgl_tempLvlFade", "$iEquip_MCM_ui_lbl_tempLvlFade", TI.bFadeIconOnDegrade)
@@ -354,6 +374,45 @@ State ui_tgl_tempInfoBelow
         elseIf currentEvent == "Select"
             TI.bTemperInfoBelowName = !TI.bTemperInfoBelowName
             MCM.SetToggleOptionValueST(TI.bTemperInfoBelowName)
+            WC.bTemperDisplaySettingChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_tempTierDisplay
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tempTierDisplay")
+        elseIf currentEvent == "Select"
+            TI.bShowTemperTierIndicator = !TI.bShowTemperTierIndicator
+            WC.bTemperDisplaySettingChanged = true
+            MCM.ForcePageReset()
+        endIf 
+    endEvent
+endState
+
+State ui_men_tempTierStyle
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_tempTierStyle")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(TI.iTemperTierDisplayChoice, temperTierIndicatorStyles, 1)
+        elseIf currentEvent == "Accept"
+            TI.iTemperTierDisplayChoice = currentVar as int
+            MCM.SetMenuOptionValueST(temperTierIndicatorStyles[TI.iTemperTierDisplayChoice])
+            WC.bTemperDisplaySettingChanged = true
+            MCM.ForcePageReset()
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_showFadedTiers
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_showFadedTiers")
+        elseIf currentEvent == "Select"
+            TI.bShowFadedTiers = !TI.bShowFadedTiers
+            MCM.SetToggleOptionValueST(TI.bShowFadedTiers)
             WC.bTemperDisplaySettingChanged = true
         endIf 
     endEvent

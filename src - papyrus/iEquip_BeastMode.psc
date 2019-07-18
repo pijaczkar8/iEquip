@@ -9,6 +9,7 @@ iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
 iEquip_AmmoMode property AM auto
 iEquip_ChargeMeters property CM auto
+iEquip_TemperedItemHandler property TI auto
 iEquip_KeyHandler property KH auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
@@ -208,6 +209,7 @@ function onPlayerTransform(race newRace, bool bPlayerIsAVampireOrLich, bool bLoa
 			;Hide the attribute, poison, count and charge info
 			if i < 2 && (!bInSupportedBeastForm || bLoading)
 				WC.hideAttributeIcons(i)
+				TI.updateTemperTierIndicator(i)
 				WC.setCounterVisibility(i, false)
 				WC.hidePoisonInfo(i)
 				if CM.abIsChargeMeterShown[i]

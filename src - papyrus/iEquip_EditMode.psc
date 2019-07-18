@@ -13,6 +13,7 @@ import iEquip_StringExt
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
 iEquip_ChargeMeters property CM auto
+iEquip_TemperedItemHandler property TI auto
 
 ; - REFERENCES -
 
@@ -312,6 +313,11 @@ function LoadAllElements()
                 ; Check and show left and right attribute icons including those for the preselect slots
                 CreateHandleIntStr(".updateAttributeIcons", i, "Both")
                 CreateHandleIntStr(".updateAttributeIcons", i + 5, "Both")
+
+                ; Show temper tier indicators
+                TI.updateTemperTierIndicator(i, 3)
+                TI.updateTemperTierIndicator(i + 5, 3)
+
             ; Handle empty shout,consumable and poison queues to ensure all elements show temporarily
             elseIf iCount < 1 || i == 3 && iCount == 3
                 if i == 2
