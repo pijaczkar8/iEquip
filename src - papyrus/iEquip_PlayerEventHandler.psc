@@ -982,13 +982,29 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	;debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
 
-Event OnGetUp(ObjectReference akFurniture)
+event OnGetUp(ObjectReference akFurniture)
 	;debug.trace("iEquip_PlayerEventHandler OnGetUp start")
-	If akFurniture.HasKeyword(CraftingSmithingSharpeningWheel) || akFurniture.HasKeyword(CraftingSmithingArmorTable)
+	if akFurniture.HasKeyword(CraftingSmithingSharpeningWheel) || akFurniture.HasKeyword(CraftingSmithingArmorTable)
 		;Check to see if the equipped hand items have been improved
-	EndIf
+		int i
+		int itemType
+		int equippedItem
+		while i < 2
+			equippedItem = PlayerRef.GetEquippedObject(i)
+			if equippedItem
+				itemType = equippedItem.GetType()
+				if itemType == 41
+					itemType = (equippedItem as weapon).GetWeaponType()
+				endIf
+				if WC.aiTemperedItemTypes.Find(itemType) > -1 && !(i == 0 && WC.ai2HWeaponTypes.Find(itemType) > -1) && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator)
+					TI.checkAndUpdateTemperLevelInfo(i)
+				endIf
+			endIf
+			i += 1
+		endWhile
+	endIf
 	;debug.trace("iEquip_PlayerEventHandler OnGetUp end")
-EndEvent
+endEvent
 
 state BEASTMODE
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)

@@ -501,7 +501,7 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 			int ammoObject = jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
 			asCurrentAmmo[Q] = jMap.getStr(ammoObject, "iEquipName")
 
-			float fNameAlpha = WC.afWidget_A[8]
+			float fNameAlpha = WC.afWidget_A[8] ; leftName_mc
 			if fNameAlpha < 1
 				fNameAlpha = 100
 			endIf

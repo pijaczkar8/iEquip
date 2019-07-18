@@ -176,8 +176,8 @@ function updateChargeMeters(bool forceUpdate = false)
 	else
 		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[13] + "._visible", false) ;leftEnchantmentMeter_mc
 		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[14] + "._visible", false) ;leftSoulgem_mc
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[27] + "._visible", false) ;rightEnchantmentMeter_mc
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[28] + "._visible", false) ;rightSoulgem_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[29] + "._visible", false) ;rightEnchantmentMeter_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[30] + "._visible", false) ;rightSoulgem_mc
 	endIf
 	;debug.trace("iEquip_ChargeMeters updateChargeMeters end")
 endFunction
@@ -272,13 +272,13 @@ function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, 
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
 			element = 13 ;leftEnchantmentMeter_mc
 			if Q == 1
-				element = 27 ;rightEnchantmentMeter_mc
+				element = 29 ;rightEnchantmentMeter_mc
 			endIf
 		else
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenSoulGemAlpha")	
 			element = 14 ;leftSoulgem_mc
 			if Q == 1
-				element = 28 ;rightSoulgem_mc
+				element = 30 ;rightSoulgem_mc
 			endIf
 		endIf
 		float targetAlpha

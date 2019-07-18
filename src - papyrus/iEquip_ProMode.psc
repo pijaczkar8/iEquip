@@ -82,9 +82,9 @@ int[] aiNameElements
 event OnInit()
 	;debug.trace("iEquip_ProMode OnInit start")
 	aiNameElements = new int[3]
-	aiNameElements[0] = 18 ;leftPreselectName_mc
-	aiNameElements[1] = 32 ;rightPreselectName_mc
-	aiNameElements[2] = 40 ;shoutPreselectName_mc
+	aiNameElements[0] = 19 ;leftPreselectName_mc
+	aiNameElements[1] = 35 ;rightPreselectName_mc
+	aiNameElements[2] = 44 ;shoutPreselectName_mc
 
 	abPreselectSlotEnabled = new bool[3]
 	abPreselectSlotEnabled[0] = true
@@ -92,6 +92,12 @@ event OnInit()
 	abPreselectSlotEnabled[2] = true
 	;debug.trace("iEquip_ProMode OnInit end")
 endEvent
+
+function onVersionUpdate()
+	aiNameElements[0] = 19 ;leftPreselectName_mc
+	aiNameElements[1] = 35 ;rightPreselectName_mc
+	aiNameElements[2] = 44 ;shoutPreselectName_mc
+endIf
 
 function OnWidgetLoad()
 	;debug.trace("iEquip_ProMode OnWidgetLoad start")
@@ -1028,9 +1034,6 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 		preferredType = 9
 		secondChoice = 7
 	endIf
-	;debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon preferredType: " + preferredType + ", secondChoice: " + secondChoice)
-	;debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon - number of ammo for preferredType (AM.aiTargetQ[" + (preferredType == 9) as int + "]: " + jArray.count(AM.aiTargetQ[(preferredType == 9) as int]))
-	;debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon - number of ammo for secondChoice (AM.aiTargetQ[" + (secondChoice == 9) as int + "]: " + jArray.count(AM.aiTargetQ[(secondChoice == 9) as int]))
 	int i
 	int targetArray = WC.aiTargetQ[1]
 	int targetObject
@@ -1046,11 +1049,6 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 			endIf
 			i += 1
 		endwhile
-		if found == -1
-			;debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon preferredType weapon not found")
-		else
-			;debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon preferredType weapon found at index " + found)
-		endIf
 	endIf
 	;if we haven't found our first choice ranged weapon type now look for the alternative
 	if found == -1
@@ -1063,11 +1061,6 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 				endIf
 				i += 1
 			endwhile
-		endIf
-		if found == -1
-			;debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon secondChoice weapon not found")
-		else
-			;debug.trace("iEquip_ProMode quickRangedFindAndEquipWeapon secondChoice weapon found at index " + found)
 		endIf
 	endIf
 	if found == -1 && bScanInventory && scanInventoryForItemOfType(41)
@@ -1377,8 +1370,8 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 		return false
 	else
 		int otherHand = (Q + 1) % 2
-		int nameElement = 22 ;rightName_mc
-		int iconElement = 21 ;rightIcon_mc
+		int nameElement = 24 ;rightName_mc
+		int iconElement = 23 ;rightIcon_mc
 		if Q == 0
 			nameElement = 8 ;leftName_mc
 			iconElement = 7 ;leftIcon_mc
@@ -1624,8 +1617,8 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool equippingOt
 		WC.bBlockSwitchBackToBoundSpell = true
 		int foundIndex = WC.findInQueue(iEquipSlot, spellName)
 		PlayerRef.EquipSpell(jMap.getForm(spellObject, "iEquipForm") as Spell, iEquipSlot)
-		int nameElement = 22 ;rightName_mc
-		int iconElement = 21 ;rightIcon_mc
+		int nameElement = 24 ;rightName_mc
+		int iconElement = 23 ;rightIcon_mc
 		if Q == 0
 			nameElement = 8 ;leftName_mc
 			iconElement = 7 ;leftIcon_mc

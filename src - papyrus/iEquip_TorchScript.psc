@@ -41,7 +41,7 @@ float fCurrentTorchLife
 
 bool bFirstUpdateForCurrentTorch = true
 bool property bSettingLightRadius auto hidden
-bool bSettingDuration
+;bool bSettingDuration
 
 bool property bJustToggledTorch auto hidden
 bool property bToggleTorchEquipRH = true auto hidden
@@ -113,16 +113,25 @@ function initialise(bool bEnabled)
 	;debug.trace("iEquip_TorchScript initialise end")
 endFunction
 
-event OnMenuClose(string MenuName)											; This is purely to handle custom torch durations set in the MCM
+event OnMenuClose(string MenuName)											; This is purely to handle custom torch duration and/or radius set in the MCM
 	;debug.trace("iEquip_TorchScript OnMenuClose start - " + MenuName + ", bTorchDurationSettingChanged: " + bTorchDurationSettingChanged)
-	if bTorchDurationSettingChanged
-		bSettingDuration = true
+	if bTorchDurationSettingChanged || bTorchRadiusSettingChanged
+		;bSettingDuration = true
+		if bTorchRadiusSettingChanged
+			iEquip_FormExt.SetLightRadius(Torch01, fTorchRadius as int)
+		endIf
 		if PlayerRef.GetEquippedItemType(0) == 11 && !PlayerRef.GetEquippedObject(0) == iEquipTorch as form		; If the player currently has a torch equipped we need to unequip it, check and change fCurrentTorchLife if required, and re-equip it
 			;debug.trace("iEquip_TorchScript OnMenuClose - player has a torch equipped")
 			form torchForm = PlayerRef.GetEquippedObject(0)
 			while IsInMenuMode()
 				Wait(0.1)
 			endWhile
+			if bTorchRadiusSettingChanged
+				bTorchRadiusSettingChanged = false
+				if torchForm == Torch01 
+					bSettingLightRadius = true
+				endIf
+			endIf
 			PlayerRef.UnequipItemEx(torchForm)
 			Wait(1.0)
 			If fCurrentTorchLife > fTorchDuration
@@ -135,7 +144,7 @@ event OnMenuClose(string MenuName)											; This is purely to handle custom t
 			fCurrentTorchLife = fTorchDuration
 		endIf
 		Wait(0.5)
-		bSettingDuration = false
+		;bSettingDuration = false
 		bTorchDurationSettingChanged = false
 	endIf
 endEvent

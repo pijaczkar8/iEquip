@@ -50,9 +50,9 @@ function initialise()
 
 		aiNameElements = new int[7]
 		aiNameElements[0] = 8
-		aiNameElements[1] = 22
-		aiNameElements[5] = 18
-		aiNameElements[6] = 32
+		aiNameElements[1] = 24
+		aiNameElements[5] = 19
+		aiNameElements[6] = 35
 		
 		aiTemperedItemTypes = new int[9]
 		aiTemperedItemTypes[0] = 1		; Swords
@@ -71,6 +71,12 @@ function initialise()
 	updateTemperLevelArrays()
 	
 	;debug.trace("iEquip_TemperedItemHandler initialise end")
+endFunction
+
+function onVersionUpdate()
+	aiNameElements[1] = 24
+	aiNameElements[5] = 19
+	aiNameElements[6] = 35
 endFunction
 
 function updateTemperLevelArrays()

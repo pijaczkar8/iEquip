@@ -29,7 +29,6 @@ float[] afWidget_CurA
 int[] aiWidget_CurD
 int[] aiWidget_CurTC
 string[] asWidget_CurTA
-;bool[] abWidget_CurV
 
 ; - Bools -
 
@@ -113,20 +112,19 @@ function OnInit()
     iFirstElementInGroup = new int[6]
     iFirstElementInGroup[0] = 6  ; leftBg_mc
     iFirstElementInGroup[1] = 6  ; leftBg_mc
-    iFirstElementInGroup[2] = 20 ; rightBg_mc
-    iFirstElementInGroup[3] = 34 ; shoutBg_mc
-    iFirstElementInGroup[4] = 41 ; consumableBg_mc
-    iFirstElementInGroup[5] = 46 ; poisonBg_mc
+    iFirstElementInGroup[2] = 22 ; rightBg_mc
+    iFirstElementInGroup[3] = 38 ; shoutBg_mc
+    iFirstElementInGroup[4] = 45 ; consumableBg_mc
+    iFirstElementInGroup[5] = 50 ; poisonBg_mc
 
-    afWidget_CurX = new Float[50]
-    afWidget_CurY = new Float[50]
-    afWidget_CurS = new Float[50]
-    afWidget_CurR = new Float[50]
-    afWidget_CurA = new Float[50]
-    aiWidget_CurD = new Int[50]
-    asWidget_CurTA = new string[50]
-    aiWidget_CurTC = new int[50]
-    ;abWidget_CurV = new bool[50]
+    afWidget_CurX = new Float[54]
+    afWidget_CurY = new Float[54]
+    afWidget_CurS = new Float[54]
+    afWidget_CurR = new Float[54]
+    afWidget_CurA = new Float[54]
+    aiWidget_CurD = new Int[54]
+    asWidget_CurTA = new string[54]
+    aiWidget_CurTC = new int[54]
     
     iCustomColors = new int[14]
     int iIndex = iCustomColors.length
@@ -134,6 +132,22 @@ function OnInit()
         iIndex -= 1
         iCustomColors[iIndex] = -1
     endWhile
+endFunction
+
+function onVersionUpdate()
+    iFirstElementInGroup[2] = 22 ; rightBg_mc
+    iFirstElementInGroup[3] = 38 ; shoutBg_mc
+    iFirstElementInGroup[4] = 45 ; consumableBg_mc
+    iFirstElementInGroup[5] = 50 ; poisonBg_mc
+
+    afWidget_CurX = new Float[54]
+    afWidget_CurY = new Float[54]
+    afWidget_CurS = new Float[54]
+    afWidget_CurR = new Float[54]
+    afWidget_CurA = new Float[54]
+    aiWidget_CurD = new Int[54]
+    asWidget_CurTA = new string[54]
+    aiWidget_CurTC = new int[54]
 endFunction
 
 ; #######################
@@ -190,7 +204,6 @@ function EnableEditmode()
     game.DisablePlayerControls(false, true, true, true, true, true, true, true, 0)
     GetPlayer().SetDontMove()
     GetPlayer().GetActorBase().SetInvulnerable()
-    ;Game.DisablePlayerControls(0, 1, 1, 0, 0, 1, 1, 1, 0)
 
     ; Save and disable Vanity Camera whilst in Edit Mode
     CurrentVanityModeDelay = GetINIfloat("fAutoVanityModeDelay:Camera")
@@ -198,7 +211,7 @@ function EnableEditmode()
 
     ; StoreOpeningValues
     int iIndex   
-    while iIndex < WC.asWidgetDescriptions.Length
+    while iIndex < WC.asWidgetDescriptions.length
         afWidget_CurX[iIndex] = WC.afWidget_X[iIndex]
         afWidget_CurY[iIndex] = WC.afWidget_Y[iIndex]
         afWidget_CurS[iIndex] = WC.afWidget_S[iIndex]
@@ -236,7 +249,7 @@ function EnableEditmode()
 
     PM.togglePreselectMode(true)
 
-    UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", WC.afWidget_A[45])
+    UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", WC.afWidget_A[49])
 
     LoadAllElements()
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0)
@@ -266,7 +279,7 @@ endFunction
 
 ; SHOULD PROBABLY BE CLEANED UP AT SOME POINT -> MAKE IT PRETTY
 function LoadAllElements()
-    int i = WC.asWidgetDescriptions.Length
+    int i = WC.asWidgetDescriptions.length
     
     while i > 0
         i -= 1
@@ -614,7 +627,7 @@ function ToggleCycleRange()
     if 0 <= iSelectedElement && iSelectedElement  <= 5           ; if group is selected, find first child
         iSelectedElement = iFirstElementInGroup[iSelectedElement]
         iFirstElement = 6
-        iLastElement = 49
+        iLastElement = 53
     else                                    ; else find parent group
         iSelectedElement = WidgetGroups.Find(WC.asWidgetGroup[iSelectedElement])
         iFirstElement = 0
@@ -672,7 +685,7 @@ function UpdateElementData(int iIndex, bool bUpdateAlpha = true)
 endFunction
 
 function UpdateElementText(int[] iArgs, int iNewColor) 
-    if iArgs[0] == 45                  ; potionSelector_mc - Only setting text colour here as alignment handled by .setPotionSelectorAlignment
+    if iArgs[0] == 49                  ; potionSelector_mc - Only setting text colour here as alignment handled by .setPotionSelectorAlignment
         iArgs[1] = iNewColor
         UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", iArgs)
     else                                ; for every other text element update colour and alignment together
@@ -693,7 +706,7 @@ function UpdateEditModeGuide()
     if iSelectedElement != -1
         string tmpStr
         
-        if iSelectedElement == 45 ; potionSelector_mc
+        if iSelectedElement == 49 ; potionSelector_mc
             UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentInstructionText.text", iEquip_StringExt.LocalizeString("$iEquip_swf_potSelAlignInstTxt"))
         else
             UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentInstructionText.text", iEquip_StringExt.LocalizeString("$iEquip_swf_AlignmentInstructionText"))
@@ -716,7 +729,7 @@ function UpdateEditModeGuide()
             else
                 tmpStr = "$iEquip_EM_centreAligned"
             endIf
-        elseIf iSelectedElement == 45 ; potionSelector_mc
+        elseIf iSelectedElement == 49 ; potionSelector_mc
             if bPotionSelectorOnLeft
                 tmpStr = "$iEquip_EM_potSelLeft"
             else
@@ -743,12 +756,7 @@ endFunction
 function UpdateElementsAll(bool bUpdateAlpha = true)
     int iIndex
     
-    while iIndex < WC.asWidgetDescriptions.Length  
-        ;/if WC.abWidget_isText[iIndex] || iIndex == 45 ; potionSelector_mc
-            iArgs[0] = iIndex
-            UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
-        endIf/;
-        
+    while iIndex < WC.asWidgetDescriptions.length        
         UpdateElementData(iIndex, bUpdateAlpha)
         iIndex += 1
     endWhile
@@ -757,8 +765,8 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
         iIndex = 1
         int[] iArgs = new int[3]
     
-        while iIndex < WC.asWidgetDescriptions.Length
-            if WC.abWidget_isText[iIndex] || iIndex == 45 ; potionSelector_mc
+        while iIndex < WC.asWidgetDescriptions.length
+            if WC.abWidget_isText[iIndex] || iIndex == 49 ; potionSelector_mc
                 iArgs[0] = iIndex
                 UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
             endIf
@@ -777,8 +785,8 @@ function UpdateAllTextFormatting()                      ; Only called from OnWid
     int iIndex = 8                                      ; leftName_mc is the first text element so no need to start earlier
     int[] iArgs = new int[3]
     
-    while iIndex < WC.asWidgetDescriptions.Length
-        if WC.abWidget_isText[iIndex] || iIndex == 45   ; potionSelector_mc
+    while iIndex < WC.asWidgetDescriptions.length
+        if WC.abWidget_isText[iIndex] || iIndex == 49   ; potionSelector_mc
             iArgs[0] = iIndex
             UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
         endIf
@@ -790,7 +798,7 @@ endFunction
 ; ### Edit Toggles ###
 
 function ToggleTextAlignment()
-    if iSelectedElement == 45 ;potionSelector_mc
+    if iSelectedElement == 49 ;potionSelector_mc
         togglePotionSelectorAlignment()
     elseIf WC.abWidget_isText[iSelectedElement]
         string tmpStr
@@ -966,7 +974,7 @@ function ShowColorSelection(int iType)
         sText = "$iEquip_EM_lbl_showColorTitle2"
         iColor = iCurrentColorValue
         iDefColor = 0xEAAB00
-    elseIf (WC.abWidget_isText[iSelectedElement] || iSelectedElement == 45) ; Selected text colour
+    elseIf (WC.abWidget_isText[iSelectedElement] || iSelectedElement == 49) ; Selected text colour
         sText = "$iEquip_EM_lbl_showColorTitle3"
         iColor = WC.aiWidget_TC[iSelectedElement]
         iDefColor = 0xFFFFFF
@@ -1039,7 +1047,7 @@ endFunction
 ; - Load -
 
 function LoadPreset(int jPreset)
-    int[] abWidget_V_temp = new int[50]
+    int[] abWidget_V_temp = new int[54]
 
     JArray.writeToFloatPArray(JMap.getObj(jPreset, "_X"), WC.afWidget_X, 0, -1, 0, 0)
     JArray.writeToFloatPArray(JMap.getObj(jPreset, "_Y"), WC.afWidget_Y, 0, -1, 0, 0)
@@ -1110,7 +1118,7 @@ function DiscardChanges()
         WC.updateWidgetVisibility(false)
         Wait(0.2)
         
-        while iIndex < WC.asWidgetDescriptions.Length
+        while iIndex < WC.asWidgetDescriptions.length
             WC.afWidget_X[iIndex] = afWidget_CurX[iIndex]
             WC.afWidget_Y[iIndex] = afWidget_CurY[iIndex]
             WC.afWidget_S[iIndex] = afWidget_CurS[iIndex]
@@ -1172,7 +1180,7 @@ function ResetElement()
             if WC.abWidget_isParent[iSelectedElement]
                 int iIndex = 6
                 
-                while iIndex < WC.asWidgetDescriptions.Length
+                while iIndex < WC.asWidgetDescriptions.length
                     if WC.asWidgetGroup[iIndex] == WC.asWidgetGroup[iSelectedElement]
                         ResetElementIndex(iArgs, iIndex)
                     endIf
