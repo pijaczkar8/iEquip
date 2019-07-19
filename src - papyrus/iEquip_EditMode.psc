@@ -78,7 +78,7 @@ string sRotation = "$iEquip_EM_clockwise"
 ; ### PRESET VERSION ###
 
 int function GetVersion()
-    return 1
+    return 2
 endFunction
 
 ; ######################
@@ -935,10 +935,78 @@ function ShowPresetList()
             
             if MenuReturnArgs[1] == 0       ; Load preset
 				int jPreset = jValue.readFromFile(WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+				int jPresetVersion = jMap.getInt(jPreset, "Version")
 				
-				if (jMap.getInt(jPreset, "Version") == GetVersion())
+				if (jPresetVersion == GetVersion())
 					LoadPreset(jPreset)
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+				elseIf (jPresetVersion == 1 && GetVersion == 2)
+					int j = 1
+					
+					while j < 9
+						int jTmpObj = jMap.getObj(jPreset, jMap.getNthKey(jPreset, j))
+						int k = 50
+						
+						if j == 1
+							while k < 54
+								jArray.addFlt(jTmpObj, WC.afWidget_DefX[k])
+								k += 1
+							endWhile
+							
+						elseIf j == 2
+							while k < 54
+								jArray.addFlt(jTmpObj, WC.afWidget_DefY[k])
+								k += 1
+							endWhile
+							
+						elseIf j == 3
+							while k < 54
+								jArray.addFlt(jTmpObj, WC.afWidget_DefS[k])
+								k += 1
+							endWhile
+							
+						elseIf j == 4
+							while k < 54
+								jArray.addFlt(jTmpObj, WC.afWidget_DefR[k])
+								k += 1
+							endWhile
+							
+						elseIf j == 5
+							while k < 54
+								jArray.addFlt(jTmpObj, WC.afWidget_DefA[k])
+								k += 1
+							endWhile
+							
+						elseIf j == 6
+							while k < 54
+								jArray.addInt(jTmpObj, WC.afWidget_DefD[k])
+								k += 1
+							endWhile
+							
+						elseIf j == 7
+							while k < 54
+								jArray.addInt(jTmpObj, WC.afWidget_DefTC[k])
+								k += 1
+							endWhile
+							
+						elseIf j == 8
+							while k < 54
+								jArray.addStr(jTmpObj, WC.afWidget_DefTA[k])
+								k += 1
+							endWhile
+							
+						endIf
+						
+						jArray.swapItems(jTmpObj, 15, 50)
+						jArray.swapItems(jTmpObj, 21, 51)
+						jArray.swapItems(jTmpObj, 31, 52)
+						jArray.swapItems(jTmpObj, 37, 53)
+						
+						j += 1
+					endWhile
+					
+					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+					LoadPreset(jPreset)
 				else
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_common_LoadPresetError"))
 				endIf
