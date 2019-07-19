@@ -1012,6 +1012,9 @@ function ShowPresetList()
 						j += 1
 					endWhile
 
+					jMap.setInt(jPreset, "Version", GetVersion())
+					jValue.writeTofile(jPreset, WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_presetUpdated") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
 					LoadPreset(jPreset)
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
 				else
