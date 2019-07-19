@@ -941,80 +941,79 @@ function ShowPresetList()
 					LoadPreset(jPreset)
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
 				elseIf (jPresetVersion == 1 && GetVersion == 2)
-					int j = 1
+					int[] aiIndexToReplace = new int[4]
+					aiIndexToReplace[0] = 15
+					aiIndexToReplace[1] = 21
+					aiIndexToReplace[2] = 31
+					aiIndexToReplace[3] = 37
+					int j = 0
 					
-					while j < 9
-						int jTmpObj
-						int k = 50
-
-						if j == 1
-							jTmpObj = jMap.getObj(jPreset, "_X")
-							while k < 54
-								jArray.addFlt(jTmpObj, WC.afWidget_DefX[k])
-								k += 1
-							endWhile
-							
+					while j < 8
+						string jKey
+						float[] fltArr
+						int[] intArr
+						string[] strArr
+					
+						if j == 0
+							jKey = "_X"
+							fltArr = WC.afWidget_DefX
+						elseIf j == 1
+							jKey = "_Y"
+							fltArr = WC.afWidget_DefY
 						elseIf j == 2
-							jTmpObj = jMap.getObj(jPreset, "_Y")
-							while k < 54
-								jArray.addFlt(jTmpObj, WC.afWidget_DefY[k])
-								k += 1
-							endWhile
-							
+							jKey = "_S"
+							fltArr = WC.afWidget_DefS
 						elseIf j == 3
-							jTmpObj = jMap.getObj(jPreset, "_S")
-							while k < 54
-								jArray.addFlt(jTmpObj, WC.afWidget_DefS[k])
-								k += 1
-							endWhile
-							
+							jKey = "_R"
+							fltArr = WC.afWidget_DefR
 						elseIf j == 4
-							jTmpObj = jMap.getObj(jPreset, "_R")
-							while k < 54
-								jArray.addFlt(jTmpObj, WC.afWidget_DefR[k])
-								k += 1
-							endWhile
-							
-						elseIf j == 5
-							jTmpObj = jMap.getObj(jPreset, "_A")
-							while k < 54
-								jArray.addFlt(jTmpObj, WC.afWidget_DefA[k])
-								k += 1
-							endWhile
-							
+							jKey = "_A"
+							fltArr = WC.afWidget_DefA
+						elseIf j == 5					
+							jKey = "_D"
+							intArr = WC.afWidget_DefD
 						elseIf j == 6
-							jTmpObj = jMap.getObj(jPreset, "_D")
-							while k < 54
-								jArray.addInt(jTmpObj, WC.afWidget_DefD[k])
-								k += 1
-							endWhile
-							
-						elseIf j == 7
-							jTmpObj = jMap.getObj(jPreset, "_TC")
-							while k < 54
-								jArray.addInt(jTmpObj, WC.afWidget_DefTC[k])
-								k += 1
-							endWhile
-							
-						elseIf j == 8
-							jTmpObj = jMap.getObj(jPreset, "_TA")
-							while k < 54
-								jArray.addStr(jTmpObj, WC.afWidget_DefTA[k])
-								k += 1
-							endWhile
-							
+							jKey = "_TC"
+							intArr = WC.afWidget_DefTC
+						else
+							jKey = "_TA"
+							strArr = WC.afWidget_DefTC
 						endIf
+					
+					
+						int jTmpObj = jMap.getObj(jPreset, jKey)
+						int[] jArrs = new int[4]
+						jArrs[0] = jArray.subArray(jTmpObj, 15, 20)
+						jArrs[1] = jArray.subArray(jTmpObj, 21, 30)
+						jArrs[2] = jArray.subArray(jTmpObj, 31, 36)
+						jArrs[3] = jArray.subArray(jTmpObj, 37, 49)
+						jArray.eraseRange(jTmpObj, 15, 49)
 						
-						jArray.swapItems(jTmpObj, 15, 50)
-						jArray.swapItems(jTmpObj, 21, 51)
-						jArray.swapItems(jTmpObj, 31, 52)
-						jArray.swapItems(jTmpObj, 37, 53)
+						int k = 0
+						while k < 4
+							if fltArr
+								jArray.addFlt(jTmpObj, fltArr[aiIndexToReplace[k]])
+							elseIf intArr
+								jArray.addInt(jTmpObj, intArr[aiIndexToReplace[k]])
+							else
+								jArray.addStr(jTmpObj, strArr[aiIndexToReplace[k]])
+							endIf
+							
+							jArray.addFromArray(jTmpObj, jArrs[k])
+							jValue.zeroLifetime(jArrs[k])
+							
+							k += 1
+						endWhile
+						
+						fltArr = none
+						intArr = none
+						strArr = none
 						
 						j += 1
 					endWhile
-					
-					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+
 					LoadPreset(jPreset)
+					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
 				else
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_common_LoadPresetError"))
 				endIf
