@@ -1047,7 +1047,6 @@ endFunction
 ; - Load -
 
 function LoadPreset(int jPreset)
-    int[] abWidget_V_temp = new int[54]
 
     JArray.writeToFloatPArray(JMap.getObj(jPreset, "_X"), WC.afWidget_X, 0, -1, 0, 0)
     JArray.writeToFloatPArray(JMap.getObj(jPreset, "_Y"), WC.afWidget_Y, 0, -1, 0, 0)
