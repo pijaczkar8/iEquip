@@ -944,52 +944,60 @@ function ShowPresetList()
 					int j = 1
 					
 					while j < 9
-						int jTmpObj = jMap.getObj(jPreset, jMap.getNthKey(jPreset, j))
+						int jTmpObj
 						int k = 50
-						
+
 						if j == 1
+							jTmpObj = jMap.getObj(jPreset, "_X")
 							while k < 54
 								jArray.addFlt(jTmpObj, WC.afWidget_DefX[k])
 								k += 1
 							endWhile
 							
 						elseIf j == 2
+							jTmpObj = jMap.getObj(jPreset, "_Y")
 							while k < 54
 								jArray.addFlt(jTmpObj, WC.afWidget_DefY[k])
 								k += 1
 							endWhile
 							
 						elseIf j == 3
+							jTmpObj = jMap.getObj(jPreset, "_S")
 							while k < 54
 								jArray.addFlt(jTmpObj, WC.afWidget_DefS[k])
 								k += 1
 							endWhile
 							
 						elseIf j == 4
+							jTmpObj = jMap.getObj(jPreset, "_R")
 							while k < 54
 								jArray.addFlt(jTmpObj, WC.afWidget_DefR[k])
 								k += 1
 							endWhile
 							
 						elseIf j == 5
+							jTmpObj = jMap.getObj(jPreset, "_A")
 							while k < 54
 								jArray.addFlt(jTmpObj, WC.afWidget_DefA[k])
 								k += 1
 							endWhile
 							
 						elseIf j == 6
+							jTmpObj = jMap.getObj(jPreset, "_D")
 							while k < 54
 								jArray.addInt(jTmpObj, WC.afWidget_DefD[k])
 								k += 1
 							endWhile
 							
 						elseIf j == 7
+							jTmpObj = jMap.getObj(jPreset, "_TC")
 							while k < 54
 								jArray.addInt(jTmpObj, WC.afWidget_DefTC[k])
 								k += 1
 							endWhile
 							
 						elseIf j == 8
+							jTmpObj = jMap.getObj(jPreset, "_TA")
 							while k < 54
 								jArray.addStr(jTmpObj, WC.afWidget_DefTA[k])
 								k += 1
