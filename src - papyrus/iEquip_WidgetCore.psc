@@ -133,10 +133,10 @@ Keyword property MagicDamageShock auto
 SoundCategory _audioCategoryUI						; Used to mute equip sound when cycling shouts/powers
 
 ; Archery Gameplay Overhaul
-bool property bIsAGOLoaded
+bool property bIsAGOLoaded auto hidden
 
 ; Animated Armoury support
-bool bIsAALoaded
+Bool bIsAALoaded
 Keyword property WeapTypePike auto hidden
 Keyword property WeapTypeHalberd auto hidden
 Keyword property WeapTypeQtrStaff auto hidden
@@ -956,7 +956,7 @@ state ENABLED
 		bool[] args = new bool[5]
 		
 		if !bIsFirstEnabled
-			onVersionUpdate()
+			oniEquipVersionUpdate()
 			CheckDependencies()
 			checkAndSetKeysForGamepadPlusPlus()
 			EM.UpdateElementsAll()
@@ -3875,9 +3875,8 @@ function applyPoison(int Q)
             chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier						; Otherwise use the iEquip MCM 'Charges Per Vial' value as the base value (default = 1)
         endIf
 
-        ; ToDo - add correct formID for the global
         if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level charge multiplier
-        	chargesToApply *= (Game.GetFormFromFile(0x00000000, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt()
+        	chargesToApply *= (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() 	; DSer_PoisonCount
         endIf
         
         if currentPoison == poisonToApply
@@ -3894,10 +3893,8 @@ function applyPoison(int Q)
             checkAndUpdatePoisonInfo(Q, false, false, refHandle)
         endIf
         ; Play sound
-        ;debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison sound")
         iEquip_ITMPoisonUse.Play(PlayerRef)
         ; Add Poison FX to weapon
-        ;debug.trace("iEquip_WidgetCore applyPoison - about to play apply poison VFX")
         if Q == 0
 			PLFX.cast(PlayerRef, PlayerRef)
         else
@@ -4619,6 +4616,11 @@ function QueueMenuShowBlacklist(int count = -1, bool update = false, int iIndex 
 	while i < count
 		form tmpForm = targetList.GetAt(i)
 		string tmpName = tmpForm.GetName()
+		int itemType = tmpForm.GetType()
+		if itemType == 41
+			itemType = (tmpForm as weapon).GetWeaponType()
+		endIf
+
 		if iQueueMenuCurrentQueue > 2 || (iQueueMenuCurrentQueue < 2 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.isGrenade(tmpForm))))
 			tmpName += " (" + PlayerRef.GetItemCount(tmpForm) + ")"
 

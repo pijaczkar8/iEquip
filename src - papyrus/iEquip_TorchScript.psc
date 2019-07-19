@@ -33,7 +33,7 @@ string WidgetRoot
 
 float property fMaxTorchDuration = 240.0 auto hidden
 float property fTorchRadius auto hidden
-float fDefaultRadius
+float property fDefaultRadius auto hidden
 
 form property realTorchForm auto hidden
 
@@ -318,7 +318,7 @@ endEvent
 ; Called when adjusting the base torch radius from the MCM - affects all carried torches, including those carried by NPCs
 function setBaseTorchRadius()
 	iEquip_FormExt.SetLightRadius(Torch01, fTorchRadius as int)
-	if PlayerRef.GetEquippedObject(0) == TorchO1
+	if PlayerRef.GetEquippedObject(0) == Torch01
 		bSettingLightRadius = true
 		PlayerRef.UnequipItemEx(Torch01)
 		PlayerRef.EquipItemEx(Torch01)

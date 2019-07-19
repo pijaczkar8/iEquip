@@ -988,7 +988,7 @@ event OnGetUp(ObjectReference akFurniture)
 		;Check to see if the equipped hand items have been improved
 		int i
 		int itemType
-		int equippedItem
+		form equippedItem
 		while i < 2
 			equippedItem = PlayerRef.GetEquippedObject(i)
 			if equippedItem
@@ -996,7 +996,7 @@ event OnGetUp(ObjectReference akFurniture)
 				if itemType == 41
 					itemType = (equippedItem as weapon).GetWeaponType()
 				endIf
-				if WC.aiTemperedItemTypes.Find(itemType) > -1 && !(i == 0 && WC.ai2HWeaponTypes.Find(itemType) > -1) && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator)
+				if TI.aiTemperedItemTypes.Find(itemType) > -1 && !(i == 0 && WC.ai2HWeaponTypes.Find(itemType) > -1) && (TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator)
 					TI.checkAndUpdateTemperLevelInfo(i)
 				endIf
 			endIf

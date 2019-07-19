@@ -206,7 +206,7 @@ endFunction
 
 function updateTemperTierIndicator(int Q, int tier = 0)
 	;debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator start - Q: " + Q + ", tier: " + tier + ", bShowTemperTierIndicator: " + bShowTemperTierIndicator + ", iTemperTierDisplayChoice: " + iTemperTierDisplayChoice + ", bShowFadedTiers: " + bShowFadedTiers)
-	if !bShowTemperTierIndicator && !EM.isEditMode
+	if !bShowTemperTierIndicator && !WC.EM.isEditMode
 		tier = 0
 	endIf
 

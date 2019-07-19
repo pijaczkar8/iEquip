@@ -60,7 +60,7 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, TO.bShowTorchMeter as int)
     jArray.addInt(jPageObj, TO.iTorchMeterFillColor)
     jArray.addInt(jPageObj, iTorchMeterFillDirection)
-    jArray.addFloat(jPageObj, TO.fTorchRadius)
+    jArray.addFlt(jPageObj, TO.fTorchRadius)
 
     return jPageObj    
 endFunction

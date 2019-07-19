@@ -97,7 +97,7 @@ function onVersionUpdate()
 	aiNameElements[0] = 19 ;leftPreselectName_mc
 	aiNameElements[1] = 35 ;rightPreselectName_mc
 	aiNameElements[2] = 44 ;shoutPreselectName_mc
-endIf
+endFunction
 
 function OnWidgetLoad()
 	;debug.trace("iEquip_ProMode OnWidgetLoad start")
@@ -427,7 +427,7 @@ function equipPreselectedItem(int Q)
 				targetObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0])
 				int leftItemType = jMap.getInt(targetObject, "iEquipType")
 				form leftItem = jMap.getForm(targetObject, "iEquipForm")
-				if WC.itemRequiresCounter(0, leftItemType , jMap.getStr(targetObject, "iEquipName"))
+				if WC.itemRequiresCounter(0, leftItemType)
 					WC.setSlotCount(0, PlayerRef.GetItemCount(leftItem))
 					WC.setCounterVisibility(0, true)
 				elseif WC.abIsCounterShown[0]
