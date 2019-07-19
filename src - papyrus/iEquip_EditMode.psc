@@ -940,7 +940,7 @@ function ShowPresetList()
 				if (jPresetVersion == GetVersion())
 					LoadPreset(jPreset)
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
-				elseIf (jPresetVersion == 1 && GetVersion == 2)
+				elseIf (jPresetVersion == 1 && GetVersion() == 2)
 					int[] aiIndexToReplace = new int[4]
 					aiIndexToReplace[0] = 15
 					aiIndexToReplace[1] = 21
