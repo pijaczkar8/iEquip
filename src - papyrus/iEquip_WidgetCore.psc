@@ -663,21 +663,6 @@ Event OnWidgetInit()
 	asUniqueItemIcons[48] = "MiraaksSword"
 	asUniqueItemIcons[49] = "MiraaksSword"
 
-	;debug.trace("iEquip_WidgetCore OnWidgetInit end")
-EndEvent
-
-function oniEquipVersionUpdate()
-	if asQueueName.length == 5
-		asQueueName = new string[7]
-		asQueueName[0] = "$iEquip_WC_common_leftQ"
-		asQueueName[1] = "$iEquip_WC_common_rightQ"
-		asQueueName[2] = "$iEquip_WC_common_shoutQ"
-		asQueueName[3] = "$iEquip_WC_common_consQ"
-		asQueueName[4] = "$iEquip_WC_common_poisonQ"
-		asQueueName[5] = "$iEquip_WC_common_arrowQ"
-		asQueueName[6] = "$iEquip_WC_common_boltQ"
-	endIf
-
 	aBlacklistFLSTs = new formlist[7]
 	aBlacklistFLSTs[0] = iEquip_LeftHandBlacklistFLST
 	aBlacklistFLSTs[1] = iEquip_RightHandBlacklistFLST
@@ -702,36 +687,99 @@ function oniEquipVersionUpdate()
 	asAmmoSorting[2] = "$iEquip_WC_ammoSorting_alphabetically"
 	asAmmoSorting[3] = "$iEquip_WC_ammoSorting_byQuantity"
 
-	aiNameElements[0] = 8 	; leftName_mc
-	aiNameElements[1] = 22 	; rightName_mc
-	aiNameElements[2] = 36 	; shoutName_mc
-	aiNameElements[3] = 43 	; consumableName_mc
-	aiNameElements[4] = 48 	; poisonName_mc
-	aiNameElements[5] = 18 	; leftPreselectName_mc
-	aiNameElements[6] = 32 	; rightPreselectName_mc
-	aiNameElements[7] = 40 	; shoutPreselectName_mc
+	;debug.trace("iEquip_WidgetCore OnWidgetInit end")
+EndEvent
 
-	aiIconClips[0] = 7 		; leftIcon_mc
-	aiIconClips[1] = 23 	; rightIcon_mc
-	aiIconClips[2] = 39 	; shoutIcon_mc
-	aiIconClips[3] = 46 	; consumableIcon_mc
-	aiIconClips[4] = 51 	; poisonIcon_mc
-	aiIconClips[5] = 18 	; leftPreselectIcon_mc
-	aiIconClips[6] = 34 	; rightPreselectIcon_mc
-	aiIconClips[7] = 43 	; shoutPreselectIcon_mc
+; #######################
+; ### Version Control ###
 
-	aiCounterClips[0] = 9 	; leftCount_mc
-	aiCounterClips[1] = 25 	; rightCount_mc
-	aiCounterClips[2] = -1 	; No shout count
-	aiCounterClips[3] = 48 	; consumableCount_mc
-	aiCounterClips[4] = 53 	; poisonCount_mc
+float fCurrentVersion						; First digit = Main version, 2nd digit = Incremental, 3rd digit = Hotfix.  For example main version 1.0, hotfix 03 would be 1.03
 
-	aiPoisonNameElements[0] = 11 ; leftPoisonName_mc
-	aiPoisonNameElements[1] = 27 ; rightPoisonName_mc
+function checkVersion()
+    float fThisVersion = getiEquipVersion()
+    
+    if fThisVersion < fCurrentVersion
+        Debug.MessageBox("$iEquip_wc_msg_oldVersion")
+    elseIf fThisVersion == fCurrentVersion
+        ; Already latest version
+    else
+        ; Let's update
+        
+        ; Version 1.1
+        if fCurrentVersion < 1.1 && !bIsFirstEnabled
 
-	EM.onVersionUpdate()
-	TI.onVersionUpdate()
+			asQueueName = new string[7]
+			asQueueName[0] = "$iEquip_WC_common_leftQ"
+			asQueueName[1] = "$iEquip_WC_common_rightQ"
+			asQueueName[2] = "$iEquip_WC_common_shoutQ"
+			asQueueName[3] = "$iEquip_WC_common_consQ"
+			asQueueName[4] = "$iEquip_WC_common_poisonQ"
+			asQueueName[5] = "$iEquip_WC_common_arrowQ"
+			asQueueName[6] = "$iEquip_WC_common_boltQ"
+
+			aBlacklistFLSTs = new formlist[7]
+			aBlacklistFLSTs[0] = iEquip_LeftHandBlacklistFLST
+			aBlacklistFLSTs[1] = iEquip_RightHandBlacklistFLST
+			aBlacklistFLSTs[2] = iEquip_GeneralBlacklistFLST
+			aBlacklistFLSTs[3] = iEquip_GeneralBlacklistFLST
+			aBlacklistFLSTs[4] = iEquip_GeneralBlacklistFLST
+			aBlacklistFLSTs[5] = iEquip_AmmoBlacklistFLST
+			aBlacklistFLSTs[6] = iEquip_AmmoBlacklistFLST
+
+			asBlacklistNames = new string[7]
+			asBlacklistNames[0] = "$iEquip_WC_common_leftBlacklist"
+			asBlacklistNames[1] = "$iEquip_WC_common_rightBlacklist"
+			asBlacklistNames[2] = "$iEquip_WC_common_generalBlacklist"
+			asBlacklistNames[3] = "$iEquip_WC_common_generalBlacklist"
+			asBlacklistNames[4] = "$iEquip_WC_common_generalBlacklist"
+			asBlacklistNames[5] = "$iEquip_WC_common_ammoBlacklist"
+			asBlacklistNames[6] = "$iEquip_WC_common_ammoBlacklist"
+
+			asAmmoSorting = new string[4]
+			asAmmoSorting[0] = "$iEquip_WC_ammoSorting_manually"
+			asAmmoSorting[1] = "$iEquip_WC_ammoSorting_byDamage"
+			asAmmoSorting[2] = "$iEquip_WC_ammoSorting_alphabetically"
+			asAmmoSorting[3] = "$iEquip_WC_ammoSorting_byQuantity"
+
+			aiNameElements[1] = 22 	; rightName_mc
+			aiNameElements[2] = 36 	; shoutName_mc
+			aiNameElements[3] = 43 	; consumableName_mc
+			aiNameElements[4] = 48 	; poisonName_mc
+			aiNameElements[5] = 18 	; leftPreselectName_mc
+			aiNameElements[6] = 32 	; rightPreselectName_mc
+			aiNameElements[7] = 40 	; shoutPreselectName_mc
+
+			aiIconClips[1] = 23 	; rightIcon_mc
+			aiIconClips[2] = 39 	; shoutIcon_mc
+			aiIconClips[3] = 46 	; consumableIcon_mc
+			aiIconClips[4] = 51 	; poisonIcon_mc
+			aiIconClips[5] = 18 	; leftPreselectIcon_mc
+			aiIconClips[6] = 34 	; rightPreselectIcon_mc
+			aiIconClips[7] = 43 	; shoutPreselectIcon_mc
+
+			aiCounterClips[1] = 25 	; rightCount_mc
+			aiCounterClips[3] = 48 	; consumableCount_mc
+			aiCounterClips[4] = 53 	; poisonCount_mc
+
+			aiPoisonNameElements[1] = 27 ; rightPoisonName_mc
+
+			updateWidgetArrays()
+
+			EM.onVersionUpdate()
+			TI.onVersionUpdate()
+        endIf
+
+        fCurrentVersion = fThisVersion
+        Debug.Notification("$iEquip_wc_not_updating")		; Need to change the version number in the strings files
+    endIf
 endFunction
+
+float function getiEquipVersion()
+    return 1.1
+endFunction
+
+; #########################
+; ### DLC & Mod Support ###
 
 function CheckDependencies()
 
@@ -931,6 +979,8 @@ state ENABLED
 	Event OnWidgetLoad()
 		;debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
 
+		checkVersion()
+
 		bool bPreselectEnabledOnLoad = bPreselectMode
 
 		EM.isEditMode = false
@@ -956,7 +1006,7 @@ state ENABLED
 		bool[] args = new bool[5]
 		
 		if !bIsFirstEnabled
-			oniEquipVersionUpdate()
+
 			CheckDependencies()
 			checkAndSetKeysForGamepadPlusPlus()
 			EM.UpdateElementsAll()
@@ -1723,6 +1773,56 @@ function addCurrentItemsOnFirstEnable()
 	;debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable end")
 endFunction
 
+function updateWidgetArrays()
+	
+	; Store current values
+	float[] afWidget_TmpX = afWidget_X
+	float[] afWidget_TmpY = afWidget_Y
+	float[] afWidget_TmpS = afWidget_S
+	float[] afWidget_TmpR = afWidget_R
+	float[] afWidget_TmpA = afWidget_A
+	int[] aiWidget_TmpD = aiWidget_D
+	string[] asWidget_TmpTA = asWidget_TA
+	int[] aiWidget_TmpTC = aiWidget_TC
+	bool[] abWidget_TmpV = abWidget_V
+	
+	; Overwrite the existing arrays 
+	PopulateWidgetArrays()
+
+	; Overwrite the default value arrays using the values from the new default layout preset
+	getAndStoreDefaultWidgetValues(true)
+
+	; Write back across the stored values, using the new default values for the four newly added elements
+	int i
+	int j
+	while i < 54
+		if (i == 15 || i == 21 || i == 31 || i == 37)
+			afWidget_X[i] = afWidget_DefX[i]
+			afWidget_Y[i] = afWidget_DefY[i]
+			afWidget_S[i] = afWidget_DefS[i]
+			afWidget_R[i] = afWidget_DefR[i]
+			afWidget_A[i] = afWidget_DefA[i]
+			aiWidget_D[i] = aiWidget_DefD[i]
+			asWidget_TA[i] = asWidget_DefTA[i]
+			aiWidget_TC[i] = aiWidget_DefTC[i]
+			abWidget_V[i] = abWidget_DefV[i]
+		else
+			afWidget_X[i] = afWidget_TmpX[j]
+			afWidget_Y[i] = afWidget_TmpY[j]
+			afWidget_S[i] = afWidget_TmpS[j]
+			afWidget_R[i] = afWidget_TmpR[j]
+			afWidget_A[i] = afWidget_TmpA[j]
+			aiWidget_D[i] = aiWidget_TmpD[j]
+			asWidget_TA[i] = asWidget_TmpTA[j]
+			aiWidget_TC[i] = aiWidget_TmpTC[j]
+			abWidget_V[i] = abWidget_TmpV[j]
+			j += 1
+		endIf
+		i += 1
+	endWhile
+
+endFunction
+
 function PopulateWidgetArrays()
 	;debug.trace("iEquip_WidgetCore PopulateWidgetArrays start")
 	asWidgetDescriptions = new string[54]
@@ -1810,7 +1910,6 @@ function PopulateWidgetArrays()
 	AddWidget("$iEquip_WC_lbl_PoisonName", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 51, 16777215, "Left", true, false, true, false, "Poison")
 	AddWidget("$iEquip_WC_lbl_PoisonCount", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 52, 16777215, "Center", true, false, true, false, "Poison")
 
-	;getAndStoreDefaultWidgetValues()
 	;debug.trace("iEquip_WidgetCore PopulateWidgetArrays end")
 endFunction
 
@@ -1842,7 +1941,7 @@ function AddWidget( string sDescription, string sPath, float fX, float fY, float
 	;debug.trace("iEquip_WidgetCore AddWidget end")
 endFunction
 
-function getAndStoreDefaultWidgetValues()
+function getAndStoreDefaultWidgetValues(bool updateFromFile = false)
 	;debug.trace("iEquip_WidgetCore getAndStoreDefaultWidgetValues start")
 	afWidget_DefX = new float[54]
 	afWidget_DefY = new float[54]
@@ -1853,27 +1952,44 @@ function getAndStoreDefaultWidgetValues()
 	asWidget_DefTA = new string[54]
 	aiWidget_DefTC = new int[54]
 	abWidget_DefV = new bool[54]
-	int iIndex
-	string Element
-	while iIndex < asWidgetDescriptions.Length
-		Element = WidgetRoot + asWidgetElements[iIndex]
-		afWidget_X[iIndex] = UI.GetFloat(HUD_MENU, Element + "._x")
-		afWidget_Y[iIndex] = UI.GetFloat(HUD_MENU, Element + "._y")
-		afWidget_S[iIndex] = UI.GetFloat(HUD_MENU, Element + "._xscale")
-		afWidget_R[iIndex] = UI.GetFloat(HUD_MENU, Element + "._rotation")
-		afWidget_A[iIndex] = UI.GetFloat(HUD_MENU, Element + "._alpha")
-		
-		afWidget_DefX[iIndex] = afWidget_X[iIndex]
-		afWidget_DefY[iIndex] = afWidget_Y[iIndex]
-		afWidget_DefS[iIndex] = afWidget_S[iIndex]
-		afWidget_DefR[iIndex] = afWidget_R[iIndex]
-		afWidget_DefA[iIndex] = afWidget_A[iIndex]
-		aiWidget_DefD[iIndex] = aiWidget_D[iIndex]
-		asWidget_DefTA[iIndex] = asWidget_TA[iIndex]
-		aiWidget_DefTC[iIndex] = aiWidget_TC[iIndex]
-		abWidget_DefV[iIndex] = abWidget_V[iIndex]
-		iIndex += 1
-	endWhile
+
+	if updateFromFile
+		int jObj = JValue.readFromDirectory(WidgetPresetPath, FileExtDef)
+		int jPreset = JMap.getObj(jObj, JMap.getNthKey(jObj, 0))
+
+		JArray.writeToFloatPArray(JMap.getObj(jPreset, "_X"), afWidget_X, 0, -1, 0, 0)
+	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_Y"), afWidget_Y, 0, -1, 0, 0)
+	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_S"), afWidget_S, 0, -1, 0, 0)
+	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_R"), afWidget_R, 0, -1, 0, 0)
+	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_A"), afWidget_A, 0, -1, 0, 0)
+	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_D"), aiWidget_D, 0, -1, 0, 0)
+	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_TC"), aiWidget_TC, 0, -1, 0, 0)
+	    JArray.writeToStringPArray(JMap.getObj(jPreset, "_TA"), asWidget_TA, 0, -1, 0, 0)
+
+	    jValue.zeroLifetime(jObj)
+	else
+		int iIndex
+		string Element
+		while iIndex < asWidgetDescriptions.Length
+			Element = WidgetRoot + asWidgetElements[iIndex]
+			afWidget_X[iIndex] = UI.GetFloat(HUD_MENU, Element + "._x")
+			afWidget_Y[iIndex] = UI.GetFloat(HUD_MENU, Element + "._y")
+			afWidget_S[iIndex] = UI.GetFloat(HUD_MENU, Element + "._xscale")
+			afWidget_R[iIndex] = UI.GetFloat(HUD_MENU, Element + "._rotation")
+			afWidget_A[iIndex] = UI.GetFloat(HUD_MENU, Element + "._alpha")
+			
+			afWidget_DefX[iIndex] = afWidget_X[iIndex]
+			afWidget_DefY[iIndex] = afWidget_Y[iIndex]
+			afWidget_DefS[iIndex] = afWidget_S[iIndex]
+			afWidget_DefR[iIndex] = afWidget_R[iIndex]
+			afWidget_DefA[iIndex] = afWidget_A[iIndex]
+			aiWidget_DefD[iIndex] = aiWidget_D[iIndex]
+			asWidget_DefTA[iIndex] = asWidget_TA[iIndex]
+			aiWidget_DefTC[iIndex] = aiWidget_TC[iIndex]
+			abWidget_DefV[iIndex] = abWidget_V[iIndex]
+			iIndex += 1
+		endWhile
+	endIf
 	;debug.trace("iEquip_WidgetCore getAndStoreDefaultWidgetValues end")
 endFunction
 
