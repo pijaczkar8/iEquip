@@ -177,6 +177,15 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
+	backgroundStyleOptions = new String[7]
+    backgroundStyleOptions[0] = "$iEquip_MCM_ui_opt_NoBg"
+    backgroundStyleOptions[1] = "$iEquip_MCM_ui_opt_SqBBg"
+    backgroundStyleOptions[2] = "$iEquip_MCM_ui_opt_SqNoBBg"
+    backgroundStyleOptions[3] = "$iEquip_MCM_ui_opt_RoBBg"
+    backgroundStyleOptions[4] = "$iEquip_MCM_ui_opt_RoNoBBg"
+    backgroundStyleOptions[5] = "$iEquip_MCM_ui_opt_RoFade"
+    backgroundStyleOptions[6] = "$iEquip_MCM_ui_opt_Dialogue"
+
 	if WC.iPosInd > 0
 		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_posIndOpts</font>")
 		MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
@@ -212,6 +221,7 @@ function drawPage()
 	MCM.AddEmptyOption()
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_iconBgOpts</font>")
+
 	MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
 			
 	if WC.bFadeLeftIconWhen2HEquipped
@@ -222,21 +232,11 @@ function drawPage()
 	MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
 	
 	MCM.SetCursorPosition(1)
-	;We don't want drop shadow settings being messed around with while we are in Edit Mode
-	if !WC.EM.isEditMode
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_txtShadOpts</font>")
-		MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
-		
-		if WC.bDropShadowEnabled
-			MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha*100, "{0}%")
-			MCM.AddSliderOptionST("ui_sld_dropShadowAngle", "$iEquip_MCM_ui_lbl_dropShadowAngle", WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
-			MCM.AddTextOptionST("ui_txt_dropShadowBlur", "$iEquip_MCM_ui_lbl_dropShadowBlur", WC.iDropShadowBlur as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
-			MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
-			MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength*100, "{0}%")
-		endIf
 
-		MCM.AddEmptyOption()
-	endIf
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_shoutSlotOpts</font>")
+	MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", WC.bShoutCooldownFadeEnabled)
+
+	MCM.AddEmptyOption()
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_fadeoutopts</font>")
 	MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
@@ -276,6 +276,23 @@ function drawPage()
 				
 		MCM.AddMenuOptionST("ui_men_firstPressNameHidn", "$iEquip_MCM_ui_lbl_firstPressNameHidn", firstPressIfNameHiddenOptions[WC.bFirstPressShowsName as int])
 	endIf
+
+	MCM.AddEmptyOption()
+
+	;We don't want drop shadow settings being messed around with while we are in Edit Mode
+	if !WC.EM.isEditMode
+		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_txtShadOpts</font>")
+		MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
+		
+		if WC.bDropShadowEnabled
+			MCM.AddSliderOptionST("ui_sld_dropShadowAlpha", "$iEquip_MCM_ui_lbl_dropShadowAlpha", WC.fDropShadowAlpha*100, "{0}%")
+			MCM.AddSliderOptionST("ui_sld_dropShadowAngle", "$iEquip_MCM_ui_lbl_dropShadowAngle", WC.fDropShadowAngle, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_degrees"))
+			MCM.AddTextOptionST("ui_txt_dropShadowBlur", "$iEquip_MCM_ui_lbl_dropShadowBlur", WC.iDropShadowBlur as string + " " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+			MCM.AddSliderOptionST("ui_sld_dropShadowDistance", "$iEquip_MCM_ui_lbl_dropShadowDistance", WC.fDropShadowDistance, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_ui_pixels"))
+			MCM.AddSliderOptionST("ui_sld_dropShadowStrength", "$iEquip_MCM_ui_lbl_dropShadowStrength", WC.fDropShadowStrength*100, "{0}%")
+		endIf
+	endIf
+
 endFunction
 
 ; ##################
@@ -456,6 +473,17 @@ State ui_men_tempLvlThresholds
             TI.iColoredIconLevels = currentVar as int
             MCM.SetMenuOptionValueST(tempLvlThresholdOptions[TI.iColoredIconLevels])
             WC.bTemperDisplaySettingChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_tgl_shoutCooldown
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_shoutCooldown")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bShoutCooldownFadeEnabled)
+            WC.bShoutCooldownFadeEnabled = !WC.bShoutCooldownFadeEnabled
+            MCM.SetToggleOptionValueST(WC.bShoutCooldownFadeEnabled)
         endIf 
     endEvent
 endState

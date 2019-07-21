@@ -132,6 +132,9 @@ Keyword property MagicDamageShock auto
 
 SoundCategory _audioCategoryUI						; Used to mute equip sound when cycling shouts/powers
 
+GlobalVariable Property iEquip_SlowTimeStrength Auto
+Spell property iEquip_SlowTimeSpell auto
+
 ; Archery Gameplay Overhaul
 bool property bIsAGOLoaded auto hidden
 
@@ -297,6 +300,7 @@ bool property bBackgroundStyleChanged auto hidden
 bool property bFadeLeftIconWhen2HEquipped = true auto hidden
 float property fLeftIconFadeAmount = 70.0 auto hidden
 bool property bTemperDisplaySettingChanged auto hidden
+bool property bShoutCooldownFadeEnabled = true auto hidden
 
 bool property bDropShadowEnabled = true auto hidden
 bool property bDropShadowSettingChanged auto hidden
@@ -414,6 +418,9 @@ bool property bJustDroppedTorch auto hidden
 int property iLastRH1HItemIndex = -1 auto hidden
 
 bool property bEquipOnPause = true auto hidden
+bool property bSlowTimeWhileCycling auto Hidden
+int property iCycleSlowTimeStrength = 50 auto hidden
+bool property bSkipRHUnarmedInCombat auto hidden
 
 bool bGPPMessageShown
 
@@ -770,7 +777,9 @@ function checkVersion()
         endIf
 
         fCurrentVersion = fThisVersion
-        Debug.Notification("$iEquip_wc_not_updating")		; Need to change the version number in the strings files
+        if !bIsFirstEnabled
+        	Debug.Notification("$iEquip_wc_not_updating")		; Need to change the version number in the strings files
+        endIf
     endIf
 endFunction
 
@@ -1628,9 +1637,10 @@ function addCurrentItemsOnFirstEnable()
 	int itemHandle = 0xFFFF
 	int itemType
 	int iEquipSlot
+	
 	while Q < 3
-		itemName = "" 	; Reset
 		equippedItem = PlayerRef.GetEquippedObject(Q)
+		
 		if equippedItem
 			abQueueWasEmpty[Q] = false
 
@@ -1712,7 +1722,10 @@ function addCurrentItemsOnFirstEnable()
 					jMap.setInt(iEquipItem, "isEnchanted", 0)
 					jMap.setInt(iEquipItem, "isPoisoned", 0)
 				endIf
+				aiCurrentQueuePosition[Q] = 1 ; Make sure we show the equipped item and not the Unarmed shortcut we've already added in index 0
 			endIf
+			asCurrentlyEquipped[Q] = itemName
+
 			jArray.addObj(aiTargetQ[Q], iEquipItem)
 			; Add to the AllItems formlist
 			iEquip_AllCurrentItemsFLST.AddForm(equippedItem)
@@ -1726,26 +1739,27 @@ function addCurrentItemsOnFirstEnable()
 					AhzMoreHudIE.AddIconItem(itemID, asMoreHUDIcons[Q])
 				endIf
 			endIf
-			; Now update the widget to show the equipped item
+			; Now update the widget to show the equipped item			
 			if Q < 2
-				aiCurrentQueuePosition[Q] = 1 ; Make sure we show the equipped item and not the Unarmed shortcut we've already added in index 0
-			else
-				aiCurrentQueuePosition[Q] = 0
-			endIf
-			asCurrentlyEquipped[Q] = itemName
-			if Q < 2 || bShoutEnabled
+				updateWidget(Q, aiCurrentQueuePosition[Q], false, true)
+				; And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
+				checkAndEquipShownHandItem(Q, false, true)
+			elseIf bShoutEnabled
 				updateWidget(Q, aiCurrentQueuePosition[Q], false, true)
 			endIf
-			; And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
-			if Q < 2
-				checkAndEquipShownHandItem(Q, false, true)
-			endIf
+
 		; Otherwise set left/right slots to Unarmed
 		elseIf Q < 2
-			aiCurrentQueuePosition[Q] = 0
 			asCurrentlyEquipped[Q] = "$iEquip_common_Unarmed"
-			updateWidget(Q, aiCurrentQueuePosition[Q], false, true)
+			updateWidget(Q, 0, false, true)
 		endIf
+		itemName = ""
+		itemBaseName = ""
+		itemIcon = ""
+		itemID = -1
+		itemHandle = 0xFFFF
+		itemType = -1
+		iEquipSlot = -1
 		Q += 1
 	endWhile
 	; The only slots this should potentially leave as + Empty on a fresh start are the Shout and Poison slots
@@ -1957,14 +1971,14 @@ function getAndStoreDefaultWidgetValues(bool updateFromFile = false)
 		int jObj = JValue.readFromDirectory(WidgetPresetPath, FileExtDef)
 		int jPreset = JMap.getObj(jObj, JMap.getNthKey(jObj, 0))
 
-		JArray.writeToFloatPArray(JMap.getObj(jPreset, "_X"), afWidget_X, 0, -1, 0, 0)
-	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_Y"), afWidget_Y, 0, -1, 0, 0)
-	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_S"), afWidget_S, 0, -1, 0, 0)
-	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_R"), afWidget_R, 0, -1, 0, 0)
-	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_A"), afWidget_A, 0, -1, 0, 0)
-	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_D"), aiWidget_D, 0, -1, 0, 0)
-	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_TC"), aiWidget_TC, 0, -1, 0, 0)
-	    JArray.writeToStringPArray(JMap.getObj(jPreset, "_TA"), asWidget_TA, 0, -1, 0, 0)
+		JArray.writeToFloatPArray(JMap.getObj(jPreset, "_X"), afWidget_DefX, 0, -1, 0, 0)
+	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_Y"), afWidget_DefY, 0, -1, 0, 0)
+	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_S"), afWidget_DefS, 0, -1, 0, 0)
+	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_R"), afWidget_DefR, 0, -1, 0, 0)
+	    JArray.writeToFloatPArray(JMap.getObj(jPreset, "_A"), afWidget_DefA, 0, -1, 0, 0)
+	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_D"), aiWidget_DefD, 0, -1, 0, 0)
+	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_TC"), aiWidget_DefTC, 0, -1, 0, 0)
+	    JArray.writeToStringPArray(JMap.getObj(jPreset, "_TA"), asWidget_DefTA, 0, -1, 0, 0)
 
 	    jValue.zeroLifetime(jObj)
 	else
@@ -2190,6 +2204,14 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
                         targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
                     endWhile
 			    else
+			    	if Q == 1 && bSkipRHUnarmedInCombat && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()
+						targetIndex = targetIndex + move
+			            if targetIndex < 0 && Reverse
+			                targetIndex = queueLength - 1
+			            elseif targetIndex == queueLength && !Reverse
+			                targetIndex = 0
+			            endIf
+			        endIf
 			    	;If we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues we need to cycle until we find one that hasn't been Auto-Added 
 			    	if !(Q < 2 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed")
 			    		targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
@@ -2278,6 +2300,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				else
 					RHUpdate.registerForEquipOnPauseUpdate(Reverse)
 				endIf
+				if bSlowTimeWhileCycling
+					iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
+    				PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
+    			endIf
 			;Otherwise carry on and equip/cycle
 			else
 				checkAndEquipShownHandItem(Q, Reverse)
@@ -2307,6 +2333,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	;debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
 	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
+		PlayerRef.RemoveSpell(iEquip_SlowTimeSpell)
 		abCyclingQueue[Q] = false
 		if iPosInd != 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)

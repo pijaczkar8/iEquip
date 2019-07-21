@@ -1,8 +1,7 @@
 Scriptname iEquip_MCM_edt extends iEquip_MCM_Page
 
 iEquip_KeyHandler Property KH Auto
-
-GlobalVariable Property iEquip_EditModeSlowTimeStrength Auto
+iEquip_EditMode Property EM Auto
 
 string[] EMKeysChoice
 int mcmUnmapFLAG
@@ -22,8 +21,7 @@ endFunction
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 	
-	jArray.addInt(jPageObj, iEquip_EditModeSlowTimeStrength.GetValueint())
-	
+	jArray.addInt(jPageObj, EM.iEditModeSlowTimeStrength)
 	jArray.addInt(jPageObj, iCurrentEMKeysChoice)
 	jArray.addInt(jPageObj, KH.iEditNextKey)
 	jArray.addInt(jPageObj, KH.iEditPrevKey)
@@ -46,8 +44,8 @@ int function saveData()             ; Save page data and return jObject
 endFunction
 
 function loadData(int jPageObj)     ; Load page data from jPageObj
-	iEquip_EditModeSlowTimeStrength.SetValueInt(jArray.getInt(jPageObj, 0))
-
+	
+    EM.iEditModeSlowTimeStrength = (jArray.getInt(jPageObj, 0))
 	iCurrentEMKeysChoice = jArray.getInt(jPageObj, 1)
 	KH.iEditNextKey = jArray.getInt(jPageObj, 2)
 	KH.iEditPrevKey = jArray.getInt(jPageObj, 3)
@@ -69,8 +67,8 @@ endFunction
 
 function drawPage()
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_edt_lbl_EMOptions</font>")
-	MCM.AddSliderOptionST("edt_sld_slowTimeStr", "$iEquip_MCM_edt_lbl_slowTimeStr", iEquip_EditModeSlowTimeStrength.GetValueint())
-	
+	MCM.AddSliderOptionST("edt_sld_slowTimeStr", "$iEquip_MCM_common_lbl_slowTimeStr", EM.iEditModeSlowTimeStrength as float, "{0}%")
+
 	MCM.SetCursorPosition(1)               
 	MCM.AddHeaderOption("")
 	MCM.AddMenuOptionST("edt_men_chooseHtKey", "$iEquip_MCM_edt_lbl_chooseHtKey", EMKeysChoice[iCurrentEMKeysChoice])
@@ -110,10 +108,10 @@ State edt_sld_slowTimeStr
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_edt_txt_slowTimeStr")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(iEquip_EditModeSlowTimeStrength.GetValue(), 0.0, 100.0, 10.0, 100.0)
+            MCM.fillSlider(EM.iEditModeSlowTimeStrength as float, 0.0, 100.0, 10.0, 100.0)
         elseIf currentEvent == "Accept"
-            MCM.SetSliderOptionValueST(currentVar)
-            iEquip_EditModeSlowTimeStrength.SetValue(currentVar)
+            EM.iEditModeSlowTimeStrength = currentVar as int
+            MCM.SetSliderOptionValueST(currentVar, "{0}%")
         endIf 
     endEvent
 endState
@@ -395,3 +393,7 @@ State edt_key_discChangs
         endIf
     endEvent
 endState
+
+; Deprecated
+
+GlobalVariable Property iEquip_EditModeSlowTimeStrength Auto

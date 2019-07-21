@@ -4,6 +4,7 @@ import iEquip_StringExt
 
 iEquip_PotionScript property PO auto
 iEquip_PlayerEventHandler property EH auto
+iEquip_KeyHandler Property KH Auto
 
 ; #############
 ; ### SETUP ###
@@ -69,6 +70,8 @@ function drawPage()
 	if WC.bAllowSingleItemsInBothQueues
 		MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "$iEquip_MCM_que_lbl_allow1hSwitch", WC.bAllowWeaponSwitchHands)
 	endIf
+
+    MCM.AddToggleOptionST("que_tgl_dsblAddToQue", "$iEquip_MCM_que_lbl_dsblAddToQue", KH.bDisableAddToQueue)
 
 	MCM.AddEmptyOption()
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_cacheBlkLst</font>")
@@ -191,6 +194,17 @@ State que_tgl_allow1hSwitch
         elseIf currentEvent == "Default"
             WC.bAllowWeaponSwitchHands = false 
             MCM.SetToggleOptionValueST(WC.bAllowWeaponSwitchHands)
+        endIf
+    endEvent
+endState
+
+State que_tgl_dsblAddToQue
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_que_txt_dsblAddToQue")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && KH.bDisableAddToQueue)
+            KH.bDisableAddToQueue = !KH.bDisableAddToQueue
+            MCM.SetToggleOptionValueST(KH.bDisableAddToQueue)
         endIf
     endEvent
 endState

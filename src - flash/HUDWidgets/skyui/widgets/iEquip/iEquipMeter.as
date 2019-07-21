@@ -167,10 +167,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 
 	public function setColors(a_primaryColor: Number, a_secondaryColor: Number, a_flashColor: Number): Void
 	{
-		//skyui.util.Debug.log("iEquipMeter setColors called - a_primaryColor:" + a_primaryColor + ", a_secondaryColor: " + a_secondaryColor + ", a_flashColor: " + a_flashColor);
-		// Wasteful checking..
-		//if (a_primaryColor != undefined && _primaryColor == a_primaryColor && _secondaryColor == a_secondaryColor)
-		//	return;
+
 		flashColor = a_flashColor;
 
 		if (a_secondaryColor == undefined || a_secondaryColor < 0x000000) {
@@ -446,9 +443,7 @@ class skyui.widgets.iEquip.iEquipMeter extends MovieClip
 	private function enterFrameHandler(): Void
 	{
 		//skyui.util.Debug.log("iEquipMeter enterFrameHandler called");
-		/*if (!_initialized) {
-			_currentPercent = _targetPercent;
-		} else*/ if (_targetPercent == _currentPercent) {
+		if (_targetPercent == _currentPercent) {
 			return;
 		}
 			

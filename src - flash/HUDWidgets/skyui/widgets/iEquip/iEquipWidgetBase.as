@@ -88,16 +88,4 @@ class skyui.widgets.iEquip.iEquipWidgetBase extends WidgetBase
 
 		filter_shadow = new DropShadowFilter(shadow_distance, shadow_angleInDegrees, shadow_color, shadow_alpha, shadow_blurX, shadow_blurY, shadow_strength, shadow_quality, shadow_inner, shadow_knockout, shadow_hideObject);
 	}
-
-	//Function utilising the SkyUI scaleform hash function to generate itemIDs for WidgetCore addToQueue
-	
-	/*public function generateItemID(displayName: String, formID: Number): Void
-	{
-		if (displayName == "CrossBow") {
-			displayName = "Crossbow"
-		}
-		var itemID: Number = skyui.util.Hash.crc32(displayName, formID & 0x00FFFFFF);
-		var IDString: String = itemID.toString()
-		skse.SendModEvent("iEquip_GotItemID", IDString, itemID);
-	}*/
 }

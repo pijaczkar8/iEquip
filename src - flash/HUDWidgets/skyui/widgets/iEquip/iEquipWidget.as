@@ -1,4 +1,4 @@
-import skyui.widgets.iEquip.iEquipWidgetBase;
+﻿import skyui.widgets.iEquip.iEquipWidgetBase;
 import skyui.widgets.iEquip.iEquipSoulGem;
 import skyui.widgets.iEquip.iEquipMeter;
 import skyui.widgets.iEquip.iEquipPositionIndicator;
@@ -353,14 +353,14 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		rightSoulgem_mc._visible = false;
 		
 		//Set up arrays of MovieClips and text elements ready for use in Edit Mode etc
-		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftPositionIndicator_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightPositionIndicator_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPositionIndicator_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, potionSelector_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
+		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftTierIndicator_mc, leftPositionIndicator_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, leftPreselectTierIndicator_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightTierIndicator_mc, rightPositionIndicator_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, rightPreselectTierIndicator_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPositionIndicator_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, potionSelector_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
 		
-		textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, null, leftPreselectName, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, null, rightPreselectName, null, null, null, shoutName, null, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, null, poisonName, poisonCount);
+		textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, null, null, leftPreselectName, null, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, null, null, rightPreselectName, null, null, null, null, shoutName, null, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, null, poisonName, poisonCount);
 
 		textFieldArray = new Array(leftName, leftCount, leftPoisonName, leftPreselectName, rightName, rightCount, rightPoisonName, rightPreselectName, shoutName, shoutPreselectName, consumableName, consumableCount, restoreText, fortifyText, regenText, poisonName, poisonCount);
 		posIndArray = new Array(leftPositionIndicator, rightPositionIndicator, shoutPositionIndicator);
 
-		temperTierStyleArray = new Array("Hidden", "Uniform", "Increasing", "Diamond", "Star", "Hammer", "Anvil", "Asterisk", "Caret");
+		temperTierStyleArray = new Array("Uniform", "Increasing", "Diamond", "Star", "Hammer", "Anvil", "Asterisk", "Caret");
 		
 		backgroundStyleArray = new Array("Hidden", "Square", "SquareNoBorder", "Round", "RoundNoBorder", "RoundFade", "Dialogue");
 		backgroundClipArray = new Array(leftBg_mc, rightBg_mc, shoutBg_mc, leftPreselectBg_mc, rightPreselectBg_mc, shoutPreselectBg_mc, consumableBg_mc, poisonBg_mc);
@@ -388,6 +388,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	//sSlot: 0 = Left Hand, 1 = Right Hand, 2 = Shout, 3 = Consumable, 4 = Poison, 5 = Left Preselect, 6 = Right Preselect, 7 = Shout Preselect
 	public function updateWidget(iSlot: Number, sIcon: String, sName: String, iNameAlpha: Number, currAlpha: Number, currScale: Number): Void
 	{
+		skyui.util.Debug.log("iEquipWidget updateWidget - iSlot: " + iSlot + ", sIcon: " + sIcon + ", sName: " + sName);
 		var iconClip: MovieClip;
 		var itemIcon: MovieClip;
 		var nameClip: MovieClip;
@@ -458,15 +459,15 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//Create the animation timeline
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		//Fade out and shrink the icon
-		tl.to(iconClip, 0.08, {_alpha:0, _xscale:0.25, _yscale:0.25, ease:Quad.easeOut}, 0)
+		tl.to(iconClip, 0.05, {_alpha:0, _xscale:0.25, _yscale:0.25, ease:Quad.easeOut}, 0)
 		//Fade out the name
-		.to(nameClip, 0.08, {_alpha:0, ease:Quad.easeOut}, 0)
+		.to(nameClip, 0.05, {_alpha:0, ease:Quad.easeOut}, 0)
 		//Set the new icon and name and update the icon colour if potion/poison whilst not visible
 		.call(updateIconAndName, [iSlot, itemIcon, itemName, sIcon, sName])
 		//Fade and scale the new icon back in
-		.to(iconClip, 0.15, {_alpha:currAlpha, _xscale:currScale, _yscale:currScale, ease:Quad.easeOut}, 0.15)
+		.to(iconClip, 0.10, {_alpha:currAlpha, _xscale:currScale, _yscale:currScale, ease:Quad.easeOut}, 0.08)
 		//Finally fade the new name back in
-		.to(nameClip, 0.15, {_alpha:iNameAlpha, ease:Quad.easeOut}, 0.15);
+		.to(nameClip, 0.10, {_alpha:iNameAlpha, ease:Quad.easeOut}, 0.08);
 		//And ACTION!
 		tl.play();
 	}
@@ -506,7 +507,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
 	{
-		//skyui.util.Debug.log("iEquipWidget updateIconAndName - iSlot: " + iSlot + ", sName: " + sName)
+		skyui.util.Debug.log("iEquipWidget updateIconAndName - iSlot: " + iSlot + ", sName: " + sName + ", sIcon: " + sIcon);
 		//Set the Icon
 		itemIcon.gotoAndStop(sIcon);
 		//Save the current text formatting to preserve any Edit Mode changes
@@ -540,6 +541,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function updateTemperTierIndicator(iSlot: Number, iTier: Number, iStyle: Number, bShowFade: Boolean): Void
 	{
+		skyui.util.Debug.log("iEquipWidget updateTemperTierIndicator - iSlot: " + iSlot + ", iTier: " + iTier + ", iStyle: " + iStyle + ", bShowFade: " + bShowFade)
+
 		var targetIndicator: MovieClip;
 		switch(iSlot) {
 			case 0:
@@ -563,6 +566,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 			}
 			sFrame += iTier.toString();
 		}
+
+		skyui.util.Debug.log("iEquipWidget updateTemperTierIndicator - sFrame: " + sFrame)
 
 		targetIndicator.gotoAndStop(sFrame);
 	}
@@ -593,7 +598,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		}
 	}
 
-	public function setWidgetBackground(iSlot: Number, iOption: Number): Void
+	public function setWidgetBackground(iSlot: Number, iStyle: Number): Void
 	{
 		var backgroundClip: MovieClip;
 		var backgroundName: String = backgroundStyleArray[iStyle];
@@ -803,12 +808,6 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 		//skse.SendModEvent("iEquip_ReadyForPreselectAnimation", null);
 	}
-
-	/*public function updateLeftTargetAlphaValues(): Void
-	{
-		leftIconAlpha = leftIcon_mc._alpha;
-		leftNameAlpha = leftName_mc._alpha;
-	}*/
 
 	public function equipPreselectedItem(iSlot: Number, currIcon: String, newIcon: String, newName: String, currPIcon: String, newPIcon: String, newPName: String): Void
 	{
@@ -1295,7 +1294,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		}
 	}
 
-	public function tweenLeftIconAlpha(bgAlpha: Number, iconAlpha: Number, nameAlpha: Number, countAlpha: Number, poisonIconAlpha: Number, poisonNameAlpha: Number, i_target: Number, enchantmentAlpha: Number): Void
+	public function tweenLeftIconAlpha(bgAlpha: Number, iconAlpha: Number, nameAlpha: Number, countAlpha: Number, poisonIconAlpha: Number, poisonNameAlpha: Number, i_target: Number, enchantmentAlpha: Number, tierIndicatorAlpha: Number): Void
 	{
 		var bgClip: MovieClip = leftBg_mc
 		var iconClip: MovieClip = leftIcon_mc
@@ -1304,6 +1303,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		var poisonIconClip: MovieClip = leftPoisonIcon_mc
 		var poisonNameClip: MovieClip = leftPoisonName_mc
 		var enchantmentClip: MovieClip = i_target == 0 ? leftEnchantmentMeter_mc : leftSoulgem_mc;
+		var tierIndicatorClip: MovieClip = leftTierIndicator_mc;
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		tl.to(bgClip, 0.25, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
 		.to(iconClip, 0.25, {_alpha:iconAlpha, ease:Quad.easeOut}, 0)
@@ -1311,7 +1311,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		.to(countClip, 0.25, {_alpha:countAlpha, ease:Quad.easeOut}, 0)
 		.to(poisonIconClip, 0.25, {_alpha:poisonIconAlpha, ease:Quad.easeOut}, 0)
 		.to(poisonNameClip, 0.25, {_alpha:poisonNameAlpha, ease:Quad.easeOut}, 0)
-		.to(enchantmentClip, 0.25, {_alpha:enchantmentAlpha, ease:Quad.easeOut}, 0);
+		.to(enchantmentClip, 0.25, {_alpha:enchantmentAlpha, ease:Quad.easeOut}, 0)
+		.to(tierIndicatorClip, 0.25, {_alpha:tierIndicatorAlpha, ease:Quad.easeOut}, 0);
 		tl.play();
 	}
 
@@ -1600,14 +1601,6 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public function startTorchMeterFillTween(nDuration: Number): Void
 	{
 		leftMeter.startFillTween(nDuration);
-		/*skyui.util.Debug.log("iEquipWidget startTorchMeterFillTween - nDuration: " + nDuration)
-		try {
-			var theString = leftMeter.startFillTween(nDuration);
-			skyui.util.Debug.log("iEquipWidget startTorchMeterFillTween - return from startFillTween: " + theString);
-		}
-		catch (e) {
-			skyui.util.Debug.log("iEquipWidget startTorchMeterFillTween - error caught: " + (e.toString()));
-		}*/
 	}
 
 	public function stopTorchMeterFillTween(): Void
@@ -1801,7 +1794,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//skyui.util.Debug.log("iEquipWidget setTextColor - textElement: " + textElement + ", newColor: " + newColor)
 		var new_format:TextFormat = new TextFormat();
 		//potionSelector_mc
-		if (textElement == 45){
+		if (textElement == 49){
 			new_format = potionSelector_mc.restoreText.getTextFormat();
 			new_format.color = newColor;
 			potionSelector_mc.restoreText.setTextFormat(new_format);

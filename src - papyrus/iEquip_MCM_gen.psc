@@ -126,11 +126,20 @@ function drawPage()
 				
 		if WC.bEquipOnPause
 			MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+            MCM.AddToggleOptionST("gen_tgl_slowTime", "$iEquip_MCM_gen_lbl_slowTime", WC.bSlowTimeWhileCycling)
+            if WC.bSlowTimeWhileCycling
+                MCM.AddSliderOptionST("gen_sld_slowTimeStr", "$iEquip_MCM_common_lbl_slowTimeStr", WC.iCycleSlowTimeStrength as float, "{0}%")
+            endIf
 		endIf
 
 		MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[WC.iPosInd])
 
 		MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
+
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_unarmedOptions</font>")
+
+        MCM.AddToggleOptionST("gen_tgl_skipUnarmed", "$iEquip_MCM_gen_lbl_skipUnarmed", WC.bSkipRHUnarmedInCombat)
 
 		if WC.findInQueue(0, "$iEquip_common_Unarmed") == -1
             MCM.AddTextOptionST("gen_txt_addFistsLeft", "$iEquip_MCM_gen_lbl_AddUnarmedLeft", "")
@@ -356,6 +365,30 @@ State gen_sld_eqpPausDelay
     endEvent
 endState
 
+State gen_tgl_slowTime
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_slowTime")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && WC.bSlowTimeWhileCycling)
+            WC.bSlowTimeWhileCycling = !WC.bSlowTimeWhileCycling
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_sld_slowTimeStr
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_slowTimeStr")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.iCycleSlowTimeStrength as float, 0.0, 100.0, 10.0, 50.0)
+        elseIf currentEvent == "Accept"
+            WC.iCycleSlowTimeStrength = currentVar as int
+            MCM.SetSliderOptionValueST(currentVar, "{0}%")
+        endIf 
+    endEvent
+endState
+
 State gen_men_showPosInd
     event OnBeginState()
     	if currentEvent == "Highlight"
@@ -377,6 +410,21 @@ State gen_tgl_showAtrIco
             WC.bShowAttributeIcons = !WC.bShowAttributeIcons
             MCM.SetToggleOptionValueST(WC.bShowAttributeIcons)
             WC.bAttributeIconsOptionChanged = true
+        endIf
+    endEvent
+endState
+
+; ---------------------
+; - Unarmed Shortcuts -
+; ---------------------
+
+State gen_tgl_skipUnarmed
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_skipUnarmed")
+        elseIf currentEvent == "Select"
+            WC.bSkipRHUnarmedInCombat = !WC.bSkipRHUnarmedInCombat
+            MCM.SetToggleOptionValueST(WC.bSkipRHUnarmedInCombat)
         endIf
     endEvent
 endState

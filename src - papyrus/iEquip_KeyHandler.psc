@@ -61,6 +61,7 @@ float property fMultiTapDelay = 0.3 auto hidden
 float property fLongPressDelay = 0.6 auto hidden
 
 ; Bools
+bool property bDisableAddToQueue auto hidden
 bool property bNoUtilMenuInCombat auto hidden
 bool property bExtendedKbControlsEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
@@ -251,7 +252,9 @@ event OnMenuOpen(string MenuName)
         if MenuName == "FavoritesMenu" && bIsGPPLoaded
             registerForGPPKeys()
         endIf
-        RegisterForMenuKeys()
+        if !bDisableAddToQueue
+            RegisterForMenuKeys()
+        endIf
     else
         GoToState("DISABLED")
     endIf

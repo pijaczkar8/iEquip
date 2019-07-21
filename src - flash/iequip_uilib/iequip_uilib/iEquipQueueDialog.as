@@ -88,9 +88,9 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 
 		removeControls_Y = removeButtonPanel._y;
 		clearControls_Y = clearButtonPanel._y;
-		titleText_Y = titleTextField._y
+		titleText_Y = titleTextField._y;
 
-		ammoSortTextField.text = ""
+		ammoSortTextField.text = "";
 		
 		// SKSE functions not yet available and there's no InitExtensions...
 		// This should do the trick.
@@ -317,7 +317,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
  		if (bIsBlacklist) {
 			titleTextField._y = titleText_Y;
 		} else {
-			titleTextField._y = titleText_Y - 6;
+			titleTextField._y = titleText_Y - 10;
 		}
  	}
   
@@ -410,7 +410,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		titleTextField.SetText(titleText);
 
 		if (bIsAmmoList) {
-			titleTextField._y = titleText_Y - 6;
+			titleTextField._y = titleText_Y - 10;
 		} else {
 			titleTextField._y = titleText_Y;
 		}

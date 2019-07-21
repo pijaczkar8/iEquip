@@ -245,7 +245,5 @@ class skyui.widgets.iEquip.iEquipPositionIndicator extends MovieClip
 		fillGradientCurr.lineTo(__x, __y + h);
 		fillGradientCurr.lineTo(__x,__y);
 		fillGradientCurr.endFill();
-
-		//fillGradientCurr._alpha = currPosAlpha;
 	}
 }

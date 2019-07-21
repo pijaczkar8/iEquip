@@ -45,11 +45,13 @@ function initData()
     QHEquipOptions[2] = "$iEquip_MCM_pro_opt_both"
     QHEquipOptions[3] = "$iEquip_MCM_pro_opt_whereFound"
     
-    QRPreferredWeaponType = new String[4]
+    QRPreferredWeaponType = new String[6]
     QRPreferredWeaponType[0] = "$iEquip_MCM_pro_opt_bow"
     QRPreferredWeaponType[1] = "$iEquip_MCM_pro_opt_crossbow"
     QRPreferredWeaponType[2] = "$iEquip_MCM_pro_opt_boundBow"
     QRPreferredWeaponType[3] = "$iEquip_MCM_pro_opt_boundCrossbow"
+    QRPreferredWeaponType[4] = "$iEquip_MCM_pro_opt_rangedSpell"
+    QRPreferredWeaponType[5] = "$iEquip_MCM_pro_opt_rangedStaff"
 
     QRSwitchOutOptions = new String[5]
     QRSwitchOutOptions[0] = "$iEquip_MCM_common_opt_disabled"

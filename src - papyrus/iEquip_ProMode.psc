@@ -1000,16 +1000,25 @@ function quickRanged()
         else
             if !(AM.bAmmoMode || (bPreselectMode && iPreselectQuickRanged == 0))
                 bool actionTaken
-                if iQuickRangedPreferredWeaponType > 1
-                    actionTaken = quickRangedFindAndEquipSpell()
+                if iQuickRangedPreferredWeaponType > 3
+                	actionTaken = quickRangedFindAndEquipSpellOrStaff()
+                elseIf iQuickRangedPreferredWeaponType > 1
+                    actionTaken = quickRangedFindAndEquipBoundSpell()
                 else
                     actionTaken = quickRangedFindAndEquipWeapon()
                 endIf
                 if !actionTaken
+                    if iQuickRangedPreferredWeaponType > 3 || iQuickRangedPreferredWeaponType < 2
+	                	actionTaken = quickRangedFindAndEquipBoundSpell()
+	                else
+                        actionTaken = quickRangedFindAndEquipSpellOrStaff()
+                    endIf
+                endIf
+                if !actionTaken
                     if iQuickRangedPreferredWeaponType > 1
-                        actionTaken = quickRangedFindAndEquipWeapon()
-                    else
-                        actionTaken = quickRangedFindAndEquipSpell()
+	                	actionTaken = quickRangedFindAndEquipWeapon()
+	                else
+                        actionTaken = quickRangedFindAndEquipSpellOrStaff()
                     endIf
                 endIf
                 if actionTaken
@@ -1141,15 +1150,15 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 	return actionTaken
 endFunction
 
-bool function quickRangedFindAndEquipSpell()
-	;debug.trace("iEquip_ProMode quickRangedFindAndEquipSpell start")
+bool function quickRangedFindAndEquipBoundSpell()
+	;debug.trace("iEquip_ProMode quickRangedFindAndEquipBoundSpell start")
 
 	bool actionTaken
-	string preferredType = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow")
-	string secondChoice = iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow")
+	int preferredType = 7
+	int secondChoice = 9
 	if iQuickRangedPreferredWeaponType == 3 || iQuickRangedPreferredWeaponType == 1
-		preferredType = iEquip_StringExt.LocalizeString("$iEquip_common_BoundCrossbow")
-		secondChoice = iEquip_StringExt.LocalizeString("$iEquip_common_BoundBow")
+		preferredType = 9
+		secondChoice = 7
 	endIf
 	int i
 	int targetArray = WC.aiTargetQ[1]
@@ -1159,7 +1168,7 @@ bool function quickRangedFindAndEquipSpell()
 	;Look for our first choice bound ranged weapon spell
 	while i < rightCount && found == -1
 		targetObject = jArray.getObj(targetArray, i)
-		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[1]) && jMap.getStr(targetObject, "iEquipName") == preferredType
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[1]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell) == preferredType
 			found = i
 		endIf
 		i += 1
@@ -1169,7 +1178,7 @@ bool function quickRangedFindAndEquipSpell()
 		i = 0
 		while i < rightCount && found == -1
 			targetObject = jArray.getObj(targetArray, i)
-			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[1]) && jMap.getStr(targetObject, "iEquipName") == secondChoice
+			if !(bPreselectMode && i == WC.aiCurrentQueuePosition[1]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell) == secondChoice
 				found = i
 			endIf
 			i += 1
@@ -1215,7 +1224,13 @@ bool function quickRangedFindAndEquipSpell()
 		endIf
 		actionTaken = true
 	endIf
-	;debug.trace("iEquip_ProMode quickRangedFindAndEquipSpell end")
+	;debug.trace("iEquip_ProMode quickRangedFindAndEquipBoundSpell end")
+	return actionTaken
+endFunction
+
+bool function quickRangedFindAndEquipSpellOrStaff()
+	bool actionTaken
+	; ToDo - write this function once iEquipUtil IsRanged function is added
 	return actionTaken
 endFunction
 

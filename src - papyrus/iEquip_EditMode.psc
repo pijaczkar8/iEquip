@@ -18,6 +18,7 @@ iEquip_TemperedItemHandler property TI auto
 ; - REFERENCES -
 
 Spell property iEquip_SlowTimeSpell auto
+GlobalVariable Property iEquip_SlowTimeStrength Auto
 
 ; - WIDGET VARIABLES -
 
@@ -42,6 +43,7 @@ bool bPotionSelectorOnLeft = true
 ; - Floats -
 
 float CurrentVanityModeDelay
+int property iEditModeSlowTimeStrength = 100 auto hidden
 
 ; - Ints -
 
@@ -274,6 +276,7 @@ function EnableEditmode()
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", false)
     endIf
     
+    iEquip_SlowTimeStrength.SetValueInt(iEditModeSlowTimeStrength)
     GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
 endFunction
 
@@ -328,8 +331,8 @@ function LoadAllElements()
                 CreateHandleIntStr(".updateAttributeIcons", i + 5, "Both")
 
                 ; Show temper tier indicators
-                TI.updateTemperTierIndicator(i, 3)
-                TI.updateTemperTierIndicator(i + 5, 3)
+                WC.TI.updateTemperTierIndicator(i, 3)
+                WC.TI.updateTemperTierIndicator(i + 5, 3)
 
             ; Handle empty shout,consumable and poison queues to ensure all elements show temporarily
             elseIf iCount < 1 || i == 3 && iCount == 3
@@ -971,13 +974,13 @@ function ShowPresetList()
 							fltArr = WC.afWidget_DefA
 						elseIf j == 5					
 							jKey = "_D"
-							intArr = WC.afWidget_DefD
+							intArr = WC.aiWidget_DefD
 						elseIf j == 6
 							jKey = "_TC"
-							intArr = WC.afWidget_DefTC
+							intArr = WC.aiWidget_DefTC
 						else
 							jKey = "_TA"
-							strArr = WC.afWidget_DefTC
+							strArr = WC.asWidget_DefTA
 						endIf
 					
 					
@@ -1014,7 +1017,7 @@ function ShowPresetList()
 
 					jMap.setInt(jPreset, "Version", GetVersion())
 					jValue.writeTofile(jPreset, WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
-					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_presetUpdated") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_presetUpdated{" + sPresetList[MenuReturnArgs[0]] + WC.FileExt + "}"))
 					LoadPreset(jPreset)
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
 				else
