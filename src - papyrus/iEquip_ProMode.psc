@@ -223,13 +223,13 @@ function PreselectModeAnimateIn()
 			i += 1
 		endwhile
 		if abPreselectSlotEnabled[0] && WC.bLeftRightNameFadeEnabled
-			WC.LPNUpdate.registerForNameFadeoutUpdate()
+			WC.LPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[5])
 		endIf
 		if abPreselectSlotEnabled[1] && WC.bLeftRightNameFadeEnabled
-			WC.RPNUpdate.registerForNameFadeoutUpdate()
+			WC.RPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[6])
 		endIf
 		if abPreselectSlotEnabled[2] && WC.bShoutNameFadeEnabled
-			WC.SPNUpdate.registerForNameFadeoutUpdate()
+			WC.SPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[7])
 		endIf
 	endIf
 	;debug.trace("iEquip_ProMode PreselectModeAnimateIn end")
@@ -370,14 +370,14 @@ function equipPreselectedItem(int Q)
 		endIf
 		if WC.bNameFadeoutEnabled
 			if Q == 0 && WC.bLeftRightNameFadeEnabled
-				WC.LNUpdate.registerForNameFadeoutUpdate()
-				WC.LPNUpdate.registerForNameFadeoutUpdate()
+				WC.LNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q])
+				WC.LPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q+5])
 			elseif Q == 1 && WC.bLeftRightNameFadeEnabled
-				WC.RNUpdate.registerForNameFadeoutUpdate()
-				WC.RPNUpdate.registerForNameFadeoutUpdate()
+				WC.RNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q])
+				WC.RPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q+5])
 			elseif Q == 2 && WC.bShoutNameFadeEnabled
-				WC.SNUpdate.registerForNameFadeoutUpdate()
-				WC.SPNUpdate.registerForNameFadeoutUpdate()	
+				WC.SNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q])
+				WC.SPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q+5])	
 			endIf
 		endIf
 	endIf
@@ -418,9 +418,9 @@ function equipPreselectedItem(int Q)
 				PlayerRef.UnequipItemEx(AM.currentAmmoForm as Ammo)
 			endIf
 			if WC.bNameFadeoutEnabled && WC.bLeftRightNameFadeEnabled
-				WC.LNUpdate.registerForNameFadeoutUpdate()
+				WC.LNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q])
 				if abPreselectSlotEnabled[0]
-					WC.LPNUpdate.registerForNameFadeoutUpdate()
+					WC.LPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q+5])
 				endIf
 			endIf
 			if abPreselectSlotEnabled[0]
@@ -682,16 +682,16 @@ function equipAllPreselectedItems(bool handsOnly = false)
 	endIf
 	if WC.bNameFadeoutEnabled
 		if equipLeft && WC.bLeftRightNameFadeEnabled
-			WC.LNUpdate.registerForNameFadeoutUpdate()
-			WC.LPNUpdate.registerForNameFadeoutUpdate()
+			WC.LNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[0])
+			WC.LPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[5])
 		endIf
 		if abPreselectSlotEnabled[1] && WC.bLeftRightNameFadeEnabled
-			WC.RNUpdate.registerForNameFadeoutUpdate()
-			WC.RPNUpdate.registerForNameFadeoutUpdate()
+			WC.RNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[1])
+			WC.RPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[6])
 		endIf
 		if abPreselectSlotEnabled[2] && WC.bShoutNameFadeEnabled && !handsOnly
-			WC.SNUpdate.registerForNameFadeoutUpdate()
-			WC.SPNUpdate.registerForNameFadeoutUpdate()	
+			WC.SNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[2])
+			WC.SPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[7])	
 		endIf
 	endIf
 	bEquippingAllPreselectedItems = false

@@ -6,7 +6,7 @@ iEquip_WidgetCore Property WC Auto
 
 int property targetName auto 							; 0 = Main name, 1 = Preselect name, 2 = Poison name
 int property index auto 								; The index used to set the abIsXxxxNameShown bools to false on fadeout
-int property clip auto 									; The index we're sending to flash for retrieving the correct name movieclip from the clip array
+int targetClip 											; The index we're sending to flash for retrieving the correct name movieclip from the clip array
 
 String WidgetRoot
 
@@ -15,9 +15,10 @@ Float fDuration
 
 bool bWaitingForNameFadeoutUpdate
 
-function registerForNameFadeoutUpdate()
+function registerForNameFadeoutUpdate(int iClip)
 	if WC.bNameFadeoutEnabled
 		WidgetRoot = WC.WidgetRoot
+		targetClip = iClip
 		
 		if targetName == 0									; Targeting main name
 			fDelay = WC.fMainNameFadeoutDelay
@@ -52,10 +53,13 @@ event OnUpdate()
 		endIf
 		Int iHandle = UICallback.Create("HUD Menu", WidgetRoot + ".tweenWidgetNameAlpha")
 		If(iHandle)
-			UICallback.PushInt(iHandle, clip) 			; The index of the name clip we're targeting
+			UICallback.PushInt(iHandle, targetClip) 	; The index of the name clip we're targeting
 			UICallback.PushFloat(iHandle, 0) 			; Target alpha which for FadeOut is 0
 			UICallback.PushFloat(iHandle, fDuration) 	; FadeOut duration
 			UICallback.Send(iHandle)
 		EndIf
 	endIf
 endEvent
+
+; Deprecated
+int property clip auto

@@ -2771,21 +2771,21 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 
 	if bNameFadeoutEnabled
 		if Slot == 0 && bLeftRightNameFadeEnabled
-			LNUpdate.registerForNameFadeoutUpdate()
+			LNUpdate.registerForNameFadeoutUpdate(aiNameElements[slot])
 		elseif Slot == 1 && bLeftRightNameFadeEnabled
-			RNUpdate.registerForNameFadeoutUpdate()
+			RNUpdate.registerForNameFadeoutUpdate(aiNameElements[slot])
 		elseif Slot == 2 && bShoutNameFadeEnabled
-			SNUpdate.registerForNameFadeoutUpdate()
+			SNUpdate.registerForNameFadeoutUpdate(aiNameElements[slot])
 		elseif Slot == 3 && bConsPoisNameFadeEnabled
-			CNUpdate.registerForNameFadeoutUpdate()
+			CNUpdate.registerForNameFadeoutUpdate(aiNameElements[slot])
 		elseif Slot == 4 && bConsPoisNameFadeEnabled
-			PNUpdate.registerForNameFadeoutUpdate()
+			PNUpdate.registerForNameFadeoutUpdate(aiNameElements[slot])
 		elseif Slot == 5 && bLeftRightNameFadeEnabled
-			LPNUpdate.registerForNameFadeoutUpdate()
+			LPNUpdate.registerForNameFadeoutUpdate(aiNameElements[slot])
 		elseif Slot == 6 && bLeftRightNameFadeEnabled
-			RPNUpdate.registerForNameFadeoutUpdate()
+			RPNUpdate.registerForNameFadeoutUpdate(aiNameElements[slot])
 		elseif Slot == 7 && bShoutNameFadeEnabled
-			SPNUpdate.registerForNameFadeoutUpdate()
+			SPNUpdate.registerForNameFadeoutUpdate(aiNameElements[slot])
 		endIf
 	endIf
 	;debug.trace("iEquip_WidgetCore updateWidget end")
@@ -2813,11 +2813,11 @@ function updateWidgetBM(int Q, string sIcon, string sName)
 
 	if bNameFadeoutEnabled
 		if Q == 0 && bLeftRightNameFadeEnabled
-			LNUpdate.registerForNameFadeoutUpdate()
+			LNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		elseif Q == 1 && bLeftRightNameFadeEnabled
-			RNUpdate.registerForNameFadeoutUpdate()
+			RNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		elseif Q == 2 && bShoutNameFadeEnabled
-			SNUpdate.registerForNameFadeoutUpdate()
+			SNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		endIf
 	endIf
 	;debug.trace("iEquip_WidgetCore updateWidgetBM end")
@@ -3047,28 +3047,28 @@ function showName(int Q, bool fadeIn = true, bool targetingPoisonName = false, f
 	if bNameFadeoutEnabled && !EM.isEditMode
 		if Q == 0 && bLeftRightNameFadeEnabled
 			if targetingPoisonName
-				LPoisonNUpdate.registerForNameFadeoutUpdate()
+				LPoisonNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 			else
-				LNUpdate.registerForNameFadeoutUpdate()
+				LNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 			endIf
 		elseif Q == 1 && bLeftRightNameFadeEnabled
 			if targetingPoisonName
-				RPoisonNUpdate.registerForNameFadeoutUpdate()
+				RPoisonNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 			else
-				RNUpdate.registerForNameFadeoutUpdate()
+				RNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 			endIf
 		elseif Q == 2 && bShoutNameFadeEnabled
-			SNUpdate.registerForNameFadeoutUpdate()
+			SNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		elseif Q == 3 && bConsPoisNameFadeEnabled
-			CNUpdate.registerForNameFadeoutUpdate()
+			CNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		elseif Q == 4 && bConsPoisNameFadeEnabled
-			PNUpdate.registerForNameFadeoutUpdate()
+			PNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		elseif Q == 5 && bLeftRightNameFadeEnabled
-			LPNUpdate.registerForNameFadeoutUpdate()
+			LPNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		elseif Q == 6 && bLeftRightNameFadeEnabled
-			RPNUpdate.registerForNameFadeoutUpdate()
+			RPNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		elseif Q == 7 && bShoutNameFadeEnabled
-			SPNUpdate.registerForNameFadeoutUpdate()
+			SPNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 		endIf
 	else
 		if Q == 0
@@ -3643,7 +3643,7 @@ function goUnarmed()
 	endIf
 	
 	if bNameFadeoutEnabled && bLeftRightNameFadeEnabled
-		LNUpdate.registerForNameFadeoutUpdate()
+		LNUpdate.registerForNameFadeoutUpdate(aiNameElements[0])
 	endIf
 	;debug.trace("iEquip_WidgetCore goUnarmed - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
 	if bAmmoMode && !bPreselectMode
@@ -3710,7 +3710,7 @@ function updateLeftSlotOn2HSpellEquipped()
 		UICallback.Send(iHandle)
 	endIf
 	if bNameFadeoutEnabled && bLeftRightNameFadeEnabled
-		LNUpdate.registerForNameFadeoutUpdate()
+		LNUpdate.registerForNameFadeoutUpdate(aiNameElements[0])
 	endIf
 	;debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
 	if bAmmoMode && !bPreselectMode

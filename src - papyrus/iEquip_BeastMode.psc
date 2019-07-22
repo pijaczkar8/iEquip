@@ -568,7 +568,7 @@ function updateOtherHandOn2HSpellEquipped(int Q, int hand, int otherHand)
 		UICallback.Send(iHandle)
 	endIf
 	if WC.bNameFadeoutEnabled && WC.bLeftRightNameFadeEnabled
-		WC.LNUpdate.registerForNameFadeoutUpdate()
+		WC.LNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[0])
 	endIf
 	b2HSpellEquipped = true
 	;debug.trace("iEquip_BeastMode updateOtherHandOn2HSpellEquipped end")
