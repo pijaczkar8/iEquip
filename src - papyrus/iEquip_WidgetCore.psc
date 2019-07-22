@@ -3974,75 +3974,79 @@ function applyPoison(int Q)
 
         int refHandle = GetRefHandleFromWornObject(Q)
 
-        Potion currentPoison = iEquip_InventoryExt.GetPoison(currentWeapon as form, refHandle) 
-        ;debug.trace("iEquip_WidgetCore applyPoison - Q: " + Q + ", isLeftHand: " + isLeftHand + ", current weapon: " + currentWeapon + ", current poison: " + currentPoison)
-        if currentPoison
-            string currentPoisonName = currentPoison.GetName()
-            if currentPoison != poisonToApply
-                if !bAllowPoisonSwitching
-                    debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_alreadyPoisioned{" + weaponName + "}{" + currentPoisonName + "}"))
-                    return
-                else
-                    if iShowPoisonMessages < 2
-                        iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_CleanApply{" + weaponName + "}{" + currentPoisonName + "}{" + newPoison + "}"))
-                        if iButton != 0
-                            return
-                        endIf
-                    endIf
-                    RemovePoison(currentWeapon as form, refHandle)
-                endIf	
-            elseif iShowPoisonMessages < 2
-                iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"))
-                if iButton != 0
-                    return
-                endIf
-            endIf
-        elseif iShowPoisonMessages == 0
-            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_WouldYouLikeToApply{" + newPoison + "}{" + weaponName + "}"))
-            if iButton != 0
-                return
-            endIf
-        endIf
-        
-        int ConcentratedPoisonMultiplier = 1
-        
-        if PlayerRef.HasPerk(ConcentratedPoison)														; If the player has the Concentrated Poison perk apply the multiplier set in the iEquip MCM slider (default = 2 (vanilla))
-            ConcentratedPoisonMultiplier = iPoisonChargeMultiplier
-        endIf
-        
-        int chargesToApply
-        
-        if iEquip_FormExt.isWax(poisonToApply as form) || iEquip_FormExt.isOil(poisonToApply as form)	; CACO waxes and Smithing Oils last for 10 uses so use that as the base value
-            chargesToApply = 10 * ConcentratedPoisonMultiplier
+        if refHandle == 0xFFFF
+        	debug.messagebox(iEquip_StringExt.LocalizeString("$iEquip_common_msg_noRefHandle"))
         else
-            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier						; Otherwise use the iEquip MCM 'Charges Per Vial' value as the base value (default = 1)
-        endIf
+	        Potion currentPoison = iEquip_InventoryExt.GetPoison(currentWeapon as form, refHandle) 
+	        ;debug.trace("iEquip_WidgetCore applyPoison - Q: " + Q + ", isLeftHand: " + isLeftHand + ", current weapon: " + currentWeapon + ", current poison: " + currentPoison)
+	        if currentPoison
+	            string currentPoisonName = currentPoison.GetName()
+	            if currentPoison != poisonToApply
+	                if !bAllowPoisonSwitching
+	                    debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_alreadyPoisioned{" + weaponName + "}{" + currentPoisonName + "}"))
+	                    return
+	                else
+	                    if iShowPoisonMessages < 2
+	                        iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_CleanApply{" + weaponName + "}{" + currentPoisonName + "}{" + newPoison + "}"))
+	                        if iButton != 0
+	                            return
+	                        endIf
+	                    endIf
+	                    RemovePoison(currentWeapon as form, refHandle)
+	                endIf	
+	            elseif iShowPoisonMessages < 2
+	                iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"))
+	                if iButton != 0
+	                    return
+	                endIf
+	            endIf
+	        elseif iShowPoisonMessages == 0
+	            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_WouldYouLikeToApply{" + newPoison + "}{" + weaponName + "}"))
+	            if iButton != 0
+	                return
+	            endIf
+	        endIf
+	        
+	        int ConcentratedPoisonMultiplier = 1
+	        
+	        if PlayerRef.HasPerk(ConcentratedPoison)														; If the player has the Concentrated Poison perk apply the multiplier set in the iEquip MCM slider (default = 2 (vanilla))
+	            ConcentratedPoisonMultiplier = iPoisonChargeMultiplier
+	        endIf
+	        
+	        int chargesToApply
+	        
+	        if iEquip_FormExt.isWax(poisonToApply as form) || iEquip_FormExt.isOil(poisonToApply as form)	; CACO waxes and Smithing Oils last for 10 uses so use that as the base value
+	            chargesToApply = 10 * ConcentratedPoisonMultiplier
+	        else
+	            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier						; Otherwise use the iEquip MCM 'Charges Per Vial' value as the base value (default = 1)
+	        endIf
 
-        if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level charge multiplier
-        	chargesToApply *= (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() 	; DSer_PoisonCount
-        endIf
-        
-        if currentPoison == poisonToApply
-            SetPoisonCount(currentWeapon as form, refHandle, chargesToApply + GetPoisonCount(currentWeapon as form, refHandle))
-        else
-            SetPoison(currentWeapon as form, refHandle, poisonToApply, chargesToApply)
-        endIf
-        ; Remove one item from the player
-        PlayerRef.RemoveItem(poisonToApply, 1, true)
-        ; Flag the item as poisoned
-        jMap.setInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "isPoisoned", 1)
-        jMap.setForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "lastKnownPoison", poisonToApply as Form)
-        if !ApplyWithoutUpdatingWidget
-            checkAndUpdatePoisonInfo(Q, false, false, refHandle)
-        endIf
-        ; Play sound
-        iEquip_ITMPoisonUse.Play(PlayerRef)
-        ; Add Poison FX to weapon
-        if Q == 0
-			PLFX.cast(PlayerRef, PlayerRef)
-        else
-			PRFX.cast(PlayerRef, PlayerRef)
-        endIf
+	        if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level charge multiplier
+	        	chargesToApply *= (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() 	; DSer_PoisonCount
+	        endIf
+	        
+	        if currentPoison == poisonToApply
+	            SetPoisonCount(currentWeapon as form, refHandle, chargesToApply + GetPoisonCount(currentWeapon as form, refHandle))
+	        else
+	            SetPoison(currentWeapon as form, refHandle, poisonToApply, chargesToApply)
+	        endIf
+	        ; Remove one item from the player
+	        PlayerRef.RemoveItem(poisonToApply, 1, true)
+	        ; Flag the item as poisoned
+	        jMap.setInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "isPoisoned", 1)
+	        jMap.setForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "lastKnownPoison", poisonToApply as Form)
+	        if !ApplyWithoutUpdatingWidget
+	            checkAndUpdatePoisonInfo(Q, false, false, refHandle)
+	        endIf
+	        ; Play sound
+	        iEquip_ITMPoisonUse.Play(PlayerRef)
+	        ; Add Poison FX to weapon
+	        if Q == 0
+				PLFX.cast(PlayerRef, PlayerRef)
+	        else
+				PRFX.cast(PlayerRef, PlayerRef)
+	        endIf
+	    endIf
     endIf
     ;debug.trace("iEquip_WidgetCore applyPoison end")
 endFunction
