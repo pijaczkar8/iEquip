@@ -286,7 +286,7 @@ function EnableEditmode()
         if !WC.bGTMSet
             WC.bGTMSet = true
             ;WC.fPreviousGTM = GlobalTimeModifier.GetValue()
-            ConsoleUtil.ExecuteCommand("sgtm " + iEditModeSlowTimeStrength as float / 100)
+            ConsoleUtil.ExecuteCommand("sgtm " + (100 - iEditModeSlowTimeStrength) as float / 100)
         endIf
     else
         iEquip_SlowTimeStrength.SetValueInt(iEditModeSlowTimeStrength)

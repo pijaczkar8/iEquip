@@ -108,7 +108,7 @@ State edt_sld_slowTimeStr
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_edt_txt_slowTimeStr")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(EM.iEditModeSlowTimeStrength as float, 0.0, 100.0, 10.0, 100.0)
+            MCM.fillSlider(EM.iEditModeSlowTimeStrength as float, 0.0, 100.0, 5.0, 100.0)
         elseIf currentEvent == "Accept"
             EM.iEditModeSlowTimeStrength = currentVar as int
             MCM.SetSliderOptionValueST(currentVar, "{0}%")

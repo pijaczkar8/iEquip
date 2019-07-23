@@ -381,7 +381,7 @@ State gen_sld_slowTimeStr
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_slowTimeStr")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.iCycleSlowTimeStrength as float, 0.0, 100.0, 10.0, 50.0)
+            MCM.fillSlider(WC.iCycleSlowTimeStrength as float, 10.0, 100.0, 5.0, 50.0)
         elseIf currentEvent == "Accept"
             WC.iCycleSlowTimeStrength = currentVar as int
             MCM.SetSliderOptionValueST(currentVar, "{0}%")

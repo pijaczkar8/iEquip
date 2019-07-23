@@ -150,9 +150,9 @@ function checkAndUpdateTemperLevelInfo(int Q)
 
 		;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - temperLevelName: " + temperLevelName + ", currentTemperLevelPercent: " + currentTemperLevelPercent + "%")
 		updateIcon(Q, currentTemperLevelPercent, targetObject)
-		updateTemperTierIndicator(Q, i)
 		setTemperLevelName(Q, fItemHealth, temperLevelName, currentTemperLevelPercent, targetObject)
 		jMap.setInt(targetObject, "lastKnownItemHealth", currentTemperLevelPercent)
+		updateTemperTierIndicator(Q, i)
 		jMap.setInt(targetObject, "lastKnownTemperTier", i)
 	
 	endIf

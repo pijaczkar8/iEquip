@@ -2308,7 +2308,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 					if bConsoleUtilLoaded
 						bGTMSet = true
 						;fPreviousGTM = GlobalTimeModifier.GetValue()
-						ConsoleUtil.ExecuteCommand("sgtm " + iCycleSlowTimeStrength as float / 100)
+						ConsoleUtil.ExecuteCommand("sgtm " + (100 - iCycleSlowTimeStrength) as float / 100)
 					else
 						iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
     					PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
@@ -2786,7 +2786,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 
 	if Q < 2 || Q == 5 || Q == 6
 		updateAttributeIcons(Q, iIndex, overridePreselect, cycling)
-		TI.updateTemperTierIndicator(Q, jMap.getInt(targetObject, "lastKnownTemperTier", 0))
+		TI.updateTemperTierIndicator(Q, jMap.getInt(targetObject, "lastKnownTemperTier"))
 	endIf
 
 	if bNameFadeoutEnabled
