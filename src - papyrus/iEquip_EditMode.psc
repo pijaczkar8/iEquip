@@ -7,6 +7,7 @@ import Utility
 import StringUtil
 import iEquip_UILIB
 import iEquip_StringExt
+import ConsoleUtil
 
 ; - SCRIPTS
 
@@ -192,7 +193,12 @@ function DisableEditMode()
     ; Reset Vanity Camera delay back to previous value on leaving Edit Mode
     SetINIfloat("fAutoVanityModeDelay:Camera", CurrentVanityModeDelay)
     
-    GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
+    if WC.bGTMSet
+        WC.bGTMSet = false
+        ConsoleUtil.ExecuteCommand("sgtm " + 1.0)
+    else
+        GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
+    endIf
     game.EnablePlayerControls()
     GetPlayer().SetDontMove(false)
     GetPlayer().GetActorBase().SetInvulnerable(false)
@@ -276,8 +282,16 @@ function EnableEditmode()
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", false)
     endIf
     
-    iEquip_SlowTimeStrength.SetValueInt(iEditModeSlowTimeStrength)
-    GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
+    if WC.bConsoleUtilLoaded
+        if !WC.bGTMSet
+            WC.bGTMSet = true
+            ;WC.fPreviousGTM = GlobalTimeModifier.GetValue()
+            ConsoleUtil.ExecuteCommand("sgtm " + iEditModeSlowTimeStrength as float / 100)
+        endIf
+    else
+        iEquip_SlowTimeStrength.SetValueInt(iEditModeSlowTimeStrength)
+        GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
+    endIf
 endFunction
 
 ; SHOULD PROBABLY BE CLEANED UP AT SOME POINT -> MAKE IT PRETTY
@@ -439,7 +453,7 @@ function SwapElementDepth()
     if iSelectedElement != -1 && !WC.abWidget_isBg[iSelectedElement]
         if iSelectedElementFront == -1
             iSelectedElementFront = iSelectedElement
-            debug.MessageBox("$iEquip_EM_msg_bringToFrontSelNext{" + WC.asWidgetDescriptions[iSelectedElement] + "}")
+            debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_EM_msg_bringToFrontSelNext{" + WC.asWidgetDescriptions[iSelectedElement] + "}"))
         else
             if WC.asWidgetGroup[iSelectedElementFront] == WC.asWidgetGroup[iSelectedElement]
                 int[] iDepthIndex = new int[2]
@@ -622,7 +636,7 @@ endFunction
 function ToggleCycleRange()
     if bFirstCycleKeyPressed
         bFirstCycleKeyPressed = false
-        showCyclingHelp()   
+        debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_EM_msg_cycleHelp"))
     endIf
     ; Toggle between cycling groups/single elements
     HighlightElement(false)
@@ -648,7 +662,7 @@ function CycleElements(int iNextPrev)
     if bFirstCycleKeyPressed
         bFirstCycleKeyPressed = false
         if WC.bShowTooltips
-            showCyclingHelp()
+            debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_EM_msg_cycleHelp"))
         endIf 
     endIf
     HighlightElement(false)
@@ -667,10 +681,6 @@ function CycleElements(int iNextPrev)
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", iSelectedElement)
     HighlightElement(true)
     UpdateEditModeGuide()
-endFunction
-
-function showCyclingHelp()
-    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_EM_msg_cycleHelp"))
 endFunction
 
 ; - Update Data -
