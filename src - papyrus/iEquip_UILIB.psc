@@ -382,7 +382,7 @@ EndFunction
 Event OnQueueMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;debug.trace("iEquip_UILIB OnQueueMenuOpen start")
 	If(asEventName == "iEquip_queueMenuOpen")
-		QueueMenu_UpdateButtons(bHasBlacklist, false, false)
+		QueueMenu_UpdateButtons(bHasBlacklist, false, false, sToggleButtonLabel)
 		UI.InvokeNumber("CustomMenu", "_root.iEquipQueueDialog.setPlatform", (Game.UsingGamepad() as Int))
 		sendListValues()
 		Int iHandle = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.initListParams")

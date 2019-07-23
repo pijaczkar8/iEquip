@@ -282,15 +282,20 @@ function EnableEditmode()
         UI.setBool(HUD_MENU, WidgetRoot + ".EditModeGuide.GridWide._visible", false)
     endIf
     
-    if WC.bConsoleUtilLoaded
-        if !WC.bGTMSet
-            WC.bGTMSet = true
-            ;WC.fPreviousGTM = GlobalTimeModifier.GetValue()
-            ConsoleUtil.ExecuteCommand("sgtm " + (100 - iEditModeSlowTimeStrength) as float / 100)
+    if iEditModeSlowTimeStrength > 0
+        if WC.bConsoleUtilLoaded
+            if !WC.bGTMSet
+                WC.bGTMSet = true
+                ;WC.fPreviousGTM = GlobalTimeModifier.GetValue()
+                ConsoleUtil.ExecuteCommand("sgtm " + (100 - iEditModeSlowTimeStrength) as float / 100)
+            endIf
+        else
+            if GetPlayer().HasSpell(iEquip_SlowTimeSpell)
+                GetPlayer().RemoveSpell(iEquip_SlowTimeSpell)
+            endIf
+            iEquip_SlowTimeStrength.SetValueInt(iEditModeSlowTimeStrength)
+            GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
         endIf
-    else
-        iEquip_SlowTimeStrength.SetValueInt(iEditModeSlowTimeStrength)
-        GetPlayer().AddSpell(iEquip_SlowTimeSpell, false)
     endIf
 endFunction
 

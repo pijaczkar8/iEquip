@@ -489,13 +489,13 @@ Event OnWidgetInit()
 
 	aiNameElements = new int[8]
 	aiNameElements[0] = 8 	; leftName_mc
-	aiNameElements[1] = 22 	; rightName_mc
-	aiNameElements[2] = 36 	; shoutName_mc
-	aiNameElements[3] = 43 	; consumableName_mc
-	aiNameElements[4] = 48 	; poisonName_mc
-	aiNameElements[5] = 18 	; leftPreselectName_mc
-	aiNameElements[6] = 32 	; rightPreselectName_mc
-	aiNameElements[7] = 40 	; shoutPreselectName_mc
+	aiNameElements[1] = 24 	; rightName_mc
+	aiNameElements[2] = 40 	; shoutName_mc
+	aiNameElements[3] = 47 	; consumableName_mc
+	aiNameElements[4] = 52 	; poisonName_mc
+	aiNameElements[5] = 19 	; leftPreselectName_mc
+	aiNameElements[6] = 35 	; rightPreselectName_mc
+	aiNameElements[7] = 44 	; shoutPreselectName_mc
 
 	aiIconClips = new int[8]
 	aiIconClips[0] = 7 		; leftIcon_mc
@@ -749,14 +749,18 @@ function checkVersion()
 			asAmmoSorting[2] = "$iEquip_WC_ammoSorting_alphabetically"
 			asAmmoSorting[3] = "$iEquip_WC_ammoSorting_byQuantity"
 
-			aiNameElements[1] = 22 	; rightName_mc
-			aiNameElements[2] = 36 	; shoutName_mc
-			aiNameElements[3] = 43 	; consumableName_mc
-			aiNameElements[4] = 48 	; poisonName_mc
-			aiNameElements[5] = 18 	; leftPreselectName_mc
-			aiNameElements[6] = 32 	; rightPreselectName_mc
-			aiNameElements[7] = 40 	; shoutPreselectName_mc
+			aiNameElements = new int[8]
+			aiNameElements[0] = 8 	; leftName_mc
+			aiNameElements[1] = 24 	; rightName_mc
+			aiNameElements[2] = 40 	; shoutName_mc
+			aiNameElements[3] = 47 	; consumableName_mc
+			aiNameElements[4] = 52 	; poisonName_mc
+			aiNameElements[5] = 19 	; leftPreselectName_mc
+			aiNameElements[6] = 35 	; rightPreselectName_mc
+			aiNameElements[7] = 44 	; shoutPreselectName_mc
 
+			aiIconClips = new int[8]
+			aiIconClips[0] = 7 		; leftIcon_mc
 			aiIconClips[1] = 23 	; rightIcon_mc
 			aiIconClips[2] = 39 	; shoutIcon_mc
 			aiIconClips[3] = 46 	; consumableIcon_mc
@@ -770,6 +774,10 @@ function checkVersion()
 			aiCounterClips[4] = 53 	; poisonCount_mc
 
 			aiPoisonNameElements[1] = 27 ; rightPoisonName_mc
+
+			self.RegisterForMenu("Crafting Menu")
+			self.RegisterForMenu("Dialogue Menu")
+			self.RegisterForMenu("BarterMenu")
 
 			updateWidgetArrays()
 
@@ -967,6 +975,9 @@ state ENABLED
 		self.RegisterForMenu("FavoritesMenu")
 		self.RegisterForMenu("ContainerMenu")
 		self.RegisterForMenu("Journal Menu")
+		self.RegisterForMenu("Crafting Menu")
+		self.RegisterForMenu("Dialogue Menu")
+		self.RegisterForMenu("BarterMenu")
 		
 		UI.invoke(HUD_MENU, WidgetRoot + ".setWidgetToEmpty")
 		CheckDependencies()
@@ -993,6 +1004,10 @@ state ENABLED
 		;debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
 
 		checkVersion()
+
+		self.RegisterForMenu("Crafting Menu")
+		self.RegisterForMenu("Dialogue Menu")
+		self.RegisterForMenu("BarterMenu")
 
 		bool bPreselectEnabledOnLoad = bPreselectMode
 
@@ -1504,7 +1519,7 @@ event OnMenuClose(string _sCurrentMenu)
 		int targetObject = jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i])
 		form equippedItem = PlayerRef.GetEquippedObject(i)
 		int itemHandle = getHandle(i)
-		if equippedItem as Weapon && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
+		if (equippedItem as Weapon || (equippedItem as armor).IsShield()) && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
 			checkAndUpdatePoisonInfo(i)
 			CM.checkAndUpdateChargeMeter(i)
 			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
@@ -2304,7 +2319,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				else
 					RHUpdate.registerForEquipOnPauseUpdate(Reverse)
 				endIf
-				if bSlowTimeWhileCycling
+				if bSlowTimeWhileCycling && iCycleSlowTimeStrength > 0
 					if bConsoleUtilLoaded
 						bGTMSet = true
 						;fPreviousGTM = GlobalTimeModifier.GetValue()

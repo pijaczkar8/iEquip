@@ -1414,6 +1414,7 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 				UICallback.Send(iHandle)
 			endIf
 			WC.checkAndUpdatePoisonInfo(otherHand)
+			TI.updateTemperTierIndicator(otherHand)
 			WC.CM.checkAndUpdateChargeMeter(otherHand)
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[otherHand]
 				WC.showName(otherHand)
