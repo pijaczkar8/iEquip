@@ -841,6 +841,9 @@ function CheckDependencies()
 
 	; Gamepad++
 	KH.registerForGPP(Game.GetModByName("Gamepad++.esp") != 255)
+
+	; ConsoleUtil
+	bConsoleUtilLoaded = ConsoleUtil.GetVersion() > 0
 	
     ; Requiem
     RC.bIsRequiemLoaded = Game.GetModByName("Requiem.esp") != 255
@@ -2302,8 +2305,14 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 					RHUpdate.registerForEquipOnPauseUpdate(Reverse)
 				endIf
 				if bSlowTimeWhileCycling
-					iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
-					PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
+					if bConsoleUtilLoaded
+						bGTMSet = true
+						;fPreviousGTM = GlobalTimeModifier.GetValue()
+						ConsoleUtil.ExecuteCommand("sgtm " + iCycleSlowTimeStrength as float / 100)
+					else
+						iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
+    					PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
+    				endIf
     			endIf
 			;Otherwise carry on and equip/cycle
 			else
@@ -2330,11 +2339,21 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	;debug.trace("iEquip_WidgetCore cycleSlot end")
 endFunction
 
+bool property bConsoleUtilLoaded auto hidden
+;GlobalVariable property GlobalTimeModifier auto
+bool property bGTMSet auto hidden
+;float property fPreviousGTM auto hidden
+
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false, bool calledByQuickRanged = false)
 	;debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
 	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
-		PlayerRef.RemoveSpell(iEquip_SlowTimeSpell)
+		if bGTMSet
+			bGTMSet = false
+			ConsoleUtil.ExecuteCommand("sgtm " + 1.0)
+		else
+			PlayerRef.RemoveSpell(iEquip_SlowTimeSpell)
+		endIf
 		abCyclingQueue[Q] = false
 		if iPosInd != 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)

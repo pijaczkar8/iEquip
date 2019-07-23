@@ -149,7 +149,6 @@ function checkAndUpdateTemperLevelInfo(int Q)
 		endIf
 
 		;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - temperLevelName: " + temperLevelName + ", currentTemperLevelPercent: " + currentTemperLevelPercent + "%")
-
 		updateIcon(Q, currentTemperLevelPercent, targetObject)
 		updateTemperTierIndicator(Q, i)
 		setTemperLevelName(Q, fItemHealth, temperLevelName, currentTemperLevelPercent, targetObject)
@@ -168,21 +167,23 @@ function updateIcon(int Q, int temperLevelPercent, int targetObject)
 
 	;debug.trace("iEquip_TemperedItemHandler updateIcon - checking we've got a value rounded to the nearest 10, temperLvl: " + temperLvl)
 
-	if bFadeIconOnDegrade && temperLvl < 100																		; If we have enabled icon fade on degrade
-		newIcon += temperLvl as string																				; First append the current item percent rounded to the nearest 10%
+	if WC.aUniqueItems.Find(jMap.getForm(targetObject, "iEquipForm") as weapon) == -1
+		if bFadeIconOnDegrade && temperLvl < 100																		; If we have enabled icon fade on degrade
+			newIcon += temperLvl as string																				; First append the current item percent rounded to the nearest 10%
 
-		if iColoredIconStyle > 0 && temperLvl < 50																	; Now if we've enabled coloured icons and item health rounded to tens is 40% or below
+			if iColoredIconStyle > 0 && temperLvl < 50																	; Now if we've enabled coloured icons and item health rounded to tens is 40% or below
 
-			if (iColoredIconLevels == 0 && temperLevelPercent < 41 && temperLevelPercent > 20) || (iColoredIconLevels == 1  && temperLevelPercent < 31 && temperLevelPercent > 20) || (iColoredIconLevels == 2  && temperLevelPercent < 31 && temperLevelPercent > 10) || (iColoredIconLevels == 3 && temperLevelPercent < 21 && temperLevelPercent > 10)	; Check the level setting and append the 'a' for amber level
-				newIcon += "a"
-			elseIf (temperLvl < 30 && iColoredIconLevels < 2 && temperLevelPercent < 21) || (temperLvl < 20 && iColoredIconLevels > 1 && temperLevelPercent < 11)			; Or 'r' for red level
-				newIcon += "r"
+				if (iColoredIconLevels == 0 && temperLevelPercent < 41 && temperLevelPercent > 20) || (iColoredIconLevels == 1  && temperLevelPercent < 31 && temperLevelPercent > 20) || (iColoredIconLevels == 2  && temperLevelPercent < 31 && temperLevelPercent > 10) || (iColoredIconLevels == 3 && temperLevelPercent < 21 && temperLevelPercent > 10)	; Check the level setting and append the 'a' for amber level
+					newIcon += "a"
+				elseIf (temperLvl < 30 && iColoredIconLevels < 2 && temperLevelPercent < 21) || (temperLvl < 20 && iColoredIconLevels > 1 && temperLevelPercent < 11)			; Or 'r' for red level
+					newIcon += "r"
+				endIf
+
+				if iColoredIconStyle == 2																				; And finally if we've selected to colour the full icon and not just the unfaded lower section append 'f' for full
+					newIcon += "f"
+				endIf
+
 			endIf
-
-			if iColoredIconStyle == 2																				; And finally if we've selected to colour the full icon and not just the unfaded lower section append 'f' for full
-				newIcon += "f"
-			endIf
-
 		endIf
 	endIf
 
