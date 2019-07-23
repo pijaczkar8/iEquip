@@ -16,6 +16,7 @@ import iEquip_SpellExt
 import iEquip_ActorExt
 import iEquip_UIExt
 import iEquip_InventoryExt
+import ConsoleUtil
 
 ;Script Properties
 iEquip_ChargeMeters property CM auto
@@ -2302,7 +2303,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				endIf
 				if bSlowTimeWhileCycling
 					iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
-    				PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
+					PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
     			endIf
 			;Otherwise carry on and equip/cycle
 			else
