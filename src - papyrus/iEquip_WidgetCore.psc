@@ -1519,7 +1519,7 @@ event OnMenuClose(string _sCurrentMenu)
 		int targetObject = jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i])
 		form equippedItem = PlayerRef.GetEquippedObject(i)
 		int itemHandle = getHandle(i)
-		if (equippedItem as Weapon || (equippedItem as armor).IsShield()) && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
+		if equippedItem && (equippedItem as Weapon || (equippedItem as armor).IsShield()) && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
 			checkAndUpdatePoisonInfo(i)
 			CM.checkAndUpdateChargeMeter(i)
 			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
@@ -1998,6 +1998,11 @@ function getAndStoreDefaultWidgetValues(bool updateFromFile = false)
 	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_D"), aiWidget_DefD, 0, -1, 0, 0)
 	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_TC"), aiWidget_DefTC, 0, -1, 0, 0)
 	    JArray.writeToStringPArray(JMap.getObj(jPreset, "_TA"), asWidget_DefTA, 0, -1, 0, 0)
+	    int i
+	    while i < 54
+	    	abWidget_DefV[i] = true
+	    	i += 1
+	    endWhile
 
 	    jValue.zeroLifetime(jObj)
 	else
