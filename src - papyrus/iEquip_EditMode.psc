@@ -286,8 +286,11 @@ function EnableEditmode()
         if WC.bConsoleUtilLoaded
             if !WC.bGTMSet
                 WC.bGTMSet = true
-                ;WC.fPreviousGTM = GlobalTimeModifier.GetValue()
-                ConsoleUtil.ExecuteCommand("sgtm " + (100 - iEditModeSlowTimeStrength) as float / 100)
+                float f = (100 - iEditModeSlowTimeStrength) as float / 100
+                if f == 0
+                    f = 0.001
+                endIf
+                ConsoleUtil.ExecuteCommand("sgtm " + f)
             endIf
         else
             if GetPlayer().HasSpell(iEquip_SlowTimeSpell)

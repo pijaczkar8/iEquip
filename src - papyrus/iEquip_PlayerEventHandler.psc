@@ -913,7 +913,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 endFunction
 
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-  	if akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable
+  	if akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !Game.GetModName(akBaseObject.GetFormID() / 0x1000000) == "Undriel_Everlight.esp"
   		;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
   		GoToState("PROCESSING")
     	TO.onTorchUnequipped()

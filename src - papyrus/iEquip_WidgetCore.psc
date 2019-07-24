@@ -2327,8 +2327,11 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				if bSlowTimeWhileCycling && iCycleSlowTimeStrength > 0
 					if bConsoleUtilLoaded
 						bGTMSet = true
-						;fPreviousGTM = GlobalTimeModifier.GetValue()
-						ConsoleUtil.ExecuteCommand("sgtm " + (100 - iCycleSlowTimeStrength) as float / 100)
+						float f = (100 - iCycleSlowTimeStrength) as float / 100
+						if f == 0
+							f = 0.001
+						endIf
+						ConsoleUtil.ExecuteCommand("sgtm " + f)
 					else
 						iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
     					PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
@@ -2804,9 +2807,9 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		UICallback.Send(iHandle)
 	endIf
 
-	if Q < 2 || Q == 5 || Q == 6
+	if Slot < 2 || Slot == 5 || Slot == 6
 		updateAttributeIcons(Q, iIndex, overridePreselect, cycling)
-		TI.updateTemperTierIndicator(Q, jMap.getInt(targetObject, "lastKnownTemperTier"))
+		TI.updateTemperTierIndicator(Slot, jMap.getInt(targetObject, "lastKnownTemperTier"))
 	endIf
 
 	if bNameFadeoutEnabled
@@ -4061,8 +4064,8 @@ function applyPoison(int Q)
 	            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier						; Otherwise use the iEquip MCM 'Charges Per Vial' value as the base value (default = 1)
 	        endIf
 
-	        if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level charge multiplier
-	        	chargesToApply *= (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() 	; DSer_PoisonCount
+	        if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level additional charges
+	        	chargesToApply += (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() 	; DSer_PoisonCount
 	        endIf
 	        
 	        if currentPoison == poisonToApply

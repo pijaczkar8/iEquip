@@ -262,7 +262,7 @@ function PreselectModeAnimateOut()
 			WC.updateAttributeIcons(0, 0)
 		elseIf i < 2
 			WC.hideAttributeIcons(i + 5)
-			TI.updateTemperTierIndicator(i + 5, 0)
+			TI.updateTemperTierIndicator(i + 5)
 		endIf
 		if WC.bNameFadeoutEnabled && !WC.abIsNameShown[i]
 			WC.showName(i)
