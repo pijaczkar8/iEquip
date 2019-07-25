@@ -3551,7 +3551,9 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    elseif ((Q == 0 && itemType == 26) || jMap.getStr(targetObject, "iEquipName") == "Rocket Launcher") ; Shield in the left hand queue
 		    	if refHandle != 0xFFFF
 		    		iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef)
-		    	else
+		    		Utility.WaitMenuMode(0.2)
+		    	endIf
+		    	if PlayerRef.GetEquippedObject(Q) != targetItem
 		    		PlayerRef.EquipItemEx(targetItem as Armor)
 		    	endIf
 		    elseIf targetItem as light
