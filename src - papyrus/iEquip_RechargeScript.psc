@@ -54,7 +54,9 @@ endEvent
 
 function rechargeWeapon(int Q)
     ;debug.trace("iEquip_RechargeScript rechargeWeapon start - Q: " + Q)
-    if bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
+	if !bRechargingEnabled
+		; Do nothing
+    elseIf bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
         debug.notification("$iEquip_RequiemEnchantingPerkMissing")
     else
         string weaponToRecharge = CM.asItemCharge[Q]
