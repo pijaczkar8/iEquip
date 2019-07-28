@@ -977,28 +977,28 @@ function ShowPresetList()
 					
 						if j == 0
 							jKey = "_X"
-							fltArr = WC.afWidget_DefX
+							fltArr = afWidget_CurX
 						elseIf j == 1
 							jKey = "_Y"
-							fltArr = WC.afWidget_DefY
+							fltArr = afWidget_CurY
 						elseIf j == 2
 							jKey = "_S"
-							fltArr = WC.afWidget_DefS
+							fltArr = afWidget_CurS
 						elseIf j == 3
 							jKey = "_R"
-							fltArr = WC.afWidget_DefR
+							fltArr = afWidget_CurR
 						elseIf j == 4
 							jKey = "_A"
-							fltArr = WC.afWidget_DefA
+							fltArr = afWidget_CurA
 						elseIf j == 5					
 							jKey = "_D"
-							intArr = WC.aiWidget_DefD
+							intArr = aiWidget_CurD
 						elseIf j == 6
 							jKey = "_TC"
-							intArr = WC.aiWidget_DefTC
+							intArr = aiWidget_CurTC
 						else
 							jKey = "_TA"
-							strArr = WC.asWidget_DefTA
+							strArr = asWidget_CurTA
 						endIf
 					
 					
