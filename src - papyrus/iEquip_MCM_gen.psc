@@ -190,7 +190,6 @@ State gen_tgl_onOff
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff")
         elseIf currentEvent == "Select"
-            ;Block enabling if player is currently a werewolf, vampire lord or lich.  iEquip will handle any subsequent player transformations once enabled.
 			if MCM.bEnabled
 				MCM.bEnabled = false
 				bFirstEnabled = false
@@ -205,7 +204,9 @@ State gen_tgl_onOff
                 Quest LALChargen = Quest.GetQuest("ARTHLALChargenQuest")
                 Quest UnboundChargen = Quest.GetQuest("SkyrimUnbound")
                 
-                if (LALChargen && !LALChargen.IsCompleted())
+				if (LALChargen && UnboundChargen)
+					MCM.ShowMessage("$iEquip_MCM_gen_mes_dontUseBoth", false, "$OK")
+                elseIf (LALChargen && !LALChargen.IsCompleted())
                     MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenFirst", false, "$OK")
                 elseIf (UnboundChargen && !UnboundChargen.IsCompleted())
                     MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenUnboundFirst", false, "$OK")
