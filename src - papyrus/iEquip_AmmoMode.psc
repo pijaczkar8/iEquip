@@ -222,7 +222,9 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				args[1] = WC.iBackgroundStyle
 				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)
 			endIf
-			;Hide the left hand poison elements if currently shown
+			; Hide the left temper tier indicator
+			TI.updateTemperTierIndicator(0)
+			; Hide the left hand poison elements if currently shown
 			if WC.abPoisonInfoDisplayed[0]
 				WC.hidePoisonInfo(0)
 			endIf
@@ -241,10 +243,10 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				endwhile
 				AmmoModeAnimateIn()
 			endIf
-
+			; Update the left preselect attribute icons and temper tier indicator
 			WC.bCyclingLHPreselectInAmmoMode = true
 			WC.updateAttributeIcons(0, WC.aiCurrentlyPreselected[0], false, true)
-			TI.updateTemperTierIndicator(0)
+			TI.updateTemperTierIndicator(5, jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0]), "lastKnownTemperTier"))
 			;If we've just equipped a bound weapon the ammo will already be equipped, otherwise go ahead and equip the ammo
 			if bBoundAmmoAdded
 				bBoundAmmoAdded = false ;Reset

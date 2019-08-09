@@ -286,8 +286,11 @@ function EnableEditmode()
         if WC.bConsoleUtilLoaded
             if !WC.bGTMSet
                 WC.bGTMSet = true
-                ;WC.fPreviousGTM = GlobalTimeModifier.GetValue()
-                ConsoleUtil.ExecuteCommand("sgtm " + (100 - iEditModeSlowTimeStrength) as float / 100)
+                float f = (100 - iEditModeSlowTimeStrength) as float / 100
+                if f == 0
+                    f = 0.001
+                endIf
+                ConsoleUtil.ExecuteCommand("sgtm " + f)
             endIf
         else
             if GetPlayer().HasSpell(iEquip_SlowTimeSpell)
@@ -959,11 +962,11 @@ function ShowPresetList()
 					LoadPreset(jPreset)
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
 				elseIf (jPresetVersion == 1 && GetVersion() == 2)
-					int[] aiIndexToReplace = new int[4]
-					aiIndexToReplace[0] = 15
-					aiIndexToReplace[1] = 21
-					aiIndexToReplace[2] = 31
-					aiIndexToReplace[3] = 37
+					int[] aiInsertAtIndex = new int[4]
+					aiInsertAtIndex[0] = 15
+					aiInsertAtIndex[1] = 21
+					aiInsertAtIndex[2] = 31
+					aiInsertAtIndex[3] = 37
 					int j = 0
 					
 					while j < 8
@@ -974,52 +977,41 @@ function ShowPresetList()
 					
 						if j == 0
 							jKey = "_X"
-							fltArr = WC.afWidget_DefX
+							fltArr = afWidget_CurX
 						elseIf j == 1
 							jKey = "_Y"
-							fltArr = WC.afWidget_DefY
+							fltArr = afWidget_CurY
 						elseIf j == 2
 							jKey = "_S"
-							fltArr = WC.afWidget_DefS
+							fltArr = afWidget_CurS
 						elseIf j == 3
 							jKey = "_R"
-							fltArr = WC.afWidget_DefR
+							fltArr = afWidget_CurR
 						elseIf j == 4
 							jKey = "_A"
-							fltArr = WC.afWidget_DefA
+							fltArr = afWidget_CurA
 						elseIf j == 5					
 							jKey = "_D"
-							intArr = WC.aiWidget_DefD
+							intArr = aiWidget_CurD
 						elseIf j == 6
 							jKey = "_TC"
-							intArr = WC.aiWidget_DefTC
+							intArr = aiWidget_CurTC
 						else
 							jKey = "_TA"
-							strArr = WC.asWidget_DefTA
+							strArr = asWidget_CurTA
 						endIf
 					
-					
 						int jTmpObj = jMap.getObj(jPreset, jKey)
-						int[] jArrs = new int[4]
-						jArrs[0] = jArray.subArray(jTmpObj, 15, 20)
-						jArrs[1] = jArray.subArray(jTmpObj, 21, 30)
-						jArrs[2] = jArray.subArray(jTmpObj, 31, 36)
-						jArrs[3] = jArray.subArray(jTmpObj, 37, 49)
-						jArray.eraseRange(jTmpObj, 15, 49)
-						
 						int k = 0
 						while k < 4
 							if fltArr
-								jArray.addFlt(jTmpObj, fltArr[aiIndexToReplace[k]])
+								jArray.addFlt(jTmpObj, fltArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
 							elseIf intArr
-								jArray.addInt(jTmpObj, intArr[aiIndexToReplace[k]])
+								jArray.addInt(jTmpObj, intArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
 							else
-								jArray.addStr(jTmpObj, strArr[aiIndexToReplace[k]])
+								jArray.addStr(jTmpObj, strArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
 							endIf
-							
-							jArray.addFromArray(jTmpObj, jArrs[k])
-							jValue.zeroLifetime(jArrs[k])
-							
+
 							k += 1
 						endWhile
 						

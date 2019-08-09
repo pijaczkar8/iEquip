@@ -174,44 +174,51 @@ function onTorchEquipped()
 		Wait(1.0) ; Just in case the unequipped event is received after this one
 		bSettingLightRadius = false
 	else
-		iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
-		PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
-
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
-		if equippedTorch != iEquipTorch
-			realTorchForm = equippedTorch
-			fMaxTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float - 5.0
-			fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
-		endIf
-		;debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fMaxTorchDuration: " + fMaxTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
+		bool bIsEverlight = Game.GetModName(equippedTorch.GetFormID() / 0x1000000) == "Undriel_Everlight.esp"
 
-		if fCurrentTorchLife < 30.0
-			if bReduceLightAsTorchRunsOut
-				
-				int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
-				
-				iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
-				iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
-				if !PlayerRef.IsWeaponDrawn()
-					bSettingLightRadius = true
-					if PlayerRef.GetItemCount(iEquipTorch) < 1
-						PlayerRef.AddItem(iEquipTorch, 1, true)
-					endIf
-	            	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
-	            endIf
+		if !bIsEverlight
+			iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
+			PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
+
+			if equippedTorch != iEquipTorch
+				realTorchForm = equippedTorch
+				fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
+				fMaxTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float - 5.0
 			endIf
-			RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
+			;debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fMaxTorchDuration: " + fMaxTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
+
+			if fCurrentTorchLife < 30.0
+				if bReduceLightAsTorchRunsOut
+					
+					int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
+					
+					iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
+					iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
+					if !PlayerRef.IsWeaponDrawn()
+						bSettingLightRadius = true
+						if PlayerRef.GetItemCount(iEquipTorch) < 1
+							PlayerRef.AddItem(iEquipTorch, 1, true)
+						endIf
+		            	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
+		            endIf
+				endIf
+				RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
+			else
+				RegisterForSingleUpdate(fCurrentTorchLife - 30.1)
+			endIf
+			
+			if bShowTorchMeter	; Show torch meter if enabled
+				if CM.abIsChargeMeterShown[0]
+					;updateTorchMeterVisibility(false)
+					CM.updateChargeMeterVisibility(0, false)
+					WaitMenuMode(0.2)
+				endIf
+				showTorchMeter()
+			endIf
 		else
-			RegisterForSingleUpdate(fCurrentTorchLife - 30.1)
-		endIf
-		
-		if bShowTorchMeter	; Show torch meter if enabled
-			if CM.abIsChargeMeterShown[0]
-				;updateTorchMeterVisibility(false)
-				CM.updateChargeMeterVisibility(0, false)
-				WaitMenuMode(0.2)
-			endIf
-			showTorchMeter()
+			realTorchForm = equippedTorch
+			fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
 		endIf
 	endIf
 	;debug.trace("iEquip_TorchScript onTorchEquipped end")
