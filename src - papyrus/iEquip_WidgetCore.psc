@@ -1511,26 +1511,27 @@ endEvent
 event OnMenuClose(string _sCurrentMenu)
 	;debug.trace("iEquip_WidgetCore OnMenuClose start - current menu: " + _sCurrentMenu)
 	int i
-	if ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(0)) > -1
-		i = 1
-	endIf
-	;Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
-	while i < 2
-		int targetObject = jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i])
-		form equippedItem = PlayerRef.GetEquippedObject(i)
-		int itemHandle = getHandle(i)
-		if equippedItem && (equippedItem as Weapon || (equippedItem as armor).IsShield()) && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
-			checkAndUpdatePoisonInfo(i)
-			CM.checkAndUpdateChargeMeter(i)
-			if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
-				TI.checkAndUpdateTemperLevelInfo(i)
-			endIf
-		endIf
-		i += 1
-	endWhile
 
-	if _sCurrentMenu == "Journal Menu" && Game.GetModByName("Bound Armory Extravaganza.esp") != 255 				; If we've just left journal menu check and update any queue objects containing Bound Armory spells in case they've just been renamed in the BAE MCM
-		i = 0
+	if _sCurrentMenu == "InventoryMenu"																				; Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
+		if ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(0)) > -1
+			i = 1
+		endIf
+		
+		while i < 2
+			int targetObject = jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i])
+			form equippedItem = PlayerRef.GetEquippedObject(i)
+			int itemHandle = getHandle(i)
+			if equippedItem && (equippedItem as Weapon || (i == 0 && equippedItem as armor && (equippedItem as armor).IsShield())) && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
+				checkAndUpdatePoisonInfo(i)
+				CM.checkAndUpdateChargeMeter(i)
+				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
+					TI.checkAndUpdateTemperLevelInfo(i)
+				endIf
+			endIf
+			i += 1
+		endWhile
+
+	elseIf _sCurrentMenu == "Journal Menu" && Game.GetModByName("Bound Armory Extravaganza.esp") != 255 			; If we've just left journal menu check and update any queue objects containing Bound Armory spells in case they've just been renamed in the BAE MCM
 		int Q
 		while Q < 2
 			int count = jArray.count(aiTargetQ[Q])
