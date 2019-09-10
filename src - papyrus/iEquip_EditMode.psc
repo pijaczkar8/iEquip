@@ -492,7 +492,7 @@ function SetElementDepthOrder(int DepthIndexA, bool bSet = true)
             int iIndex
             
             ; Find iIndex with default value for DepthIndexA
-            while WC.aiWidget_D[iIndex] != WC.aiWidget_DefD[DepthIndexA]
+            while WC.aiWidget_D[iIndex] != WC.aiWidget_DefD[DepthIndexA] && iIndex < 53
                 iIndex += 1
             endWhile
             DepthIndexB = iIndex
