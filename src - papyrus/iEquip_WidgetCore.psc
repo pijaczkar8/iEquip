@@ -402,6 +402,8 @@ bool property bBlockSwitchBackToBoundSpell auto hidden
 bool property bMoreHUDLoaded auto hidden
 string[] property asMoreHUDIcons auto hidden
 
+bool property bIsCGOLoaded auto hidden
+
 int iRemovedItemsCacheObj
 int property iRefHandleArray auto hidden
 int property iEquipQHolderObj auto hidden
@@ -858,6 +860,9 @@ function CheckDependencies()
 
     ; Archery Gameplay Overhaul
     bIsAGOLoaded = Game.GetModByName("DSerArcheryGameplayOverhaul.esp") != 255
+
+    ; Combat Gameplay Overhaul
+    bIsCGOLoaded = Game.GetModByName("DSerCombatGameplayOverhaul.esp") != 255
 
     ; Thunderchild
     EH.bIsThunderchildLoaded = Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
@@ -1513,7 +1518,8 @@ event OnMenuClose(string _sCurrentMenu)
 	int i
 
 	if _sCurrentMenu == "InventoryMenu"																				; Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
-		if ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(0)) > -1
+		int leftItemType = PlayerRef.GetEquippedItemType(0)
+		if ai2HWeaponTypesAlt.Find(leftItemType) > -1 && !(leftItemType < 7 && bIsCGOLoaded)
 			i = 1
 		endIf
 		
@@ -2274,7 +2280,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				int itemType = jMap.getInt(targetObject, "iEquipType")
 				AM.bAmmoModePending = false
 				; Check if initial target item is 2h or ranged, or if it is a 1h item but you only have one of it and you've just equipped it in the other hand, or if it is unarmed
-				if (itemType == 0 || ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
+				if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1  && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
 					int newIndex = targetIndex + 1
 					if newIndex == queueLength
 						newIndex = 0
@@ -2285,7 +2291,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 						targetObject = jArray.getObj(targetArray, newIndex)
 						itemType = jMap.getInt(targetObject, "iEquipType")
 						; if the new target item is 2h or ranged, or if it is a 1h item but you only have one of it and it's already equipped in the other hand, or it is unarmed then move on again
-						if (itemType == 0 || ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) < 2))
+						if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1  && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) < 2))
 							newIndex += 1
 							;if we have reached the final index in the array then loop to the start and keep counting forward until we reach the original starting point
 							if newIndex == queueLength
@@ -4010,7 +4016,7 @@ function applyPoison(int Q)
             	endIf
             endIf
             return
-        elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon
+        elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon && !IsWeaponBound(currentWeapon)
             iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"))
             if iButton != 0
                 return
