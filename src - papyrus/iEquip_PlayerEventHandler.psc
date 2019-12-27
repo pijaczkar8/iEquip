@@ -33,6 +33,8 @@ Race property PlayerRace auto hidden
 Keyword Property CraftingSmithingSharpeningWheel Auto
 Keyword Property CraftingSmithingArmorTable Auto
 
+form property fistWeapon auto
+
 light property iEquipTorch auto
 
 Race PlayerBaseRace
@@ -727,96 +729,102 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	string itemName
 	string itemBaseName
 
-	int itemHandle = WC.getHandle(equippedSlot, itemType)
+	if equippedSlot < 2 && queuedForm == fistWeapon && WC.asCurrentlyEquipped[equippedSlot] != "$iEquip_common_Unarmed"		; If the player is brawling then don't add the fistWeapon to the queue, and if not currently showing Unarmed do so now.
 
-	;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
+		WC.setSlotToEmpty(equippedSlot, true, true)
 
-	if itemHandle != 0xFFFF
-		itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
-		itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
-		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
-	endIf
-	
-	if itemName == ""
-		itemName = queuedForm.getName()
-	endIf
+	else
+		int itemHandle = WC.getHandle(equippedSlot, itemType)
 
-	;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - final names being saved, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
 
-	int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
-	;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
-																										; Check if we've just manually equipped an item that is already in an iEquip queue
- 	if formFound
-																										; If it's been found in the queue for the equippedSlot it's been equipped to
-		targetIndex = WC.findInQueue(equippedSlot, itemName, queuedForm, itemHandle)
-		if targetIndex != -1
-			
-			if equippedSlot < 2
-				if !abSkipQueueObjectUpdate[equippedSlot]								; Update the item name in case the display name differs from the base item name, and store the new itemID
-					if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", 0xFFFF) == 0xFFFF
-						JArray.AddInt(WC.iRefHandleArray, itemHandle)
-						JArray.unique(WC.iRefHandleArray)
-						jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
+		if itemHandle != 0xFFFF
+			itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
+			itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
+			;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+		endIf
+		
+		if itemName == ""
+			itemName = queuedForm.getName()
+		endIf
+
+		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - final names being saved, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+
+		int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
+		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
+																											; Check if we've just manually equipped an item that is already in an iEquip queue
+	 	if formFound
+																											; If it's been found in the queue for the equippedSlot it's been equipped to
+			targetIndex = WC.findInQueue(equippedSlot, itemName, queuedForm, itemHandle)
+			if targetIndex != -1
+				
+				if equippedSlot < 2
+					if !abSkipQueueObjectUpdate[equippedSlot]								; Update the item name in case the display name differs from the base item name, and store the new itemID
+						if itemHandle != 0xFFFF && jMap.getInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", 0xFFFF) == 0xFFFF
+							JArray.AddInt(WC.iRefHandleArray, itemHandle)
+							JArray.unique(WC.iRefHandleArray)
+							jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipHandle", itemHandle)
+						endIf
+						jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
+						jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipBaseName", itemBaseName)
+						jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
+						jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
+					else
+						abSkipQueueObjectUpdate[equippedSlot] = false
 					endIf
-					jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipName", itemName)
-					jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipBaseName", itemBaseName)
-					jMap.setStr(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "lastDisplayedName", itemName)
-					jMap.setInt(jArray.GetObj(WC.aiTargetQ[equippedSlot], targetIndex), "iEquipItemID", itemID)
-				else
-					abSkipQueueObjectUpdate[equippedSlot] = false
 				endIf
-			endIf
-			
-			if WC.bMoreHUDLoaded																		; Send to moreHUD if loaded
-				string moreHUDIcon
-				if equippedSlot < 2
-					AhzMoreHudIE.RemoveIconItem(itemID)
-					if specificHandedItems.Find(itemType) == -1 && WC.isAlreadyInQueue((equippedSlot + 1) % 2, queuedForm, itemID, itemHandle)
-						moreHUDIcon = WC.asMoreHUDIcons[3]
-					else
-	            		moreHUDIcon = WC.asMoreHUDIcons[equippedSlot]
-	            	endIf
-	            else
-	            	moreHUDIcon = WC.asMoreHUDIcons[2]
-	            endIf
-	            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
-	        endIf
+				
+				if WC.bMoreHUDLoaded																		; Send to moreHUD if loaded
+					string moreHUDIcon
+					if equippedSlot < 2
+						AhzMoreHudIE.RemoveIconItem(itemID)
+						if specificHandedItems.Find(itemType) == -1 && WC.isAlreadyInQueue((equippedSlot + 1) % 2, queuedForm, itemID, itemHandle)
+							moreHUDIcon = WC.asMoreHUDIcons[3]
+						else
+		            		moreHUDIcon = WC.asMoreHUDIcons[equippedSlot]
+		            	endIf
+		            else
+		            	moreHUDIcon = WC.asMoreHUDIcons[2]
+		            endIf
+		            AhzMoreHudIE.AddIconItem(itemID, moreHUDIcon)
+		        endIf
 
-	        bool bCurrentlyDualCasting = !WC.b2HSpellEquipped && jMap.getInt(jArray.GetObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && WC.asCurrentlyEquipped[1] == UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text")
+		        bool bCurrentlyDualCasting = !WC.b2HSpellEquipped && jMap.getInt(jArray.GetObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && WC.asCurrentlyEquipped[1] == UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text")
 
-			if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || TO.bJustCalledQuickLight)			; If it's somehow already shown in the widget
-				if equippedSlot < 2
-					if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator																				; Update the name and temper level if required
-						TI.checkAndUpdateTemperLevelInfo(equippedSlot)
-					else
-						int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
-						If(iHandle)
-							UICallback.PushInt(iHandle, TI.aiNameElements[equippedSlot])
-							UICallback.PushString(iHandle, itemName)
-							UICallback.Send(iHandle)
+				if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || TO.bJustCalledQuickLight)			; If it's somehow already shown in the widget
+					if equippedSlot < 2
+						if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator																				; Update the name and temper level if required
+							TI.checkAndUpdateTemperLevelInfo(equippedSlot)
+						else
+							int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
+							If(iHandle)
+								UICallback.PushInt(iHandle, TI.aiNameElements[equippedSlot])
+								UICallback.PushString(iHandle, itemName)
+								UICallback.Send(iHandle)
+							endIf
 						endIf
 					endIf
-				endIf
-				if equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped || AM.bAmmoMode)
-					if WC.bLeftIconFaded
-						WC.checkAndFadeLeftIcon(0, itemType)
+					if equippedSlot == 0 && (WC.bLeftIconFaded || WC.b2HSpellEquipped || AM.bAmmoMode)
+						if WC.bLeftIconFaded
+							WC.checkAndFadeLeftIcon(0, itemType)
+							blockCall = true
+						endIf
+					else
 						blockCall = true
 					endIf
-				else
-					blockCall = true
+				
+				else 																																	; Otherwise update the position and name, then update the widget
+					WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
+					WC.asCurrentlyEquipped[equippedSlot] = itemName
+					if equippedSlot < 2 || WC.bShoutEnabled
+						WC.updateWidget(equippedSlot, targetIndex, true, true)
+					endIf
+					if equippedSlot == 0
+						WC.bGoneUnarmed = false
+					endIf
 				endIf
-			
-			else 																																	; Otherwise update the position and name, then update the widget
-				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
-				WC.asCurrentlyEquipped[equippedSlot] = itemName
-				if equippedSlot < 2 || WC.bShoutEnabled
-					WC.updateWidget(equippedSlot, targetIndex, true, true)
-				endIf
-				if equippedSlot == 0
-					WC.bGoneUnarmed = false
-				endIf
+				actionTaken = true
 			endIf
-			actionTaken = true
 		endIf
 	endIf
 	;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
