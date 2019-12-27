@@ -234,7 +234,8 @@ function drawPage()
 	MCM.SetCursorPosition(1)
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_shoutSlotOpts</font>")
-	MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", WC.bShoutCooldownFadeEnabled)
+	;MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", WC.bShoutCooldownFadeEnabled)
+	MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", false)
 
 	MCM.AddEmptyOption()
 
@@ -482,8 +483,9 @@ State ui_tgl_shoutCooldown
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_shoutCooldown")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bShoutCooldownFadeEnabled)
-            WC.bShoutCooldownFadeEnabled = !WC.bShoutCooldownFadeEnabled
-            MCM.SetToggleOptionValueST(WC.bShoutCooldownFadeEnabled)
+        	MCM.ShowMessage("$iEquip_MCM_common_comingSoon")
+            ;WC.bShoutCooldownFadeEnabled = !WC.bShoutCooldownFadeEnabled
+            ;MCM.SetToggleOptionValueST(WC.bShoutCooldownFadeEnabled)
         endIf 
     endEvent
 endState

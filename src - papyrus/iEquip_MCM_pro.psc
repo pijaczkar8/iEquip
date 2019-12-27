@@ -787,8 +787,12 @@ State pro_men_prefWepTyp
         elseIf currentEvent == "Open"
             MCM.fillMenu(PM.iQuickRangedPreferredWeaponType, QRPreferredWeaponType, 0)
         elseIf currentEvent == "Accept"
-            PM.iQuickRangedPreferredWeaponType = currentVar as int
-            MCM.SetMenuOptionValueST(QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
+        	if currentVar as int > 3
+        		MCM.ShowMessage("$iEquip_MCM_common_comingSoon")
+        	else
+            	PM.iQuickRangedPreferredWeaponType = currentVar as int
+            	MCM.SetMenuOptionValueST(QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
+            endIf
         endIf
     endEvent
 endState

@@ -197,9 +197,9 @@ State gen_tgl_onOff
 				MCM.forcePageReset()
 			elseIf !JContainers.isInstalled()                                               ; Dependency checks
 				MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontmissing", false, "$OK")
-            elseIf !(JContainers.APIVersion() >= 3 && JContainers.featureVersion() >= 3)
+            ;elseIf !(JContainers.APIVersion() >= 3 && JContainers.featureVersion() >= 3)
             ; SSE Note - Comment out the preceding line and uncomment the following - JContainers versions differ between LE and SE    
-            ;elseIf !(JContainers.APIVersion() >= 4 && JContainers.featureVersion() >= 1)
+            elseIf !(JContainers.APIVersion() >= 4 && JContainers.featureVersion() >= 1)
                 MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontoldversion", false, "$OK")
             else                                                                            ; Requirement checks
                 Quest LALChargen = Quest.GetQuest("ARTHLALChargenQuest")
