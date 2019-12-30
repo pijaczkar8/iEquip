@@ -312,7 +312,7 @@ event OnUpdate()
 			iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
 			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
 			PlayerRef.UnequipItemEx(equippedTorch)
-			PlayerRef.RemoveItem(iEquipTorch, 1, true)	; Remove the fadable torch
+			PlayerRef.RemoveItem(iEquipTorch, 1, true)	; Remove the fadeable torch
 			PlayerRef.RemoveItem(realTorchForm)			; Remove the real torch which will trigger the timer reset and re-equip
 		else
 			RegisterForSingleUpdate(5.0)
@@ -392,7 +392,7 @@ function quickLight()
 		
 			WC.hidePoisonInfo(0)
 
-			if WC.ai2HWeaponTypesAlt.Find(currentItemType) > -1
+			if WC.ai2HWeaponTypesAlt.Find(currentItemType) > -1 && !(currentItemType < 7 && WC.bIsCGOLoaded)
 				bPreviously2HOrRanged = true
 				previousLeftHandIndex = WC.aiCurrentQueuePosition[0]
 				previousLeftHandName = WC.asCurrentlyEquipped[0]

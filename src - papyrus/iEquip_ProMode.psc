@@ -468,7 +468,7 @@ function equipPreselectedItem(int Q)
 		;Unequip current item
 		WC.UnequipHand(Q)
 		;if equipping the left hand will cause a 2H or ranged weapon to be unequipped in the right hand, or the one handed weapon you are about to equip is already equipped in the other hand and you only have one of it then cycle the main slot and equip a suitable 1H item
-		if (Q == 0 && (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1)) || (targetItem == PlayerRef.GetEquippedObject(otherHand) && itemType != 22 && PlayerRef.GetItemCount(targetItem) < 2)
+		if (Q == 0 && (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !(PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded)) || (targetItem == PlayerRef.GetEquippedObject(otherHand) && itemType != 22 && PlayerRef.GetItemCount(targetItem) < 2)
 			if !bEquippingAllPreselectedItems
 	        	WC.bPreselectSwitchingHands = true
 	        endif
@@ -623,7 +623,7 @@ function equipAllPreselectedItems(bool handsOnly = false)
 	endIf
 
 	bool equipLeft
-	if abPreselectSlotEnabled[0] && !(abPreselectSlotEnabled[1] && ((WC.ai2HWeaponTypes.Find(rightHandItemType) > -1) || rightHandItemType == 0 || (rightHandItemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3) || (leftTargetItem == rightTargetItem && itemCount < 2 && rightHandItemType != 22)))
+	if abPreselectSlotEnabled[0] && !(abPreselectSlotEnabled[1] && ((WC.ai2HWeaponTypes.Find(rightHandItemType) > -1 && !(rightHandItemType < 7 && WC.bIsCGOLoaded)) || rightHandItemType == 0 || (rightHandItemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3) || (leftTargetItem == rightTargetItem && itemCount < 2 && rightHandItemType != 22)))
 		equipLeft = true
 		if abPreselectSlotEnabled[1]
 			WC.UnequipHand(1)
@@ -725,7 +725,7 @@ endEvent
 function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 	;debug.trace("iEquip_ProMode quickShield start - forceSwitch: " + forceSwitch + ", onTorchDropped: " + onTorchDropped)
 	;if right hand or ranged weapon in right hand and bQuickShield2HSwitchAllowed not enabled then return out
-	if (!bQuickShieldEnabled && !onTorchDropped) || (!forceSwitch && (((WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
+	if (!bQuickShieldEnabled && !onTorchDropped) || (!forceSwitch && (((WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1 && !(PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded)) && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
 		return
 	endIf
 	int i
@@ -831,7 +831,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 				WC.checkAndFadeLeftIcon(0, foundType)
 			endIf
 			bool switchRightHand
-			if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) || (foundType == 22 && bQuickShieldPreferMagic && !rightHandHasSpell) || WC.bGoneUnarmed || WC.b2HSpellEquipped
+			if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1 && !(PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded)) || (foundType == 22 && bQuickShieldPreferMagic && !rightHandHasSpell) || WC.bGoneUnarmed || WC.b2HSpellEquipped
 				switchRightHand = true
 				if !WC.bGoneUnarmed
 					WC.UnequipHand(1)
@@ -869,7 +869,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 		if forceSwitch || onTorchDropped
 			;If we've forced quickShield because a previously equipped shield was removed from the player, or we've just dropped a lit torch and we haven't been able to find another in the left queue we now need to cycle the left queue
 			WC.cycleSlot(0, false, true)
-		elseIf bQuickShieldUnequipLeftIfNotFound && (PlayerRef.GetEquippedObject(1) as weapon) && WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) == -1
+		elseIf bQuickShieldUnequipLeftIfNotFound && (PlayerRef.GetEquippedObject(1) as weapon) && (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) == -1 || (PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded))
 			WC.UnequipHand(0)
 			WC.setSlotToEmpty(0, true, true)
 		else
@@ -1678,11 +1678,12 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 	WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], iPreviousLeftHandIndex), "iEquipName")
 	WC.aiCurrentQueuePosition[1] = iPreviousRightHandIndex
 	int previousRHObject = jArray.getObj(WC.aiTargetQ[1], iPreviousRightHandIndex)
+	int previousRHType = jMap.getInt(previousRHObject, "iEquipType")
 	WC.asCurrentlyEquipped[1] = jMap.getStr(previousRHObject, "iEquipName")
 	
 	int Q = iQuickHealSlotsEquipped
 	bool previouslyUnarmed = WC.asCurrentlyEquipped[1] == "$iEquip_common_Unarmed"
-	bool previously2H = WC.ai2HWeaponTypes.Find(jMap.getInt(previousRHObject, "iEquipType")) > -1 || (jMap.getInt(previousRHObject, "iEquipType") == 22 && jMap.getInt(previousRHObject, "iEquipSlot") == 3)
+	bool previously2H = (WC.ai2HWeaponTypes.Find(previousRHType) > -1 && !(previousRHType < 7 && WC.bIsCGOLoaded)) || (previousRHType == 22 && jMap.getInt(previousRHObject, "iEquipSlot") == 3)
 	
 	if previously2H
 		Q = 2
@@ -1698,7 +1699,7 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 		WC.updateWidget(0, WC.aiCurrentQueuePosition[0], true)
 		if !previously2H
 			WC.checkAndEquipShownHandItem(0)
-		elseIf jMap.getInt(previousRHObject, "iEquipType") == 7 || jMap.getInt(previousRHObject, "iEquipType") == 9
+		elseIf previousRHType == 7 || previousRHType == 9
 			Utility.WaitMenuMode(0.4)
 		endIf
 		WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)

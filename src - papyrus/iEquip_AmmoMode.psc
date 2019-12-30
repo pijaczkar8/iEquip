@@ -409,6 +409,9 @@ endEvent
 
 function cycleAmmo(bool reverse, bool ignoreEquipOnPause = false, bool onKeyPress = false)
 	debug.trace("iEquip_AmmoMode cycleAmmo start")
+
+	WC.addSlowTimeEffect(0, true)
+	
 	int queueLength = jArray.count(aiTargetQ[Q])
 	int targetIndex
 	;No need for any checking here at all, we're just cycling ammo so just cycle and equip

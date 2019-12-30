@@ -233,10 +233,11 @@ function drawPage()
 	
 	MCM.SetCursorPosition(1)
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_shoutSlotOpts</font>")
-	MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", WC.bShoutCooldownFadeEnabled)
+	;/MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_shoutSlotOpts</font>")
+	;MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", WC.bShoutCooldownFadeEnabled)
+	MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", false)
 
-	MCM.AddEmptyOption()
+	MCM.AddEmptyOption()/;
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_fadeoutopts</font>")
 	MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
@@ -477,16 +478,17 @@ State ui_men_tempLvlThresholds
     endEvent
 endState
 
-State ui_tgl_shoutCooldown
+;/State ui_tgl_shoutCooldown
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_shoutCooldown")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bShoutCooldownFadeEnabled)
-            WC.bShoutCooldownFadeEnabled = !WC.bShoutCooldownFadeEnabled
-            MCM.SetToggleOptionValueST(WC.bShoutCooldownFadeEnabled)
+        	MCM.ShowMessage("$iEquip_MCM_common_comingSoon")
+            ;WC.bShoutCooldownFadeEnabled = !WC.bShoutCooldownFadeEnabled
+            ;MCM.SetToggleOptionValueST(WC.bShoutCooldownFadeEnabled)
         endIf 
     endEvent
-endState
+endState/;
 
 State ui_tgl_fadeLeftIco2h
     event OnBeginState()

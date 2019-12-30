@@ -23,11 +23,11 @@ string sCurrentPage
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 110  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 120  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 110 && CurrentVersion < 110)
+    if (a_version >= 120 && CurrentVersion < 120)
         OnConfigInit()
     endIf
 endEvent

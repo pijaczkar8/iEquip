@@ -279,13 +279,17 @@ event OnMenuClose(string MenuName)
         Utility.WaitMenuMode(0.5)
     endIf
 
-    if !utility.IsInMenuMode()
+    if !utility.IsInMenuMode() && !UI.IsMenuOpen("Dialogue Menu") && !UI.IsMenuOpen("Crafting Menu")
         if EM.isEditMode
             GoToState("EDITMODE")
         elseIf _bPlayerIsABeast
             GoToState("BEASTMODE")
         else
             GoToState("")
+        endIf
+
+        if Game.UsingGamepad() && iUtilityKey == 277
+            Utility.Wait(0.5)
         endIf
         RegisterForKey(iUtilityKey)
     else
@@ -318,7 +322,7 @@ event OnKeyDown(int KeyCode)
     
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = true
-        ;bUtilityKeyDownReceived = true
+        bUtilityKeyDownReceived = true
     elseIf bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
         bGPPKeyHeld = true
     endIf
@@ -411,7 +415,7 @@ function runUpdate()
             
     elseIf iMultiTap == 1   ; Single tap
         if iWaitingKeyCode == iUtilityKey
-            ;if bUtilityKeyDownReceived ; This should stop the Utility Menu from triggering if player has just exited another menu using controller B as we won't have received the OnKeyDown event whilst in a menu
+            if bUtilityKeyDownReceived ; This should stop the Utility Menu from triggering if player has just exited another menu using controller B as we won't have received the OnKeyDown event whilst in a menu
                 if PlayerRef.IsInCombat() && bNoUtilMenuInCombat
                     debug.notification(iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_notWithWeaponsDrawn"))
                 else
@@ -428,7 +432,7 @@ function runUpdate()
                         endIf
                     endIf
                 endIf
-            ;endIf     
+            endIf        
         elseIf iWaitingKeyCode == iLeftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
 			
@@ -570,7 +574,7 @@ function runUpdate()
     endIf
 
     iWaitingKeyCode = -1
-    ;bUtilityKeyDownReceived = false
+    bUtilityKeyDownReceived = false
     ;debug.trace("iEquip_KeyHandler runUpdate end")
 endFunction
 

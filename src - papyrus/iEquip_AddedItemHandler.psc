@@ -56,7 +56,7 @@ event OnUpdate()
 	form formToAdd
 	while i < numForms
 		formToAdd = iEquip_ItemsToAddFLST.GetAt(i)
-																										; Handle Potions, Ammo and bound ammo first
+																											; Handle Potions, Ammo and bound ammo first
 		if formToAdd
 			if formToAdd as potion
 				PO.onPotionAdded(formToAdd)
@@ -66,27 +66,31 @@ event OnUpdate()
 				else
 					AM.onAmmoAdded(formToAdd)
 				endIf
-		    																							; Otherwise check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
+		    																								; Next check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
 		    elseIf WC.bEnableRemovedItemCaching && iEquip_RemovedItemsFLST.HasForm(formToAdd)
 		    	WC.addBackCachedItem(formToAdd)
-		    																							; Or finally check if we've just added one of a currently equipped item which requires a counter update
+
 			else
-				if formToAdd == iEquipDroppedTorch as form || formToAdd == iEquipBurntOutTorch as form	; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for...
+				if formToAdd as weapon || formToAdd as armor 												; If we've picked up a weapon or shield and we have auto-add/equip weapons and shields enabled run that now
+					WC.onWeaponOrShieldAdded(formToAdd)
+
+				elseIf formToAdd == iEquipDroppedTorch as form || formToAdd == iEquipBurntOutTorch as form	; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for...
 					bSwitchingTorches = true
 					PlayerRef.RemoveItem(formToAdd, 1, true)
 					if Game.GetModByName("RealisticTorches.esp") != 255
-						formToAdd = Game.GetFormFromFile(0x00002DC5, "RealisticTorches.esp") as form 	; RT_TorchOut - Burnt Out Torch (if Realistic Torches detected)
+						formToAdd = Game.GetFormFromFile(0x00002DC5, "RealisticTorches.esp") as form 		; RT_TorchOut - Burnt Out Torch (if Realistic Torches detected)
 					else
-						formToAdd = TO.realTorchForm 													; Or a real torch
+						formToAdd = TO.realTorchForm 														; Or a real torch
 					endIf
 					PlayerRef.AddItem(formToAdd, 1, true)
 				endIf
+		    																								; Finally check if we've just added one of a currently equipped item which requires a counter update
 				j = 0
 				int itemType = formToAdd.GetType()
 				while j < 2
 					if WC.asCurrentlyEquipped[j] == formToAdd.GetName()
 						;Ammo, scrolls, torch or other throwing weapons
-						if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(formToAdd))	
+						if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 41 && iEquip_FormExt.IsGrenade(formToAdd))	
 			    			WC.setSlotCount(j, PlayerRef.GetItemCount(formToAdd))
 			    		endIf
 		        	endIf
