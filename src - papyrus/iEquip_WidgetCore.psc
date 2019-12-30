@@ -3465,24 +3465,106 @@ function onWeaponOrShieldAdded(form addedForm)
 	if iAutoEquipEnabled > 0
 
 		int currLHItemType = PlayerRef.GetEquippedItemType(0)
-		int currRHItemType = PlayerRef.GetEquippedItemType(1)
+		
 		form currItem
 
-		if addedForm as armor 									; Only shields will have been passed through from OnItemAdded
-			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() > PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1))		; Shield or nothing currently equipped
-				if currLHItemType == 10 && bAutoEquipHardcore
-					currItem = PlayerRef.GetEquippedObject(0)
+		if addedForm as armor 														; Only shields will have been passed through from OnItemAdded
+			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() > PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1) && !(PlayerRef.GetEquippedShield.GetEnchantment() && iCurrentItemEnchanted == 0))		; Shield or nothing currently equipped
+				if currLHItemType == 10
+					currItem = PlayerRef.GetEquippedShield() as form
 				endIf
-				
+				PlayerRef.EquipItemEx(addedForm as Armor)
 			endIf
 		
 		else
+			int currRHItemType = PlayerRef.GetEquippedItemType(1)
+			int weaponType = (addedForm as weapon).GetWeaponType()
+			int targetHand
+			bool doEquip
 
+			if (weaponType == 7 || weaponType == 9)									; Bows and crossbows - will only be equipped if currently weilding a ranged weapon, or if both hands are empty
+				if (currLHItemType == 0 && currRHItemType == 0) || ((currRHItemType == 7 || currRHType == 12) && ((iAutoEquipEnabled == 2 && (addedForm as weapon).GetBaseDamage() > PlayerRef.GetEquippedWeapon().GetBaseDamage()) || iAutoEquipEnabled == 1) && !(iCurrentItemPoisoned == 0 && GetPoisonCount(PlayerRef.GetEquippedObject(1), GetRefHandleFromWornObject(1)) > 0) || (PlayerRef.GetEquippedWeapon().GetEnchantment() && (iCurrentItemEnchanted == 0 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") > 0.0))))
+					if currRHItemType > 0
+						currItem = PlayerRef.GetEquippedObject(1)
+					endIf
+					doEquip = true
+					targetHand = 1
+				endIf
+
+			elseIf weaponType > 0 && weaponType < 7 								; 1H and 2H weapons (excluding fist weapons and staffs) - will only be equipped if replacing like for like (1H/2H) or if an empty hand is found
+				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || (currLHItemType < 7 && weaponType < 7)) && !(iCurrentItemPoisoned == 0 && GetPoisonCount(PlayerRef.GetEquippedObject(0), GetRefHandleFromWornObject(0)) > 0) || (PlayerRef.GetEquippedWeapon(true).GetEnchantment() && (iCurrentItemEnchanted == 0 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") > 0.0)))
+				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || (currRHItemType < 7 && weaponType < 7)) && !(iCurrentItemPoisoned == 0 && GetPoisonCount(PlayerRef.GetEquippedObject(1), GetRefHandleFromWornObject(1)) > 0) || (PlayerRef.GetEquippedWeapon().GetEnchantment() && (iCurrentItemEnchanted == 0 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") > 0.0)))
+
+				bool emptyHanded
+
+				if leftMatch && rightMatch
+					targetHand = PlayerRef.GetEquippedWeapon().GetBaseDamage() > PlayerRef.GetEquippedWeapon(false).GetBaseDamage()
+				elseIf rightMatch || currRHItemType == 0
+					targetHand = 1
+					emptyHanded = currRHItemType == 0
+				elseIf leftMatch || currLHItemType == 0
+					if !((weaponType == 5 || weaponType == 6) && !bIsCGOLoaded) 	; This should stop 2H weapons being equipped in an empty left hand if CGO is not loaded
+						targetHand = 2
+					endIf
+					emptyHanded = currLHItemType == 0
+				endIf
+
+				if targetHand > 0 && (emptyHanded || ((iAutoEquipEnabled == 2 && (addedForm as weapon).GetBaseDamage() > PlayerRef.GetEquippedWeapon(targetHand == 2).GetBaseDamage()) || iAutoEquipEnabled == 1))
+					if !emptyHanded
+						currItem = PlayerRef.GetEquippedObject(targetHand == 1 as int)
+					endIf
+					doEquip = true
+				endIf
+
+			endIf
+
+			if doEquip
+				PlayerRef.EquipItemEx(addedForm, targetHand)
+			endIf
+
+		endIf
+
+		if currItem && bAutoEquipHardcore
+			PlayerRef.DropObject(currItem, 1)
+			;DropItem(currItem)
 		endIf
 
 	endIf
 	;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded end")
 endFunction
+
+;/function DropItem(form itemToDrop)
+	;debug.trace("iEquip_WidgetCore Drop start")
+	objectreference droppedItem = PlayerRef.DropObject(itemToDrop, 1)
+
+	droppedItem.SetActorOwner(PlayerRef.GetActorBase())
+	droppedItem.SetFactionOwner(PlayerFaction)
+	
+	Float OffsetX = 48.0 * Math.Sin(PlayerRef.GetAngleZ() - 15)
+	Float OffsetY = 48.0 * Math.Cos(PlayerRef.GetAngleZ() - 15)
+	Float OffsetZ = PlayerRef.GetHeight() - 32.0
+	If (PlayerRef.IsSneaking())
+		OffsetZ = PlayerRef.GetHeight() - 72.0
+	EndIf
+
+	If (droppedItem.is3DLoaded())
+		droppedItem.MoveTo(PlayerRef, OffsetX, OffsetY, OffsetZ, false)
+	Else
+		droppedItem.MoveToIfUnloaded(PlayerRef, OffsetX, OffsetY, OffsetZ)
+	EndIf
+
+	droppedItem.EnableNoWait()
+
+	Int Tries = 0 
+	While(Tries < 10 && (!droppedItem.is3DLoaded() || !droppedItem.IsEnabled()))
+		Wait(0.05)
+		Tries += 1
+	EndWhile
+	
+	droppedItem.ApplyHavokImpulse(0,0,1,5)
+
+	;debug.trace("iEquip_WidgetCore Drop end")
+endFunction/;
 
 bool function playerStillHasItem(form itemForm, int itemHandle = 0xFFFF)
 	;debug.trace("iEquip_WidgetCore playerStillHasItem start - itemForm: " + itemForm + ", itemHandle: " + itemHandle)
