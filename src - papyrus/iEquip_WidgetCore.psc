@@ -14,6 +14,7 @@ import iEquip_FormExt
 import iEquip_StringExt
 import iEquip_SpellExt
 import iEquip_ActorExt
+import iEquip_WeaponExt
 import iEquip_UIExt
 import iEquip_InventoryExt
 import ConsoleUtil
@@ -52,6 +53,7 @@ iEquip_ConsumableNameUpdateScript property CNUpdate auto
 iEquip_ConsumableFadeUpdateScript property CFUpdate auto
 iEquip_PotionSelectorUpdateScript property PSUpdate auto
 iEquip_PoisonNameUpdateScript property PNUpdate auto
+iEquip_SlowTimeEffectUpdateScript property STUpdate auto
 
 ;CK-filled Properties
 Actor property PlayerRef auto
@@ -862,7 +864,11 @@ function CheckDependencies()
     bIsAGOLoaded = Game.GetModByName("DSerArcheryGameplayOverhaul.esp") != 255
 
     ; Combat Gameplay Overhaul
-    bIsCGOLoaded = Game.GetModByName("DSerCombatGameplayOverhaul.esp") != 255
+    bool isCGOLoaded = Game.GetModByName("DSerCombatGameplayOverhaul.esp") != 255
+    if bIsCGOLoaded && !isCGOLoaded
+    	remove2HWeaponsFromLeftQueue()
+    endIf
+    bIsCGOLoaded = isCGOLoaded
 
     ; Thunderchild
     EH.bIsThunderchildLoaded = Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
@@ -2144,6 +2150,10 @@ endFunction
 function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false, bool onItemRemoved = false, bool onKeyPress = false)
 	;debug.trace("iEquip_WidgetCore cycleSlot start - Q: " + Q + ", Reverse: " + Reverse + " ,abIsNameShown[Q]: " + abIsNameShown[Q])
 	;Q: 0 = Left hand, 1 = Right hand, 2 = Shout, 3 = Consumables, 4 = Poisons
+
+	; Apply Slow Time effect if enabled
+	addSlowTimeEffect(Q)
+
 	if onKeyPress
 		bSwitchingHands = false
 		bPreselectSwitchingHands = false
@@ -2280,7 +2290,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				int itemType = jMap.getInt(targetObject, "iEquipType")
 				AM.bAmmoModePending = false
 				; Check if initial target item is 2h or ranged, or if it is a 1h item but you only have one of it and you've just equipped it in the other hand, or if it is unarmed
-				if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1  && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
+				if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
 					int newIndex = targetIndex + 1
 					if newIndex == queueLength
 						newIndex = 0
@@ -2291,7 +2301,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 						targetObject = jArray.getObj(targetArray, newIndex)
 						itemType = jMap.getInt(targetObject, "iEquipType")
 						; if the new target item is 2h or ranged, or if it is a 1h item but you only have one of it and it's already equipped in the other hand, or it is unarmed then move on again
-						if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1  && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) < 2))
+						if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) < 2))
 							newIndex += 1
 							;if we have reached the final index in the array then loop to the start and keep counting forward until we reach the original starting point
 							if newIndex == queueLength
@@ -2331,7 +2341,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				else
 					RHUpdate.registerForEquipOnPauseUpdate(Reverse)
 				endIf
-				if bSlowTimeWhileCycling && iCycleSlowTimeStrength > 0
+				;/if bSlowTimeWhileCycling && iCycleSlowTimeStrength > 0
 					if bConsoleUtilLoaded
 						bGTMSet = true
 						float f = (100 - iCycleSlowTimeStrength) as float / 100
@@ -2343,7 +2353,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 						iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
     					PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
     				endIf
-    			endIf
+    			endIf/;
 			;Otherwise carry on and equip/cycle
 			else
 				checkAndEquipShownHandItem(Q, Reverse)
@@ -2374,16 +2384,39 @@ bool property bConsoleUtilLoaded auto hidden
 bool property bGTMSet auto hidden
 ;float property fPreviousGTM auto hidden
 
+function addSlowTimeEffect(int Q, bool bCyclingAmmo = false)
+	if bSlowTimeWhileCycling && iCycleSlowTimeStrength > 0
+		if bConsoleUtilLoaded
+			bGTMSet = true
+			float f = (100 - iCycleSlowTimeStrength) as float / 100
+			if f == 0
+				f = 0.001
+			endIf
+			ConsoleUtil.ExecuteCommand("sgtm " + f)
+		else
+			iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
+			PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
+		endIf
+		if Q > 1 || (Q == 0 && bCyclingAmmo) || !bEquipOnPause
+			STUpdate.registerForSlowTimeEffectUpdate()
+		endIf
+	endIf
+endFunction
+
+function removeSlowTimeEffect()
+	if bGTMSet
+		bGTMSet = false
+		ConsoleUtil.ExecuteCommand("sgtm " + 1.0)
+	else
+		PlayerRef.RemoveSpell(iEquip_SlowTimeSpell)
+	endIf
+endFunction
+
 function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingOnAutoAdd = false, bool calledByQuickRanged = false)
 	;debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
 	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
-		if bGTMSet
-			bGTMSet = false
-			ConsoleUtil.ExecuteCommand("sgtm " + 1.0)
-		else
-			PlayerRef.RemoveSpell(iEquip_SlowTimeSpell)
-		endIf
+		removeSlowTimeEffect()
 		abCyclingQueue[Q] = false
 		if iPosInd != 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
@@ -3029,6 +3062,9 @@ function onBoundWeaponUnequipped(int hand, bool isBoundShield = false)
 		bBlockSwitchBackToBoundSpell = false
 	else
 		if PlayerRef.GetEquippedItemType(hand) == 9 && (iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedObject(hand) as spell) || isBoundShield) && (PlayerRef.GetEquippedObject(hand).GetName() == asCurrentlyEquipped[hand])
+
+			hidePoisonInfo(hand) 								; In case we've poisoned the bound weapon we need to hide the poison info as we switch back to the spell icon
+			
 			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIconOnly")
 																; Switch back to the spell icon from the bound weapon icon without updating the name as it should be the same anyway
 			if(iHandle)
@@ -3387,7 +3423,7 @@ function addBackCachedItem(form addedForm)
 			int Q
 			int itemType = jMap.getInt(targetObject, "iEquipType")
 			;Check if the re-added item has been equipped in either hand and set that as the target queue
-			if PlayerRef.GetEquippedObject(0) == addedForm && ai2HWeaponTypes.Find(itemType) == -1
+			if PlayerRef.GetEquippedObject(0) == addedForm && (ai2HWeaponTypes.Find(itemType) == -1 || (bIsCGOLoaded && itemType < 7))
 				Q = 0
 			elseIf PlayerRef.GetEquippedObject(1) == addedForm
 				Q = 1
@@ -3416,6 +3452,36 @@ function addBackCachedItem(form addedForm)
 		endIf
 	endwhile
 	;debug.trace("iEquip_WidgetCore addBackCachedItem end")
+endFunction
+
+; New in v1.2 - Battle Royale style auto equipping
+int property iAutoEquipEnabled = 1 auto hidden 			; 0 = Disabled, 1 = Always Equip, 2 = Equip if better than current, 3 = Equip if unarmed
+int property iCurrentItemEnchanted auto hidden 			; 0 = Don't switch, 1 = Switch if no charge, 2 = Always switch
+int property iCurrentItemPoisoned = 1 auto hidden 		; 0 = Don't switch, 1 = Always switch
+bool property bAutoEquipHardcore auto hidden
+
+function onWeaponOrShieldAdded(form addedForm)
+	;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded start")
+	if iAutoEquipEnabled > 0
+
+		int currLHItemType = PlayerRef.GetEquippedItemType(0)
+		int currRHItemType = PlayerRef.GetEquippedItemType(1)
+		form currItem
+
+		if addedForm as armor 									; Only shields will have been passed through from OnItemAdded
+			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() > PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1))		; Shield or nothing currently equipped
+				if currLHItemType == 10 && bAutoEquipHardcore
+					currItem = PlayerRef.GetEquippedObject(0)
+				endIf
+				
+			endIf
+		
+		else
+
+		endIf
+
+	endIf
+	;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded end")
 endFunction
 
 bool function playerStillHasItem(form itemForm, int itemHandle = 0xFFFF)
@@ -3452,7 +3518,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     endIf
 
     ; Set targetObjectIs2hOrRanged to true if the item we're about to equip is a 2H or ranged weapon
-    bool targetObjectIs2hOrRanged = (ai2HWeaponTypes.Find(itemType) > -1 || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3))
+    bool targetObjectIs2hOrRanged = ((ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3))
    	
    	; When using Unequip, 0 corresponds to the left hand, but when using equip, 2 corresponds to the left hand, so we have to change the value for the left hand here 
    	int iEquipSlotId = 1
@@ -3470,7 +3536,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
     	currRHType = PlayerRef.GetEquippedItemType(1)
     endIf
     
-    bool previously2H = currRHType == 5 || currRHType == 6 || (equippingOnAutoAdd && currRHType == 22 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)) || (!equippingOnAutoAdd && currRHType == 9 && EquipSlots.Find((PlayerRef.GetEquippedObject(1) as spell).GetEquipType()) == 3)
+    bool previously2H = ((currRHType == 5 || currRHType == 6) && !bIsCGOLoaded) || (equippingOnAutoAdd && currRHType == 22 && (jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipSlot") == 3)) || (!equippingOnAutoAdd && currRHType == 9 && EquipSlots.Find((PlayerRef.GetEquippedObject(1) as spell).GetEquipType()) == 3)
     
     ; Hide the attribute icons ready to show full poison and enchantment elements if required
     hideAttributeIcons(Q)
@@ -3480,28 +3546,21 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	if bSwitchingHands
 		bSwitchingHands = false
 		justSwitchedHands = true
+
 	; Otherwise unequip current item if we need to
-	;elseif !bGoneUnarmed && !equippingOnAutoAdd ;&& !previously2H
-		;UnequipHand(Q)
-	elseIf ai2HWeaponTypes.Find(itemType) > -1 && !equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) == -1 ;&& jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "isEnchanted") == 1
+	elseIf (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) && !equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) == -1
 		UnequipHand(1)
 		WaitMenuMode(0.4)
 	endIf
+
 	; if we're switching the left hand and it is going to cause a 2h or ranged weapon to be unequipped from the right hand then we need to ensure a suitable 1h item is equipped in its place, or we're about to equip a 2H/ranged item and we're currently unarmed or have a 2H spell equipped
-    if (Q == 0 && ((equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) > -1) || (!equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) > -1))) && !justSwitchedHands ;|| targetObjectIs2hOrRanged
+    if (Q == 0 && (((equippingOnAutoAdd && ai2HWeaponTypes.Find(currRHType) > -1) || (!equippingOnAutoAdd && ai2HWeaponTypesAlt.Find(currRHType) > -1)) && !(currRHType < 7 && bIsCGOLoaded))) && !justSwitchedHands ;|| targetObjectIs2hOrRanged
     	if !targetObjectIs2hOrRanged
     		bSwitchingHands = true
     	endIf
     	if bGoneUnarmed || b2HSpellEquipped
     		previouslyUnarmedOr2HSpell = true
     	endIf
-    	;debug.trace("iEquip_WidgetCore cycleHand - RightHandWeaponIs2hOrRanged: " + (ai2HWeaponTypesAlt.Find(currRHType) > -1) + ", bGoneUnarmed: " + bGoneUnarmed + ", itemType: " + itemType + ", bSwitchingHands: " + bSwitchingHands + ", targetObjectIs2hOrRanged: " + targetObjectIs2hOrRanged)
-    	;if !bGoneUnarmed && !b2HSpellEquipped && !equippingOnAutoAdd && (ai2HWeaponTypesAlt.Find(currRHType) == -1 || targetObjectIs2hOrRanged)
-    	;	if PlayerRef.GetEquippedObject(otherHand)
-    			;UnequipHand(otherHand)
-    	;	endIf
-    		;otherHandUnequipped = true
-    	;endIf
     endif
     ; In case we are re-equipping from an unarmed or 2H spell state
 	bGoneUnarmed = false
@@ -3640,8 +3699,11 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	    	if Q == 1 && previouslyUnarmedOr2HSpell
 	    		reequipOtherHand(0)
 	    	; If we just equipped the left hand causing a 2H item to be unequipped now re-equip the last known RH 1H item
-	    	elseif Q == 0 && ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType")) > -1 && iLastRH1HItemIndex > -1 && ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipType")) == -1 && playerStillHasItem(jMap.getForm(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipForm"), jMap.getInt(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipHandle", 0xFFFF))
-				cycleHand(1, iLastRH1HItemIndex, jMap.getForm(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipForm"))
+	    	elseif Q == 0
+	    		currRHType = jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType")
+	    		if (ai2HWeaponTypes.Find(currRHType) > -1 && !(currRHType < 7 && bIsCGOLoaded)) && iLastRH1HItemIndex > -1 && ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipType")) == -1 && playerStillHasItem(jMap.getForm(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipForm"), jMap.getInt(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipHandle", 0xFFFF))
+					cycleHand(1, iLastRH1HItemIndex, jMap.getForm(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipForm"))
+				endIf
 			else
 				cycleSlot(otherHand, false, true)
 			endIf
@@ -4016,7 +4078,7 @@ function applyPoison(int Q)
             	endIf
             endIf
             return
-        elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon && !IsWeaponBound(currentWeapon)
+        elseif currentWeapon != jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon && !iEquip_WeaponExt.IsWeaponBound(currentWeapon)
             iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"))
             if iButton != 0
                 return
@@ -4117,6 +4179,10 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 	int itemType = jMap.getInt(targetObject, "iEquipType")
 	Form equippedItem = PlayerRef.GetEquippedObject(Q)
+
+	if itemType == 22 && IsBoundSpell(jMap.getForm(targetObject, "iEquipForm") as Spell) && equippedItem as Weapon && iEquip_WeaponExt.IsWeaponBound(equippedItem as Weapon)
+		itemType = GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as Spell)
+	endIf
 
 	if refHandle == 0xFFFF
 		;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetRefHandleFromWornObject, Q: " + Q)
@@ -4263,7 +4329,7 @@ bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 	;debug.trace("iEquip_WidgetCore isWeaponPoisoned start")
 	bool isPoisoned
 	;if we're checking the left hand item but we currently have a 2H or ranged weapon equipped, or if we're cycling we need to check the object data for the last know poison info
-	if cycling || (Q == 0 && (ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1))
+	if cycling || (Q == 0 && (ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !(PlayerRef.GetEquippedItemType(1) < 7 && bIsCGOLoaded))
 		isPoisoned = jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "isPoisoned") as bool
 	;Otherwise we're checking an equipped item so we can check the actual data from the weapon
 	else
@@ -4523,7 +4589,7 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
 	if Q == 0 ;Left Hand
 		if itemType == 41 ;Weapon
         	int WeaponType = (itemForm as Weapon).GetWeaponType()
-        	if WeaponType <= 4 || WeaponType == 8 ;Fists, 1H weapons and Staffs only
+        	if WeaponType < 5 || (WeaponType < 7 && bIsCGOLoaded) || WeaponType == 8 ; Fists, 1H weapons and Staffs only, or 2H weapons if Combat Gameplay Overhaul is loaded
         		isValid = true
         	endIf
     	elseif (itemType == 22 && !isShout) || itemType == 23 || itemType == 31 || (itemType == 26 && (itemForm as Armor).GetSlotMask() == 512) ;Spell, Scroll, Torch, Shield
@@ -4719,11 +4785,12 @@ function purgeQueue()
 	int targetArray = aiTargetQ[1]
 	int count = jArray.count(targetArray)
 	;debug.trace("iEquip_WidgetCore purgeQueue - " + count + " items in right hand queue")
+	int targetObject
 	form itemForm
 	int itemType
 	int itemID
 	int itemHandle
-	int targetObject
+	
 	while i < count
 		targetObject = jArray.getObj(targetArray, i)
 		itemForm = jMap.getForm(targetObject, "iEquipForm")
@@ -4739,6 +4806,29 @@ function purgeQueue()
 		i += 1
 	endwhile
 	;debug.trace("iEquip_WidgetCore purgeQueue end")
+endFunction
+
+; From 1.2 - Called from ClearDependencies if CGO was previously installed but has been removed to clear any 2H weapons from the left hand queue
+function remove2HWeaponsFromLeftQueue()
+	;debug.trace("iEquip_WidgetCore remove2HWeaponsFromLeftQueue start")
+	int i
+	int targetArray = aiTargetQ[0]
+	int count = jArray.count(targetArray)
+	int targetObject
+	int itemType
+	
+	while i < count
+		targetObject = jArray.getObj(targetArray, i)
+		itemType = jMap.getInt(targetObject, "iEquipType")
+		;debug.trace("iEquip_WidgetCore remove2HWeaponsFromLeftQueue - index: " + i + ", itemType: " + itemType)
+		if itemType == 5 || itemType == 6
+			removeItemFromQueue(0, i, true)
+			count -= 1
+			i -= 1
+		endIf
+		i += 1
+	endwhile
+	;debug.trace("iEquip_WidgetCore remove2HWeaponsFromLeftQueue end")
 endFunction
 
 function openQueueManagerMenu(int Q = -1)

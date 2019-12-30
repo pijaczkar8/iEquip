@@ -66,6 +66,7 @@ bool property bNoUtilMenuInCombat auto hidden
 bool property bExtendedKbControlsEnabled auto hidden
 bool property bAllowKeyPress = true auto hidden
 bool bIsUtilityKeyHeld
+bool bUtilityDownReceived
 bool bIsUtilityMenu
 bool _bPlayerIsABeast
 bool property bIsGPPLoaded auto hidden
@@ -246,6 +247,8 @@ event OnMenuOpen(string MenuName)
     ;debug.trace("iEquip_KeyHandler OnMenuOpen start - Menu being opened: "+MenuName)
 
     sPreviousState = GetState()
+
+    UnregisterForKey(iUtilityKey)
     
     if (MenuName == "FavoritesMenu" || MenuName == "MagicMenu" || MenuName == "InventoryMenu")
         GotoState("INVENTORYMENU")
@@ -277,7 +280,7 @@ event OnMenuClose(string MenuName)
         Utility.WaitMenuMode(0.5)
     endIf
 
-    if !utility.IsInMenuMode()
+    if !utility.IsInMenuMode() && !UI.IsMenuOpen("Dialogue Menu") && !UI.IsMenuOpen("Crafting Menu")
         if EM.isEditMode
             GoToState("EDITMODE")
         elseIf _bPlayerIsABeast
@@ -285,6 +288,11 @@ event OnMenuClose(string MenuName)
         else
             GoToState("")
         endIf
+
+        if Game.UsingGamepad() && iUtilityKey == 277
+            Utility.Wait(0.5)
+        endIf
+        RegisterForKey(iUtilityKey)
     
     else
         GotoState(sPreviousState)
@@ -316,6 +324,7 @@ event OnKeyDown(int KeyCode)
     
     if KeyCode == iUtilityKey
         bIsUtilityKeyHeld = true
+        bUtilityDownReceived = true
     elseIf bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
         bGPPKeyHeld = true
     endIf
@@ -378,52 +387,54 @@ function runUpdate()
     ;debug.trace("iEquip_KeyHandler runUpdate - is Loot Menu open: " + IsMenuOpen("Loot Menu") + ", is Loot Menu visible: " + UI.GetBool("Loot Menu", "_root.Menu_mc._visible"))
   
     if iMultiTap == 0 ; Long press
-            if iWaitingKeyCode == iConsumableKey
-                if !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true)
-                    WC.consumeItem()
-                endIf
-            elseIf iWaitingKeyCode == iShoutKey && !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true) && PM.bPreselectMode && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
-                PM.equipAllPreselectedItems()
-            elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
-                if PM.bPreselectMode
-                    if bIsUtilityKeyHeld
-                        RC.rechargeWeapon((iWaitingKeyCode == iRightKey) as int)
-                    else
-                        PM.equipAllPreselectedItems(true)
-                    endIf
+        if iWaitingKeyCode == iConsumableKey
+            if !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true)
+                WC.consumeItem()
+            endIf
+        elseIf iWaitingKeyCode == iShoutKey && !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true) && PM.bPreselectMode && WC.bShoutEnabled && PM.bShoutPreselectEnabled && PM.abPreselectSlotEnabled[2]
+            PM.equipAllPreselectedItems()
+        elseif iWaitingKeyCode == iLeftKey || iWaitingKeyCode == iRightKey
+            if PM.bPreselectMode
+                if bIsUtilityKeyHeld
+                    RC.rechargeWeapon((iWaitingKeyCode == iRightKey) as int)
                 else
-                    if iWaitingKeyCode == iLeftKey
-                        if AM.bAmmoMode
-                            if !AM.bSimpleAmmoMode
-                                AM.toggleAmmoMode()
-                            endIf
-                        else
-                            RC.rechargeWeapon(0)
+                    PM.equipAllPreselectedItems(true)
+                endIf
+            else
+                if iWaitingKeyCode == iLeftKey
+                    if AM.bAmmoMode
+                        if !AM.bSimpleAmmoMode
+                            AM.toggleAmmoMode()
                         endIf
                     else
-                        RC.rechargeWeapon(1)
+                        RC.rechargeWeapon(0)
                     endIf
+                else
+                    RC.rechargeWeapon(1)
                 endIf
             endIf
+        endIf
             
     elseIf iMultiTap == 1   ; Single tap
         if iWaitingKeyCode == iUtilityKey
-            if PlayerRef.IsInCombat() && bNoUtilMenuInCombat
-                debug.notification(iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_notWithWeaponsDrawn"))
-            else
-                bIsUtilityMenu = true
-                int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
-                
-                if iAction != 0             ; Exit
-                    if iAction == 1         ; Queue Menu
-                        WC.openQueueManagerMenu()
-                    elseif iAction == 2     ; Edit Mode
-                        toggleEditMode()
-                    else;if iAction == 3     ; Help Menu
-                        HM.showHelpMenuMain()
+            if bUtilityDownReceived
+                if PlayerRef.IsInCombat() && bNoUtilMenuInCombat
+                    debug.notification(iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_notWithWeaponsDrawn"))
+                else
+                    bIsUtilityMenu = true
+                    int iAction = WC.showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
+                    
+                    if iAction != 0             ; Exit
+                        if iAction == 1         ; Queue Menu
+                            WC.openQueueManagerMenu()
+                        elseif iAction == 2     ; Edit Mode
+                            toggleEditMode()
+                        else;if iAction == 3     ; Help Menu
+                            HM.showHelpMenuMain()
+                        endIf
                     endIf
                 endIf
-            endIf         
+            endIf        
         elseIf iWaitingKeyCode == iLeftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
 			

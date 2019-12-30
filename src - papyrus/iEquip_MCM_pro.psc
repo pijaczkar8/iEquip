@@ -44,14 +44,16 @@ function initData()
     QHEquipOptions[1] = "$iEquip_MCM_pro_opt_right"
     QHEquipOptions[2] = "$iEquip_MCM_pro_opt_both"
     QHEquipOptions[3] = "$iEquip_MCM_pro_opt_whereFound"
-    
-    QRPreferredWeaponType = new String[6]
+
+    QRPreferredWeaponType = new String[4]
     QRPreferredWeaponType[0] = "$iEquip_MCM_pro_opt_bow"
     QRPreferredWeaponType[1] = "$iEquip_MCM_pro_opt_crossbow"
     QRPreferredWeaponType[2] = "$iEquip_MCM_pro_opt_boundBow"
     QRPreferredWeaponType[3] = "$iEquip_MCM_pro_opt_boundCrossbow"
-    QRPreferredWeaponType[4] = "$iEquip_MCM_pro_opt_rangedSpell"
-    QRPreferredWeaponType[5] = "$iEquip_MCM_pro_opt_rangedStaff"
+
+    if PM.iQuickRangedPreferredWeaponType > 3	; Resets just in case user had previously selected 'Coming Soon' options of Ranged Spell or Staff which have only now been added in SSE
+    	PM.iQuickRangedPreferredWeaponType = 0
+    endIf
 
     QRSwitchOutOptions = new String[5]
     QRSwitchOutOptions[0] = "$iEquip_MCM_common_opt_disabled"
@@ -787,12 +789,8 @@ State pro_men_prefWepTyp
         elseIf currentEvent == "Open"
             MCM.fillMenu(PM.iQuickRangedPreferredWeaponType, QRPreferredWeaponType, 0)
         elseIf currentEvent == "Accept"
-        	if currentVar as int > 3
-        		MCM.ShowMessage("$iEquip_MCM_common_comingSoon")
-        	else
-            	PM.iQuickRangedPreferredWeaponType = currentVar as int
-            	MCM.SetMenuOptionValueST(QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
-            endIf
+            PM.iQuickRangedPreferredWeaponType = currentVar as int
+            MCM.SetMenuOptionValueST(QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
         endIf
     endEvent
 endState
