@@ -1550,7 +1550,7 @@ event OnMenuClose(string _sCurrentMenu)
 			while i < count
 				if jMap.getInt(jArray.getObj(aiTargetQ[Q], i), "iEquipType") == 22
 					form spellForm = jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm")
-					if Game.GetModName(spellForm.GetFormID() / 0x1000000) == "Bound Armory Extravaganza.esp"		; If it's a Bound Armory Spell
+					if Game.GetModName(Math.LogicalAnd(Math.RightShift(spellForm.GetFormID(), 24), 0xFF)) == "Bound Armory Extravaganza.esp"		; If it's a Bound Armory Spell
 						string spellName = spellForm.GetName()														; Get the new spell name
 						jMap.setStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName", spellName)						; Update the queue object
 						if aiCurrentQueuePosition[Q] == i && PlayerRef.GetEquippedSpell(Q) == spellForm 			; Now check if the spell is currently displayed and equipped
@@ -3015,7 +3015,7 @@ function checkIfBoundSpellEquipped()
 	bool boundSpellEquipped
 	int hand
 	while hand < 2
-		if PlayerRef.GetEquippedItemType(hand) == 9 && (iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand)) || (Game.GetModName(PlayerRef.GetEquippedObject(hand).GetFormID() / 0x1000000) == "Bound Shield.esp"))
+		if PlayerRef.GetEquippedItemType(hand) == 9 && (iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand)) || (Game.GetModName(Math.LogicalAnd(Math.RightShift(PlayerRef.GetEquippedObject(hand).GetFormID(), 24), 0xFF)) == "Bound Shield.esp"))
 			boundSpellEquipped = true
 		endIf
 		hand += 1
@@ -3469,7 +3469,8 @@ function onWeaponOrShieldAdded(form addedForm)
 		form currItem
 
 		if addedForm as armor 														; Only shields will have been passed through from OnItemAdded
-			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() > PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1) && !(PlayerRef.GetEquippedShield.GetEnchantment() && iCurrentItemEnchanted == 0))		; Shield or nothing currently equipped
+			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() > PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1) && (!PlayerRef.GetEquippedShield().GetEnchantment() || (iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && (addedForm as armor).GetArmorRating() > PlayerRef.GetEquippedShield().GetArmorRating()))))
+
 				if currLHItemType == 10
 					currItem = PlayerRef.GetEquippedShield() as form
 				endIf
@@ -3478,41 +3479,75 @@ function onWeaponOrShieldAdded(form addedForm)
 		
 		else
 			int currRHItemType = PlayerRef.GetEquippedItemType(1)
+			weapon currLHWeapon = PlayerRef.GetEquippedWeapon(true)
+			weapon currRHWeapon = PlayerRef.GetEquippedWeapon()
 			int weaponType = (addedForm as weapon).GetWeaponType()
+			int newWeaponDamage = (addedForm as weapon).GetBaseDamage()
+			int rightWeaponDamage = PlayerRef.GetEquippedWeapon().GetBaseDamage()
+			int leftWeaponDamage = PlayerRef.GetEquippedWeapon(true).GetBaseDamage()
+
 			int targetHand
 			bool doEquip
 
 			if (weaponType == 7 || weaponType == 9)									; Bows and crossbows - will only be equipped if currently weilding a ranged weapon, or if both hands are empty
-				if (currLHItemType == 0 && currRHItemType == 0) || ((currRHItemType == 7 || currRHType == 12) && ((iAutoEquipEnabled == 2 && (addedForm as weapon).GetBaseDamage() > PlayerRef.GetEquippedWeapon().GetBaseDamage()) || iAutoEquipEnabled == 1) && !(iCurrentItemPoisoned == 0 && GetPoisonCount(PlayerRef.GetEquippedObject(1), GetRefHandleFromWornObject(1)) > 0) || (PlayerRef.GetEquippedWeapon().GetEnchantment() && (iCurrentItemEnchanted == 0 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") > 0.0))))
+				
+				if (currLHItemType == 0 && currRHItemType == 0) || ((currRHItemType == 7 || currRHItemType == 12) && ((iAutoEquipEnabled == 2 && newWeaponDamage > rightWeaponDamage) || iAutoEquipEnabled == 1) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (!currRHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage > rightWeaponDamage))))
+					
 					if currRHItemType > 0
-						currItem = PlayerRef.GetEquippedObject(1)
+						currItem = currRHWeapon as form
 					endIf
+					
 					doEquip = true
 					targetHand = 1
+				
 				endIf
 
 			elseIf weaponType > 0 && weaponType < 7 								; 1H and 2H weapons (excluding fist weapons and staffs) - will only be equipped if replacing like for like (1H/2H) or if an empty hand is found
-				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || (currLHItemType < 7 && weaponType < 7)) && !(iCurrentItemPoisoned == 0 && GetPoisonCount(PlayerRef.GetEquippedObject(0), GetRefHandleFromWornObject(0)) > 0) || (PlayerRef.GetEquippedWeapon(true).GetEnchantment() && (iCurrentItemEnchanted == 0 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") > 0.0)))
-				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || (currRHItemType < 7 && weaponType < 7)) && !(iCurrentItemPoisoned == 0 && GetPoisonCount(PlayerRef.GetEquippedObject(1), GetRefHandleFromWornObject(1)) > 0) || (PlayerRef.GetEquippedWeapon().GetEnchantment() && (iCurrentItemEnchanted == 0 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") > 0.0)))
+
+				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || (currLHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (!currLHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage > leftWeaponDamage)))
+				
+				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || (currRHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (!currRHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage > rightWeaponDamage)))
 
 				bool emptyHanded
+				int currDamage
 
 				if leftMatch && rightMatch
-					targetHand = PlayerRef.GetEquippedWeapon().GetBaseDamage() > PlayerRef.GetEquippedWeapon(false).GetBaseDamage()
+					
+					if rightWeaponDamage > leftWeaponDamage
+						targetHand = 1
+						currDamage = rightWeaponDamage
+					else
+						targetHand = 2
+						currDamage = leftWeaponDamage
+					endIf
+
 				elseIf rightMatch || currRHItemType == 0
 					targetHand = 1
 					emptyHanded = currRHItemType == 0
+					
+					if !emptyHanded
+						currDamage = rightWeaponDamage
+					endIf
+
 				elseIf leftMatch || currLHItemType == 0
+					
 					if !((weaponType == 5 || weaponType == 6) && !bIsCGOLoaded) 	; This should stop 2H weapons being equipped in an empty left hand if CGO is not loaded
 						targetHand = 2
 					endIf
+
 					emptyHanded = currLHItemType == 0
+					
+					if !emptyHanded
+						currDamage = leftWeaponDamage
+					endIf
 				endIf
 
-				if targetHand > 0 && (emptyHanded || ((iAutoEquipEnabled == 2 && (addedForm as weapon).GetBaseDamage() > PlayerRef.GetEquippedWeapon(targetHand == 2).GetBaseDamage()) || iAutoEquipEnabled == 1))
+				if targetHand > 0 && (emptyHanded || ((iAutoEquipEnabled == 2 && newWeaponDamage > currDamage) || iAutoEquipEnabled == 1))
+					
 					if !emptyHanded
-						currItem = PlayerRef.GetEquippedObject(targetHand == 1 as int)
+						currItem = PlayerRef.GetEquippedObject((targetHand == 1) as int)
 					endIf
+
 					doEquip = true
 				endIf
 
@@ -3668,7 +3703,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 				string spellSchool = jMap.getStr(targetObject, "iEquipSchool")
 				;debug.trace("iEquip_WidgetCore cycleHand - spellSchool: " + spellSchool + ", QuickDualCast allowed: " + abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)])
 				; Only allow QuickDualCast is the feature is enabled for this school, and if the equipped spell is GetEquipType == 2 (EitherHand), and as long as it's not a Bound 2H item or shield
-				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !(iEquip_FormExt.IsSpellWard(targetItem) || (ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(targetSpell)) > -1) || (Game.GetModName(targetItem.GetFormID() / 0x1000000) == "Bound Shield.esp"))
+				if abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)] && (jMap.getInt(targetObject, "iEquipSlot") == 2) && !(iEquip_FormExt.IsSpellWard(targetItem) || (ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(targetSpell)) > -1) || (Game.GetModName(Math.LogicalAnd(Math.RightShift(targetItem.GetFormID(), 24), 0xFF)) == "Bound Shield.esp"))
 					;debug.trace("iEquip_WidgetCore cycleHand - about to QuickDualCast")
 					if PM.quickDualCastEquipSpellInOtherHand(Q, targetItem, jMap.getStr(targetObject, "iEquipName"), spellSchool)
 						bSwitchingHands = false ; Just in case equipping the original spell triggered bSwitchingHands then as long as we have successfully dual equipped the spell we can cancel bSwitchingHands now
@@ -4739,7 +4774,7 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
             	IconName = "Quarterstaff"
             elseIf itemForm.HasKeyword(WeapTypePike)
             	IconName = "Spear"
-            elseIf itemType == 2 && Game.GetModName(itemForm.GetFormID() / 0x1000000) == "NewArmoury.esp"
+            elseIf itemType == 2 && Game.GetModName(Math.LogicalAnd(Math.RightShift(itemForm.GetFormID(), 24), 0xFF)) == "NewArmoury.esp"
             	IconName = "Claws"
             endIf
         endIf

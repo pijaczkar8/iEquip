@@ -47,11 +47,6 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	endIf
 endEvent
 
-;/Int index = Math.RightShift(form.GetFormID(), 24)
-index = Math.LogicalAnd(index, 0xFF)/;
-
-;/if Game.GetModName(Math.LogicalAnd(Math.RightShift(formToAdd.GetFormID(), 24), 0xFF) == "JZBai_ThrowingWpnsLite.esp"/;
-
 event OnUpdate()
 	;debug.trace("iEquip_AddedItemHandler OnUpdate start")
 	int i
@@ -65,7 +60,6 @@ event OnUpdate()
 		if formToAdd
 			if formToAdd as potion
 				PO.onPotionAdded(formToAdd)
-			;/elseIf formToAdd as ammo && (Game.GetModName(formToAdd.GetFormID() / 0x1000000) != "JZBai_ThrowingWpnsLite.esp")/;
 			elseIf formToAdd as ammo && Game.GetModName(Math.LogicalAnd(Math.RightShift(formToAdd.GetFormID(), 24), 0xFF)) != "JZBai_ThrowingWpnsLite.esp"
 				if WC.BW.bIsBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
 					AM.addBoundAmmoToQueue(formToAdd, formToAdd.GetName())

@@ -668,7 +668,7 @@ function processQueuedForms(int equippedSlot = -1)
 				AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
 			endIf
 		; Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
-		elseIf !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(queuedForm.GetFormID() / 0x1000000) == "Bound Shield.esp")
+		elseIf !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "Bound Shield.esp")
 			if equippedSlot == -1
 				if PlayerRef.GetEquippedObject(0) == queuedForm
 					; Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
@@ -728,13 +728,15 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName
 	string itemBaseName
+	int itemID
+	int itemHandle
 
 	if equippedSlot < 2 && queuedForm == fistWeapon && WC.asCurrentlyEquipped[equippedSlot] != "$iEquip_common_Unarmed"		; If the player is brawling then don't add the fistWeapon to the queue, and if not currently showing Unarmed do so now.
 
 		WC.setSlotToEmpty(equippedSlot, true, true)
 
 	else
-		int itemHandle = WC.getHandle(equippedSlot, itemType)
+		itemHandle = WC.getHandle(equippedSlot, itemType)
 
 		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
 
@@ -750,7 +752,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 
 		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - final names being saved, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 
-		int itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
+		itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
 		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
 																											; Check if we've just manually equipped an item that is already in an iEquip queue
 	 	if formFound
@@ -921,7 +923,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 endFunction
 
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-  	if akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !Game.GetModName(akBaseObject.GetFormID() / 0x1000000) == "Undriel_Everlight.esp"
+  	if akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (akBaseObject == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
   		;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
   		GoToState("PROCESSING")
     	TO.onTorchUnequipped()

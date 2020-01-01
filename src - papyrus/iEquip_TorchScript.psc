@@ -76,6 +76,7 @@ bool property bRealisticReEquip = true auto hidden
 float property fRealisticReEquipDelay = 2.0 auto hidden
 bool property bReduceLightAsTorchRunsOut auto hidden
 bool property bDropLitTorchesEnabled auto hidden
+bool property bDontDropEverlights = true auto hidden 	; Added in v1.2
 int property iDropLitTorchBehavior = 0 auto hidden
 bool property bSettingsChanged auto hidden
 
@@ -174,10 +175,10 @@ function onTorchEquipped()
 		Wait(1.0) ; Just in case the unequipped event is received after this one
 		bSettingLightRadius = false
 	else
-		form equippedTorch = PlayerRef.GetEquippedObject(0)
-		bool bIsEverlight = Game.GetModName(equippedTorch.GetFormID() / 0x1000000) == "Undriel_Everlight.esp"
 
-		if !bIsEverlight
+		form equippedTorch = PlayerRef.GetEquippedObject(0)
+
+		if !(Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
 			iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
 			PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
 
@@ -441,76 +442,89 @@ endFunction
 Function DropTorch()
 	;debug.trace("iEquip_TorchScript DropTorch start")
 	if bDropLitTorchesEnabled
-		bJustDroppedTorch = true
+		
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
-		int remainingTorches = PlayerRef.GetItemCount(realTorchForm) - 1
+		int remainingTorches
 		int queueLength = JArray.count(WC.aiTargetQ[0])
-		if remainingTorches == 0
-			WC.bJustDroppedTorch = true
-			queueLength -= 1
+
+		if Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp" || equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm") && !bDontDropEverlights
+			
+			bJustDroppedTorch = true
+			PlayerRef.UnequipItemEx(equippedTorch)
+			PlayerRef.DropObject(equippedTorch, 1)
+
+		else
+			bJustDroppedTorch = true
+			remainingTorches = PlayerRef.GetItemCount(realTorchForm) - 1
+			if remainingTorches == 0
+				WC.bJustDroppedTorch = true
+				queueLength -= 1
+			endIf
+
+			PlayerRef.UnequipItemEx(equippedTorch)
+
+			if equippedTorch == iEquipTorch || (fCurrentTorchLife < 30.0 && bReduceLightAsTorchRunsOut)			; Switch to using the one with the display name so if the player wants to pick it up again it will have the same name/value/weight displayed as Torch01
+				equippedTorch = iEquipDroppedTorch
+			endIf
+
+			ObjectReference DroppedTorch = PlayerRef.PlaceAtMe(equippedTorch, 1, false, true)
+
+			ObjectReference TorchToDelete = aDroppedTorches[iCurrentDroppedTorchesIndex]
+			if TorchToDelete
+				TorchToDelete.Delete()
+				TorchToDelete.Disable()
+			endIf	
+			aDroppedTorches[iCurrentDroppedTorchesIndex] = DroppedTorch
+			iCurrentDroppedTorchesIndex += 1
+			if iCurrentDroppedTorchesIndex == 4
+				iCurrentDroppedTorchesIndex = 0
+			endIf
+
+			DroppedTorch.SetActorOwner(PlayerRef.GetActorBase())
+			DroppedTorch.SetFactionOwner(PlayerFaction)
+			
+			Float OffsetX = 48.0 * Math.Sin(PlayerRef.GetAngleZ() - 15)
+			Float OffsetY = 48.0 * Math.Cos(PlayerRef.GetAngleZ() - 15)
+			Float OffsetZ = PlayerRef.GetHeight() - 32.0
+			If (PlayerRef.IsSneaking())
+				OffsetZ = PlayerRef.GetHeight() - 72.0
+			EndIf
+
+			If (DroppedTorch.is3DLoaded())
+				DroppedTorch.MoveTo(PlayerRef, OffsetX, OffsetY, OffsetZ, false)
+			Else
+				DroppedTorch.MoveToIfUnloaded(PlayerRef, OffsetX, OffsetY, OffsetZ)
+			EndIf
+
+			DroppedTorch.EnableNoWait()
+
+			Int Tries = 0 
+			While(Tries < 10 && (!DroppedTorch.is3DLoaded() || !DroppedTorch.IsEnabled()))
+				Wait(0.05)
+				Tries += 1
+			EndWhile
+			
+			DroppedTorch.ApplyHavokImpulse(0,0,1,5)
+
+			PlayerRef.RemoveItem(realTorchForm, 1, true, None)
+			
+			if equippedTorch == iEquipDroppedTorch
+				PlayerRef.RemoveItem(iEquipTorch, 1, true, None)
+			endIf
 		endIf
 
-		PlayerRef.UnequipItemEx(equippedTorch)
-
-		if equippedTorch == iEquipTorch || (fCurrentTorchLife < 30.0 && bReduceLightAsTorchRunsOut)			; Switch to using the one with the display name so if the player wants to pick it up again it will have the same name/value/weight displayed as Torch01
-			equippedTorch = iEquipDroppedTorch
-		endIf
-
-		ObjectReference DroppedTorch = PlayerRef.PlaceAtMe(equippedTorch, 1, false, true)
-
-		ObjectReference TorchToDelete = aDroppedTorches[iCurrentDroppedTorchesIndex]
-		if TorchToDelete
-			TorchToDelete.Delete()
-			TorchToDelete.Disable()
-		endIf	
-		aDroppedTorches[iCurrentDroppedTorchesIndex] = DroppedTorch
-		iCurrentDroppedTorchesIndex += 1
-		if iCurrentDroppedTorchesIndex == 4
-			iCurrentDroppedTorchesIndex = 0
-		endIf
-
-		DroppedTorch.SetActorOwner(PlayerRef.GetActorBase())
-		DroppedTorch.SetFactionOwner(PlayerFaction)
-		
-		Float OffsetX = 48.0 * Math.Sin(PlayerRef.GetAngleZ() - 15)
-		Float OffsetY = 48.0 * Math.Cos(PlayerRef.GetAngleZ() - 15)
-		Float OffsetZ = PlayerRef.GetHeight() - 32.0
-		If (PlayerRef.IsSneaking())
-			OffsetZ = PlayerRef.GetHeight() - 72.0
-		EndIf
-
-		If (DroppedTorch.is3DLoaded())
-			DroppedTorch.MoveTo(PlayerRef, OffsetX, OffsetY, OffsetZ, false)
-		Else
-			DroppedTorch.MoveToIfUnloaded(PlayerRef, OffsetX, OffsetY, OffsetZ)
-		EndIf
-
-		DroppedTorch.EnableNoWait()
-
-		Int Tries = 0 
-		While(Tries < 10 && (!DroppedTorch.is3DLoaded() || !DroppedTorch.IsEnabled()))
-			Wait(0.05)
-			Tries += 1
-		EndWhile
-		
-		DroppedTorch.ApplyHavokImpulse(0,0,1,5)
-
-		PlayerRef.RemoveItem(realTorchForm, 1, true, None)
-		
-		if equippedTorch == iEquipDroppedTorch
-			PlayerRef.RemoveItem(iEquipTorch, 1, true, None)
-		endIf
-
-		; iDropLitTorchBehaviour - 0: Do Nothing, 1: Torch/Nothing, 2: Torch/Cycle, 3: Cycle, 4: QuickShield
-		if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || ((iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3) && queueLength == 0)	; Do Nothing and set left hand to empty
-			WC.setSlotToEmpty(0, false, true)
-		elseIf iDropLitTorchBehavior == 1 || (iDropLitTorchBehavior == 2 && remainingTorches > 0)																					; Equip another torch
-			Wait(fRealisticReEquipDelay)
-			PlayerRef.EquipItemEx(realTorchForm, 0)
-		elseIf iDropLitTorchBehavior < 4																																			; Cycle left hand
-			WC.cycleSlot(0, false, true)
-		else 																																										; QuickShield
-			PM.QuickShield(false, true)
+		if bJustDroppedTorch
+			; iDropLitTorchBehaviour - 0: Do Nothing, 1: Torch/Nothing, 2: Torch/Cycle, 3: Cycle, 4: QuickShield
+			if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || ((iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3) && queueLength == 0)	; Do Nothing and set left hand to empty
+				WC.setSlotToEmpty(0, false, true)
+			elseIf iDropLitTorchBehavior == 1 || (iDropLitTorchBehavior == 2 && remainingTorches > 0)																					; Equip another torch
+				Wait(fRealisticReEquipDelay)
+				PlayerRef.EquipItemEx(realTorchForm, 0)
+			elseIf iDropLitTorchBehavior < 4																																			; Cycle left hand
+				WC.cycleSlot(0, false, true)
+			else 																																										; QuickShield
+				PM.QuickShield(false, true)
+			endIf
 		endIf
 	endIf
 	;debug.trace("iEquip_TorchScript DropTorch end")

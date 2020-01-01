@@ -12,6 +12,10 @@ string[] whenNoAmmoLeftOptions
 string[] ammoModeOptions
 string[] posIndBehaviour
 
+string[] autoEquipOptions
+string[] currItemEnchOptions
+string[] currItemPoisOptions
+
 bool bFirstTimeDisablingTooltips = true
 bool bFirstEnabled = false
 
@@ -39,6 +43,21 @@ function initData()
     posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
     posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
     posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
+
+    autoEquipOptions = new string[4]
+    autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
+    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfBetter"
+    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
+
+    currItemEnchOptions = new string[3]
+    currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
+    currItemEnchOptions[1] = "$iEquip_MCM_gen_opt_equipIfNoCharge"
+    currItemEnchOptions[2] = "$iEquip_MCM_gen_opt_alwaysEquip"
+
+    currItemPoisOptions = new string[2]
+    currItemPoisOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
+    currItemPoisOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
 
 endFunction
 
@@ -99,6 +118,22 @@ endFunction
 
 function drawPage()
 
+    ; ToDo - remove after testing
+    autoEquipOptions = new string[4]
+    autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
+    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfBetter"
+    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
+
+    currItemEnchOptions = new string[3]
+    currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
+    currItemEnchOptions[1] = "$iEquip_MCM_gen_opt_equipIfNoCharge"
+    currItemEnchOptions[2] = "$iEquip_MCM_gen_opt_alwaysEquip"
+
+    currItemPoisOptions = new string[2]
+    currItemPoisOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
+    currItemPoisOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
+
     if MCM.bEnabled
         MCM.AddToggleOptionST("gen_tgl_onOff", "<font color='#c7ea46'>$iEquip_MCM_gen_lbl_onOff</font>", MCM.bEnabled)
     else
@@ -118,6 +153,13 @@ function drawPage()
 		MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
 		MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
 		MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_AutoEquip</font>")
+        MCM.AddMenuOptionST("gen_men_enableAutoEquip", "$iEquip_MCM_gen_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
+        MCM.AddMenuOptionST("gen_men_currItemEnch", "$iEquip_MCM_gen_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
+        MCM.AddMenuOptionST("gen_men_currItemPois", "$iEquip_MCM_gen_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
+        MCM.AddToggleOptionST("gen_tgl_autoEquipHardcore", "$iEquip_MCM_gen_lbl_autoEquipHardcore", WC.bAutoEquipHardcore)
 
 		MCM.SetCursorPosition(1)
 				
@@ -196,9 +238,9 @@ State gen_tgl_onOff
 				MCM.forcePageReset()
 			elseIf !JContainers.isInstalled()                                               ; Dependency checks
 				MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontmissing", false, "$OK")
-            ;elseIf !(JContainers.APIVersion() >= 3 && JContainers.featureVersion() >= 3)
+            elseIf !(JContainers.APIVersion() >= 3 && JContainers.featureVersion() >= 3)
             ; SSE Note - Comment out the preceding line and uncomment the following - JContainers versions differ between LE and SE    
-            elseIf !(JContainers.APIVersion() >= 4 && JContainers.featureVersion() >= 1)
+            ;elseIf !(JContainers.APIVersion() >= 4 && JContainers.featureVersion() >= 1)
                 MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontoldversion", false, "$OK")
             else                                                                            ; Requirement checks
                 Quest LALChargen = Quest.GetQuest("ARTHLALChargenQuest")
@@ -333,6 +375,60 @@ State gen_men_whenNoAmmoLeft
         elseIf currentEvent == "Accept"
             AM.iActionOnLastAmmoUsed = currentVar as int
             MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+        endIf
+    endEvent
+endState
+
+; ------------------------
+; - Auto-Equipping Options -
+; ------------------------ 
+
+State gen_men_enableAutoEquip
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enableAutoEquip")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iAutoEquipEnabled, autoEquipOptions, 0)
+        elseIf currentEvent == "Accept"
+            WC.iAutoEquipEnabled = currentVar as int
+            MCM.SetMenuOptionValueST(autoEquipOptions[WC.iAutoEquipEnabled])
+        endIf
+    endEvent
+endState
+
+State gen_men_currItemEnch
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_currItemEnch")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iCurrentItemEnchanted, currItemEnchOptions, 0)
+        elseIf currentEvent == "Accept"
+            WC.iCurrentItemEnchanted = currentVar as int
+            MCM.SetMenuOptionValueST(currItemEnchOptions[WC.iCurrentItemEnchanted])
+        endIf
+    endEvent
+endState
+
+State gen_men_currItemPois
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_currItemPois")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iCurrentItemPoisoned, currItemPoisOptions, 1)
+        elseIf currentEvent == "Accept"
+            WC.iCurrentItemPoisoned = currentVar as int
+            MCM.SetMenuOptionValueST(currItemPoisOptions[WC.iCurrentItemPoisoned])
+        endIf
+    endEvent
+endState
+
+State gen_tgl_autoEquipHardcore
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_autoEquipHardcore")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && WC.bAutoEquipHardcore)
+            WC.bAutoEquipHardcore = !WC.bAutoEquipHardcore
+            MCM.SetToggleOptionValueST(WC.bAutoEquipHardcore)
         endIf
     endEvent
 endState
