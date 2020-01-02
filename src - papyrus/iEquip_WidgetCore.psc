@@ -3502,12 +3502,20 @@ function onWeaponOrShieldAdded(form addedForm)
 			weapon currRHWeapon = PlayerRef.GetEquippedWeapon()
 			int weaponType = (addedForm as weapon).GetWeaponType()
 			int newWeaponDamage = (addedForm as weapon).GetBaseDamage()
-			int rightWeaponDamage = PlayerRef.GetEquippedWeapon().GetBaseDamage()
-			int leftWeaponDamage = PlayerRef.GetEquippedWeapon(true).GetBaseDamage()
+			int rightWeaponDamage
+			int leftWeaponDamage
 
-			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHItemType: " + currLHItemType + ", currRHItemType: " + currRHItemType + ", new weapon type: " + weaponType)
-			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHWeapon: " + currLHWeapon.GetName() + ", currRHWeapon: " + currRHWeapon.GetName)
-			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - leftWeaponDamage: " + leftWeaponDamage + ", rightWeaponDamage: " + rightWeaponDamage + ", newWeaponDamage: " + newWeaponDamage)
+			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHItemType: " + currLHItemType + ", currRHItemType: " + currRHItemType + ", new weapon type: " + weaponType + ", newWeaponDamage: " + newWeaponDamage)
+
+			if currRHItemType > 0 && currRHItemType < 8 || currRHItemType == 12
+				rightWeaponDamage = PlayerRef.GetEquippedWeapon().GetBaseDamage()
+				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currRHWeapon: " + currRHWeapon.GetName() + ", rightWeaponDamage: " + rightWeaponDamage)
+			endIf
+
+			if currLHItemType > 0 && currLHItemType < 7
+				leftWeaponDamage = PlayerRef.GetEquippedWeapon(true).GetBaseDamage()
+				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHWeapon: " + currLHWeapon.GetName() + ", leftWeaponDamage: " + leftWeaponDamage)
+			endIf
 
 			int targetHand
 			bool doEquip
@@ -3529,9 +3537,9 @@ function onWeaponOrShieldAdded(form addedForm)
 			elseIf weaponType > 0 && weaponType < 7 								; 1H and 2H weapons (excluding fist weapons and staffs) - will only be equipped if replacing like for like (1H/2H) or if an empty hand is found
 
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - handling new melee weapon")
-				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || (currLHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (currLHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= leftWeaponDamage)))
+				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || ((currLHItemType == 5 || currLHItemType == 6) && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (currLHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= leftWeaponDamage)))
 				
-				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || (currRHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (currRHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= rightWeaponDamage)))
+				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || ((currRHItemType == 5 || currRHItemType == 6) && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (currRHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= rightWeaponDamage)))
 
 				bool emptyHanded
 				int currDamage
