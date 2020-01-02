@@ -3460,24 +3460,43 @@ int property iCurrentItemEnchanted auto hidden 			; 0 = Don't switch, 1 = Switch
 int property iCurrentItemPoisoned = 1 auto hidden 		; 0 = Don't switch, 1 = Always switch
 bool property bAutoEquipHardcore auto hidden
 
+;/GetEquippedItemType returns:
+0: Nothing (Hand to hand)
+1: One-handed sword
+2: One-handed dagger
+3: One-handed axe
+4: One-handed mace
+5: Two-handed sword
+6: Two-handed axe/mace
+7: Bow
+8: Staff
+9: Magic spell
+10: Shield
+11: Torch
+12: Crossbow/;
+
 function onWeaponOrShieldAdded(form addedForm)
-	;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded start")
+	debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded start - addedForm: " + addedForm.GetName() + ", iAutoEquipEnabled: " + iAutoEquipEnabled)
 	if iAutoEquipEnabled > 0
 
 		int currLHItemType = PlayerRef.GetEquippedItemType(0)
-		
 		form currItem
 
-		if addedForm as armor 														; Only shields will have been passed through from OnItemAdded
-			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() > PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1) && (!PlayerRef.GetEquippedShield().GetEnchantment() || (iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && (addedForm as armor).GetArmorRating() > PlayerRef.GetEquippedShield().GetArmorRating()))))
+		if addedForm as armor														; Only shields will have been passed through from OnItemAdded
+			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - new shield added, currLHItemType: " + currLHItemType)
+
+			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() >= PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1) && (!PlayerRef.GetEquippedShield().GetEnchantment() || (iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && (addedForm as armor).GetEnchantment() && (addedForm as armor).GetArmorRating() >= PlayerRef.GetEquippedShield().GetArmorRating()))))
 
 				if currLHItemType == 10
 					currItem = PlayerRef.GetEquippedShield() as form
+					debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - about to replace " + currItem.GetName())
 				endIf
+				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - should be equipping new shield now")
 				PlayerRef.EquipItemEx(addedForm as Armor)
 			endIf
 		
 		else
+			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - new weapon added")
 			int currRHItemType = PlayerRef.GetEquippedItemType(1)
 			weapon currLHWeapon = PlayerRef.GetEquippedWeapon(true)
 			weapon currRHWeapon = PlayerRef.GetEquippedWeapon()
@@ -3486,12 +3505,17 @@ function onWeaponOrShieldAdded(form addedForm)
 			int rightWeaponDamage = PlayerRef.GetEquippedWeapon().GetBaseDamage()
 			int leftWeaponDamage = PlayerRef.GetEquippedWeapon(true).GetBaseDamage()
 
+			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHItemType: " + currLHItemType + ", currRHItemType: " + currRHItemType + ", new weapon type: " + weaponType)
+			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHWeapon: " + currLHWeapon.GetName() + ", currRHWeapon: " + currRHWeapon.GetName)
+			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - leftWeaponDamage: " + leftWeaponDamage + ", rightWeaponDamage: " + rightWeaponDamage + ", newWeaponDamage: " + newWeaponDamage)
+
 			int targetHand
 			bool doEquip
 
 			if (weaponType == 7 || weaponType == 9)									; Bows and crossbows - will only be equipped if currently weilding a ranged weapon, or if both hands are empty
 				
-				if (currLHItemType == 0 && currRHItemType == 0) || ((currRHItemType == 7 || currRHItemType == 12) && ((iAutoEquipEnabled == 2 && newWeaponDamage > rightWeaponDamage) || iAutoEquipEnabled == 1) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (!currRHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage > rightWeaponDamage))))
+				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - handling new ranged weapon")
+				if (currLHItemType == 0 && currRHItemType == 0) || ((currRHItemType == 7 || currRHItemType == 12) && ((iAutoEquipEnabled == 2 && newWeaponDamage >= rightWeaponDamage) || iAutoEquipEnabled == 1) && (iCurrentItemPoisoned == 1 || GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0) && (iCurrentItemEnchanted == 2 || !currRHWeapon.GetEnchantment() || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage >= rightWeaponDamage))))
 					
 					if currRHItemType > 0
 						currItem = currRHWeapon as form
@@ -3504,16 +3528,19 @@ function onWeaponOrShieldAdded(form addedForm)
 
 			elseIf weaponType > 0 && weaponType < 7 								; 1H and 2H weapons (excluding fist weapons and staffs) - will only be equipped if replacing like for like (1H/2H) or if an empty hand is found
 
-				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || (currLHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (!currLHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage > leftWeaponDamage)))
+				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - handling new melee weapon")
+				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || (currLHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (!currLHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage >= leftWeaponDamage)))
 				
-				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || (currRHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (!currRHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage > rightWeaponDamage)))
+				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || (currRHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (!currRHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage >= rightWeaponDamage)))
 
 				bool emptyHanded
 				int currDamage
 
+				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - leftMatch: " + leftMatch + ", rightMatch: " + rightMatch)
+
 				if leftMatch && rightMatch
 					
-					if rightWeaponDamage > leftWeaponDamage
+					if rightWeaponDamage >= leftWeaponDamage
 						targetHand = 1
 						currDamage = rightWeaponDamage
 					else
@@ -3531,7 +3558,7 @@ function onWeaponOrShieldAdded(form addedForm)
 
 				elseIf leftMatch || currLHItemType == 0
 					
-					if !((weaponType == 5 || weaponType == 6) && !bIsCGOLoaded) 	; This should stop 2H weapons being equipped in an empty left hand if CGO is not loaded
+					if bIsCGOLoaded || weaponType < 5	; This should stop 2H weapons being equipped in an empty left hand if CGO is not loaded
 						targetHand = 2
 					endIf
 
@@ -3542,24 +3569,30 @@ function onWeaponOrShieldAdded(form addedForm)
 					endIf
 				endIf
 
-				if targetHand > 0 && (emptyHanded || ((iAutoEquipEnabled == 2 && newWeaponDamage > currDamage) || iAutoEquipEnabled == 1))
+				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - targetHand: " + targetHand + ", emptyHanded: " + emptyHanded + ", currDamage: " + currDamage)
+
+				if targetHand > 0 && (emptyHanded || ((iAutoEquipEnabled == 2 && newWeaponDamage >= currDamage) || iAutoEquipEnabled == 1))
 					
 					if !emptyHanded
 						currItem = PlayerRef.GetEquippedObject((targetHand == 1) as int)
 					endIf
 
 					doEquip = true
+					debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - doEquip: " + doEquip)
 				endIf
 
 			endIf
 
 			if doEquip
+				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - should be equipping the " + addedForm.GetName() + " now")
 				PlayerRef.EquipItemEx(addedForm, targetHand)
 			endIf
 
 		endIf
 
 		if currItem && bAutoEquipHardcore
+			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - should be dropping the " + currItem.GetName() + " now")
+			Wait(0.5)
 			PlayerRef.DropObject(currItem, 1)
 			;DropItem(currItem)
 		endIf
