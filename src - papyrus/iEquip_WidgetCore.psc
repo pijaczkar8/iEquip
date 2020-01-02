@@ -3485,7 +3485,7 @@ function onWeaponOrShieldAdded(form addedForm)
 		if addedForm as armor														; Only shields will have been passed through from OnItemAdded
 			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - new shield added, currLHItemType: " + currLHItemType)
 
-			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() >= PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1) && (!PlayerRef.GetEquippedShield().GetEnchantment() || (iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && (addedForm as armor).GetEnchantment() && (addedForm as armor).GetArmorRating() >= PlayerRef.GetEquippedShield().GetArmorRating()))))
+			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquipEnabled == 2 && (addedForm as armor).GetArmorRating() >= PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquipEnabled == 1) && (PlayerRef.GetEquippedShield().GetEnchantment() == none || (iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && (addedForm as armor).GetEnchantment() != none && (addedForm as armor).GetArmorRating() >= PlayerRef.GetEquippedShield().GetArmorRating()))))
 
 				if currLHItemType == 10
 					currItem = PlayerRef.GetEquippedShield() as form
@@ -3515,7 +3515,7 @@ function onWeaponOrShieldAdded(form addedForm)
 			if (weaponType == 7 || weaponType == 9)									; Bows and crossbows - will only be equipped if currently weilding a ranged weapon, or if both hands are empty
 				
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - handling new ranged weapon")
-				if (currLHItemType == 0 && currRHItemType == 0) || ((currRHItemType == 7 || currRHItemType == 12) && ((iAutoEquipEnabled == 2 && newWeaponDamage >= rightWeaponDamage) || iAutoEquipEnabled == 1) && (iCurrentItemPoisoned == 1 || GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0) && (iCurrentItemEnchanted == 2 || !currRHWeapon.GetEnchantment() || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage >= rightWeaponDamage))))
+				if (currLHItemType == 0 && currRHItemType == 0) || ((currRHItemType == 7 || currRHItemType == 12) && ((iAutoEquipEnabled == 2 && newWeaponDamage >= rightWeaponDamage) || iAutoEquipEnabled == 1) && (iCurrentItemPoisoned == 1 || GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0) && (iCurrentItemEnchanted == 2 || currRHWeapon.GetEnchantment() == none || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= rightWeaponDamage))))
 					
 					if currRHItemType > 0
 						currItem = currRHWeapon as form
@@ -3529,9 +3529,9 @@ function onWeaponOrShieldAdded(form addedForm)
 			elseIf weaponType > 0 && weaponType < 7 								; 1H and 2H weapons (excluding fist weapons and staffs) - will only be equipped if replacing like for like (1H/2H) or if an empty hand is found
 
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - handling new melee weapon")
-				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || (currLHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (!currLHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage >= leftWeaponDamage)))
+				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || (currLHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (currLHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= leftWeaponDamage)))
 				
-				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || (currRHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (!currRHWeapon.GetEnchantment() || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() && newWeaponDamage >= rightWeaponDamage)))
+				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || (currRHItemType > 4 && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (currRHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= rightWeaponDamage)))
 
 				bool emptyHanded
 				int currDamage
