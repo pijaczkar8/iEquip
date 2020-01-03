@@ -141,6 +141,9 @@ Spell property iEquip_SlowTimeSpell auto
 ; Archery Gameplay Overhaul
 bool property bIsAGOLoaded auto hidden
 
+; Legacy of the Dragonborn
+bool property bIsLOTDLoaded auto hidden
+
 ; Animated Armoury support
 Bool bIsAALoaded
 Keyword property WeapTypePike auto hidden
@@ -859,6 +862,9 @@ function CheckDependencies()
 	
     ; Requiem
     RC.bIsRequiemLoaded = Game.GetModByName("Requiem.esp") != 255
+
+    ; Legacy of the Dragonborn
+    bIsLOTDLoaded = Game.GetModByName("LegacyoftheDragonborn.esm") != 255
 
     ; Archery Gameplay Overhaul
     bIsAGOLoaded = Game.GetModByName("DSerArcheryGameplayOverhaul.esp") != 255
@@ -3512,7 +3518,7 @@ function onWeaponOrShieldAdded(form addedForm)
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currRHWeapon: " + currRHWeapon.GetName() + ", rightWeaponDamage: " + rightWeaponDamage)
 			endIf
 
-			if currLHItemType > 0 && currLHItemType < 7
+			if currLHItemType > 0 && (currLHItemType < 5 || (currLHItemType < 7 && bIsCGOLoaded))
 				leftWeaponDamage = PlayerRef.GetEquippedWeapon(true).GetBaseDamage()
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHWeapon: " + currLHWeapon.GetName() + ", leftWeaponDamage: " + leftWeaponDamage)
 			endIf
@@ -3537,9 +3543,9 @@ function onWeaponOrShieldAdded(form addedForm)
 			elseIf weaponType > 0 && weaponType < 7 								; 1H and 2H weapons (excluding fist weapons and staffs) - will only be equipped if replacing like for like (1H/2H) or if an empty hand is found
 
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - handling new melee weapon")
-				bool leftMatch = ((currLHItemType < 5 && weaponType < 5) || ((currLHItemType == 5 || currLHItemType == 6) && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (currLHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= leftWeaponDamage)))
+				bool leftMatch = currLHItemType == 0 || (((currLHItemType < 5 && weaponType < 5) || ((currLHItemType == 5 || currLHItemType == 6) && weaponType > 4)) && (GetPoisonCount(currLHWeapon as form, GetRefHandleFromWornObject(0)) == 0 || iCurrentItemPoisoned == 1) && (currLHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("LeftItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= leftWeaponDamage))))
 				
-				bool rightMatch = ((currRHItemType < 5 && weaponType < 5) || ((currRHItemType == 5 || currRHItemType == 6) && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (currRHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= rightWeaponDamage)))
+				bool rightMatch = currRHItemType == 0 || (((currRHItemType < 5 && weaponType < 5) || ((currRHItemType == 5 || currRHItemType == 6) && weaponType > 4)) && (GetPoisonCount(currRHWeapon as form, GetRefHandleFromWornObject(1)) == 0 || iCurrentItemPoisoned == 1) && (currRHWeapon.GetEnchantment() == none || iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && PlayerRef.GetActorValue("RightItemCharge") == 0.0 || ((addedForm as weapon).GetEnchantment() != none && newWeaponDamage >= rightWeaponDamage))))
 
 				bool emptyHanded
 				int currDamage

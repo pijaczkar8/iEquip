@@ -178,7 +178,7 @@ function onTorchEquipped()
 
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
 
-		if !(Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
+		if !(Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
 			iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
 			PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
 
@@ -447,11 +447,13 @@ Function DropTorch()
 		int remainingTorches
 		int queueLength = JArray.count(WC.aiTargetQ[0])
 
-		if Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp" || equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm") && !bDontDropEverlights
+		if Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp" || (WC.bIsLOTDLoaded && equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
 			
-			bJustDroppedTorch = true
-			PlayerRef.UnequipItemEx(equippedTorch)
-			PlayerRef.DropObject(equippedTorch, 1)
+			if !bDontDropEverlights
+				bJustDroppedTorch = true
+				PlayerRef.UnequipItemEx(equippedTorch)
+				PlayerRef.DropObject(equippedTorch, 1)
+			endIf
 
 		else
 			bJustDroppedTorch = true
