@@ -3465,6 +3465,9 @@ int property iAutoEquipEnabled = 1 auto hidden 			; 0 = Disabled, 1 = Always Equ
 int property iCurrentItemEnchanted auto hidden 			; 0 = Don't switch, 1 = Switch if no charge, 2 = Always switch
 int property iCurrentItemPoisoned = 1 auto hidden 		; 0 = Don't switch, 1 = Always switch
 bool property bAutoEquipHardcore auto hidden
+bool property bAutoEquipDontDropFavorites = true auto hidden
+bool property bJustDroppedCurrentItem auto hidden
+form property fLastDroppedItem auto hidden
 
 ;/GetEquippedItemType returns:
 0: Nothing (Hand to hand)
@@ -3604,29 +3607,28 @@ function onWeaponOrShieldAdded(form addedForm)
 
 		endIf
 
-		if currItem && bAutoEquipHardcore
+		if currItem && bAutoEquipHardcore && !(bAutoEquipDontDropFavorites && Game.isObjectFavorited(currItem))
 			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - should be dropping the " + currItem.GetName() + " now")
-			Wait(0.5)
-			PlayerRef.DropObject(currItem, 1)
-			;DropItem(currItem)
+			bJustDroppedCurrentItem = true
+			fLastDroppedItem = currItem
+			DropItem(currItem)
 		endIf
 
 	endIf
 	;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded end")
 endFunction
 
-;/function DropItem(form itemToDrop)
+function DropItem(form itemToDrop)
 	;debug.trace("iEquip_WidgetCore Drop start")
 	objectreference droppedItem = PlayerRef.DropObject(itemToDrop, 1)
-
-	droppedItem.SetActorOwner(PlayerRef.GetActorBase())
-	droppedItem.SetFactionOwner(PlayerFaction)
 	
 	Float OffsetX = 48.0 * Math.Sin(PlayerRef.GetAngleZ() - 15)
 	Float OffsetY = 48.0 * Math.Cos(PlayerRef.GetAngleZ() - 15)
-	Float OffsetZ = PlayerRef.GetHeight() - 32.0
+	Float OffsetZ
 	If (PlayerRef.IsSneaking())
 		OffsetZ = PlayerRef.GetHeight() - 72.0
+	else
+		OffsetZ = PlayerRef.GetHeight() - 32.0
 	EndIf
 
 	If (droppedItem.is3DLoaded())
@@ -3645,8 +3647,11 @@ endFunction
 	
 	droppedItem.ApplyHavokImpulse(0,0,1,5)
 
+	droppedItem.SetActorOwner(PlayerRef.GetActorBase())
+	droppedItem.SetFactionOwner(TO.PlayerFaction)
+
 	;debug.trace("iEquip_WidgetCore Drop end")
-endFunction/;
+endFunction
 
 bool function playerStillHasItem(form itemForm, int itemHandle = 0xFFFF)
 	;debug.trace("iEquip_WidgetCore playerStillHasItem start - itemForm: " + itemForm + ", itemHandle: " + itemHandle)

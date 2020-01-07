@@ -934,6 +934,12 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	;debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	
 	int i
 	int itemType = akBaseItem.GetType()
+
+	if WC.bAutoEquipHardcore && WC.bJustDroppedCurrentItem && akBaseItem == WC.fLastDroppedItem
+		WC.bJustDroppedCurrentItem = false
+		Wait(1.5)
+	endIf
+
 	If itemType == 41 													; If it is a weapon get the weapon type
 		itemType = (akBaseItem as Weapon).GetWeaponType()
 	endIf

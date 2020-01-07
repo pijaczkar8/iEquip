@@ -160,6 +160,9 @@ function drawPage()
         MCM.AddMenuOptionST("gen_men_currItemEnch", "$iEquip_MCM_gen_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
         MCM.AddMenuOptionST("gen_men_currItemPois", "$iEquip_MCM_gen_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
         MCM.AddToggleOptionST("gen_tgl_autoEquipHardcore", "$iEquip_MCM_gen_lbl_autoEquipHardcore", WC.bAutoEquipHardcore)
+        if WC.bAutoEquipHardcore
+            MCM.AddToggleOptionST("gen_tgl_dontDropFavorites", "$iEquip_MCM_gen_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
+        endIf
 
 		MCM.SetCursorPosition(1)
 				
@@ -428,7 +431,18 @@ State gen_tgl_autoEquipHardcore
             MCM.SetInfoText("$iEquip_MCM_gen_txt_autoEquipHardcore")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && WC.bAutoEquipHardcore)
             WC.bAutoEquipHardcore = !WC.bAutoEquipHardcore
-            MCM.SetToggleOptionValueST(WC.bAutoEquipHardcore)
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_tgl_dontDropFavorites
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_dontDropFavorites")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bAutoEquipDontDropFavorites)
+            WC.bAutoEquipDontDropFavorites = !WC.bAutoEquipDontDropFavorites
+            MCM.SetToggleOptionValueST(WC.bAutoEquipDontDropFavorites)
         endIf
     endEvent
 endState
