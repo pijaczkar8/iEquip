@@ -51,10 +51,10 @@ function initData()
     autoEquipOptions[2] = "$iEquip_MCM_gen_opt_weapDrawn"
     autoEquipOptions[3] = "$iEquip_MCM_gen_opt_combatOnly"
 
-    autoEquipOptions = new string[3]
-    autoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
-    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
-    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
+    whenToAutoEquipOptions = new string[3]
+    whenToAutoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    whenToAutoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
+    whenToAutoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
 
     currItemEnchOptions = new string[3]
     currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
@@ -131,10 +131,10 @@ function drawPage()
     autoEquipOptions[2] = "$iEquip_MCM_gen_opt_weapDrawn"
     autoEquipOptions[3] = "$iEquip_MCM_gen_opt_combatOnly"
 
-    autoEquipOptions = new string[3]
-    autoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
-    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
-    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
+    whenToAutoEquipOptions = new string[3]
+    whenToAutoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    whenToAutoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
+    whenToAutoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
 
     currItemEnchOptions = new string[3]
     currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"

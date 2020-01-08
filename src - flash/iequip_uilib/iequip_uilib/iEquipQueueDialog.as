@@ -223,7 +223,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 
 		var exitButton;
 		if (bDirectAccess) {
-			exitButton = exitButtonPanel.addButton({text: "iEquip_btn_exit", controls: exitControls_});
+			exitButton = exitButtonPanel.addButton({text: "$iEquip_btn_exit", controls: exitControls_});
 		} else {
 			exitButton = exitButtonPanel.addButton({text: "$iEquip_btn_backToMenu", controls: exitControls_});
 		}
