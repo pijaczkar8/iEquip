@@ -3,6 +3,7 @@ Scriptname iEquip_AddedItemHandler extends ReferenceAlias
 
 Import iEquip_AmmoExt
 Import iEquip_FormExt
+Import UI
 
 iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
@@ -19,6 +20,8 @@ FormList Property iEquip_ItemsToAddFLST Auto
 
 bool bSwitchingTorches
 
+bool bCraftingOrBarterMenuOpen
+
 function initialise(bool bEnabled)
 	;debug.trace("iEquip_AddedItemHandler initialise start")
 	if bEnabled
@@ -32,6 +35,11 @@ endFunction
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	if akBaseItem as weapon || akBaseItem as ammo || akBaseItem as potion || akBaseItem as light || akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch || (akBaseItem as armor && (akBaseItem as armor).IsShield()) || akBaseItem as scroll
 		;debug.trace("iEquip_AddedItemHandler OnItemAdded start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
+		
+		if UI.IsMenuOpen("Crafting Menu") || UI.IsMenuOpen("BarterMenu")
+			bCraftingOrBarterMenuOpen = true
+		endIf
+
 		if bSwitchingTorches && akBaseItem == TO.realTorchForm
 			bSwitchingTorches = false
 		elseIf !(akBaseItem == iEquipDroppedTorch as form && TO.bSettingLightRadius)
@@ -71,8 +79,10 @@ event OnUpdate()
 		    	WC.addBackCachedItem(formToAdd)
 
 			else
-				if formToAdd as weapon || formToAdd as armor 												; If we've picked up a weapon or shield and we have auto-add/equip weapons and shields enabled run that now
-					WC.onWeaponOrShieldAdded(formToAdd)
+				if (formToAdd as weapon || formToAdd as armor)												; If we've picked up a weapon or shield and we have auto-add/equip weapons and shields enabled run that now
+					if !bCraftingOrBarterMenuOpen
+						WC.onWeaponOrShieldAdded(formToAdd)
+					endIf
 
 				elseIf formToAdd == iEquipDroppedTorch as form || formToAdd == iEquipBurntOutTorch as form	; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for...
 					bSwitchingTorches = true
@@ -101,6 +111,7 @@ event OnUpdate()
 		i += 1
 	endWhile
 	iEquip_ItemsToAddFLST.Revert()
+	bCraftingOrBarterMenuOpen = false
 	;debug.trace("iEquip_AddedItemHandler OnUpdate end - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
 endEvent
 

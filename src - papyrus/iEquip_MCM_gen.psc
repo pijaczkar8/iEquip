@@ -13,6 +13,7 @@ string[] ammoModeOptions
 string[] posIndBehaviour
 
 string[] autoEquipOptions
+string[] whenToAutoEquipOptions
 string[] currItemEnchOptions
 string[] currItemPoisOptions
 
@@ -46,9 +47,14 @@ function initData()
 
     autoEquipOptions = new string[4]
     autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
-    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfBetter"
-    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
+    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_anyTime"
+    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_weapDrawn"
+    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_combatOnly"
+
+    autoEquipOptions = new string[3]
+    autoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
+    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
 
     currItemEnchOptions = new string[3]
     currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
@@ -121,9 +127,14 @@ function drawPage()
     ; ToDo - remove after testing
     autoEquipOptions = new string[4]
     autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
-    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfBetter"
-    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
+    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_anyTime"
+    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_weapDrawn"
+    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_combatOnly"
+
+    autoEquipOptions = new string[3]
+    autoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
+    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
 
     currItemEnchOptions = new string[3]
     currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
@@ -157,11 +168,15 @@ function drawPage()
         MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_AutoEquip</font>")
         MCM.AddMenuOptionST("gen_men_enableAutoEquip", "$iEquip_MCM_gen_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
-        MCM.AddMenuOptionST("gen_men_currItemEnch", "$iEquip_MCM_gen_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
-        MCM.AddMenuOptionST("gen_men_currItemPois", "$iEquip_MCM_gen_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
-        MCM.AddToggleOptionST("gen_tgl_autoEquipHardcore", "$iEquip_MCM_gen_lbl_autoEquipHardcore", WC.bAutoEquipHardcore)
-        if WC.bAutoEquipHardcore
-            MCM.AddToggleOptionST("gen_tgl_dontDropFavorites", "$iEquip_MCM_gen_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
+
+        if WC.iAutoEquipEnabled > 0
+            MCM.AddMenuOptionST("gen_men_whenToAutoEquip", "$iEquip_MCM_gen_lbl_whenToAutoEquip", whenToAutoEquipOptions[WC.iAutoEquip])
+            MCM.AddMenuOptionST("gen_men_currItemEnch", "$iEquip_MCM_gen_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
+            MCM.AddMenuOptionST("gen_men_currItemPois", "$iEquip_MCM_gen_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
+            MCM.AddToggleOptionST("gen_tgl_autoEquipHardcore", "$iEquip_MCM_gen_lbl_autoEquipHardcore", WC.bAutoEquipHardcore)
+            if WC.bAutoEquipHardcore
+                MCM.AddToggleOptionST("gen_tgl_dontDropFavorites", "$iEquip_MCM_gen_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
+            endIf
         endIf
 
 		MCM.SetCursorPosition(1)
@@ -393,8 +408,29 @@ State gen_men_enableAutoEquip
         elseIf currentEvent == "Open"
             MCM.fillMenu(WC.iAutoEquipEnabled, autoEquipOptions, 0)
         elseIf currentEvent == "Accept"
+            bool reset
+            if (WC.iAutoEquipEnabled > 0 && currentVar as int == 0) || (WC.iAutoEquipEnabled == 0 && currentVar as int > 0)
+                reset = true
+            endIf
             WC.iAutoEquipEnabled = currentVar as int
-            MCM.SetMenuOptionValueST(autoEquipOptions[WC.iAutoEquipEnabled])
+            if reset
+                MCM.forcePageReset()
+            else
+                MCM.SetMenuOptionValueST(autoEquipOptions[WC.iAutoEquipEnabled])
+            endIf
+        endIf
+    endEvent
+endState
+
+State gen_men_whenToAutoEquip
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_whenToAutoEquip")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iAutoEquip, whenToAutoEquipOptions, 1)
+        elseIf currentEvent == "Accept"
+            WC.iAutoEquip = currentVar as int
+            MCM.SetMenuOptionValueST(whenToAutoEquipOptions[WC.iAutoEquip])
         endIf
     endEvent
 endState
