@@ -77,15 +77,18 @@ int property iPotionSelectChoice = 1 auto hidden ; 0 = Always use strongest, 1 =
 float property fSmartSelectThreshold = 0.4 auto hidden
 int property iQuickBuffsToApply = 3 auto hidden
 
-bool bIsCACOLoaded = false
+bool bIsCACOLoaded
 MagicEffect[] aCACO_RestoreEffects
 bool bIsPAFLoaded
 MagicEffect[] aPAF_RestoreEffects
 string[] asEffectNames
 
-bool bMoreHUDLoaded = false
+bool bMoreHUDLoaded
 
-bool bAddedToQueue = false
+bool bIsEnderalLoaded
+MagicEffect[] aEnderal_RestoreEffects
+
+bool bAddedToQueue
 int iQueueToSort = -1 ;Only used if potion added by onPotionAdded
 float fTempStrength
 int iTempDuration
@@ -273,6 +276,15 @@ function initialise()
         aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DF, "PotionAnimatedFix.esp") as MagicEffect
     else
         bIsPAFLoaded = false
+    endIf
+    aEnderal_RestoreEffects = new MagicEffect[3]
+    if Game.GetModByName("Enderal - Forgotten Stories.esm") != 255
+        bIsEnderalLoaded = true
+        aEnderal_RestoreEffects[0] = Game.GetFormFromFile(0x000028C3, "Skyrim.esm") as MagicEffect  ; 00E_AlchRestoreHealth
+        aEnderal_RestoreEffects[1] = Game.GetFormFromFile(0x000028DD, "Skyrim.esm") as MagicEffect  ; 00E_AlchRestoreMagicka
+        aEnderal_RestoreEffects[2] = Game.GetFormFromFile(0x000028DC, "Skyrim.esm") as MagicEffect  ; 00E_AlchRestoreStamina
+    else
+        bIsEnderalLoaded = false
     endIf
     ;debug.trace("iEquip_PotionScript initialise - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
     findAndSortPotions()
@@ -702,47 +714,56 @@ int function getPotionQueue(potion potionToCheck, bool bAdding = false)
 endFunction
 
 int function checkEffects(magicEffect effectToCheck, bool restoreOnly = false)
-    int Q = aStrongestEffects.find(effectToCheck) ;Returns -1 if not found
-    ;If it's not a regular effect check for a consummate effect
+    int Q = aStrongestEffects.find(effectToCheck)       ; Returns -1 if not found
+    ; If it's not a regular effect check for a consummate effect
     if Q < 0
-        Q = aConsummateEffects.find(effectToCheck) ;Puts ultimate/consummate potions into the Restore queues (0,3,6)
+        Q = aConsummateEffects.find(effectToCheck)      ; Puts ultimate/consummate potions into the Restore queues (0,3,6)
         if Q != -1
             Q = Q * 3
         endIf
     endIf
-    ;If we've not found a vanilla effect check if CACO is loaded and if so check for a CACO restore effect
+    ; If we've not found a vanilla effect check if CACO is loaded and if so check for a CACO restore effect
     if Q < 0 && bIsCACOLoaded
-        Q = aCACO_RestoreEffects.find(effectToCheck) ;Returns -1 if not found
+        Q = aCACO_RestoreEffects.find(effectToCheck)    ; Returns -1 if not found
         ;debug.trace("iEquip_PotionScript checkEffects - checking for a CACO restore effect, Q = " + Q)
         if Q != -1
-            if Q < 3 ;AlchRestoreHealth_1sec, AlchRestoreHealth_5sec, AlchRestoreHealth_10sec
-                Q = 0 ;Health Restore
-            elseIf Q < 6 ;AlchRestoreMagicka_1sec, AlchRestoreMagicka_5sec, AlchRestoreMagicka_10sec
-                Q = 3 ;Magicka Restore
-            elseIf Q < 9 ;AlchRestoreStamina_1sec, AlchRestoreStamina_5sec, AlchRestoreStamina_10sec
-                Q = 6 ;Stamina Restore
+            if Q < 3                                    ; AlchRestoreHealth_1sec, AlchRestoreHealth_5sec, AlchRestoreHealth_10sec
+                Q = 0                                   ; Health Restore
+            elseIf Q < 6                                ; AlchRestoreMagicka_1sec, AlchRestoreMagicka_5sec, AlchRestoreMagicka_10sec
+                Q = 3                                   ; Magicka Restore
+            elseIf Q < 9                                ; AlchRestoreStamina_1sec, AlchRestoreStamina_5sec, AlchRestoreStamina_10sec
+                Q = 6                                   ; Stamina Restore
             endIf
         endIf
         ;debug.trace("iEquip_PotionScript checkEffects - CACO restore effect, final Q value = " + Q)
     endIf
-    ;Finally check if PotionAnimatedFix is loaded and check for one of its DUPLICATE restore effects
+    ; Check if PotionAnimatedFix is loaded and check for one of its DUPLICATE restore effects
     if Q < 0 && bIsPAFLoaded
         Q = aPAF_RestoreEffects.find(effectToCheck)
         ;debug.trace("iEquip_PotionScript checkEffects - checking for a PAF restore effect, Q = " + Q)
         if Q != -1
-            if Q < 2 ;AlchRestoreHealthDUPLICATE001 or AlchRestoreHealthAllDUPLICATE001
-                Q = 0 ;Health Restore
-            elseIf Q < 4 ;AlchRestoreMagickaDUPLICATE001 or AlchRestoreMagickaAllDUPLICATE001
-                Q = 3 ;Magicka Restore
-            else ;AlchRestoreStaminaDUPLICATE001 or AlchRestoreStaminaAllDUPLICATE001
-                Q = 6 ;Stamina Restore
+            if Q < 2                                    ; AlchRestoreHealthDUPLICATE001 or AlchRestoreHealthAllDUPLICATE001
+                Q = 0                                   ; Health Restore
+            elseIf Q < 4                                ; AlchRestoreMagickaDUPLICATE001 or AlchRestoreMagickaAllDUPLICATE001
+                Q = 3                                   ; Magicka Restore
+            else                                        ; AlchRestoreStaminaDUPLICATE001 or AlchRestoreStaminaAllDUPLICATE001
+                Q = 6                                   ; Stamina Restore
             endIf
         endIf
         ;debug.trace("iEquip_PotionScript checkEffects - PAF restore effect, final Q value = " + Q)
     endIf
+    ; Finally if there's still no match check if we're playing Enderal
+    if Q < 0 && bIsEnderalLoaded
+        Q = aEnderal_RestoreEffects.find(effectToCheck)
+        if Q != -1
+            Q = Q * 3
+        endIf
+    endIf
+
     if restoreOnly && !(Q == 0 || Q == 3 || Q == 6)
         Q = -1
     endIf
+
     return Q
 endFunction
 
