@@ -1136,7 +1136,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 			else
 				WC.checkAndEquipShownHandItem(1, false, false, true)
 			endIf
-			if setCurrentlyQuickRangedFlag && !(iQuickRangedSwitchOutAction == 0)
+			if setCurrentlyQuickRangedFlag && iQuickRangedSwitchOutAction > 0
 				bCurrentlyQuickRanged = true
 			endIf
 		;Otherwise update the Preselect Mode preselect slot
@@ -1214,7 +1214,7 @@ bool function quickRangedFindAndEquipBoundSpell()
 				endIf
 			endIf
 			WC.checkAndEquipShownHandItem(1, false)
-			if !(iQuickRangedSwitchOutAction == 0)
+			if iQuickRangedSwitchOutAction > 0
 				bCurrentlyQuickRanged = true
 			endIf
 		;Otherwise update the Preselect Mode preselect slot
@@ -1230,7 +1230,33 @@ endFunction
 
 bool function quickRangedFindAndEquipSpellOrStaff()
 	bool actionTaken
-	; ToDo - write this function once iEquipUtil IsRanged function is added
+	
+	if iQuickRangedPreferredWeaponType > 1 && iQuickRangedPreferredWeaponType < 5
+		actionTaken = quickRangedFindAndEquipSpell()
+	else
+		actionTaken = quickRangedFindAndEquipStaff()
+	endIf
+
+	if !actionTaken
+		if iQuickRangedPreferredWeaponType > 1 && iQuickRangedPreferredWeaponType < 5
+			actionTaken = quickRangedFindAndEquipStaff()
+		else
+			actionTaken = quickRangedFindAndEquipSpell()
+		endIf
+	endIf
+
+	return actionTaken
+endFunction
+
+bool function quickRangedFindAndEquipSpell()
+	bool actionTaken
+
+	return actionTaken
+endFunction
+
+bool function quickRangedFindAndEquipStaff()
+	bool actionTaken
+
 	return actionTaken
 endFunction
 
