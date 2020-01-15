@@ -178,11 +178,7 @@ function onAmmoRemoved(form removedAmmo)
 							WC.setSlotToEmpty(0)
 						; ...or Cycle / Switch Out
 						elseIf iActionOnLastAmmoUsed == 3 || (iActionOnLastAmmoUsed == 2 && !switchedRangedWeapon)
-							if PM.bCurrentlyQuickRanged
-								PM.quickRanged()
-							else
-								PM.quickRangedSwitchOut(true)
-							endIf
+							PM.quickRangedSwitchOut(PM.bCurrentlyQuickRanged)
 						endIf
 					endIf
 				endIf

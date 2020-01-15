@@ -717,11 +717,11 @@ function checkVersion()
         Debug.MessageBox("$iEquip_wc_msg_oldVersion")
     elseIf fThisVersion == fCurrentVersion
         ; Already latest version
-    else
+    elseIf !bIsFirstEnabled
         ; Let's update
         
         ; Version 1.1
-        if fCurrentVersion < 1.1 && !bIsFirstEnabled
+        if fCurrentVersion < 1.1
 
 			asQueueName = new string[7]
 			asQueueName[0] = "$iEquip_WC_common_leftQ"
@@ -792,10 +792,12 @@ function checkVersion()
 			TI.onVersionUpdate()
         endIf
 
-        fCurrentVersion = fThisVersion
-        if !bIsFirstEnabled
-        	Debug.Notification("$iEquip_wc_not_updating")		; Need to change the version number in the strings files
+        if fCurrentVersion < 1.2
+        	PM.onVersionUpdate()
         endIf
+
+        fCurrentVersion = fThisVersion
+        Debug.Notification("$iEquip_wc_not_updating")		; Need to change the version number in the strings files
     endIf
 endFunction
 
@@ -3796,7 +3798,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    elseIf targetItem as light
 		    	;debug.trace("iEquip_WidgetCore cycleHand - this is a torch so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, 0)
-		    elseIf !(targetItem as weapon) ;|| itemCount == 1													; If it's not a weapon, or we only have one of them there's no risk of equipping the wrong one so safe to use EquipItemEx
+		    elseIf !(targetItem as weapon) || itemCount == 1													; If it's not a weapon, or we only have one of them there's no risk of equipping the wrong one so safe to use EquipItemEx
 		    	;debug.trace("iEquip_WidgetCore cycleHand - not a weapon, or we only have one of these so equip using EquipItemEx")
 		    	PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 		    else																								; If we have more than one of the item check if we have a valid refHandle and attempt to equip by handle
@@ -3804,7 +3806,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	    			;debug.trace("iEquip_WidgetCore cycleHand - we have more than one of these and a refHandle so attempting to equip by handle")
 	    			;debug.trace("iEquip_WidgetCore cycleHand - args being passed to EquipItem are targetItem: " + targetItem + ", refHandle: " + refHandle + ", PlayerRef: " + PlayerRef + ", equip slot: " + iEquipSlotId)
 	    			iEquip_InventoryExt.EquipItem(targetItem, refHandle, PlayerRef, iEquipSlotId)
-	    			Utility.WaitMenuMode(0.2)
+	    			Utility.WaitMenuMode(0.3)
 	    		endIf
 		    	
 		    	if PlayerRef.GetEquippedObject(Q) != targetItem													; If nothing has been equipped check we have an itemID for it and try equipping it that way
@@ -3813,7 +3815,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			    		;;debug.trace("iEquip_WidgetCore cycleHand - the item isn't enchanted or poisoned but we have an itemID so attempting to EquipItemByID")
 			    		;debug.trace("iEquip_WidgetCore cycleHand - we have an itemID so attempting to EquipItemByID")
 			    		PlayerRef.EquipItemByID(targetItem, itemID, iEquipSlotID)
-			    		Utility.WaitMenuMode(0.2)
+			    		Utility.WaitMenuMode(0.3)
 			    	endIf
 		    		if PlayerRef.GetEquippedObject(Q) != targetItem												; Final check to confirm we actually have something equipped.  If all the above have failed fall back on EquipItemEX and take pot luck as to which one is equipped
 		    			;debug.trace("iEquip_WidgetCore cycleHand - We still haven't succeeded in equipping anything so falling back on EquipItemEx and taking pot luck")

@@ -78,6 +78,9 @@ actor property PlayerRef auto
 float fTimeOfLastQuickRestore
 
 int[] aiNameElements
+int[] aiHandEquipSlots
+
+string[] asSpellSchools
 
 event OnInit()
 	;debug.trace("iEquip_ProMode OnInit start")
@@ -86,17 +89,48 @@ event OnInit()
 	aiNameElements[1] = 35 ;rightPreselectName_mc
 	aiNameElements[2] = 44 ;shoutPreselectName_mc
 
+	aiHandEquipSlots = new int[2]
+	aiHandEquipSlots[0] = 2
+	aiHandEquipSlots[1] = 1
+
 	abPreselectSlotEnabled = new bool[3]
 	abPreselectSlotEnabled[0] = true
 	abPreselectSlotEnabled[1] = true
 	abPreselectSlotEnabled[2] = true
 	;debug.trace("iEquip_ProMode OnInit end")
+
+	asSpellSchools = new string[5]
+	asSpellSchools[0] = "Alteration"
+	asSpellSchools[1] = "Conjuration"
+	asSpellSchools[2] = "Destruction"
+	asSpellSchools[3] = "Illusion"
+	asSpellSchools[4] = "Restoration"
 endEvent
+
+bool bInitialiseQRSpellSchoolsArray = true
 
 function onVersionUpdate()
 	aiNameElements[0] = 19 ;leftPreselectName_mc
 	aiNameElements[1] = 35 ;rightPreselectName_mc
 	aiNameElements[2] = 44 ;shoutPreselectName_mc
+
+	aiHandEquipSlots = new int[2]
+	aiHandEquipSlots[0] = 2
+	aiHandEquipSlots[1] = 1
+
+	asSpellSchools = new string[5]
+	asSpellSchools[0] = "Alteration"
+	asSpellSchools[1] = "Conjuration"
+	asSpellSchools[2] = "Destruction"
+	asSpellSchools[3] = "Illusion"
+	asSpellSchools[4] = "Restoration"
+
+	if bInitialiseQRSpellSchoolsArray
+		abQuickRangedSpellSchoolAllowed = new bool[5]
+		abQuickRangedSpellSchoolAllowed[2] = true	; Destruction spells enabled by default
+		bInitialiseQRSpellSchoolsArray = false
+	endIf
+
 endFunction
 
 function OnWidgetLoad()
@@ -811,7 +845,15 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 					PlayerRef.UnequipItemEx(targetAmmo)
 				endIf
 			endIf
+
 			int tmpIndex = WC.aiCurrentQueuePosition[0]
+			form targetForm = jMap.getForm(jArray.getObj(targetArray, found), "iEquipForm")
+			
+			bool is2HWardSpell
+			if foundType == 22
+				is2HWardSpell = (targetForm as spell).GetEquipType() == Game.GetForm(0x00013F45) As EquipSlot
+			endIf
+
 			WC.aiCurrentQueuePosition[0] = found
 			WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(targetArray, found), "iEquipName")
 			if bPreselectMode
@@ -830,17 +872,24 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 				Utility.WaitMenuMode(0.3)
 				WC.checkAndFadeLeftIcon(0, foundType)
 			endIf
+
 			bool switchRightHand
-			if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1 && !(PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded)) || (foundType == 22 && bQuickShieldPreferMagic && !rightHandHasSpell) || WC.bGoneUnarmed || WC.b2HSpellEquipped
+			
+			if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1 && !(PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded)) || (foundType == 22 && bQuickShieldPreferMagic && !rightHandHasSpell && !is2HWardSpell) || WC.bGoneUnarmed || WC.b2HSpellEquipped
 				switchRightHand = true
 				if !WC.bGoneUnarmed
 					WC.UnequipHand(1)
 				endIf
 			endIf	
 			WC.UnequipHand(0)
-			form targetForm = jMap.getForm(jArray.getObj(targetArray, found), "iEquipForm")
+			
 			if foundType == 22
-				PlayerRef.EquipSpell(targetForm as Spell, 0)
+				if is2HWardSpell
+					PlayerRef.EquipSpell(targetForm as Spell)
+					
+				else
+					PlayerRef.EquipSpell(targetForm as Spell, 0)
+				endIf
 			elseif foundType == 26
 				int refHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
 				if refHandle != 0xFFFF
@@ -854,6 +903,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 			if WC.CM.abIsChargeMeterShown[0]
 				WC.CM.updateChargeMeterVisibility(0, false)
 			endIf
+
 			if switchRightHand
 				quickShieldSwitchRightHand(foundType, rightHandHasSpell)
 			endIf
@@ -990,16 +1040,29 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 	;debug.trace("iEquip_ProMode quickShieldSwitchRightHand end")
 endFunction
 
-;The forceSwitch bool is set to true when quickRanged is called by WC.removeItemFromQueue when a previously equipped ranged weapon has been removed, so we also set typeToFind to start by searching for another ranged weapon of the same type
+bool bJustEquipped2HRangedSpell
+bool property bQuickRangedQueueItemsOnly auto hidden
+bool property bQuickRangedGiveMeAnythingGoddamit = true auto hidden
+bool[] property abQuickRangedSpellSchoolAllowed auto hidden
+int property iQuickRanged1HPreferredHand = 1 auto hidden
+int property iQuickRanged1HOtherHandAction auto hidden
+
+int
+
 function quickRanged()
 	;debug.trace("iEquip_ProMode quickRanged start")
-	;if you already have a ranged weapon equipped or if you're in Preselect Mode and have disabled quickRanged in Preselect Mode then do nothing
+	bJustEquipped2HRangedSpell = false
+
     if bQuickRangedEnabled
         if bCurrentlyQuickRanged
             quickRangedSwitchOut()
         else
             if !(AM.bAmmoMode || (bPreselectMode && iPreselectQuickRanged == 0))
                 bool actionTaken
+
+                iPreviousLeftHandIndex = WC.aiCurrentQueuePosition[0]
+				iPreviousRightHandIndex = WC.aiCurrentQueuePosition[1]
+
                 if iQuickRangedPreferredWeaponType > 3
                 	actionTaken = quickRangedFindAndEquipSpellOrStaff()
                 elseIf iQuickRangedPreferredWeaponType > 1
@@ -1007,24 +1070,29 @@ function quickRanged()
                 else
                     actionTaken = quickRangedFindAndEquipWeapon()
                 endIf
-                if !actionTaken
+
+                if !actionTaken && bQuickRangedGiveMeAnythingGoddamit
                     if iQuickRangedPreferredWeaponType > 3 || iQuickRangedPreferredWeaponType < 2
 	                	actionTaken = quickRangedFindAndEquipBoundSpell()
 	                else
                         actionTaken = quickRangedFindAndEquipSpellOrStaff()
                     endIf
                 endIf
-                if !actionTaken
+
+                if !actionTaken && bQuickRangedGiveMeAnythingGoddamit
                     if iQuickRangedPreferredWeaponType > 1
 	                	actionTaken = quickRangedFindAndEquipWeapon()
 	                else
                         actionTaken = quickRangedFindAndEquipSpellOrStaff()
                     endIf
                 endIf
+
                 if actionTaken
                 	WC.bGoneUnarmed = false
-                	WC.b2HSpellEquipped = false
-                else	
+                	if !bJustEquipped2HRangedSpell
+                		WC.b2HSpellEquipped = false
+                	endIf
+                else
                     debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_QRNoRanged"))
                 endIf
             endIf
@@ -1237,7 +1305,7 @@ bool function quickRangedFindAndEquipSpellOrStaff()
 		actionTaken = quickRangedFindAndEquipStaff()
 	endIf
 
-	if !actionTaken
+	if !actionTaken && bQuickRangedGiveMeAnythingGoddamit
 		if iQuickRangedPreferredWeaponType > 1 && iQuickRangedPreferredWeaponType < 5
 			actionTaken = quickRangedFindAndEquipStaff()
 		else
@@ -1260,6 +1328,10 @@ bool function quickRangedFindAndEquipStaff()
 	return actionTaken
 endFunction
 
+function quickRanged1HEquipOtherHand()
+
+endFunction
+
 function quickRangedSwitchOut(bool force1H = false)
 	;debug.trace("iEquip_ProMode quickRangedSwitchOut start - iQuickRangedSwitchOutAction: " + iQuickRangedSwitchOutAction)
 	bCurrentlyQuickRanged = false
@@ -1269,7 +1341,8 @@ function quickRangedSwitchOut(bool force1H = false)
 	int rightCount = jArray.count(targetArray)
 	int i
 	if iQuickRangedSwitchOutAction == 1 && !force1H ;Switch Back
-		targetIndex = iPreviousRightHandIndex
+		;targetIndex = iPreviousRightHandIndex
+		quickSwitchBack(false, true)
 		;debug.trace("iEquip_ProMode quickRangedSwitchOut doing iQuickRangedSwitchOutAction: 1, targetIndex: " + targetIndex)
 	elseif force1H || iQuickRangedSwitchOutAction == 2 || iQuickRangedSwitchOutAction == 3 ;Two Handed or One Handed
 		int[] preferredType
@@ -1481,7 +1554,7 @@ function quickRestore()
 	        ;debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled)
 	        if bCurrentlyQuickHealing
 	        	;debug.trace("iEquip_ProMode quickRestore - bCurrentlyQuickHealing, switching back")
-	            quickHealSwitchBack(bPlayerIsInCombat)
+	            quickSwitchBack(true, bPlayerIsInCombat)
 	        
 	        elseIf bQuickRestore
 	        	;debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
@@ -1697,8 +1770,8 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool equippingOt
 	;debug.trace("iEquip_ProMode quickHealEquipSpell end")
 endFunction
 
-function quickHealSwitchBack(bool bPlayerIsInCombat)
-	;debug.trace("iEquip_ProMode quickHealSwitchBack start")
+function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
+	;debug.trace("iEquip_ProMode quickSwitchBack start")
 	bCurrentlyQuickHealing = false
 	WC.aiCurrentQueuePosition[0] = iPreviousLeftHandIndex
 	WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], iPreviousLeftHandIndex), "iEquipName")
@@ -1707,7 +1780,7 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 	int previousRHType = jMap.getInt(previousRHObject, "iEquipType")
 	WC.asCurrentlyEquipped[1] = jMap.getStr(previousRHObject, "iEquipName")
 	
-	int Q = iQuickHealSlotsEquipped
+	int Q = iQuickSlotsEquipped
 	bool previouslyUnarmed = WC.asCurrentlyEquipped[1] == "$iEquip_common_Unarmed"
 	bool previously2H = (WC.ai2HWeaponTypes.Find(previousRHType) > -1 && !(previousRHType < 7 && WC.bIsCGOLoaded)) || (previousRHType == 22 && jMap.getInt(previousRHObject, "iEquipSlot") == 3)
 	
@@ -1733,14 +1806,14 @@ function quickHealSwitchBack(bool bPlayerIsInCombat)
 	else
 		;debug.trace("iEquip_ProMode quickHealSwitchBack - Something went wrong!")
 	endIf
-	if bQuickHealSwitchBackAndRestore && bPlayerIsInCombat
+	if bQuickHealing && bQuickHealSwitchBackAndRestore && bPlayerIsInCombat
 		PO.selectAndConsumePotion(1, 0) ;Magicka potions
 	endIf
-	iQuickHealSlotsEquipped = -1 ;Reset
-	;debug.trace("iEquip_ProMode quickHealSwitchBack end")
+	iQuickSlotsEquipped = -1 ;Reset
+	;debug.trace("iEquip_ProMode quickSwitchBack end")
 endFunction
 
-bool function scanInventoryForItemOfType(int itemType)
+bool function scanInventoryForItemOfType(int itemType, bool bFindStaff = false)
 	;debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType start - item type to find: " + itemType)
 	; Possible itemType inputs are 26 - Armor (for shields) or 41 - Weapons (for ranged weapons)
 	int numFound = GetNumItemsOfType(PlayerRef, itemType)
@@ -1785,4 +1858,8 @@ bool function scanInventoryForItemOfType(int itemType)
 
 	;debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType end - returning:" + found)
 	return found
+endFunction
+
+; Deprecated in v1.2
+function quickHealSwitchBack(bool bPlayerIsInCombat)
 endFunction
