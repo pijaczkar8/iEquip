@@ -37,8 +37,6 @@ bool property bCurrentlyQuickRanged auto hidden
 bool property bCurrentlyQuickHealing auto hidden
 bool property bQuickHealActionTaken auto hidden
 int iQuickHealSlotsEquipped = -1
-int iPreviousLeftHandIndex
-int iPreviousRightHandIndex
 
 ;MCM Properties
 bool property bQuickShieldEnabled auto hidden
@@ -886,7 +884,6 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 			if foundType == 22
 				if is2HWardSpell
 					PlayerRef.EquipSpell(targetForm as Spell)
-					
 				else
 					PlayerRef.EquipSpell(targetForm as Spell, 0)
 				endIf
@@ -1313,12 +1310,98 @@ bool function quickRangedFindAndEquipSpellOrStaff()
 		endIf
 	endIf
 
+	if actionTaken && iQuickRangedSwitchOutAction > 0
+		bCurrentlyQuickRanged = true
+	endIf
+
 	return actionTaken
 endFunction
 
 bool function quickRangedFindAndEquipSpell()
-	bool actionTaken
 
+	bool actionTaken
+	int i
+	int targetArray = WC.aiTargetQ[iQuickRanged1HPreferredHand]
+	int targetObject
+	int queueLength = jArray.count(targetArray)
+	spell foundSpell
+	;Look for our first choice bound ranged weapon spell
+	while i < queueLength && foundSpell == none
+		targetObject = jArray.getObj(targetArray, i)
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[iQuickRanged1HPreferredHand]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsSpellRanged(jMap.getForm(targetObject, "iEquipForm") as spell)
+			foundSpell = jMap.getForm(targetObject, "iEquipForm") as spell
+		endIf
+		i += 1
+	endwhile
+	;if we haven't found our first choice bound ranged weapon spell now look for the alternative
+	if foundSpell == none && bScanInventory
+
+		int spellCount = PlayerRef.GetSpellCount()	; Check through players learned spells starting with the most recent
+		spell spellToCheck
+		
+		while spellCount > 0 && foundSpell == none
+			spellToCheck = PlayerRef.GetNthSpell(spellCount)
+			if iEquip_FormExt.IsSpellRanged(spellToCheck)
+				foundSpell = spellToCheck
+			else
+				spellCount -=1
+			endIf
+		endWhile
+
+		if foundSpell == none						; If we haven't found a learned ranged spell then as a last resort check the player race starting spells
+			spellCount = PlayerRef.GetActorBase().GetSpellCount()
+
+			while spellCount > 0 && foundSpell == none
+				spellToCheck = PlayerRef.GetActorBase().GetNthSpell(spellCount)
+				if iEquip_FormExt.IsSpellRanged(spellToCheck)
+					foundSpell = spellToCheck
+				else
+					spellCount -=1
+				endIf
+			endWhile
+		endIf
+	endIf
+	
+	if foundSpell != none
+		;if we're not in Preselect Mode, or we've selected Preselect Mode Equip in the MCM
+		if !bPreselectMode || iPreselectQuickRanged == 2
+			;Store current right hand index before switching in case user calls quickRangedSwitchOut() - we don't need left index as toggling out of ammo mode by switching right will take care of that.
+			iPreviousRightHandIndex = WC.aiCurrentQueuePosition[1]
+			if WC.abPoisonInfoDisplayed[1]
+				WC.hidePoisonInfo(1)
+			endIf
+			if WC.abIsCounterShown[1]
+				WC.setCounterVisibility(1, false)
+			endIf
+			if WC.bLeftIconFaded
+				WC.checkAndFadeLeftIcon(1, 22)
+			endIf
+			WC.aiCurrentQueuePosition[1] = found
+			WC.asCurrentlyEquipped[1] = jMap.getStr(jArray.getObj(targetArray, found), "iEquipName")
+			;Update the main right hand widget, if in Preselect Mode skipping the Preselect Mode check so we don't update the preselect slot
+			WC.updateWidget(1, found, true)
+			;If we're in Preselect Mode and the spell we're about to equip matches the right preselected item then cycle the preselect slot
+			if bPreselectMode
+		    	if bPreselectSwapItemsOnQuickAction
+					WC.aiCurrentlyPreselected[1] = iPreviousRightHandIndex
+					WC.updateWidget(1, iPreviousRightHandIndex, false, true)
+				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
+				elseIf WC.aiCurrentlyPreselected[1] == found
+					cyclePreselectSlot(1, rightCount, false)
+				endIf
+			endIf
+			WC.checkAndEquipShownHandItem(1, false)
+			if iQuickRangedSwitchOutAction > 0
+				bCurrentlyQuickRanged = true
+			endIf
+		;Otherwise update the Preselect Mode preselect slot
+		else
+			WC.aiCurrentlyPreselected[1] = found
+			WC.updateWidget(1, found)
+		endIf
+		actionTaken = true
+	endIf
+	;debug.trace("iEquip_ProMode quickRangedFindAndEquipBoundSpell end")
 	return actionTaken
 endFunction
 
@@ -1674,8 +1757,7 @@ function quickHealFindAndEquipSpell()
 		endIf
 		;debug.trace("iEquip_ProMode quickHealFindAndEquipSpell - iEquipSlot: " + iEquipSlot + ", bQuickHealSwitchBackEnabled: " + bQuickHealSwitchBackEnabled)
 		if bQuickHealSwitchBackEnabled
-			iPreviousLeftHandIndex = WC.aiCurrentQueuePosition[0]
-			iPreviousRightHandIndex = WC.aiCurrentQueuePosition[1]
+			saveCurrentItemsForSwitchBack()
 			;debug.trace("iEquip_ProMode quickHealFindAndEquipSpell - current queue positions stored for switch back, iPreviousLeftHandIndex: " + iPreviousLeftHandIndex + ", iPreviousRightHandIndex: " + iPreviousRightHandIndex)
 		endIf
 		iQuickHealSlotsEquipped = iEquipSlot
@@ -1770,39 +1852,118 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool equippingOt
 	;debug.trace("iEquip_ProMode quickHealEquipSpell end")
 endFunction
 
+int iPreviousLeftHandIndex
+int iPreviousRightHandIndex
+form fPreviousLeftHandForm
+form fPreviousRightHandForm
+int iPreviousRHType
+bool bPreviously2H
+bool bPreviouslyUnarmed
+
+function saveCurrentItemsForSwitchBack()
+	
+	fPreviousLeftHandForm = PlayerRef.GetEquippedObject(0)
+	if fPreviousLeftHandForm && (fPreviousLeftHandForm == jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
+		iPreviousLeftHandIndex = WC.aiCurrentQueuePosition[0]
+	else
+		iPreviousLeftHandIndex = -1
+	endIf
+
+	fPreviousRightHandForm = PlayerRef.GetEquippedObject(1)
+	if fPreviousRightHandForm && (fPreviousRightHandForm == jMap.getForm(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipForm"))
+		iPreviousRightHandIndex = WC.aiCurrentQueuePosition[1]
+	else
+		iPreviousRightHandIndex = -1
+	endIf
+
+	if fPreviousRightHandForm
+		iPreviousRHType = fPreviousRightHandForm.GetType()
+		if fPreviousRightHandForm as weapon
+			iPreviousRHType = (fPreviousRightHandForm as weapon).GetWeaponType()
+		endIf
+		bPreviously2H = (WC.ai2HWeaponTypes.Find(iPreviousRHType) > -1 && !(iPreviousRHType < 7 && WC.bIsCGOLoaded)) || (iPreviousRHType == 22 && (fPreviousRightHandForm as spell).GetEquipType() == 3)
+	else
+		bPreviously2H = false
+	endIf
+
+	bPreviouslyUnarmed = (fPreviousRightHandForm == none && fPreviousLeftHandForm == none) || (fPreviousRightHandForm == EH.FistWeapon)
+
+endFunction
+
 function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
 	;debug.trace("iEquip_ProMode quickSwitchBack start")
 	bCurrentlyQuickHealing = false
-	WC.aiCurrentQueuePosition[0] = iPreviousLeftHandIndex
-	WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], iPreviousLeftHandIndex), "iEquipName")
-	WC.aiCurrentQueuePosition[1] = iPreviousRightHandIndex
-	int previousRHObject = jArray.getObj(WC.aiTargetQ[1], iPreviousRightHandIndex)
-	int previousRHType = jMap.getInt(previousRHObject, "iEquipType")
-	WC.asCurrentlyEquipped[1] = jMap.getStr(previousRHObject, "iEquipName")
+
+	if iPreviousLeftHandIndex != -1
+		WC.aiCurrentQueuePosition[0] = iPreviousLeftHandIndex
+		WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], iPreviousLeftHandIndex), "iEquipName")
+	endIf
+
+	if iPreviousRightHandIndex != -1
+		WC.aiCurrentQueuePosition[1] = iPreviousRightHandIndex
+		WC.asCurrentlyEquipped[1] = jMap.getStr(jArray.getObj(WC.aiTargetQ[1], iPreviousRightHandIndex), "iEquipName")
+	endIf
 	
 	int Q = iQuickSlotsEquipped
-	bool previouslyUnarmed = WC.asCurrentlyEquipped[1] == "$iEquip_common_Unarmed"
-	bool previously2H = (WC.ai2HWeaponTypes.Find(previousRHType) > -1 && !(previousRHType < 7 && WC.bIsCGOLoaded)) || (previousRHType == 22 && jMap.getInt(previousRHObject, "iEquipSlot") == 3)
 	
-	if previously2H
+	if bPreviously2H
 		Q = 2
 	endIf
 	
-	if previouslyUnarmed
-		WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)
+	if bPreviouslyUnarmed
+		if iPreviousRightHandIndex != -1 && WC.asCurrentlyEquipped[1] == "$iEquip_common_Unarmed"
+			WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)
+		endIf
 		WC.goUnarmed()
 	elseIf Q < 2
-		WC.updateWidget(Q, WC.aiCurrentQueuePosition[Q], true) ;True overrides bPreselectMode to make sure we're updating the main slot if we're in Preselect
-		WC.checkAndEquipShownHandItem(Q)
-	elseIf Q == 2
-		WC.updateWidget(0, WC.aiCurrentQueuePosition[0], true)
-		if !previously2H
-			WC.checkAndEquipShownHandItem(0)
-		elseIf previousRHType == 7 || previousRHType == 9
-			Utility.WaitMenuMode(0.4)
+		if (Q == 0 && iPreviousLeftHandIndex != -1) || (Q == 1 && iPreviousRightHandIndex != -1)
+			WC.updateWidget(Q, WC.aiCurrentQueuePosition[Q], true) ; True overrides bPreselectMode to make sure we're updating the main slot if we're in Preselect
+			WC.checkAndEquipShownHandItem(Q)
+		else
+			form previousItemForm
+			if Q == 0
+				previousItemForm = fPreviousLeftHandForm
+			else
+				previousItemForm = fPreviousRightHandForm
+			endIf
+
+			if previousItemForm == none
+				WC.UnequipHand(Q)
+			elseIf previousItemForm as spell
+				PlayerRef.EquipSpell(previousItemForm as Spell, aiHandEquipSlots.Find(Q))
+			else
+				PlayerRef.EquipItemEx(previousItemForm, aiHandEquipSlots.Find(Q))
+			endIf
 		endIf
-		WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)
-		WC.checkAndEquipShownHandItem(1)
+	elseIf Q == 2
+		if iPreviousLeftHandIndex != -1
+			WC.updateWidget(0, WC.aiCurrentQueuePosition[0], true)
+			if !bPreviously2H
+				WC.checkAndEquipShownHandItem(0)
+			elseIf iPreviousRHType == 7 || iPreviousRHType == 9
+				Utility.WaitMenuMode(0.4)
+			endIf
+		elseIf !bPreviously2H
+			if fPreviousLeftHandForm == none
+				WC.UnequipHand(0)
+			elseIf fPreviousLeftHandForm as spell
+				PlayerRef.EquipSpell(fPreviousLeftHandForm as Spell, 2)
+			else
+				PlayerRef.EquipItemEx(fPreviousLeftHandForm, 2)
+			endIf
+		endIf
+		if iPreviousRightHandIndex != -1
+			WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)
+			WC.checkAndEquipShownHandItem(1)
+		else
+			if fPreviousRightHandForm == none
+				WC.UnequipHand(1)
+			elseIf fPreviousRightHandForm as spell
+				PlayerRef.EquipSpell(fPreviousRightHandForm as Spell, 1)
+			else
+				PlayerRef.EquipItemEx(fPreviousRightHandForm, 1)
+			endIf
+		endIf
 	else
 		;debug.trace("iEquip_ProMode quickHealSwitchBack - Something went wrong!")
 	endIf
