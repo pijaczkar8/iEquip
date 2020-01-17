@@ -4879,8 +4879,7 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     			endIf
     		endIf
     	else
-        	MagicEffect sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())
-        	IconName = sEffect.GetAssociatedSkill()
+        	IconName = getSpellSchool(S)
         	if IconName == "Destruction"
         		;debug.trace("iEquip_WidgetCore GetItemIconString - IconName: " + IconName + ", strongest magic effect: " + sEffect + ", " + (sEffect as form).GetName())
         		if sEffect.HasKeyword(MagicDamageFire)
@@ -4949,6 +4948,10 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     endIf
     ;debug.trace("iEquip_WidgetCore GetItemIconName end - returning IconName as " + IconName)
     return IconName
+endFunction
+
+string function getSpellSchool(spell spellToCheck)
+	return spellToCheck.GetNthEffectMagicEffect(spellToCheck.GetCostliestEffectIndex()).GetAssociatedSkill()
 endFunction
 
 ; Called by MCM if user has disabled Allow Single Items In Both Queues to remove duplicate 1h items from the right hand queue
