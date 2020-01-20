@@ -2342,6 +2342,8 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		updateWidget(Q, targetIndex, false, true)
 		
 		if Q < 2
+			PM.bCurrentlyQuickRanged = false
+			PM.bCurrentlyQuickHealing = false
 			;if bEquipOnPause is enabled and you are cycling left/right/shout, and we're not ignoring bEquipOnPause because we're switching hands, then use the bEquipOnPause updates
 			if !ignoreEquipOnPause && bEquipOnPause
 				if Q == 0
@@ -2349,19 +2351,6 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				else
 					RHUpdate.registerForEquipOnPauseUpdate(Reverse)
 				endIf
-				;/if bSlowTimeWhileCycling && iCycleSlowTimeStrength > 0
-					if bConsoleUtilLoaded
-						bGTMSet = true
-						float f = (100 - iCycleSlowTimeStrength) as float / 100
-						if f == 0
-							f = 0.001
-						endIf
-						ConsoleUtil.ExecuteCommand("sgtm " + f)
-					else
-						iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
-    					PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
-    				endIf
-    			endIf/;
 			;Otherwise carry on and equip/cycle
 			else
 				checkAndEquipShownHandItem(Q, Reverse)
@@ -3753,7 +3742,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			PlayerRef.EquipSpell(targetItem as Spell, Q)
 			;debug.trace("iEquip_WidgetCore cycleHand - just equipped a spell, equip type: " + jMap.getInt(targetObject, "iEquipSlot") + ", bProModeEnabled: " + bProModeEnabled + ", bQuickDualCastEnabled: " + bQuickDualCastEnabled + ", justSwitchedHands: " + justSwitchedHands + ", bPreselectMode: " + bPreselectMode)
 			if jMap.getInt(targetObject, "iEquipSlot") == 3 ; 2H spells
-				updateLeftSlotOn2HSpellEquipped()
+				updateOtherHandOn2HSpellEquipped(0)
 			elseIf bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
 				spell targetSpell = targetItem as spell
 				string spellSchool = jMap.getStr(targetObject, "iEquipSchool")
@@ -3832,7 +3821,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		Utility.WaitMenuMode(0.2)
 	; If we've just directly equipped and are auto adding a 2H spell now we need to show it in the left slot as well, which will also sit b2HSpellEquipped to true blocking cycleHand(0) below
 	elseIf itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3
-		updateLeftSlotOn2HSpellEquipped()
+		updateOtherHandOn2HSpellEquipped(0)
 	endIf
 	checkIfBoundSpellEquipped()
 	checkAndUpdatePoisonInfo(Q)
@@ -3970,37 +3959,50 @@ function goUnarmed()
 	;debug.trace("iEquip_WidgetCore goUnarmed end")
 endFunction
 
+; Deprecated in v1.2
 function updateLeftSlotOn2HSpellEquipped()
-	;debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped start")
+endFunction
+
+function updateOtherHandOn2HSpellEquipped(int Q)
+	;debug.trace("iEquip_WidgetCore updateOtherHandOn2HSpellEquipped start")
+	int otherHand
+	if Q == 0
+		otherHand = 1
+	endIf
+
 	bBlockSwitchBackToBoundSpell = true
 	;And now we need to update the left hand widget
-	float fNameAlpha = afWidget_A[aiNameElements[0]]
+	float fNameAlpha = afWidget_A[aiNameElements[Q]]
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
 
 	if iBackgroundStyle > 0
 		int[] args = new int[2]
-		args[0] = 0
+		args[0] = Q
 		args[1] = iBackgroundStyle
 		UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)	; Reshow the background if it was previously hidden
 	endIf
 
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	If(iHandle)
-		UICallback.PushInt(iHandle, 0)
-		UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipIcon")) ;Show the same icon and name in the left hand as already showing in the right
-		UICallback.PushString(iHandle, asCurrentlyEquipped[1])
+		UICallback.PushInt(iHandle, Q)
+		UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiTargetQ[otherHand], aiCurrentQueuePosition[otherHand]), "iEquipIcon")) ;Show the same icon and name in the left hand as already showing in the right
+		UICallback.PushString(iHandle, asCurrentlyEquipped[otherHand])
 		UICallback.PushFloat(iHandle, fNameAlpha)
-		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[0]])
-		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[0]])
+		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]])
+		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[Q]])
 		UICallback.Send(iHandle)
 	endIf
 	if bNameFadeoutEnabled && bLeftRightNameFadeEnabled
-		LNUpdate.registerForNameFadeoutUpdate(aiNameElements[0])
+		if Q == 0
+			LNUpdate.registerForNameFadeoutUpdate(aiNameElements[0])
+		else
+			RNUpdate.registerForNameFadeoutUpdate(aiNameElements[1])
+		endIf
 	endIf
-	;debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
-	if bAmmoMode && !bPreselectMode
+	;debug.trace("iEquip_WidgetCore updateOtherHandOn2HSpellEquipped - isAmmoMode: " + bAmmoMode + ", bPreselectMode: " + bPreselectMode)
+	if Q == 0 && bAmmoMode && !bPreselectMode
 		AM.toggleAmmoMode(true, true)
 		bool[] args = new bool[3]
 		args[2] = true
@@ -4009,12 +4011,12 @@ function updateLeftSlotOn2HSpellEquipped()
 		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 	endIf
 	b2HSpellEquipped = true
-	hideAttributeIcons(0)
-	TI.updateTemperTierIndicator(0)
-	setCounterVisibility(0, false)
-	hidePoisonInfo(0)
-	if CM.abIsChargeMeterShown[0]
-		CM.updateChargeMeterVisibility(0, false)
+	hideAttributeIcons(Q)
+	TI.updateTemperTierIndicator(Q)
+	setCounterVisibility(Q, false)
+	hidePoisonInfo(Q)
+	if CM.abIsChargeMeterShown[Q]
+		CM.updateChargeMeterVisibility(Q, false)
 	endIf
 	ammo targetAmmo = AM.currentAmmoForm as Ammo
 	if targetAmmo && bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
@@ -4024,7 +4026,7 @@ function updateLeftSlotOn2HSpellEquipped()
 		refreshGearedUp()
 	endIf
 	bBlockSwitchBackToBoundSpell = false
-	;debug.trace("iEquip_WidgetCore updateLeftSlotOn2HSpellEquipped end")
+	;debug.trace("iEquip_WidgetCore updateOtherHandOn2HSpellEquipped end")
 endFunction
 
 function reequipOtherHand(int Q, bool equip = true)
@@ -4881,6 +4883,7 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     	else
         	IconName = getSpellSchool(S)
         	if IconName == "Destruction"
+        		MagicEffect sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())
         		;debug.trace("iEquip_WidgetCore GetItemIconString - IconName: " + IconName + ", strongest magic effect: " + sEffect + ", " + (sEffect as form).GetName())
         		if sEffect.HasKeyword(MagicDamageFire)
         			IconName += "Fire"
