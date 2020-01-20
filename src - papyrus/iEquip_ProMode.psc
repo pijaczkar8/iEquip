@@ -1041,7 +1041,6 @@ function quickShieldSwitchRightHand(int foundType, bool rightHandHasSpell)
 endFunction
 
 bool bJustEquipped2HRangedSpell
-bool property bQuickRangedQueueItemsOnly auto hidden
 bool property bQuickRangedGiveMeAnythingGoddamit = true auto hidden
 bool[] property abQuickRangedSpellSchoolAllowed auto hidden
 int property iQuickRanged1HPreferredHand = 1 auto hidden
@@ -1329,7 +1328,7 @@ bool function quickRangedFindAndEquipSpellOrStaff()
 endFunction
 
 bool function quickRangedFindAndEquipSpell()
-
+	;debug.trace("iEquip_ProMode quickRangedFindAndEquipSpell end")
 	bool actionTaken
 	int Q = iQuickRanged1HPreferredHand
 	int i
@@ -1459,13 +1458,100 @@ bool function quickRangedFindAndEquipSpell()
 
 		actionTaken = true
 	endIf
-	;debug.trace("iEquip_ProMode quickRangedFindAndEquipBoundSpell end")
+	;debug.trace("iEquip_ProMode quickRangedFindAndEquipSpell end")
 	return actionTaken
 endFunction
 
 bool function quickRangedFindAndEquipStaff()
+	;debug.trace("iEquip_ProMode quickRangedFindAndEquipStaff end")
 	bool actionTaken
+	int Q = iQuickRanged1HPreferredHand
+	int i
+	int targetArray = WC.aiTargetQ[Q]
+	int targetObject
+	int queueLength = jArray.count(targetArray)
+	form foundStaff
+	bool foundInQueue
+	;Look for our first choice bound ranged weapon spell
+	while i < queueLength && foundStaff == none
+		targetObject = jArray.getObj(targetArray, i)
+		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsSpellRanged(jMap.getForm(targetObject, "iEquipForm") as spell)
+		; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm"))
+			foundStaff = jMap.getForm(targetObject, "iEquipForm")
+			foundInQueue = true
+		else
+			i += 1
+		endIf
+	endwhile
+	
+	if foundStaff == none && bScanInventory && scanInventoryForItemOfType(41, true, Q)
 
+	endIf
+
+	if foundStaff != none
+	
+		bool doEquip
+
+		if foundInQueue
+			if !bPreselectMode || iPreselectQuickRanged == 2
+
+				if WC.abPoisonInfoDisplayed[Q]
+					WC.hidePoisonInfo(Q)
+				endIf
+				if WC.abIsCounterShown[Q]
+					WC.setCounterVisibility(Q, false)
+				endIf
+				if WC.bLeftIconFaded
+					WC.checkAndFadeLeftIcon(Q, 22)
+				endIf
+
+				WC.aiCurrentQueuePosition[Q] = i
+				WC.asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
+				WC.updateWidget(Q, i, true)
+
+				if bPreselectMode
+			    	if bPreselectSwapItemsOnQuickAction
+			    		int previousIndex
+			    		if Q == 0
+			    			previousIndex = iPreviousLeftHandIndex
+			    		else
+			    			previousIndex = iPreviousRightHandIndex
+			    		endIf
+						WC.aiCurrentlyPreselected[Q] = previousIndex
+						WC.updateWidget(Q, previousIndex, false, true)
+					;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
+					elseIf WC.aiCurrentlyPreselected[Q] == i
+						cyclePreselectSlot(Q, queueLength, false)
+					endIf
+				endIf
+				doEquip = true
+			;Otherwise update the Preselect Mode preselect slot
+			else
+				WC.aiCurrentlyPreselected[Q] = i
+				WC.updateWidget(Q, i)
+			endIf
+		else
+			if !bPreselectMode || iPreselectQuickRanged == 2
+				doEquip = true
+			else
+				addNonEquippedItemToQueue(Q, foundSpell as form, 22)
+				WC.aiCurrentlyPreselected[Q] = queueLength
+				WC.updateWidget(Q, queueLength)
+			endIf
+		endIf
+
+		if doEquip
+			PlayerRef.EquipSpell(foundSpell, Q)
+			if iQuickRangedSwitchOutAction > 0
+				bCurrentlyQuickRanged = true
+				iQuickSlotsEquipped = Q
+			endIf
+		endIf
+
+		actionTaken = true
+	endIf
+	;debug.trace("iEquip_ProMode quickRangedFindAndEquipBoundSpell end")
 	return actionTaken
 endFunction
 

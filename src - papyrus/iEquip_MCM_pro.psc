@@ -50,10 +50,8 @@ function initData()
     QRPreferredWeaponType[1] = "$iEquip_MCM_pro_opt_crossbow"
     QRPreferredWeaponType[2] = "$iEquip_MCM_pro_opt_boundBow"
     QRPreferredWeaponType[3] = "$iEquip_MCM_pro_opt_boundCrossbow"
-
-    if PM.iQuickRangedPreferredWeaponType > 3	; Resets just in case user had previously selected 'Coming Soon' options of Ranged Spell or Staff which have only now been added in SSE
-    	PM.iQuickRangedPreferredWeaponType = 0
-    endIf
+    QRPreferredWeaponType[4] = "$iEquip_MCM_pro_opt_rangedSpell"
+    QRPreferredWeaponType[5] = "$iEquip_MCM_pro_opt_rangedStaff"
 
     QRSwitchOutOptions = new String[5]
     QRSwitchOutOptions[0] = "$iEquip_MCM_common_opt_disabled"
