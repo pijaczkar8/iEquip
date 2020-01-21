@@ -757,7 +757,7 @@ event EquipAllComplete(string sEventName, string sStringArg, Float fNumArg, Form
 endEvent
 
 ;The forceSwitch bool is set to true when quickShield is called by WC.removeItemFromQueue when a previously equipped shield has been removed, so we're only looking for a shield, not a ward
-function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
+function quickShield(bool forceSwitch = false, bool onTorchDropped = false, bool wardOnlyForQuickRanged = false)
 	;debug.trace("iEquip_ProMode quickShield start - forceSwitch: " + forceSwitch + ", onTorchDropped: " + onTorchDropped)
 	;if right hand or ranged weapon in right hand and bQuickShield2HSwitchAllowed not enabled then return out
 	if (!bQuickShieldEnabled && !onTorchDropped) || (!forceSwitch && (((WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1 && !(PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded)) && !bQuickShield2HSwitchAllowed) || (bPreselectMode && iPreselectQuickShield == 0)))
@@ -772,7 +772,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 	bool rightHandHasSpell = ((PlayerRef.GetEquippedItemType(1) == 9) && !(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 42))
 	;debug.trace("iEquip_ProMode quickShield() - RH current item: " + WC.asCurrentlyEquipped[1] + ", RH item type: " + (PlayerRef.GetEquippedItemType(1)))
 	;if player currently has a spell equipped in the right hand or we've enabled Prefer Magic in the MCM search for a ward spell first
-	if !forceSwitch && (rightHandHasSpell || bQuickShieldPreferMagic)
+	if !forceSwitch && (rightHandHasSpell || bQuickShieldPreferMagic || wardOnlyForQuickRanged)
 		;debug.trace("iEquip_ProMode quickShield() - should be looking for a ward spell")
 		;debug.trace("iEquip_ProMode quickShield() - leftCount: " + leftCount + ", current queue position: " + WC.aiCurrentQueuePosition[0] + ", bPreselectMode: " + bPreselectMode + ", ammo mode: " + AM.bAmmoMode)
 		while i < leftCount && found == -1
@@ -787,7 +787,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false)
 			i += 1
 		endwhile
 		;if we haven't found a ward look for a shield
-		if found == -1
+		if found == -1 && !wardOnlyForQuickRanged
 			;debug.trace("iEquip_ProMode quickShield() - ward spell not found, should now be looking for a shield")
 			i = 0
 			while i < leftCount && found == -1
@@ -1297,8 +1297,12 @@ bool function quickRangedFindAndEquipBoundSpell()
 	return actionTaken
 endFunction
 
+; iQuickRanged1HOtherHandAction - 0 = Do nothing, 1 = Dual equip same spell, 2 = Another spell/staff, 3 = Ward Spell, 4 = 1H weapon
+
 bool function quickRangedFindAndEquipSpellOrStaff()
 	bool actionTaken
+
+	; Do preferred hand action first
 	
 	if iQuickRangedPreferredWeaponType > 1 && iQuickRangedPreferredWeaponType < 5
 		actionTaken = quickRangedFindAndEquipSpell()
@@ -1314,8 +1318,34 @@ bool function quickRangedFindAndEquipSpellOrStaff()
 		endIf
 	endIf
 
-	if actionTaken && iQuickRanged1HOtherHandAction > 0 && !bJustEquipped2HRangedSpell
+	; Now if we've equipped the preferred hand carry out the preferred other hand action
 
+	if actionTaken && iQuickRanged1HOtherHandAction > 0 && !bJustEquipped2HRangedSpell
+		bool spellEquipped = PlayerRef.GetEquippedItemType(iQuickRanged1HPreferredHand) == 9
+		if iQuickRanged1HOtherHandAction == 1													; Dual equip the same spell
+			if spellEquipped
+				quickDualCastOnDoubleTap(iQuickRanged1HPreferredHand)
+			endIf
+		elseIf iQuickRanged1HOtherHandAction == 2												; Equip a different spell or staff, preferring the same type (spell or staff) if possible
+			bool otherHandEquipped
+			if spellEquipped
+				otherHandEquipped = quickRangedFindAndEquipSpell(true)
+				if !otherHandEquipped
+					otherHandEquipped = quickRangedFindAndEquipStaff(true)
+				endIf
+			else
+				otherHandEquipped = quickRangedFindAndEquipStaff(true)
+				if !otherHandEquipped
+					otherHandEquipped = quickRangedFindAndEquipSpell(true)
+				endIf
+			endIf
+		elseIf iQuickRanged1HOtherHandAction == 3												; Equip a ward spell (only if the preferred hand is the right hand) - NO INVENTORY SCANNING so only looks in queue items in the other hand
+			if iQuickRanged1HPreferredHand == 1
+				quickShield(false, false, true)
+			endIf
+		else 																					; Equip a 1H weapon (or 2H if using Combat Gameplay Overhaul) - NO INVENTORY SCANNING so only looks in queue items in the other hand
+			quickRangedFindAndEquipWeaponInOtherHand()
+		endIf
 	endIf
 
 	return actionTaken
@@ -1325,26 +1355,27 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 	;debug.trace("iEquip_ProMode quickRangedFindAndEquipSpell end")
 	bool actionTaken
 	int Q = iQuickRanged1HPreferredHand
+	int otherHand
+	bool spellEquipped
+	if equippingOtherHand
+		otherHand = Q
+		Q = (Q + 1) % 2
+		spellEquipped = PlayerRef.GetEquippedItemType(otherHand) == 9
+	endIf
 	int i
 	int targetArray = WC.aiTargetQ[Q]
 	int targetObject
 	int queueLength = jArray.count(targetArray)
 	spell foundSpell
-	bool foundInQueue
-	;Look for our first choice bound ranged weapon spell
+	
+	;Look for a ranged spell in the preferred hand queue first
 	while i < queueLength && foundSpell == none
 		targetObject = jArray.getObj(targetArray, i)
-		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsSpellRanged(jMap.getForm(targetObject, "iEquipForm") as spell)
+		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsSpellRanged(jMap.getForm(targetObject, "iEquipForm") as spell) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))]
 		; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm"))
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == jMap.getForm(targetObject, "iEquipForm") as spell)
 			foundSpell = jMap.getForm(targetObject, "iEquipForm") as spell
-			if abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))]
-				foundInQueue = true
-			else
-				foundSpell = none
-			endIf
-		endIf
-		if foundSpell == none
+		else
 			i += 1
 		endIf
 	endwhile
@@ -1358,7 +1389,7 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 			spellToCheck = PlayerRef.GetNthSpell(spellCount)
 			;if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
 			; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-			if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
+			if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
 				foundSpell = spellToCheck
 			else
 				spellCount -=1
@@ -1372,78 +1403,65 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 				spellToCheck = PlayerRef.GetActorBase().GetNthSpell(spellCount)
 				;if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
 				; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-				if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
+				if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
 					foundSpell = spellToCheck
 				else
 					spellCount -=1
 				endIf
 			endWhile
 		endIf
+
+		if foundSpell
+			addNonEquippedItemToQueue(Q, foundSpell as form, 22)
+			i = queueLength
+		endIf
 	endIf
 
 	if foundSpell != none
 	
-		bool doEquip
 		bool is2HSpell = (foundSpell.GetEquipType() == WC.EquipSlots[3])
 
-		if foundInQueue
-			if !bPreselectMode || iPreselectQuickRanged == 2
+		if !bPreselectMode || iPreselectQuickRanged == 2
 
-				if WC.abPoisonInfoDisplayed[Q]
-					WC.hidePoisonInfo(Q)
-				endIf
-				if WC.abIsCounterShown[Q]
-					WC.setCounterVisibility(Q, false)
-				endIf
-				if WC.bLeftIconFaded
-					WC.checkAndFadeLeftIcon(Q, 22)
-				endIf
-
-				WC.aiCurrentQueuePosition[Q] = i
-				WC.asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
-				WC.updateWidget(Q, i, true)
-
-				if bPreselectMode
-			    	if bPreselectSwapItemsOnQuickAction
-			    		int previousIndex
-			    		if Q == 0
-			    			previousIndex = iPreviousLeftHandIndex
-			    		else
-			    			previousIndex = iPreviousRightHandIndex
-			    		endIf
-						WC.aiCurrentlyPreselected[Q] = previousIndex
-						WC.updateWidget(Q, previousIndex, false, true)
-					;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
-					elseIf WC.aiCurrentlyPreselected[Q] == i
-						cyclePreselectSlot(Q, queueLength, false)
-					endIf
-				endIf
-				doEquip = true
-			;Otherwise update the Preselect Mode preselect slot
-			else
-				WC.aiCurrentlyPreselected[Q] = i
-				WC.updateWidget(Q, i)
+			if WC.abPoisonInfoDisplayed[Q]
+				WC.hidePoisonInfo(Q)
 			endIf
-		else
-			if !bPreselectMode || iPreselectQuickRanged == 2
-				doEquip = true
-			else
-				addNonEquippedItemToQueue(Q, foundSpell as form, 22)
-				WC.aiCurrentlyPreselected[Q] = queueLength
-				WC.updateWidget(Q, queueLength)
+			if WC.abIsCounterShown[Q]
+				WC.setCounterVisibility(Q, false)
 			endIf
-		endIf
+			if WC.bLeftIconFaded
+				WC.checkAndFadeLeftIcon(Q, 22)
+			endIf
 
-		if doEquip
+			WC.aiCurrentQueuePosition[Q] = i
+			WC.asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
+			WC.updateWidget(Q, i, true)
+
+			if bPreselectMode
+		    	if bPreselectSwapItemsOnQuickAction
+		    		int previousIndex
+		    		if Q == 0
+		    			previousIndex = iPreviousLeftHandIndex
+		    		else
+		    			previousIndex = iPreviousRightHandIndex
+		    		endIf
+					WC.aiCurrentlyPreselected[Q] = previousIndex
+					WC.updateWidget(Q, previousIndex, false, true)
+				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
+				elseIf WC.aiCurrentlyPreselected[Q] == i
+					cyclePreselectSlot(Q, queueLength, false)
+				endIf
+			endIf
+			
 			PlayerRef.EquipSpell(foundSpell, Q)
+			
 			if is2HSpell
-				if !foundInQueue
-					WaitMenuMode(1.0)
-				endIf
 				WC.updateOtherHandOn2HSpellEquipped(Q)
 				Q = 2
 			endIf
+			
 			bJustEquipped2HRangedSpell = is2HSpell
+			
 			if iQuickRangedSwitchOutAction > 0
 				bCurrentlyQuickRanged = true
 				if equippingOtherHand
@@ -1452,6 +1470,10 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 					iQuickSlotsEquipped = Q
 				endIf
 			endIf
+		;Otherwise update the Preselect Mode preselect slot
+		else
+			WC.aiCurrentlyPreselected[Q] = i
+			WC.updateWidget(Q, i)
 		endIf
 
 		actionTaken = true
@@ -1464,20 +1486,25 @@ bool function quickRangedFindAndEquipStaff(bool equippingOtherHand = false)
 	;debug.trace("iEquip_ProMode quickRangedFindAndEquipStaff end")
 	bool actionTaken
 	int Q = iQuickRanged1HPreferredHand
+	int otherHand
+	bool staffEquipped
+	if equippingOtherHand
+		otherHand = Q
+		Q = (Q + 1) % 2
+		staffEquipped = PlayerRef.GetEquippedItemType(otherHand) == 8
+	endIf
 	int i
 	int targetArray = WC.aiTargetQ[Q]
 	int targetObject
 	int queueLength = jArray.count(targetArray)
 	form foundStaff
-	bool foundInQueue
 	;Look for our first choice bound ranged weapon spell
 	while i < queueLength && foundStaff == none
 		targetObject = jArray.getObj(targetArray, i)
-		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsStaffRanged(jMap.getForm(targetObject, "iEquipForm") as spell)
+		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsStaffRanged(jMap.getForm(targetObject, "iEquipForm"))
 		; LE Only - the following line is a workaround due to missing IsStaffRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm"))
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && !(equippingOtherHand && staffEquipped && (PlayerRef.GetEquippedObject(otherHand) == jMap.getForm(targetObject, "iEquipForm")) && (PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) == 1))
 			foundStaff = jMap.getForm(targetObject, "iEquipForm")
-			foundInQueue = true
 		else
 			i += 1
 		endIf
@@ -1490,58 +1517,40 @@ bool function quickRangedFindAndEquipStaff(bool equippingOtherHand = false)
 
 	if foundStaff != none
 	
-		bool doEquip
+		if !bPreselectMode || iPreselectQuickRanged == 2
 
-		if foundInQueue
-			if !bPreselectMode || iPreselectQuickRanged == 2
-
-				if WC.abPoisonInfoDisplayed[Q]
-					WC.hidePoisonInfo(Q)
-				endIf
-				if WC.abIsCounterShown[Q]
-					WC.setCounterVisibility(Q, false)
-				endIf
-				if WC.bLeftIconFaded
-					WC.checkAndFadeLeftIcon(Q, 8)
-				endIf
-
-				WC.aiCurrentQueuePosition[Q] = i
-				WC.asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
-				WC.updateWidget(Q, i, true)
-
-				if bPreselectMode
-			    	if bPreselectSwapItemsOnQuickAction
-			    		int previousIndex
-			    		if Q == 0
-			    			previousIndex = iPreviousLeftHandIndex
-			    		else
-			    			previousIndex = iPreviousRightHandIndex
-			    		endIf
-						WC.aiCurrentlyPreselected[Q] = previousIndex
-						WC.updateWidget(Q, previousIndex, false, true)
-					;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
-					elseIf WC.aiCurrentlyPreselected[Q] == i
-						cyclePreselectSlot(Q, queueLength, false)
-					endIf
-				endIf
-				doEquip = true
-			;Otherwise update the Preselect Mode preselect slot
-			else
-				WC.aiCurrentlyPreselected[Q] = i
-				WC.updateWidget(Q, i)
+			if WC.abPoisonInfoDisplayed[Q]
+				WC.hidePoisonInfo(Q)
 			endIf
-		else
-			if !bPreselectMode || iPreselectQuickRanged == 2
-				doEquip = true
-			else
-				addNonEquippedItemToQueue(Q, foundStaff, 8)
-				WC.aiCurrentlyPreselected[Q] = queueLength
-				WC.updateWidget(Q, queueLength)
+			if WC.abIsCounterShown[Q]
+				WC.setCounterVisibility(Q, false)
 			endIf
-		endIf
+			if WC.bLeftIconFaded
+				WC.checkAndFadeLeftIcon(Q, 8)
+			endIf
 
-		if doEquip
+			WC.aiCurrentQueuePosition[Q] = i
+			WC.asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(targetArray, i), "iEquipName")
+			WC.updateWidget(Q, i, true)
+
+			if bPreselectMode
+		    	if bPreselectSwapItemsOnQuickAction
+		    		int previousIndex
+		    		if Q == 0
+		    			previousIndex = iPreviousLeftHandIndex
+		    		else
+		    			previousIndex = iPreviousRightHandIndex
+		    		endIf
+					WC.aiCurrentlyPreselected[Q] = previousIndex
+					WC.updateWidget(Q, previousIndex, false, true)
+				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
+				elseIf WC.aiCurrentlyPreselected[Q] == i
+					cyclePreselectSlot(Q, queueLength, false)
+				endIf
+			endIf
+			
 			PlayerRef.EquipItemEx(foundStaff, aiHandEquipSlots[Q])
+			
 			if iQuickRangedSwitchOutAction > 0
 				bCurrentlyQuickRanged = true
 				if equippingOtherHand
@@ -1550,6 +1559,10 @@ bool function quickRangedFindAndEquipStaff(bool equippingOtherHand = false)
 					iQuickSlotsEquipped = Q
 				endIf
 			endIf
+		;Otherwise update the Preselect Mode preselect slot
+		else
+			WC.aiCurrentlyPreselected[Q] = i
+			WC.updateWidget(Q, i)
 		endIf
 
 		actionTaken = true
@@ -1558,7 +1571,69 @@ bool function quickRangedFindAndEquipStaff(bool equippingOtherHand = false)
 	return actionTaken
 endFunction
 
-function quickRanged1HEquipOtherHand()
+function quickRangedFindAndEquipWeaponInOtherHand()
+	int i
+	int Q = (iQuickRanged1HPreferredHand + 1) % 2
+	int targetArray = WC.aiTargetQ[Q]
+	int targetObject
+	int itemType
+	int queueLength = jArray.count(targetArray)
+	form foundWeapon
+	
+	while i < queueLength && foundWeapon == none
+		targetObject = jArray.getObj(targetArray, i)
+		itemType = jMap.getInt(targetObject, "iEquipType")
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && itemType > 0 && (itemType < 5 || (WC.bIsCGOLoaded && itemType < 7))
+			foundWeapon = jMap.getForm(targetObject, "iEquipForm")
+		else
+			i += 1
+		endIf
+	endwhile
+
+	if foundWeapon != none
+		if !bPreselectMode || iPreselectQuickRanged == 2
+
+			if WC.abPoisonInfoDisplayed[Q]
+				WC.hidePoisonInfo(Q)
+			endIf
+			if WC.abIsCounterShown[Q]
+				WC.setCounterVisibility(Q, false)
+			endIf
+			if WC.bLeftIconFaded
+				WC.checkAndFadeLeftIcon(Q, itemType)
+			endIf
+
+			WC.aiCurrentQueuePosition[Q] = i
+			WC.asCurrentlyEquipped[Q] = jMap.getStr(targetObject, "iEquipName")
+			WC.updateWidget(Q, i, true)
+
+			if bPreselectMode
+		    	if bPreselectSwapItemsOnQuickAction
+		    		int previousIndex
+		    		if Q == 0
+		    			previousIndex = iPreviousLeftHandIndex
+		    		else
+		    			previousIndex = iPreviousRightHandIndex
+		    		endIf
+					WC.aiCurrentlyPreselected[Q] = previousIndex
+					WC.updateWidget(Q, previousIndex, false, true)
+				;If we're in Preselect Mode check if we've equipping the currently preselected item and cycle that slot on if so
+				elseIf WC.aiCurrentlyPreselected[Q] == i
+					cyclePreselectSlot(Q, queueLength, false)
+				endIf
+			endIf
+			
+			PlayerRef.EquipItemEx(foundWeapon, aiHandEquipSlots[Q])
+			
+			if iQuickRangedSwitchOutAction > 0
+				iQuickSlotsEquipped = 2
+			endIf
+		;Otherwise update the Preselect Mode preselect slot
+		else
+			WC.aiCurrentlyPreselected[Q] = i
+			WC.updateWidget(Q, i)
+		endIf
+	endIf
 
 endFunction
 
@@ -2123,7 +2198,7 @@ function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
 	;debug.trace("iEquip_ProMode quickSwitchBack end")
 endFunction
 
-bool function scanInventoryForItemOfType(int itemType, bool bFindStaff = false, int Q = -1)
+bool function scanInventoryForItemOfType(int itemType, bool bFindStaff = false, int Q = -1, bool equippingOtherHand = false)
 	;debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType start - item type to find: " + itemType)
 	; Possible itemType inputs are 26 - Armor (for shields) or 41 - Weapons (for ranged weapons)
 	int numFound = GetNumItemsOfType(PlayerRef, itemType)
@@ -2132,7 +2207,7 @@ bool function scanInventoryForItemOfType(int itemType, bool bFindStaff = false, 
 	form formToCheck
 	while i < numFound && !found
 		formToCheck = GetNthFormOfType(PlayerRef, itemType, i)
-		if (itemType == 26 && (formToCheck as armor).IsShield()) || (bFindStaff && (formToCheck as weapon).GetWeaponType() == 8) || (itemType == 41 && (((formToCheck as weapon).GetWeaponType() == 7 && jArray.count(AM.aiTargetQ[0]) > 0) || ((formToCheck as weapon).GetWeaponType() == 9 && jArray.count(AM.aiTargetQ[1]) > 0)))
+		if (itemType == 26 && (formToCheck as armor).IsShield()) || (bFindStaff && (formToCheck as weapon).GetWeaponType() == 8 && !((equippingOtherHand && PlayerRef.GetEquippedObject((Q + 1) % 2)) == formToCheck && PlayerRef.GetItemCount(formToCheck) == 1)) || (itemType == 41 && (((formToCheck as weapon).GetWeaponType() == 7 && jArray.count(AM.aiTargetQ[0]) > 0) || ((formToCheck as weapon).GetWeaponType() == 9 && jArray.count(AM.aiTargetQ[1]) > 0)))
 			found = true
 		else
 			i += 1
