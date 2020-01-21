@@ -1635,6 +1635,7 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 					FadeTo(100, 0.2)
 					WaitMenuMode(0.2)				; Wait for fade duration before continuing
 				endif
+				; ToDo - add kickstart here for torch meter animation as tweens seem to be cancelled when visibility is false?
 													; Register for widget fadeout if enabled and weapons drawn settings allow
 				;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - bWidgetFadeoutEnabled: " + bWidgetFadeoutEnabled + ", fWidgetFadeoutDelay: " + fWidgetFadeoutDelay + ", bAlwaysVisibleWhenWeaponsDrawn: " + bAlwaysVisibleWhenWeaponsDrawn + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
 				if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode

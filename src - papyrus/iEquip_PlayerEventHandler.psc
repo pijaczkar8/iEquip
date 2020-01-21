@@ -379,6 +379,8 @@ bool property bJustQuickDualCast
 	endFunction
 endProperty
 
+; Inventory Event Filters filter what we receive OnItemAdded/OnItemRemoved events for, in this case only OnItemRemoved, so we only receive events for items currently known to iEquip (included in one of the three formlists)
+
 function updateAllEventFilters()
 	;debug.trace("iEquip_PlayerEventHandler updateAllEventFilters start")
 	RemoveAllInventoryEventFilters()
