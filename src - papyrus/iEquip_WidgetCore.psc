@@ -1619,7 +1619,7 @@ function refreshVisibleItems()
 	;debug.trace("iEquip_WidgetCore refreshVisibleItems end")
 endFunction
 
-function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
+function updateWidgetVisibility(bool show = true, float fDuration = 0.2, bool showForTorchMeterFlash = false)
 	;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
 	if !bFadeRequestQueued 							; Terminate the fade request if there is already one in progress and one pending
 		bFadeRequestQueued = true					; Block any further fade requests while this one is pending
@@ -1632,10 +1632,13 @@ function updateWidgetVisibility(bool show = true, float fDuration = 0.2)
 			if show 								; If it is a show request and the widget isn't currently shown then start fade in
 				if !bIsWidgetShown
 					bIsWidgetShown = true
-					FadeTo(100, 0.2)
-					WaitMenuMode(0.2)				; Wait for fade duration before continuing
+					FadeTo(100, fDuration)
+					WaitMenuMode(fDuration)				; Wait for fade duration before continuing
+
+					if CM.bTorchMeterShown && PlayerRef.GetEquippedObject(0).GetType() == 31 && !showForTorchMeterFlash
+						TO.showTorchMeter(true)		; This should update the torch meter fill and kick start the animation again just in case the tween was stopped when the widget was hidden
+					endIf
 				endif
-				; ToDo - add kickstart here for torch meter animation as tweens seem to be cancelled when visibility is false?
 													; Register for widget fadeout if enabled and weapons drawn settings allow
 				;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - bWidgetFadeoutEnabled: " + bWidgetFadeoutEnabled + ", fWidgetFadeoutDelay: " + fWidgetFadeoutDelay + ", bAlwaysVisibleWhenWeaponsDrawn: " + bAlwaysVisibleWhenWeaponsDrawn + ", weapons drawn: " + PlayerRef.IsWeaponDrawn())
 				if bWidgetFadeoutEnabled && fWidgetFadeoutDelay > 0 && (!bAlwaysVisibleWhenWeaponsDrawn || !PlayerRef.IsWeaponDrawn()) && !EM.isEditMode
@@ -5254,10 +5257,10 @@ function QueueMenuRemoveFromQueue(int iIndex)
 				endIf
 	        endIf
 	        ;Add manually removed items to the relevant blackList
-	        if bBlacklistEnabled
+	        if bBlacklistEnabled && itemForm != TO.realTorchForm
 		        aBlackListFLSTs[iQueueMenuCurrentQueue].AddForm(itemForm) ;iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
 		    endIf
-	        if !keepInFLST
+	        if !keepInFLST && itemForm != TO.realTorchForm
 	        	iEquip_AllCurrentItemsFLST.RemoveAddedForm(itemForm)
 	        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
 	        endIf

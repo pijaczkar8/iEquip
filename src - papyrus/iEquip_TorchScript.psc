@@ -306,6 +306,10 @@ event OnUpdate()
 		
 		if fCurrentTorchLife <= 0.0
 			if bShowTorchMeter
+				if !WC.bIsWidgetShown
+					WC.updateWidgetVisibility(true, 0.1, true)
+					Wait(0.1)
+				endIf
 				startTorchMeterFlash()
 				Wait(2.0)
 				updateTorchMeterVisibility(false)

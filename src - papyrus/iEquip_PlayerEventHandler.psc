@@ -696,7 +696,7 @@ function processQueuedForms(int equippedSlot = -1)
 				elseIf itemType == 41
 					itemType = (queuedForm as Weapon).GetWeaponType()
 				endIf
-				if (itemType == 5 || itemType == 6 || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
+				if ((itemType == 5 || itemType == 6 && !WC.bIsCGOLoaded) || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
 					equippedSlot = 1
 				endIf
 				if bPlayerIsABeast
@@ -835,11 +835,11 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 																										; Check that the queuedForm isn't blacklisted for the slot it's been equipped to
 	if !blackListFLSTs[equippedSlot].HasForm(queuedForm) && !(WC.PM.bCurrentlyQuickHealing && itemType == 22 && iEquip_SpellExt.IsHealingSpell(queuedForm as spell))
 																										; If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
-		if !actionTaken && ((equippedSlot < 2 && bAutoAddNewItems || itemType == 31) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers))))
+		if !actionTaken && ((equippedSlot < 2 && bAutoAddNewItems || queuedForm == TO.realTorchForm) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers))))
 																										; First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
 			bool freeSpace = true
 			targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
-			if targetIndex >= WC.iMaxQueueLength && itemType != 31
+			if targetIndex >= WC.iMaxQueueLength && queuedForm != TO.realTorchForm
 				if WC.bHardLimitQueueSize
 					freeSpace = false
 					blockCall = true

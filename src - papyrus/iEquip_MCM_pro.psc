@@ -15,6 +15,8 @@ string[] QSPreferredMagicSchool
 string[] preselectQuickFunctionOptions
 string[] QHEquipOptions
 string[] QRPreferredWeaponType
+string[] QREquipOptions
+string[] QROtherHandOptions
 string[] QRSwitchOutOptions
 string[] QBuffControlOptions
 string[] QBuffOptions
@@ -52,6 +54,17 @@ function initData()
     QRPreferredWeaponType[3] = "$iEquip_MCM_pro_opt_boundCrossbow"
     QRPreferredWeaponType[4] = "$iEquip_MCM_pro_opt_rangedSpell"
     QRPreferredWeaponType[5] = "$iEquip_MCM_pro_opt_rangedStaff"
+
+    QREquipOptions = new String[2]
+    QREquipOptions[0] = "$iEquip_MCM_pro_opt_left"
+    QREquipOptions[1] = "$iEquip_MCM_pro_opt_right"
+
+    QROtherHandOptions = new String[5]
+    QROtherHandOptions[0] = "$iEquip_MCM_gen_opt_DoNothing"
+    QROtherHandOptions[1] = "$iEquip_MCM_pro_opt_dualCast"
+    QROtherHandOptions[2] = "$iEquip_MCM_pro_opt_spellStaff"
+    QROtherHandOptions[3] = "$iEquip_MCM_pro_opt_wardSpell"
+    QROtherHandOptions[4] = "$iEquip_MCM_pro_opt_weapon"
 
     QRSwitchOutOptions = new String[5]
     QRSwitchOutOptions[0] = "$iEquip_MCM_common_opt_disabled"
@@ -190,6 +203,7 @@ function drawPage()
 		MCM.AddTextOptionST("pro_txt_whatProMode", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatIsProMode</font>", "")
 		if WC.bProModeEnabled
 			MCM.AddToggleOptionST("pro_tgl_enblProMode", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblProMode</font>", WC.bProModeEnabled)
+			MCM.AddToggleOptionST("pro_tgl_allowInvScan", "$iEquip_MCM_pro_lbl_allowInvScan", PM.bScanInventory)
 			MCM.AddEmptyOption()
 
 			MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_preselectOpts</font>")
@@ -275,6 +289,23 @@ function drawPage()
 			if PM.bQuickRangedEnabled
 				MCM.AddToggleOptionST("pro_tgl_enblQuickranged", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
 				MCM.AddMenuOptionST("pro_men_prefWepTyp", "$iEquip_MCM_pro_lbl_prefWepTyp", QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
+				MCM.AddToggleOptionST("pro_tgl_gimmeAnything", "$iEquip_MCM_pro_lbl_gimmeAnything", PM.bQuickRangedGiveMeAnythingGoddamit)
+
+				if PM.iQuickRangedPreferredWeaponType > 3 || PM.bQuickRangedGiveMeAnythingGoddamit
+					MCM.AddMenuOptionST("pro_men_QR_prefHand", "$iEquip_MCM_pro_lbl_prefHand", QHEquipOptions[PM.iQuickRanged1HPreferredHand])
+					
+					if PM.iQuickRangedPreferredWeaponType == 4 || PM.bQuickRangedGiveMeAnythingGoddamit
+						MCM.AddTextOption("$iEquip_MCM_pro_lbl_enableQRSchools", "")
+						MCM.AddToggleOptionST("pro_tgl_QR_altSpll", "$iEquip_MCM_pro_lbl_altSpll", PM.abQuickRangedSpellSchoolAllowed[0])
+						MCM.AddToggleOptionST("pro_tgl_QR_conjSpll", "$iEquip_MCM_pro_lbl_conjSpll", PM.abQuickRangedSpellSchoolAllowed[1])
+						MCM.AddToggleOptionST("pro_tgl_QR_destSpll", "$iEquip_MCM_pro_lbl_destSpll", PM.abQuickRangedSpellSchoolAllowed[2])
+						MCM.AddToggleOptionST("pro_tgl_QR_illSpll", "$iEquip_MCM_pro_lbl_illSpll", PM.abQuickRangedSpellSchoolAllowed[3])
+						MCM.AddToggleOptionST("pro_tgl_QR_restSpll", "$iEquip_MCM_pro_lbl_restSpll", PM.abQuickRangedSpellSchoolAllowed[4])
+					endIf
+
+					MCM.AddMenuOptionST("pro_men_QR_otherHand", "$iEquip_MCM_pro_lbl_otherHand", QROtherHandOptions[PM.iQuickRanged1HOtherHandAction])
+				endIf
+
 				MCM.AddMenuOptionST("pro_men_swtchOut", "$iEquip_MCM_pro_lbl_swtchOut", QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
 
 				if PM.iQuickRangedSwitchOutAction == 4
@@ -383,6 +414,16 @@ State pro_txt_whatProMode
             MCM.ShowMessage("$iEquip_MCM_pro_txt_whatProMode", false, "$iEquip_common_msg_Exit")
         endIf
     endEvent    
+endState
+
+State pro_tgl_allowInvScan
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_allowInvScan")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bScanInventory)
+            PM.bScanInventory = !PM.bScanInventory
+        endIf
+    endEvent
 endState
         
 ; ---------------------
@@ -793,6 +834,102 @@ State pro_men_prefWepTyp
     endEvent
 endState
 
+State pro_tgl_gimmeAnything
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_gimmeAnything")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickRangedGiveMeAnythingGoddamit)
+            PM.bQuickRangedGiveMeAnythingGoddamit = !PM.bQuickRangedGiveMeAnythingGoddamit
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pro_men_QR_prefHand
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_prefHand")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(PM.iQuickRanged1HPreferredHand, QHEquipOptions, 1)
+        elseIf currentEvent == "Accept"
+            PM.iQuickRanged1HPreferredHand = currentVar as int
+            if PM.iQuickRanged1HPreferredHand == 0 && PM.iQuickRanged1HOtherHandAction == 3
+            	MCM.ShowMessage("$iEquip_MCM_pro_msg_QRprefHandQS", false, "$OK")
+            	PM.iQuickRanged1HOtherHandAction = 0
+            	MCM.ForcePageReset()
+            else
+            	MCM.SetMenuOptionValueST(QHEquipOptions[PM.iQuickRanged1HPreferredHand])
+            endIf
+        endIf
+    endEvent
+endState
+
+State pro_tgl_QR_altSpll
+    event OnBeginState()
+    	if (currentEvent == "Select") || (currentEvent == "Default" && PM.abQuickRangedSpellSchoolAllowed[0])
+            PM.abQuickRangedSpellSchoolAllowed[0] = !PM.abQuickRangedSpellSchoolAllowed[0]            
+            MCM.SetToggleOptionValueST(PM.abQuickRangedSpellSchoolAllowed[0])
+        endIf
+    endEvent
+endState
+
+State pro_tgl_QR_conjSpll
+    event OnBeginState()
+        if (currentEvent == "Select") || (currentEvent == "Default" && PM.abQuickRangedSpellSchoolAllowed[1])
+            PM.abQuickRangedSpellSchoolAllowed[1] = !PM.abQuickRangedSpellSchoolAllowed[1]            
+            MCM.SetToggleOptionValueST(PM.abQuickRangedSpellSchoolAllowed[1])
+        endIf
+    endEvent
+endState
+
+State pro_tgl_QR_destSpll
+    event OnBeginState()
+        if (currentEvent == "Select") || (currentEvent == "Default" && !PM.abQuickRangedSpellSchoolAllowed[2])
+            PM.abQuickRangedSpellSchoolAllowed[2] = !PM.abQuickRangedSpellSchoolAllowed[2]            
+            MCM.SetToggleOptionValueST(PM.abQuickRangedSpellSchoolAllowed[2])
+        endIf
+    endEvent
+endState
+
+State pro_tgl_QR_illSpll
+    event OnBeginState()
+        if (currentEvent == "Select") || (currentEvent == "Default" && PM.abQuickRangedSpellSchoolAllowed[3])
+            PM.abQuickRangedSpellSchoolAllowed[3] = !PM.abQuickRangedSpellSchoolAllowed[3]            
+            MCM.SetToggleOptionValueST(PM.abQuickRangedSpellSchoolAllowed[3])
+        endIf
+    endEvent
+endState
+
+State pro_tgl_QR_restSpll
+    event OnBeginState()
+        if (currentEvent == "Select") || (currentEvent == "Default" && PM.abQuickRangedSpellSchoolAllowed[4])
+            PM.abQuickRangedSpellSchoolAllowed[4] = !PM.abQuickRangedSpellSchoolAllowed[4]            
+            MCM.SetToggleOptionValueST(PM.abQuickRangedSpellSchoolAllowed[4])
+        endIf
+    endEvent
+endState
+
+State pro_men_QR_otherHand
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pro_txt_otherHand")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(PM.iQuickRanged1HOtherHandAction, QROtherHandOptions, 1)
+        elseIf currentEvent == "Accept"
+            if currentVar as int == 3 && PM.iQuickRanged1HPreferredHand == 0
+            	if MCM.ShowMessage("$iEquip_MCM_pro_msg_QRprefHandQS2", true, "$OK", "$Cancel")
+            		PM.iQuickRanged1HOtherHandAction = 3
+	            	PM.iQuickRanged1HPreferredHand = 1
+	            	MCM.ForcePageReset()
+	            endIf
+            else
+            	PM.iQuickRanged1HOtherHandAction = currentVar as int
+            	MCM.SetMenuOptionValueST(QROtherHandOptions[PM.iQuickRanged1HOtherHandAction])
+            endIf
+        endIf
+    endEvent
+endState
+
 State pro_men_swtchOut
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -862,13 +999,8 @@ endState
 
 State pro_tgl_altSpll
     event OnBeginState()
-    	If (currentEvent == "Select") || currentEvent == "Default"
-            if currentEvent == "Select"
-                WC.abQuickDualCastSchoolAllowed[0] = !WC.abQuickDualCastSchoolAllowed[0] 
-            else
-                WC.abQuickDualCastSchoolAllowed[0] = false
-            endIf
-            
+    	if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[0])
+            WC.abQuickDualCastSchoolAllowed[0] = !WC.abQuickDualCastSchoolAllowed[0]            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[0])
         endIf
     endEvent
@@ -876,13 +1008,8 @@ endState
 
 State pro_tgl_conjSpll
     event OnBeginState()
-        If (currentEvent == "Select") || currentEvent == "Default"
-            if currentEvent == "Select"
-                WC.abQuickDualCastSchoolAllowed[1] = !WC.abQuickDualCastSchoolAllowed[1] 
-            else
-                WC.abQuickDualCastSchoolAllowed[1] = false
-            endIf
-            
+        if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[1])
+            WC.abQuickDualCastSchoolAllowed[1] = !WC.abQuickDualCastSchoolAllowed[1]            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[1])
         endIf
     endEvent
@@ -890,13 +1017,8 @@ endState
 
 State pro_tgl_destSpll
     event OnBeginState()
-        If (currentEvent == "Select") || currentEvent == "Default"
-            if currentEvent == "Select"
-                WC.abQuickDualCastSchoolAllowed[2] = !WC.abQuickDualCastSchoolAllowed[2] 
-            else
-                WC.abQuickDualCastSchoolAllowed[2] = false
-            endIf
-            
+        if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[2])
+            WC.abQuickDualCastSchoolAllowed[2] = !WC.abQuickDualCastSchoolAllowed[2]            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[2])
         endIf
     endEvent
@@ -904,13 +1026,8 @@ endState
 
 State pro_tgl_illSpll
     event OnBeginState()
-        If (currentEvent == "Select") || currentEvent == "Default"
-            if currentEvent == "Select"
-                WC.abQuickDualCastSchoolAllowed[3] = !WC.abQuickDualCastSchoolAllowed[3] 
-            else
-                WC.abQuickDualCastSchoolAllowed[3] = false
-            endIf
-            
+        if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[3])
+            WC.abQuickDualCastSchoolAllowed[3] = !WC.abQuickDualCastSchoolAllowed[3]            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[3])
         endIf
     endEvent
@@ -918,13 +1035,8 @@ endState
 
 State pro_tgl_restSpll
     event OnBeginState()
-        If (currentEvent == "Select") || currentEvent == "Default"
-            if currentEvent == "Select"
-                WC.abQuickDualCastSchoolAllowed[4] = !WC.abQuickDualCastSchoolAllowed[4] 
-            else
-                WC.abQuickDualCastSchoolAllowed[4] = false
-            endIf
-            
+        if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[4])
+            WC.abQuickDualCastSchoolAllowed[4] = !WC.abQuickDualCastSchoolAllowed[4]            
             MCM.SetToggleOptionValueST(WC.abQuickDualCastSchoolAllowed[4])
         endIf
     endEvent
