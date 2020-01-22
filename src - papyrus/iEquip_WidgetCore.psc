@@ -5222,8 +5222,6 @@ function QueueMenuSwap(int upDown, int iIndex)
 	debug.trace("iEquip_WidgetCore QueueMenuSwap end")
 endFunction
 
-;ToDo - Remove Ammo From Queue
-
 function QueueMenuRemoveFromQueue(int iIndex)
 	debug.trace("iEquip_WidgetCore QueueMenuRemoveFromQueue start")
 
