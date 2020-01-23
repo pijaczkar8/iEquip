@@ -2169,6 +2169,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	if onKeyPress
 		bSwitchingHands = false
 		bPreselectSwitchingHands = false
+		if Q < 2
+			PM.bCurrentlyQuickRanged = false
+    		PM.bCurrentlyQuickHealing = false
+    	endIf
 	endIf
 	;Check if queue contains anything and return out if not
 	int targetArray = aiTargetQ[Q]
@@ -2429,9 +2433,6 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
     Form targetItem = jMap.getForm(targetObject, "iEquipForm")
     int itemType = jMap.getInt(targetObject, "iEquipType")
     int itemHandle = jMap.getInt(targetObject, "iEquipHandle", 0xFFFF)
-    
-    PM.bCurrentlyQuickRanged = false
-    PM.bCurrentlyQuickHealing = false
     
     if itemType == 7 || itemType == 9
     	AM.checkAndRemoveBoundAmmo(itemType)
@@ -3482,7 +3483,7 @@ form property fLastDroppedItem auto hidden
 
 function onWeaponOrShieldAdded(form addedForm)
 	;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded start - addedForm: " + addedForm.GetName() + ", iAutoEquipEnabled: " + iAutoEquipEnabled)
-	if iAutoEquipEnabled == 1 || (iAutoEquipEnabled == 2 && PlayerRef.IsWeaponDrawn()) || (iAutoEquipEnabled == 3 && PlayerRef.IsInCombat())
+	if !EH.bPlayerIsABeast && (iAutoEquipEnabled == 1 || (iAutoEquipEnabled == 2 && PlayerRef.IsWeaponDrawn()) || (iAutoEquipEnabled == 3 && PlayerRef.IsInCombat()))
 
 		int currLHItemType = PlayerRef.GetEquippedItemType(0)
 		form currItem
