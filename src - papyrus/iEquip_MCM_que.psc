@@ -31,11 +31,14 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, PO.bAutoAddConsumables as int)
 	jArray.addInt(jPageObj, WC.bShowAutoAddedFlag as int)
 	jArray.addInt(jPageObj, WC.bSkipAutoAddedItems as int)
+
+    ; Missing settings from <v1.2
+    jArray.addInt(jPageObj, KH.bDisableAddToQueue as int)
     
 	return jPageObj
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	WC.iMaxQueueLength = jArray.getInt(jPageObj, 0)
 	WC.bHardLimitQueueSize = jArray.getInt(jPageObj, 1)
 	
@@ -55,6 +58,10 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	PO.bAutoAddConsumables = jArray.getInt(jPageObj, 13)
 	WC.bShowAutoAddedFlag = jArray.getInt(jPageObj, 14)
 	WC.bSkipAutoAddedItems = jArray.getInt(jPageObj, 15)
+
+    if presetVersion > 110
+        KH.bDisableAddToQueue = jArray.getInt(jPageObj, 16)
+    endIf
 endFunction
 
 function drawPage()

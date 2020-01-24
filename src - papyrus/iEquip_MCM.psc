@@ -254,23 +254,31 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
 			jMCMPreset = jValue.readFromFile(WC.MCMSettingsPath + presetName + WC.FileExt)
 		endIf
 		
-		if (jMap.getInt(jMCMPreset, "Version") != GetVersion())
+		int presetVersion = jMap.getInt(jMCMPreset, "Version")
+
+        if presetVersion < 110
 			ShowMessage("$iEquip_common_LoadPresetError")
 		else
 			bBusy = true
 			
-			gen.loadData(jMap.getObj(jMCMPreset, "General"))
-			htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"))
-			que.loadData(jMap.getObj(jMCMPreset, "Queue"))
-			pot.loadData(jMap.getObj(jMCMPreset, "Potions"))
-			poi.loadData(jMap.getObj(jMCMPreset, "Poisons&"))
-			tch.loadData(jMap.getObj(jMCMPreset, "Torch"))
-			uii.loadData(jMap.getObj(jMCMPreset, "Ui"))
-			pro.loadData(jMap.getObj(jMCMPreset, "Pro"))
-			edt.loadData(jMap.getObj(jMCMPreset, "Editmode"))
-			inf.loadData(jMap.getObj(jMCMPreset, "Info"))
+			gen.loadData(jMap.getObj(jMCMPreset, "General"), presetVersion)
+			htk.loadData(jMap.getObj(jMCMPreset, "Hotkey"), presetVersion)
+			que.loadData(jMap.getObj(jMCMPreset, "Queue"), presetVersion)
+			pot.loadData(jMap.getObj(jMCMPreset, "Potions"), presetVersion)
+			poi.loadData(jMap.getObj(jMCMPreset, "Poisons&"), presetVersion)
+			tch.loadData(jMap.getObj(jMCMPreset, "Torch"), presetVersion)
+			uii.loadData(jMap.getObj(jMCMPreset, "Ui"), presetVersion)
+			pro.loadData(jMap.getObj(jMCMPreset, "Pro"), presetVersion)
+			edt.loadData(jMap.getObj(jMCMPreset, "Editmode"), presetVersion)
+			inf.loadData(jMap.getObj(jMCMPreset, "Info"), presetVersion)
 			
 			WC.bMCMPresetLoaded = true
+
+            if presetVersion < GetVersion() ; If we've just loaded an older preset delete it and resave to update to the current version so all new settings are included
+                deletePreset(presetName)
+                savePreset(presetName)
+            endIf
+
 			bBusy = false
 		endIf
 		

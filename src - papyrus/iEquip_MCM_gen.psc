@@ -92,11 +92,25 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, BM.abShowInTransformedState[1] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[2] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[3] as int)
+
+    ; Missing settings from <v1.2
+    jArray.addInt(jPageObj, WC.bSlowTimeWhileCycling as int)
+    jArray.addInt(jPageObj, WC.iCycleSlowTimeStrength)
+
+    jArray.addInt(jPageObj, WC.bSkipRHUnarmedInCombat as int)
+
+    ; New in v1.2
+    jArray.addInt(jPageObj, WC.iAutoEquipEnabled)
+    jArray.addInt(jPageObj, WC.iAutoEquip)
+    jArray.addInt(jPageObj, WC.iCurrentItemEnchanted)
+    jArray.addInt(jPageObj, WC.iCurrentItemPoisoned)
+    jArray.addInt(jPageObj, WC.bAutoEquipHardcore as int)
+    jArray.addInt(jPageObj, WC.bAutoEquipDontDropFavorites as int)
     
 	return jPageObj
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	WC.bShowTooltips = jArray.getInt(jPageObj, 0)
 	WC.bShoutEnabled = jArray.getInt(jPageObj, 1)
 	WC.bConsumablesEnabled = jArray.getInt(jPageObj, 2)
@@ -120,30 +134,23 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 14)
 	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 15)
     BM.abShowInTransformedState[3] = jArray.getInt(jPageObj, 16)
+
+    if presetVersion > 110
+        WC.bSlowTimeWhileCycling = jArray.getInt(jPageObj, 17)
+        WC.iCycleSlowTimeStrength = jArray.getInt(jPageObj, 18)
+
+        WC.bSkipRHUnarmedInCombat = jArray.getInt(jPageObj, 19)
+
+        WC.iAutoEquipEnabled = jArray.getInt(jPageObj, 20)
+        WC.iAutoEquip = jArray.getInt(jPageObj, 21)
+        WC.iCurrentItemEnchanted = jArray.getInt(jPageObj, 22)
+        WC.iCurrentItemPoisoned = jArray.getInt(jPageObj, 23)
+        WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 24)
+        WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 25)
+    endIf
 endFunction
 
 function drawPage()
-
-    ; ToDo - remove after testing
-    autoEquipOptions = new string[4]
-    autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_anyTime"
-    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_weapDrawn"
-    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_combatOnly"
-
-    whenToAutoEquipOptions = new string[3]
-    whenToAutoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
-    whenToAutoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
-    whenToAutoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
-
-    currItemEnchOptions = new string[3]
-    currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
-    currItemEnchOptions[1] = "$iEquip_MCM_gen_opt_equipIfNoCharge"
-    currItemEnchOptions[2] = "$iEquip_MCM_gen_opt_alwaysEquip"
-
-    currItemPoisOptions = new string[2]
-    currItemPoisOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
-    currItemPoisOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
 
     if MCM.bEnabled
         MCM.AddToggleOptionST("gen_tgl_onOff", "<font color='#c7ea46'>$iEquip_MCM_gen_lbl_onOff</font>", MCM.bEnabled)

@@ -142,10 +142,21 @@ int function saveData()             ; Save page data and return jObject
 	
 	jArray.addInt(jPageObj, PM.bPreselectSwapItemsOnQuickAction as int)
 
+	; New in v1.2
+	jArray.addInt(jPageObj, PM.bScanInventory as int)
+	jArray.addInt(jPageObj, PM.bQuickRangedGiveMeAnythingGoddamit as int)
+	jArray.addInt(jPageObj, PM.iQuickRanged1HPreferredHand)
+	jArray.addInt(jPageObj, PM.abQuickRangedSpellSchoolAllowed[0] as int)
+	jArray.addInt(jPageObj, PM.abQuickRangedSpellSchoolAllowed[1] as int)
+	jArray.addInt(jPageObj, PM.abQuickRangedSpellSchoolAllowed[2] as int)
+	jArray.addInt(jPageObj, PM.abQuickRangedSpellSchoolAllowed[3] as int)
+	jArray.addInt(jPageObj, PM.abQuickRangedSpellSchoolAllowed[4] as int)
+	jArray.addInt(jPageObj, PM.iQuickRanged1HOtherHandAction)
+
     return jPageObj
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	bStillToEnableProMode = jArray.getInt(jPageObj, 0)
 	iProModeEasterEggCounter = jArray.getInt(jPageObj, 1)
 	WC.bProModeEnabled = jArray.getInt(jPageObj, 2)
@@ -194,6 +205,18 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 	PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 38)
 
 	PM.bPreselectSwapItemsOnQuickAction = jArray.getInt(jPageObj, 39)
+
+	if presetVersion > 110
+		PM.bScanInventory = jArray.getInt(jPageObj, 40)
+		PM.bQuickRangedGiveMeAnythingGoddamit = jArray.getInt(jPageObj, 41)
+		PM.iQuickRanged1HPreferredHand = jArray.getInt(jPageObj, 42)
+		PM.abQuickRangedSpellSchoolAllowed[0] = jArray.getInt(jPageObj, 43)
+		PM.abQuickRangedSpellSchoolAllowed[1] = jArray.getInt(jPageObj, 44)
+		PM.abQuickRangedSpellSchoolAllowed[2] = jArray.getInt(jPageObj, 45)
+		PM.abQuickRangedSpellSchoolAllowed[3] = jArray.getInt(jPageObj, 46)
+		PM.abQuickRangedSpellSchoolAllowed[4] = jArray.getInt(jPageObj, 47)
+		PM.iQuickRanged1HOtherHandAction = jArray.getInt(jPageObj, 48)
+	endIf
 endFunction
 
 function drawPage()

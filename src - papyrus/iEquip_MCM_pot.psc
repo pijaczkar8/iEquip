@@ -61,7 +61,7 @@ int function saveData()             ; Save page data and return jObject
 	return jPageObj
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	WC.bPotionGrouping = jArray.getInt(jPageObj, 0)
 	
 	PO.bCheckOtherEffects = jArray.getInt(jPageObj, 1)
@@ -85,11 +85,6 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
 endFunction
 
 function drawPage()
-
-    notificationOptions = new String[3]
-    notificationOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    notificationOptions[1] = "$iEquip_MCM_common_opt_minimal"
-    notificationOptions[2] = "$iEquip_MCM_common_opt_verbose"
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_potOpts</font>")
 	MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)

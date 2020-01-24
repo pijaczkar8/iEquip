@@ -83,7 +83,7 @@ int function saveData()             ; Save page data and return jObject
 	return jPageObj
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	RC.bRechargingEnabled = jArray.getInt(jPageObj, 0)
 	
 	RC.bUseLargestSoul = jArray.getInt(jPageObj, 1)

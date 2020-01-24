@@ -36,7 +36,7 @@ int function saveData()             ; Save page data and return jObject
     return jPageObj
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	KH.iLeftKey = jArray.getInt(jPageObj, 0)
 	KH.iRightKey = jArray.getInt(jPageObj, 1)
 	KH.iShoutKey = jArray.getInt(jPageObj, 2)

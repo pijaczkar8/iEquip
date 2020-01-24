@@ -131,11 +131,16 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, WC.bLeftRightNameFadeEnabled as int)
     jArray.addInt(jPageObj, WC.bShoutNameFadeEnabled as int)
     jArray.addInt(jPageObj, WC.bConsPoisNameFadeEnabled as int)
+
+    ; Missing settings from <v1.2
+    jArray.addInt(jPageObj, TI.bShowTemperTierIndicator as int)
+    jArray.addInt(jPageObj, TI.iTemperTierDisplayChoice)
+    jArray.addInt(jPageObj, TI.bShowFadedTiers as int)
     
 	return jPageObj
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	WC.iPositionIndicatorColor = jArray.getInt(jPageObj, 0)
 	WC.fPositionIndicatorAlpha = jArray.getFlt(jPageObj, 1)
 	WC.iCurrPositionIndicatorColor = jArray.getInt(jPageObj, 2)
@@ -174,17 +179,15 @@ function loadData(int jPageObj)     ; Load page data from jPageObj
     WC.bLeftRightNameFadeEnabled = jArray.getInt(jPageObj, 31)
     WC.bShoutNameFadeEnabled = jArray.getInt(jPageObj, 32)
     WC.bConsPoisNameFadeEnabled = jArray.getInt(jPageObj, 33)
+
+    if presetVersion > 110
+    	TI.bShowTemperTierIndicator = jArray.getInt(jPageObj, 34)
+    	TI.iTemperTierDisplayChoice = jArray.getInt(jPageObj, 35)
+    	TI.bShowFadedTiers = jArray.getInt(jPageObj, 36)
+    endIf
 endFunction
 
 function drawPage()
-	backgroundStyleOptions = new String[7]
-    backgroundStyleOptions[0] = "$iEquip_MCM_ui_opt_NoBg"
-    backgroundStyleOptions[1] = "$iEquip_MCM_ui_opt_SqBBg"
-    backgroundStyleOptions[2] = "$iEquip_MCM_ui_opt_SqNoBBg"
-    backgroundStyleOptions[3] = "$iEquip_MCM_ui_opt_RoBBg"
-    backgroundStyleOptions[4] = "$iEquip_MCM_ui_opt_RoNoBBg"
-    backgroundStyleOptions[5] = "$iEquip_MCM_ui_opt_RoFade"
-    backgroundStyleOptions[6] = "$iEquip_MCM_ui_opt_Dialogue"
 
 	if WC.iPosInd > 0
 		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_posIndOpts</font>")
@@ -232,12 +235,6 @@ function drawPage()
 	MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
 	
 	MCM.SetCursorPosition(1)
-
-	;/MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_shoutSlotOpts</font>")
-	;MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", WC.bShoutCooldownFadeEnabled)
-	MCM.AddToggleOptionST("ui_tgl_shoutCooldown", "$iEquip_MCM_ui_lbl_shoutCooldown", false)
-
-	MCM.AddEmptyOption()/;
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_fadeoutopts</font>")
 	MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)

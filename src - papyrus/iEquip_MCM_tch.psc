@@ -65,7 +65,7 @@ int function saveData()             ; Save page data and return jObject
     return jPageObj    
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 
 	KH.iQuickLightKey = jArray.getInt(jPageObj, 0)
     TO.bQuickLightPreferMagic = jArray.getInt(jPageObj, 1)
