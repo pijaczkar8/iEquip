@@ -193,11 +193,13 @@ function drawPage()
 				
 		if WC.bEquipOnPause
 			MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-            MCM.AddToggleOptionST("gen_tgl_slowTime", "$iEquip_MCM_gen_lbl_slowTime", WC.bSlowTimeWhileCycling)
-            if WC.bSlowTimeWhileCycling
-                MCM.AddSliderOptionST("gen_sld_slowTimeStr", "$iEquip_MCM_common_lbl_slowTimeStr", WC.iCycleSlowTimeStrength as float, "{0}%")
-            endIf
 		endIf
+
+        MCM.AddToggleOptionST("gen_tgl_slowTime", "$iEquip_MCM_gen_lbl_slowTime", WC.bSlowTimeWhileCycling)
+        
+        if WC.bSlowTimeWhileCycling
+            MCM.AddSliderOptionST("gen_sld_slowTimeStr", "$iEquip_MCM_common_lbl_slowTimeStr", WC.iCycleSlowTimeStrength as float, "{0}%")
+        endIf
 
 		MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[WC.iPosInd])
 

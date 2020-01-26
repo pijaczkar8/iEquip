@@ -2,6 +2,7 @@ Scriptname iEquip_MCM extends SKI_ConfigBase
 
 import Utility
 import StringUtil
+import iEquip_StringExt
 
 iEquip_WidgetCore property WC auto
 iEquip_MCM_gen property gen auto
@@ -244,7 +245,7 @@ endFunction
 
 function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
 	if (bBusy)
-		ShowMessage("$iEquip_common_LoadPresetBusy")
+		ShowMessage("$iEquip_common_LoadPresetBusy", false)
 	else
 		int jMCMPreset
 		
@@ -257,7 +258,7 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
 		int presetVersion = jMap.getInt(jMCMPreset, "Version")
 
         if presetVersion < 110
-			ShowMessage("$iEquip_common_LoadPresetError")
+			ShowMessage("$iEquip_common_LoadPresetError", false)
 		else
 			bBusy = true
 			
@@ -277,6 +278,7 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
             if presetVersion < GetVersion() ; If we've just loaded an older preset delete it and resave to update to the current version so all new settings are included
                 deletePreset(presetName)
                 savePreset(presetName)
+                ShowMessage("$iEquip_MCM_msg_presetUpdated", false)
             endIf
 
 			bBusy = false

@@ -47,7 +47,7 @@ function initData()
     QHEquipOptions[2] = "$iEquip_MCM_pro_opt_both"
     QHEquipOptions[3] = "$iEquip_MCM_pro_opt_whereFound"
 
-    QRPreferredWeaponType = new String[4]
+    QRPreferredWeaponType = new String[6]
     QRPreferredWeaponType[0] = "$iEquip_MCM_pro_opt_bow"
     QRPreferredWeaponType[1] = "$iEquip_MCM_pro_opt_crossbow"
     QRPreferredWeaponType[2] = "$iEquip_MCM_pro_opt_boundBow"
@@ -852,7 +852,7 @@ State pro_men_prefWepTyp
             MCM.fillMenu(PM.iQuickRangedPreferredWeaponType, QRPreferredWeaponType, 0)
         elseIf currentEvent == "Accept"
             PM.iQuickRangedPreferredWeaponType = currentVar as int
-            MCM.SetMenuOptionValueST(QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
+            MCM.forcePageReset()
         endIf
     endEvent
 endState
@@ -961,7 +961,7 @@ State pro_men_swtchOut
             MCM.fillMenu(PM.iQuickRangedSwitchOutAction, QRSwitchOutOptions, 1)
         elseIf currentEvent == "Accept"
             PM.iQuickRangedSwitchOutAction = currentVar as int
-            MCM.SetMenuOptionValueST(QRSwitchOutOptions[PM.iQuickRangedSwitchOutAction])
+            MCM.ForcePageReset()
         endIf
     endEvent
 endState

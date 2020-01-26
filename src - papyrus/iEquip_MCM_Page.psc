@@ -19,7 +19,7 @@ int function saveData()             ; Save page data and return jObject
     return jArray.object()
 endFunction
 
-function loadData(int jPageObj)     ; Load page data from jPageObj
+function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
     ;debug.trace("WARN: An iEquip MCM Page has no defined load data")
 endFunction
 

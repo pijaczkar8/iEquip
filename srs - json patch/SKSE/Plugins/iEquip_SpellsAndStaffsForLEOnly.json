@@ -1,60 +1,4 @@
 {
-	"spears": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		},
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"javelins": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		},
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"grenades": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		},
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"throwingAxes": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		},
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
 	"throwingKnives": [
 		{
 			"name": "Calm",
@@ -78,12 +22,6 @@
 			"name": "Dread Zombie",
 			"pluginName": "Skyrim.esm",
 			"formID": "0x096D95",
-			"isLightMod": false
-		},
-		{
-			"name": "Dead Thrall",
-			"pluginName": "Skyrim.esm",
-			"formID": "0x07E8DF",
 			"isLightMod": false
 		},
 		{
@@ -453,9 +391,69 @@
 			"isLightMod": false
 		},
 		{
+			"name": "Gadnor's Staff of Charming",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x046E0B",
+			"isLightMod": false
+		},
+		{
+			"name": "Halldir's Staff",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0AB704",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Arcane Authority",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0940D8",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Jyrik Gauldurson",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0E5F43",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Tandil",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x06A093",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Zombies",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B74",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Reanimation",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B76",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Revenants",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B7A",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Dread Zombies",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B7C",
+			"isLightMod": false
+		},
+		{
 			"name": "Staff of Chain Lightning",
 			"pluginName": "Dawnguard.esm",
 			"formID": "0x011D56",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Ruunvald",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x01958C",
 			"isLightMod": false
 		},
 		{
@@ -487,131 +485,83 @@
 			"pluginName": "Dawnguard.esm",
 			"formID": "0x011D60",
 			"isLightMod": false
-		}
-	],
-	"waxes": [
+		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Daedric Staff of Infernal Flames",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072182",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"oils": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Ebony Staff of Paralysis",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072163",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"spellWards": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Glass Staff of Icy Spears",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072165",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"fire": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Glass Staff of Incineration",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072164",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"ice": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Glass Staff of Thunderbolts",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072166",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"shock": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Silver Staff of Fireballs",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072157",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"poison": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Silver Staff of Icestorms",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072158",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"salves": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Silver Staff of Lightning Shackles",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072159",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
-			"isLightMod": false
-		}
-	],
-	"bandages": [
-		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Wooden Staff of Firebolts",
+			"pluginName": "Requiem.esp",
+			"formID": "0x07215E",
 			"isLightMod": false
 		},
 		{
-			"name": "",
-			"pluginName": "",
-			"formID": "",
+			"name": "Wooden Staff of Ice Spikes",
+			"pluginName": "Requiem.esp",
+			"formID": "0x07215F",
+			"isLightMod": false
+		},
+		{
+			"name": "Wooden Staff of Lightning Bolts",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072160",
+			"isLightMod": false
+		},
+		{
+			"name": "Abominable Staff",
+			"pluginName": "CollegeOfWinterholdImmersive.esp",
+			"formID": "0x49A45D",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Worms",
+			"pluginName": "Undeath.esp",
+			"formID": "0x035286",
 			"isLightMod": false
 		}
 	]
