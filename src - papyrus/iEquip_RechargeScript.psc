@@ -74,10 +74,12 @@ function rechargeWeapon(int Q)
                 ;debug.trace("iEquip_RechargeScript rechargeWeapon - bringMeASoul returned me a size " + soulSize + " soul")
                 if soulSize > 0
                     iEquip_Recharge_SFX.Play(PlayerRef)
-                    if Q == 0
-						LFX.cast(PlayerRef, PlayerRef)
-                    else
-						RFX.cast(PlayerRef, PlayerRef)
+                    if PlayerRef.IsWeaponDrawn()
+                        if Q == 0 || PlayerRef.GetEquippedItemType(0) == 7
+    						LFX.cast(PlayerRef, PlayerRef)
+                        else
+    						RFX.cast(PlayerRef, PlayerRef)
+                        endIf
                     endIf
                     ;Just in case it's possible to overcharge a weapon ensure we never recharge more than requiredCharge
                     if afAmountToRecharge[soulSize] < requiredCharge

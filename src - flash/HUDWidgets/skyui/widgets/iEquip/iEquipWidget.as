@@ -362,7 +362,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 		temperTierStyleArray = new Array("Uniform", "Increasing", "Diamond", "Star", "Hammer", "Anvil", "Asterisk", "Caret");
 		
-		backgroundStyleArray = new Array("Hidden", "Square", "SquareNoBorder", "Round", "RoundNoBorder", "RoundFade", "Dialogue");
+		backgroundStyleArray = new Array("Hidden", "Square", "SquareNoBorder", "Round", "RoundNoBorder", "RoundFade", "Dialogue", "DarkSouls");
 		backgroundClipArray = new Array(leftBg_mc, rightBg_mc, shoutBg_mc, leftPreselectBg_mc, rightPreselectBg_mc, shoutPreselectBg_mc, consumableBg_mc, poisonBg_mc);
 
 		handleTextFieldDropShadow(false);
@@ -721,7 +721,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		tl.staggerTo(preselectIcons, 0.8, {_rotation:"-=360", _alpha:0, _xscale:20, _yscale:20, immediateRender:false, ease:Quad.easeOut}, 0.3, 0)
-		tl.staggerTo(preselectBackgrounds, 0.8, {_rotation:"-=120", _alpha:0, immediateRender:false, ease:Quad.easeOut}, 0.3, 0.2)
+		tl.staggerTo(preselectBackgrounds, 0.8, {_rotation:"-=360", _alpha:0, immediateRender:false, ease:Quad.easeOut}, 0.3, 0.2)
 		tl.staggerTo(preselectNames, 0.4, {_alpha:0, immediateRender:false}, 0.3, 0);
 
 		tl.play();

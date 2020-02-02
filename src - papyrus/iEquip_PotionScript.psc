@@ -871,7 +871,8 @@ function checkAndAddToPoisonQueue(potion foundPoison)
         if WC.asCurrentlyEquipped[4] == poisonName
             WC.setSlotCount(4, PlayerRef.GetItemCount(poisonForm))
         endIf
-    elseIf !(jArray.count(iPoisonQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
+    ;elseIf !(jArray.count(iPoisonQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
+    else
         int poisonFormID = poisonForm.GetFormID()
         int itemID = CalcCRC32Hash(poisonName, Math.LogicalAND(poisonFormID, 0x00FFFFFF))
         int poisonObj = jMap.object()
@@ -919,7 +920,8 @@ function checkAndAddToConsumableQueue(potion foundConsumable, bool isPotion = fa
         if WC.asCurrentlyEquipped[3] == consumableName
             WC.setSlotCount(3, PlayerRef.GetItemCount(consumableForm))
         endIf
-    elseIf !(jArray.count(iConsumableQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
+    ;elseIf !(jArray.count(iConsumableQ) == WC.iMaxQueueLength && WC.bHardLimitQueueSize)
+    else
         int consumableFormID = consumableForm.GetFormID()
         int itemID = CalcCRC32Hash(consumableName, Math.LogicalAND(consumableFormID, 0x00FFFFFF))
         int consumableObj = jMap.object()
@@ -1169,7 +1171,9 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
 
                 if bEffectActive && bSkipEffectCheck ;Finally if we're skipping the active effect check we need to make sure to only consume another OT potion if the selected potion effect is stronger than the currently active effect
                     int targetObject = jArray.getObj(aiPotionQ[Q], targetPotion)
-                    if jMap.getInt(targetObject, "iEquipDuration") > 1 && jMap.getFlt(targetObject, "iEquipStrength") < fActiveEffectMagnitude
+                    ;debug.trace("iEquip_PotionScript selectAndConsumePotion - current effect magnitude: " + fActiveEffectMagnitude + ", new duration: " + jMap.getInt(targetObject, "iEquipDuration") + ", new strength: " + jMap.getFlt(targetObject, "iEquipStrength"))
+                    if jMap.getInt(targetObject, "iEquipDuration") > 1 && jMap.getFlt(targetObject, "iEquipStrength") <= fActiveEffectMagnitude
+                        targetPotion = -1
                         if bQuickHealing
                             PM.bQuickHealActionTaken = true
                         endIf
@@ -1317,12 +1321,14 @@ bool function isEffectAlreadyActive(int Q, bool bIsRestore)
     	endIf
     endIf
 
-    if fActiveEffectMagnitude > 0.0 && iNotificationLevel > 0
+    bool bAlreadyActive = fActiveEffectMagnitude > 0.0
+
+    if bAlreadyActive && iNotificationLevel > 0
     	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive{"+asEffectNames[Q]+"}"))
     endIf
 
-    ;debug.trace("iEquip_PotionScript isEffectAlreadyActive - returning: " + fActiveEffectMagnitude > 0.0)
-    return fActiveEffectMagnitude > 0.0
+    ;debug.trace("iEquip_PotionScript isEffectAlreadyActive - returning: " + bAlreadyActive + ", fActiveEffectMagnitude: " + fActiveEffectMagnitude)
+    return bAlreadyActive
 endFunction
 
 function warnOnLowRestorePotionCount(int restoreCount, int potionGroup)

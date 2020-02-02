@@ -23,7 +23,7 @@ class iEquip_uilib.ButtonListEntry extends BasicListEntry
 	public var itemIcon: MovieClip;
 	public var poisonIcon: MovieClip;
 	public var enchIcon: MovieClip;
-	
+	public var autoAddIcon: MovieClip;
 	
   /* PROPERTIES */
   
@@ -87,6 +87,15 @@ class iEquip_uilib.ButtonListEntry extends BasicListEntry
 		        enchIcon.gotoAndStop("show");
 		    } else {
 		        enchIcon.gotoAndStop("hide");
+			}
+
+			// Auto Added Icon
+		    if (a_entryObject.isAutoAdded == true) {
+		        autoAddIcon._x = iconPos;
+		        iconPos = iconPos + iconSpace;
+		        autoAddIcon.gotoAndStop("show");
+		    } else {
+		        autoAddIcon.gotoAndStop("hide");
 			}
 
 		}

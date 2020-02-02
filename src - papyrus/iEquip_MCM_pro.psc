@@ -315,7 +315,7 @@ function drawPage()
 				MCM.AddToggleOptionST("pro_tgl_gimmeAnything", "$iEquip_MCM_pro_lbl_gimmeAnything", PM.bQuickRangedGiveMeAnythingGoddamit)
 
 				if PM.iQuickRangedPreferredWeaponType > 3 || PM.bQuickRangedGiveMeAnythingGoddamit
-					MCM.AddMenuOptionST("pro_men_QR_prefHand", "$iEquip_MCM_pro_lbl_prefHand", QHEquipOptions[PM.iQuickRanged1HPreferredHand])
+					MCM.AddMenuOptionST("pro_men_QR_prefHand", "$iEquip_MCM_pro_lbl_prefHand", QREquipOptions[PM.iQuickRanged1HPreferredHand])
 					
 					if PM.iQuickRangedPreferredWeaponType == 4 || PM.bQuickRangedGiveMeAnythingGoddamit
 						MCM.AddTextOption("$iEquip_MCM_pro_lbl_enableQRSchools", "")
@@ -445,6 +445,7 @@ State pro_tgl_allowInvScan
             MCM.SetInfoText("$iEquip_MCM_pro_txt_allowInvScan")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bScanInventory)
             PM.bScanInventory = !PM.bScanInventory
+            MCM.SetToggleOptionValueST(PM.bScanInventory)
         endIf
     endEvent
 endState
@@ -717,7 +718,7 @@ State pro_tgl_quickBuff
             MCM.SetInfoText("$iEquip_MCM_pro_txt_quickBuff")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickBuffEnabled)
             PM.bQuickBuffEnabled = !PM.bQuickBuffEnabled
-            MCM.SetToggleOptionValueST(PM.bQuickBuffEnabled)
+            MCM.forcePageReset()
         endIf
     endEvent
 endState
@@ -873,7 +874,7 @@ State pro_men_QR_prefHand
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_pro_txt_prefHand")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(PM.iQuickRanged1HPreferredHand, QHEquipOptions, 1)
+            MCM.fillMenu(PM.iQuickRanged1HPreferredHand, QREquipOptions, 1)
         elseIf currentEvent == "Accept"
             PM.iQuickRanged1HPreferredHand = currentVar as int
             if PM.iQuickRanged1HPreferredHand == 0 && PM.iQuickRanged1HOtherHandAction == 3
@@ -881,7 +882,7 @@ State pro_men_QR_prefHand
             	PM.iQuickRanged1HOtherHandAction = 0
             	MCM.ForcePageReset()
             else
-            	MCM.SetMenuOptionValueST(QHEquipOptions[PM.iQuickRanged1HPreferredHand])
+            	MCM.SetMenuOptionValueST(QREquipOptions[PM.iQuickRanged1HPreferredHand])
             endIf
         endIf
     endEvent

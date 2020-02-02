@@ -65,11 +65,11 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 endFunction
 
 function drawPage()
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_queLenOpts</font>")
+	;/MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_queLenOpts</font>")
 	MCM.AddSliderOptionST("que_sld_maxItmQue", "$iEquip_MCM_que_lbl_maxItmQue", WC.iMaxQueueLength, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
 	MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "$iEquip_MCM_que_lbl_hrdLimQueSize", WC.bHardLimitQueueSize)
 	
-	MCM.AddEmptyOption()      
+	MCM.AddEmptyOption()/;  
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_addToQueOpts</font>")
 	MCM.AddToggleOptionST("que_tgl_showConfMsg", "$iEquip_MCM_que_lbl_showConfMsg", WC.bShowQueueConfirmationMessages)
 	MCM.AddToggleOptionST("que_tgl_signlBothQue", "$iEquip_MCM_que_lbl_signlBothQue", WC.bAllowSingleItemsInBothQueues)

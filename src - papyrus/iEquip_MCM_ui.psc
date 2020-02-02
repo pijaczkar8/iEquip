@@ -25,7 +25,7 @@ function initData()
     ammoIconOptions[1] = "$iEquip_MCM_ui_opt_Triple"
     ammoIconOptions[2] = "$iEquip_MCM_ui_opt_Quiver"
     
-    backgroundStyleOptions = new String[7]
+    backgroundStyleOptions = new String[8]
     backgroundStyleOptions[0] = "$iEquip_MCM_ui_opt_NoBg"
     backgroundStyleOptions[1] = "$iEquip_MCM_ui_opt_SqBBg"
     backgroundStyleOptions[2] = "$iEquip_MCM_ui_opt_SqNoBBg"
@@ -33,6 +33,7 @@ function initData()
     backgroundStyleOptions[4] = "$iEquip_MCM_ui_opt_RoNoBBg"
     backgroundStyleOptions[5] = "$iEquip_MCM_ui_opt_RoFade"
     backgroundStyleOptions[6] = "$iEquip_MCM_ui_opt_Dialogue"
+    backgroundStyleOptions[7] = "$iEquip_MCM_ui_opt_DarkSouls"
     
     fadeoutOptions = new String[4]
     fadeoutOptions[0] = "$iEquip_MCM_ui_opt_Slow"

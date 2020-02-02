@@ -94,8 +94,8 @@ function drawPage()
 		MCM.AddToggleOptionST("pot_tgl_exclRestAllEffects", "$iEquip_MCM_pot_lbl_exclRestAllEffects", PO.bExcludeRestoreAllEffects)
 		MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
 		
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_thrshldFX</font>")
+		;MCM.AddEmptyOption()
+		;MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_thrshldFX</font>")
 		if PO.iPotionSelectChoice == 1 ; Smart Select
 			MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartSelectThreshold*100, "{0} %")
 		endIf
