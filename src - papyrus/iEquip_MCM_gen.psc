@@ -272,16 +272,20 @@ State gen_tgl_onOff
             else                                                                            ; Requirement checks
                 Quest LALChargen = Quest.GetQuest("ARTHLALChargenQuest")
                 Quest UnboundChargen = Quest.GetQuest("SkyrimUnbound")
+
+                bool IgnoreAltStartQuestWarnings
                 
-				if (LALChargen && UnboundChargen)
-					MCM.ShowMessage("$iEquip_MCM_gen_mes_dontUseBoth", false, "$OK")
-                elseIf (LALChargen && !LALChargen.IsCompleted())
-                    MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenFirst", false, "$OK")
-                elseIf (UnboundChargen && !UnboundChargen.IsCompleted())
-                    MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenUnboundFirst", false, "$OK")
-                elseIf EH.bPlayerIsABeast
+				if (LALChargen && UnboundChargen) && MCM.ShowMessage("$iEquip_MCM_gen_mes_dontUseBoth", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
+					IgnoreAltStartQuestWarnings = true
+                elseIf (LALChargen && !LALChargen.IsCompleted()) && MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenFirst", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
+                    IgnoreAltStartQuestWarnings = true
+                elseIf (UnboundChargen && !UnboundChargen.IsCompleted()) && MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenUnboundFirst", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
+                    IgnoreAltStartQuestWarnings = true
+                endIf
+                
+                if EH.bPlayerIsABeast
                     MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
-                else
+                elseIf !(LALChargen || UnboundChargen) || IgnoreAltStartQuestWarnings
                     MCM.bEnabled = true
                     bFirstEnabled = true
                     MCM.forcePageReset()
