@@ -7,9 +7,6 @@ iEquip_BeastMode property BM auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_TorchScript property TO auto
 
-string[] ammoSortingOptions
-string[] whenNoAmmoLeftOptions
-string[] ammoModeOptions
 string[] posIndBehaviour
 
 string[] autoEquipOptions
@@ -24,21 +21,7 @@ bool bFirstEnabled = false
 ; ### SETUP ###
 
 function initData()
-    ammoSortingOptions = new string[4]
-    ammoSortingOptions[0] = "$iEquip_MCM_gen_opt_Unsorted"
-    ammoSortingOptions[1] = "$iEquip_MCM_gen_opt_ByDamage"
-    ammoSortingOptions[2] = "$iEquip_MCM_gen_opt_Alphabetically"
-    ammoSortingOptions[3] = "$iEquip_MCM_gen_opt_ByQuantity"
-
-    whenNoAmmoLeftOptions = new string[4]
-    whenNoAmmoLeftOptions[0] = "$iEquip_MCM_gen_opt_DoNothing"
-    whenNoAmmoLeftOptions[1] = "$iEquip_MCM_gen_opt_SwitchNothing"
-    whenNoAmmoLeftOptions[2] = "$iEquip_MCM_gen_opt_SwitchCycle"
-    whenNoAmmoLeftOptions[3] = "$iEquip_MCM_gen_opt_Cycle"
-
-    ammoModeOptions = new string[2]
-    ammoModeOptions[0] = "$iEquip_MCM_gen_opt_advAM"
-    ammoModeOptions[1] = "$iEquip_MCM_gen_opt_simpleAM"
+    
 
     posIndBehaviour = new string[3]
     posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
@@ -166,12 +149,6 @@ function drawPage()
 		MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "$iEquip_MCM_gen_lbl_enblConsumSlt", WC.bConsumablesEnabled)
 		MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
 
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_AmmoMode</font>")
-		MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
-		MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
-		MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
-
         MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_AutoEquip</font>")
         MCM.AddMenuOptionST("gen_men_enableAutoEquip", "$iEquip_MCM_gen_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
@@ -259,12 +236,12 @@ State gen_tgl_onOff
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_onOff")
         elseIf currentEvent == "Select"
-			if MCM.bEnabled
-				MCM.bEnabled = false
-				bFirstEnabled = false
-				MCM.forcePageReset()
-			elseIf !JContainers.isInstalled()                                               ; Dependency checks
-				MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontmissing", false, "$OK")
+            if MCM.bEnabled
+                MCM.bEnabled = false
+                bFirstEnabled = false
+                MCM.forcePageReset()
+            elseIf !JContainers.isInstalled()                                               ; Dependency checks
+                MCM.ShowMessage("$iEquip_MCM_gen_mes_jcontmissing", false, "$OK")
             elseIf !(JContainers.APIVersion() >= 3 && JContainers.featureVersion() >= 3)
             ; SSE Note - Comment out the preceding line and uncomment the following - JContainers versions differ between LE and SE    
             ;elseIf !(JContainers.APIVersion() >= 4 && JContainers.featureVersion() >= 1)
@@ -275,8 +252,8 @@ State gen_tgl_onOff
 
                 bool IgnoreAltStartQuestWarnings
                 
-				if (LALChargen && UnboundChargen) && MCM.ShowMessage("$iEquip_MCM_gen_mes_dontUseBoth", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
-					IgnoreAltStartQuestWarnings = true
+                if (LALChargen && UnboundChargen) && MCM.ShowMessage("$iEquip_MCM_gen_mes_dontUseBoth", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
+                    IgnoreAltStartQuestWarnings = true
                 elseIf (LALChargen && !LALChargen.IsCompleted()) && MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenFirst", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
                     IgnoreAltStartQuestWarnings = true
                 elseIf (UnboundChargen && !UnboundChargen.IsCompleted()) && MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenUnboundFirst", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
@@ -290,10 +267,10 @@ State gen_tgl_onOff
                     bFirstEnabled = true
                     MCM.forcePageReset()
                 endIf
-			endIf
+            endIf
         elseIf currentEvent == "Default"
             MCM.bEnabled = false 
-			bFirstEnabled = false
+            bFirstEnabled = false
             MCM.forcePageReset()
         endIf
     endEvent
@@ -368,47 +345,7 @@ State gen_tgl_enblPoisonSlt
     endEvent
 endState
 
-; ------------------------
-; - Ammo Mode Options -
-; ------------------------ 
 
-State gen_txt_AmmoModeChoice
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_AmmoModeChoice")
-        elseIf currentEvent == "Select"
-            AM.bSimpleAmmoMode = !AM.bSimpleAmmoMode
-            MCM.SetTextOptionValueST(ammoModeOptions[AM.bSimpleAmmoMode as int])
-        endIf
-    endEvent
-endState
-
-State gen_men_ammoLstSrt
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_ammoLstSrt")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(AM.iAmmoListSorting, ammoSortingOptions, 0)
-        elseIf currentEvent == "Accept"
-            AM.iAmmoListSorting = currentVar as int
-            MCM.SetMenuOptionValueST(ammoSortingOptions[AM.iAmmoListSorting])
-            WC.bAmmoSortingChanged = true
-        endIf
-    endEvent
-endState
-
-State gen_men_whenNoAmmoLeft
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_whenNoAmmoLeft")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(AM.iActionOnLastAmmoUsed, whenNoAmmoLeftOptions, 2)
-        elseIf currentEvent == "Accept"
-            AM.iActionOnLastAmmoUsed = currentVar as int
-            MCM.SetMenuOptionValueST(whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
-        endIf
-    endEvent
-endState
 
 ; ------------------------
 ; - Auto-Equipping Options -
