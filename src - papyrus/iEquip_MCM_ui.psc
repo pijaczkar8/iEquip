@@ -1,9 +1,7 @@
 Scriptname iEquip_MCM_ui extends iEquip_MCM_Page
 
-iEquip_AmmoMode Property AM Auto
 iEquip_TemperedItemHandler Property TI Auto
 
-string[] ammoIconOptions
 string[] backgroundStyleOptions
 string[] fadeoutOptions
 string[] firstPressIfNameHiddenOptions
@@ -13,17 +11,12 @@ string[] tempLvlThresholdOptions
 
 int[] aiDropShadowBlurValues
 
-; From 1.1 onwards
 string[] temperTierIndicatorStyles
 
 ; #############
 ; ### SETUP ###
 
 function initData()
-    ammoIconOptions = new String[3]
-    ammoIconOptions[0] = "$iEquip_MCM_ui_opt_Single"
-    ammoIconOptions[1] = "$iEquip_MCM_ui_opt_Triple"
-    ammoIconOptions[2] = "$iEquip_MCM_ui_opt_Quiver"
     
     backgroundStyleOptions = new String[8]
     backgroundStyleOptions[0] = "$iEquip_MCM_ui_opt_NoBg"
@@ -94,11 +87,6 @@ endFunction
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 	
-	jArray.addInt(jPageObj, WC.iPositionIndicatorColor)
-	jArray.addFlt(jPageObj, WC.fPositionIndicatorAlpha)
-	jArray.addInt(jPageObj, WC.iCurrPositionIndicatorColor)
-	jArray.addFlt(jPageObj, WC.fCurrPositionIndicatorAlpha)
-	
 	jArray.addInt(jPageObj, WC.bFadeLeftIconWhen2HEquipped as int)
 	jArray.addFlt(jPageObj, WC.fLeftIconFadeAmount)
     jArray.addInt(jPageObj, TI.iTemperNameFormat)
@@ -106,7 +94,7 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, TI.bFadeIconOnDegrade as int)
 	jArray.addInt(jPageObj, TI.iColoredIconStyle)
     jArray.addInt(jPageObj, TI.iColoredIconLevels)
-	jArray.addInt(jPageObj, AM.iAmmoIconStyle)
+
 	jArray.addInt(jPageObj, WC.iBackgroundStyle) ; Save in preset also
 	
 	jArray.addInt(jPageObj, WC.bDropShadowEnabled as int)
@@ -133,7 +121,6 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, WC.bShoutNameFadeEnabled as int)
     jArray.addInt(jPageObj, WC.bConsPoisNameFadeEnabled as int)
 
-    ; Missing settings from <v1.2
     jArray.addInt(jPageObj, TI.bShowTemperTierIndicator as int)
     jArray.addInt(jPageObj, TI.iTemperTierDisplayChoice)
     jArray.addInt(jPageObj, TI.bShowFadedTiers as int)
@@ -142,10 +129,6 @@ int function saveData()             ; Save page data and return jObject
 endFunction
 
 function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
-	WC.iPositionIndicatorColor = jArray.getInt(jPageObj, 0)
-	WC.fPositionIndicatorAlpha = jArray.getFlt(jPageObj, 1)
-	WC.iCurrPositionIndicatorColor = jArray.getInt(jPageObj, 2)
-	WC.fCurrPositionIndicatorAlpha = jArray.getFlt(jPageObj, 3)
 	
 	WC.bFadeLeftIconWhen2HEquipped = jArray.getInt(jPageObj, 4)
 	WC.fLeftIconFadeAmount = jArray.getFlt(jPageObj, 5)
@@ -154,7 +137,7 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 8)
 	TI.iColoredIconStyle = jArray.getInt(jPageObj, 9)
     TI.iColoredIconLevels = jArray.getInt(jPageObj, 10)
-	AM.iAmmoIconStyle = jArray.getInt(jPageObj, 11)
+
 	WC.iBackgroundStyle = jArray.getInt(jPageObj, 12)
 	
 	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 13)
@@ -181,23 +164,12 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     WC.bShoutNameFadeEnabled = jArray.getInt(jPageObj, 32)
     WC.bConsPoisNameFadeEnabled = jArray.getInt(jPageObj, 33)
 
-    if presetVersion > 110
-    	TI.bShowTemperTierIndicator = jArray.getInt(jPageObj, 34)
-    	TI.iTemperTierDisplayChoice = jArray.getInt(jPageObj, 35)
-    	TI.bShowFadedTiers = jArray.getInt(jPageObj, 36)
-    endIf
+	TI.bShowTemperTierIndicator = jArray.getInt(jPageObj, 34)
+	TI.iTemperTierDisplayChoice = jArray.getInt(jPageObj, 35)
+	TI.bShowFadedTiers = jArray.getInt(jPageObj, 36)
 endFunction
 
 function drawPage()
-
-	if WC.iPosInd > 0
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_posIndOpts</font>")
-		MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
-		MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
-		MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
-		MCM.AddSliderOptionST("ui_sld_currPosIndAlpha", "$iEquip_MCM_ui_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
-		MCM.AddEmptyOption()
-	endIf
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_temperedItemOpts</font>")
 	MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
@@ -232,7 +204,6 @@ function drawPage()
 		MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
 	endIf
 
-	MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[AM.iAmmoIconStyle])
 	MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
 	
 	MCM.SetCursorPosition(1)
@@ -301,72 +272,6 @@ endFunction
 ; ------------------
 ; - Widget Options -
 ; ------------------
-
-State ui_col_posIndColor
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_ui_txt_posIndColor")
-        elseIf currentEvent == "Open"
-            MCM.SetColorDialogStartColor(WC.iPositionIndicatorColor)
-            MCM.SetColorDialogDefaultColor(0xFFFFFF)
-        else
-            If currentEvent == "Accept"
-                WC.iPositionIndicatorColor = currentVar as int
-            elseIf currentEvent == "Default"
-                WC.iPositionIndicatorColor = 0xFFFFFF
-            endIf
-            MCM.SetColorOptionValueST(WC.iPositionIndicatorColor)
-            WC.bPositionIndicatorSettingsChanged = true
-        endIf 
-    endEvent
-endState
-
-State ui_sld_posIndAlpha
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_ui_txt_posIndAlpha")
-        elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fPositionIndicatorAlpha, 10.0, 100.0, 10.0, 60.0)
-        elseIf currentEvent == "Accept"
-            WC.fPositionIndicatorAlpha = currentVar
-            MCM.SetSliderOptionValueST(WC.fPositionIndicatorAlpha, "{0}%")
-            WC.bPositionIndicatorSettingsChanged = true
-        endIf 
-    endEvent
-endState
-
-State ui_col_currPosIndColor
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_ui_txt_currPosIndColor")
-        elseIf currentEvent == "Open"
-            MCM.SetColorDialogStartColor(WC.iCurrPositionIndicatorColor)
-            MCM.SetColorDialogDefaultColor(0xCCCCCC)
-        else
-            If currentEvent == "Accept"
-                WC.iCurrPositionIndicatorColor = currentVar as int
-            elseIf currentEvent == "Default"
-                WC.iCurrPositionIndicatorColor = 0xCCCCCC
-            endIf
-            MCM.SetColorOptionValueST(WC.iCurrPositionIndicatorColor)
-            WC.bPositionIndicatorSettingsChanged = true
-        endIf 
-    endEvent
-endState
-
-State ui_sld_currPosIndAlpha
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_ui_txt_currPosIndAlpha")
-        elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.fCurrPositionIndicatorAlpha, 10.0, 100.0, 10.0, 40.0)
-        elseIf currentEvent == "Accept"
-            WC.fCurrPositionIndicatorAlpha = currentVar
-            MCM.SetSliderOptionValueST(WC.fCurrPositionIndicatorAlpha, "{0}%")
-            WC.bPositionIndicatorSettingsChanged = true
-        endIf 
-    endEvent
-endState
 
 State ui_men_tmpLvlTxt
     event OnBeginState()
@@ -476,18 +381,6 @@ State ui_men_tempLvlThresholds
     endEvent
 endState
 
-;/State ui_tgl_shoutCooldown
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_ui_txt_shoutCooldown")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bShoutCooldownFadeEnabled)
-        	MCM.ShowMessage("$iEquip_MCM_common_comingSoon")
-            ;WC.bShoutCooldownFadeEnabled = !WC.bShoutCooldownFadeEnabled
-            ;MCM.SetToggleOptionValueST(WC.bShoutCooldownFadeEnabled)
-        endIf 
-    endEvent
-endState/;
-
 State ui_tgl_fadeLeftIco2h
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -511,20 +404,6 @@ State ui_sld_leftIcoFade
         elseIf currentEvent == "Accept"
             WC.fLeftIconFadeAmount = currentVar
             MCM.SetSliderOptionValueST(WC.fLeftIconFadeAmount, "{0}%")
-        endIf 
-    endEvent
-endState
-
-State ui_men_ammoIcoStyle
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_ui_txt_ammoIcoStyle")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(AM.iAmmoIconStyle, ammoIconOptions, 0)
-        elseIf currentEvent == "Accept"
-            AM.iAmmoIconStyle = currentVar as int
-            WC.bAmmoIconChanged = true
-			MCM.SetMenuOptionValueST(ammoIconOptions[AM.iAmmoIconStyle])
         endIf 
     endEvent
 endState
@@ -853,3 +732,7 @@ State ui_men_firstPressNameHidn
         endIf 
     endEvent
 endState
+
+; Deprecated
+
+string[] ammoIconOptions

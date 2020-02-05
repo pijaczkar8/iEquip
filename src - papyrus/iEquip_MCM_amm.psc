@@ -9,7 +9,7 @@ string[] ammoSortingOptions
 string[] whenNoAmmoLeftOptions
 string[] ammoModeOptions
 
-
+string[] ammoIconOptions
 
 string[] QRPreferredMagicSchool
 string[] preselectQuickFunctionOptions
@@ -19,12 +19,19 @@ string[] QROtherHandOptions
 string[] QRSwitchOutOptions
 string[] asMagicSchools
 
+string[] preselectQuickFunctionOptions
+
 int iCurrentQRPreferredMagicSchoolChoice = 2
 
 ; #############
 ; ### SETUP ###
 
 function initData()
+    ammoIconOptions = new String[3]
+    ammoIconOptions[0] = "$iEquip_MCM_ui_opt_Single"
+    ammoIconOptions[1] = "$iEquip_MCM_ui_opt_Triple"
+    ammoIconOptions[2] = "$iEquip_MCM_ui_opt_Quiver"
+
 	ammoSortingOptions = new string[4]
     ammoSortingOptions[0] = "$iEquip_MCM_gen_opt_Unsorted"
     ammoSortingOptions[1] = "$iEquip_MCM_gen_opt_ByDamage"
@@ -85,10 +92,23 @@ function initData()
     asMagicSchools[2] = "Destruction"
     asMagicSchools[3] = "Illusion"
     asMagicSchools[4] = "Restoration"
+
+    preselectQuickFunctionOptions = new String[3]
+    preselectQuickFunctionOptions[0] = "$iEquip_MCM_common_opt_disabled"
+    preselectQuickFunctionOptions[1] = "$iEquip_MCM_pro_opt_preselect"
+    preselectQuickFunctionOptions[2] = "$iEquip_MCM_pro_opt_equip"
 endFunction
 
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
+
+    jArray.addInt(jPageObj, AM.bSimpleAmmoMode as int)
+    jArray.addInt(jPageObj, AM.iAmmoListSorting)
+    jArray.addInt(jPageObj, AM.iActionOnLastAmmoUsed)
+
+    jArray.addInt(jPageObj, AM.iAmmoIconStyle)
+    
+    jArray.addInt(jPageObj, WC.bUnequipAmmo as int)
 		
 	jArray.addInt(jPageObj, PM.bQuickRangedEnabled as int)
 	jArray.addInt(jPageObj, PM.iQuickRangedPreferredWeaponType)
@@ -108,6 +128,12 @@ int function saveData()             ; Save page data and return jObject
 endFunction
 
 function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
+
+    AM.bSimpleAmmoMode = jArray.getInt(jPageObj, 4)
+    AM.iAmmoListSorting = jArray.getInt(jPageObj, 5)
+    AM.iActionOnLastAmmoUsed = jArray.getInt(jPageObj, 6)
+    AM.iAmmoIconStyle = jArray.getInt(jPageObj, 11)
+    WC.bUnequipAmmo = jArray.getInt(jPageObj, 12)
 
 	PM.bQuickRangedEnabled = jArray.getInt(jPageObj, 27)
 	PM.iQuickRangedPreferredWeaponType = jArray.getInt(jPageObj, 28)
@@ -132,7 +158,11 @@ function drawPage()
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_AmmoMode</font>")
 	MCM.AddTextOptionST("gen_txt_AmmoModeChoice", "$iEquip_MCM_gen_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
 	MCM.AddMenuOptionST("gen_men_ammoLstSrt", "$iEquip_MCM_gen_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
-	MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])	
+	MCM.AddMenuOptionST("gen_men_whenNoAmmoLeft", "$iEquip_MCM_gen_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
+
+    MCM.AddMenuOptionST("ui_men_ammoIcoStyle", "$iEquip_MCM_ui_lbl_ammoIcoStyle", ammoIconOptions[AM.iAmmoIconStyle])	
+
+    MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
 				
 	MCM.SetCursorPosition(1)
 			
@@ -387,5 +417,19 @@ State pro_men_inPreselectQuickrangedMode
             PM.iPreselectQuickRanged = currentVar as int
             MCM.SetMenuOptionValueST(preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
         endIf
+    endEvent
+endState
+
+State ui_men_ammoIcoStyle
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_ammoIcoStyle")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(AM.iAmmoIconStyle, ammoIconOptions, 0)
+        elseIf currentEvent == "Accept"
+            AM.iAmmoIconStyle = currentVar as int
+            WC.bAmmoIconChanged = true
+            MCM.SetMenuOptionValueST(ammoIconOptions[AM.iAmmoIconStyle])
+        endIf 
     endEvent
 endState

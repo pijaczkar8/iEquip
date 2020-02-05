@@ -6,13 +6,10 @@ iEquip_AmmoMode property AM auto
 iEquip_BeastMode property BM auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_TorchScript property TO auto
+iEquip_KeyHandler Property KH Auto
+iEquip_ProMode Property PM Auto
 
-string[] posIndBehaviour
-
-string[] autoEquipOptions
-string[] whenToAutoEquipOptions
-string[] currItemEnchOptions
-string[] currItemPoisOptions
+int mcmUnmapFLAG
 
 bool bFirstTimeDisablingTooltips = true
 bool bFirstEnabled = false
@@ -21,33 +18,7 @@ bool bFirstEnabled = false
 ; ### SETUP ###
 
 function initData()
-    
-
-    posIndBehaviour = new string[3]
-    posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
-    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
-    posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
-
-    autoEquipOptions = new string[4]
-    autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_anyTime"
-    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_weapDrawn"
-    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_combatOnly"
-
-    whenToAutoEquipOptions = new string[3]
-    whenToAutoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
-    whenToAutoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
-    whenToAutoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
-
-    currItemEnchOptions = new string[3]
-    currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
-    currItemEnchOptions[1] = "$iEquip_MCM_gen_opt_equipIfNoCharge"
-    currItemEnchOptions[2] = "$iEquip_MCM_gen_opt_alwaysEquip"
-
-    currItemPoisOptions = new string[2]
-    currItemPoisOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
-    currItemPoisOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
-
+    mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -57,38 +28,30 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, WC.bShoutEnabled as int)
 	jArray.addInt(jPageObj, WC.bConsumablesEnabled as int)
 	jArray.addInt(jPageObj, WC.bPoisonsEnabled as int)
-	
-	jArray.addInt(jPageObj, AM.bSimpleAmmoMode as int)
-	jArray.addInt(jPageObj, AM.iAmmoListSorting)
-	jArray.addInt(jPageObj, AM.iActionOnLastAmmoUsed)
-	
-	jArray.addInt(jPageObj, WC.bEquipOnPause as int)
-	jArray.addFlt(jPageObj, WC.fEquipOnPauseDelay)
-	
-	jArray.addInt(jPageObj, WC.iPosInd)
-	jArray.addInt(jPageObj, WC.bShowAttributeIcons as int)
-	
-	jArray.addInt(jPageObj, WC.bEnableGearedUp as int)
-	jArray.addInt(jPageObj, WC.bUnequipAmmo as int)
+
+    jArray.addInt(jPageObj, PM.bScanInventory as int)
 
 	jArray.addInt(jPageObj, BM.abShowInTransformedState[0] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[1] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[2] as int)
     jArray.addInt(jPageObj, BM.abShowInTransformedState[3] as int)
 
-    ; Missing settings from <v1.2
-    jArray.addInt(jPageObj, WC.bSlowTimeWhileCycling as int)
-    jArray.addInt(jPageObj, WC.iCycleSlowTimeStrength)
-
-    jArray.addInt(jPageObj, WC.bSkipRHUnarmedInCombat as int)
-
-    ; New in v1.2
-    jArray.addInt(jPageObj, WC.iAutoEquipEnabled)
-    jArray.addInt(jPageObj, WC.iAutoEquip)
-    jArray.addInt(jPageObj, WC.iCurrentItemEnchanted)
-    jArray.addInt(jPageObj, WC.iCurrentItemPoisoned)
-    jArray.addInt(jPageObj, WC.bAutoEquipHardcore as int)
-    jArray.addInt(jPageObj, WC.bAutoEquipDontDropFavorites as int)
+    jArray.addInt(jPageObj, KH.iLeftKey)
+    jArray.addInt(jPageObj, KH.iRightKey)
+    jArray.addInt(jPageObj, KH.iShoutKey)
+    jArray.addInt(jPageObj, KH.iConsumableKey)
+    jArray.addInt(jPageObj, KH.iUtilityKey)
+    jArray.addInt(jPageObj, KH.bNoUtilMenuInCombat as int)
+    
+    jArray.addFlt(jPageObj, KH.fMultiTapDelay)
+    jArray.addFlt(jPageObj, KH.fLongPressDelay)
+    
+    jArray.addInt(jPageObj, KH.bExtendedKbControlsEnabled as int)
+    jArray.addInt(jPageObj, KH.iConsumeItemKey)
+    jArray.addInt(jPageObj, KH.iCyclePoisonKey)
+    jArray.addInt(jPageObj, KH.iQuickRestoreKey)
+    jArray.addInt(jPageObj, KH.iQuickShieldKey)
+    jArray.addInt(jPageObj, KH.iQuickRangedKey)
     
 	return jPageObj
 endFunction
@@ -98,39 +61,30 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	WC.bShoutEnabled = jArray.getInt(jPageObj, 1)
 	WC.bConsumablesEnabled = jArray.getInt(jPageObj, 2)
 	WC.bPoisonsEnabled = jArray.getInt(jPageObj, 3)
-	
-	AM.bSimpleAmmoMode = jArray.getInt(jPageObj, 4)
-	AM.iAmmoListSorting = jArray.getInt(jPageObj, 5)
-	AM.iActionOnLastAmmoUsed = jArray.getInt(jPageObj, 6)
-	
-	WC.bEquipOnPause = jArray.getInt(jPageObj, 7)
-	WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 8)
-	
-	WC.iPosInd = jArray.getInt(jPageObj, 9)
 
-	WC.bShowAttributeIcons = jArray.getInt(jPageObj, 10)
-	
-	WC.bEnableGearedUp = jArray.getInt(jPageObj, 11)
-	WC.bUnequipAmmo = jArray.getInt(jPageObj, 12)
+    PM.bScanInventory = jArray.getInt(jPageObj, 40)
 
 	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 13)
 	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 14)
 	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 15)
     BM.abShowInTransformedState[3] = jArray.getInt(jPageObj, 16)
 
-    if presetVersion > 110
-        WC.bSlowTimeWhileCycling = jArray.getInt(jPageObj, 17)
-        WC.iCycleSlowTimeStrength = jArray.getInt(jPageObj, 18)
-
-        WC.bSkipRHUnarmedInCombat = jArray.getInt(jPageObj, 19)
-
-        WC.iAutoEquipEnabled = jArray.getInt(jPageObj, 20)
-        WC.iAutoEquip = jArray.getInt(jPageObj, 21)
-        WC.iCurrentItemEnchanted = jArray.getInt(jPageObj, 22)
-        WC.iCurrentItemPoisoned = jArray.getInt(jPageObj, 23)
-        WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 24)
-        WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 25)
-    endIf
+    KH.iLeftKey = jArray.getInt(jPageObj, 0)
+    KH.iRightKey = jArray.getInt(jPageObj, 1)
+    KH.iShoutKey = jArray.getInt(jPageObj, 2)
+    KH.iConsumableKey = jArray.getInt(jPageObj, 3)
+    KH.iUtilityKey = jArray.getInt(jPageObj, 4)
+    KH.bNoUtilMenuInCombat = jArray.getInt(jPageObj, 5)
+    
+    KH.fMultiTapDelay = jArray.getFlt(jPageObj, 6)
+    KH.fLongPressDelay = jArray.getFlt(jPageObj, 7)
+    
+    KH.bExtendedKbControlsEnabled = jArray.getInt(jPageObj, 8)
+    KH.iConsumeItemKey = jArray.getInt(jPageObj, 9)
+    KH.iCyclePoisonKey = jArray.getInt(jPageObj, 10)
+    KH.iQuickRestoreKey = jArray.getInt(jPageObj, 11)
+    KH.iQuickShieldKey = jArray.getInt(jPageObj, 12)
+    KH.iQuickRangedKey = jArray.getInt(jPageObj, 13)
 endFunction
 
 function drawPage()
@@ -150,55 +104,6 @@ function drawPage()
 		MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
 
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_AutoEquip</font>")
-        MCM.AddMenuOptionST("gen_men_enableAutoEquip", "$iEquip_MCM_gen_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
-
-        if WC.iAutoEquipEnabled > 0
-            MCM.AddMenuOptionST("gen_men_whenToAutoEquip", "$iEquip_MCM_gen_lbl_whenToAutoEquip", whenToAutoEquipOptions[WC.iAutoEquip])
-            MCM.AddMenuOptionST("gen_men_currItemEnch", "$iEquip_MCM_gen_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
-            MCM.AddMenuOptionST("gen_men_currItemPois", "$iEquip_MCM_gen_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
-            MCM.AddToggleOptionST("gen_tgl_autoEquipHardcore", "$iEquip_MCM_gen_lbl_autoEquipHardcore", WC.bAutoEquipHardcore)
-            if WC.bAutoEquipHardcore
-                MCM.AddToggleOptionST("gen_tgl_dontDropFavorites", "$iEquip_MCM_gen_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
-            endIf
-        endIf
-
-		MCM.SetCursorPosition(1)
-				
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_Cycling</font>")
-		MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
-				
-		if WC.bEquipOnPause
-			MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-		endIf
-
-        MCM.AddToggleOptionST("gen_tgl_slowTime", "$iEquip_MCM_gen_lbl_slowTime", WC.bSlowTimeWhileCycling)
-        
-        if WC.bSlowTimeWhileCycling
-            MCM.AddSliderOptionST("gen_sld_slowTimeStr", "$iEquip_MCM_common_lbl_slowTimeStr", WC.iCycleSlowTimeStrength as float, "{0}%")
-        endIf
-
-		MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[WC.iPosInd])
-
-		MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
-
-        MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_unarmedOptions</font>")
-
-        MCM.AddToggleOptionST("gen_tgl_skipUnarmed", "$iEquip_MCM_gen_lbl_skipUnarmed", WC.bSkipRHUnarmedInCombat)
-
-		if WC.findInQueue(0, "$iEquip_common_Unarmed") == -1
-            MCM.AddTextOptionST("gen_txt_addFistsLeft", "$iEquip_MCM_gen_lbl_AddUnarmedLeft", "")
-        endIf
-
-        if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
-			MCM.AddTextOptionST("gen_txt_addFistsRight", "$iEquip_MCM_gen_lbl_AddUnarmedRight", "")
-		endIf
-
-		MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_VisGear</font>")
-		MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
-		MCM.AddToggleOptionST("gen_tgl_autoUnqpAmmo", "$iEquip_MCM_gen_lbl_autoUnqpAmmo", WC.bUnequipAmmo)
 
 		MCM.AddEmptyOption()
 		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_BeastMode</font>")

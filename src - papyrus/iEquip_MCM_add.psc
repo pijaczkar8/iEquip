@@ -30,7 +30,6 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, PO.bAutoAddPoisons as int)
 	jArray.addInt(jPageObj, PO.bAutoAddConsumables as int)
 	jArray.addInt(jPageObj, WC.bShowAutoAddedFlag as int)
-	jArray.addInt(jPageObj, WC.bSkipAutoAddedItems as int)
 
     ; Missing settings from <v1.2
     jArray.addInt(jPageObj, KH.bDisableAddToQueue as int)
@@ -65,18 +64,10 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 endFunction
 
 function drawPage()
-	;/MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_queLenOpts</font>")
-	MCM.AddSliderOptionST("que_sld_maxItmQue", "$iEquip_MCM_que_lbl_maxItmQue", WC.iMaxQueueLength, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
-	MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "$iEquip_MCM_que_lbl_hrdLimQueSize", WC.bHardLimitQueueSize)
-	
-	MCM.AddEmptyOption()/;  
+
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_addToQueOpts</font>")
 	MCM.AddToggleOptionST("que_tgl_showConfMsg", "$iEquip_MCM_que_lbl_showConfMsg", WC.bShowQueueConfirmationMessages)
 	MCM.AddToggleOptionST("que_tgl_signlBothQue", "$iEquip_MCM_que_lbl_signlBothQue", WC.bAllowSingleItemsInBothQueues)
-			
-	if WC.bAllowSingleItemsInBothQueues
-		MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "$iEquip_MCM_que_lbl_allow1hSwitch", WC.bAllowWeaponSwitchHands)
-	endIf
 
     MCM.AddToggleOptionST("que_tgl_dsblAddToQue", "$iEquip_MCM_que_lbl_dsblAddToQue", KH.bDisableAddToQueue)
 
@@ -101,7 +92,29 @@ function drawPage()
 	MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
 	MCM.AddEmptyOption()
 	MCM.AddToggleOptionST("que_tgl_queueMenuAAFlags", "$iEquip_MCM_que_lbl_queueMenuAAFlags", WC.bShowAutoAddedFlag)
-	MCM.AddToggleOptionST("que_tgl_skipAutoAddedItems", "$iEquip_MCM_que_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
+    
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_addBack</font>")
+    
+    if WC.findInQueue(0, "$iEquip_common_Unarmed") == -1
+        MCM.AddTextOptionST("gen_txt_addFistsLeft", "$iEquip_MCM_gen_lbl_AddUnarmedLeft", "")
+    endIf
+
+    if WC.findInQueue(1, "$iEquip_common_Unarmed") == -1
+        MCM.AddTextOptionST("gen_txt_addFistsRight", "$iEquip_MCM_gen_lbl_AddUnarmedRight", "")
+    endIf
+
+    if WC.bPotionGrouping
+        MCM.AddEmptyOption()
+        if !WC.abPotionGroupEnabled[0]
+            MCM.AddTextOptionST("pot_txt_addHealthGroup", "$iEquip_MCM_gen_lbl_addHealthGroup", "")
+        endIf
+        if !WC.abPotionGroupEnabled[1]
+            MCM.AddTextOptionST("pot_txt_addMagickaGroup", "$iEquip_MCM_gen_lbl_addMagickaGroup", "")
+        endIf
+        if !WC.abPotionGroupEnabled[2]
+            MCM.AddTextOptionST("pot_txt_addStaminaGroup", "$iEquip_MCM_gen_lbl_addStaminaGroup", "")
+        endIf
+    endIf
 endFunction
 
 ; #####################

@@ -6,102 +6,169 @@ iEquip_PotionScript property PO auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_KeyHandler Property KH Auto
 
+string[] posIndBehaviour
+
+string[] autoEquipOptions
+string[] whenToAutoEquipOptions
+string[] currItemEnchOptions
+string[] currItemPoisOptions
+
 ; #############
 ; ### SETUP ###
+
+function initData()
+    posIndBehaviour = new string[3]
+    posIndBehaviour[0] = "$iEquip_MCM_common_opt_disabled"
+    posIndBehaviour[1] = "$iEquip_MCM_gen_opt_onlyCycling"
+    posIndBehaviour[2] = "$iEquip_MCM_gen_opt_alwaysVisible"
+
+    autoEquipOptions = new string[4]
+    autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
+    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_anyTime"
+    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_weapDrawn"
+    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_combatOnly"
+
+    whenToAutoEquipOptions = new string[3]
+    whenToAutoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    whenToAutoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
+    whenToAutoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
+
+    currItemEnchOptions = new string[3]
+    currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
+    currItemEnchOptions[1] = "$iEquip_MCM_gen_opt_equipIfNoCharge"
+    currItemEnchOptions[2] = "$iEquip_MCM_gen_opt_alwaysEquip"
+
+    currItemPoisOptions = new string[2]
+    currItemPoisOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
+    currItemPoisOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
+
+endFunction
 
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 	
-	jArray.addInt(jPageObj, WC.iMaxQueueLength)
-	jArray.addInt(jPageObj, WC.bHardLimitQueueSize as int)
-	
-	jArray.addInt(jPageObj, WC.bShowQueueConfirmationMessages as int)
-	jArray.addInt(jPageObj, WC.bAllowSingleItemsInBothQueues as int)
-	jArray.addInt(jPageObj, WC.bAllowWeaponSwitchHands as int)
-	
-	jArray.addInt(jPageObj, WC.bEnableRemovedItemCaching as int)
-	jArray.addInt(jPageObj, WC.iMaxCachedItems)
-	jArray.addInt(jPageObj, WC.bBlacklistEnabled as int)
-	
-	jArray.addInt(jPageObj, EH.bAutoAddNewItems as int)
-	jArray.addInt(jPageObj, EH.bAutoAddShouts as int)
-	jArray.addInt(jPageObj, EH.bAutoAddPowers as int)
-	jArray.addInt(jPageObj, PO.bAutoAddPotions as int)
-	jArray.addInt(jPageObj, PO.bAutoAddPoisons as int)
-	jArray.addInt(jPageObj, PO.bAutoAddConsumables as int)
-	jArray.addInt(jPageObj, WC.bShowAutoAddedFlag as int)
-	jArray.addInt(jPageObj, WC.bSkipAutoAddedItems as int)
+	jArray.addInt(jPageObj, WC.bEquipOnPause as int)
+    jArray.addFlt(jPageObj, WC.fEquipOnPauseDelay)
 
-    ; Missing settings from <v1.2
-    jArray.addInt(jPageObj, KH.bDisableAddToQueue as int)
+    jArray.addInt(jPageObj, WC.bSlowTimeWhileCycling as int)
+    jArray.addInt(jPageObj, WC.iCycleSlowTimeStrength)
+
+    jArray.addInt(jPageObj, WC.bSkipAutoAddedItems as int)
+    jArray.addInt(jPageObj, WC.bSkipRHUnarmedInCombat as int)
     
+    jArray.addInt(jPageObj, WC.iPosInd)
+    jArray.addInt(jPageObj, WC.iPositionIndicatorColor)
+    jArray.addFlt(jPageObj, WC.fPositionIndicatorAlpha)
+    jArray.addInt(jPageObj, WC.iCurrPositionIndicatorColor)
+    jArray.addFlt(jPageObj, WC.fCurrPositionIndicatorAlpha)
+
+    jArray.addInt(jPageObj, WC.bShowAttributeIcons as int)
+
+    jArray.addInt(jPageObj, WC.iAutoEquipEnabled)
+    jArray.addInt(jPageObj, WC.iAutoEquip)
+    jArray.addInt(jPageObj, WC.iCurrentItemEnchanted)
+    jArray.addInt(jPageObj, WC.iCurrentItemPoisoned)
+    jArray.addInt(jPageObj, WC.bAutoEquipHardcore as int)
+    jArray.addInt(jPageObj, WC.bAutoEquipDontDropFavorites as int)
+
+    jArray.addInt(jPageObj, WC.bEnableGearedUp as int)
+    
+    jArray.addInt(jPageObj, PM.bPreselectEnabled as int)
+    jArray.addInt(jPageObj, PM.bShoutPreselectEnabled as int)
+    jArray.addInt(jPageObj, PM.bPreselectSwapItemsOnEquip as int)
+    jArray.addInt(jPageObj, PM.bTogglePreselectOnEquipAll as int)
+    jArray.addInt(jPageObj, PM.bPreselectSwapItemsOnQuickAction as int)
+
 	return jPageObj
 endFunction
 
 function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
-	WC.iMaxQueueLength = jArray.getInt(jPageObj, 0)
-	WC.bHardLimitQueueSize = jArray.getInt(jPageObj, 1)
-	
-	WC.bShowQueueConfirmationMessages = jArray.getInt(jPageObj, 2)
-	WC.bAllowSingleItemsInBothQueues = jArray.getInt(jPageObj, 3)
-	WC.bAllowWeaponSwitchHands = jArray.getInt(jPageObj, 4)
-	
-	WC.bEnableRemovedItemCaching = jArray.getInt(jPageObj, 5)
-	WC.iMaxCachedItems = jArray.getInt(jPageObj, 6)
-	WC.bBlacklistEnabled = jArray.getInt(jPageObj, 7)
-	
-	EH.bAutoAddNewItems = jArray.getInt(jPageObj, 8)
-	EH.bAutoAddShouts = jArray.getInt(jPageObj, 9)
-	EH.bAutoAddPowers = jArray.getInt(jPageObj, 10)
-	PO.bAutoAddPotions = jArray.getInt(jPageObj, 11)
-	PO.bAutoAddPoisons = jArray.getInt(jPageObj, 12)
-	PO.bAutoAddConsumables = jArray.getInt(jPageObj, 13)
-	WC.bShowAutoAddedFlag = jArray.getInt(jPageObj, 14)
-	WC.bSkipAutoAddedItems = jArray.getInt(jPageObj, 15)
 
-    if presetVersion > 110
-        KH.bDisableAddToQueue = jArray.getInt(jPageObj, 16)
-    endIf
+    WC.bEquipOnPause = jArray.getInt(jPageObj, 7)
+    WC.fEquipOnPauseDelay = jArray.getFlt(jPageObj, 8)
+
+    WC.bSlowTimeWhileCycling = jArray.getInt(jPageObj, 17)
+    WC.iCycleSlowTimeStrength = jArray.getInt(jPageObj, 18)
+
+    WC.bSkipAutoAddedItems = jArray.getInt(jPageObj, 15)
+    WC.bSkipRHUnarmedInCombat = jArray.getInt(jPageObj, 19)
+    
+    WC.iPosInd = jArray.getInt(jPageObj, 9)
+    WC.iPositionIndicatorColor = jArray.getInt(jPageObj, 0)
+    WC.fPositionIndicatorAlpha = jArray.getFlt(jPageObj, 1)
+    WC.iCurrPositionIndicatorColor = jArray.getInt(jPageObj, 2)
+    WC.fCurrPositionIndicatorAlpha = jArray.getFlt(jPageObj, 3)
+
+    WC.bShowAttributeIcons = jArray.getInt(jPageObj, 10)
+
+    WC.iAutoEquipEnabled = jArray.getInt(jPageObj, 20)
+    WC.iAutoEquip = jArray.getInt(jPageObj, 21)
+    WC.iCurrentItemEnchanted = jArray.getInt(jPageObj, 22)
+    WC.iCurrentItemPoisoned = jArray.getInt(jPageObj, 23)
+    WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 24)
+    WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 25)
+
+    WC.bEnableGearedUp = jArray.getInt(jPageObj, 11)
+
+    PM.bPreselectEnabled = jArray.getInt(jPageObj, 3)
+    PM.bShoutPreselectEnabled = jArray.getInt(jPageObj, 4)
+    PM.bPreselectSwapItemsOnEquip = jArray.getInt(jPageObj, 5)
+    PM.bTogglePreselectOnEquipAll = jArray.getInt(jPageObj, 6)
+    PM.bPreselectSwapItemsOnQuickAction = jArray.getInt(jPageObj, 39)
+
 endFunction
 
 function drawPage()
-	;/MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_queLenOpts</font>")
-	MCM.AddSliderOptionST("que_sld_maxItmQue", "$iEquip_MCM_que_lbl_maxItmQue", WC.iMaxQueueLength, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
-	MCM.AddToggleOptionST("que_tgl_hrdLimQueSize", "$iEquip_MCM_que_lbl_hrdLimQueSize", WC.bHardLimitQueueSize)
-	
-	MCM.AddEmptyOption()/;  
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_addToQueOpts</font>")
-	MCM.AddToggleOptionST("que_tgl_showConfMsg", "$iEquip_MCM_que_lbl_showConfMsg", WC.bShowQueueConfirmationMessages)
-	MCM.AddToggleOptionST("que_tgl_signlBothQue", "$iEquip_MCM_que_lbl_signlBothQue", WC.bAllowSingleItemsInBothQueues)
-			
-	if WC.bAllowSingleItemsInBothQueues
-		MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "$iEquip_MCM_que_lbl_allow1hSwitch", WC.bAllowWeaponSwitchHands)
-	endIf
+ 
+	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_Cycling</font>")
+    MCM.AddToggleOptionST("gen_tgl_eqpPaus", "$iEquip_MCM_gen_lbl_eqpPaus", WC.bEquipOnPause)
+            
+    if WC.bEquipOnPause
+        MCM.AddSliderOptionST("gen_sld_eqpPausDelay", "$iEquip_MCM_gen_lbl_eqpPausDelay", WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+    endIf
 
-    MCM.AddToggleOptionST("que_tgl_dsblAddToQue", "$iEquip_MCM_que_lbl_dsblAddToQue", KH.bDisableAddToQueue)
+    MCM.AddToggleOptionST("gen_tgl_slowTime", "$iEquip_MCM_gen_lbl_slowTime", WC.bSlowTimeWhileCycling)
+    
+    if WC.bSlowTimeWhileCycling
+        MCM.AddSliderOptionST("gen_sld_slowTimeStr", "$iEquip_MCM_common_lbl_slowTimeStr", WC.iCycleSlowTimeStrength as float, "{0}%")
+    endIf
 
-	MCM.AddEmptyOption()
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_cacheBlkLst</font>")
-	MCM.AddToggleOptionST("que_tgl_allowCacheRmvItm", "$iEquip_MCM_que_lbl_allowCacheRmvItm", WC.bEnableRemovedItemCaching)
-			
-	if WC.bEnableRemovedItemCaching
-		MCM.AddSliderOptionST("que_sld_MaxItmCache", "$iEquip_MCM_que_lbl_MaxItmCache", WC.iMaxCachedItems, iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_max") + " {0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_que_lbl_items"))
-	endIf
+    if WC.bAllowSingleItemsInBothQueues
+        MCM.AddToggleOptionST("que_tgl_allow1hSwitch", "$iEquip_MCM_que_lbl_allow1hSwitch", WC.bAllowWeaponSwitchHands)
+    endIf
 
-	MCM.AddToggleOptionST("que_tgl_enblBlacklist", "$iEquip_MCM_que_lbl_enblBlacklist", WC.bBlacklistEnabled)
+    MCM.AddToggleOptionST("que_tgl_skipAutoAddedItems", "$iEquip_MCM_que_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
+    MCM.AddToggleOptionST("gen_tgl_skipUnarmed", "$iEquip_MCM_gen_lbl_skipUnarmed", WC.bSkipRHUnarmedInCombat)
 
-	MCM.SetCursorPosition(1)
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+    MCM.AddMenuOptionST("gen_men_showPosInd", "$iEquip_MCM_gen_lbl_queuePosInd", posIndBehaviour[WC.iPosInd])
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_que_lbl_autoAddOpts</font>")
-	MCM.AddToggleOptionST("que_tgl_autoAddHandItems", "$iEquip_MCM_que_lbl_autoAddHandItems", EH.bAutoAddNewItems)
-	MCM.AddToggleOptionST("que_tgl_autoAddShouts", "$iEquip_MCM_que_lbl_autoAddShouts", EH.bAutoAddShouts)
-	MCM.AddToggleOptionST("que_tgl_autoAddPowers", "$iEquip_MCM_que_lbl_autoAddPowers", EH.bAutoAddPowers)
-	MCM.AddToggleOptionST("que_tgl_autoAddPotions", "$iEquip_MCM_que_lbl_autoAddPotions", PO.bAutoAddPotions)
-	MCM.AddToggleOptionST("que_tgl_autoAddPoisons", "$iEquip_MCM_que_lbl_autoAddPoisons", PO.bAutoAddPoisons)
-	MCM.AddToggleOptionST("que_tgl_autoAddConsumables", "$iEquip_MCM_que_lbl_autoAddConsumables", PO.bAutoAddConsumables)
-	MCM.AddEmptyOption()
-	MCM.AddToggleOptionST("que_tgl_queueMenuAAFlags", "$iEquip_MCM_que_lbl_queueMenuAAFlags", WC.bShowAutoAddedFlag)
-	MCM.AddToggleOptionST("que_tgl_skipAutoAddedItems", "$iEquip_MCM_que_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
+    if WC.iPosInd > 0
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_posIndOpts</font>")
+        MCM.AddColorOptionST("ui_col_posIndColor", "$iEquip_MCM_ui_lbl_posIndColor", WC.iPositionIndicatorColor)
+        MCM.AddSliderOptionST("ui_sld_posIndAlpha", "$iEquip_MCM_ui_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
+        MCM.AddColorOptionST("ui_col_currPosIndColor", "$iEquip_MCM_ui_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
+        MCM.AddSliderOptionST("ui_sld_currPosIndAlpha", "$iEquip_MCM_ui_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
+        MCM.AddEmptyOption()
+    endIf
+
+    MCM.AddToggleOptionST("gen_tgl_showAtrIco", "$iEquip_MCM_gen_lbl_showAtrIco", WC.bShowAttributeIcons)
+
+    MCM.SetCursorPosition(1)
+
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_preselectOpts</font>")
+    MCM.AddTextOptionST("pro_txt_whatPreselect", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatPreselect</font>", "")
+
+    if PM.bPreselectEnabled
+        MCM.AddToggleOptionST("pro_tgl_enblPreselect", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblPreselect</font>", PM.bPreselectEnabled)
+        MCM.AddToggleOptionST("pro_tgl_enblShoutPreselect", "$iEquip_MCM_pro_lbl_enblShoutPreselect", PM.bShoutPreselectEnabled)
+        MCM.AddToggleOptionST("pro_tgl_swapPreselectItm", "$iEquip_MCM_pro_lbl_swapPreselectItm", PM.bPreselectSwapItemsOnEquip)
+        MCM.AddToggleOptionST("pro_tgl_swapPreselectAdv", "$iEquip_MCM_pro_lbl_swapPreselectAdv", PM.bPreselectSwapItemsOnQuickAction)
+        MCM.AddToggleOptionST("pro_tgl_eqpAllExitPreselectMode", "$iEquip_MCM_pro_lbl_eqpAllExitPreselectMode", PM.bTogglePreselectOnEquipAll)
+    else
+        MCM.AddToggleOptionST("pro_tgl_enblPreselect", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblPreselect</font>", PM.bPreselectEnabled)
+    endIf
+
 endFunction
 
 ; #####################
@@ -388,6 +455,72 @@ State que_tgl_enblBlacklist
             endIf
             MCM.forcePageReset()
         endIf
+    endEvent
+endState
+
+State ui_col_posIndColor
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_posIndColor")
+        elseIf currentEvent == "Open"
+            MCM.SetColorDialogStartColor(WC.iPositionIndicatorColor)
+            MCM.SetColorDialogDefaultColor(0xFFFFFF)
+        else
+            If currentEvent == "Accept"
+                WC.iPositionIndicatorColor = currentVar as int
+            elseIf currentEvent == "Default"
+                WC.iPositionIndicatorColor = 0xFFFFFF
+            endIf
+            MCM.SetColorOptionValueST(WC.iPositionIndicatorColor)
+            WC.bPositionIndicatorSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_sld_posIndAlpha
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_posIndAlpha")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fPositionIndicatorAlpha, 10.0, 100.0, 10.0, 60.0)
+        elseIf currentEvent == "Accept"
+            WC.fPositionIndicatorAlpha = currentVar
+            MCM.SetSliderOptionValueST(WC.fPositionIndicatorAlpha, "{0}%")
+            WC.bPositionIndicatorSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_col_currPosIndColor
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_currPosIndColor")
+        elseIf currentEvent == "Open"
+            MCM.SetColorDialogStartColor(WC.iCurrPositionIndicatorColor)
+            MCM.SetColorDialogDefaultColor(0xCCCCCC)
+        else
+            If currentEvent == "Accept"
+                WC.iCurrPositionIndicatorColor = currentVar as int
+            elseIf currentEvent == "Default"
+                WC.iCurrPositionIndicatorColor = 0xCCCCCC
+            endIf
+            MCM.SetColorOptionValueST(WC.iCurrPositionIndicatorColor)
+            WC.bPositionIndicatorSettingsChanged = true
+        endIf 
+    endEvent
+endState
+
+State ui_sld_currPosIndAlpha
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_currPosIndAlpha")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(WC.fCurrPositionIndicatorAlpha, 10.0, 100.0, 10.0, 40.0)
+        elseIf currentEvent == "Accept"
+            WC.fCurrPositionIndicatorAlpha = currentVar
+            MCM.SetSliderOptionValueST(WC.fCurrPositionIndicatorAlpha, "{0}%")
+            WC.bPositionIndicatorSettingsChanged = true
+        endIf 
     endEvent
 endState
 
