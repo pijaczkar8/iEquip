@@ -347,9 +347,7 @@ event OnKeyDown(int KeyCode)
             iMultiTap = 2
             RegisterForSingleUpdate(fMultiTapDelay)
         elseIf iMultiTap == 2   ; This is the third time the key has been pressed
-            if WC.bProModeEnabled
-                iMultiTap = 3
-            endIf
+            iMultiTap = 3
             RegisterForSingleUpdate(0.0)
         endIf
     endif

@@ -220,7 +220,6 @@ int property iPotionSelectorChoice = 2 auto hidden
 float property fSmartConsumeThreshold = 0.8 auto hidden
 float property fPotionSelectorFadeoutDelay = 3.0 auto hidden
 
-bool property bProModeEnabled auto hidden
 bool property bPreselectMode auto hidden
 bool property bQuickDualCastEnabled auto hidden
 
@@ -794,6 +793,12 @@ function checkVersion()
 
         if fCurrentVersion < 1.2
         	PM.onVersionUpdate()
+        	; Geared Up has been removed in 1.2 so if currently enabled turn it off now
+        	if bEnableGearedUp
+        		bEnableGearedUp = false
+        		Utility.SetINIbool("bDisableGearedUp:General", True)
+				refreshVisibleItems()
+			endIf
         endIf
 
         fCurrentVersion = fThisVersion
@@ -1521,16 +1526,6 @@ event OnMenuOpen(string _sCurrentMenu)
 	;elseif sCurrentMenu == "Journal Menu"
 		;sEntryPath = "_root.ConfigPanelFader.configPanel._modList"
 	endIf
-	;Geared Up
-	if bEnableGearedUp && PlayerRef.GetRace() == EH.PlayerRace
-		if PlayerRef.IsWeaponDrawn() || PlayerRef.GetAnimationVariablebool("IsEquipping")
-			Utility.SetINIbool("bDisableGearedUp:General", true)
-			refreshVisibleItems()
-			Utility.WaitMenuMode(0.1)
-			Utility.SetINIbool("bDisableGearedUp:General", false)
-			refreshVisibleItems()
-		endIf
-	endIf
 	;debug.trace("iEquip_WidgetCore OnMenuOpen end")
 endEvent
 
@@ -1594,37 +1589,6 @@ event OnMenuClose(string _sCurrentMenu)
 	sEntryPath = ""
 	;debug.trace("iEquip_WidgetCore OnMenuClose end")
 endEvent
-
-function refreshGearedUp()
-	;debug.trace("iEquip_WidgetCore refreshGearedUp start")
-	Utility.SetINIbool("bDisableGearedUp:General", True)
-	refreshVisibleItems()
-	Utility.WaitMenuMode(0.05)
-	Utility.SetINIbool("bDisableGearedUp:General", False)
-	refreshVisibleItems()
-	;debug.trace("iEquip_WidgetCore refreshGearedUp end")
-endFunction
-
-function refreshVisibleItems()
-	;debug.trace("iEquip_WidgetCore refreshVisibleItems start")
-	if !PlayerRef.IsOnMount()
-		PlayerRef.QueueNiNodeUpdate()
-	else
-		boots = PlayerRef.GetWornForm(0x00000080)
-		if boots
-			PlayerRef.UnequipItem(boots, false, true)
-			Utility.WaitMenuMode(0.1)
-			PlayerRef.EquipItem(boots, false, true)
-		else
-			PlayerRef.AddItem(Shoes, 1, true)
-			PlayerRef.EquipItem(Shoes, false, true)
-			Utility.WaitMenuMode(0.1)
-			PlayerRef.UnequipItem(Shoes, false, true)
-			PlayerRef.RemoveItem(Shoes, 1, true)
-		endIf
-	endIf
-	;debug.trace("iEquip_WidgetCore refreshVisibleItems end")
-endFunction
 
 function updateWidgetVisibility(bool show = true, float fDuration = 0.2, bool showForTorchMeterFlash = false)
 	;debug.trace("iEquip_WidgetCore updateWidgetVisibility start - show: " + show + ", bIsWidgetShown: " + bIsWidgetShown)
@@ -3367,7 +3331,7 @@ function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cycli
 			setSlotToEmpty(Q)
 		endIf
 	endIf
-	if Q < 3 && bProModeEnabled
+	if Q < 3 && bPreselectMode
 		if queueLength < 2
 			setSlotToEmpty(Q + 5)
 		elseIf aiCurrentlyPreselected[Q] == iIndex
@@ -3735,10 +3699,10 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		; If target item is a spell equip straight away
 		if itemType == 22
 			PlayerRef.EquipSpell(targetItem as Spell, Q)
-			;debug.trace("iEquip_WidgetCore cycleHand - just equipped a spell, equip type: " + jMap.getInt(targetObject, "iEquipSlot") + ", bProModeEnabled: " + bProModeEnabled + ", bQuickDualCastEnabled: " + bQuickDualCastEnabled + ", justSwitchedHands: " + justSwitchedHands + ", bPreselectMode: " + bPreselectMode)
+			;debug.trace("iEquip_WidgetCore cycleHand - just equipped a spell, equip type: " + jMap.getInt(targetObject, "iEquipSlot") + ", bQuickDualCastEnabled: " + bQuickDualCastEnabled + ", justSwitchedHands: " + justSwitchedHands + ", bPreselectMode: " + bPreselectMode)
 			if jMap.getInt(targetObject, "iEquipSlot") == 3 ; 2H spells
 				updateOtherHandOn2HSpellEquipped(0)
-			elseIf bProModeEnabled && bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
+			elseIf bQuickDualCastEnabled && !justSwitchedHands && !bPreselectMode
 				spell targetSpell = targetItem as spell
 				string spellSchool = jMap.getStr(targetObject, "iEquipSchool")
 				;debug.trace("iEquip_WidgetCore cycleHand - spellSchool: " + spellSchool + ", QuickDualCast allowed: " + abQuickDualCastSchoolAllowed[asSpellSchools.find(spellSchool)])
@@ -3867,9 +3831,7 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			endIf
 		endIf
 	endIf
-	if bEnableGearedUp && !previouslyUnarmedOr2HSpell ; This will be actioned on the second pass when re-equipping a previous otherHand item
-		refreshGearedUp()
-	endIf
+
 	TO.bJustCalledQuickLight = false
 	EH.bJustQuickDualCast = false
 	bBlockSwitchBackToBoundSpell = false
@@ -3947,9 +3909,7 @@ function goUnarmed()
 	if targetAmmo && bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
-	if bEnableGearedUp
-		refreshGearedUp()
-	endIf
+
 	EH.bGoingUnarmed = false
 	bBlockSwitchBackToBoundSpell = false
 	;debug.trace("iEquip_WidgetCore goUnarmed end")
@@ -4018,9 +3978,7 @@ function updateOtherHandOn2HSpellEquipped(int Q)
 	if targetAmmo && bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
-	if bEnableGearedUp
-		refreshGearedUp()
-	endIf
+
 	bBlockSwitchBackToBoundSpell = false
 	;debug.trace("iEquip_WidgetCore updateOtherHandOn2HSpellEquipped end")
 endFunction
@@ -5531,23 +5489,13 @@ function ApplyChanges()
 	    if bRefreshQueues
 	    	purgeQueue()
 	    endIf
-	    ;/if bReduceMaxQueueLengthPending
-	    	reduceMaxQueueLength()
-	    endIf/;
-	    if bGearedUpOptionChanged
-	    	Utility.SetINIbool("bDisableGearedUp:General", True)
-			refreshVisibleItems()
-			if bEnableGearedUp
-				Utility.SetINIbool("bDisableGearedUp:General", False)
-				refreshVisibleItems()
-			endIf
-	    endIf
+
 	    ammo targetAmmo = AM.currentAmmoForm as ammo
 	    if !bAmmoMode && bUnequipAmmo && targetAmmo && PlayerRef.isEquipped(targetAmmo)
 			PlayerRef.UnequipItemEx(targetAmmo)
 		endIf
-		;debug.trace("iEquip_WidgetCore ApplyChanges - bPreselectMode: " + bPreselectMode + ", bProModeEnabled: " + bProModeEnabled + ", PM.bPreselectEnabled: " + PM.bPreselectEnabled)
-	    if bPreselectMode && !(bProModeEnabled && PM.bPreselectEnabled)
+		;debug.trace("iEquip_WidgetCore ApplyChanges - bPreselectMode: " + bPreselectMode + ", PM.bPreselectEnabled: " + PM.bPreselectEnabled)
+	    if bPreselectMode && !PM.bPreselectEnabled
 	    	;debug.trace("iEquip_WidgetCore ApplyChanges - should be toggling out of Preselect Mode")
 	    	PM.togglePreselectMode(true)
 	    endIf
@@ -5697,6 +5645,7 @@ int property iMaxQueueLength = 12 auto hidden
 bool property bReduceMaxQueueLengthPending auto hidden
 bool property bHardLimitQueueSize = true auto hidden
 bool property bHardLimitEnabledPending auto hidden
+bool property bProModeEnabled auto hidden
 
 function reduceMaxQueueLength()
 	;/;debug.trace("iEquip_WidgetCore reduceMaxQueueLength start")
@@ -5715,4 +5664,35 @@ function reduceMaxQueueLength()
 		i += 1
 	endWhile
 	;debug.trace("iEquip_WidgetCore reduceMaxQueueLength end")/;
+endFunction
+
+function refreshGearedUp()
+	;debug.trace("iEquip_WidgetCore refreshGearedUp start")
+	Utility.SetINIbool("bDisableGearedUp:General", True)
+	refreshVisibleItems()
+	Utility.WaitMenuMode(0.05)
+	Utility.SetINIbool("bDisableGearedUp:General", False)
+	refreshVisibleItems()
+	;debug.trace("iEquip_WidgetCore refreshGearedUp end")
+endFunction
+
+function refreshVisibleItems()
+	;debug.trace("iEquip_WidgetCore refreshVisibleItems start")
+	if !PlayerRef.IsOnMount()
+		PlayerRef.QueueNiNodeUpdate()
+	else
+		boots = PlayerRef.GetWornForm(0x00000080)
+		if boots
+			PlayerRef.UnequipItem(boots, false, true)
+			Utility.WaitMenuMode(0.1)
+			PlayerRef.EquipItem(boots, false, true)
+		else
+			PlayerRef.AddItem(Shoes, 1, true)
+			PlayerRef.EquipItem(Shoes, false, true)
+			Utility.WaitMenuMode(0.1)
+			PlayerRef.UnequipItem(Shoes, false, true)
+			PlayerRef.RemoveItem(Shoes, 1, true)
+		endIf
+	endIf
+	;debug.trace("iEquip_WidgetCore refreshVisibleItems end")
 endFunction

@@ -8,10 +8,10 @@ iEquip_WidgetCore property WC auto
 iEquip_MCM_gen property gen auto
 iEquip_MCM_add property add auto
 iEquip_MCM_cyc property cyc auto
+iEquip_MCM_cyc property eqp auto
 iEquip_MCM_amm property amm auto
 iEquip_MCM_rep property poi auto
 iEquip_MCM_pot property pot auto
-iEquip_MCM_qsh property qsh auto
 iEquip_MCM_tch property tch auto
 iEquip_MCM_ui property uii auto
 iEquip_MCM_edt property edt auto
@@ -41,11 +41,11 @@ event OnConfigInit()
     Pages = new String[11]
     Pages[0] = "$iEquip_MCM_lbl_GeneralHotkeys"
     Pages[1] = "$iEquip_MCM_lbl_AddingItems"
-    Pages[2] = "$iEquip_MCM_lbl_CyclingEquipping"
-    Pages[3] = "$iEquip_MCM_lbl_AmmoQuickRanged"
-    Pages[4] = "$iEquip_MCM_lbl_PoisoningRecharging"
-    Pages[5] = "$iEquip_MCM_lbl_PotionsQuickRestore"
-    Pages[6] = "$iEquip_MCM_lbl_QuickShield"
+    Pages[2] = "$iEquip_MCM_lbl_Cycling"
+    Pages[3] = "$iEquip_MCM_lbl_Equipping"
+    Pages[4] = "$iEquip_MCM_lbl_AmmoQuickRanged"
+    Pages[5] = "$iEquip_MCM_lbl_PoisoningRecharging"
+    Pages[6] = "$iEquip_MCM_lbl_PotionsQuickRestore"
     Pages[7] = "$iEquip_MCM_lbl_TorchQuickLight"
     Pages[8] = "$iEquip_MCM_lbl_MiscUI"
     Pages[9] = "$iEquip_MCM_lbl_EditMode"
@@ -54,10 +54,10 @@ event OnConfigInit()
     gen.initData()
     add.initData()
     cyc.initData()
+    eqp.initData()
     amm.initData()
     poi.initData()
     pot.initData()    
-    qsh.initData()          
     tch.initData()
     uii.initData()
     edt.initData()           
@@ -97,16 +97,16 @@ event OnPageReset(string page)
 		elseIf WC.isEnabled
 			if page == "$iEquip_MCM_lbl_AddingItems"
 				add.drawPage()
-			elseIf page == "$iEquip_MCM_lbl_CyclingEquipping" 
+			elseIf page == "$iEquip_MCM_lbl_Cycling" 
 				cyc.drawPage()
+            elseIf page == "$iEquip_MCM_lbl_Equipping" 
+                eqp.drawPage()
             elseIf page == "$iEquip_MCM_lbl_AmmoQuickRanged" 
                 amm.drawPage()
             elseIf page == "$iEquip_MCM_lbl_PoisoningRecharging"
                 poi.drawPage()
 			elseIf page == "$iEquip_MCM_lbl_PotionsQuickRestore" 
 				pot.drawPage()
-            elseIf page == "$iEquip_MCM_lbl_QuickShield"
-                qsh.drawPage()   
             elseIf page == "$iEquip_MCM_lbl_TorchQuickLight"
                 tch.drawPage()  
 			elseIf page == "$iEquip_MCM_lbl_MiscUI"
@@ -127,16 +127,16 @@ function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
         gen.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_AddingItems"
         add.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
-    elseIf sCurrentPage == "$iEquip_MCM_lbl_CyclingEquipping"
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Cycling"
         cyc.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Equipping"
+        eqp.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_AmmoQuickRanged"
         amm.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_PoisoningRecharging"
         poi.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_PotionsQuickRestore"
         pot.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
-    elseIf sCurrentPage == "$iEquip_MCM_lbl_QuickShield"
-        qsh.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_TorchQuickLight"
         tch.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_MiscUI"
@@ -237,11 +237,11 @@ function savePreset(string presetName)	; Save data to JContainer file
 	jMap.setInt(jMCMPreset, "Version", GetVersion())
 	jMap.setObj(jMCMPreset, "GeneralHotkeys", gen.saveData())
 	jMap.setObj(jMCMPreset, "AddingItems", add.saveData())
-	jMap.setObj(jMCMPreset, "CyclingEquipping", cyc.saveData())
+	jMap.setObj(jMCMPreset, "Cycling", cyc.saveData())
+    jMap.setObj(jMCMPreset, "Equipping", eqp.saveData())
     jMap.setObj(jMCMPreset, "AmmoQuickRanged", amm.saveData())
 	jMap.setObj(jMCMPreset, "PoisoningRecharging", pot.saveData())
 	jMap.setObj(jMCMPreset, "PotionsQuickRestore", poi.saveData())
-    jMap.setObj(jMCMPreset, "QuickShield", qsh.saveData())
 	jMap.setObj(jMCMPreset, "TorchQuickLight", tch.saveData())
 	jMap.setObj(jMCMPreset, "MiscUI", uii.saveData())
 	jMap.setObj(jMCMPreset, "EditMode", edt.saveData())
@@ -272,11 +272,11 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
 			
 			gen.loadData(jMap.getObj(jMCMPreset, "GeneralHotkeys"), presetVersion)
 			add.loadData(jMap.getObj(jMCMPreset, "AddingItems"), presetVersion)
-			cyc.loadData(jMap.getObj(jMCMPreset, "CyclingEquipping"), presetVersion)
+			cyc.loadData(jMap.getObj(jMCMPreset, "Cycling"), presetVersion)
+            eqp.loadData(jMap.getObj(jMCMPreset, "Equipping"), presetVersion)
 			amm.loadData(jMap.getObj(jMCMPreset, "AmmoQuickRanged"), presetVersion)
 			poi.loadData(jMap.getObj(jMCMPreset, "PoisoningRecharging&"), presetVersion)
 			pot.loadData(jMap.getObj(jMCMPreset, "PotionsQuickRestore"), presetVersion)
-			qsh.loadData(jMap.getObj(jMCMPreset, "QuickShield"), presetVersion)
 			tch.loadData(jMap.getObj(jMCMPreset, "TorchQuickLight"), presetVersion)
             uii.loadData(jMap.getObj(jMCMPreset, "MiscUI"), presetVersion)
 			edt.loadData(jMap.getObj(jMCMPreset, "EditMode"), presetVersion)

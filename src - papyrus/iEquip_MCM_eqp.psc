@@ -2,9 +2,6 @@ Scriptname iEquip_MCM_eqp extends iEquip_MCM_Page
 
 import iEquip_StringExt
 
-iEquip_PotionScript property PO auto
-iEquip_PlayerEventHandler property EH auto
-iEquip_KeyHandler Property KH Auto
 iEquip_ProMode Property PM Auto
 
 string[] autoEquipOptions
@@ -26,23 +23,23 @@ function initData()
     
     autoEquipOptions = new string[4]
     autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    autoEquipOptions[1] = "$iEquip_MCM_gen_opt_anyTime"
-    autoEquipOptions[2] = "$iEquip_MCM_gen_opt_weapDrawn"
-    autoEquipOptions[3] = "$iEquip_MCM_gen_opt_combatOnly"
+    autoEquipOptions[1] = "$iEquip_MCM_eqp_opt_anyTime"
+    autoEquipOptions[2] = "$iEquip_MCM_eqp_opt_weapDrawn"
+    autoEquipOptions[3] = "$iEquip_MCM_eqp_opt_combatOnly"
 
     whenToAutoEquipOptions = new string[3]
-    whenToAutoEquipOptions[0] = "$iEquip_MCM_gen_opt_alwaysEquip"
-    whenToAutoEquipOptions[1] = "$iEquip_MCM_gen_opt_equipIfBetter"
-    whenToAutoEquipOptions[2] = "$iEquip_MCM_gen_opt_equipIfUnarmed"
+    whenToAutoEquipOptions[0] = "$iEquip_MCM_eqp_opt_alwaysEquip"
+    whenToAutoEquipOptions[1] = "$iEquip_MCM_eqp_opt_equipIfBetter"
+    whenToAutoEquipOptions[2] = "$iEquip_MCM_eqp_opt_equipIfUnarmed"
 
     currItemEnchOptions = new string[3]
-    currItemEnchOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
-    currItemEnchOptions[1] = "$iEquip_MCM_gen_opt_equipIfNoCharge"
-    currItemEnchOptions[2] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    currItemEnchOptions[0] = "$iEquip_MCM_eqp_opt_dontEquip"
+    currItemEnchOptions[1] = "$iEquip_MCM_eqp_opt_equipIfNoCharge"
+    currItemEnchOptions[2] = "$iEquip_MCM_eqp_opt_alwaysEquip"
 
     currItemPoisOptions = new string[2]
-    currItemPoisOptions[0] = "$iEquip_MCM_gen_opt_dontEquip"
-    currItemPoisOptions[1] = "$iEquip_MCM_gen_opt_alwaysEquip"
+    currItemPoisOptions[0] = "$iEquip_MCM_eqp_opt_dontEquip"
+    currItemPoisOptions[1] = "$iEquip_MCM_eqp_opt_alwaysEquip"
 
     QSPreferredMagicSchool = new String[5]
     QSPreferredMagicSchool[0] = "$iEquip_common_alteration"
@@ -53,8 +50,8 @@ function initData()
     
     preselectQuickFunctionOptions = new String[3]
     preselectQuickFunctionOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    preselectQuickFunctionOptions[1] = "$iEquip_MCM_pro_opt_preselect"
-    preselectQuickFunctionOptions[2] = "$iEquip_MCM_pro_opt_equip"
+    preselectQuickFunctionOptions[1] = "$iEquip_MCM_common_opt_preselect"
+    preselectQuickFunctionOptions[2] = "$iEquip_MCM_common_opt_equip"
     
     asMagicSchools = new string[5]
     asMagicSchools[0] = "Alteration"
@@ -75,8 +72,6 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, WC.bAutoEquipHardcore as int)
     jArray.addInt(jPageObj, WC.bAutoEquipDontDropFavorites as int)
 	
-    jArray.addInt(jPageObj, WC.bEnableGearedUp as int)
-
     jArray.addInt(jPageObj, PM.bQuickShieldEnabled as int)
     jArray.addInt(jPageObj, PM.bQuickShield2HSwitchAllowed as int)
     jArray.addInt(jPageObj, PM.bQuickShieldPreferMagic as int)
@@ -97,94 +92,175 @@ endFunction
 
 function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 
-    WC.iAutoEquipEnabled = jArray.getInt(jPageObj, 20)
-    WC.iAutoEquip = jArray.getInt(jPageObj, 21)
-    WC.iCurrentItemEnchanted = jArray.getInt(jPageObj, 22)
-    WC.iCurrentItemPoisoned = jArray.getInt(jPageObj, 23)
-    WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 24)
-    WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 25)
+    WC.iAutoEquipEnabled = jArray.getInt(jPageObj, 0)
+    WC.iAutoEquip = jArray.getInt(jPageObj, 1)
+    WC.iCurrentItemEnchanted = jArray.getInt(jPageObj, 2)
+    WC.iCurrentItemPoisoned = jArray.getInt(jPageObj, 3)
+    WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 4)
+    WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 5)
 
-    WC.bEnableGearedUp = jArray.getInt(jPageObj, 11)
-
-    PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 7)
-    PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 8)
-    PM.bQuickShieldPreferMagic = jArray.getInt(jPageObj, 9)
-    iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 10)
+    PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 6)
+    PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 7)
+    PM.bQuickShieldPreferMagic = jArray.getInt(jPageObj, 8)
+    iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 9)
     PM.sQuickShieldPreferredMagicSchool = asMagicSchools[iCurrentQSPreferredMagicSchoolChoice]
-    PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 11)
-    PM.iPreselectQuickShield = jArray.getInt(jPageObj, 12)
+    PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 10)
+    PM.iPreselectQuickShield = jArray.getInt(jPageObj, 11)
 
-    WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 32)
-    WC.abQuickDualCastSchoolAllowed[0] = jArray.getInt(jPageObj, 33)
-    WC.abQuickDualCastSchoolAllowed[1] = jArray.getInt(jPageObj, 34)
-    WC.abQuickDualCastSchoolAllowed[2] = jArray.getInt(jPageObj, 35)
-    WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 36)
-    WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 37)
-    PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 38)
+    WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 12)
+    WC.abQuickDualCastSchoolAllowed[0] = jArray.getInt(jPageObj, 13)
+    WC.abQuickDualCastSchoolAllowed[1] = jArray.getInt(jPageObj, 14)
+    WC.abQuickDualCastSchoolAllowed[2] = jArray.getInt(jPageObj, 15)
+    WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 16)
+    WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 17)
+    PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 18)
 
 endFunction
 
 function drawPage()
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_AutoEquip</font>")
-    MCM.AddMenuOptionST("gen_men_enableAutoEquip", "$iEquip_MCM_gen_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_eqp_lbl_AutoEquip</font>")
+    MCM.AddMenuOptionST("eqp_men_enableAutoEquip", "$iEquip_MCM_eqp_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
 
     if WC.iAutoEquipEnabled > 0
-        MCM.AddMenuOptionST("gen_men_whenToAutoEquip", "$iEquip_MCM_gen_lbl_whenToAutoEquip", whenToAutoEquipOptions[WC.iAutoEquip])
-        MCM.AddMenuOptionST("gen_men_currItemEnch", "$iEquip_MCM_gen_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
-        MCM.AddMenuOptionST("gen_men_currItemPois", "$iEquip_MCM_gen_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
-        MCM.AddToggleOptionST("gen_tgl_autoEquipHardcore", "$iEquip_MCM_gen_lbl_autoEquipHardcore", WC.bAutoEquipHardcore)
+        MCM.AddMenuOptionST("eqp_men_whenToAutoEquip", "$iEquip_MCM_eqp_lbl_whenToAutoEquip", whenToAutoEquipOptions[WC.iAutoEquip])
+        MCM.AddMenuOptionST("eqp_men_currItemEnch", "$iEquip_MCM_eqp_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
+        MCM.AddMenuOptionST("eqp_men_currItemPois", "$iEquip_MCM_eqp_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
+        MCM.AddToggleOptionST("eqp_tgl_autoEquipHardcore", "$iEquip_MCM_eqp_lbl_autoEquipHardcore", WC.bAutoEquipHardcore)
         if WC.bAutoEquipHardcore
-            MCM.AddToggleOptionST("gen_tgl_dontDropFavorites", "$iEquip_MCM_gen_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
+            MCM.AddToggleOptionST("eqp_tgl_dontDropFavorites", "$iEquip_MCM_eqp_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
         endIf
     endIf
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_VisGear</font>")
-    MCM.AddToggleOptionST("gen_tgl_enblAllGeard", "$iEquip_MCM_gen_lbl_enblAllGeard", WC.bEnableGearedUp)
-
     MCM.SetCursorPosition(1)
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickShieldOpts</font>")
-    MCM.AddTextOptionST("pro_txt_whatQuickshield", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickshield</font>", "")
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_eqp_lbl_quickShieldOpts</font>")
+    MCM.AddTextOptionST("eqp_txt_whatQuickshield", "<font color='#a6bffe'>$iEquip_MCM_eqp_lbl_whatQuickshield</font>", "")
     
     if PM.bQuickShieldEnabled
-        MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
-        MCM.AddToggleOptionST("pro_tgl_with2hReqp", "$iEquip_MCM_pro_lbl_with2hReqp", PM.bQuickShield2HSwitchAllowed)
-        MCM.AddToggleOptionST("pro_tgl_prefShieldMag", "$iEquip_MCM_pro_lbl_prefMag", PM.bQuickShieldPreferMagic)
+        MCM.AddToggleOptionST("eqp_tgl_enblQuickshield", "<font color='#c7ea46'>$iEquip_MCM_eqp_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
+        MCM.AddToggleOptionST("eqp_tgl_with2hReqp", "$iEquip_MCM_eqp_lbl_with2hReqp", PM.bQuickShield2HSwitchAllowed)
+        MCM.AddToggleOptionST("eqp_tgl_prefShieldMag", "$iEquip_MCM_eqp_lbl_prefMag", PM.bQuickShieldPreferMagic)
                 
         if PM.bQuickShieldPreferMagic
-            MCM.AddMenuOptionST("pro_men_rightHandspllTyp", "$iEquip_MCM_pro_lbl_rightHandspllTyp", QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])
+            MCM.AddMenuOptionST("eqp_men_rightHandspllTyp", "$iEquip_MCM_eqp_lbl_rightHandspllTyp", QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])
         endIf         
-        MCM.AddToggleOptionST("pro_tgl_ifNotFound", "$iEquip_MCM_pro_lbl_ifNotFound", PM.bQuickShieldUnequipLeftIfNotFound)
-        MCM.AddMenuOptionST("pro_men_inPreselectQuickshieldMode", "$iEquip_MCM_pro_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
+        MCM.AddToggleOptionST("eqp_tgl_ifNotFound", "$iEquip_MCM_eqp_lbl_ifNotFound", PM.bQuickShieldUnequipLeftIfNotFound)
+        MCM.AddMenuOptionST("eqp_men_inPreselectQuickshieldMode", "$iEquip_MCM_common_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
     else
-        MCM.AddToggleOptionST("pro_tgl_enblQuickshield", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
+        MCM.AddToggleOptionST("eqp_tgl_enblQuickshield", "<font color='#ff7417'>$iEquip_MCM_eqp_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
     endIf
 
     MCM.AddEmptyOption()
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickDCOpts</font>")
-    MCM.AddTextOptionST("pro_txt_whatQuickdualcast", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickdualcast</font>", "")
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_eqp_lbl_dualEquipSpells</font>")
+    MCM.AddTextOptionST("eqp_txt_whatQuickdualcast", "<font color='#a6bffe'>$iEquip_MCM_eqp_lbl_whatQuickdualcast</font>", "")
 
     if WC.bQuickDualCastEnabled
-        MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
-        MCM.AddTextOption("$iEquip_MCM_pro_lbl_enableQDCSchools", "")
-        MCM.AddToggleOptionST("pro_tgl_altSpll", "$iEquip_MCM_pro_lbl_altSpll", WC.abQuickDualCastSchoolAllowed[0])
-        MCM.AddToggleOptionST("pro_tgl_conjSpll", "$iEquip_MCM_pro_lbl_conjSpll", WC.abQuickDualCastSchoolAllowed[1])
-        MCM.AddToggleOptionST("pro_tgl_destSpll", "$iEquip_MCM_pro_lbl_destSpll", WC.abQuickDualCastSchoolAllowed[2])
-        MCM.AddToggleOptionST("pro_tgl_illSpll", "$iEquip_MCM_pro_lbl_illSpll", WC.abQuickDualCastSchoolAllowed[3])
-        MCM.AddToggleOptionST("pro_tgl_restSpll", "$iEquip_MCM_pro_lbl_restSpll", WC.abQuickDualCastSchoolAllowed[4])
-        MCM.AddToggleOptionST("pro_tgl_reqBothQue", "$iEquip_MCM_pro_lbl_reqBothQue", PM.bQuickDualCastMustBeInBothQueues)
+        MCM.AddToggleOptionST("eqp_tgl_enblDualEquipSpells", "<font color='#c7ea46'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
+        MCM.AddTextOption("$iEquip_MCM_eqp_lbl_enableQDCSchools", "")
+        MCM.AddToggleOptionST("eqp_tgl_altSpll", "$iEquip_MCM_common_lbl_altSpll", WC.abQuickDualCastSchoolAllowed[0])
+        MCM.AddToggleOptionST("eqp_tgl_conjSpll", "$iEquip_MCM_common_lbl_conjSpll", WC.abQuickDualCastSchoolAllowed[1])
+        MCM.AddToggleOptionST("eqp_tgl_destSpll", "$iEquip_MCM_common_lbl_destSpll", WC.abQuickDualCastSchoolAllowed[2])
+        MCM.AddToggleOptionST("eqp_tgl_illSpll", "$iEquip_MCM_common_lbl_illSpll", WC.abQuickDualCastSchoolAllowed[3])
+        MCM.AddToggleOptionST("eqp_tgl_restSpll", "$iEquip_MCM_common_lbl_restSpll", WC.abQuickDualCastSchoolAllowed[4])
+        MCM.AddToggleOptionST("eqp_tgl_reqBothQue", "$iEquip_MCM_eqp_lbl_reqBothQue", PM.bQuickDualCastMustBeInBothQueues)
     else
-        MCM.AddToggleOptionST("pro_tgl_enblQuickdualcast", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
+        MCM.AddToggleOptionST("eqp_tgl_enblQuickdualcast", "<font color='#ff7417'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
     endIf
 
 endFunction
+
+; ------------------------
+; - Auto-Equipping Options -
+; ------------------------ 
+
+State eqp_men_enableAutoEquip
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_enableAutoEquip")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iAutoEquipEnabled, autoEquipOptions, 0)
+        elseIf currentEvent == "Accept"
+            bool reset
+            if (WC.iAutoEquipEnabled > 0 && currentVar as int == 0) || (WC.iAutoEquipEnabled == 0 && currentVar as int > 0)
+                reset = true
+            endIf
+            WC.iAutoEquipEnabled = currentVar as int
+            if reset
+                MCM.forcePageReset()
+            else
+                MCM.SetMenuOptionValueST(autoEquipOptions[WC.iAutoEquipEnabled])
+            endIf
+        endIf
+    endEvent
+endState
+
+State eqp_men_whenToAutoEquip
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_whenToAutoEquip")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iAutoEquip, whenToAutoEquipOptions, 1)
+        elseIf currentEvent == "Accept"
+            WC.iAutoEquip = currentVar as int
+            MCM.SetMenuOptionValueST(whenToAutoEquipOptions[WC.iAutoEquip])
+        endIf
+    endEvent
+endState
+
+State eqp_men_currItemEnch
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_currItemEnch")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iCurrentItemEnchanted, currItemEnchOptions, 0)
+        elseIf currentEvent == "Accept"
+            WC.iCurrentItemEnchanted = currentVar as int
+            MCM.SetMenuOptionValueST(currItemEnchOptions[WC.iCurrentItemEnchanted])
+        endIf
+    endEvent
+endState
+
+State eqp_men_currItemPois
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_currItemPois")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iCurrentItemPoisoned, currItemPoisOptions, 1)
+        elseIf currentEvent == "Accept"
+            WC.iCurrentItemPoisoned = currentVar as int
+            MCM.SetMenuOptionValueST(currItemPoisOptions[WC.iCurrentItemPoisoned])
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_autoEquipHardcore
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_autoEquipHardcore")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && WC.bAutoEquipHardcore)
+            WC.bAutoEquipHardcore = !WC.bAutoEquipHardcore
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_dontDropFavorites
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_dontDropFavorites")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bAutoEquipDontDropFavorites)
+            WC.bAutoEquipDontDropFavorites = !WC.bAutoEquipDontDropFavorites
+            MCM.SetToggleOptionValueST(WC.bAutoEquipDontDropFavorites)
+        endIf
+    endEvent
+endState
 
 ; -----------------------
 ; - QuickShield Options -
 ; -----------------------
 
-State pro_txt_whatQuickshield
+State eqp_txt_whatQuickshield
     event OnBeginState()
         if currentEvent == "Select"
             if MCM.ShowMessage("$iEquip_help_quickshield1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
@@ -196,10 +272,10 @@ State pro_txt_whatQuickshield
     endEvent   
 endState
 
-State pro_tgl_enblQuickshield
+State eqp_tgl_enblQuickshield
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_enblQuickshield")
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_enblQuickshield")
         elseIf currentEvent == "Select"
             PM.bQuickShieldEnabled = !PM.bQuickShieldEnabled
             MCM.forcePageReset()
@@ -210,10 +286,10 @@ State pro_tgl_enblQuickshield
     endEvent
 endState
 
-State pro_tgl_with2hReqp
+State eqp_tgl_with2hReqp
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_with2hReqp")
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_with2hReqp")
         elseIf currentEvent == "Select"
             PM.bQuickShield2HSwitchAllowed = !PM.bQuickShield2HSwitchAllowed
             MCM.SetToggleOptionValueST(PM.bQuickShield2HSwitchAllowed)
@@ -224,10 +300,10 @@ State pro_tgl_with2hReqp
     endEvent
 endState
 
-State pro_tgl_prefShieldMag
+State eqp_tgl_prefShieldMag
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_prefShieldMag")
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_prefShieldMag")
         elseIf currentEvent == "Select"
             PM.bQuickShieldPreferMagic = !PM.bQuickShieldPreferMagic
             MCM.forcePageReset()
@@ -238,10 +314,10 @@ State pro_tgl_prefShieldMag
     endEvent
 endState
 
-State pro_men_rightHandspllTyp
+State eqp_men_rightHandspllTyp
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_rightHandspllTyp")
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_rightHandspllTyp")
         elseIf currentEvent == "Open"
             MCM.fillMenu(iCurrentQSPreferredMagicSchoolChoice, QSPreferredMagicSchool, 2)
         elseIf currentEvent == "Accept"
@@ -253,10 +329,10 @@ State pro_men_rightHandspllTyp
     endEvent
 endState
 
-State pro_tgl_ifNotFound
+State eqp_tgl_ifNotFound
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_ifNotFound")
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_ifNotFound")
         else
             if currentEvent == "Select"
                 PM.bQuickShieldUnequipLeftIfNotFound = !PM.bQuickShieldUnequipLeftIfNotFound
@@ -268,10 +344,10 @@ State pro_tgl_ifNotFound
     endEvent
 endState
 
-State pro_men_inPreselectQuickshieldMode
+State eqp_men_inPreselectQuickshieldMode
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_inPreselectQuickshieldMode")
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_inPreselectQuickshieldMode")
         elseIf currentEvent == "Open"
             MCM.fillMenu(PM.iPreselectQuickShield, preselectQuickFunctionOptions, 1)
         elseIf currentEvent == "Accept"
@@ -282,10 +358,10 @@ State pro_men_inPreselectQuickshieldMode
 endState
 
 ; -------------------------
-; - QuickDualCast Options -
+; - DualEquipSpells Options -
 ; -------------------------      
 
-State pro_txt_whatQuickdualcast
+State eqp_txt_whatDualEquipSpells
     event OnBeginState()
         if currentEvent == "Select"
             MCM.ShowMessage("$iEquip_help_quickdualcast", false, "$OK")
@@ -293,10 +369,10 @@ State pro_txt_whatQuickdualcast
     endEvent
 endState  
 
-State pro_tgl_enblQuickdualcast
+State eqp_tgl_enblQuickdualcast
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_enblQuickdualcast")
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_enblQuickdualcast")
         elseIf currentEvent == "Select"
             WC.bQuickDualCastEnabled = !WC.bQuickDualCastEnabled
             MCM.forcePageReset()
@@ -307,7 +383,7 @@ State pro_tgl_enblQuickdualcast
     endEvent
 endState
 
-State pro_tgl_altSpll
+State eqp_tgl_altSpll
     event OnBeginState()
         if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[0])
             WC.abQuickDualCastSchoolAllowed[0] = !WC.abQuickDualCastSchoolAllowed[0]            
@@ -316,7 +392,7 @@ State pro_tgl_altSpll
     endEvent
 endState
 
-State pro_tgl_conjSpll
+State eqp_tgl_conjSpll
     event OnBeginState()
         if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[1])
             WC.abQuickDualCastSchoolAllowed[1] = !WC.abQuickDualCastSchoolAllowed[1]            
@@ -325,7 +401,7 @@ State pro_tgl_conjSpll
     endEvent
 endState
 
-State pro_tgl_destSpll
+State eqp_tgl_destSpll
     event OnBeginState()
         if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[2])
             WC.abQuickDualCastSchoolAllowed[2] = !WC.abQuickDualCastSchoolAllowed[2]            
@@ -334,7 +410,7 @@ State pro_tgl_destSpll
     endEvent
 endState
 
-State pro_tgl_illSpll
+State eqp_tgl_illSpll
     event OnBeginState()
         if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[3])
             WC.abQuickDualCastSchoolAllowed[3] = !WC.abQuickDualCastSchoolAllowed[3]            
@@ -343,7 +419,7 @@ State pro_tgl_illSpll
     endEvent
 endState
 
-State pro_tgl_restSpll
+State eqp_tgl_restSpll
     event OnBeginState()
         if (currentEvent == "Select") || (currentEvent == "Default" && WC.abQuickDualCastSchoolAllowed[4])
             WC.abQuickDualCastSchoolAllowed[4] = !WC.abQuickDualCastSchoolAllowed[4]            
@@ -352,10 +428,10 @@ State pro_tgl_restSpll
     endEvent
 endState
 
-State pro_tgl_reqBothQue
+State eqp_tgl_reqBothQue
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_reqBothQue")
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_reqBothQue")
         elseIf currentEvent == "Select"
             PM.bQuickDualCastMustBeInBothQueues = !PM.bQuickDualCastMustBeInBothQueues
             MCM.SetToggleOptionValueST(PM.bQuickDualCastMustBeInBothQueues)

@@ -39,21 +39,21 @@ function initData()
     notificationOptions[2] = "$iEquip_MCM_common_opt_verbose"
 
     QHEquipOptions = new String[4]
-    QHEquipOptions[0] = "$iEquip_MCM_pro_opt_left"
-    QHEquipOptions[1] = "$iEquip_MCM_pro_opt_right"
-    QHEquipOptions[2] = "$iEquip_MCM_pro_opt_both"
-    QHEquipOptions[3] = "$iEquip_MCM_pro_opt_whereFound"
+    QHEquipOptions[0] = "$iEquip_MCM_pot_opt_left"
+    QHEquipOptions[1] = "$iEquip_MCM_pot_opt_right"
+    QHEquipOptions[2] = "$iEquip_MCM_pot_opt_both"
+    QHEquipOptions[3] = "$iEquip_MCM_pot_opt_whereFound"
 
     QBuffOptions = new string[4]
-    QBuffOptions[0] = "$iEquip_MCM_pro_opt_eitherBuff"
-    QBuffOptions[1] = "$iEquip_MCM_pro_opt_fortifyOnly"
-    QBuffOptions[2] = "$iEquip_MCM_pro_opt_regenOnly"
-    QBuffOptions[3] = "$iEquip_MCM_pro_opt_bothBuffs"
+    QBuffOptions[0] = "$iEquip_MCM_pot_opt_eitherBuff"
+    QBuffOptions[1] = "$iEquip_MCM_pot_opt_fortifyOnly"
+    QBuffOptions[2] = "$iEquip_MCM_pot_opt_regenOnly"
+    QBuffOptions[3] = "$iEquip_MCM_pot_opt_bothBuffs"
 
     QBuffControlOptions = new string[3]
-    QBuffControlOptions[0] = "$iEquip_MCM_pro_opt_alwaysQB"
-    QBuffControlOptions[1] = "$iEquip_MCM_pro_opt_QBOn2ndPress"
-    QBuffControlOptions[2] = "$iEquip_MCM_pro_opt_2ndPressInCombat"
+    QBuffControlOptions[0] = "$iEquip_MCM_pot_opt_alwaysQB"
+    QBuffControlOptions[1] = "$iEquip_MCM_pot_opt_QBOn2ndPress"
+    QBuffControlOptions[2] = "$iEquip_MCM_pot_opt_2ndPressInCombat"
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -120,20 +120,20 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	PO.bNotificationOnLowRestorePotions = jArray.getInt(jPageObj, 15)
     PO.iNotificationLevel = jArray.getInt(jPageObj, 16)
 
-    PM.bQuickRestoreEnabled = jArray.getInt(jPageObj, 13)
-    PM.bQuickHealEnabled = jArray.getInt(jPageObj, 14)
-    PM.bQuickMagickaEnabled = jArray.getInt(jPageObj, 15)
-    PM.bQuickStaminaEnabled = jArray.getInt(jPageObj, 16)
-    PM.fQuickRestoreThreshold = jArray.getFlt(jPageObj, 17)
-    PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 18)
-    PM.iQuickBuffControl = jArray.getInt(jPageObj, 19)
-    PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 20)
-    PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 21)
-    PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 22)
-    PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 23)
-    PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 24)
-    PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 25)
-    PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 26)
+    PM.bQuickRestoreEnabled = jArray.getInt(jPageObj, 17)
+    PM.bQuickHealEnabled = jArray.getInt(jPageObj, 18)
+    PM.bQuickMagickaEnabled = jArray.getInt(jPageObj, 19)
+    PM.bQuickStaminaEnabled = jArray.getInt(jPageObj, 20)
+    PM.fQuickRestoreThreshold = jArray.getFlt(jPageObj, 21)
+    PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 22)
+    PM.iQuickBuffControl = jArray.getInt(jPageObj, 23)
+    PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 24)
+    PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 25)
+    PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 26)
+    PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 27)
+    PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 28)
+    PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 29)
+    PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 30)
 endFunction
 
 function drawPage()
@@ -179,47 +179,47 @@ function drawPage()
 
     MCM.SetCursorPosition(1)
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickRestoreOpts</font>")
-    MCM.AddTextOptionST("pro_txt_whatQuickRestore", "<font color='#a6bffe'>$iEquip_MCM_pro_lbl_whatQuickRestore</font>", "")
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_quickRestoreOpts</font>")
+    MCM.AddTextOptionST("pot_txt_whatQuickRestore", "<font color='#a6bffe'>$iEquip_MCM_pot_lbl_whatQuickRestore</font>", "")
 
     if PM.bQuickRestoreEnabled
-        MCM.AddToggleOptionST("pro_tgl_enblQuickRestore", "<font color='#c7ea46'>$iEquip_MCM_pro_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
+        MCM.AddToggleOptionST("pot_tgl_enblQuickRestore", "<font color='#c7ea46'>$iEquip_MCM_pot_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
         ;QuickHeal
-        MCM.AddToggleOptionST("pro_tgl_enblQuickheal", "$iEquip_MCM_pro_lbl_enblQuickheal", PM.bQuickHealEnabled) 
+        MCM.AddToggleOptionST("pot_tgl_enblQuickheal", "$iEquip_MCM_pot_lbl_enblQuickheal", PM.bQuickHealEnabled) 
         ;QuickMagicka
-        MCM.AddToggleOptionST("pro_tgl_enblQuickMagicka", "$iEquip_MCM_pro_lbl_enblQuickMagicka", PM.bQuickMagickaEnabled) 
+        MCM.AddToggleOptionST("pot_tgl_enblQuickMagicka", "$iEquip_MCM_pot_lbl_enblQuickMagicka", PM.bQuickMagickaEnabled) 
         ;QuickStamina
-        MCM.AddToggleOptionST("pro_tgl_enblQuickStamina", "$iEquip_MCM_pro_lbl_enblQuickStamina", PM.bQuickStaminaEnabled)        
+        MCM.AddToggleOptionST("pot_tgl_enblQuickStamina", "$iEquip_MCM_pot_lbl_enblQuickStamina", PM.bQuickStaminaEnabled)        
         ;Core settings
-        MCM.AddSliderOptionST("pro_sld_QuickRestoreThreshold", "$iEquip_MCM_pro_lbl_QuickRestoreThreshold", PM.fQuickRestoreThreshold*100, "{0} %")
-        MCM.AddToggleOptionST("pro_tgl_quickBuff", "$iEquip_MCM_pro_lbl_quickBuff", PM.bQuickBuffEnabled)
+        MCM.AddSliderOptionST("pot_sld_QuickRestoreThreshold", "$iEquip_MCM_pot_lbl_QuickRestoreThreshold", PM.fQuickRestoreThreshold*100, "{0} %")
+        MCM.AddToggleOptionST("pot_tgl_quickBuff", "$iEquip_MCM_pot_lbl_quickBuff", PM.bQuickBuffEnabled)
         
         if PM.bQuickBuffEnabled
-            MCM.AddMenuOptionST("pro_men_quickBuffControl", "$iEquip_MCM_pro_lbl_quickBuffControl", QBuffControlOptions[PM.iQuickBuffControl])
+            MCM.AddMenuOptionST("pot_men_quickBuffControl", "$iEquip_MCM_pot_lbl_quickBuffControl", QBuffControlOptions[PM.iQuickBuffControl])
             
             if PM.iQuickBuffControl > 0
-                MCM.AddSliderOptionST("pro_sld_quickBuffDelay", "$iEquip_MCM_pro_lbl_quickBuffDelay", PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+                MCM.AddSliderOptionST("pot_sld_quickBuffDelay", "$iEquip_MCM_pot_lbl_quickBuffDelay", PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
             endIf
-            MCM.AddMenuOptionST("pro_men_buffsToApply", "$iEquip_MCM_pro_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
+            MCM.AddMenuOptionST("pot_men_buffsToApply", "$iEquip_MCM_pot_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
         endIf
         ;QuickHeal Options
         if PM.bQuickHealEnabled
-            MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pro_lbl_quickHealOpts</font>")
-            MCM.AddToggleOptionST("pro_tgl_prefHealMag", "$iEquip_MCM_pro_lbl_prefMag", PM.bQuickHealPreferMagic)
-            MCM.AddToggleOptionST("pro_tgl_useFallback", "$iEquip_MCM_pro_lbl_useFallback", PM.bQuickHealUseFallback)
+            MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_quickHealOpts</font>")
+            MCM.AddToggleOptionST("pot_tgl_prefHealMag", "$iEquip_MCM_pot_lbl_prefMag", PM.bQuickHealPreferMagic)
+            MCM.AddToggleOptionST("pot_tgl_useFallback", "$iEquip_MCM_pot_lbl_useFallback", PM.bQuickHealUseFallback)
                     
             if PM.bQuickHealPreferMagic
-                MCM.AddMenuOptionST("pro_men_alwysEqpSpll", "$iEquip_MCM_pro_lbl_alwysEqpSpll", QHEquipOptions[PM.iQuickHealEquipChoice])
+                MCM.AddMenuOptionST("pot_men_alwysEqpSpll", "$iEquip_MCM_pot_lbl_alwysEqpSpll", QHEquipOptions[PM.iQuickHealEquipChoice])
             endIf
 
-            MCM.AddToggleOptionST("pro_tgl_swtchBck", "$iEquip_MCM_pro_lbl_swtchBck", PM.bQuickHealSwitchBackEnabled)
+            MCM.AddToggleOptionST("pot_tgl_swtchBck", "$iEquip_MCM_pot_lbl_swtchBck", PM.bQuickHealSwitchBackEnabled)
             
             if PM.bQuickHealSwitchBackEnabled
-                MCM.AddToggleOptionST("pro_tgl_swtchBckRest", "$iEquip_MCM_pro_lbl_swtchBckRest", PM.bQuickHealSwitchBackAndRestore)
+                MCM.AddToggleOptionST("pot_tgl_swtchBckRest", "$iEquip_MCM_pot_lbl_swtchBckRest", PM.bQuickHealSwitchBackAndRestore)
             endIf
         endIf
     else
-        MCM.AddToggleOptionST("pro_tgl_enblQuickRestore", "<font color='#ff7417'>$iEquip_MCM_pro_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
+        MCM.AddToggleOptionST("pot_tgl_enblQuickRestore", "<font color='#ff7417'>$iEquip_MCM_pot_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
     endIf
 endFunction
 
@@ -371,45 +371,6 @@ State pot_tgl_blockIfBuffEffect
         endIf
     endEvent
 endState
-
-State pot_txt_addHealthGroup
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_addHealthGroup")
-        elseIf currentEvent == "Select"
-            WC.addPotionGroups(0)
-            WC.abPotionGroupAddedBack[0] = true
-            WC.bPotionGroupingOptionsChanged = true
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State pot_txt_addMagickaGroup
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_addMagickaGroup")
-        elseIf currentEvent == "Select"
-            WC.addPotionGroups(1)
-            WC.abPotionGroupAddedBack[1] = true
-            WC.bPotionGroupingOptionsChanged = true
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State pot_txt_addStaminaGroup
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_addStaminaGroup")
-        elseIf currentEvent == "Select"
-            WC.addPotionGroups(2)
-            WC.abPotionGroupAddedBack[2] = true
-            WC.bPotionGroupingOptionsChanged = true
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
             
 ; ------------------
 ; - Widget Options -
@@ -497,7 +458,7 @@ endState
 ; - QuickRestore Options -
 ; ---------------------
 
-State pro_txt_whatQuickRestore
+State pot_txt_whatQuickRestore
     event OnBeginState()
         if currentEvent == "Select"
             if MCM.ShowMessage("$iEquip_help_quickRestore1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
@@ -511,10 +472,10 @@ State pro_txt_whatQuickRestore
     endEvent
 endState
 
-State pro_tgl_enblQuickRestore
+State pot_tgl_enblQuickRestore
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_enblQuickRestore")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblQuickRestore")
         elseIf currentEvent == "Select"
             PM.bQuickRestoreEnabled = !PM.bQuickRestoreEnabled
             MCM.forcePageReset()
@@ -525,10 +486,10 @@ State pro_tgl_enblQuickRestore
     endEvent
 endState
 
-State pro_tgl_enblQuickheal
+State pot_tgl_enblQuickheal
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_enblQuickheal")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblQuickheal")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickHealEnabled)
             PM.bQuickHealEnabled = !PM.bQuickHealEnabled
             MCM.forcePageReset()
@@ -536,10 +497,10 @@ State pro_tgl_enblQuickheal
     endEvent
 endState
 
-State pro_tgl_enblQuickMagicka
+State pot_tgl_enblQuickMagicka
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_enblQuickMagicka")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblQuickMagicka")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickMagickaEnabled)
             PM.bQuickMagickaEnabled = !PM.bQuickMagickaEnabled
             MCM.SetToggleOptionValueST(PM.bQuickMagickaEnabled)
@@ -547,10 +508,10 @@ State pro_tgl_enblQuickMagicka
     endEvent
 endState
 
-State pro_tgl_enblQuickStamina
+State pot_tgl_enblQuickStamina
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_enblQuickStamina")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_enblQuickStamina")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickStaminaEnabled)
             PM.bQuickStaminaEnabled = !PM.bQuickStaminaEnabled
             MCM.SetToggleOptionValueST(PM.bQuickStaminaEnabled)
@@ -558,10 +519,10 @@ State pro_tgl_enblQuickStamina
     endEvent
 endState
 
-State pro_sld_QuickRestoreThreshold
+State pot_sld_QuickRestoreThreshold
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_QuickRestoreThreshold")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_QuickRestoreThreshold")
         elseIf currentEvent == "Open"
             MCM.fillSlider(PM.fQuickRestoreThreshold*100, 5.0, 100.0, 5.0, 70.0)
         elseIf currentEvent == "Accept"
@@ -571,10 +532,10 @@ State pro_sld_QuickRestoreThreshold
     endEvent
 endState
 
-State pro_tgl_quickBuff
+State pot_tgl_quickBuff
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_quickBuff")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickBuff")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickBuffEnabled)
             PM.bQuickBuffEnabled = !PM.bQuickBuffEnabled
             MCM.forcePageReset()
@@ -582,10 +543,10 @@ State pro_tgl_quickBuff
     endEvent
 endState
 
-State pro_men_quickBuffControl
+State pot_men_quickBuffControl
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_quickBuffControl")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickBuffControl")
         elseIf currentEvent == "Open"
             MCM.fillMenu(PM.iQuickBuffControl, QBuffControlOptions, 1)
         elseIf currentEvent == "Accept"
@@ -595,10 +556,10 @@ State pro_men_quickBuffControl
     endEvent
 endState
 
-State pro_sld_quickBuffDelay
+State pot_sld_quickBuffDelay
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_quickBuffDelay")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickBuffDelay")
         elseIf currentEvent == "Open"
             MCM.fillSlider(PM.fQuickBuff2ndPressDelay, 0.0, 20.0, 0.5, 4.0)
         elseIf currentEvent == "Accept"
@@ -608,10 +569,10 @@ State pro_sld_quickBuffDelay
     endEvent
 endState
 
-State pro_men_buffsToApply
+State pot_men_buffsToApply
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_buffsToApply")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_buffsToApply")
         elseIf currentEvent == "Open"
             MCM.fillMenu(PO.iQuickBuffsToApply, QBuffOptions, 3)
         elseIf currentEvent == "Accept"
@@ -621,10 +582,10 @@ State pro_men_buffsToApply
     endEvent
 endState
 
-State pro_tgl_prefHealMag
+State pot_tgl_prefHealMag
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_prefHealMag")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_prefHealMag")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && PM.bQuickHealPreferMagic)
             PM.bQuickHealPreferMagic = !PM.bQuickHealPreferMagic
             MCM.forcePageReset()
@@ -632,10 +593,10 @@ State pro_tgl_prefHealMag
     endEvent
 endState
 
-State pro_tgl_useFallback
+State pot_tgl_useFallback
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_useFallback")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_useFallback")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && PM.bQuickHealUseFallback)
             PM.bQuickHealUseFallback = !PM.bQuickHealUseFallback
             MCM.SetToggleOptionValueST(PM.bQuickHealUseFallback)
@@ -643,10 +604,10 @@ State pro_tgl_useFallback
     endEvent
 endState
 
-State pro_men_alwysEqpSpll
+State pot_men_alwysEqpSpll
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_alwysEqpSpll")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_alwysEqpSpll")
         elseIf currentEvent == "Open"
             MCM.fillMenu(PM.iQuickHealEquipChoice, QHEquipOptions, 3)
         elseIf currentEvent == "Accept"
@@ -656,10 +617,10 @@ State pro_men_alwysEqpSpll
     endEvent
 endState
 
-State pro_tgl_swtchBck
+State pot_tgl_swtchBck
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_swtchBck")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_swtchBck")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && PM.bQuickHealSwitchBackEnabled)
             PM.bQuickHealSwitchBackEnabled = !PM.bQuickHealSwitchBackEnabled
             MCM.SetToggleOptionValueST(PM.bQuickHealSwitchBackEnabled)
@@ -667,10 +628,10 @@ State pro_tgl_swtchBck
     endEvent
 endState
 
-State pro_tgl_swtchBckRest
+State pot_tgl_swtchBckRest
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pro_txt_swtchBckRest")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_swtchBckRest")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickHealSwitchBackAndRestore)
             PM.bQuickHealSwitchBackAndRestore = !PM.bQuickHealSwitchBackAndRestore
             MCM.SetToggleOptionValueST(PM.bQuickHealSwitchBackAndRestore)

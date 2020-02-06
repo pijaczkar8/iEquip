@@ -2,10 +2,7 @@ Scriptname iEquip_MCM_gen extends iEquip_MCM_Page
 
 import iEquip_StringExt
 
-iEquip_AmmoMode property AM auto
 iEquip_BeastMode property BM auto
-iEquip_PlayerEventHandler property EH auto
-iEquip_TorchScript property TO auto
 iEquip_KeyHandler Property KH Auto
 iEquip_ProMode Property PM Auto
 
@@ -62,29 +59,29 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	WC.bConsumablesEnabled = jArray.getInt(jPageObj, 2)
 	WC.bPoisonsEnabled = jArray.getInt(jPageObj, 3)
 
-    PM.bScanInventory = jArray.getInt(jPageObj, 40)
+    PM.bScanInventory = jArray.getInt(jPageObj, 4)
 
-	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 13)
-	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj, 14)
-	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 15)
-    BM.abShowInTransformedState[3] = jArray.getInt(jPageObj, 16)
+	BM.abShowInTransformedState[0] = jArray.getInt(jPageObj, 5)
+	BM.abShowInTransformedState[1] = jArray.getInt(jPageObj,6)
+	BM.abShowInTransformedState[2] = jArray.getInt(jPageObj, 7)
+    BM.abShowInTransformedState[3] = jArray.getInt(jPageObj, 8)
 
-    KH.iLeftKey = jArray.getInt(jPageObj, 0)
-    KH.iRightKey = jArray.getInt(jPageObj, 1)
-    KH.iShoutKey = jArray.getInt(jPageObj, 2)
-    KH.iConsumableKey = jArray.getInt(jPageObj, 3)
-    KH.iUtilityKey = jArray.getInt(jPageObj, 4)
-    KH.bNoUtilMenuInCombat = jArray.getInt(jPageObj, 5)
+    KH.iLeftKey = jArray.getInt(jPageObj, 9)
+    KH.iRightKey = jArray.getInt(jPageObj, 10)
+    KH.iShoutKey = jArray.getInt(jPageObj, 11)
+    KH.iConsumableKey = jArray.getInt(jPageObj, 12)
+    KH.iUtilityKey = jArray.getInt(jPageObj, 13)
+    KH.bNoUtilMenuInCombat = jArray.getInt(jPageObj, 14)
     
-    KH.fMultiTapDelay = jArray.getFlt(jPageObj, 6)
-    KH.fLongPressDelay = jArray.getFlt(jPageObj, 7)
+    KH.fMultiTapDelay = jArray.getFlt(jPageObj, 15)
+    KH.fLongPressDelay = jArray.getFlt(jPageObj, 16)
     
-    KH.bExtendedKbControlsEnabled = jArray.getInt(jPageObj, 8)
-    KH.iConsumeItemKey = jArray.getInt(jPageObj, 9)
-    KH.iCyclePoisonKey = jArray.getInt(jPageObj, 10)
-    KH.iQuickRestoreKey = jArray.getInt(jPageObj, 11)
-    KH.iQuickShieldKey = jArray.getInt(jPageObj, 12)
-    KH.iQuickRangedKey = jArray.getInt(jPageObj, 13)
+    KH.bExtendedKbControlsEnabled = jArray.getInt(jPageObj, 17)
+    KH.iConsumeItemKey = jArray.getInt(jPageObj, 18)
+    KH.iCyclePoisonKey = jArray.getInt(jPageObj, 19)
+    KH.iQuickRestoreKey = jArray.getInt(jPageObj, 20)
+    KH.iQuickShieldKey = jArray.getInt(jPageObj, 21)
+    KH.iQuickRangedKey = jArray.getInt(jPageObj, 22)
 endFunction
 
 function drawPage()
@@ -105,7 +102,9 @@ function drawPage()
 
         MCM.AddEmptyOption()
 
-		MCM.AddEmptyOption()
+		MCM.AddToggleOptionST("gen_tgl_allowInvScan", "$iEquip_MCM_gen_lbl_allowInvScan", PM.bScanInventory)
+
+        MCM.AddEmptyOption()
 		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_BeastMode</font>")
 		MCM.AddToggleOptionST("gen_tgl_BM_werewolf", "$iEquip_MCM_gen_lbl_BM_werewolf", BM.abShowInTransformedState[0])
 		if Game.GetModByName("Dawnguard.esm") != 255
@@ -117,6 +116,39 @@ function drawPage()
         if Game.GetModByName("The Path of Transcendence.esp") != 255
             MCM.AddToggleOptionST("gen_tgl_BM_POTBoneTyrant", "$iEquip_MCM_gen_lbl_BM_POTBoneTyrant", BM.abShowInTransformedState[3])
         endIf
+
+        MCM.SetCursorPosition(1)
+
+        MCM.AddTextOptionST("gen_txt_htkHelp", "<font color='#a6bffe'>$iEquip_MCM_gen_lbl_htkHelp</font>", "")
+        
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_MainHtks</font>")
+        MCM.AddKeyMapOptionST("gen_key_leftHand", "$iEquip_MCM_gen_lbl_leftHand", KH.iLeftKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("gen_key_rightHand", "$iEquip_MCM_gen_lbl_rightHand", KH.iRightKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("gen_key_shout", "$iEquip_MCM_gen_lbl_shout", KH.iShoutKey, mcmUnmapFLAG)
+        MCM.AddKeyMapOptionST("gen_key_consumPoison", "$iEquip_MCM_gen_lbl_consumPoison", KH.iConsumableKey, mcmUnmapFLAG)
+        MCM.AddEmptyOption()
+                
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_UtHtkOpts</font>")
+        MCM.AddKeyMapOptionST("gen_key_util", "$iEquip_MCM_gen_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
+        MCM.AddToggleOptionST("gen_tgl_blockUtilMenuInCombat", "$iEquip_MCM_gen_lbl_blockUtilMenuInCombat", KH.bNoUtilMenuInCombat)
+        
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_KeyPressOpts</font>")
+        MCM.AddSliderOptionST("gen_sld_multiTapDelay", "$iEquip_MCM_gen_lbl_multiTapDelay", KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        MCM.AddSliderOptionST("gen_sld_longPrsDelay", "$iEquip_MCM_gen_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        MCM.AddEmptyOption()
+        
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_ExtKbCtrls</font>")
+        MCM.AddToggleOptionST("gen_tgl_enblExtKbCtrls", "$iEquip_MCM_gen_lbl_enblExtKbCtrls", KH.bExtendedKbControlsEnabled)
+        
+        if KH.bExtendedKbControlsEnabled
+            MCM.AddKeyMapOptionST("gen_key_consItem", "$iEquip_MCM_gen_lbl_consItem", KH.iConsumeItemKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("gen_key_cyclePoison", "$iEquip_MCM_gen_lbl_cyclePoison", KH.iCyclePoisonKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("gen_key_quickRestore", "$iEquip_MCM_gen_lbl_quickRestore", KH.iQuickRestoreKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("gen_key_quickShield", "$iEquip_MCM_gen_lbl_quickShield", KH.iQuickShieldKey, mcmUnmapFLAG)
+            MCM.AddKeyMapOptionST("gen_key_quickRanged", "$iEquip_MCM_gen_lbl_quickRanged", KH.iQuickRangedKey, mcmUnmapFLAG)
+        endIf
+
 	elseIf bFirstEnabled
 		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
 		MCM.AddTextOptionST("gen_txt_firstEnabled2", "$iEquip_MCM_common_lbl_firstEnabled2", "")
@@ -250,239 +282,17 @@ State gen_tgl_enblPoisonSlt
     endEvent
 endState
 
+; ------------------------------
+; - Inventory Scanning Options -
+; ------------------------------
 
-
-; ------------------------
-; - Auto-Equipping Options -
-; ------------------------ 
-
-State gen_men_enableAutoEquip
+State gen_tgl_allowInvScan
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_enableAutoEquip")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(WC.iAutoEquipEnabled, autoEquipOptions, 0)
-        elseIf currentEvent == "Accept"
-            bool reset
-            if (WC.iAutoEquipEnabled > 0 && currentVar as int == 0) || (WC.iAutoEquipEnabled == 0 && currentVar as int > 0)
-                reset = true
-            endIf
-            WC.iAutoEquipEnabled = currentVar as int
-            if reset
-                MCM.forcePageReset()
-            else
-                MCM.SetMenuOptionValueST(autoEquipOptions[WC.iAutoEquipEnabled])
-            endIf
-        endIf
-    endEvent
-endState
-
-State gen_men_whenToAutoEquip
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_whenToAutoEquip")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(WC.iAutoEquip, whenToAutoEquipOptions, 1)
-        elseIf currentEvent == "Accept"
-            WC.iAutoEquip = currentVar as int
-            MCM.SetMenuOptionValueST(whenToAutoEquipOptions[WC.iAutoEquip])
-        endIf
-    endEvent
-endState
-
-State gen_men_currItemEnch
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_currItemEnch")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(WC.iCurrentItemEnchanted, currItemEnchOptions, 0)
-        elseIf currentEvent == "Accept"
-            WC.iCurrentItemEnchanted = currentVar as int
-            MCM.SetMenuOptionValueST(currItemEnchOptions[WC.iCurrentItemEnchanted])
-        endIf
-    endEvent
-endState
-
-State gen_men_currItemPois
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_currItemPois")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(WC.iCurrentItemPoisoned, currItemPoisOptions, 1)
-        elseIf currentEvent == "Accept"
-            WC.iCurrentItemPoisoned = currentVar as int
-            MCM.SetMenuOptionValueST(currItemPoisOptions[WC.iCurrentItemPoisoned])
-        endIf
-    endEvent
-endState
-
-State gen_tgl_autoEquipHardcore
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_autoEquipHardcore")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && WC.bAutoEquipHardcore)
-            WC.bAutoEquipHardcore = !WC.bAutoEquipHardcore
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State gen_tgl_dontDropFavorites
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_dontDropFavorites")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bAutoEquipDontDropFavorites)
-            WC.bAutoEquipDontDropFavorites = !WC.bAutoEquipDontDropFavorites
-            MCM.SetToggleOptionValueST(WC.bAutoEquipDontDropFavorites)
-        endIf
-    endEvent
-endState
-
-; ---------------------
-; - Cycling Behaviour -
-; ---------------------
-
-State gen_tgl_eqpPaus
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_eqpPaus")
-        elseIf currentEvent == "Select"
-            WC.bEquipOnPause = !WC.bEquipOnPause
-            MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            WC.bEquipOnPause = true 
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State gen_sld_eqpPausDelay
-    event OnBeginState()
-        if currentEvent == "Open"
-            MCM.fillSlider(WC.fEquipOnPauseDelay, 0.8, 10.0, 0.1, 2.0)
-        elseIf currentEvent == "Accept"
-            WC.fEquipOnPauseDelay = currentVar
-            MCM.SetSliderOptionValueST(WC.fEquipOnPauseDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-        endIf
-    endEvent
-endState
-
-State gen_tgl_slowTime
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_slowTime")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && WC.bSlowTimeWhileCycling)
-            WC.bSlowTimeWhileCycling = !WC.bSlowTimeWhileCycling
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State gen_sld_slowTimeStr
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_slowTimeStr")
-        elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.iCycleSlowTimeStrength as float, 0.0, 100.0, 5.0, 50.0)
-        elseIf currentEvent == "Accept"
-            WC.iCycleSlowTimeStrength = currentVar as int
-            MCM.SetSliderOptionValueST(currentVar, "{0}%")
-        endIf 
-    endEvent
-endState
-
-State gen_men_showPosInd
-    event OnBeginState()
-    	if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_showPosInd")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(WC.iPosInd, posIndBehaviour, 1)
-        elseIf currentEvent == "Accept"
-            WC.iPosInd = currentVar as int
-            MCM.SetMenuOptionValueST(posIndBehaviour[WC.iPosInd])
-        endIf
-    endEvent
-endState
-
-State gen_tgl_showAtrIco
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_showAtrIco")
-        elseIf currentEvent == "Select"
-            WC.bShowAttributeIcons = !WC.bShowAttributeIcons
-            MCM.SetToggleOptionValueST(WC.bShowAttributeIcons)
-            WC.bAttributeIconsOptionChanged = true
-        endIf
-    endEvent
-endState
-
-; ---------------------
-; - Unarmed Shortcuts -
-; ---------------------
-
-State gen_tgl_skipUnarmed
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_skipUnarmed")
-        elseIf currentEvent == "Select"
-            WC.bSkipRHUnarmedInCombat = !WC.bSkipRHUnarmedInCombat
-            MCM.SetToggleOptionValueST(WC.bSkipRHUnarmedInCombat)
-        endIf
-    endEvent
-endState
-
-State gen_txt_addFistsLeft
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_addFistsLeft")
-        elseIf currentEvent == "Select"
-            WC.addFists(0)
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-State gen_txt_addFistsRight
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_addFistsRight")
-        elseIf currentEvent == "Select"
-            WC.addFists(1)
-            MCM.forcePageReset()
-        endIf
-    endEvent
-endState
-
-; ------------------------
-; - Visible Gear Options -
-; ------------------------        
-
-State gen_tgl_enblAllGeard
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblAllGeard")
-        elseIf currentEvent == "Select"
-            WC.bEnableGearedUp = !WC.bEnableGearedUp
-            MCM.SetToggleOptionValueST(WC.bEnableGearedUp)
-            WC.bGearedUpOptionChanged = true
-        elseIf currentEvent == "Default"
-            WC.bEnableGearedUp = true 
-            MCM.SetToggleOptionValueST(WC.bEnableGearedUp)
-            WC.bGearedUpOptionChanged = true
-        endIf
-    endEvent
-endState
-
-State gen_tgl_autoUnqpAmmo
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_gen_txt_autoUnqpAmmo")
-        elseIf currentEvent == "Select"
-            WC.bUnequipAmmo = !WC.bUnequipAmmo
-            MCM.SetToggleOptionValueST(WC.bUnequipAmmo)
-        elseIf currentEvent == "Default"
-            WC.bUnequipAmmo = true 
-            MCM.SetToggleOptionValueST(WC.bUnequipAmmo)
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_allowInvScan")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bScanInventory)
+            PM.bScanInventory = !PM.bScanInventory
+            MCM.SetToggleOptionValueST(PM.bScanInventory)
         endIf
     endEvent
 endState
@@ -535,3 +345,277 @@ State gen_tgl_BM_POTBoneTyrant
         endIf
     endEvent
 endState
+
+; ######################
+; ### Hotkey Options ###
+; ######################
+
+State gen_txt_htkHelp
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_htkHelp")
+        elseIf currentEvent == "Select"
+            bool bKeepReading = MCM.ShowMessage("$iEquip_help_controls0",  true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+            if bKeepReading 
+                bKeepReading = MCM.ShowMessage("$iEquip_help_controls1",  true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                if bKeepReading
+                    bKeepReading = MCM.ShowMessage("$iEquip_help_controls2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                    if bKeepReading
+                        bKeepReading = MCM.ShowMessage("$iEquip_help_controls3", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                        if bKeepReading
+                            bKeepReading = MCM.ShowMessage("$iEquip_help_controls4", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                            if bKeepReading
+                                bKeepReading = MCM.ShowMessage("$iEquip_help_controls5", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                                if bKeepReading
+                                    bKeepReading = MCM.ShowMessage("$iEquip_help_controls6", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                                    if bKeepReading
+                                        MCM.ShowMessage("$iEquip_help_controls7", false, "$iEquip_common_msg_Exit")
+                                    endIf
+                                endIf
+                            endIf
+                        endIf
+                    endIf 
+                endIf
+            endIf
+        endIf 
+    endEvent
+endState
+
+; ----------------
+; - Main Hotkeys -
+; ----------------
+
+State gen_key_leftHand
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_leftHand")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iLeftKey = currentVar as int
+            else
+                KH.iLeftKey = 34
+            endIf
+            
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iLeftKey)
+        endIf
+    endEvent
+endState
+
+State gen_key_rightHand
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_rightHand")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iRightKey = currentVar as int
+            else
+                KH.iRightKey = 35
+            endIf
+            
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iRightKey)
+        endIf
+    endEvent
+endState
+
+State gen_key_shout
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_shout")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iShoutKey = currentVar as int
+            else
+                KH.iShoutKey = 21
+            endIf
+            
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iShoutKey)
+        endIf
+    endEvent
+endState
+
+State gen_key_consumPoison
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_consumPoison")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iConsumableKey = currentVar as int
+            else
+                KH.iConsumableKey = 48
+            endIf
+            
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iConsumableKey)
+        endIf
+    endEvent
+endState
+        
+; --------------------------
+; - Utility Hotkey Options -
+; --------------------------
+
+State gen_key_util
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_util")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iUtilityKey = currentVar as int
+            else
+                KH.iUtilityKey = 37
+            endIf
+            
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iUtilityKey)        
+        endIf
+    endEvent
+endState
+
+State gen_tgl_blockUtilMenuInCombat
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_blockUtilMenuInCombat")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && KH.bNoUtilMenuInCombat)
+            KH.bNoUtilMenuInCombat = !KH.bNoUtilMenuInCombat
+            MCM.SetToggleOptionValueST(KH.bNoUtilMenuInCombat)
+        endIf
+    endEvent
+endState
+
+; ---------------------
+; - Key Press Options -
+; ---------------------
+
+State gen_sld_multiTapDelay
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_multiTapDelay")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(KH.fMultiTapDelay, 0.2, 1.0, 0.1, 0.3)
+        elseIf currentEvent == "Accept"
+            KH.fMultiTapDelay = currentVar
+            MCM.SetSliderOptionValueST(KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        endIf
+    endEvent
+endState
+
+State gen_sld_longPrsDelay
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_longPrsDelay")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(KH.fLongPressDelay, 0.3, 1.5, 0.1, 0.6)
+        elseIf currentEvent == "Accept"
+            KH.fLongPressDelay = currentVar
+            MCM.SetSliderOptionValueST(KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        endIf
+    endEvent
+endState
+
+; --------------------
+; - Optional Hotkeys -
+; --------------------
+
+State gen_tgl_enblExtKbCtrls
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_enblExtKbCtrls")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && KH.bExtendedKbControlsEnabled)
+            KH.bExtendedKbControlsEnabled = !KH.bExtendedKbControlsEnabled
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State gen_key_consItem
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iConsumeItemKey = currentVar as int
+            else
+                KH.iConsumeItemKey = -1
+            endIf
+            KH.updateExtKbKeysArray()
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iConsumeItemKey)        
+        endIf
+    endEvent
+endState
+
+State gen_key_cyclePoison
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iCyclePoisonKey = currentVar as int
+            else
+                KH.iCyclePoisonKey = -1
+            endIf
+            KH.updateExtKbKeysArray()
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iCyclePoisonKey)        
+        endIf
+    endEvent
+endState
+
+State gen_key_quickRestore
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iQuickRestoreKey = currentVar as int
+            else
+                KH.iQuickRestoreKey = -1
+            endIf
+            KH.updateExtKbKeysArray()
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iQuickRestoreKey)        
+        endIf
+    endEvent
+endState
+
+State gen_key_quickShield
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iQuickShieldKey = currentVar as int
+            else
+                KH.iQuickShieldKey = -1
+            endIf
+            KH.updateExtKbKeysArray()
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iQuickShieldKey)        
+        endIf
+    endEvent
+endState
+
+State gen_key_quickRanged
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iQuickRangedKey = currentVar as int
+            else
+                KH.iQuickRangedKey = -1
+            endIf
+            KH.updateExtKbKeysArray()
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iQuickRangedKey)        
+        endIf
+    endEvent
+endState
+
+; Deprecated
+iEquip_AmmoMode property AM auto
+iEquip_PlayerEventHandler property EH auto
+iEquip_TorchScript property TO auto

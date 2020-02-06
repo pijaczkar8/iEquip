@@ -594,9 +594,7 @@ function equipPreselectedItem(int Q)
 			if WC.aiCurrentlyPreselected[1] == WC.aiCurrentQueuePosition[1]
 				cyclePreselectSlot(1, jArray.count(WC.aiTargetQ[1]), false)
 			endIf
-			if WC.bEnableGearedUp
-				WC.refreshGearedUp()
-			endIf
+
 			if AM.bAmmoMode && bAmmoModePreselectModeFirstLook
 				if WC.bShowTooltips
 					Utility.WaitMenuMode(1.8)
@@ -730,9 +728,7 @@ function equipAllPreselectedItems(bool handsOnly = false)
 		endIf
 	endIf
 	bEquippingAllPreselectedItems = false
-	if WC.bEnableGearedUp
-		WC.refreshGearedUp()
-	endIf
+
 	if AM.bAmmoMode && bAmmoModePreselectModeFirstLook
 		if WC.bShowTooltips
 			Utility.WaitMenuMode(1.0)
@@ -912,9 +908,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false, bool
 				WC.updateOtherHandOn2HSpellEquipped(1)					
 			endIf
 			WC.checkIfBoundSpellEquipped()
-			if WC.bEnableGearedUp
-				WC.refreshGearedUp()
-			endIf
+
 		else
 			WC.aiCurrentlyPreselected[0] = found
 			WC.updateWidget(0, found)
@@ -1224,9 +1218,7 @@ bool function quickRangedFindAndEquipWeapon(int typeToFind = -1, bool setCurrent
 				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 					TI.checkAndUpdateTemperLevelInfo(1)
 				endIf
-				if WC.bEnableGearedUp
-					WC.refreshGearedUp()
-				endIf
+
 			;if we're not in Preselect Mode or Ammo Mode we can now equip as normal which will toggle Ammo Mode
 			else
 				WC.checkAndEquipShownHandItem(1, false, false, true)

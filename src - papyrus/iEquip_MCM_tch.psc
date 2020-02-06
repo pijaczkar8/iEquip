@@ -27,7 +27,7 @@ function initData()                  ; Initialize page specific data
     rawMeterFillDirectionOptions[2] = "both"
 
     dropLitTorchBehaviour = new string[5]
-    dropLitTorchBehaviour[0] = "$iEquip_MCM_gen_opt_DoNothing"
+    dropLitTorchBehaviour[0] = "$iEquip_MCM_common_opt_DoNothing"
     dropLitTorchBehaviour[1] = "$iEquip_MCM_tch_opt_TorchNothing"
     dropLitTorchBehaviour[2] = "$iEquip_MCM_tch_opt_TorchCycle"
     dropLitTorchBehaviour[3] = "$iEquip_MCM_tch_opt_CycleLeft"

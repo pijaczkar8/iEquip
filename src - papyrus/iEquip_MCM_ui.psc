@@ -1,6 +1,7 @@
 Scriptname iEquip_MCM_ui extends iEquip_MCM_Page
 
 iEquip_TemperedItemHandler Property TI Auto
+iEquip_ProMode Property PM Auto
 
 string[] backgroundStyleOptions
 string[] fadeoutOptions
@@ -130,43 +131,43 @@ endFunction
 
 function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	
-	WC.bFadeLeftIconWhen2HEquipped = jArray.getInt(jPageObj, 4)
-	WC.fLeftIconFadeAmount = jArray.getFlt(jPageObj, 5)
-    TI.iTemperNameFormat = jArray.getInt(jPageObj, 6)
-    TI.bTemperInfoBelowName = jArray.getInt(jPageObj, 7)
-	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 8)
-	TI.iColoredIconStyle = jArray.getInt(jPageObj, 9)
-    TI.iColoredIconLevels = jArray.getInt(jPageObj, 10)
+	WC.bFadeLeftIconWhen2HEquipped = jArray.getInt(jPageObj, 0)
+	WC.fLeftIconFadeAmount = jArray.getFlt(jPageObj, 1)
+    TI.iTemperNameFormat = jArray.getInt(jPageObj, 2)
+    TI.bTemperInfoBelowName = jArray.getInt(jPageObj, 3)
+	TI.bFadeIconOnDegrade = jArray.getInt(jPageObj, 4)
+	TI.iColoredIconStyle = jArray.getInt(jPageObj, 5)
+    TI.iColoredIconLevels = jArray.getInt(jPageObj, 6)
 
-	WC.iBackgroundStyle = jArray.getInt(jPageObj, 12)
+	WC.iBackgroundStyle = jArray.getInt(jPageObj, 7)
 	
-	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 13)
-	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 14)
-	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 15)
-	WC.iDropShadowBlur = jArray.getInt(jPageObj, 16)
-	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 17)
-	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 18)
+	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 8)
+	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 9)
+	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 10)
+	WC.iDropShadowBlur = jArray.getInt(jPageObj, 11)
+	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 12)
+	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 13)
 	
-	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 19)
-	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 20)
-	WC.iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 21)
-	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 22)
-	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 23)
+	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 14)
+	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 15)
+	WC.iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 16)
+	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 17)
+	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 18)
 	
-	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 24)
-	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 25)
-	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 26)
-	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 27)
-	WC.iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 28)
-	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 29)
-	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 30)
-    WC.bLeftRightNameFadeEnabled = jArray.getInt(jPageObj, 31)
-    WC.bShoutNameFadeEnabled = jArray.getInt(jPageObj, 32)
-    WC.bConsPoisNameFadeEnabled = jArray.getInt(jPageObj, 33)
+	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 19)
+	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 20)
+	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 21)
+	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 22)
+	WC.iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 23)
+	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 24)
+	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 25)
+    WC.bLeftRightNameFadeEnabled = jArray.getInt(jPageObj, 26)
+    WC.bShoutNameFadeEnabled = jArray.getInt(jPageObj, 27)
+    WC.bConsPoisNameFadeEnabled = jArray.getInt(jPageObj, 28)
 
-	TI.bShowTemperTierIndicator = jArray.getInt(jPageObj, 34)
-	TI.iTemperTierDisplayChoice = jArray.getInt(jPageObj, 35)
-	TI.bShowFadedTiers = jArray.getInt(jPageObj, 36)
+	TI.bShowTemperTierIndicator = jArray.getInt(jPageObj, 29)
+	TI.iTemperTierDisplayChoice = jArray.getInt(jPageObj, 30)
+	TI.bShowFadedTiers = jArray.getInt(jPageObj, 31)
 endFunction
 
 function drawPage()
@@ -234,7 +235,7 @@ function drawPage()
 		MCM.AddSliderOptionST("ui_sld_mainNameFadeDelay", "$iEquip_MCM_ui_lbl_mainNameFadeDelay", WC.fMainNameFadeoutDelay, "{1}")
 		MCM.AddSliderOptionST("ui_sld_poisonNameFadeDelay", "$iEquip_MCM_ui_lbl_poisonNameFadeDelay", WC.fPoisonNameFadeoutDelay, "{1}")
 				
-		if WC.bProModeEnabled
+		if PM.bPreselectEnabled
 			MCM.AddSliderOptionST("ui_sld_preselectNameFadeDelay", "$iEquip_MCM_ui_lbl_preselectNameFadeDelay", WC.fPreselectNameFadeoutDelay, "{1}")
 		endIf
 				

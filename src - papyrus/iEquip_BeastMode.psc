@@ -40,7 +40,6 @@ bool b2HSpellEquipped
 bool bConsumableSlotEnabled
 bool bPoisonSlotEnabled
 bool bShoutSlotEnabled
-bool bProModeEnabled
 bool bPreselectEnabled
 
 bool[] property abShowInTransformedState auto hidden
@@ -178,7 +177,6 @@ function onPlayerTransform(race newRace, bool bPlayerIsAVampireOrLich, bool bLoa
 				bConsumableSlotEnabled = WC.bConsumablesEnabled
 				bPoisonSlotEnabled = WC.bPoisonsEnabled
 				bShoutSlotEnabled = WC.bShoutEnabled
-				bProModeEnabled = WC.bProModeEnabled
 				bPreselectEnabled = WC.bPreselectMode
 			endIf
 			;Toggle out of Preselect Mode if active
@@ -670,3 +668,6 @@ function checkAndEquipShownPower(int Q)
     endIf
     ;debug.trace("iEquip_BeastMode checkAndEquipShownPower end")
 endFunction
+
+; Deprecated
+bool bProModeEnabled

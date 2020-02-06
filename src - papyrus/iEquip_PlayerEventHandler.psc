@@ -215,12 +215,6 @@ function initialise(bool enabled)
 		bPlayerIsAVampireOrLich = ((aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBaseVampireRaces.Find(PlayerRace)) || (aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBasePOTLichRaces.Find(PlayerRace)))
 		bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
 		;debug.trace("iEquip_PlayerEventHandler initialise - current PlayerRace: " + PlayerRace.GetName() + ", original race: " + PlayerBaseRace.GetName() + ", bPlayerIsABeast: " + bPlayerIsABeast)
-		Utility.SetINIBool("bDisableGearedUp:General", True)
-		WC.refreshVisibleItems()
-		If WC.bEnableGearedUp
-			Utility.SetINIBool("bDisableGearedUp:General", False)
-			WC.refreshVisibleItems()
-		EndIf
 		
 		if bPlayerIsABeast
 			registerForBMEvents()
@@ -406,10 +400,7 @@ Event OnRaceSwitchComplete()
 		;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current PlayerRace: " + PlayerRace.GetName() + ", newRace: " + newRace.GetName() + ", original race: " + PlayerBaseRace.GetName())
 		race baseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
 		;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - baseRace: " + baseRace.GetName())
-		if WC.isEnabled && WC.bEnableGearedUp
-			Utility.SetINIbool("bDisableGearedUp:General", !(newRace == PlayerRace))
-			WC.refreshVisibleItems()
-		endIf
+
 		if PlayerRace != newRace
 			PlayerRace = newRace
 			bPlayerIsAVampireOrLich = ((aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBaseVampireRaces.Find(PlayerRace)) || (aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBasePOTLichRaces.Find(PlayerRace)))
