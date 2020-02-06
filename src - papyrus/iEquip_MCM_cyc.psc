@@ -110,10 +110,13 @@ function drawPage()
     MCM.AddToggleOptionST("cyc_tgl_skipUnarmed", "$iEquip_MCM_cyc_lbl_skipUnarmed", WC.bSkipRHUnarmedInCombat)
     MCM.AddToggleOptionST("cyc_tgl_skipAutoAddedItems", "$iEquip_MCM_cyc_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
 
+    MCM.AddEmptyOption()
     MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+    MCM.AddToggleOptionST("cyc_tgl_showAtrIco", "$iEquip_MCM_cyc_lbl_showAtrIco", WC.bShowAttributeIcons)
     MCM.AddMenuOptionST("cyc_men_showPosInd", "$iEquip_MCM_cyc_lbl_queuePosInd", posIndBehaviour[WC.iPosInd])
 
     if WC.iPosInd > 0
+        MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_cyc_lbl_posIndOpts</font>")
         MCM.AddColorOptionST("cyc_col_posIndColor", "$iEquip_MCM_cyc_lbl_posIndColor", WC.iPositionIndicatorColor)
         MCM.AddSliderOptionST("cyc_sld_posIndAlpha", "$iEquip_MCM_cyc_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
@@ -121,8 +124,6 @@ function drawPage()
         MCM.AddSliderOptionST("cyc_sld_currPosIndAlpha", "$iEquip_MCM_cyc_lbl_currPosIndAlpha", WC.fCurrPositionIndicatorAlpha, "{0}%")
         MCM.AddEmptyOption()
     endIf
-
-    MCM.AddToggleOptionST("cyc_tgl_showAtrIco", "$iEquip_MCM_cyc_lbl_showAtrIco", WC.bShowAttributeIcons)
 
     MCM.SetCursorPosition(1)
 

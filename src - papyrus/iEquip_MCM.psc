@@ -8,7 +8,7 @@ iEquip_WidgetCore property WC auto
 iEquip_MCM_gen property gen auto
 iEquip_MCM_add property add auto
 iEquip_MCM_cyc property cyc auto
-iEquip_MCM_cyc property eqp auto
+iEquip_MCM_eqp property eqp auto
 iEquip_MCM_amm property amm auto
 iEquip_MCM_rep property poi auto
 iEquip_MCM_pot property pot auto

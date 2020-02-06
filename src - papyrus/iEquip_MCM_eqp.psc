@@ -140,7 +140,7 @@ function drawPage()
     if PM.bQuickShieldEnabled
         MCM.AddToggleOptionST("eqp_tgl_enblQuickshield", "<font color='#c7ea46'>$iEquip_MCM_eqp_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
         MCM.AddToggleOptionST("eqp_tgl_with2hReqp", "$iEquip_MCM_eqp_lbl_with2hReqp", PM.bQuickShield2HSwitchAllowed)
-        MCM.AddToggleOptionST("eqp_tgl_prefShieldMag", "$iEquip_MCM_eqp_lbl_prefMag", PM.bQuickShieldPreferMagic)
+        MCM.AddToggleOptionST("eqp_tgl_prefShieldMag", "$iEquip_MCM_common_lbl_prefMag", PM.bQuickShieldPreferMagic)
                 
         if PM.bQuickShieldPreferMagic
             MCM.AddMenuOptionST("eqp_men_rightHandspllTyp", "$iEquip_MCM_eqp_lbl_rightHandspllTyp", QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])

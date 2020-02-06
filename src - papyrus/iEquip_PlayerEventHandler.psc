@@ -33,7 +33,7 @@ Race property PlayerRace auto hidden
 Keyword Property CraftingSmithingSharpeningWheel Auto
 Keyword Property CraftingSmithingArmorTable Auto
 
-form property fistWeapon auto
+form property Unarmed auto ; 1F4 Unarmed
 
 light property iEquipTorch auto
 
@@ -724,7 +724,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	int itemID
 	int itemHandle
 
-	if equippedSlot < 2 && queuedForm == fistWeapon && WC.asCurrentlyEquipped[equippedSlot] != "$iEquip_common_Unarmed"		; If the player is brawling then don't add the fistWeapon to the queue, and if not currently showing Unarmed do so now.
+	if equippedSlot < 2 && queuedForm == Unarmed && WC.asCurrentlyEquipped[equippedSlot] != "$iEquip_common_Unarmed"		; If the player is brawling then don't add the fistWeapon to the queue, and if not currently showing Unarmed do so now.
 
 		WC.setSlotToEmpty(equippedSlot, true, true)
 

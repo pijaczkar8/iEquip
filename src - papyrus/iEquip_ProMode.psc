@@ -2139,7 +2139,7 @@ function saveCurrentItemsForSwitchBack()
 		bPreviously2H = false
 	endIf
 
-	bPreviouslyUnarmed = (fPreviousRightHandForm == none && fPreviousLeftHandForm == none) || (fPreviousRightHandForm == EH.FistWeapon)
+	bPreviouslyUnarmed = (fPreviousRightHandForm == none && fPreviousLeftHandForm == none) || (fPreviousRightHandForm == EH.Unarmed)
 	;;debug.trace("iEquip_ProMode saveCurrentItemsForSwitchBack - iPreviousLeftHandIndex: " + iPreviousLeftHandIndex + ", fPreviousLeftHandForm: " + fPreviousLeftHandForm.GetName())
 	;;debug.trace("iEquip_ProMode saveCurrentItemsForSwitchBack - iPreviousRightHandIndex: " + iPreviousRightHandIndex + ", fPreviousRightHandForm: " + fPreviousRightHandForm.GetName() + ", bPreviouslyUnarmed: " + bPreviouslyUnarmed)
 	;debug.trace("iEquip_ProMode saveCurrentItemsForSwitchBack end")

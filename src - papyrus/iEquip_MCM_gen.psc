@@ -121,7 +121,6 @@ function drawPage()
 
         MCM.AddTextOptionST("gen_txt_htkHelp", "<font color='#a6bffe'>$iEquip_MCM_gen_lbl_htkHelp</font>", "")
         
-        MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_MainHtks</font>")
         MCM.AddKeyMapOptionST("gen_key_leftHand", "$iEquip_MCM_gen_lbl_leftHand", KH.iLeftKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("gen_key_rightHand", "$iEquip_MCM_gen_lbl_rightHand", KH.iRightKey, mcmUnmapFLAG)
@@ -133,6 +132,7 @@ function drawPage()
         MCM.AddKeyMapOptionST("gen_key_util", "$iEquip_MCM_gen_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
         MCM.AddToggleOptionST("gen_tgl_blockUtilMenuInCombat", "$iEquip_MCM_gen_lbl_blockUtilMenuInCombat", KH.bNoUtilMenuInCombat)
         
+        MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_KeyPressOpts</font>")
         MCM.AddSliderOptionST("gen_sld_multiTapDelay", "$iEquip_MCM_gen_lbl_multiTapDelay", KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         MCM.AddSliderOptionST("gen_sld_longPrsDelay", "$iEquip_MCM_gen_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))

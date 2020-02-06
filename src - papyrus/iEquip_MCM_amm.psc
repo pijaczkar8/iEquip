@@ -148,7 +148,6 @@ endFunction
 
 function drawPage()
 
-	MCM.AddEmptyOption()
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_amm_lbl_AmmoMode</font>")
 	MCM.AddTextOptionST("amm_txt_AmmoModeChoice", "$iEquip_MCM_amm_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
 	MCM.AddMenuOptionST("amm_men_ammoLstSrt", "$iEquip_MCM_amm_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
@@ -189,7 +188,7 @@ function drawPage()
 			MCM.AddMenuOptionST("amm_men_prefMagSchl", "$iEquip_MCM_amm_lbl_prefMagSchl", QRPreferredMagicSchool[iCurrentQRPreferredMagicSchoolChoice])
 		endIf
 	   
-		MCM.AddMenuOptionST("amm_men_inPreselectQuickrangedMode", "$iEquip_MCM_amm_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
+		MCM.AddMenuOptionST("amm_men_inPreselectQuickrangedMode", "$iEquip_MCM_common_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
 	else
 		MCM.AddToggleOptionST("amm_tgl_enblQuickranged", "<font color='#ff7417'>$iEquip_MCM_amm_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
 	endIf

@@ -156,7 +156,8 @@ function drawPage()
 		MCM.AddToggleOptionST("pot_tgl_blockIfBuffEffect", "$iEquip_MCM_pot_lbl_blockIfBuffEffect", PO.bBlockIfBuffEffectActive)
 	endIf
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_potSelOpts</font>")
+	MCM.AddEmptyOption()
+    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_potSelOpts</font>")
 	MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
 	MCM.AddSliderOptionST("pot_sld_SmartConsumeThreshold", "$iEquip_MCM_pot_lbl_SmartConsumeThreshold", WC.fSmartConsumeThreshold*100, "{0} %")
 	MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
@@ -204,8 +205,9 @@ function drawPage()
         endIf
         ;QuickHeal Options
         if PM.bQuickHealEnabled
+            MCM.AddEmptyOption()
             MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_quickHealOpts</font>")
-            MCM.AddToggleOptionST("pot_tgl_prefHealMag", "$iEquip_MCM_pot_lbl_prefMag", PM.bQuickHealPreferMagic)
+            MCM.AddToggleOptionST("pot_tgl_prefHealMag", "$iEquip_MCM_common_lbl_prefMag", PM.bQuickHealPreferMagic)
             MCM.AddToggleOptionST("pot_tgl_useFallback", "$iEquip_MCM_pot_lbl_useFallback", PM.bQuickHealUseFallback)
                     
             if PM.bQuickHealPreferMagic

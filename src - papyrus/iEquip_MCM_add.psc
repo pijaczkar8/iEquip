@@ -56,7 +56,6 @@ function drawPage()
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_add_lbl_addToQueOpts</font>")
 	MCM.AddToggleOptionST("add_tgl_showConfMsg", "$iEquip_MCM_add_lbl_showConfMsg", WC.bShowQueueConfirmationMessages)
 	MCM.AddToggleOptionST("add_tgl_signlBothQue", "$iEquip_MCM_add_lbl_signlBothQue", WC.bAllowSingleItemsInBothQueues)
-    MCM.AddEmptyOption()
     MCM.AddToggleOptionST("add_tgl_dsblAddToQue", "$iEquip_MCM_add_lbl_dsblAddToQue", KH.bDisableAddToQueue)
 
 	MCM.AddEmptyOption()
@@ -81,6 +80,7 @@ function drawPage()
 
     MCM.AddToggleOptionST("add_tgl_enblBlacklist", "$iEquip_MCM_add_lbl_enblBlacklist", WC.bBlacklistEnabled)
     
+    MCM.AddEmptyOption()
     MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_add_lbl_addBack</font>")
     
     if WC.findInQueue(0, "$iEquip_common_Unarmed") == -1
