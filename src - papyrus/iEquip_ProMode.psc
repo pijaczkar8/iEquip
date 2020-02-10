@@ -235,13 +235,24 @@ endFunction
 function PreselectModeAnimateIn()
 	;debug.trace("iEquip_ProMode PreselectModeAnimateIn start")
 	Self.RegisterForModEvent("iEquip_PreselectModeAnimationComplete", "onPreselectModeAnimationComplete")
-	bool[] args = new bool[3]
+	;/bool[] args = new bool[3]
 	if !AM.bAmmoMode || AM.bSimpleAmmoMode
 		args[0] = abPreselectSlotEnabled[0] ;Only animate the left icon if not already shown in ammo mode
 	endIf
 	args[1] = abPreselectSlotEnabled[2]
 	args[2] = abPreselectSlotEnabled[1]
-	UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn", args)
+	UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn", args)/;
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn")
+	bool animateLeft = (!AM.bAmmoMode || AM.bSimpleAmmoMode)
+	if(iHandle)
+		UICallback.PushBool(iHandle, animateLeft)
+		UICallback.PushBool(iHandle, abPreselectSlotEnabled[2])
+		UICallback.PushBool(iHandle, abPreselectSlotEnabled[1])
+		UICallback.PushFloat(iHandle, WC.afWidget_A[33]) ; rightPreselectBackground alpha
+		UICallback.PushFloat(iHandle, WC.afWidget_A[34]) ; rightPreselectIcon alpha
+		UICallback.PushFloat(iHandle, WC.afWidget_A[35]) ; rightPreselectName alpha
+		UICallback.Send(iHandle)
+	endIf
 	if WC.bNameFadeoutEnabled
 		int i
 		while i < 3
@@ -1393,9 +1404,9 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 	;Look for a ranged spell in the preferred hand queue first
 	while i < queueLength && foundSpell == none
 		targetObject = jArray.getObj(targetArray, i)
-		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsSpellRanged(jMap.getForm(targetObject, "iEquipForm") as spell) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))]
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsSpellRanged(jMap.getForm(targetObject, "iEquipForm") as spell) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))]
 		; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == jMap.getForm(targetObject, "iEquipForm") as spell)
+		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == jMap.getForm(targetObject, "iEquipForm") as spell)
 			foundSpell = jMap.getForm(targetObject, "iEquipForm") as spell
 		else
 			i += 1
@@ -1409,9 +1420,9 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 		
 		while spellCount > 0 && foundSpell == none
 			spellToCheck = PlayerRef.GetNthSpell(spellCount)
-			;if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
+			if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
 			; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-			if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
+			;if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
 				foundSpell = spellToCheck
 			else
 				spellCount -=1
@@ -1423,9 +1434,9 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 
 			while spellCount > 0 && foundSpell == none
 				spellToCheck = PlayerRef.GetActorBase().GetNthSpell(spellCount)
-				;if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
+				if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
 				; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-				if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
+				;if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
 					foundSpell = spellToCheck
 				else
 					spellCount -=1
@@ -1523,9 +1534,9 @@ bool function quickRangedFindAndEquipStaff(bool equippingOtherHand = false)
 	;Look for our first choice bound ranged weapon spell
 	while i < queueLength && foundStaff == none
 		targetObject = jArray.getObj(targetArray, i)
-		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsStaffRanged(jMap.getForm(targetObject, "iEquipForm"))
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsStaffRanged(jMap.getForm(targetObject, "iEquipForm"))
 		; LE Only - the following line is a workaround due to missing IsStaffRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && !(equippingOtherHand && staffEquipped && (PlayerRef.GetEquippedObject(otherHand) == jMap.getForm(targetObject, "iEquipForm")) && (PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) == 1))
+		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && !(equippingOtherHand && staffEquipped && (PlayerRef.GetEquippedObject(otherHand) == jMap.getForm(targetObject, "iEquipForm")) && (PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) == 1))
 			foundStaff = jMap.getForm(targetObject, "iEquipForm")
 		else
 			i += 1

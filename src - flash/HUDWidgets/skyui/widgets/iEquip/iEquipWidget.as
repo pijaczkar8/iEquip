@@ -660,7 +660,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		rightPreselectName_mc._visible = rightEnabled
 	}
 
-	public function PreselectModeAnimateIn(leftEnabled: Boolean, shoutEnabled: Boolean, rightEnabled: Boolean): Void
+	public function PreselectModeAnimateIn(leftEnabled: Boolean, shoutEnabled: Boolean, rightEnabled: Boolean, bgAlpha: Number, iconAlpha: Number, nameAlpha: Number): Void
 	{
 		//Create the preselect element arrays then add elements to the arrays depending on whether they are shown or not. Sequence for animation is left to right
 		var preselectIcons: Array = new Array();
@@ -685,9 +685,9 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//Set up the animation timeline
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true, onComplete:PreselectModeAnimateInComplete});
 		//var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
-		tl.staggerTo(preselectIcons, 0.6, {_rotation:"+=360", _alpha:100, _xscale:100, _yscale:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0)
-		tl.staggerTo(preselectBackgrounds, 0.6, {_rotation:"+=360", _alpha:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
-		tl.staggerTo(preselectNames, 0.25, {_alpha:100, immediateRender:false}, 0.2, 0.4);
+		tl.staggerTo(preselectIcons, 0.6, {_rotation:"+=360", _alpha:iconAlpha, _xscale:100, _yscale:100, immediateRender:false, ease:Back.easeOut}, 0.2, 0)
+		tl.staggerTo(preselectBackgrounds, 0.6, {_rotation:"+=360", _alpha:bgAlpha, immediateRender:false, ease:Back.easeOut}, 0.2, 0.1)
+		tl.staggerTo(preselectNames, 0.25, {_alpha:nameAlpha, immediateRender:false}, 0.2, 0.4);
 		//And action!
 		tl.play();
 	}
