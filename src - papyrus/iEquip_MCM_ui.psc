@@ -206,6 +206,7 @@ function drawPage()
 	endIf
 
 	MCM.AddMenuOptionST("ui_men_bckgroundStyle", "$iEquip_MCM_ui_lbl_bckgroundStyle", backgroundStyleOptions[WC.iBackgroundStyle])
+    MCM.AddToggleOptionST("ui_tgl_dontFadeBackgrounds", "$iEquip_MCM_ui_lbl_dontFadeBackgrounds", WC.bDontFadeBackgrounds)
 	
 	MCM.SetCursorPosition(1)
 
@@ -420,6 +421,18 @@ State ui_men_bckgroundStyle
             WC.bBackgroundStyleChanged = true
 			MCM.SetMenuOptionValueST(backgroundStyleOptions[WC.iBackgroundStyle])
         endIf 
+    endEvent
+endState
+
+State ui_tgl_dontFadeBackgrounds
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_dontFadeBackgrounds")
+        elseif currentEvent == "Select" || (currentEvent == "Default" && WC.bDontFadeBackgrounds)
+            WC.bDontFadeBackgrounds = !WC.bDontFadeBackgrounds
+            WC.bBackgroundStyleChanged = true
+            MCM.SetToggleOptionValueST(WC.bBackgroundStyleChanged)
+        endIf
     endEvent
 endState
 

@@ -687,8 +687,8 @@ state EDITMODE
                 EM.RotateElement()
             elseIf iWaitingKeyCode == iEditAlphaKey
                 EM.SetElementAlpha()
-            elseIf iWaitingKeyCode == iEditDepthKey
-                EM.SwapElementDepth()
+            ;elseIf iWaitingKeyCode == iEditDepthKey
+            ;    EM.SwapElementDepth()
             elseIf iWaitingKeyCode == iEditTextKey
                 EM.ToggleTextAlignment()
             elseIf iWaitingKeyCode == iEditNextKey
@@ -861,7 +861,7 @@ function RegisterForEditModeKeys()
     RegisterForKey(iEditLoadPresetKey)
     RegisterForKey(iEditSavePresetKey)
     RegisterForKey(iEditRotateKey)
-    RegisterForKey(iEditDepthKey)
+    ;RegisterForKey(iEditDepthKey)
     RegisterForKey(iEditAlphaKey)
     RegisterForKey(iEditTextKey)
     RegisterForKey(iEditRulersKey)

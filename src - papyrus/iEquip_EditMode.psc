@@ -450,30 +450,37 @@ function SwapIndexDepth(int[] iDepthIndex)
     UI.InvokeIntA(HUD_MENU, WidgetRoot + ".swapItemDepths", iDepthIndex)
 endFunction
 
+bool function isWidgetGroup(int element)
+    return (element > 0 && element < 6)
+endFunction
+
+bool bSendBehindFirstTime = true
+int iSelectedElementRear = -1
+
 function SwapElementDepth()
     ; Swap depth of the two selected elements
 
-    if bringToFrontFirstTime
-        debug.MessageBox("$iEquip_EM_msg_firstBringToFront")
-        bringToFrontFirstTime = False
+    if bSendBehindFirstTime
+        debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_EM_msg_firstSendBehind"))
+        bSendBehindFirstTime = False
     endIf
 
-    if iSelectedElement != -1 && !WC.abWidget_isBg[iSelectedElement]
-        if iSelectedElementFront == -1
-            iSelectedElementFront = iSelectedElement
-            debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_EM_msg_bringToFrontSelNext{" + WC.asWidgetDescriptions[iSelectedElement] + "}"))
+    if iSelectedElement != -1 ;&& !WC.abWidget_isBg[iSelectedElement]
+        if iSelectedElementRear == -1
+            iSelectedElementRear = iSelectedElement
+            debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_EM_msg_sendBehindSelNext{" + WC.asWidgetDescriptions[iSelectedElement] + "}"))
         else
-            if WC.asWidgetGroup[iSelectedElementFront] == WC.asWidgetGroup[iSelectedElement]
+            if (WC.asWidgetGroup[iSelectedElementRear] == WC.asWidgetGroup[iSelectedElement]) || (isWidgetGroup(iSelectedElementRear) && isWidgetGroup(iSelectedElement))
                 int[] iDepthIndex = new int[2]
-                iDepthIndex[0] = iSelectedElementFront
-                iDepthIndex[1] = iSelectedElement
+                iDepthIndex[0] = iSelectedElement
+                iDepthIndex[1] = iSelectedElementRear
                 
                 SwapIndexDepth(iDepthIndex)
             else
                 debug.notification("$iEquip_EM_not_bringToFrontError")
             endIf
             
-            iSelectedElementFront = -1
+            iSelectedElementRear = -1
         endIf
     endIf
 endFunction
@@ -791,7 +798,7 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
                 iArgs[0] = iIndex
                 UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
             endIf
-            SetElementDepthOrder(iIndex)
+            ;SetElementDepthOrder(iIndex)
             iIndex += 1
         endWhile
         
@@ -1125,6 +1132,7 @@ function SavePreset()
 		jMap.setInt(jSavePreset, "potionSelectorAlignment", bPotionSelectorOnLeft as int)
 		jMap.setInt(jSavePreset, "chargeDisplayType", CM.iChargeDisplayType)
 		jMap.setInt(jSavePreset, "backgroundStyle", WC.iBackgroundStyle)
+        jMap.setInt(jSavePreset, "dontFadeBackgrounds", WC.bDontFadeBackgrounds as int)
 
         jValue.writeTofile(jSavePreset, WC.WidgetPresetPath + textInput + WC.FileExt)
         jValue.zeroLifetime(jSavePreset)
@@ -1147,6 +1155,10 @@ function LoadPreset(int jPreset)
 	bPotionSelectorOnLeft = jMap.getInt(jPreset, "potionSelectorAlignment") as bool
 	CM.iChargeDisplayType = jMap.getInt(jPreset, "chargeDisplayType")
 	WC.iBackgroundStyle = jMap.getInt(jPreset, "backgroundStyle")
+    
+    if jMap.getInt(jPreset, "dontFadeBackgrounds", -1) != -1
+        WC.bDontFadeBackgrounds = jMap.getInt(jPreset, "dontFadeBackgrounds") as bool
+    endIf
     
     WC.updateWidgetVisibility(false)
     Wait(0.2)
@@ -1249,10 +1261,10 @@ function ResetElement()
     
         if WC.abWidget_isParent[iSelectedElement]
             theMessage = 8 ;iEquip_ConfirmResetParent
-            theString = iEquip_StringExt.LocalizeString("$iEquip_msg_confReset")
+            theString = iEquip_StringExt.LocalizeString("$iEquip_msg_confResetParent")
         else
             theMessage = 7 ;iEquip_ConfirmReset
-            theString = iEquip_StringExt.LocalizeString("$iEquip_msg_confResetParent")
+            theString = iEquip_StringExt.LocalizeString("$iEquip_msg_confReset")
         endIf
         
         ; Confirm choice

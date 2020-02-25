@@ -199,7 +199,7 @@ State gen_tgl_onOff
                 
                 if EH.bPlayerIsABeast
                     MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
-                elseIf !(LALChargen || UnboundChargen) || IgnoreAltStartQuestWarnings
+                elseIf !(LALChargen || UnboundChargen) || (LALChargen && LALChargen.IsCompleted()) || (UnboundChargen && UnboundChargen.IsCompleted()) || IgnoreAltStartQuestWarnings
                     MCM.bEnabled = true
                     bFirstEnabled = true
                     MCM.forcePageReset()

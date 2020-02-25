@@ -18,7 +18,7 @@ string[] QBuffOptions
 function initData()
     
     emptyPotionQueueOptions = new String[3]
-    emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeicon"
+    emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeIcon"
     emptyPotionQueueOptions[1] = "$iEquip_MCM_pot_opt_hideIcon"
     emptyPotionQueueOptions[2] = "$iEquip_MCM_pot_opt_leaveIcon"
 

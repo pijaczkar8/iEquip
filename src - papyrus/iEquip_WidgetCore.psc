@@ -17,7 +17,7 @@ import iEquip_ActorExt
 import iEquip_WeaponExt
 import iEquip_UIExt
 import iEquip_InventoryExt
-import iEquip_MagicEffectExt
+;import iEquip_MagicEffectExt
 import ConsoleUtil
 
 ;Script Properties
@@ -304,6 +304,7 @@ float property fPreselectNameFadeoutDelay = 5.0 auto hidden
 float property fNameFadeoutDuration = 1.5 auto hidden
 
 bool property bBackgroundStyleChanged auto hidden
+bool property bDontFadeBackgrounds auto hidden
 bool property bFadeLeftIconWhen2HEquipped = true auto hidden
 float property fLeftIconFadeAmount = 70.0 auto hidden
 bool property bTemperDisplaySettingChanged auto hidden
@@ -2542,7 +2543,11 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 	float[] widgetData = new float[9]
 	if Q == 1 && bFadeLeftIconWhen2HEquipped && (itemType == 5 || itemType == 6) && !bLeftIconFaded
 		float adjustment = (1 - (fLeftIconFadeAmount * 0.01))
-		widgetData[0] = afWidget_A[6] * adjustment ;leftBg_mc
+		if bDontFadeBackgrounds
+			widgetData[0] = afWidget_A[6] ;leftBg_mc
+		else
+			widgetData[0] = afWidget_A[6] * adjustment ;leftBg_mc
+		endIf
 		widgetData[1] = afWidget_A[7] * adjustment ;leftIcon_mc
 		if abIsNameShown[0]
 			widgetData[2] = afWidget_A[8] * adjustment ;leftName_mc
@@ -2634,8 +2639,12 @@ function checkAndFadeConsumableIcon(bool fadeOut)
 	float[] widgetData = new float[4]
 	if fadeOut
 		if PO.iEmptyPotionQueueChoice == 0 									; Fade
-			float adjustment = (1 - (fconsIconFadeAmount * 0.01)) 			
-			widgetData[0] = afWidget_A[45] * adjustment 					; consumableBg_mc
+			float adjustment = (1 - (fconsIconFadeAmount * 0.01))
+			if bDontFadeBackgrounds
+				widgetData[0] = afWidget_A[45] 								; consumableBg_mc
+			else
+				widgetData[0] = afWidget_A[45] * adjustment 				; consumableBg_mc
+			endIf
 			widgetData[1] = afWidget_A[46] * adjustment 					; consumableIcon_mc
 			if abIsNameShown[3]
 				widgetData[2] = afWidget_A[47] * adjustment 				; consumableName_mc
@@ -2662,7 +2671,11 @@ function checkAndFadePoisonIcon(bool fadeOut)
 	float[] widgetData = new float[4]
 	if fadeOut
 		float adjustment = (1 - (fconsIconFadeAmount * 0.01)) 				; Use same value as consumable icon fade for consistency
-		widgetData[0] = afWidget_A[50] * adjustment 						; poisonBg_mc
+		if bDontFadeBackgrounds
+			widgetData[0] = afWidget_A[50]									; poisonBg_mc
+		else
+			widgetData[0] = afWidget_A[50] * adjustment 						; poisonBg_mc
+		endIf
 		widgetData[1] = afWidget_A[51] * adjustment 						; poisonIcon_mc
 		if abIsNameShown[3]
 			widgetData[2] = afWidget_A[52] * adjustment 					; poisonName_mc
@@ -4845,10 +4858,10 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
         	IconName = getSpellSchool(S)
         	if IconName == "Destruction"
         		MagicEffect sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())
-        		if sEffect.HasKeyword(MagicCloak)
+        		;/if sEffect.HasKeyword(MagicCloak)
         			S = iEquip_MagicEffectExt.GetAssociatedItem(sEffect) as Spell
         			sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())
-        		endIf
+        		endIf/;
         		debug.trace("iEquip_WidgetCore GetItemIconName - IconName: " + IconName + ", strongest magic effect: " + sEffect + ", " + (sEffect as form).GetName())
         		if sEffect.HasKeyword(MagicDamageFire)
         			IconName += "Fire"
@@ -5442,6 +5455,11 @@ function ApplyChanges()
 				endIf
 				i += 1
 			endWhile
+			if bDontFadeBackgrounds
+				UI.setFloat(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftBg_mc._alpha", afWidget_A[6])
+				UI.setFloat(HUD_MENU, WidgetRoot + ".widgetMaster.ConsumableWidget.consumableBg_mc._alpha", afWidget_A[45])
+				UI.setFloat(HUD_MENU, WidgetRoot + ".widgetMaster.PoisonWidget.poisonBg_mc._alpha", afWidget_A[50])
+			endIf
 		endIf
 	endIf
 	if bDropShadowSettingChanged && !EM.isEditMode
@@ -5614,6 +5632,7 @@ function ApplyChanges()
 		    	endWhile
 		    endIf
 		endIf
+
 		if bRestorePotionWarningSettingChanged
 			int potionGroup = asPotionGroups.Find(asCurrentlyEquipped[3])
 			if (potionGroup > -1)
