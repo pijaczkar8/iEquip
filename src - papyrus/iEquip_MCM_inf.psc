@@ -33,6 +33,7 @@ function drawPage()
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_inf_lbl_presets</font>")
 	MCM.AddInputOptionST("inf_inp_savepreset", "$iEquip_MCM_inf_lbl_savepreset", "")
 	if jMap.count(jObj) > 0
+		MCM.AddMenuOptionST("inf_men_updatepreset", "$iEquip_MCM_inf_lbl_updatepreset", "")
 		MCM.AddMenuOptionST("inf_men_loadpreset", "$iEquip_MCM_inf_lbl_loadpreset", "")
 		MCM.AddMenuOptionST("inf_men_deletepreset", "$iEquip_MCM_inf_lbl_deletepreset", "")
 	endIf
@@ -62,6 +63,21 @@ State inf_inp_savepreset
         elseIf currentEvent == "Accept"
 			MCM.savePreset(currentStrVar)
 			MCM.ForcePageReset()
+        endIf 
+    endEvent
+endState
+
+State inf_men_updatepreset
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_updatepreset")
+        elseIf currentEvent == "Open"
+			saPresets = MCM.getPresets("$iEquip_MCM_inf_lbl_noUpdate")
+			MCM.fillMenu(0, saPresets, 0)
+        elseIf currentEvent == "Accept"
+			if (currentVar as int > 0)
+				MCM.resavePreset(saPresets[currentVar as int])
+			endIf
         endIf 
     endEvent
 endState

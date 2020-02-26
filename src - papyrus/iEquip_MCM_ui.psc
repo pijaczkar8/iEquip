@@ -431,7 +431,7 @@ State ui_tgl_dontFadeBackgrounds
         elseif currentEvent == "Select" || (currentEvent == "Default" && WC.bDontFadeBackgrounds)
             WC.bDontFadeBackgrounds = !WC.bDontFadeBackgrounds
             WC.bBackgroundStyleChanged = true
-            MCM.SetToggleOptionValueST(WC.bBackgroundStyleChanged)
+            MCM.SetToggleOptionValueST(WC.bDontFadeBackgrounds)
         endIf
     endEvent
 endState

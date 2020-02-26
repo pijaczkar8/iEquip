@@ -625,7 +625,7 @@ State pot_tgl_swtchBck
             MCM.SetInfoText("$iEquip_MCM_pot_txt_swtchBck")
         elseIf currentEvent == "Select" || (currentEvent == "Default" && PM.bQuickHealSwitchBackEnabled)
             PM.bQuickHealSwitchBackEnabled = !PM.bQuickHealSwitchBackEnabled
-            MCM.SetToggleOptionValueST(PM.bQuickHealSwitchBackEnabled)
+            MCM.forcePageReset()
         endIf
     endEvent
 endState

@@ -297,6 +297,11 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
 	endIf
 endFunction
 
+function updatePreset(string presetName)
+    deletePreset(presetName)
+    savePreset(presetName)
+endFunction
+
 function deletePreset(string presetName)
 	JContainers.removeFileAtPath(WC.MCMSettingsPath + presetName + WC.FileExt)
 endFunction
