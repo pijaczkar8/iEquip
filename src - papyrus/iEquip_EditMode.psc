@@ -115,19 +115,19 @@ function OnInit()
     iFirstElementInGroup = new int[6]
     iFirstElementInGroup[0] = 6  ; leftBg_mc
     iFirstElementInGroup[1] = 6  ; leftBg_mc
-    iFirstElementInGroup[2] = 22 ; rightBg_mc
-    iFirstElementInGroup[3] = 38 ; shoutBg_mc
-    iFirstElementInGroup[4] = 45 ; consumableBg_mc
-    iFirstElementInGroup[5] = 50 ; poisonBg_mc
+    iFirstElementInGroup[2] = 23 ; rightBg_mc
+    iFirstElementInGroup[3] = 40 ; shoutBg_mc
+    iFirstElementInGroup[4] = 47 ; consumableBg_mc
+    iFirstElementInGroup[5] = 52 ; poisonBg_mc
 
-    afWidget_CurX = new Float[54]
-    afWidget_CurY = new Float[54]
-    afWidget_CurS = new Float[54]
-    afWidget_CurR = new Float[54]
-    afWidget_CurA = new Float[54]
-    aiWidget_CurD = new Int[54]
-    asWidget_CurTA = new string[54]
-    aiWidget_CurTC = new int[54]
+    afWidget_CurX = new Float[56]
+    afWidget_CurY = new Float[56]
+    afWidget_CurS = new Float[56]
+    afWidget_CurR = new Float[56]
+    afWidget_CurA = new Float[56]
+    aiWidget_CurD = new Int[56]
+    asWidget_CurTA = new string[56]
+    aiWidget_CurTC = new int[56]
     
     iCustomColors = new int[14]
     int iIndex = iCustomColors.length
@@ -138,19 +138,19 @@ function OnInit()
 endFunction
 
 function onVersionUpdate()
-    iFirstElementInGroup[2] = 22 ; rightBg_mc
-    iFirstElementInGroup[3] = 38 ; shoutBg_mc
-    iFirstElementInGroup[4] = 45 ; consumableBg_mc
-    iFirstElementInGroup[5] = 50 ; poisonBg_mc
+    iFirstElementInGroup[2] = 23 ; rightBg_mc
+    iFirstElementInGroup[3] = 40 ; shoutBg_mc
+    iFirstElementInGroup[4] = 47 ; consumableBg_mc
+    iFirstElementInGroup[5] = 52 ; poisonBg_mc
 
-    afWidget_CurX = new Float[54]
-    afWidget_CurY = new Float[54]
-    afWidget_CurS = new Float[54]
-    afWidget_CurR = new Float[54]
-    afWidget_CurA = new Float[54]
-    aiWidget_CurD = new Int[54]
-    asWidget_CurTA = new string[54]
-    aiWidget_CurTC = new int[54]
+    afWidget_CurX = new Float[56]
+    afWidget_CurY = new Float[56]
+    afWidget_CurS = new Float[56]
+    afWidget_CurR = new Float[56]
+    afWidget_CurA = new Float[56]
+    aiWidget_CurD = new Int[56]
+    asWidget_CurTA = new string[56]
+    aiWidget_CurTC = new int[56]
 endFunction
 
 ; #######################

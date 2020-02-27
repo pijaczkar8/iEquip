@@ -498,23 +498,23 @@ Event OnWidgetInit()
 
 	aiNameElements = new int[8]
 	aiNameElements[0] = 8 	; leftName_mc
-	aiNameElements[1] = 24 	; rightName_mc
-	aiNameElements[2] = 40 	; shoutName_mc
-	aiNameElements[3] = 47 	; consumableName_mc
-	aiNameElements[4] = 52 	; poisonName_mc
-	aiNameElements[5] = 19 	; leftPreselectName_mc
-	aiNameElements[6] = 35 	; rightPreselectName_mc
-	aiNameElements[7] = 44 	; shoutPreselectName_mc
+	aiNameElements[1] = 25 	; rightName_mc
+	aiNameElements[2] = 42 	; shoutName_mc
+	aiNameElements[3] = 49 	; consumableName_mc
+	aiNameElements[4] = 54 	; poisonName_mc
+	aiNameElements[5] = 20 	; leftPreselectName_mc
+	aiNameElements[6] = 37 	; rightPreselectName_mc
+	aiNameElements[7] = 46 	; shoutPreselectName_mc
 
 	aiIconClips = new int[8]
 	aiIconClips[0] = 7 		; leftIcon_mc
-	aiIconClips[1] = 23 	; rightIcon_mc
-	aiIconClips[2] = 39 	; shoutIcon_mc
-	aiIconClips[3] = 46 	; consumableIcon_mc
-	aiIconClips[4] = 51 	; poisonIcon_mc
-	aiIconClips[5] = 18 	; leftPreselectIcon_mc
-	aiIconClips[6] = 34 	; rightPreselectIcon_mc
-	aiIconClips[7] = 43 	; shoutPreselectIcon_mc
+	aiIconClips[1] = 24 	; rightIcon_mc
+	aiIconClips[2] = 41 	; shoutIcon_mc
+	aiIconClips[3] = 48 	; consumableIcon_mc
+	aiIconClips[4] = 53 	; poisonIcon_mc
+	aiIconClips[5] = 19 	; leftPreselectIcon_mc
+	aiIconClips[6] = 36 	; rightPreselectIcon_mc
+	aiIconClips[7] = 45 	; shoutPreselectIcon_mc
 
 	asWeaponTypeNames = new string[10]
 	asWeaponTypeNames[0] = "Fist"
@@ -549,14 +549,14 @@ Event OnWidgetInit()
 
 	aiCounterClips = new int[5]
 	aiCounterClips[0] = 9 	; leftCount_mc
-	aiCounterClips[1] = 25 	; rightCount_mc
+	aiCounterClips[1] = 26 	; rightCount_mc
 	aiCounterClips[2] = -1 	; No shout count
-	aiCounterClips[3] = 48 	; consumableCount_mc
-	aiCounterClips[4] = 53 	; poisonCount_mc
+	aiCounterClips[3] = 50 	; consumableCount_mc
+	aiCounterClips[4] = 55 	; poisonCount_mc
 
 	aiPoisonNameElements = new int[2]
 	aiPoisonNameElements[0] = 11 ; leftPoisonName_mc
-	aiPoisonNameElements[1] = 27 ; rightPoisonName_mc
+	aiPoisonNameElements[1] = 28 ; rightPoisonName_mc
 
 	asPotionGroups = new string[3]
 	asPotionGroups[0] = "$iEquip_common_HealthPotions"
@@ -758,44 +758,45 @@ function checkVersion()
 			asAmmoSorting[2] = "$iEquip_WC_ammoSorting_alphabetically"
 			asAmmoSorting[3] = "$iEquip_WC_ammoSorting_byQuantity"
 
-			aiNameElements = new int[8]
-			aiNameElements[0] = 8 	; leftName_mc
-			aiNameElements[1] = 24 	; rightName_mc
-			aiNameElements[2] = 40 	; shoutName_mc
-			aiNameElements[3] = 47 	; consumableName_mc
-			aiNameElements[4] = 52 	; poisonName_mc
-			aiNameElements[5] = 19 	; leftPreselectName_mc
-			aiNameElements[6] = 35 	; rightPreselectName_mc
-			aiNameElements[7] = 44 	; shoutPreselectName_mc
-
-			aiIconClips = new int[8]
-			aiIconClips[0] = 7 		; leftIcon_mc
-			aiIconClips[1] = 23 	; rightIcon_mc
-			aiIconClips[2] = 39 	; shoutIcon_mc
-			aiIconClips[3] = 46 	; consumableIcon_mc
-			aiIconClips[4] = 51 	; poisonIcon_mc
-			aiIconClips[5] = 18 	; leftPreselectIcon_mc
-			aiIconClips[6] = 34 	; rightPreselectIcon_mc
-			aiIconClips[7] = 43 	; shoutPreselectIcon_mc
-
-			aiCounterClips[1] = 25 	; rightCount_mc
-			aiCounterClips[3] = 48 	; consumableCount_mc
-			aiCounterClips[4] = 53 	; poisonCount_mc
-
-			aiPoisonNameElements[1] = 27 ; rightPoisonName_mc
-
 			self.RegisterForMenu("Crafting Menu")
 			self.RegisterForMenu("Dialogue Menu")
 			self.RegisterForMenu("BarterMenu")
+        endIf
+
+        if fCurrentVersion < 1.2
+
+        	aiNameElements = new int[8]
+			aiNameElements[0] = 8 	; leftName_mc
+			aiNameElements[1] = 25 	; rightName_mc
+			aiNameElements[2] = 42 	; shoutName_mc
+			aiNameElements[3] = 49 	; consumableName_mc
+			aiNameElements[4] = 54 	; poisonName_mc
+			aiNameElements[5] = 20 	; leftPreselectName_mc
+			aiNameElements[6] = 37 	; rightPreselectName_mc
+			aiNameElements[7] = 46 	; shoutPreselectName_mc
+
+			aiIconClips = new int[8]
+			aiIconClips[0] = 7 		; leftIcon_mc
+			aiIconClips[1] = 24 	; rightIcon_mc
+			aiIconClips[2] = 41 	; shoutIcon_mc
+			aiIconClips[3] = 48 	; consumableIcon_mc
+			aiIconClips[4] = 53 	; poisonIcon_mc
+			aiIconClips[5] = 19 	; leftPreselectIcon_mc
+			aiIconClips[6] = 36 	; rightPreselectIcon_mc
+			aiIconClips[7] = 45 	; shoutPreselectIcon_mc
+
+			aiCounterClips[1] = 26 	; rightCount_mc
+			aiCounterClips[3] = 50 	; consumableCount_mc
+			aiCounterClips[4] = 55 	; poisonCount_mc
+
+			aiPoisonNameElements[1] = 28 ; rightPoisonName_mc
 
 			updateWidgetArrays()
 
 			EM.onVersionUpdate()
 			TI.onVersionUpdate()
-        endIf
-
-        if fCurrentVersion < 1.2
         	PM.onVersionUpdate()
+
         	; Geared Up has been removed in 1.2 so if currently enabled turn it off now
         	if bEnableGearedUp
         		bEnableGearedUp = false

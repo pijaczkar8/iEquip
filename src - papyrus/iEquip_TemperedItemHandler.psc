@@ -50,9 +50,9 @@ function initialise()
 
 		aiNameElements = new int[7]
 		aiNameElements[0] = 8
-		aiNameElements[1] = 24
-		aiNameElements[5] = 19
-		aiNameElements[6] = 35
+		aiNameElements[1] = 25
+		aiNameElements[5] = 20
+		aiNameElements[6] = 37
 		
 		aiTemperedItemTypes = new int[9]
 		aiTemperedItemTypes[0] = 1		; Swords
@@ -74,9 +74,9 @@ function initialise()
 endFunction
 
 function onVersionUpdate()
-	aiNameElements[1] = 24
-	aiNameElements[5] = 19
-	aiNameElements[6] = 35
+	aiNameElements[1] = 25
+	aiNameElements[5] = 20
+	aiNameElements[6] = 37
 endFunction
 
 function updateTemperLevelArrays()
