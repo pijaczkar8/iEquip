@@ -16,10 +16,11 @@ string[] poisonIndicatorOptions
 ; ### SETUP ###
 
 function initData()
-    chargeDisplayOptions = new String[3]
+    chargeDisplayOptions = new String[4]
     chargeDisplayOptions[0] = "$iEquip_MCM_rep_opt_Hidden"
     chargeDisplayOptions[1] = "$iEquip_MCM_rep_opt_Meters"
     chargeDisplayOptions[2] = "$iEquip_MCM_rep_opt_Soulgem"
+    chargeDisplayOptions[3] = "$iEquip_MCM_rep_opt_RadialMeters"
 
     meterFillDirectionOptions = new String[3]
     meterFillDirectionOptions[0] = "$iEquip_MCM_rep_opt_left"
