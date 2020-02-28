@@ -1828,8 +1828,8 @@ function updateWidgetArrays()
 	; Write back across the stored values, using the new default values for the four newly added elements
 	int i
 	int j
-	while i < 54
-		if (i == 15 || i == 21 || i == 31 || i == 37)
+	while i < 56
+		if (afWidget_TmpX.Length < 54 && (i == 16 || i == 22 || i == 33 || i == 39)) || (i == 15 || i == 32)
 			afWidget_X[i] = afWidget_DefX[i]
 			afWidget_Y[i] = afWidget_DefY[i]
 			afWidget_S[i] = afWidget_DefS[i]
@@ -1858,24 +1858,24 @@ endFunction
 
 function PopulateWidgetArrays()
 	debug.trace("iEquip_WidgetCore PopulateWidgetArrays start")
-	asWidgetDescriptions = new string[54]
-	asWidgetElements = new string[54]
-	asWidget_TA = new string[54]
-	asWidgetGroup = new string[54]
+	asWidgetDescriptions = new string[56]
+	asWidgetElements = new string[56]
+	asWidget_TA = new string[56]
+	asWidgetGroup = new string[56]
 	
-	afWidget_X = new float[54]
-	afWidget_Y = new float[54]
-	afWidget_S = new float[54]
-	afWidget_R = new float[54]
-	afWidget_A = new float[54]
+	afWidget_X = new float[56]
+	afWidget_Y = new float[56]
+	afWidget_S = new float[56]
+	afWidget_R = new float[56]
+	afWidget_A = new float[56]
 	
-	aiWidget_D = new int[54] ;Stored the index value of any Bring To Front target element ie the element to be sent behind
-	aiWidget_TC = new int[54]
+	aiWidget_D = new int[56] ;Stored the index value of any Bring To Front target element ie the element to be sent behind
+	aiWidget_TC = new int[56]
 	
-	abWidget_V = new bool[54]
-	abWidget_isParent = new bool[54]
-	abWidget_isText = new bool[54]
-	abWidget_isBg = new bool[54]
+	abWidget_V = new bool[56]
+	abWidget_isParent = new bool[56]
+	abWidget_isText = new bool[56]
+	abWidget_isBg = new bool[56]
 
 	;AddWidget arguments - Description, Full Path, X position, Y position, Scale, Rotation, Alpha, Depth, Text Colour, Text Alignment, Visibility, isParent, isText, isBackground, Widget Group
 	;Master widget
@@ -1896,52 +1896,54 @@ function PopulateWidgetArrays()
 	AddWidget("$iEquip_WC_lbl_LeftAttIcon", ".widgetMaster.LeftHandWidget.leftAttributeIcons_mc", 0, 0, 0, 0, 0, 11, 0, None, true, false, false, false, "Left")
 	AddWidget("$iEquip_WC_lbl_LeftMeter", ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc", 0, 0, 0, 0, 0, 12, 0, None, true, false, false, false, "Left")
 	AddWidget("$iEquip_WC_lbl_LeftGem", ".widgetMaster.LeftHandWidget.leftSoulgem_mc", 0, 0, 0, 0, 0, 13, 0, None, true, false, false, false, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftTierInd", ".widgetMaster.LeftHandWidget.leftTierIndicator_mc", 0, 0, 0, 0, 0, 14, 0, None, true, false, false, false, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftPosInd", ".widgetMaster.LeftHandWidget.leftPositionIndicator_mc", 0, 0, 0, 0, 0, 15, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftRadialMeter", ".widgetMaster.LeftHandWidget.leftRadialMeter_mc", 0, 0, 0, 0, 0, 14, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftTierInd", ".widgetMaster.LeftHandWidget.leftTierIndicator_mc", 0, 0, 0, 0, 0, 15, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPosInd", ".widgetMaster.LeftHandWidget.leftPositionIndicator_mc", 0, 0, 0, 0, 0, 16, 0, None, true, false, false, false, "Left")
 	;Left Hand Preselect widget components
 	AddWidget("$iEquip_WC_lbl_LeftPreBg", ".widgetMaster.LeftHandWidget.leftPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftPreIcon", ".widgetMaster.LeftHandWidget.leftPreselectIcon_mc", 0, 0, 0, 0, 0, 17, 0, None, true, false, false, false, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftPreName", ".widgetMaster.LeftHandWidget.leftPreselectName_mc", 0, 0, 0, 0, 0, 18, 16777215, "Right", true, false, true, false, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftPreAtt", ".widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 19, 0, None, true, false, false, false, "Left")
-	AddWidget("$iEquip_WC_lbl_LeftPreTierInd", ".widgetMaster.LeftHandWidget.leftPreselectTierIndicator_mc", 0, 0, 0, 0, 0, 20, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreIcon", ".widgetMaster.LeftHandWidget.leftPreselectIcon_mc", 0, 0, 0, 0, 0, 18, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreName", ".widgetMaster.LeftHandWidget.leftPreselectName_mc", 0, 0, 0, 0, 0, 19, 16777215, "Right", true, false, true, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreAtt", ".widgetMaster.LeftHandWidget.leftPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 20, 0, None, true, false, false, false, "Left")
+	AddWidget("$iEquip_WC_lbl_LeftPreTierInd", ".widgetMaster.LeftHandWidget.leftPreselectTierIndicator_mc", 0, 0, 0, 0, 0, 21, 0, None, true, false, false, false, "Left")
 	;Right Hand widget components
 	AddWidget("$iEquip_WC_lbl_RightBg", ".widgetMaster.RightHandWidget.rightBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
-	AddWidget("$iEquip_WC_lbl_RightIcon", ".widgetMaster.RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 22, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightName", ".widgetMaster.RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 23, 16777215, "Left", true, false, true, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightCount", ".widgetMaster.RightHandWidget.rightCount_mc", 0, 0, 0, 0, 0, 24, 16777215, "Center", true, false, true, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPoisIcon", ".widgetMaster.RightHandWidget.rightPoisonIcon_mc", 0, 0, 0, 0, 0, 25, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPoisName", ".widgetMaster.RightHandWidget.rightPoisonName_mc", 0, 0, 0, 0, 0, 26, 12646509, "Left", true, false, true, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightAttIcon", ".widgetMaster.RightHandWidget.rightAttributeIcons_mc", 0, 0, 0, 0, 0, 27, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightMeter", ".widgetMaster.RightHandWidget.rightEnchantmentMeter_mc", 0, 0, 0, 0, 0, 28, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightGem", ".widgetMaster.RightHandWidget.rightSoulgem_mc", 0, 0, 0, 0, 0, 29, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightTierInd", ".widgetMaster.RightHandWidget.rightTierIndicator_mc", 0, 0, 0, 0, 0, 30, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPosInd", ".widgetMaster.RightHandWidget.rightPositionIndicator_mc", 0, 0, 0, 0, 0, 31, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightIcon", ".widgetMaster.RightHandWidget.rightIcon_mc", 0, 0, 0, 0, 0, 23, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightName", ".widgetMaster.RightHandWidget.rightName_mc", 0, 0, 0, 0, 0, 24, 16777215, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightCount", ".widgetMaster.RightHandWidget.rightCount_mc", 0, 0, 0, 0, 0, 25, 16777215, "Center", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPoisIcon", ".widgetMaster.RightHandWidget.rightPoisonIcon_mc", 0, 0, 0, 0, 0, 26, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPoisName", ".widgetMaster.RightHandWidget.rightPoisonName_mc", 0, 0, 0, 0, 0, 27, 12646509, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightAttIcon", ".widgetMaster.RightHandWidget.rightAttributeIcons_mc", 0, 0, 0, 0, 0, 28, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightMeter", ".widgetMaster.RightHandWidget.rightEnchantmentMeter_mc", 0, 0, 0, 0, 0, 29, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightGem", ".widgetMaster.RightHandWidget.rightSoulgem_mc", 0, 0, 0, 0, 0, 30, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightRadialMeter", ".widgetMaster.RightHandWidget.rightRadialMeter_mc", 0, 0, 0, 0, 0, 31, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightTierInd", ".widgetMaster.RightHandWidget.rightTierIndicator_mc", 0, 0, 0, 0, 0, 32, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPosInd", ".widgetMaster.RightHandWidget.rightPositionIndicator_mc", 0, 0, 0, 0, 0, 33, 0, None, true, false, false, false, "Right")
 	;Right Hand Preselect widget components
 	AddWidget("$iEquip_WC_lbl_RightPreBg", ".widgetMaster.RightHandWidget.rightPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPreIcon", ".widgetMaster.RightHandWidget.rightPreselectIcon_mc", 0, 0, 0, 0, 0, 33, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPreName", ".widgetMaster.RightHandWidget.rightPreselectName_mc", 0, 0, 0, 0, 0, 34, 16777215, "Left", true, false, true, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPreAtt", ".widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 35, 0, None, true, false, false, false, "Right")
-	AddWidget("$iEquip_WC_lbl_RightPreTierInd", ".widgetMaster.RightHandWidget.rightPreselectTierIndicator_mc", 0, 0, 0, 0, 0, 36, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreIcon", ".widgetMaster.RightHandWidget.rightPreselectIcon_mc", 0, 0, 0, 0, 0, 35, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreName", ".widgetMaster.RightHandWidget.rightPreselectName_mc", 0, 0, 0, 0, 0, 36, 16777215, "Left", true, false, true, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreAtt", ".widgetMaster.RightHandWidget.rightPreselectAttributeIcons_mc", 0, 0, 0, 0, 0, 37, 0, None, true, false, false, false, "Right")
+	AddWidget("$iEquip_WC_lbl_RightPreTierInd", ".widgetMaster.RightHandWidget.rightPreselectTierIndicator_mc", 0, 0, 0, 0, 0, 38, 0, None, true, false, false, false, "Right")
 	;Shout widget components
 	AddWidget("$iEquip_WC_lbl_ShoutBg", ".widgetMaster.ShoutWidget.shoutBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutIcon", ".widgetMaster.ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 38, 0, None, true, false, false, false, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutName", ".widgetMaster.ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 39, 16777215, "Center", true, false, true, false, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutPosInd", ".widgetMaster.ShoutWidget.shoutPositionIndicator_mc", 0, 0, 0, 0, 0, 40, 0, None, true, false, false, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutIcon", ".widgetMaster.ShoutWidget.shoutIcon_mc", 0, 0, 0, 0, 0, 40, 0, None, true, false, false, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutName", ".widgetMaster.ShoutWidget.shoutName_mc", 0, 0, 0, 0, 0, 41, 16777215, "Center", true, false, true, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPosInd", ".widgetMaster.ShoutWidget.shoutPositionIndicator_mc", 0, 0, 0, 0, 0, 42, 0, None, true, false, false, false, "Shout")
 	;Shout Preselect widget components
 	AddWidget("$iEquip_WC_lbl_ShoutPreBg", ".widgetMaster.ShoutWidget.shoutPreselectBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutPreIcon", ".widgetMaster.ShoutWidget.shoutPreselectIcon_mc", 0, 0, 0, 0, 0, 42, 0, None, true, false, false, false, "Shout")
-	AddWidget("$iEquip_WC_lbl_ShoutPreName", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 43, 16777215, "Right", true, false, true, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPreIcon", ".widgetMaster.ShoutWidget.shoutPreselectIcon_mc", 0, 0, 0, 0, 0, 44, 0, None, true, false, false, false, "Shout")
+	AddWidget("$iEquip_WC_lbl_ShoutPreName", ".widgetMaster.ShoutWidget.shoutPreselectName_mc", 0, 0, 0, 0, 0, 45, 16777215, "Right", true, false, true, false, "Shout")
 	;Consumable widget components
 	AddWidget("$iEquip_WC_lbl_ConsBg", ".widgetMaster.ConsumableWidget.consumableBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Consumable")
-	AddWidget("$iEquip_WC_lbl_ConsIcon", ".widgetMaster.ConsumableWidget.consumableIcon_mc", 0, 0, 0, 0, 0, 45, 0, None, true, false, false, false, "Consumable")
-	AddWidget("$iEquip_WC_lbl_ConsName", ".widgetMaster.ConsumableWidget.consumableName_mc", 0, 0, 0, 0, 0, 46, 16777215, "Right", true, false, true, false, "Consumable")
-	AddWidget("$iEquip_WC_lbl_ConsCount", ".widgetMaster.ConsumableWidget.consumableCount_mc", 0, 0, 0, 0, 0, 47, 16777215, "Center", true, false, true, false, "Consumable")
-	AddWidget("$iEquip_WC_lbl_potSelector", ".widgetMaster.ConsumableWidget.potionSelector_mc", 0, 0, 0, 0, 0, 48, 16777215, None, true, false, false, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsIcon", ".widgetMaster.ConsumableWidget.consumableIcon_mc", 0, 0, 0, 0, 0, 47, 0, None, true, false, false, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsName", ".widgetMaster.ConsumableWidget.consumableName_mc", 0, 0, 0, 0, 0, 48, 16777215, "Right", true, false, true, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_ConsCount", ".widgetMaster.ConsumableWidget.consumableCount_mc", 0, 0, 0, 0, 0, 49, 16777215, "Center", true, false, true, false, "Consumable")
+	AddWidget("$iEquip_WC_lbl_potSelector", ".widgetMaster.ConsumableWidget.potionSelector_mc", 0, 0, 0, 0, 0, 50, 16777215, None, true, false, false, false, "Consumable")
 	;Poison widget components
 	AddWidget("$iEquip_WC_lbl_PoisonBg", ".widgetMaster.PoisonWidget.poisonBg_mc", 0, 0, 0, 0, 0, -1, 0, None, true, false, false, true, "Poison")
-	AddWidget("$iEquip_WC_lbl_PoisonIcon", ".widgetMaster.PoisonWidget.poisonIcon_mc", 0, 0, 0, 0, 0, 50, 0, None, true, false, false, false, "Poison")
-	AddWidget("$iEquip_WC_lbl_PoisonName", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 51, 16777215, "Left", true, false, true, false, "Poison")
-	AddWidget("$iEquip_WC_lbl_PoisonCount", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 52, 16777215, "Center", true, false, true, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonIcon", ".widgetMaster.PoisonWidget.poisonIcon_mc", 0, 0, 0, 0, 0, 52, 0, None, true, false, false, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonName", ".widgetMaster.PoisonWidget.poisonName_mc", 0, 0, 0, 0, 0, 53, 16777215, "Left", true, false, true, false, "Poison")
+	AddWidget("$iEquip_WC_lbl_PoisonCount", ".widgetMaster.PoisonWidget.poisonCount_mc", 0, 0, 0, 0, 0, 54, 16777215, "Center", true, false, true, false, "Poison")
 
 	debug.trace("iEquip_WidgetCore PopulateWidgetArrays end")
 endFunction
@@ -1976,15 +1978,15 @@ endFunction
 
 function getAndStoreDefaultWidgetValues(bool updateFromFile = false)
 	debug.trace("iEquip_WidgetCore getAndStoreDefaultWidgetValues start")
-	afWidget_DefX = new float[54]
-	afWidget_DefY = new float[54]
-	afWidget_DefS = new float[54]
-	afWidget_DefR = new float[54]
-	afWidget_DefA = new float[54]
-	aiWidget_DefD = new int[54]
-	asWidget_DefTA = new string[54]
-	aiWidget_DefTC = new int[54]
-	abWidget_DefV = new bool[54]
+	afWidget_DefX = new float[56]
+	afWidget_DefY = new float[56]
+	afWidget_DefS = new float[56]
+	afWidget_DefR = new float[56]
+	afWidget_DefA = new float[56]
+	aiWidget_DefD = new int[56]
+	asWidget_DefTA = new string[56]
+	aiWidget_DefTC = new int[56]
+	abWidget_DefV = new bool[56]
 
 	if updateFromFile
 		int jObj = JValue.readFromDirectory(WidgetPresetPath, FileExtDef)
@@ -1999,7 +2001,7 @@ function getAndStoreDefaultWidgetValues(bool updateFromFile = false)
 	    JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_TC"), aiWidget_DefTC, 0, -1, 0, 0)
 	    JArray.writeToStringPArray(JMap.getObj(jPreset, "_TA"), asWidget_DefTA, 0, -1, 0, 0)
 	    int i
-	    while i < 54
+	    while i < 56
 	    	abWidget_DefV[i] = true
 	    	i += 1
 	    endWhile
@@ -2565,12 +2567,15 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 		if CM.abIsChargeMeterShown[0]
 			if CM.iChargeDisplayType == 1
 				widgetData[7] = afWidget_A[13] * adjustment ;leftEnchantmentMeter_mc
-			else
+			elseIf CM.iChargeDisplayType == 2
 				widgetData[6] = 1
 				widgetData[7] = afWidget_A[14] * adjustment ;leftSoulgem_mc
+			else
+				widgetData[6] = 2
+				widgetData[7] = afWidget_A[15] * adjustment ;leftRadialMeter_mc
 			endIf
 		endIf
-		widgetData[8] = afWidget_A[15] * adjustment ;leftTierIndicator_mc
+		widgetData[8] = afWidget_A[16] * adjustment ;leftTierIndicator_mc
 		debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading out")
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
 		bLeftIconFaded = true
@@ -2593,12 +2598,15 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 		if CM.abIsChargeMeterShown[0]
 			if CM.iChargeDisplayType == 1
 				widgetData[7] = afWidget_A[13]
-			else
+			elseIf CM.iChargeDisplayType == 2
 				widgetData[6] = 1
 				widgetData[7] = afWidget_A[14]
+			else
+				widgetData[6] = 2
+				widgetData[7] = afWidget_A[15]
 			endIf
 		endIf
-		widgetData[8] = afWidget_A[15]
+		widgetData[8] = afWidget_A[16]
 		debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading in")
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
 		bLeftIconFaded = false
@@ -2642,25 +2650,25 @@ function checkAndFadeConsumableIcon(bool fadeOut)
 		if PO.iEmptyPotionQueueChoice == 0 									; Fade
 			float adjustment = (1 - (fconsIconFadeAmount * 0.01))
 			if bDontFadeBackgrounds
-				widgetData[0] = afWidget_A[45] 								; consumableBg_mc
+				widgetData[0] = afWidget_A[47] 								; consumableBg_mc
 			else
-				widgetData[0] = afWidget_A[45] * adjustment 				; consumableBg_mc
+				widgetData[0] = afWidget_A[47] * adjustment 				; consumableBg_mc
 			endIf
-			widgetData[1] = afWidget_A[46] * adjustment 					; consumableIcon_mc
+			widgetData[1] = afWidget_A[48] * adjustment 					; consumableIcon_mc
 			if abIsNameShown[3]
-				widgetData[2] = afWidget_A[47] * adjustment 				; consumableName_mc
+				widgetData[2] = afWidget_A[49] * adjustment 				; consumableName_mc
 			endIf
-			widgetData[3] = afWidget_A[48]  * adjustment 					; consumableCount_mc
+			widgetData[3] = afWidget_A[50]  * adjustment 					; consumableCount_mc
 			UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenConsumableIconAlpha", widgetData)
 			bConsumableIconFaded = true
 		endIf
 	else 																	; For anything else fade it back in (we've already checked if it needs fading or not before calling this function)
-		widgetData[0] = afWidget_A[45]
-		widgetData[1] = afWidget_A[46]
+		widgetData[0] = afWidget_A[47]
+		widgetData[1] = afWidget_A[48]
 		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[47]
+			widgetData[2] = afWidget_A[49]
 		endIf
-		widgetData[3] = afWidget_A[48]
+		widgetData[3] = afWidget_A[50]
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenConsumableIconAlpha", widgetData)
 		bConsumableIconFaded = false
 	endIf
@@ -2673,25 +2681,25 @@ function checkAndFadePoisonIcon(bool fadeOut)
 	if fadeOut
 		float adjustment = (1 - (fconsIconFadeAmount * 0.01)) 				; Use same value as consumable icon fade for consistency
 		if bDontFadeBackgrounds
-			widgetData[0] = afWidget_A[50]									; poisonBg_mc
+			widgetData[0] = afWidget_A[52]									; poisonBg_mc
 		else
-			widgetData[0] = afWidget_A[50] * adjustment 						; poisonBg_mc
+			widgetData[0] = afWidget_A[52] * adjustment 						; poisonBg_mc
 		endIf
-		widgetData[1] = afWidget_A[51] * adjustment 						; poisonIcon_mc
+		widgetData[1] = afWidget_A[53] * adjustment 						; poisonIcon_mc
 		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[52] * adjustment 					; poisonName_mc
+			widgetData[2] = afWidget_A[54] * adjustment 					; poisonName_mc
 		endIf
-		widgetData[3] = afWidget_A[53] * adjustment 						; poisonCount_mc
+		widgetData[3] = afWidget_A[55] * adjustment 						; poisonCount_mc
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenPoisonIconAlpha", widgetData)
 		bPoisonIconFaded = true
 																			; For anything else fade it back in (we've already checked if it needs fading or not before calling this function)
 	else
-		widgetData[0] = afWidget_A[50]
-		widgetData[1] = afWidget_A[51]
+		widgetData[0] = afWidget_A[52]
+		widgetData[1] = afWidget_A[53]
 		if abIsNameShown[3]
-			widgetData[2] = afWidget_A[52]
+			widgetData[2] = afWidget_A[54]
 		endIf
-		widgetData[3] = afWidget_A[53]
+		widgetData[3] = afWidget_A[55]
 		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenPoisonIconAlpha", widgetData)
 		bPoisonIconFaded = false
 	endIf
@@ -2777,7 +2785,7 @@ function updatePotionSelector(bool bHide = false)
 		UI.InvokeStringA(HUD_MENU, WidgetRoot + ".updatePotionSelectorText", args)
 		;If the selector isn't already shown then show it now
 		if !bPotionSelectorShown
-			UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", afWidget_A[49])
+			UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", afWidget_A[51])
 			bPotionSelectorShown = true
 			PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
 		endIf
@@ -2954,9 +2962,9 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 			endIf
 		endIf
 	elseIf Q == 3
-		UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 48)		; consumableCount_mc
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 50)		; consumableCount_mc
 	elseIf Q == 4 && hidePoisonCount
-		UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 53)		; poisonCount_mc
+		UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 55)		; poisonCount_mc
 
 	elseIf Q == 5 || Q == 6
 		hideAttributeIcons(Q)
@@ -2977,7 +2985,7 @@ function handleEmptyPoisonQueue()
 	
 	;Hide the count by setting it to an empty string
 
-	UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 53)	; poisonCount_mc
+	UI.InvokeInt(HUD_MENU, WidgetRoot + ".updateDisplayedText", 55)	; poisonCount_mc
 	asCurrentlyEquipped[4] = ""
 																	; Set to generic poison icon and name to empty before flashing/fading/hiding
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
@@ -4394,7 +4402,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				args[1] = aiWidget_TC[9] ;leftCount text colour
 			else
 				args[0] = 25 ;rightCount
-				args[1] = aiWidget_TC[25] ;rightCount text colour
+				args[1] = aiWidget_TC[26] ;rightCount text colour
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
@@ -4428,7 +4436,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			poisonNameElement = 11 	; leftPoisonName_mc
 		elseif Q == 1
 			poisonNamePath = ".widgetMaster.RightHandWidget.rightPoisonName_mc.rightPoisonName.text"
-			poisonNameElement = 27 	; rightPoisonName_mc
+			poisonNameElement = 28 	; rightPoisonName_mc
 		endIf
 		string currentlyDisplayedPoison = UI.GetString(HUD_MENU, WidgetRoot + poisonNamePath)
 		debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - currentlyDisplayedPoison: " + currentlyDisplayedPoison + ", poisonName: " + poisonName)
@@ -4459,7 +4467,7 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				args[1] = aiWidget_TC[11] ;leftPoisonName text colour
 			else
 				args[0] = 25 ;rightCount
-				args[1] = aiWidget_TC[27] ;rightPoisonName text colour
+				args[1] = aiWidget_TC[28] ;rightPoisonName text colour
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
 			UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", args)
@@ -4859,6 +4867,7 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
         	IconName = getSpellSchool(S)
         	if IconName == "Destruction"
         		MagicEffect sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())
+        		; ToDo - finish this off (for SE only)
         		;/if sEffect.HasKeyword(MagicCloak)
         			S = iEquip_MagicEffectExt.GetAssociatedItem(sEffect) as Spell
         			sEffect = S.GetNthEffectMagicEffect(S.GetCostliestEffectIndex())

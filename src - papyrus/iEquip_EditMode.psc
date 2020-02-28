@@ -81,7 +81,7 @@ string sRotation = "$iEquip_EM_clockwise"
 ; ### PRESET VERSION ###
 
 int function GetVersion()
-    return 2
+    return 3
 endFunction
 
 ; ######################
@@ -257,7 +257,7 @@ function EnableEditmode()
 
     PM.togglePreselectMode(true)
 
-    UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", WC.afWidget_A[49])
+    UI.InvokeFloat(HUD_MENU, WidgetRoot + ".tweenPotionSelectorAlpha", WC.afWidget_A[51])
 
     LoadAllElements()
     UI.InvokeInt(HUD_MENU, WidgetRoot + ".setCurrentClip", 0)
@@ -659,7 +659,7 @@ function ToggleCycleRange()
     if 0 <= iSelectedElement && iSelectedElement  <= 5           ; if group is selected, find first child
         iSelectedElement = iFirstElementInGroup[iSelectedElement]
         iFirstElement = 6
-        iLastElement = 53
+        iLastElement = 55
     else                                    ; else find parent group
         iSelectedElement = WidgetGroups.Find(WC.asWidgetGroup[iSelectedElement])
         iFirstElement = 0
@@ -713,7 +713,7 @@ function UpdateElementData(int iIndex, bool bUpdateAlpha = true)
 endFunction
 
 function UpdateElementText(int[] iArgs, int iNewColor) 
-    if iArgs[0] == 49                  ; potionSelector_mc - Only setting text colour here as alignment handled by .setPotionSelectorAlignment
+    if iArgs[0] == 51                  ; potionSelector_mc - Only setting text colour here as alignment handled by .setPotionSelectorAlignment
         iArgs[1] = iNewColor
         UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setTextColor", iArgs)
     else                                ; for every other text element update colour and alignment together
@@ -734,7 +734,7 @@ function UpdateEditModeGuide()
     if iSelectedElement != -1
         string tmpStr
         
-        if iSelectedElement == 49 ; potionSelector_mc
+        if iSelectedElement == 51 ; potionSelector_mc
             UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentInstructionText.text", iEquip_StringExt.LocalizeString("$iEquip_swf_potSelAlignInstTxt"))
         else
             UI.SetString(HUD_MENU, WidgetRoot + ".EditModeGuide.AlignmentInstructionText.text", iEquip_StringExt.LocalizeString("$iEquip_swf_AlignmentInstructionText"))
@@ -757,7 +757,7 @@ function UpdateEditModeGuide()
             else
                 tmpStr = "$iEquip_EM_centreAligned"
             endIf
-        elseIf iSelectedElement == 49 ; potionSelector_mc
+        elseIf iSelectedElement == 51 ; potionSelector_mc
             if bPotionSelectorOnLeft
                 tmpStr = "$iEquip_EM_potSelLeft"
             else
@@ -794,7 +794,7 @@ function UpdateElementsAll(bool bUpdateAlpha = true)
         int[] iArgs = new int[3]
     
         while iIndex < WC.asWidgetDescriptions.length
-            if WC.abWidget_isText[iIndex] || iIndex == 49 ; potionSelector_mc
+            if WC.abWidget_isText[iIndex] || iIndex == 51 ; potionSelector_mc
                 iArgs[0] = iIndex
                 UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
             endIf
@@ -814,7 +814,7 @@ function UpdateAllTextFormatting()                      ; Only called from OnWid
     int[] iArgs = new int[3]
     
     while iIndex < WC.asWidgetDescriptions.length
-        if WC.abWidget_isText[iIndex] || iIndex == 49   ; potionSelector_mc
+        if WC.abWidget_isText[iIndex] || iIndex == 51   ; potionSelector_mc
             iArgs[0] = iIndex
             UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
         endIf
@@ -826,7 +826,7 @@ endFunction
 ; ### Edit Toggles ###
 
 function ToggleTextAlignment()
-    if iSelectedElement == 49 ;potionSelector_mc
+    if iSelectedElement == 51 ;potionSelector_mc
         togglePotionSelectorAlignment()
     elseIf WC.abWidget_isText[iSelectedElement]
         string tmpStr
@@ -968,13 +968,24 @@ function ShowPresetList()
 				if (jPresetVersion == GetVersion())
 					LoadPreset(jPreset)
 					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
-				elseIf (jPresetVersion == 1 && GetVersion() == 2)
-					int[] aiInsertAtIndex = new int[4]
-					aiInsertAtIndex[0] = 15
-					aiInsertAtIndex[1] = 21
-					aiInsertAtIndex[2] = 31
-					aiInsertAtIndex[3] = 37
-					int j = 0
+				elseIf jPresetVersion < GetVersion()
+                    
+                    int[] aiInsertAtIndex
+                    if jPresetVersion == 1
+    					aiInsertAtIndex = new int[6]
+                        aiInsertAtIndex[0] = 15
+    					aiInsertAtIndex[1] = 16
+    					aiInsertAtIndex[2] = 22
+                        aiInsertAtIndex[3] = 32
+    					aiInsertAtIndex[4] = 33
+    					aiInsertAtIndex[5] = 39
+                    else
+                        aiInsertAtIndex = new int[2]
+                        aiInsertAtIndex[0] = 15
+                        aiInsertAtIndex[1] = 32
+                    endIf
+					
+                    int j = 0
 					
 					while j < 8
 						string jKey
@@ -1010,7 +1021,7 @@ function ShowPresetList()
 					
 						int jTmpObj = jMap.getObj(jPreset, jKey)
 						int k = 0
-						while k < 4
+						while k < aiInsertAtIndex.Length
 							if fltArr
 								jArray.addFlt(jTmpObj, fltArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
 							elseIf intArr
