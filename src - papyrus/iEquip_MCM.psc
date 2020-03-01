@@ -25,11 +25,11 @@ string sCurrentPage
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 120  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 121  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 120 && CurrentVersion < 120)
+    if (a_version >= 121 && CurrentVersion < 121)
         OnConfigInit()
     endIf
 endEvent
@@ -265,7 +265,7 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
 		
 		int presetVersion = jMap.getInt(jMCMPreset, "Version")
 
-        if presetVersion < 120
+        if presetVersion < 121
 			ShowMessage("$iEquip_common_LoadPresetError", false)
 		else
 			bBusy = true

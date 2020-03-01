@@ -153,7 +153,7 @@ function drawPage()
 
     MCM.AddEmptyOption()
     MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_eqp_lbl_dualEquipSpells</font>")
-    MCM.AddTextOptionST("eqp_txt_whatQuickdualcast", "<font color='#a6bffe'>$iEquip_MCM_eqp_lbl_whatQuickdualcast</font>", "")
+    MCM.AddTextOptionST("eqp_txt_whatDualEquipSpells", "<font color='#a6bffe'>$iEquip_MCM_eqp_lbl_whatQuickdualcast</font>", "")
 
     if WC.bQuickDualCastEnabled
         MCM.AddToggleOptionST("eqp_tgl_enblDualEquipSpells", "<font color='#c7ea46'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
@@ -369,7 +369,7 @@ State eqp_txt_whatDualEquipSpells
     endEvent
 endState  
 
-State eqp_tgl_enblQuickdualcast
+State eqp_tgl_enblDualEquipSpells
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_enblQuickdualcast")

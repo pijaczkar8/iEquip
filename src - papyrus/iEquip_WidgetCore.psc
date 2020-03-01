@@ -713,13 +713,19 @@ EndEvent
 float fCurrentVersion						; First digit = Main version, 2nd digit = Incremental, 3rd digit = Hotfix.  For example main version 1.0, hotfix 03 would be 1.03
 
 function checkVersion()
+
     float fThisVersion = getiEquipVersion()
+
+    debug.trace("iEquip_WidgetCore checkVersion start, fCurrentVersion: " + fCurrentVersion + ", fThisVersion: " + fThisVersion + ", bIsFirstEnabled: " + bIsFirstEnabled)
     
     if fThisVersion < fCurrentVersion
+    	debug.trace("iEquip_WidgetCore checkVersion - older version")
         Debug.MessageBox("$iEquip_wc_msg_oldVersion")
     elseIf fThisVersion == fCurrentVersion
+    	debug.trace("iEquip_WidgetCore checkVersion - same version")
         ; Already latest version
     elseIf !bIsFirstEnabled
+    	debug.trace("iEquip_WidgetCore checkVersion - should be updating now")
         ; Let's update
         
         ; Version 1.1
@@ -763,7 +769,7 @@ function checkVersion()
 			self.RegisterForMenu("BarterMenu")
         endIf
 
-        if fCurrentVersion < 1.2
+        if fCurrentVersion < 1.21
 
         	aiNameElements = new int[8]
 			aiNameElements[0] = 8 	; leftName_mc
@@ -791,7 +797,9 @@ function checkVersion()
 
 			aiPoisonNameElements[1] = 28 ; rightPoisonName_mc
 
-			updateWidgetArrays()
+			if asWidgetElements.Length < 56		; This is only here to ensure the array update doesn't run a second time, only relevant for beta testers with previous iterations of 1.2
+				updateWidgetArrays()
+			endIf
 
 			EM.onVersionUpdate()
 			TI.onVersionUpdate()
@@ -804,13 +812,15 @@ function checkVersion()
 				refreshVisibleItems()
 			endIf
         endIf
-        Debug.Notification("$iEquip_wc_not_updating")		; Need to change the version number in the strings files
+        Utility.Wait(3.0)									; Just to make sure the notification hasn't been and gone before you're fully loaded in
+        debug.notification("$iEquip_wc_not_updating")		; Remember to change the version number in the strings files
     endIf
     fCurrentVersion = fThisVersion
+    debug.trace("iEquip_WidgetCore checkVersion end")
 endFunction
 
 float function getiEquipVersion()
-    return 1.2
+    return 1.21
 endFunction
 
 ; #########################

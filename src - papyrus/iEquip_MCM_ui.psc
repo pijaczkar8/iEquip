@@ -97,6 +97,7 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, TI.iColoredIconLevels)
 
 	jArray.addInt(jPageObj, WC.iBackgroundStyle) ; Save in preset also
+    jArray.addInt(jPageObj, WC.bDontFadeBackgrounds as int) ; Save in preset also
 	
 	jArray.addInt(jPageObj, WC.bDropShadowEnabled as int)
 	jArray.addFlt(jPageObj, WC.fDropShadowAlpha)
@@ -140,34 +141,35 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     TI.iColoredIconLevels = jArray.getInt(jPageObj, 6)
 
 	WC.iBackgroundStyle = jArray.getInt(jPageObj, 7)
+    WC.bDontFadeBackgrounds = jArray.getInt(jPageObj, 8)
 	
-	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 8)
-	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 9)
-	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 10)
-	WC.iDropShadowBlur = jArray.getInt(jPageObj, 11)
-	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 12)
-	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 13)
+	WC.bDropShadowEnabled = jArray.getInt(jPageObj, 9)
+	WC.fDropShadowAlpha = jArray.getFlt(jPageObj, 10)
+	WC.fDropShadowAngle = jArray.getFlt(jPageObj, 11)
+	WC.iDropShadowBlur = jArray.getInt(jPageObj, 12)
+	WC.fDropShadowDistance = jArray.getFlt(jPageObj, 13)
+	WC.fDropShadowStrength = jArray.getFlt(jPageObj, 14)
 	
-	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 14)
-	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 15)
-	WC.iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 16)
-	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 17)
-	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 18)
+	WC.bWidgetFadeoutEnabled = jArray.getInt(jPageObj, 15)
+	WC.fWidgetFadeoutDelay = jArray.getFlt(jPageObj, 16)
+	WC.iCurrentWidgetFadeoutChoice = jArray.getInt(jPageObj, 17)
+	WC.fWidgetFadeoutDuration = jArray.getFlt(jPageObj, 18)
+	WC.bAlwaysVisibleWhenWeaponsDrawn = jArray.getInt(jPageObj, 19)
 	
-	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 19)
-	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 20)
-	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 21)
-	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 22)
-	WC.iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 23)
-	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 24)
-	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 25)
-    WC.bLeftRightNameFadeEnabled = jArray.getInt(jPageObj, 26)
-    WC.bShoutNameFadeEnabled = jArray.getInt(jPageObj, 27)
-    WC.bConsPoisNameFadeEnabled = jArray.getInt(jPageObj, 28)
+	WC.bNameFadeoutEnabled = jArray.getInt(jPageObj, 20)
+	WC.fMainNameFadeoutDelay = jArray.getFlt(jPageObj, 21)
+	WC.fPoisonNameFadeoutDelay = jArray.getFlt(jPageObj, 22)
+	WC.fPreselectNameFadeoutDelay = jArray.getFlt(jPageObj, 23)
+	WC.iCurrentNameFadeoutChoice = jArray.getInt(jPageObj, 24)
+	WC.fNameFadeoutDuration = jArray.getFlt(jPageObj, 25)
+	WC.bFirstPressShowsName = jArray.getInt(jPageObj, 26)
+    WC.bLeftRightNameFadeEnabled = jArray.getInt(jPageObj, 27)
+    WC.bShoutNameFadeEnabled = jArray.getInt(jPageObj, 28)
+    WC.bConsPoisNameFadeEnabled = jArray.getInt(jPageObj, 29)
 
-	TI.bShowTemperTierIndicator = jArray.getInt(jPageObj, 29)
-	TI.iTemperTierDisplayChoice = jArray.getInt(jPageObj, 30)
-	TI.bShowFadedTiers = jArray.getInt(jPageObj, 31)
+	TI.bShowTemperTierIndicator = jArray.getInt(jPageObj, 30)
+	TI.iTemperTierDisplayChoice = jArray.getInt(jPageObj, 31)
+	TI.bShowFadedTiers = jArray.getInt(jPageObj, 32)
 endFunction
 
 function drawPage()

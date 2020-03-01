@@ -86,7 +86,7 @@ class skyui.widgets.iEquip.iEquipRadialMeter extends MovieClip
 			RRGGBB = fillColor;
 			flashColorAuto = true;
 		} else if (iFlashColor == undefined) {
-			RRGGBB = 0xFFFFFF;
+			RRGGBB = 0xFFFFFF; // White by default
 		} else {
 			RRGGBB = ColorFunctions.validHex(iFlashColor);
 		}

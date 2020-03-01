@@ -635,16 +635,19 @@ endFunction
 
 function startTorchMeterFlash()
 	;debug.trace("iEquip_TorchScript startTorchMeterFlash start")
+	int iHandle
+	
 	if CM.iChargeDisplayType == 3
-		UI.Invoke(HUD_MENU, WidgetRoot + ".leftRadialMeter.startFlash")
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startRadialMeterFlash")
 	else
-		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
-		If(iHandle)
-			UICallback.PushInt(iHandle, 0)
-			UICallback.PushInt(iHandle, 0xFF0000)
-			UICallback.PushBool(iHandle, true)
-			UICallback.Send(iHandle)
-		endIf
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
+	endIf
+
+	If(iHandle)
+		UICallback.PushInt(iHandle, 0)
+		UICallback.PushInt(iHandle, 0xFF0000)
+		UICallback.PushBool(iHandle, true)
+		UICallback.Send(iHandle)
 	endIf
 	;debug.trace("iEquip_TorchScript startTorchMeterFlash end")
 endFunction

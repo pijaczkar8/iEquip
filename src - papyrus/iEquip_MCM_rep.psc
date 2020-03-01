@@ -625,7 +625,7 @@ State rep_sld_chargeMult
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_rep_txt_chargeMult")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(WC.iPoisonChargeMultiplier, 2.0, 5.0, 1.0, 1.0)
+            MCM.fillSlider(WC.iPoisonChargeMultiplier, 2.0, 5.0, 1.0, 2.0)
         elseIf currentEvent == "Accept"
             WC.iPoisonChargeMultiplier = currentVar as int
             MCM.SetSliderOptionValueST(WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseChrgs"))
