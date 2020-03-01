@@ -76,7 +76,7 @@ State inf_men_updatepreset
 			MCM.fillMenu(0, saPresets, 0)
         elseIf currentEvent == "Accept"
 			if (currentVar as int > 0)
-				MCM.resavePreset(saPresets[currentVar as int])
+				MCM.updatePreset(saPresets[currentVar as int])
 			endIf
         endIf 
     endEvent

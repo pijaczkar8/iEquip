@@ -29,6 +29,8 @@ event OnUpdate()
 			iHandle = UICallback.Create("HUD Menu", WidgetRoot + ".tweenChargeMeterAlpha")
 		elseIf iTargetDisplay == 2
 			iHandle = UICallback.Create("HUD Menu", WidgetRoot + ".tweenSoulGemAlpha")
+		elseIf iTargetDisplay == 3
+			iHandle = UICallback.Create("HUD Menu", WidgetRoot + ".tweenRadialMeterAlpha")
 		endIf
 		If(iHandle)
 			UICallback.PushInt(iHandle, Q)

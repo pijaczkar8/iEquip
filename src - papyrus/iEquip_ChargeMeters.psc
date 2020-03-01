@@ -98,6 +98,21 @@ function initSoulGem(int Q)
 	;debug.trace("iEquip_ChargeMeters initSoulGem end")
 endFunction
 
+function initRadialMeter(int Q)
+	;debug.trace("iEquip_ChargeMeters initSoulGem start")
+	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".initRadialMeter")	
+	If(iHandle)
+		;debug.trace("iEquip_ChargeMeters initSoulGem - got iHandle for .initSoulGem")
+		UICallback.PushInt(iHandle, Q)
+		UICallback.PushInt(iHandle, iPrimaryFillColor)
+		UICallback.PushInt(iHandle, -1)
+		UICallback.PushFloat(iHandle, 1.0)	
+		UICallback.PushBool(iHandle, true)
+		UICallback.Send(iHandle)
+	endIf
+	;debug.trace("iEquip_ChargeMeters initSoulGem end")
+endFunction
+
 function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = false) ;Sets the meter percent, a_force sets the meter percent without animation
 	;debug.trace("iEquip_ChargeMeters updateMeterPercent start - Q: " + Q + ", asItemCharge[Q]: " + asItemCharge[Q] + ", forceUpdate: " + forceUpdate + ", skipFlash: " + skipFlash)
 	float currentCharge = PlayerRef.GetActorValue(asItemCharge[Q])
@@ -118,6 +133,8 @@ function updateMeterPercent(int Q, bool forceUpdate = false, bool skipFlash = fa
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterPercent")
 		elseIf iChargeDisplayType == 2
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setSoulGemPercent")
+		elseIf iChargeDisplayType == 3
+			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setRadialMeterPercent")
 		endIf
 		If(iHandle)
 			UICallback.PushInt(iHandle, Q)
@@ -152,6 +169,8 @@ function startMeterFlash(int Q, bool forceFlash = false) ; Starts meter flashing
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
 	elseIf iChargeDisplayType == 2
 		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startSoulGemFlash")
+	elseIf iChargeDisplayType == 3
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startRadialMeterFlash")
 	endIf
 	If(iHandle)
 		UICallback.PushInt(iHandle, Q)
@@ -167,9 +186,8 @@ function updateChargeMeters(bool forceUpdate = false)
 	int Q
 	if iChargeDisplayType > 0
 		while Q < 2
-			;Force both meters and both gems to hide first then call checkAndUpdate to reshow the relevant one if required
-			updateChargeMeterVisibility(Q, false, true) ;hideMeters
-			updateChargeMeterVisibility(Q, false, false, true) ;hideGems
+			;Force all meters and gems to hide first then call checkAndUpdate to reshow the relevant one if required
+			UI.InvokeInt(HUD_MENU, WidgetRoot + ".hideAllEnchantmentMeters", Q)
 			checkAndUpdateChargeMeter(Q, forceUpdate)
 			Q += 1
 		endWhile
@@ -202,7 +220,11 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 
 		;Just in case torch meter fill tween is still running
 		if Q == 0
-			UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.stopFillTween")
+			if iChargeDisplayType == 3
+				UI.Invoke(HUD_MENU, WidgetRoot + ".leftRadialMeter.stopFillTween")
+			else
+				UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.stopFillTween")
+			endIf
 		endIf
 
 		if !PlayerRef.IsWeaponDrawn()
@@ -263,22 +285,28 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 	;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter end")
 endFunction
 
-function updateChargeMeterVisibility(int Q, bool show, bool hideMeters = false, bool hideGems = false)
+function updateChargeMeterVisibility(int Q, bool show)
 	;debug.trace("iEquip_ChargeMeters updateChargeMeterVisibility start - Q: " + Q + ", show: " + show)
 	int element
 	int iHandle
-	if (show && !abIsChargeMeterShown[Q]) || (!show && abIsChargeMeterShown[Q]) || hideMeters || hideGems
-		if hideMeters || (iChargeDisplayType == 1 && !hideGems) || (Q == 0 && bTorchMeterShown)
+	if show != abIsChargeMeterShown[Q]
+		if iChargeDisplayType == 1 || (Q == 0 && bTorchMeterShown && iChargeDisplayType < 3)
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
 			element = 13 ;leftEnchantmentMeter_mc
 			if Q == 1
-				element = 29 ;rightEnchantmentMeter_mc
+				element = 30 ;rightEnchantmentMeter_mc
 			endIf
-		else
+		elseIf iChargeDisplayType == 2
 			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenSoulGemAlpha")	
 			element = 14 ;leftSoulgem_mc
 			if Q == 1
-				element = 30 ;rightSoulgem_mc
+				element = 31 ;rightSoulgem_mc
+			endIf
+		elseIf iChargeDisplayType == 3
+			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenRadialMeterAlpha")	
+			element = 15 ;leftRadialMeter_mc
+			if Q == 1
+				element = 32 ;rightRadialMeter_mc
 			endIf
 		endIf
 		float targetAlpha

@@ -562,27 +562,44 @@ function showTorchMeter(bool checkTimer = false)
 
 	;debug.trace("iEquip_TorchScript showTorchMeter - currPercent: " + currPercent)
 
-	; Set the fill direction if different to the regular left enchantment meter fill direction setting
-	if sTorchMeterFillDirection != CM.asMeterFillDirection[0]
-		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
-		if(iHandle)
+	int iHandle
+
+	if CM.iChargeDisplayType == 3	; Radial meters
+
+		; Set the starting fill level for the meter
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setRadialMeterPercent")
+		If(iHandle)
+			;debug.trace("iEquip_TorchScript showTorchMeter - got handle for .setRadialMeterPercent")
 			UICallback.PushInt(iHandle, 0)
-			UICallback.PushString(iHandle, sTorchMeterFillDirection)
+			UICallback.PushFloat(iHandle, currPercent)
+			UICallback.PushInt(iHandle, iTorchMeterFillColor)
+			UICallback.PushBool(iHandle, true)
 			UICallback.Send(iHandle)
 		endIf
-	endIf
 
-	; Set the starting fill level for the meter
-	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterPercent")
-	If(iHandle)
-		;debug.trace("iEquip_TorchScript showTorchMeter - got handle for .setChargeMeterPercent")
-		UICallback.PushInt(iHandle, 0)
-		UICallback.PushFloat(iHandle, currPercent)
-		UICallback.PushInt(iHandle, iTorchMeterFillColor)
-		UICallback.PushBool(iHandle, true)	; Enables gradient fill
-		UICallback.PushInt(iHandle, iTorchMeterFillColorDark)
-		UICallback.PushBool(iHandle, true)
-		UICallback.Send(iHandle)
+	else
+		; Set the fill direction if different to the regular left enchantment meter fill direction setting
+		if sTorchMeterFillDirection != CM.asMeterFillDirection[0]
+			iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterFillDirection")	
+			if(iHandle)
+				UICallback.PushInt(iHandle, 0)
+				UICallback.PushString(iHandle, sTorchMeterFillDirection)
+				UICallback.Send(iHandle)
+			endIf
+		endIf
+
+		; Set the starting fill level for the meter
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".setChargeMeterPercent")
+		If(iHandle)
+			;debug.trace("iEquip_TorchScript showTorchMeter - got handle for .setChargeMeterPercent")
+			UICallback.PushInt(iHandle, 0)
+			UICallback.PushFloat(iHandle, currPercent)
+			UICallback.PushInt(iHandle, iTorchMeterFillColor)
+			UICallback.PushBool(iHandle, true)	; Enables gradient fill
+			UICallback.PushInt(iHandle, iTorchMeterFillColorDark)
+			UICallback.PushBool(iHandle, true)
+			UICallback.Send(iHandle)
+		endIf
 	endIf
 
 	; Show the meter if not currently visible
@@ -598,40 +615,64 @@ endFunction
 
 function startTorchMeterAnim()
 	;debug.trace("iEquip_TorchScript startTorchMeterAnim start - duration: " + fCurrentTorchLife)
-	UI.InvokeFloat(HUD_MENU, WidgetRoot + ".leftMeter.startFillTween", fCurrentTorchLife)
+	if CM.iChargeDisplayType == 3
+		UI.InvokeFloat(HUD_MENU, WidgetRoot + ".leftRadialMeter.startFillTween", fCurrentTorchLife)
+	else	
+		UI.InvokeFloat(HUD_MENU, WidgetRoot + ".leftMeter.startFillTween", fCurrentTorchLife)
+	endIf
 	;debug.trace("iEquip_TorchScript startTorchMeterAnim end")
 endFunction
 
 function stopTorchMeterAnim()
 	;debug.trace("iEquip_TorchScript stopChargeMeterAnim start")
-	UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.stopFillTween")
+	if CM.iChargeDisplayType == 3
+		UI.Invoke(HUD_MENU, WidgetRoot + ".leftRadialMeter.stopFillTween")
+	else	
+		UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.stopFillTween")
+	endIf
 	;debug.trace("iEquip_TorchScript stopChargeMeterAnim end")
 endFunction
 
 function startTorchMeterFlash()
 	;debug.trace("iEquip_TorchScript startTorchMeterFlash start")
-	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
-	If(iHandle)
-		UICallback.PushInt(iHandle, 0)
-		UICallback.PushInt(iHandle, 0xFF0000)
-		UICallback.PushBool(iHandle, true)
-		UICallback.Send(iHandle)
+	if CM.iChargeDisplayType == 3
+		UI.Invoke(HUD_MENU, WidgetRoot + ".leftRadialMeter.startFlash")
+	else
+		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".startChargeMeterFlash")
+		If(iHandle)
+			UICallback.PushInt(iHandle, 0)
+			UICallback.PushInt(iHandle, 0xFF0000)
+			UICallback.PushBool(iHandle, true)
+			UICallback.Send(iHandle)
+		endIf
 	endIf
 	;debug.trace("iEquip_TorchScript startTorchMeterFlash end")
 endFunction
 
 function updateTorchMeterVisibility(bool show)
 	;debug.trace("iEquip_TorchScript updateTorchMeterVisibility start - show: " + show)
+
+	bool radialMeter = CM.iChargeDisplayType == 3
 	
-	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
+	int iHandle
+
+	if radialMeter
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenRadialMeterAlpha")
+	else
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".tweenChargeMeterAlpha")
+	endIf
 	
 	If(iHandle)
 		float targetAlpha
 		if show
-			;Just in case the torch meter and the queue position indicator occupy the same screen space hide the position indicator first (does nothing if not currently shown)
-			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", 0)
-			UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc._visible", true)
-			targetAlpha = WC.afWidget_A[13]
+			if radialMeter
+				UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftRadialMeter_mc._visible", true)
+				targetAlpha = WC.afWidget_A[15]	; leftRadialMeter_mc
+			else
+				UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", 0)	;Just in case the torch meter and the queue position indicator occupy the same screen space hide the position indicator first (does nothing if not currently shown)
+				UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc._visible", true)
+				targetAlpha = WC.afWidget_A[13]	; leftEnchantmentMeter_mc
+			endIf
 			CM.abIsChargeMeterShown[0] = true
 			CM.bTorchMeterShown = true
 		else
@@ -645,7 +686,11 @@ function updateTorchMeterVisibility(bool show)
 		UICallback.Send(iHandle)
 		
 		if !show
-			UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc._visible", false)
+			if radialMeter
+				UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftRadialMeter_mc._visible", false)
+			else
+				UI.setBool(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc._visible", false)
+			endIf
 		endIf
 	endIf
 	;debug.trace("iEquip_TorchScript updateTorchMeterVisibility end")

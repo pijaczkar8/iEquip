@@ -13,7 +13,7 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 	public var RotateInstructionText: TextField;
 	public var ToggleRotateInstructionText: TextField;
 	public var RotationDirectionInstructionText: TextField;
-	public var DepthInstructionText: TextField;
+	//public var DepthInstructionText: TextField;
 	public var AlignmentInstructionText: TextField;
 	public var TextColorInstructionText: TextField;
 	public var AlphaInstructionText: TextField;
@@ -48,7 +48,7 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 	public var ScaleUpButton: MovieClip;
 	public var ScaleDownButton: MovieClip;
 	public var RotateButton: MovieClip;
-	public var DepthButton: MovieClip;
+	//public var DepthButton: MovieClip;
 	public var AlphaButton: MovieClip;
 	public var AlignmentButton: MovieClip;
 	public var ToggleGridButton: MovieClip;
@@ -73,7 +73,7 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 		MoveRightButton = MoveRightButton;
 		ScaleUpButton = ScaleUpButton;
 		ScaleDownButton = ScaleDownButton;
-		DepthButton = DepthButton;
+		//DepthButton = DepthButton;
 		RotateButton = RotateButton;
 		AlphaButton = AlphaButton;
 		AlignmentButton = AlignmentButton;
@@ -93,7 +93,7 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 		RotateInstructionText = RotateInstructionText;
 		ToggleRotateInstructionText = ToggleRotateInstructionText;
 		RotationDirectionInstructionText = RotationDirectionInstructionText;
-		DepthInstructionText = DepthInstructionText;
+		//DepthInstructionText = DepthInstructionText;
 		AlignmentInstructionText = AlignmentInstructionText;
 		TextColorInstructionText = TextColorInstructionText;
 		AlphaInstructionText = AlphaInstructionText;
@@ -149,8 +149,8 @@ class skyui.widgets.iEquip.iEquipEditMode extends iEquipWidget
 		TextColorInstructionText._x = RotateInstructionText._x;
 		AlphaButton.gotoAndStop(Alpha);
 		AlphaInstructionText._x = RotateInstructionText._x;
-		DepthButton.gotoAndStop(Dep);
-		DepthInstructionText._x = RotateInstructionText._x;
+		//DepthButton.gotoAndStop(Dep);
+		//DepthInstructionText._x = RotateInstructionText._x;
 		ToggleAlphaInstructionText._x = RotateInstructionText._x;
 		ToggleGridButton.gotoAndStop(Rul);
 		ToggleGridInstructionText._x = RotateInstructionText._x;

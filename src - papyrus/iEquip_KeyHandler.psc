@@ -740,6 +740,7 @@ function ToggleEditMode()
     ;debug.trace("iEquip KeyHandler toggleEditMode start")
     if EM.isEditMode
         GoToState("")
+        bIsUtilityKeyHeld = false
     else
         GoToState("EDITMODE")
     endIf

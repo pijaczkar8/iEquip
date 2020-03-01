@@ -68,6 +68,10 @@ MagicEffect property AlchWeaknessMagic auto ;00073f51
 MagicEffect property AlchWeaknessPoison auto ;00090042
 MagicEffect property AlchWeaknessShock auto ;00073f2F
 
+; Skooma Keywords
+keyword VendorItemIllicitDrug
+keyword REQ_KW_VendorItem_BlackMarket
+
 string[] asPotionGroups
 String[] asPoisonIconNames
 string[] asActorValues
@@ -87,6 +91,8 @@ bool bMoreHUDLoaded
 
 bool bIsEnderalLoaded
 MagicEffect[] aEnderal_RestoreEffects
+
+bool bIsRequiemLoaded
 
 bool bAddedToQueue
 int iQueueToSort = -1 ;Only used if potion added by onPotionAdded
@@ -250,6 +256,8 @@ function initialise()
     WC.abPotionGroupEmpty[1] = true
     WC.abPotionGroupEmpty[2] = true
 
+    int i
+
     aCACO_RestoreEffects = new MagicEffect[9]
     if Game.GetModByName("Complete Alchemy & Cooking Overhaul.esp") != 255
         bIsCACOLoaded = true
@@ -262,9 +270,16 @@ function initialise()
         aCACO_RestoreEffects[6] = Game.GetFormFromFile(0x001B42BB, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
         aCACO_RestoreEffects[7] = Game.GetFormFromFile(0x001B42BC, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
         aCACO_RestoreEffects[8] = Game.GetFormFromFile(0x001B42BD, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
+        VendorItemIllicitDrug = Game.GetFormFromFile(0x00A08E48, "Complete Alchemy & Cooking Overhaul.esp") as keyword
     else
         bIsCACOLoaded = false
+        while i < 9
+            aCACO_RestoreEffects[i] = none
+            i += 1
+        endWhile
+        VendorItemIllicitDrug = none
     endIf
+    
     aPAF_RestoreEffects = new MagicEffect[6]
     if Game.GetModByName("PotionAnimatedFix.esp") != 255
         bIsPAFLoaded = true
@@ -276,7 +291,13 @@ function initialise()
         aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DF, "PotionAnimatedFix.esp") as MagicEffect
     else
         bIsPAFLoaded = false
+        i = 0
+        while i < 6
+            aPAF_RestoreEffects[i] = none
+            i += 1
+        endWhile
     endIf
+    
     aEnderal_RestoreEffects = new MagicEffect[3]
     if Game.GetModByName("Enderal - Forgotten Stories.esm") != 255
         bIsEnderalLoaded = true
@@ -285,6 +306,14 @@ function initialise()
         aEnderal_RestoreEffects[2] = Game.GetFormFromFile(0x000028DC, "Skyrim.esm") as MagicEffect  ; 00E_AlchRestoreStamina
     else
         bIsEnderalLoaded = false
+    endIf
+    
+    if Game.GetModByName("Requiem.esp") != 255
+        bIsRequiemLoaded = true
+        REQ_KW_VendorItem_BlackMarket = Game.GetFormFromFile(0x00444D86, "Requiem.esp") as keyword
+    else
+        bIsRequiemLoaded = false
+        REQ_KW_VendorItem_BlackMarket = none
     endIf
     ;debug.trace("iEquip_PotionScript initialise - bIsCACOLoaded: " + bIsCACOLoaded + ", bIsPAFLoaded: " + bIsPAFLoaded)
     findAndSortPotions()
@@ -784,6 +813,12 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
     else
         ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue - foundPotion: " + foundPotion.GetName())
         int Q = getPotionQueue(foundPotion, true)
+
+        ; Exclude Skooma from groups if CACO or Requiem loaded to avoid unintended negative effects including possibility of death (Requiem)!  Will still be added directly to the consumables queue if enabled.
+        if (bIsCACOLoaded && foundPotion.HasKeyword(VendorItemIllicitDrug)) || (bIsRequiemLoaded && foundPotion.HasKeyword(REQ_KW_VendorItem_BlackMarket))
+            Q = -1
+        endIf
+
         int group ; Q < 3 defaults to 0
         if Q > 2
             if Q < 6
@@ -792,6 +827,7 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
                 group = 2
             endIf
         endIf
+        
         string potionGroup = asPotionGroups[group]
         ;Check it isn't already in the chosen queue and add it if not. This needs to be done regardless of whether potion groups are enabled or not, so they remain populated in case the user later wishes to enable them
         form potionForm = foundPotion as form

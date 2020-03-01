@@ -1,6 +1,7 @@
 ﻿import skyui.widgets.iEquip.iEquipWidgetBase;
 import skyui.widgets.iEquip.iEquipSoulGem;
 import skyui.widgets.iEquip.iEquipMeter;
+import skyui.widgets.iEquip.iEquipRadialMeter;
 import skyui.widgets.iEquip.iEquipPositionIndicator;
 import skyui.widgets.iEquip.iEquipEditMode;
 
@@ -47,6 +48,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public var leftPoisonIcon_mc: MovieClip;
 	public var leftAttributeIcons_mc: MovieClip;
 	public var leftEnchantmentMeter_mc: MovieClip;
+	public var leftRadialMeter_mc: MovieClip;
 	public var leftSoulgem_mc: MovieClip;
 	public var leftTierIndicator_mc: MovieClip;
 	public var leftPositionIndicator_mc: MovieClip;
@@ -57,6 +59,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public var rightPoisonIcon_mc: MovieClip;
 	public var rightAttributeIcons_mc: MovieClip;
 	public var rightEnchantmentMeter_mc: MovieClip;
+	public var rightRadialMeter_mc: MovieClip;
 	public var rightSoulgem_mc: MovieClip;
 	public var rightTierIndicator_mc: MovieClip;
 	public var rightPositionIndicator_mc: MovieClip;
@@ -130,6 +133,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public var rightMeter: iEquipMeter;
 	public var leftSoulGem: iEquipSoulGem;
 	public var rightSoulGem: iEquipSoulGem;
+	public var leftRadialMeter: iEquipRadialMeter;
+	public var rightRadialMeter: iEquipRadialMeter;
 
 	public var leftPositionIndicator: iEquipPositionIndicator;
 	public var rightPositionIndicator: iEquipPositionIndicator;
@@ -152,6 +157,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public var temperTierStyleArray: Array;
 	public var backgroundStyleArray: Array;
 	public var backgroundClipArray: Array;
+	public var enchantmentMeterArray: Array;
 	
   /* INITIALIZATION */
 
@@ -198,6 +204,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		leftPoisonIcon_mc = widgetMaster.LeftHandWidget.leftPoisonIcon_mc;
 		leftAttributeIcons_mc = widgetMaster.LeftHandWidget.leftAttributeIcons_mc;
 		leftEnchantmentMeter_mc = widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc;
+		leftRadialMeter_mc = widgetMaster.LeftHandWidget.leftRadialMeter_mc;
 		leftTierIndicator_mc = widgetMaster.LeftHandWidget.leftTierIndicator_mc;
 		leftPositionIndicator_mc = widgetMaster.LeftHandWidget.leftPositionIndicator_mc;
 		leftSoulgem_mc = widgetMaster.LeftHandWidget.leftSoulgem_mc;
@@ -205,6 +212,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		rightPoisonIcon_mc = widgetMaster.RightHandWidget.rightPoisonIcon_mc;
 		rightAttributeIcons_mc = widgetMaster.RightHandWidget.rightAttributeIcons_mc;
 		rightEnchantmentMeter_mc = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc;
+		rightRadialMeter_mc = widgetMaster.RightHandWidget.rightRadialMeter_mc;
 		rightTierIndicator_mc = widgetMaster.RightHandWidget.rightTierIndicator_mc;
 		rightPositionIndicator_mc = widgetMaster.RightHandWidget.rightPositionIndicator_mc;
 		rightSoulgem_mc = widgetMaster.RightHandWidget.rightSoulgem_mc;
@@ -263,11 +271,13 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		leftAttributeIcons = widgetMaster.LeftHandWidget.leftAttributeIcons_mc.leftAttributeIcons;
 		leftSoulGem = widgetMaster.LeftHandWidget.leftSoulgem_mc.leftSoulGem;
 		leftMeter = widgetMaster.LeftHandWidget.leftEnchantmentMeter_mc.leftMeter;
+		leftRadialMeter = widgetMaster.LeftHandWidget.leftRadialMeter_mc.leftRadialMeter;
 		rightIcon = widgetMaster.RightHandWidget.rightIcon_mc.rightIcon;
 		rightPoisonIcon = widgetMaster.RightHandWidget.rightPoisonIcon_mc.rightPoisonIcon;
 		rightAttributeIcons = widgetMaster.RightHandWidget.rightAttributeIcons_mc.rightAttributeIcons;
 		rightSoulGem = widgetMaster.RightHandWidget.rightSoulgem_mc.rightSoulGem;
 		rightMeter = widgetMaster.RightHandWidget.rightEnchantmentMeter_mc.rightMeter;
+		rightRadialMeter = widgetMaster.RightHandWidget.rightRadialMeter_mc.rightRadialMeter;
 		shoutIcon = widgetMaster.ShoutWidget.shoutIcon_mc.shoutIcon;
 		consumableIcon = widgetMaster.ConsumableWidget.consumableIcon_mc.consumableIcon;
 		potionFlashAnim = widgetMaster.ConsumableWidget.consumableIcon_mc.potionFlashAnim;
@@ -347,15 +357,17 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		leftEnchantmentMeter_mc._yscale = 25;
 		leftEnchantmentMeter_mc._visible = false;
 		leftSoulgem_mc._visible = false;
+		leftRadialMeter_mc._visible = false;
 		rightEnchantmentMeter_mc._xscale = 25;
 		rightEnchantmentMeter_mc._yscale = 25;
 		rightEnchantmentMeter_mc._visible = false;
 		rightSoulgem_mc._visible = false;
+		rightRadialMeter_mc._visible = false;
 		
 		//Set up arrays of MovieClips and text elements ready for use in Edit Mode etc
-		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftTierIndicator_mc, leftPositionIndicator_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, leftPreselectTierIndicator_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightTierIndicator_mc, rightPositionIndicator_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, rightPreselectTierIndicator_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPositionIndicator_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, potionSelector_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
+		clipArray = new Array(widgetMaster, LeftHandWidget, RightHandWidget, ShoutWidget, ConsumableWidget, PoisonWidget, leftBg_mc, leftIcon_mc, leftName_mc, leftCount_mc, leftPoisonIcon_mc, leftPoisonName_mc, leftAttributeIcons_mc, leftEnchantmentMeter_mc, leftSoulgem_mc, leftRadialMeter_mc, leftTierIndicator_mc, leftPositionIndicator_mc, leftPreselectBg_mc, leftPreselectIcon_mc, leftPreselectName_mc, leftPreselectAttributeIcons_mc, leftPreselectTierIndicator_mc, rightBg_mc, rightIcon_mc, rightName_mc, rightCount_mc, rightPoisonIcon_mc, rightPoisonName_mc, rightAttributeIcons_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightRadialMeter_mc, rightTierIndicator_mc, rightPositionIndicator_mc, rightPreselectBg_mc, rightPreselectIcon_mc, rightPreselectName_mc, rightPreselectAttributeIcons_mc, rightPreselectTierIndicator_mc, shoutBg_mc, shoutIcon_mc, shoutName_mc, shoutPositionIndicator_mc, shoutPreselectBg_mc, shoutPreselectIcon_mc, shoutPreselectName_mc, consumableBg_mc, consumableIcon_mc, consumableName_mc, consumableCount_mc, potionSelector_mc, poisonBg_mc, poisonIcon_mc, poisonName_mc, poisonCount_mc);
 		
-		textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, null, null, leftPreselectName, null, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, null, null, rightPreselectName, null, null, null, null, shoutName, null, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, null, poisonName, poisonCount);
+		textElementArray = new Array(null, null, null, null, null, null, null, null, leftName, leftCount, null, leftPoisonName, null, null, null, null, null, null, null, null, leftPreselectName, null, null, null, null, rightName, rightCount, null, rightPoisonName, null, null, null, null, null, null, null, null, rightPreselectName, null, null, null, null, shoutName, null, null, null, shoutPreselectName, null, null, consumableName, consumableCount, null, null, null, poisonName, poisonCount);
 
 		textFieldArray = new Array(leftName, leftCount, leftPoisonName, leftPreselectName, rightName, rightCount, rightPoisonName, rightPreselectName, shoutName, shoutPreselectName, consumableName, consumableCount, restoreText, fortifyText, regenText, poisonName, poisonCount);
 		posIndArray = new Array(leftPositionIndicator, rightPositionIndicator, shoutPositionIndicator);
@@ -364,6 +376,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		
 		backgroundStyleArray = new Array("Hidden", "Square", "SquareNoBorder", "Round", "RoundNoBorder", "RoundFade", "Dialogue", "DarkSouls");
 		backgroundClipArray = new Array(leftBg_mc, rightBg_mc, shoutBg_mc, leftPreselectBg_mc, rightPreselectBg_mc, shoutPreselectBg_mc, consumableBg_mc, poisonBg_mc);
+
+		enchantmentMeterArray = new Array(leftEnchantmentMeter_mc, leftSoulgem_mc, leftRadialMeter_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightRadialMeter_mc);
 
 		handleTextFieldDropShadow(false);
 	}
@@ -388,7 +402,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	//sSlot: 0 = Left Hand, 1 = Right Hand, 2 = Shout, 3 = Consumable, 4 = Poison, 5 = Left Preselect, 6 = Right Preselect, 7 = Shout Preselect
 	public function updateWidget(iSlot: Number, sIcon: String, sName: String, iNameAlpha: Number, currAlpha: Number, currScale: Number): Void
 	{
-		skyui.util.Debug.log("iEquipWidget updateWidget - iSlot: " + iSlot + ", sIcon: " + sIcon + ", sName: " + sName);
+		//skyui.util.Debug.log("iEquipWidget updateWidget - iSlot: " + iSlot + ", sIcon: " + sIcon + ", sName: " + sName);
 		var iconClip: MovieClip;
 		var itemIcon: MovieClip;
 		var nameClip: MovieClip;
@@ -507,7 +521,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
 	{
-		skyui.util.Debug.log("iEquipWidget updateIconAndName - iSlot: " + iSlot + ", sName: " + sName + ", sIcon: " + sIcon);
+		//skyui.util.Debug.log("iEquipWidget updateIconAndName - iSlot: " + iSlot + ", sName: " + sName + ", sIcon: " + sIcon);
 		//Set the Icon
 		itemIcon.gotoAndStop(sIcon);
 		//Save the current text formatting to preserve any Edit Mode changes
@@ -541,7 +555,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function updateTemperTierIndicator(iSlot: Number, iTier: Number, iStyle: Number, bShowFade: Boolean): Void
 	{
-		skyui.util.Debug.log("iEquipWidget updateTemperTierIndicator - iSlot: " + iSlot + ", iTier: " + iTier + ", iStyle: " + iStyle + ", bShowFade: " + bShowFade)
+		//skyui.util.Debug.log("iEquipWidget updateTemperTierIndicator - iSlot: " + iSlot + ", iTier: " + iTier + ", iStyle: " + iStyle + ", bShowFade: " + bShowFade)
 
 		var targetIndicator: MovieClip;
 		switch(iSlot) {
@@ -1302,7 +1316,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		var countClip: MovieClip = leftCount_mc
 		var poisonIconClip: MovieClip = leftPoisonIcon_mc
 		var poisonNameClip: MovieClip = leftPoisonName_mc
-		var enchantmentClip: MovieClip = i_target == 0 ? leftEnchantmentMeter_mc : leftSoulgem_mc;
+		var enchantmentClip: MovieClip = enchantmentMeterArray[i_target];
 		var tierIndicatorClip: MovieClip = leftTierIndicator_mc;
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
 		tl.to(bgClip, 0.25, {_alpha:bgAlpha, ease:Quad.easeOut}, 0)
@@ -1543,6 +1557,21 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	//Enchantment display functions
 
+	public function hideAllEnchantmentMeters(Q: Number): Void
+	{
+		var targetClip: MovieClip
+
+		tweenChargeMeterAlpha(Q, 0);
+		targetClip = Q == 0 ? leftEnchantmentMeter_mc : rightEnchantmentMeter_mc;
+		targetClip._visible = false
+		tweenSoulGemAlpha(Q, 0);
+		targetClip = Q == 0 ? leftSoulgem_mc : rightSoulgem_mc;
+		targetClip._visible = false
+		tweenRadialMeterAlpha(Q, 0);
+		targetClip = Q == 0 ? leftRadialMeter_mc : rightRadialMeter_mc;
+		targetClip._visible = false
+	}
+
 	//Charge Meter functions
 
 	public function initChargeMeter(i_meter: Number, nWidth: Number, nHeight: Number, primaryColor: Number, secondaryColor: Number, flashColor: Number, newPercent: Number, sFillDirection: String, forceUpdate: Boolean, bVisible: Boolean): Void
@@ -1598,16 +1627,6 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		TweenLite.to(meterClip, 0.5, {_alpha:targetAlpha, ease:Quad.easeOut});
 	}
 
-	public function startTorchMeterFillTween(nDuration: Number): Void
-	{
-		leftMeter.startFillTween(nDuration);
-	}
-
-	public function stopTorchMeterFillTween(): Void
-	{
-		leftMeter.stopFillTween();
-	}
-
 	//Dynamic Soulgem functions
 
 	public function initSoulGem(i_gem: Number, primaryColor: Number, flashColor: Number, newPercent: Number, forceUpdate: Boolean, bVisible: Boolean): Void
@@ -1646,6 +1665,46 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		var soulGemClip: MovieClip = i_gem == 0 ? leftSoulgem_mc : rightSoulgem_mc;
 		TweenLite.to(soulGemClip, 0.5, {_alpha:targetAlpha, ease:Quad.easeOut});
 	}
+
+	//Radial Meter functions
+
+	public function initRadialMeter(i_meter: Number, primaryColor: Number, flashColor: Number, newPercent: Number, forceUpdate: Boolean): Void
+	{
+		// Set the meter being targeted for this update
+		var targetMeter: iEquipRadialMeter = i_meter == 0 ? leftRadialMeter : rightRadialMeter;
+		// Hide
+		targetMeter._visible = false;
+		// Update fill colours
+		targetMeter.color = primaryColor;
+		// Update the flash colour
+		targetMeter.flashColor = flashColor;
+		// Update fill percent
+		targetMeter.setPercent(newPercent, forceUpdate);
+		// Show
+		targetMeter._visible = true
+	}
+
+	public function setRadialMeterPercent(i_meter: Number, newPercent: Number, primaryColor: Number, forceUpdate: Boolean): Void
+	{
+		//skyui.util.Debug.log("iEquipWidget setRadialMeterPercent called - i_meter: " + i_meter + ", newPercent: " + newPercent + ", primaryColor: " + primaryColor + ", forceUpdate: " + forceUpdate)
+		var targetMeter: iEquipRadialMeter = i_meter == 0 ? leftRadialMeter : rightRadialMeter;
+		targetMeter.color = primaryColor;
+		targetMeter.setPercent(newPercent, forceUpdate);
+	}
+
+	public function startRadialMeterFlash(i_meter: Number, flashColor: Number, forceUpdate: Boolean): Void
+	{	
+		var targetMeter: iEquipRadialMeter = i_meter == 0 ? leftRadialMeter : rightRadialMeter;
+		targetMeter.flashColor = flashColor;
+		targetMeter.startFlash(forceUpdate);
+	}
+
+	public function tweenRadialMeterAlpha(i_meter: Number, targetAlpha: Number): Void
+	{
+		var radialMeterClip: MovieClip = i_meter == 0 ? leftRadialMeter_mc : rightRadialMeter_mc;
+		TweenLite.to(radialMeterClip, 0.5, {_alpha:targetAlpha, ease:Quad.easeOut});
+	}
+
 
 	//Called from OnWidgetLoad
 	public function initQueuePositionIndicator(Q: Number, primaryColor: Number, markerAlpha: Number, currPosColor: Number, currPosAlpha: Number,currentQueueLength: Number, currentPosition: Number): Void
@@ -1794,7 +1853,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//skyui.util.Debug.log("iEquipWidget setTextColor - textElement: " + textElement + ", newColor: " + newColor)
 		var new_format:TextFormat = new TextFormat();
 		//potionSelector_mc
-		if (textElement == 49){
+		if (textElement == 51){
 			new_format = potionSelector_mc.restoreText.getTextFormat();
 			new_format.color = newColor;
 			potionSelector_mc.restoreText.setTextFormat(new_format);

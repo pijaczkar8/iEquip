@@ -5,6 +5,7 @@ import Utility
 
 iEquip_WidgetCore property WC auto
 iEquip_TorchScript property TO Auto
+iEquip_ChargeMeters property CM Auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
@@ -38,7 +39,11 @@ Event OnMenuOpen(String MenuName)
 	    Utility.WaitMenuMode(0.2)
 	    if TimePassed < (GetTimeElapsed() + 0.2)
             ;debug.trace("iEquip_TorchTimerEffectScript OnMenuOpen - time appears to be paused, pausing the meter animation")
-	    	UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.pauseFillTween")
+            if CM.iChargeDisplayType == 3
+                UI.Invoke(HUD_MENU, WidgetRoot + ".leftRadialMeter.pauseFillTween")
+            else
+                UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.pauseFillTween")
+            endIf
 			bTweenPaused = true
 	    endIf
 	endIf
@@ -50,7 +55,11 @@ Event OnMenuClose(String MenuName)
     ; Resume the meter fill animation if it was stopped
     if bTweenPaused && !Utility.IsInMenuMode()
         ;debug.trace("iEquip_TorchTimerEffectScript OnMenuClose - unpausing the meter animation")
-		UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween")
+        if CM.iChargeDisplayType == 3
+            UI.Invoke(HUD_MENU, WidgetRoot + ".leftRadialMeter.resumeFillTween")
+        else
+            UI.Invoke(HUD_MENU, WidgetRoot + ".leftMeter.resumeFillTween")
+        endIf
 		bTweenPaused = false
 	endIf
     ;debug.trace("iEquip_TorchTimerEffectScript OnMenuClose end")

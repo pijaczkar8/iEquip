@@ -83,9 +83,9 @@ string[] asSpellSchools
 event OnInit()
 	;debug.trace("iEquip_ProMode OnInit start")
 	aiNameElements = new int[3]
-	aiNameElements[0] = 19 ;leftPreselectName_mc
-	aiNameElements[1] = 35 ;rightPreselectName_mc
-	aiNameElements[2] = 44 ;shoutPreselectName_mc
+	aiNameElements[0] = 20 ;leftPreselectName_mc
+	aiNameElements[1] = 37 ;rightPreselectName_mc
+	aiNameElements[2] = 46 ;shoutPreselectName_mc
 
 	aiHandEquipSlots = new int[2]
 	aiHandEquipSlots[0] = 2
@@ -108,9 +108,9 @@ endEvent
 bool bInitialiseQRSpellSchoolsArray = true
 
 function onVersionUpdate()
-	aiNameElements[0] = 19 ;leftPreselectName_mc
-	aiNameElements[1] = 35 ;rightPreselectName_mc
-	aiNameElements[2] = 44 ;shoutPreselectName_mc
+	aiNameElements[0] = 20 ;leftPreselectName_mc
+	aiNameElements[1] = 37 ;rightPreselectName_mc
+	aiNameElements[2] = 46 ;shoutPreselectName_mc
 
 	aiHandEquipSlots = new int[2]
 	aiHandEquipSlots[0] = 2
@@ -248,9 +248,9 @@ function PreselectModeAnimateIn()
 		UICallback.PushBool(iHandle, animateLeft)
 		UICallback.PushBool(iHandle, abPreselectSlotEnabled[2])
 		UICallback.PushBool(iHandle, abPreselectSlotEnabled[1])
-		UICallback.PushFloat(iHandle, WC.afWidget_A[33]) ; rightPreselectBackground alpha
-		UICallback.PushFloat(iHandle, WC.afWidget_A[34]) ; rightPreselectIcon alpha
-		UICallback.PushFloat(iHandle, WC.afWidget_A[35]) ; rightPreselectName alpha
+		UICallback.PushFloat(iHandle, WC.afWidget_A[35]) ; rightPreselectBackground alpha
+		UICallback.PushFloat(iHandle, WC.afWidget_A[36]) ; rightPreselectIcon alpha
+		UICallback.PushFloat(iHandle, WC.afWidget_A[37]) ; rightPreselectName alpha
 		UICallback.Send(iHandle)
 	endIf
 	if WC.bNameFadeoutEnabled
@@ -1823,8 +1823,8 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 		return false
 	else
 		int otherHand = (Q + 1) % 2
-		int nameElement = 24 ;rightName_mc
-		int iconElement = 23 ;rightIcon_mc
+		int nameElement = 25 ;rightName_mc
+		int iconElement = 24 ;rightIcon_mc
 		if Q == 0
 			nameElement = 8 ;leftName_mc
 			iconElement = 7 ;leftIcon_mc
@@ -2077,8 +2077,8 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool equippingOt
 		WC.bBlockSwitchBackToBoundSpell = true
 		int foundIndex = WC.findInQueue(iEquipSlot, spellName)
 		PlayerRef.EquipSpell(jMap.getForm(spellObject, "iEquipForm") as Spell, iEquipSlot)
-		int nameElement = 24 ;rightName_mc
-		int iconElement = 23 ;rightIcon_mc
+		int nameElement = 25 ;rightName_mc
+		int iconElement = 24 ;rightIcon_mc
 		if Q == 0
 			nameElement = 8 ;leftName_mc
 			iconElement = 7 ;leftIcon_mc

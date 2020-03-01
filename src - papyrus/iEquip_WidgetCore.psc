@@ -804,10 +804,9 @@ function checkVersion()
 				refreshVisibleItems()
 			endIf
         endIf
-
-        fCurrentVersion = fThisVersion
         Debug.Notification("$iEquip_wc_not_updating")		; Need to change the version number in the strings files
     endIf
+    fCurrentVersion = fThisVersion
 endFunction
 
 float function getiEquipVersion()
@@ -1083,6 +1082,7 @@ state ENABLED
 			while i < 2
 				CM.initChargeMeter(i)
 				CM.initSoulGem(i)
+				CM.initRadialMeter(i)
 				i += 1
 			endWhile
 			addCurrentItemsOnFirstEnable()
@@ -1216,6 +1216,7 @@ function refreshWidgetOnLoad()
 					TI.checkAndUpdateTemperLevelInfo(Q)
 					CM.initChargeMeter(Q)
 					CM.initSoulGem(Q)
+					CM.initRadialMeter(Q)
 				endIf
 				if Q == 0 && bAmmoMode
 					updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
@@ -2121,7 +2122,7 @@ function setSlotCount(int Q, int count)
 			else
 				UICallback.PushInt(iHandle, 0)
 			endIf
-			UICallback.PushInt(iHandle, aiWidget_TC[44]) ;consumableCount_mc text colour, used to reset to white/Edit Mode set colour if count is above 5, otherwise colour is handled by ActionScript
+			UICallback.PushInt(iHandle, aiWidget_TC[50]) ;consumableCount_mc text colour, used to reset to white/Edit Mode set colour if count is above 5, otherwise colour is handled by ActionScript
 		else
 			UICallback.PushBool(iHandle, false) ;Default to false for anything other than a Potion Group in Q == 3
 			UICallback.PushInt(iHandle, 0) ;Not needed if Q != 3
@@ -4398,10 +4399,10 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			;Reset the counter text colour
 			args = new int[2]
 			if Q == 0
-				args[0] = 9 ;leftCount
+				args[0] = 9 ;leftCount_mc
 				args[1] = aiWidget_TC[9] ;leftCount text colour
 			else
-				args[0] = 25 ;rightCount
+				args[0] = 26 ;rightCount_mc
 				args[1] = aiWidget_TC[26] ;rightCount text colour
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
@@ -4463,10 +4464,10 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			;Set counter text colour to match poison name
 			args = new int[2]
 			if Q == 0
-				args[0] = 9 ;leftCount
+				args[0] = 9 ;leftCount_mc
 				args[1] = aiWidget_TC[11] ;leftPoisonName text colour
 			else
-				args[0] = 25 ;rightCount
+				args[0] = 26 ;rightCount_mc
 				args[1] = aiWidget_TC[28] ;rightPoisonName text colour
 			endIf
 			debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", about to set counter colour to " + args[1])
