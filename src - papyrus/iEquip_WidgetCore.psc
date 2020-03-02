@@ -324,7 +324,7 @@ bool property bRestorePotionWarningSettingChanged auto hidden
 
 bool property bAllowPoisonSwitching = true auto hidden
 bool property bAllowPoisonTopUp = true auto hidden
-int property iPoisonChargeMultiplier = 1 auto hidden
+int property iPoisonChargeMultiplier = 2 auto hidden
 int property iPoisonChargesPerVial = 1 auto hidden
 int property iShowPoisonMessages auto hidden
 int property iPoisonIndicatorStyle = 1 auto hidden
@@ -770,6 +770,10 @@ function checkVersion()
         endIf
 
         if fCurrentVersion < 1.21
+
+        	if iPoisonChargeMultiplier < 2
+        		iPoisonChargeMultiplier = 2		; Should have been 2 by default (Concentrated Poison perk multiplier)
+        	endIf
 
         	aiNameElements = new int[8]
 			aiNameElements[0] = 8 	; leftName_mc

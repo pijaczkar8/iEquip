@@ -183,6 +183,11 @@ function drawPage()
         MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_poisonChargeOpts</font>")
         MCM.AddSliderOptionST("rep_sld_chargePerVial", "$iEquip_MCM_rep_lbl_chargePerVial", WC.iPoisonChargesPerVial, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_chrgs"))
+
+        if WC.iPoisonChargeMultiplier < 2
+            WC.iPoisonChargeMultiplier = 2     ; Should have been 2 by default (Concentrated Poison perk multiplier)
+        endIf
+
         MCM.AddSliderOptionST("rep_sld_chargeMult", "$iEquip_MCM_rep_lbl_chargeMult", WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseChrgs"))
                 
         MCM.AddEmptyOption()
