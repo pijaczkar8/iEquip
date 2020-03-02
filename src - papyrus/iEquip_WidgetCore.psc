@@ -3040,30 +3040,35 @@ endFunction
 ; Called from iEquip_PlayerEventHandler when OnActorAction receives actionType 2 (should only ever happen when the player has a 'Bound' spell equipped in either hand)
 function onBoundWeaponEquipped(Int weaponType, Int hand)
 	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped start")
-	string iconName = "Bound"
-	if weaponType == 6 && (PlayerRef.GetEquippedObject(hand) as Weapon).IsWarhammer()
-        iconName += "Warhammer"
-    elseIf weaponType == 26
-    	iconName += "Shield"
-    elseIf iEquip_FormExt.IsSpear(PlayerRef.GetEquippedObject(hand))
-    	iconName += "Spear"
-    else
-		iconName += asWeaponTypeNames[weaponType]
-    endIf
-    debug.trace("iEquip_WidgetCore onBoundWeaponEquipped - iconName: " + iconName + ", weaponType: " + weaponType)
-    int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIconOnly")
-													; Replace the spell icon with the correct bound weapon icon without updating the name as it should be the same anyway
-	if(iHandle)
-		UICallback.PushInt(iHandle, hand) 			; Target icon to update: left = 0, right  = 1
-		UICallback.PushString(iHandle, iconName) 	; New icon label name
-		UICallback.Send(iHandle)
+	
+	if PlayerRef.GetEquippedObject(hand) as weapon && iEquip_WeaponExt.IsWeaponBound(PlayerRef.GetEquippedWeapon(hand)) && (PlayerRef.GetEquippedObject(hand).GetName() == asCurrentlyEquipped[hand])
+		
+		string iconName = "Bound"
+		if weaponType == 6 && (PlayerRef.GetEquippedObject(hand) as Weapon).IsWarhammer()
+	        iconName += "Warhammer"
+	    elseIf weaponType == 26
+	    	iconName += "Shield"
+	    elseIf iEquip_FormExt.IsSpear(PlayerRef.GetEquippedObject(hand))
+	    	iconName += "Spear"
+	    else
+			iconName += asWeaponTypeNames[weaponType]
+	    endIf
+	    debug.trace("iEquip_WidgetCore onBoundWeaponEquipped - iconName: " + iconName + ", weaponType: " + weaponType)
+	    int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIconOnly")
+														; Replace the spell icon with the correct bound weapon icon without updating the name as it should be the same anyway
+		if(iHandle)
+			UICallback.PushInt(iHandle, hand) 			; Target icon to update: left = 0, right  = 1
+			UICallback.PushString(iHandle, iconName) 	; New icon label name
+			UICallback.Send(iHandle)
+		endIf
+														; Now if we've equipped a bound ranged weapon we need to toggle Ammo Mode and show bound ammo in the left slot
+	    if weaponType == 7 || weaponType == 9 			; Bound Bow or Bound Crossbow
+	    	AM.onBoundRangedWeaponEquipped(weaponType)
+	    elseIf weaponType == 5 || weaponType == 6 		; Bound 2H weapon
+	    	checkAndFadeLeftIcon(hand, weaponType)
+		endIf
 	endIf
-													; Now if we've equipped a bound ranged weapon we need to toggle Ammo Mode and show bound ammo in the left slot
-    if weaponType == 7 || weaponType == 9 			; Bound Bow or Bound Crossbow
-    	AM.onBoundRangedWeaponEquipped(weaponType)
-    elseIf weaponType == 5 || weaponType == 6 		; Bound 2H weapon
-    	checkAndFadeLeftIcon(hand, weaponType)
-	endIf
+
 	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped end")
 endFunction
 
