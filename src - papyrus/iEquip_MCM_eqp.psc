@@ -165,7 +165,7 @@ function drawPage()
         MCM.AddToggleOptionST("eqp_tgl_restSpll", "$iEquip_MCM_common_lbl_restSpll", WC.abQuickDualCastSchoolAllowed[4])
         MCM.AddToggleOptionST("eqp_tgl_reqBothQue", "$iEquip_MCM_eqp_lbl_reqBothQue", PM.bQuickDualCastMustBeInBothQueues)
     else
-        MCM.AddToggleOptionST("eqp_tgl_enblQuickdualcast", "<font color='#ff7417'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
+        MCM.AddToggleOptionST("eqp_tgl_enblDualEquipSpells", "<font color='#ff7417'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
     endIf
 
 endFunction
@@ -373,11 +373,8 @@ State eqp_tgl_enblDualEquipSpells
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_enblQuickdualcast")
-        elseIf currentEvent == "Select"
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && WC.bQuickDualCastEnabled)
             WC.bQuickDualCastEnabled = !WC.bQuickDualCastEnabled
-            MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            WC.bQuickDualCastEnabled = false
             MCM.forcePageReset()
         endIf
     endEvent
