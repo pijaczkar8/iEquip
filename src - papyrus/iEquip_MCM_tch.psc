@@ -31,7 +31,7 @@ function initData()                  ; Initialize page specific data
     dropLitTorchBehaviour[1] = "$iEquip_MCM_tch_opt_TorchNothing"
     dropLitTorchBehaviour[2] = "$iEquip_MCM_tch_opt_TorchCycle"
     dropLitTorchBehaviour[3] = "$iEquip_MCM_tch_opt_CycleLeft"
-    dropLitTorchBehaviour[4] = "$iEquip_MCM_htk_lbl_quickShield"
+    dropLitTorchBehaviour[4] = "$iEquip_MCM_gen_lbl_quickShield"
 
     modStates = new string[2]
     modStates[0] = "$iEquip_MCM_common_notDetected"
