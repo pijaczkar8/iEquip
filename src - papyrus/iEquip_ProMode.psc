@@ -191,10 +191,10 @@ function togglePreselectMode(bool togglingEditModeOrRefreshing = false, bool ena
 				Q += 1
 			endwhile
 
-			abPreselectSlotEnabled[0] = (((WC.aiCurrentlyPreselected[0] != -1) && JArray.count(WC.aiTargetQ[0]) > 1) || togglingEditModeOrRefreshing)
-			abPreselectSlotEnabled[1] = ((WC.aiCurrentlyPreselected[1] != -1) || togglingEditModeOrRefreshing)
+			abPreselectSlotEnabled[0] = ((WC.aiCurrentlyPreselected[0] != -1) && JArray.count(WC.aiTargetQ[0]) > 1) || togglingEditModeOrRefreshing && !WC.bPlayerIsMounted
+			abPreselectSlotEnabled[1] = (WC.aiCurrentlyPreselected[1] != -1) || togglingEditModeOrRefreshing
 			;Also if shout preselect has been turned off in the MCM or hidden in Edit Mode make sure it stays hidden before showing the preselect group
-			abPreselectSlotEnabled[2] = ((WC.bShoutEnabled && bShoutPreselectEnabled && (WC.aiCurrentlyPreselected[2] != -1)) || togglingEditModeOrRefreshing)
+			abPreselectSlotEnabled[2] = (WC.bShoutEnabled && bShoutPreselectEnabled && (WC.aiCurrentlyPreselected[2] != -1)) || togglingEditModeOrRefreshing
 
 			;Add showLeft/showRight with check for number of items in queue must be greater than 1 (ie if only 1 in queue then nothing to preselect)
 			args[0] = abPreselectSlotEnabled[0] ;Show left
@@ -235,13 +235,7 @@ endFunction
 function PreselectModeAnimateIn()
 	;debug.trace("iEquip_ProMode PreselectModeAnimateIn start")
 	Self.RegisterForModEvent("iEquip_PreselectModeAnimationComplete", "onPreselectModeAnimationComplete")
-	;/bool[] args = new bool[3]
-	if !AM.bAmmoMode || AM.bSimpleAmmoMode
-		args[0] = abPreselectSlotEnabled[0] ;Only animate the left icon if not already shown in ammo mode
-	endIf
-	args[1] = abPreselectSlotEnabled[2]
-	args[2] = abPreselectSlotEnabled[1]
-	UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn", args)/;
+
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn")
 	bool animateLeft = (!AM.bAmmoMode || AM.bSimpleAmmoMode)
 	if(iHandle)
@@ -253,9 +247,10 @@ function PreselectModeAnimateIn()
 		UICallback.PushFloat(iHandle, WC.afWidget_A[37]) ; rightPreselectName alpha
 		UICallback.Send(iHandle)
 	endIf
-	if WC.bNameFadeoutEnabled
-		int i
-		while i < 3
+
+	int i
+	while i < 3
+		if abPreselectSlotEnabled[i]
 			if i < 2
 				WC.updateAttributeIcons(i, WC.aiCurrentlyPreselected[i])
 				TI.updateTemperTierIndicator(i + 5, jMap.getInt(jArray.getObj(WC.aiTargetQ[i], WC.aiCurrentlyPreselected[i]), "lastKnownTemperTier", 0))
@@ -263,8 +258,11 @@ function PreselectModeAnimateIn()
 			if !WC.abIsNameShown[i]
 				WC.showName(i)
 			endIf
-			i += 1
-		endwhile
+		endIf
+		i += 1
+	endwhile
+
+	if WC.bNameFadeoutEnabled
 		if abPreselectSlotEnabled[0] && WC.bLeftRightNameFadeEnabled
 			WC.LPNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[5])
 		endIf

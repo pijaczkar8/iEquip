@@ -305,7 +305,7 @@ float property fNameFadeoutDuration = 1.5 auto hidden
 
 bool property bBackgroundStyleChanged auto hidden
 bool property bDontFadeBackgrounds auto hidden
-bool property bFadeLeftIconWhen2HEquipped = true auto hidden
+bool property bFadeLeftIcon = true auto hidden
 float property fLeftIconFadeAmount = 70.0 auto hidden
 bool property bTemperDisplaySettingChanged auto hidden
 bool property bShoutCooldownFadeEnabled = true auto hidden
@@ -772,6 +772,8 @@ function checkVersion()
         endIf
 
         if fCurrentVersion < 1.21
+
+        	bFadeLeftIcon = bFadeLeftIconWhen2HEquipped
 
         	if iPoisonChargeMultiplier < 2
         		iPoisonChargeMultiplier = 2		; Should have been 2 by default (Concentrated Poison perk multiplier)
@@ -2560,77 +2562,124 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 endFunction
 
 function checkAndFadeLeftIcon(int Q, int itemType)
-	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon start - Q: " + Q + ", itemType: " + itemType + ", bFadeLeftIconWhen2HEquipped: " + bFadeLeftIconWhen2HEquipped + ", bLeftIconFaded: " + bLeftIconFaded + ", AM.bAmmoModePending: " + AM.bAmmoModePending)
-	;if we're equipping 2H or ranged then check and fade left icon
-	float[] widgetData = new float[9]
-	if Q == 1 && bFadeLeftIconWhen2HEquipped && (itemType == 5 || itemType == 6) && !bLeftIconFaded
-		float adjustment = (1 - (fLeftIconFadeAmount * 0.01))
-		if bDontFadeBackgrounds
-			widgetData[0] = afWidget_A[6] ;leftBg_mc
-		else
-			widgetData[0] = afWidget_A[6] * adjustment ;leftBg_mc
-		endIf
-		widgetData[1] = afWidget_A[7] * adjustment ;leftIcon_mc
-		if abIsNameShown[0]
-			widgetData[2] = afWidget_A[8] * adjustment ;leftName_mc
-		endIf
-		if abIsCounterShown[0]
-			widgetData[3] = afWidget_A[9] * adjustment ;leftCount_mc
-		endIf
-		if isWeaponPoisoned(0, aiCurrentQueuePosition[0])
-			widgetData[4] = afWidget_A[10] * adjustment ;leftPoisonIcon_mc
-			if abIsPoisonNameShown[0]
-				widgetData[5] = afWidget_A[11] * adjustment ;leftPoisonName_mc
-			endIf
-		endIf
-		if CM.abIsChargeMeterShown[0]
-			if CM.iChargeDisplayType == 1
-				widgetData[7] = afWidget_A[13] * adjustment ;leftEnchantmentMeter_mc
-			elseIf CM.iChargeDisplayType == 2
-				widgetData[6] = 1
-				widgetData[7] = afWidget_A[14] * adjustment ;leftSoulgem_mc
-			else
-				widgetData[6] = 2
-				widgetData[7] = afWidget_A[15] * adjustment ;leftRadialMeter_mc
-			endIf
-		endIf
-		widgetData[8] = afWidget_A[16] * adjustment ;leftTierIndicator_mc
-		debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading out")
-		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
-		bLeftIconFaded = true
-	;For anything else check if it is currently faded and if so fade it back in
-	elseif Q < 2 && bLeftIconFaded && !AM.bAmmoModePending && !(itemType == 5 || itemType == 6)
-		widgetData[0] = afWidget_A[6]
-		widgetData[1] = afWidget_A[7]
-		if abIsNameShown[0]
-			widgetData[2] = afWidget_A[8]
-		endIf
-		if abIsCounterShown[0]
-			widgetData[3] = afWidget_A[9]
-		endIf
-		if isWeaponPoisoned(0, aiCurrentQueuePosition[0])
-			widgetData[4] = afWidget_A[10]
-			if abIsPoisonNameShown[0]
-				widgetData[5] = afWidget_A[11]
-			endIf
-		endIf
-		if CM.abIsChargeMeterShown[0]
-			if CM.iChargeDisplayType == 1
-				widgetData[7] = afWidget_A[13]
-			elseIf CM.iChargeDisplayType == 2
-				widgetData[6] = 1
-				widgetData[7] = afWidget_A[14]
-			else
-				widgetData[6] = 2
-				widgetData[7] = afWidget_A[15]
-			endIf
-		endIf
-		widgetData[8] = afWidget_A[16]
-		debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon - should be fading in")
-		UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
-		bLeftIconFaded = false
+	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon start - Q: " + Q + ", itemType: " + itemType + ", bFadeLeftIcon: " + bFadeLeftIcon + ", bLeftIconFaded: " + bLeftIconFaded + ", AM.bAmmoModePending: " + AM.bAmmoModePending)
+	
+	if Q == 1 && bFadeLeftIcon && ((itemType == 5 || itemType == 6) && !bIsCGOLoaded) && !bLeftIconFaded
+		fadeLeftIcon(true)						; If we're equipping 2H or ranged then check and fade left icon
+	elseif Q < 2 && bLeftIconFaded && !AM.bAmmoModePending && !(itemType == 5 || itemType == 6) && !(bFadeLeftIcon && bPlayerIsMounted)
+		fadeLeftIcon()							; For anything else check if it is currently faded and if so fade it back in
 	endIf
 	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon end")
+endFunction
+
+bool bWasSimpleAmmoMode
+
+function onPlayerMount()
+	bWasSimpleAmmoMode = AM.bSimpleAmmoMode
+
+	if bFadeLeftIcon && !bLeftIconFaded && !bAmmoMode
+		fadeLeftIcon(true)						; Fade out
+	endIf
+
+	if (bPreselectMode && PM.abPreselectSlotEnabled[0]) || (bAmmoMode && !AM.bSimpleAmmoMode)
+		bool[] args = new bool[3]
+		args[2] = true
+		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateOut", args)
+	endIf
+
+	AM.bSimpleAmmoMode = true
+endFunction
+
+function onPlayerDismount()
+	AM.bSimpleAmmoMode = bWasSimpleAmmoMode
+
+	if bLeftIconFaded && !AM.bAmmoModePending && !(bFadeLeftIcon && PlayerRef.GetEquippedObject(1) as weapon && (PlayerRef.GetEquippedWeapon().GetWeaponType() == 5 || PlayerRef.GetEquippedWeapon().GetWeaponType() == 6) && PlayerRef.GetEquippedWeapon().GetEquipType() == EquipSlots[3])
+		fadeLeftIcon()							; Fade in
+	endIf
+
+	if (bPreselectMode && PM.abPreselectSlotEnabled[0]) || (bAmmoMode && !AM.bSimpleAmmoMode)
+		
+		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
+		
+		if(iHandle)
+			UICallback.PushInt(iHandle, 5) 													; Which slot we're updating
+			if bPreselectMode || jArray.count(aiTargetQ[0]) > 0
+				UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiTargetQ[0], aiCurrentlyPreselected[0]), "iEquipIcon"))
+				UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiTargetQ[0], aiCurrentlyPreselected[0]), "iEquipName"))
+			else
+				UICallback.PushString(iHandle, "Fist")
+				UICallback.PushString(iHandle, "$iEquip_common_Unarmed")
+			endIf
+			UICallback.PushFloat(iHandle, afWidget_A[aiNameElements[5]]) 					; Current item name alpha
+			UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[5]]) 						; Current item icon alpha
+			UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[5]]) 						; Current item icon scale
+			UICallback.Send(iHandle)
+		endIf
+		
+		bool[] args = new bool[3]
+		args[2] = true
+		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn", args)
+
+		if bAmmoMode
+			bCyclingLHPreselectInAmmoMode = true
+		endIf
+
+		updateAttributeIcons(0, aiCurrentlyPreselected[0])
+		TI.updateTemperTierIndicator(5, jMap.getInt(jArray.getObj(aiTargetQ[0], aiCurrentlyPreselected[0]), "lastKnownTemperTier", 0))
+
+		if bLeftRightNameFadeEnabled
+			LPNUpdate.registerForNameFadeoutUpdate(aiNameElements[5])
+		endIf
+	endIf
+endFunction
+
+function fadeLeftIcon(bool fadeOut = false)
+	float[] widgetData = new float[9]
+	float adjustment = 1.0
+	
+	if fadeOut
+		adjustment = (1 - (fLeftIconFadeAmount * 0.01))
+	endIf
+	
+	if fadeOut && bDontFadeBackgrounds
+		widgetData[0] = afWidget_A[6] ;leftBg_mc
+	else
+		widgetData[0] = afWidget_A[6] * adjustment ;leftBg_mc
+	endIf
+	
+	widgetData[1] = afWidget_A[7] * adjustment ;leftIcon_mc
+	
+	if abIsNameShown[0]
+		widgetData[2] = afWidget_A[8] * adjustment ;leftName_mc
+	endIf
+	
+	if abIsCounterShown[0]
+		widgetData[3] = afWidget_A[9] * adjustment ;leftCount_mc
+	endIf
+	
+	if isWeaponPoisoned(0, aiCurrentQueuePosition[0])
+		widgetData[4] = afWidget_A[10] * adjustment ;leftPoisonIcon_mc
+		if abIsPoisonNameShown[0]
+			widgetData[5] = afWidget_A[11] * adjustment ;leftPoisonName_mc
+		endIf
+	endIf
+	
+	if CM.abIsChargeMeterShown[0]
+		if CM.iChargeDisplayType == 1
+			widgetData[7] = afWidget_A[13] * adjustment ;leftEnchantmentMeter_mc
+		elseIf CM.iChargeDisplayType == 2
+			widgetData[6] = 1
+			widgetData[7] = afWidget_A[14] * adjustment ;leftSoulgem_mc
+		else
+			widgetData[6] = 2
+			widgetData[7] = afWidget_A[15] * adjustment ;leftRadialMeter_mc
+		endIf
+	endIf
+	
+	widgetData[8] = afWidget_A[16] * adjustment ;leftTierIndicator_mc
+	
+	UI.InvokeFloatA(HUD_MENU, WidgetRoot + ".tweenLeftIconAlpha", widgetData)
+	bLeftIconFaded = fadeOut
 endFunction
 
 function checkAndEquipShownShoutOrConsumable(int Q, bool Reverse, int targetIndex, form targetItem, bool isPotionGroup)
@@ -5716,6 +5765,7 @@ bool property bReduceMaxQueueLengthPending auto hidden
 bool property bHardLimitQueueSize = true auto hidden
 bool property bHardLimitEnabledPending auto hidden
 bool property bProModeEnabled auto hidden
+bool property bFadeLeftIconWhen2HEquipped auto hidden
 
 function reduceMaxQueueLength()
 	;/debug.trace("iEquip_WidgetCore reduceMaxQueueLength start")

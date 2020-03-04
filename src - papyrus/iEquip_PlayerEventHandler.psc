@@ -398,8 +398,12 @@ endFunction
 Event OnPlayerCameraState(int oldState, int newState)
 	if newState == 10 && PlayerRef.IsOnMount()
 		WC.bPlayerIsMounted = true
-	if oldState == 10 && !PlayerRef.IsOnMount()
+		WC.onPlayerMount()
+		KH.UnregisterForLeftKey()
+	elseIf oldState == 10 && !PlayerRef.IsOnMount()
 		WC.bPlayerIsMounted = false
+		WC.onPlayerDismount()
+		KH.RegisterForLeftKey()
 	endIf	
 EndEvent
 

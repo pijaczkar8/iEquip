@@ -393,6 +393,8 @@ function runUpdate()
             if PM.bPreselectMode
                 if bIsUtilityKeyHeld
                     RC.rechargeWeapon((iWaitingKeyCode == iRightKey) as int)
+                elseIf WC.bPlayerIsMounted
+                    PM.equipPreselectedItem(1)
                 else
                     PM.equipAllPreselectedItems(true)
                 endIf
@@ -837,6 +839,16 @@ function RegisterForGameplayKeys()
         endIf
     endIf
     ;debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
+endFunction
+
+; Called from EH when player dismounts to re-enable left slot actions
+function RegisterForLeftKey()
+    RegisterForKey(iLeftKey)
+endFunction
+
+; Called from EH when player mounts a horse to block all left slot actions
+function UnregisterForLeftKey()
+    UnregisterForKey(iLeftKey)
 endFunction
 
 function RegisterForMenuKeys()

@@ -88,7 +88,7 @@ endFunction
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
 	
-	jArray.addInt(jPageObj, WC.bFadeLeftIconWhen2HEquipped as int)
+	jArray.addInt(jPageObj, WC.bFadeLeftIcon as int)
 	jArray.addFlt(jPageObj, WC.fLeftIconFadeAmount)
     jArray.addInt(jPageObj, TI.iTemperNameFormat)
     jArray.addInt(jPageObj, TI.bTemperInfoBelowName as int)
@@ -132,7 +132,7 @@ endFunction
 
 function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	
-	WC.bFadeLeftIconWhen2HEquipped = jArray.getInt(jPageObj, 0)
+	WC.bFadeLeftIcon = jArray.getInt(jPageObj, 0)
 	WC.fLeftIconFadeAmount = jArray.getFlt(jPageObj, 1)
     TI.iTemperNameFormat = jArray.getInt(jPageObj, 2)
     TI.bTemperInfoBelowName = jArray.getInt(jPageObj, 3)
@@ -201,9 +201,9 @@ function drawPage()
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_iconBgOpts</font>")
 
-	MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIconWhen2HEquipped)
+	MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIcon)
 			
-	if WC.bFadeLeftIconWhen2HEquipped
+	if WC.bFadeLeftIcon
 		MCM.AddSliderOptionST("ui_sld_leftIcoFade", "$iEquip_MCM_ui_lbl_leftIcoFade", WC.fLeftIconFadeAmount, "{0}%")
 	endIf
 
@@ -390,10 +390,10 @@ State ui_tgl_fadeLeftIco2h
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_ui_txt_fadeLeftIco2h")
         elseIf currentEvent == "Select"
-            WC.bFadeLeftIconWhen2HEquipped = !WC.bFadeLeftIconWhen2HEquipped
+            WC.bFadeLeftIcon = !WC.bFadeLeftIcon
             MCM.forcePageReset()
         elseIf currentEvent == "Default"
-            WC.bFadeLeftIconWhen2HEquipped = true
+            WC.bFadeLeftIcon = true
             MCM.forcePageReset()
         endIf 
     endEvent
