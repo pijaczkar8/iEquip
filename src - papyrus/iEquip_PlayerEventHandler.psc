@@ -222,6 +222,8 @@ function initialise(bool enabled)
 			registerForCoreAnimationEvents()
 			registerForCoreActorActions()
 		endIf
+
+		RegisterForCameraState()
 		
 		PO.initialise()
 		TI.initialise()
@@ -341,6 +343,8 @@ function unregisterForAllEvents()
    	UnregisterForActorAction(7)
 	UnregisterForActorAction(8)
 	UnregisterForActorAction(10)
+	;Camera State Changes
+	UnregisterForCameraState()
 endFunction
 
 bool Property boundSpellEquipped
@@ -390,6 +394,32 @@ function updateEventFilter(formlist listToUpdate)
 	AddInventoryEventFilter(listToUpdate)
 	;debug.trace("iEquip_PlayerEventHandler updateEventFilter end")
 endFunction
+
+Event OnPlayerCameraState(int oldState, int newState)
+	if newState == 10 && PlayerRef.IsOnMount()
+		WC.bPlayerIsMounted = true
+	if oldState == 10 && !PlayerRef.IsOnMount()
+		WC.bPlayerIsMounted = false
+	endIf	
+EndEvent
+
+;/ Camera States:
+
+	0 - first person
+	1 - auto vanity
+	2 - VATS
+	3 - free
+	4 - iron sights
+	5 - furniture
+	6 - transition
+	7 - tweenmenu
+	8 - third person 1
+	9 - third person 2
+	10 - horse
+	11 - bleedout
+	12 - dragon
+
+/;
 
 Event OnRaceSwitchComplete()
 	;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start - current state: " + GetState())

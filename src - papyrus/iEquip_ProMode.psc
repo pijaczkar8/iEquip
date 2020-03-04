@@ -1878,80 +1878,89 @@ function quickRestore()
 		bool bPlayerIsInCombat = PlayerRef.IsInCombat()
 		bool bDoBoth
 		bool bQuickBuff
+		bool bRunningQuickBuffOnSecondPress = bQuickBuffEnabled && ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay && (iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bPlayerIsInCombat)))
 
 		if bQuickBuffEnabled
 			bDoBoth = iQuickBuffControl == 0 || (iQuickBuffControl == 2 && !bPlayerIsInCombat)
-			bQuickBuff = bDoBoth || ((iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bPlayerIsInCombat)) && (Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay)
+			bQuickBuff = bDoBoth || bRunningQuickBuffOnSecondPress
 		endIf
 
-		bool bQuickRestore = bDoBoth || !bQuickBuff
-
-		float currAV
-
-		;debug.trace("iEquip_ProMode quickRestore - bPlayerIsInCombat: " + bPlayerIsInCombat + ", bIn2ndPressWindow: " + ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay) + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore + ", fQuickRestoreThreshold: " + fQuickRestoreThreshold)
-
-		if bQuickRestore
-			fTimeOfLastQuickRestore = Utility.GetCurrentRealTime()
+		if bDoBoth || bQuickBuff
+			fTimeOfLastQuickRestore = Utility.GetCurrentRealTime() - fQuickBuff2ndPressDelay	; If we're running QuickBuff close the 2nd press window.  Will be re-opened again if we're running QR.
 		endIf
 
-		if bQuickHealEnabled
-	        ;debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled)
-	        if bCurrentlyQuickHealing
-	        	;debug.trace("iEquip_ProMode quickRestore - bCurrentlyQuickHealing, switching back")
-	            quickSwitchBack(true, bPlayerIsInCombat)
-	        
-	        elseIf bQuickRestore
-	        	;debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
-	        	quickHeal()
-	        endIf
+		if bCurrentlyQuickHealing && !bRunningQuickBuffOnSecondPress
 
-	        if bQuickBuff
-	        	If PO.getPotionTypeCount(1) > 0 || PO.getPotionTypeCount(2) > 0
-		        	;debug.trace("iEquip_ProMode quickRestore - calling quickBuff health")
-					PO.quickBuffFindAndConsumePotions(0)
-				elseIf PO.iNotificationLevel > 0
-					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noHealthBuffPotions"))
-				endIf
+			if !((iQuickSlotsEquipped > 0 && (PlayerRef as objectReference).GetAnimationVariableBool("IsCastingRight")) || ((iQuickSlotsEquipped == 0 || iQuickSlotsEquipped == 2) && (PlayerRef as objectReference).GetAnimationVariableBool("IsCastingLeft")))
+				quickSwitchBack(true, bPlayerIsInCombat)
 			endIf
-	    endIf
 
-	    if bQuickStaminaEnabled
-	    	currAV = PlayerRef.GetActorValue("Stamina")
-    		if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
-		    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
-		    	PO.selectAndConsumePotion(2, 0) ;Stamina
-		    elseIf PO.iNotificationLevel > 0
-		    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_StaminaFull"))
+		else
+			bool bQuickRestore = bDoBoth || !bQuickBuff
+
+			float currAV
+
+			;debug.trace("iEquip_ProMode quickRestore - bPlayerIsInCombat: " + bPlayerIsInCombat + ", bIn2ndPressWindow: " + ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay) + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore + ", fQuickRestoreThreshold: " + fQuickRestoreThreshold)
+
+			if bQuickRestore
+				fTimeOfLastQuickRestore = Utility.GetCurrentRealTime()
+			endIf
+
+			if bQuickHealEnabled
+		        ;debug.trace("iEquip_ProMode quickRestore - bQuickHealEnabled: " + bQuickHealEnabled)
+		        if bQuickRestore
+		        	;debug.trace("iEquip_ProMode quickRestore - calling quickHeal")
+		        	quickHeal()
+		        endIf
+
+		        if bQuickBuff
+		        	If PO.getPotionTypeCount(1) > 0 || PO.getPotionTypeCount(2) > 0
+			        	;debug.trace("iEquip_ProMode quickRestore - calling quickBuff health")
+						PO.quickBuffFindAndConsumePotions(0)
+					elseIf PO.iNotificationLevel > 0
+						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noHealthBuffPotions"))
+					endIf
+				endIf
 		    endIf
-			
-			if bQuickBuff
-				If PO.getPotionTypeCount(7) > 0 || PO.getPotionTypeCount(8) > 0
-					;debug.trace("iEquip_ProMode quickRestore - calling quickBuff stamina")
-					PO.quickBuffFindAndConsumePotions(2)
-				elseIf PO.iNotificationLevel > 0
-					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noStaminaBuffPotions"))
-				endIf
-			endIf
-	    endIf
 
-	    if bQuickMagickaEnabled
-	    	currAV = PlayerRef.GetActorValue("Magicka")
-	    	if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
-		    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
-		    	PO.selectAndConsumePotion(1, 0) ;Magicka
-		    elseIf PO.iNotificationLevel > 0
-		    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_MagickaFull"))
-		    endIf
-			
-			if bQuickBuff
-				If PO.getPotionTypeCount(4) > 0 || PO.getPotionTypeCount(5) > 0
-					;debug.trace("iEquip_ProMode quickRestore - calling quickBuff magicka")
-					PO.quickBuffFindAndConsumePotions(1)
-				elseIf PO.iNotificationLevel > 0
-					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noMagickaBuffPotions"))
+		    if bQuickStaminaEnabled
+		    	currAV = PlayerRef.GetActorValue("Stamina")
+	    		if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
+			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
+			    	PO.selectAndConsumePotion(2, 0) ;Stamina
+			    elseIf PO.iNotificationLevel > 0
+			    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_StaminaFull"))
+			    endIf
+				
+				if bQuickBuff
+					If PO.getPotionTypeCount(7) > 0 || PO.getPotionTypeCount(8) > 0
+						;debug.trace("iEquip_ProMode quickRestore - calling quickBuff stamina")
+						PO.quickBuffFindAndConsumePotions(2)
+					elseIf PO.iNotificationLevel > 0
+						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noStaminaBuffPotions"))
+					endIf
 				endIf
-			endIf
-	    endIf
+		    endIf
+
+		    if bQuickMagickaEnabled
+		    	currAV = PlayerRef.GetActorValue("Magicka")
+		    	if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
+			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
+			    	PO.selectAndConsumePotion(1, 0) ;Magicka
+			    elseIf PO.iNotificationLevel > 0
+			    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_MagickaFull"))
+			    endIf
+				
+				if bQuickBuff
+					If PO.getPotionTypeCount(4) > 0 || PO.getPotionTypeCount(5) > 0
+						;debug.trace("iEquip_ProMode quickRestore - calling quickBuff magicka")
+						PO.quickBuffFindAndConsumePotions(1)
+					elseIf PO.iNotificationLevel > 0
+						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noMagickaBuffPotions"))
+					endIf
+				endIf
+		    endIf
+		endIf
 	endIf
     ;debug.trace("iEquip_ProMode quickRestore end")
 endFunction

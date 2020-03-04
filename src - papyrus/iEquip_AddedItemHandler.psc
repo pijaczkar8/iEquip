@@ -3,6 +3,7 @@ Scriptname iEquip_AddedItemHandler extends ReferenceAlias
 
 Import iEquip_AmmoExt
 Import iEquip_FormExt
+Import iEquip_WeaponExt
 Import UI
 
 iEquip_WidgetCore Property WC Auto
@@ -79,7 +80,7 @@ event OnUpdate()
 		    	WC.addBackCachedItem(formToAdd)
 
 			else
-				if (formToAdd as weapon || formToAdd as armor)												; If we've picked up a weapon or shield and we have auto-add/equip weapons and shields enabled run that now
+				if (formToAdd as weapon && !iEquip_WeaponExt.IsWeaponBound(formToAdd as weapon)) || formToAdd as armor	; If we've picked up a weapon or shield and we have auto-add/equip weapons and shields enabled run that now
 					if !bCraftingOrBarterMenuOpen
 						WC.onWeaponOrShieldAdded(formToAdd)
 					endIf

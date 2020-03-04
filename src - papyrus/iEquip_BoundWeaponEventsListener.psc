@@ -19,6 +19,9 @@ endFunction
 Event OnBoundWeaponEquipped(Int a_weaponType, Int a_equipSlot)
 	debug.trace("iEquip_BoundWeaponEventsListener OnBoundWeaponEquipped event received - weapon type: " + a_weaponType + ", slot: " + a_equipSlot)
 	if bIsBoundSpellEquipped && a_equipSlot != 0
+		if WC.PlayerRef.IsOnMount()
+			a_equipSlot = 1
+		endIf
 		int otherHand = 1
 		bool equipBoth = a_equipSlot == 3 && (a_weaponType < 5 || a_weaponType == 8)
 		if a_equipSlot == 2

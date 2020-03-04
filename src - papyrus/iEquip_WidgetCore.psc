@@ -434,6 +434,8 @@ bool property bSkipRHUnarmedInCombat auto hidden
 
 bool bGPPMessageShown
 
+bool property bPlayerIsMounted auto hidden
+
 string function GetWidgetType()
 	Return "iEquip_WidgetCore"
 endFunction
@@ -1056,6 +1058,8 @@ state ENABLED
 		self.RegisterForMenu("Crafting Menu")
 		self.RegisterForMenu("Dialogue Menu")
 		self.RegisterForMenu("BarterMenu")
+
+		bPlayerIsMounted = PlayerRef.IsOnMount()
 
 		bool bPreselectEnabledOnLoad = bPreselectMode
 
@@ -3045,7 +3049,7 @@ endFunction
 function onBoundWeaponEquipped(Int weaponType, Int hand)
 	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped start")
 	
-	if PlayerRef.GetEquippedObject(hand) as weapon && iEquip_WeaponExt.IsWeaponBound(PlayerRef.GetEquippedWeapon(hand)) && (PlayerRef.GetEquippedObject(hand).GetName() == asCurrentlyEquipped[hand])
+	;if PlayerRef.GetEquippedObject(hand) as weapon && iEquip_WeaponExt.IsWeaponBound(PlayerRef.GetEquippedWeapon(hand)) && (PlayerRef.GetEquippedObject(hand).GetName() == asCurrentlyEquipped[hand])
 		
 		string iconName = "Bound"
 		if weaponType == 6 && (PlayerRef.GetEquippedObject(hand) as Weapon).IsWarhammer()
@@ -3071,7 +3075,7 @@ function onBoundWeaponEquipped(Int weaponType, Int hand)
 	    elseIf weaponType == 5 || weaponType == 6 		; Bound 2H weapon
 	    	checkAndFadeLeftIcon(hand, weaponType)
 		endIf
-	endIf
+	;endIf
 
 	debug.trace("iEquip_WidgetCore onBoundWeaponEquipped end")
 endFunction
@@ -3601,6 +3605,14 @@ function onWeaponOrShieldAdded(form addedForm)
 
 			if doEquip
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - should be equipping the " + addedForm.GetName() + " now")
+				if weaponType == 5 || weaponType == 6 && bIsCGOLoaded && (addedForm as weapon).GetEquipType() == EquipSlots[3] ; BothHands
+					; Give CGO enough time to change the equipSlot on 2H weapons to EitherHand
+					int i
+					while i < 20 && (addedForm as weapon).GetEquipType() != EquipSlots[2] ; EitherHand
+						Utility.WaitMenuMode(0.05)
+						i += 1
+					endWhile
+				endIf
 				PlayerRef.EquipItemEx(addedForm, targetHand)
 			endIf
 
