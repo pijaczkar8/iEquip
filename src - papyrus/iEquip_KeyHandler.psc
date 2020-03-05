@@ -438,7 +438,7 @@ function runUpdate()
 			
             if AM.bAmmoMode || (PM.bPreselectMode && (RHItemType == 7 || RHItemType == 12))
                 AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
-            else
+            elseIf !WC.bPlayerIsMounted
                 WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
             endIf
         elseIf iWaitingKeyCode == iRightKey
@@ -482,29 +482,31 @@ function runUpdate()
 			TO.DropTorch()
         elseif PM.bPreselectMode
             if iWaitingKeyCode == iLeftKey
-                int RHItemType = PlayerRef.GetEquippedItemType(1)
-                
-                if bIsUtilityKeyHeld
-                    if AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
-                        WC.cycleSlot(0, false, false, false, true)
-                    else
-                        LHItemType = PlayerRef.GetEquippedItemType(0)
+                if !WC.bPlayerIsMounted
+                    int RHItemType = PlayerRef.GetEquippedItemType(1)
                     
-                        if LHItemType == 9 ; Spell
-                            PM.quickDualCastOnDoubleTap(0)
-                        elseIf LHItemType == 11 ; Torch
-                            TO.DropTorch()
+                    if bIsUtilityKeyHeld
+                        if AM.bAmmoMode || RHItemType == 7 || RHItemType == 12
+                            WC.cycleSlot(0, false, false, false, true)
                         else
-                            WC.applyPoison(0)
+                            LHItemType = PlayerRef.GetEquippedItemType(0)
+                        
+                            if LHItemType == 9 ; Spell
+                                PM.quickDualCastOnDoubleTap(0)
+                            elseIf LHItemType == 11 ; Torch
+                                TO.DropTorch()
+                            else
+                                WC.applyPoison(0)
+                            endIf
                         endIf
+                    elseIf PM.abPreselectSlotEnabled[0]
+                        ;debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling equipPreselectedItem")
+                        PM.equipPreselectedItem(0)
+                    elseIf AM.bAmmoMode
+                        ;debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling toggleAmmoMode")
+                        AM.toggleAmmoMode()
+                        WC.bPreselectSwitchingHands = false
                     endIf
-                elseIf PM.abPreselectSlotEnabled[0]
-                    ;debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling equipPreselectedItem")
-                    PM.equipPreselectedItem(0)
-                elseIf AM.bAmmoMode
-                    ;debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling toggleAmmoMode")
-                    AM.toggleAmmoMode()
-                    WC.bPreselectSwitchingHands = false
                 endIf
             else
                 if bIsUtilityKeyHeld
@@ -527,18 +529,20 @@ function runUpdate()
             if iWaitingKeyCode == iLeftKey
                 if bIsUtilityKeyHeld
                     WC.openQueueManagerMenu(1)
-                elseIf !AM.bAmmoMode
-					LHItemType = PlayerRef.GetEquippedItemType(0)
-				
-                    if LHItemType == 9 ; Spell
-                        PM.quickDualCastOnDoubleTap(0)
-                    elseIf LHItemType == 11 ; Torch
-                        TO.DropTorch()
-                    else
-                        WC.applyPoison(0)
+                elseIf !WC.bPlayerIsMounted
+                    if !AM.bAmmoMode
+    					LHItemType = PlayerRef.GetEquippedItemType(0)
+    				
+                        if LHItemType == 9 ; Spell
+                            PM.quickDualCastOnDoubleTap(0)
+                        elseIf LHItemType == 11 ; Torch
+                            TO.DropTorch()
+                        else
+                            WC.applyPoison(0)
+                        endIf
+                    elseIf !AM.bSimpleAmmoMode ;We're in ammo mode, so cycle the left preselect slot unless Simple Ammo Mode is enabled
+                        WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
                     endIf
-                elseIf !AM.bSimpleAmmoMode ;We're in ammo mode, so cycle the left preselect slot unless Simple Ammo Mode is enabled
-                    WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
                 endIf
             else
                 if bIsUtilityKeyHeld
@@ -560,7 +564,7 @@ function runUpdate()
         endIf
         
     elseIf iMultiTap == 3  ; Triple tap
-        if iWaitingKeyCode == iLeftKey
+        if iWaitingKeyCode == iLeftKey && !WC.bPlayerIsMounted
             PM.quickShield()
         elseIf iWaitingKeyCode == iRightKey
             PM.quickRanged()
