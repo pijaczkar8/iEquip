@@ -9,6 +9,7 @@ string[] whenToAutoEquipOptions
 string[] currItemEnchOptions
 string[] currItemPoisOptions
 
+string[] QSPreferredType
 string[] QSPreferredMagicSchool
 string[] preselectQuickFunctionOptions
 
@@ -40,6 +41,11 @@ function initData()
     currItemPoisOptions = new string[2]
     currItemPoisOptions[0] = "$iEquip_MCM_eqp_opt_dontEquip"
     currItemPoisOptions[1] = "$iEquip_MCM_eqp_opt_alwaysEquip"
+
+    QSPreferredType = new string[3]
+    QSPreferredType[0] = "$iEquip_MCM_eqp_opt_shield"
+    QSPreferredType[1] = "$iEquip_MCM_eqp_opt_ward"
+    QSPreferredType[2] = "$iEquip_MCM_eqp_opt_matchToRightHand"
 
     QSPreferredMagicSchool = new String[5]
     QSPreferredMagicSchool[0] = "$iEquip_common_alteration"
@@ -74,7 +80,7 @@ int function saveData()             ; Save page data and return jObject
 	
     jArray.addInt(jPageObj, PM.bQuickShieldEnabled as int)
     jArray.addInt(jPageObj, PM.bQuickShield2HSwitchAllowed as int)
-    jArray.addInt(jPageObj, PM.bQuickShieldPreferMagic as int)
+    jArray.addInt(jPageObj, PM.iQuickShieldPreferredItemType as int)
     jArray.addInt(jPageObj, iCurrentQSPreferredMagicSchoolChoice)
     jArray.addInt(jPageObj, PM.bQuickShieldUnequipLeftIfNotFound as int)
     jArray.addInt(jPageObj, PM.iPreselectQuickShield)
@@ -101,7 +107,7 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 
     PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 6)
     PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 7)
-    PM.bQuickShieldPreferMagic = jArray.getInt(jPageObj, 8)
+    PM.iQuickShieldPreferredItemType = jArray.getInt(jPageObj, 8)
     iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 9)
     PM.sQuickShieldPreferredMagicSchool = asMagicSchools[iCurrentQSPreferredMagicSchoolChoice]
     PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 10)
@@ -140,9 +146,10 @@ function drawPage()
     if PM.bQuickShieldEnabled
         MCM.AddToggleOptionST("eqp_tgl_enblQuickshield", "<font color='#c7ea46'>$iEquip_MCM_eqp_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
         MCM.AddToggleOptionST("eqp_tgl_with2hReqp", "$iEquip_MCM_eqp_lbl_with2hReqp", PM.bQuickShield2HSwitchAllowed)
-        MCM.AddToggleOptionST("eqp_tgl_prefShieldMag", "$iEquip_MCM_common_lbl_prefMag", PM.bQuickShieldPreferMagic)
+        MCM.AddMenuOptionST("eqp_men_quickShieldItemType", "$iEquip_MCM_eqp_lbl_quickShieldItemType", QSPreferredType[PM.iQuickShieldPreferredItemType])
+        MCM.AddToggleOptionST("eqp_tgl_quickShieldUseAlt", "$iEquip_MCM_eqp_lbl_quickShieldUseAlt", PM.bQuickShieldUseAlt)
                 
-        if PM.bQuickShieldPreferMagic
+        if PM.iQuickShieldPreferredItemType == 1
             MCM.AddMenuOptionST("eqp_men_rightHandspllTyp", "$iEquip_MCM_eqp_lbl_rightHandspllTyp", QSPreferredMagicSchool[iCurrentQSPreferredMagicSchoolChoice])
         endIf         
         MCM.AddToggleOptionST("eqp_tgl_ifNotFound", "$iEquip_MCM_eqp_lbl_ifNotFound", PM.bQuickShieldUnequipLeftIfNotFound)
@@ -279,9 +286,6 @@ State eqp_tgl_enblQuickshield
         elseIf currentEvent == "Select"
             PM.bQuickShieldEnabled = !PM.bQuickShieldEnabled
             MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            PM.bQuickShieldEnabled = false
-            MCM.forcePageReset()
         endIf
     endEvent
 endState
@@ -290,26 +294,33 @@ State eqp_tgl_with2hReqp
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_with2hReqp")
-        elseIf currentEvent == "Select"
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickShield2HSwitchAllowed)
             PM.bQuickShield2HSwitchAllowed = !PM.bQuickShield2HSwitchAllowed
-            MCM.SetToggleOptionValueST(PM.bQuickShield2HSwitchAllowed)
-        elseIf currentEvent == "Default"
-            PM.bQuickShield2HSwitchAllowed = true
             MCM.SetToggleOptionValueST(PM.bQuickShield2HSwitchAllowed)
         endIf
     endEvent
 endState
 
-State eqp_tgl_prefShieldMag
+State eqp_men_quickShieldItemType
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_eqp_txt_prefShieldMag")
-        elseIf currentEvent == "Select"
-            PM.bQuickShieldPreferMagic = !PM.bQuickShieldPreferMagic
-            MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            PM.bQuickShieldPreferMagic = false
-            MCM.forcePageReset()
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_quickShieldItemType")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(iQuickShieldPreferredItemType, QSPreferredType, 0)
+        elseIf currentEvent == "Accept"
+            PM.iQuickShieldPreferredItemType = currentVar as int         
+            MCM.SetMenuOptionValueST(QSPreferredType[iQuickShieldPreferredItemType])
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_quickShieldUseAlt
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_quickShieldUseAlt")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bQuickShieldUseAlt)
+            PM.bQuickShieldUseAlt = !PM.bQuickShieldUseAlt
+            MCM.SetToggleOptionValueST(PM.bQuickShield2HSwitchAllowed)
         endIf
     endEvent
 endState
@@ -333,12 +344,8 @@ State eqp_tgl_ifNotFound
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_ifNotFound")
-        else
-            if currentEvent == "Select"
-                PM.bQuickShieldUnequipLeftIfNotFound = !PM.bQuickShieldUnequipLeftIfNotFound
-            elseIf currentEvent == "Default"
-                PM.bQuickShieldUnequipLeftIfNotFound = false
-            endIf
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && PM.bQuickShieldUnequipLeftIfNotFound)
+            PM.bQuickShieldUnequipLeftIfNotFound = !PM.bQuickShieldUnequipLeftIfNotFound
             MCM.SetToggleOptionValueST(PM.bQuickShieldUnequipLeftIfNotFound)
         endIf
     endEvent
