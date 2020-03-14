@@ -204,10 +204,13 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 		Self.RegisterForModEvent("iEquip_ReadyForAmmoModeAnimation", "ReadyForAmmoModeAnimation")
 		;Toggle in
 		if bAmmoMode
+			if WC.bPlayerIsMounted
+				WC.KH.RegisterForLeftKey()
+			endIf
 			EH.bTogglingAmmoMode = true
 			bSimpleAmmoModeOnEnter = bSimpleAmmoMode
 			bAmmoModePending = false ;Reset
-			if WC.bLeftIconFaded ;In case we're coming from bAmmoModePending and it's still faded out
+			if WC.bLeftIconFaded ;In case we're coming from bAmmoModePending or we're currently on vanilla horseback and it's still faded out
 				WC.checkAndFadeLeftIcon(0, 0)
 				Utility.WaitMenuMode(0.3)
 			endIf
@@ -329,6 +332,10 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
 					TI.checkAndUpdateTemperLevelInfo(0)
 				endIf
+			endIf
+			if WC.bPlayerIsMounted
+				WC.KH.UnregisterForLeftKey()
+				WC.fadeLeftIcon(true)
 			endIf
 		endIf
 		Self.UnregisterForModEvent("iEquip_ReadyForAmmoModeAnimation")

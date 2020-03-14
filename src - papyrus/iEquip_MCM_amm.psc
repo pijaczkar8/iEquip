@@ -149,7 +149,11 @@ endFunction
 function drawPage()
 
 	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_amm_lbl_AmmoMode</font>")
-	MCM.AddTextOptionST("amm_txt_AmmoModeChoice", "$iEquip_MCM_amm_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
+    if WC.bPlayerIsMounted
+        MCM.AddTextOptionST("amm_txt_AmmoModeChoice", "$iEquip_MCM_amm_lbl_AmmoModeChoice", ammoModeOptions[WC.bWasSimpleAmmoMode as int])
+    else
+	   MCM.AddTextOptionST("amm_txt_AmmoModeChoice", "$iEquip_MCM_amm_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
+    endIf
 	MCM.AddMenuOptionST("amm_men_ammoLstSrt", "$iEquip_MCM_amm_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
 	MCM.AddMenuOptionST("amm_men_whenNoAmmoLeft", "$iEquip_MCM_amm_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
 
@@ -204,8 +208,13 @@ State amm_txt_AmmoModeChoice
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_amm_txt_AmmoModeChoice")
         elseIf currentEvent == "Select"
-            AM.bSimpleAmmoMode = !AM.bSimpleAmmoMode
-            MCM.SetTextOptionValueST(ammoModeOptions[AM.bSimpleAmmoMode as int])
+            if WC.bPlayerIsMounted
+                WC.bWasSimpleAmmoMode = !WC.bWasSimpleAmmoMode
+                MCM.SetTextOptionValueST(ammoModeOptions[WC.bWasSimpleAmmoMode as int])
+            else
+                AM.bSimpleAmmoMode = !AM.bSimpleAmmoMode
+                MCM.SetTextOptionValueST(ammoModeOptions[AM.bSimpleAmmoMode as int])
+            endIf
         endIf
     endEvent
 endState

@@ -5,6 +5,7 @@ import iEquip_StringExt
 iEquip_BeastMode property BM auto
 iEquip_KeyHandler Property KH Auto
 iEquip_ProMode Property PM Auto
+iEquip_PlayerEventHandler property EH auto
 
 int mcmUnmapFLAG
 
@@ -49,6 +50,9 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, KH.iQuickRestoreKey)
     jArray.addInt(jPageObj, KH.iQuickShieldKey)
     jArray.addInt(jPageObj, KH.iQuickRangedKey)
+
+    jArray.addInt(jPageObj, EH.bVanillaHorses as int)
+    jArray.addInt(jPageObj, EH.bRelevantItemsOnlyWhileDragonRiding as int)
     
 	return jPageObj
 endFunction
@@ -82,6 +86,11 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     KH.iQuickRestoreKey = jArray.getInt(jPageObj, 20)
     KH.iQuickShieldKey = jArray.getInt(jPageObj, 21)
     KH.iQuickRangedKey = jArray.getInt(jPageObj, 22)
+
+    if presetVersion > 122
+        EH.bVanillaHorses = jArray.getInt(jPageObj, 23)
+        EH.bRelevantItemsOnlyWhileDragonRiding = jArray.getInt(jPageObj, 24)
+    endIf
 endFunction
 
 function drawPage()
@@ -105,7 +114,13 @@ function drawPage()
 		MCM.AddToggleOptionST("gen_tgl_allowInvScan", "$iEquip_MCM_gen_lbl_allowInvScan", PM.bScanInventory)
 
         MCM.AddEmptyOption()
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_BeastMode</font>")
+
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_MountedOptions</font>")
+        MCM.AddToggleOptionST("gen_tgl_vanillaHorses", "$iEquip_MCM_gen_lbl_vanillaHorses", EH.bVanillaHorses)
+        MCM.AddToggleOptionST("gen_tgl_dragonRiding", "$iEquip_MCM_gen_lbl_dragonRiding", EH.bRelevantItemsOnlyWhileDragonRiding)
+
+		MCM.AddEmptyOption()
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_BeastMode</font>")
 		MCM.AddToggleOptionST("gen_tgl_BM_werewolf", "$iEquip_MCM_gen_lbl_BM_werewolf", BM.abShowInTransformedState[0])
 		if Game.GetModByName("Dawnguard.esm") != 255
 			MCM.AddToggleOptionST("gen_tgl_BM_vampLord", "$iEquip_MCM_gen_lbl_BM_vampLord", BM.abShowInTransformedState[1])
@@ -293,6 +308,38 @@ State gen_tgl_allowInvScan
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PM.bScanInventory)
             PM.bScanInventory = !PM.bScanInventory
             MCM.SetToggleOptionValueST(PM.bScanInventory)
+        endIf
+    endEvent
+endState
+
+; ---------------------
+; -  Mounted Options  -
+; --------------------- 
+
+State gen_tgl_vanillaHorses
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_vanillaHorses")
+        elseIf currentEvent == "Select"
+            EH.bVanillaHorses = !EH.bVanillaHorses
+            MCM.SetToggleOptionValueST(EH.bVanillaHorses)
+            if WC.bPlayerIsMounted
+                MCM.ShowMessage(iEquip_StringExt.LocalizeString("$iEquip_MCM_gen_msg_vanillaHorses"), false)
+            endIf
+        endIf
+    endEvent
+endState
+
+State gen_tgl_dragonRiding
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_gen_txt_dragonRiding")
+        elseIf currentEvent == "Select"
+            EH.bRelevantItemsOnlyWhileDragonRiding = !EH.bRelevantItemsOnlyWhileDragonRiding
+            MCM.SetToggleOptionValueST(EH.bRelevantItemsOnlyWhileDragonRiding)
+            if WC.bDragonRiding
+                MCM.ShowMessage(iEquip_StringExt.LocalizeString("$iEquip_MCM_gen_msg_dragonRiding"), false)
+            endIf
         endIf
     endEvent
 endState
@@ -617,5 +664,4 @@ endState
 
 ; Deprecated
 iEquip_AmmoMode property AM auto
-iEquip_PlayerEventHandler property EH auto
 iEquip_TorchScript property TO auto

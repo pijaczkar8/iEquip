@@ -111,6 +111,9 @@ bool[] property abSkipQueueObjectUpdate auto hidden
 
 bool property bRealTimeStaffMeters = true auto hidden
 
+bool property bVanillaHorses = false auto hidden
+bool property bRelevantItemsOnlyWhileDragonRiding = true auto hidden
+
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
 int[] specificHandedItems
@@ -252,7 +255,16 @@ function registerForCoreAnimationEvents()
 	RegisterForAnimationEvent(PlayerRef, "CastStop")
 	;Listeners for the beast form transformation sAttributes
 	RegisterForAnimationEvent(PlayerRef, "SetRace")
-	RegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+	RegisterForAnimationEvent(PlayerRef, "Soundplay.NPCWerewolfTransformation")
+	RegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHorseMount")
+	RegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHorseDismount")
+	RegisterForAnimationEvent(PlayerRef, "HorseEnter")
+	RegisterForAnimationEvent(PlayerRef, "HorseEnterInstant")
+	RegisterForAnimationEvent(PlayerRef, "HorseEnterSwim")
+	RegisterForAnimationEvent(PlayerRef, "HorseExitOut")
+	RegisterForAnimationEvent(PlayerRef, "DragonMountEnter")
+	RegisterForAnimationEvent(PlayerRef, "DragonMountEnterInstant")
+	RegisterForAnimationEvent(PlayerRef, "DragonMountExitOut")
 	RegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
 	RegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
 	RegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
@@ -279,6 +291,15 @@ function unregisterForCoreAnimationEvents()
 	;Listeners for the beast form transformation sAttributes
 	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
 	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+	UnRegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHorseMount")
+	UnRegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHorseDismount")
+	UnRegisterForAnimationEvent(PlayerRef, "HorseEnter")
+	UnRegisterForAnimationEvent(PlayerRef, "HorseEnterInstant")
+	UnRegisterForAnimationEvent(PlayerRef, "HorseEnterSwim")
+	UnRegisterForAnimationEvent(PlayerRef, "HorseExitOut")
+	UnRegisterForAnimationEvent(PlayerRef, "DragonMountEnter")
+	UnRegisterForAnimationEvent(PlayerRef, "DragonMountEnterInstant")
+	UnRegisterForAnimationEvent(PlayerRef, "DragonMountExitOut")
 	UnRegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
 	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
 	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
@@ -334,6 +355,8 @@ function unregisterForAllEvents()
     UnRegisterForAnimationEvent(PlayerRef, "LandStart")
    	UnRegisterForAnimationEvent(PlayerRef, "TransformToHuman" )
    	UnRegisterForAnimationEvent(PlayerREF, "Soundplay.NPCWerewolfTransformation")
+   	UnRegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHorseMount")
+	UnRegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHorseDismount")
    	UnRegisterForAnimationEvent(PlayerRef, "WerewolfTransformation ")
 	UnRegisterForAnimationEvent(PlayerRef, "VampireLordChangePlayer ")
 	UnRegisterForAnimationEvent(PlayerRef, "pa_VampireLordChangePlayer")
@@ -395,17 +418,40 @@ function updateEventFilter(formlist listToUpdate)
 	;debug.trace("iEquip_PlayerEventHandler updateEventFilter end")
 endFunction
 
+bool bMountedRestrictionsApplied
+
 Event OnPlayerCameraState(int oldState, int newState)
 	if newState == 10 && PlayerRef.IsOnMount()
-		WC.bPlayerIsMounted = true
-		WC.onPlayerMount()
-		KH.UnregisterForLeftKey()
+		applyMountedRestrictions()
 	elseIf oldState == 10 && !PlayerRef.IsOnMount()
-		WC.bPlayerIsMounted = false
-		WC.onPlayerDismount()
-		KH.RegisterForLeftKey()
+		applyMountedRestrictions(false)
 	endIf	
 EndEvent
+
+function applyMountedRestrictions(bool apply = true, bool dragonRiding = false)
+	if apply
+		if dragonRiding && bRelevantItemsOnlyWhileDragonRiding
+			WC.bDragonRiding = true
+
+		elseIf bVanillaHorses && !WC.bPlayerIsMounted
+			bMountedRestrictionsApplied = true
+			WC.bPlayerIsMounted = true
+			WC.onPlayerMount()
+			KH.UnregisterForLeftKey()
+		endIf
+
+	elseIf bMountedRestrictionsApplied
+		if dragonRiding
+			WC.bDragonRiding = false
+
+		elseIf WC.bPlayerIsMounted
+			WC.bPlayerIsMounted = false
+			WC.onPlayerDismount()
+			KH.RegisterForLeftKey()
+		endIf
+		bMountedRestrictionsApplied = false
+	endIf
+endFunction
 
 ;/ Camera States:
 
@@ -540,6 +586,18 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     if EventName == "Soundplay.NPCWerewolfTransformation"
     	BM.OnWerewolfTransformationStart()
 
+    elseIf EventName == "SoundPlay.NPCHorseMount" || EventName == "HorseEnter" || EventName == "HorseEnterInstant" || EventName == "HorseEnterSwim"
+    	applyMountedRestrictions()
+
+   	elseIf EventName == "SoundPlay.NPCHorseDismount" || EventName == "HorseExitOut"
+   		applyMountedRestrictions(false)
+
+   	elseIf EventName == "DragonMountEnter" || EventName == "DragonMountEnterInstant"
+   		applyMountedRestrictions(true, true)
+
+   	elseIf EventName == "DragonMountExitOut"
+   		applyMountedRestrictions(false, true)
+
     elseIf EventName == "IdleChairSitting" 											; We're checking here for Wintersun/Thunderchild meditation to disable iEquip controls while meditating
     	Utility.WaitMenuMode(1.0) 													; Just in case the magic effect isn't added straight away - in testing this took less than 0.25s so 1s should be sufficient for most cases
     	if (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
@@ -547,7 +605,7 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	    	KH.bAllowKeyPress = false
 	    endIf
 
-    elseIf bPlayerIsMeditating && EventName == "idleChairGetUp" 					; Restore controls on exiting meditation
+    elseIf EventName == "idleChairGetUp" && bPlayerIsMeditating 					; Restore controls on exiting meditation
     	bPlayerIsMeditating = false
     	KH.bAllowKeyPress = true
 

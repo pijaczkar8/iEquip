@@ -127,6 +127,8 @@ Formlist Property iEquip_RightHandBlacklistFLST Auto
 Formlist Property iEquip_GeneralBlacklistFLST Auto ;Shout, Consumable and Poison Queues
 FormList property iEquip_AmmoBlacklistFLST auto
 
+FormList property DLC2DRAllowedSpells auto
+
 FormList[] aBlacklistFLSTs
 string[] asBlacklistNames
 
@@ -435,6 +437,7 @@ bool property bSkipRHUnarmedInCombat auto hidden
 bool bGPPMessageShown
 
 bool property bPlayerIsMounted auto hidden
+bool property bDragonRiding auto hidden
 
 string function GetWidgetType()
 	Return "iEquip_WidgetCore"
@@ -2566,13 +2569,13 @@ function checkAndFadeLeftIcon(int Q, int itemType)
 	
 	if Q == 1 && bFadeLeftIcon && ((itemType == 5 || itemType == 6) && !bIsCGOLoaded) && !bLeftIconFaded
 		fadeLeftIcon(true)						; If we're equipping 2H or ranged then check and fade left icon
-	elseif Q < 2 && bLeftIconFaded && !AM.bAmmoModePending && !(itemType == 5 || itemType == 6) && !(bFadeLeftIcon && bPlayerIsMounted)
+	elseif Q < 2 && bLeftIconFaded && !AM.bAmmoModePending && !(itemType == 5 || itemType == 6) && (!(bFadeLeftIcon && bPlayerIsMounted) || bAmmoMode)
 		fadeLeftIcon()							; For anything else check if it is currently faded and if so fade it back in
 	endIf
 	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon end")
 endFunction
 
-bool bWasSimpleAmmoMode
+bool property bWasSimpleAmmoMode auto hidden
 
 function onPlayerMount()
 	bWasSimpleAmmoMode = AM.bSimpleAmmoMode
