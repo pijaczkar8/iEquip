@@ -56,9 +56,10 @@ bool property bPreselectSwapItemsOnEquip auto hidden
 bool property bPreselectSwapItemsOnQuickAction = true auto hidden
 bool property bTogglePreselectOnEquipAll auto hidden
 bool property bQuickShield2HSwitchAllowed = true auto hidden
+bool property bQuickShieldUseAlt = true auto hidden
 bool property bQuickShieldUnequipLeftIfNotFound auto hidden
 int property iPreselectQuickShield = 2 auto hidden
-bool property bQuickShieldPreferMagic auto hidden
+int property iQuickShieldPreferredItemType auto hidden
 string property sQuickShieldPreferredMagicSchool = "Destruction" auto hidden
 int property iPreselectQuickRanged = 2 auto hidden
 int property iQuickRangedPreferredWeaponType auto hidden
@@ -129,6 +130,7 @@ function onVersionUpdate()
 		bInitialiseQRSpellSchoolsArray = false
 	endIf
 
+	iQuickShieldPreferredItemType = bQuickShieldPreferMagic as int
 endFunction
 
 function OnWidgetLoad()
@@ -775,9 +777,13 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false, bool
 	int foundType
 	int targetObject
 	bool rightHandHasSpell = ((PlayerRef.GetEquippedItemType(1) == 9) && !(jMap.getInt(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 42))
+	bool rightHandSpellIsPrefSchool
+	if rightHandHasSpell
+		rightHandSpellIsPrefSchool = WC.getSpellSchool(PlayerRef.GetEquippedSpell(1)) == sQuickShieldPreferredMagicSchool
+	endIf
 	;debug.trace("iEquip_ProMode quickShield() - RH current item: " + WC.asCurrentlyEquipped[1] + ", RH item type: " + (PlayerRef.GetEquippedItemType(1)))
 	;if player currently has a spell equipped in the right hand or we've enabled Prefer Magic in the MCM search for a ward spell first
-	if !forceSwitch && (rightHandHasSpell || bQuickShieldPreferMagic)
+	if !forceSwitch && (iQuickShieldPreferredItemType == 1 || (iQuickShieldPreferredItemType == 2 && rightHandHasSpell))
 		;debug.trace("iEquip_ProMode quickShield() - should be looking for a ward spell")
 		;debug.trace("iEquip_ProMode quickShield() - leftCount: " + leftCount + ", current queue position: " + WC.aiCurrentQueuePosition[0] + ", bPreselectMode: " + bPreselectMode + ", ammo mode: " + AM.bAmmoMode)
 		while i < leftCount && found == -1
@@ -884,7 +890,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false, bool
 
 			bool switchRightHand
 			
-			if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1 && !(PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded)) || (foundType == 22 && bQuickShieldPreferMagic && !rightHandHasSpell && !is2HWardSpell) || WC.bGoneUnarmed || WC.b2HSpellEquipped
+			if (WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1 && !(PlayerRef.GetEquippedItemType(1) < 7 && WC.bIsCGOLoaded)) || (foundType == 22 && iQuickShieldPreferredItemType > 0 && !rightHandSpellIsPrefSchool && !is2HWardSpell) || WC.bGoneUnarmed || WC.b2HSpellEquipped
 				switchRightHand = true
 				if !WC.bGoneUnarmed
 					WC.UnequipHand(1)
@@ -2006,7 +2012,7 @@ function quickHealFindAndEquipSpell()
 		count = jArray.count(WC.aiTargetQ[Q])
 		while i < count && targetIndex == -1
 			targetObject = jArray.getObj(WC.aiTargetQ[Q], i)
-			if jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_SpellExt.IsHealingSpell(jMap.getForm(targetObject, "iEquipForm") as spell)
+			if jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_SpellExt.IsHealingSpell(jMap.getForm(targetObject, "iEquipForm") as spell) && GetNthEffectMagicEffect((jMap.getForm(targetObject, "iEquipForm") as spell).GetCostliestEffectIndex()).GetDeliveryType() == 0  ; Make sure it's a Self delivery type healing spell
 				targetIndex = i
 				containingQ = Q
 			endIf
@@ -2027,6 +2033,7 @@ function quickHealFindAndEquipSpell()
 		;debug.trace("iEquip_ProMode quickHealFindAndEquipSpell - iEquipSlot: " + iEquipSlot + ", bQuickHealSwitchBackEnabled: " + bQuickHealSwitchBackEnabled)
 		if bQuickHealSwitchBackEnabled
 			saveCurrentItemsForSwitchBack()
+			bCurrentlyQuickHealing = true
 			;debug.trace("iEquip_ProMode quickHealFindAndEquipSpell - current queue positions stored for switch back, iPreviousLeftHandIndex: " + iPreviousLeftHandIndex + ", iPreviousRightHandIndex: " + iPreviousRightHandIndex)
 		endIf
 		iQuickSlotsEquipped = iEquipSlot
@@ -2037,7 +2044,6 @@ function quickHealFindAndEquipSpell()
 			quickHealEquipSpell(0, containingQ, targetIndex, containingQ == 1)
 		endIf
 		bCurrentlyQuickRanged = false
-		bCurrentlyQuickHealing = true
 		bQuickHealActionTaken = true
 	endIf
 	;debug.trace("iEquip_ProMode quickHealFindAndEquipSpell end")
@@ -2323,3 +2329,5 @@ endFunction
 ; Deprecated in v1.2
 function quickHealSwitchBack(bool bPlayerIsInCombat)
 endFunction
+
+bool property bQuickShieldPreferMagic auto hidden
