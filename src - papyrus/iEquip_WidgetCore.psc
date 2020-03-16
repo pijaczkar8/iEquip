@@ -2163,6 +2163,17 @@ endFunction
 ;QUEUE FUNCTIONALITY CODE
 ;-----------------------------------------------------------------------------------------------------------------------
 
+int function confirmNewIndex(int targetIndex, int queueLength, bool reverse)
+	if reverse
+		if targetIndex < 0
+			targetIndex = queueLength - 1
+		endIf
+	elseif targetIndex == queueLength
+		targetIndex = 0
+	endIf
+	return targetIndex
+endFunction
+
 function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false, bool onItemRemoved = false, bool onKeyPress = false)
 	debug.trace("iEquip_WidgetCore cycleSlot start - Q: " + Q + ", Reverse: " + Reverse + " ,abIsNameShown[Q]: " + abIsNameShown[Q])
 	;Q: 0 = Left hand, 1 = Right hand, 2 = Shout, 3 = Consumables, 4 = Poisons
@@ -2246,44 +2257,26 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			;Set the initial target index
 			targetIndex = aiCurrentQueuePosition[Q] + move
 			;Check if we're cycling past the first or last items in the queue and jump to the start/end as required
-			if targetIndex < 0 && Reverse
-				targetIndex = queueLength - 1
-			elseif targetIndex == queueLength && !Reverse
-				targetIndex = 0
-			endIf
+			targetIndex = confirmNewIndex(targetIndex, queueLength, Reverse)
+
 			;Check if we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues, or we're in the consumables queue and we're checking for empty potion groups
 			if Q < 4
 		    	targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
 			    if Q == 3
                     while (asPotionGroups.Find(targetName) > -1 && (!bPotionGrouping || (PO.iEmptyPotionQueueChoice == 1 && abPotionGroupEmpty[asPotionGroups.Find(targetName)])))
-                        targetIndex = targetIndex + move
-                        if targetIndex < 0 && Reverse
-                            targetIndex = queueLength - 1
-                        elseif targetIndex == queueLength && !Reverse
-                            targetIndex = 0
-                        endIf
+                        targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
                         targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
                     endWhile
 			    else
 			    	if Q == 1 && bSkipRHUnarmedInCombat && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()
-						targetIndex = targetIndex + move
-			            if targetIndex < 0 && Reverse
-			                targetIndex = queueLength - 1
-			            elseif targetIndex == queueLength && !Reverse
-			                targetIndex = 0
-			            endIf
+						targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 			        endIf
 			    	;If we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues we need to cycle until we find one that hasn't been Auto-Added 
 			    	if !(Q < 2 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed")
 			    		targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
 			    		int countdown = queueLength - 1
 				        while !(Q < 2 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed") && ((Q < 2 && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipType") != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)) || (bSkipAutoAddedItems && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipAutoAdded") == 1)) && countdown > 0
-				            targetIndex = targetIndex + move
-				            if targetIndex < 0 && Reverse
-				                targetIndex = queueLength - 1
-				            elseif targetIndex == queueLength && !Reverse
-				                targetIndex = 0
-				            endIf
+				            targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 				            targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
 				            countdown -= 1
 				        endWhile
@@ -2292,10 +2285,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		    endIf
 			;if we're switching because of a hand to hand swap in EquipPreselectedItem then if the targetIndex matches the currently preselected item skip past it when advancing the main queue.
 			if bPreselectSwitchingHands && targetIndex == aiCurrentlyPreselected[Q]
-				targetIndex += 1
-				if targetIndex == queueLength
-					targetIndex = 0
-				endIf
+				targetIndex = confirmNewIndex(targetIndex + 1, queueLength, false)
 			endIf
 		else
 			targetIndex = 0
