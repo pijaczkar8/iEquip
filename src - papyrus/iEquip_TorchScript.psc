@@ -379,8 +379,11 @@ function quickLight()
 		endIf
 
 		bJustCalledQuickLight = true
-		
-		if previousItemHandle != 0xFFFF
+
+		if WC.bPlayerIsMounted
+			WC.KH.UnregisterForLeftKey()
+			WC.fadeLeftIcon(true)
+		elseIf previousItemHandle != 0xFFFF
 			iEquip_InventoryExt.EquipItem(previousItemForm, previousItemHandle, PlayerRef, targetSlot)
 		elseIf previousItemForm
 			if previousItemForm as spell
@@ -408,6 +411,8 @@ function quickLight()
 				bPreviously2HOrRanged = false
 			endIf
 
+			bJustCalledQuickLight = true
+
 			if AM.bAmmoMode
 				AM.toggleAmmoMode(true, true)
 				if !AM.bSimpleAmmoMode
@@ -417,6 +422,8 @@ function quickLight()
 					args = new bool[4]
 					UI.InvokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 				endIf
+			elseIf WC.bPlayerIsMounted
+				WC.KH.RegisterForLeftKey()
 			endIf
 
 			if currentItemType == 10 ; Shield
@@ -427,7 +434,6 @@ function quickLight()
 
 			previousItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(targetSlot)
 			previousItemForm = currentItemForm
-			bJustCalledQuickLight = true
 
 			if playerKnowsSpell && (bQuickLightPreferMagic || (!playerHasATorch && bQuickLightUseMagicIfNoTorch)) && (PlayerRef.GetActorValue("Magicka") > Candlelight.GetEffectiveMagickaCost(PlayerRef) || (PO.getRestoreCount(1) > 0 && bQuickLightConsumePotion))
 				if PlayerRef.GetActorValue("Magicka") < Candlelight.GetEffectiveMagickaCost(PlayerRef)
@@ -526,9 +532,16 @@ Function DropTorch()
 			; iDropLitTorchBehaviour - 0: Do Nothing, 1: Torch/Nothing, 2: Torch/Cycle, 3: Cycle, 4: QuickShield
 			if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || ((iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3) && queueLength == 0)	; Do Nothing and set left hand to empty
 				WC.setSlotToEmpty(0, false, true)
+				if WC.bPlayerIsMounted
+					WC.KH.UnregisterForLeftKey()
+					WC.fadeLeftIcon(true)
+				endIf
 			elseIf iDropLitTorchBehavior == 1 || (iDropLitTorchBehavior == 2 && remainingTorches > 0)																					; Equip another torch
 				Wait(fRealisticReEquipDelay)
 				PlayerRef.EquipItemEx(realTorchForm, 0)
+			elseIf WC.bPlayerIsMounted
+				WC.KH.UnregisterForLeftKey()
+				WC.fadeLeftIcon(true)
 			elseIf iDropLitTorchBehavior < 4																																			; Cycle left hand
 				WC.cycleSlot(0, false, true)
 			else 																																										; QuickShield

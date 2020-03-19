@@ -399,7 +399,7 @@ function runUpdate()
                     PM.equipAllPreselectedItems(true)
                 endIf
             else
-                if iWaitingKeyCode == iLeftKey
+                if iWaitingKeyCode == iLeftKey && !WC.bPlayerIsMounted
                     if AM.bAmmoMode
                         if !AM.bSimpleAmmoMode
                             AM.toggleAmmoMode()
@@ -438,7 +438,7 @@ function runUpdate()
 			
             if AM.bAmmoMode || (PM.bPreselectMode && (RHItemType == 7 || RHItemType == 12))
                 AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
-            else
+            elseIf !WC.bPlayerIsMounted
                 WC.cycleSlot(0, bIsUtilityKeyHeld, false, false, true)
             endIf
         elseIf iWaitingKeyCode == iRightKey
@@ -453,7 +453,7 @@ function runUpdate()
             WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
         elseIf iWaitingKeyCode == iQuickRestoreKey && bExtendedKbControlsEnabled
             PM.quickRestore()
-        elseIf iWaitingKeyCode == iQuickShieldKey && bExtendedKbControlsEnabled
+        elseIf iWaitingKeyCode == iQuickShieldKey && bExtendedKbControlsEnabled && !WC.bPlayerIsMounted
             PM.quickShield()
         elseIf iWaitingKeyCode == iQuickRangedKey && bExtendedKbControlsEnabled
             PM.quickRanged()
@@ -498,7 +498,7 @@ function runUpdate()
                             WC.applyPoison(0)
                         endIf
                     endIf
-                elseIf PM.abPreselectSlotEnabled[0]
+                elseIf PM.abPreselectSlotEnabled[0] && !WC.bPlayerIsMounted
                     ;debug.trace("iEquip_KeyHandler - in Preselect Mode, double tap left should be calling equipPreselectedItem")
                     PM.equipPreselectedItem(0)
                 elseIf AM.bAmmoMode
@@ -560,7 +560,7 @@ function runUpdate()
         endIf
         
     elseIf iMultiTap == 3  ; Triple tap
-        if iWaitingKeyCode == iLeftKey
+        if iWaitingKeyCode == iLeftKey && !WC.bPlayerIsMounted
             PM.quickShield()
         elseIf iWaitingKeyCode == iRightKey
             PM.quickRanged()

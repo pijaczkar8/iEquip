@@ -333,7 +333,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 					TI.checkAndUpdateTemperLevelInfo(0)
 				endIf
 			endIf
-			if WC.bPlayerIsMounted
+			if WC.bPlayerIsMounted && !WC.TO.bJustCalledQuickLight
 				WC.KH.UnregisterForLeftKey()
 				WC.fadeLeftIcon(true)
 			endIf
