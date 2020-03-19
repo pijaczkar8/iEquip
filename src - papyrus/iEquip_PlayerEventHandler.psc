@@ -420,6 +420,23 @@ endFunction
 
 bool bMountedRestrictionsApplied
 
+;/ Camera States:
+
+	0 - first person
+	1 - auto vanity
+	2 - VATS
+	3 - free
+	4 - iron sights
+	5 - furniture
+	6 - transition
+	7 - tweenmenu
+	8 - third person 1
+	9 - third person 2
+	10 - horse
+	11 - bleedout
+	12 - dragon
+/;
+
 Event OnPlayerCameraState(int oldState, int newState)
 	if newState == 10 && PlayerRef.IsOnMount()
 		applyMountedRestrictions()
@@ -452,24 +469,6 @@ function applyMountedRestrictions(bool apply = true, bool dragonRiding = false)
 		bMountedRestrictionsApplied = false
 	endIf
 endFunction
-
-;/ Camera States:
-
-	0 - first person
-	1 - auto vanity
-	2 - VATS
-	3 - free
-	4 - iron sights
-	5 - furniture
-	6 - transition
-	7 - tweenmenu
-	8 - third person 1
-	9 - third person 2
-	10 - horse
-	11 - bleedout
-	12 - dragon
-
-/;
 
 Event OnRaceSwitchComplete()
 	;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start - current state: " + GetState())
