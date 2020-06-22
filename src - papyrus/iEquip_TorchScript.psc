@@ -4,6 +4,7 @@ Scriptname iEquip_TorchScript extends Quest
 import UI
 import Utility
 import iEquip_FormExt
+import iEquip_LightExt
 import iEquip_StringExt
 import iEquip_InventoryExt
 
@@ -91,12 +92,12 @@ function initialise(bool bEnabled)
 		if !aDroppedTorches
 			aDroppedTorches = new ObjectReference[4]
 		endIf
-		fTorchRadius = iEquip_FormExt.GetLightRadius(Torch01) as float
+		fTorchRadius = iEquip_LightExt.GetLightRadius(Torch01) as float
 		if bFirstRun
 			bFirstRun = false
 			fDefaultRadius = fTorchRadius
 		endIf
-		fMaxTorchDuration = iEquip_FormExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
+		fMaxTorchDuration = iEquip_LightExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
 		if fMaxTorchDuration < fTorchDuration
 			fTorchDuration = fMaxTorchDuration
 		endIf
@@ -107,8 +108,8 @@ function initialise(bool bEnabled)
 	else
 		UnregisterForAllMenus()
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
-		if fDefaultRadius > 0 && iEquip_FormExt.GetLightRadius(Torch01) as float != fDefaultRadius
-			iEquip_FormExt.SetLightRadius(Torch01, fDefaultRadius as int)
+		if fDefaultRadius > 0 && iEquip_LightExt.GetLightRadius(Torch01) as float != fDefaultRadius
+			iEquip_LightExt.SetLightRadius(Torch01, fDefaultRadius as int)
 		endIf
 		GoToState("DISABLED")
 	endIf
@@ -120,7 +121,7 @@ event OnMenuClose(string MenuName)											; This is purely to handle custom t
 	if bTorchDurationSettingChanged || bTorchRadiusSettingChanged
 		;bSettingDuration = true
 		if bTorchRadiusSettingChanged
-			iEquip_FormExt.SetLightRadius(Torch01, fTorchRadius as int)
+			iEquip_LightExt.SetLightRadius(Torch01, fTorchRadius as int)
 		endIf
 		if PlayerRef.GetEquippedItemType(0) == 11 && !PlayerRef.GetEquippedObject(0) == iEquipTorch as form		; If the player currently has a torch equipped we need to unequip it, check and change fCurrentTorchLife if required, and re-equip it
 			;debug.trace("iEquip_TorchScript OnMenuClose - player has a torch equipped")
@@ -155,8 +156,8 @@ function onTorchRemoved(form torchForm)
 	;debug.trace("iEquip_TorchScript onTorchRemoved start - torchForm: " + torchForm)
 	if !PlayerRef.GetEquippedItemType(0) == 11 && torchForm != iEquipTorch
 		fCurrentTorchLife = fTorchDuration
-		iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
-		iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
+		iEquip_LightExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
+		iEquip_LightExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
 		bFirstUpdateForCurrentTorch = true
 		;debug.trace("iEquip_TorchScript onTorchRemoved - WC.asCurrentlyEquipped[0]: " + WC.asCurrentlyEquipped[0] + ", torchForm.GetName(): " + torchForm.GetName())
 		if !bJustDroppedTorch && bTorchJustBurnedOut && WC.asCurrentlyEquipped[0] == torchForm.GetName() && bautoReEquipTorch && PlayerRef.GetItemCount(torchForm) > 0
@@ -186,8 +187,8 @@ function onTorchEquipped()
 
 			if equippedTorch != iEquipTorch
 				realTorchForm = equippedTorch
-				fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
-				fMaxTorchDuration = iEquip_FormExt.GetLightDuration(equippedTorch) as float - 5.0
+				fTorchRadius = iEquip_LightExt.GetLightRadius(equippedTorch as light) as float
+				fMaxTorchDuration = iEquip_LightExt.GetLightDuration(equippedTorch as light) as float - 5.0
 			endIf
 			;debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fMaxTorchDuration: " + fMaxTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
 
@@ -196,8 +197,8 @@ function onTorchEquipped()
 					
 					int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
 					
-					iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
-					iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
+					iEquip_LightExt.SetLightRadius(iEquipTorch, newRadius)
+					iEquip_LightExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 					if !PlayerRef.IsWeaponDrawn()
 						bSettingLightRadius = true
 						if PlayerRef.GetItemCount(iEquipTorch) < 1
@@ -221,7 +222,7 @@ function onTorchEquipped()
 			endIf
 		else
 			realTorchForm = equippedTorch
-			fTorchRadius = iEquip_FormExt.GetLightRadius(equippedTorch) as float
+			fTorchRadius = iEquip_LightExt.GetLightRadius(equippedTorch as light) as float
 		endIf
 	endIf
 	;debug.trace("iEquip_TorchScript onTorchEquipped end")
@@ -276,8 +277,8 @@ event OnUpdate()
 			int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
 			;debug.trace("iEquip_TorchScript OnUpdate - setting torch light radius to " + newRadius)
 			
-			iEquip_FormExt.SetLightRadius(iEquipTorch, newRadius)
-			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, newRadius)
+			iEquip_LightExt.SetLightRadius(iEquipTorch, newRadius)
+			iEquip_LightExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 			
 			if !((PlayerRef as objectReference).GetAnimationVariableBool("IsCastingRight") || (PlayerRef as objectReference).GetAnimationVariableBool("IsAttacking") || (PlayerRef as objectReference).GetAnimationVariableBool("IsBlocking") || (PlayerRef as objectReference).GetAnimationVariableBool("IsBashing"))
 
@@ -316,8 +317,8 @@ event OnUpdate()
 				Wait(2.0)
 				updateTorchMeterVisibility(false)
 			endIf
-			iEquip_FormExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
-			iEquip_FormExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
+			iEquip_LightExt.SetLightRadius(iEquipTorch, fTorchRadius as int)
+			iEquip_LightExt.SetLightRadius(iEquipDroppedTorch, fTorchRadius as int)
 			PlayerRef.UnequipItemEx(equippedTorch)
 			bTorchJustBurnedOut = true 					; So re-equip only triggers on our torch events, not Realistic Torches or any other Drop Lit Torch mod
 			PlayerRef.RemoveItem(iEquipTorch, 1, true)	; Remove the fadeable torch
@@ -332,7 +333,7 @@ endEvent
 
 ; Called when adjusting the base torch radius from the MCM - affects all carried torches, including those carried by NPCs
 function setBaseTorchRadius()
-	iEquip_FormExt.SetLightRadius(Torch01, fTorchRadius as int)
+	iEquip_LightExt.SetLightRadius(Torch01, fTorchRadius as int)
 	if PlayerRef.GetEquippedObject(0) == Torch01
 		bSettingLightRadius = true
 		PlayerRef.UnequipItemEx(Torch01)

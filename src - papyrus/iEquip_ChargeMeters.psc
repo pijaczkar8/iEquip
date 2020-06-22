@@ -194,8 +194,10 @@ function updateChargeMeters(bool forceUpdate = false)
 	else
 		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[13] + "._visible", false) ;leftEnchantmentMeter_mc
 		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[14] + "._visible", false) ;leftSoulgem_mc
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[29] + "._visible", false) ;rightEnchantmentMeter_mc
-		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[30] + "._visible", false) ;rightSoulgem_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[15] + "._visible", false) ;leftRadialMeter_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[30] + "._visible", false) ;rightEnchantmentMeter_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[31] + "._visible", false) ;rightSoulgem_mc
+		UI.setBool(HUD_MENU, WidgetRoot + WC.asWidgetElements[32] + "._visible", false) ;rightRadialMeter_mc
 	endIf
 	;debug.trace("iEquip_ChargeMeters updateChargeMeters end")
 endFunction

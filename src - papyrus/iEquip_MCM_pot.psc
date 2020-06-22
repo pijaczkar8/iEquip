@@ -212,6 +212,7 @@ function drawPage()
                     
             if PM.bQuickHealPreferMagic
                 MCM.AddMenuOptionST("pot_men_alwysEqpSpll", "$iEquip_MCM_pot_lbl_alwysEqpSpll", QHEquipOptions[PM.iQuickHealEquipChoice])
+                MCM.AddToggleOptionST("pot_tgl_prefHealMagIgnoreTHold", "$iEquip_MCM_pot_lbl_prefHealMagIgnoreTHold", PM.bQuickHealPreferMagicIgnoreThreshold)
             endIf
 
             MCM.AddToggleOptionST("pot_tgl_swtchBck", "$iEquip_MCM_pot_lbl_swtchBck", PM.bQuickHealSwitchBackEnabled)
@@ -615,6 +616,17 @@ State pot_men_alwysEqpSpll
         elseIf currentEvent == "Accept"
             PM.iQuickHealEquipChoice = currentVar as int
             MCM.SetMenuOptionValueST(QHEquipOptions[PM.iQuickHealEquipChoice])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_prefHealMagIgnoreTHold
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_prefHealMagIgnoreTHold")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && PM.bQuickHealPreferMagicIgnoreThreshold)
+            PM.bQuickHealPreferMagicIgnoreThreshold = !PM.bQuickHealPreferMagicIgnoreThreshold
+            MCM.SetToggleOptionValueST(PM.bQuickHealPreferMagicIgnoreThreshold)
         endIf
     endEvent
 endState

@@ -67,6 +67,7 @@ int property iQuickRangedSwitchOutAction = 1 auto hidden
 string property sQuickRangedPreferredMagicSchool = "Destruction" auto hidden
 bool property bQuickDualCastMustBeInBothQueues auto hidden
 bool property bQuickHealPreferMagic auto hidden
+bool property bQuickHealPreferMagicIgnoreThreshold auto hidden
 int property iQuickHealEquipChoice = 2 auto hidden
 bool property bQuickHealSwitchBackEnabled = true auto hidden
 bool property bQuickHealSwitchBackAndRestore = true auto hidden
@@ -381,7 +382,7 @@ function equipPreselectedItem(int Q)
 	
 	if (itemType == 7 || itemType == 9)
 		AM.checkAndRemoveBoundAmmo(itemType)
-		if (!(WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > 2) || AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3)
+		if WC.ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) < 2 || AM.switchingRangedWeaponType(itemType) || AM.iAmmoListSorting == 3
 			AM.selectAmmoQueue(itemType)
 		endIf
 	endIf
@@ -1408,9 +1409,9 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 	;Look for a ranged spell in the preferred hand queue first
 	while i < queueLength && foundSpell == none
 		targetObject = jArray.getObj(targetArray, i)
-		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsSpellRanged(jMap.getForm(targetObject, "iEquipForm") as spell) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))]
-		; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == jMap.getForm(targetObject, "iEquipForm") as spell)
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsSpellRanged(jMap.getForm(targetObject, "iEquipForm") as spell) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))]
+		; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SSE uncomment the line above and comment out the following line
+		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(jMap.getStr(targetObject, "iEquipSchool"))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == jMap.getForm(targetObject, "iEquipForm") as spell)
 			foundSpell = jMap.getForm(targetObject, "iEquipForm") as spell
 		else
 			i += 1
@@ -1424,9 +1425,9 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 		
 		while spellCount > 0 && foundSpell == none
 			spellToCheck = PlayerRef.GetNthSpell(spellCount)
-			;if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
-			; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-			if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
+			if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
+			; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SSE uncomment the line above and comment out the following line
+			;if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
 				foundSpell = spellToCheck
 			else
 				spellCount -=1
@@ -1438,9 +1439,9 @@ bool function quickRangedFindAndEquipSpell(bool equippingOtherHand = false)
 
 			while spellCount > 0 && foundSpell == none
 				spellToCheck = PlayerRef.GetActorBase().GetNthSpell(spellCount)
-				;if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
-				; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-				if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
+				if iEquip_FormExt.IsSpellRanged(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))]
+				; LE Only - the following line is a workaround due to missing IsSpellRanged function in LE version of iEquipUtil.  For SSE uncomment the line above and comment out the following line
+				;if iEquip_FormExt.IsThrowingKnife(spellToCheck) && abQuickRangedSpellSchoolAllowed[asSpellSchools.Find(WC.getSpellSchool(spellToCheck))] && !(equippingOtherHand && spellEquipped && PlayerRef.GetEquippedSpell(otherHand) == spellToCheck)
 					foundSpell = spellToCheck
 				else
 					spellCount -=1
@@ -1538,9 +1539,9 @@ bool function quickRangedFindAndEquipStaff(bool equippingOtherHand = false)
 	;Look for our first choice bound ranged weapon spell
 	while i < queueLength && foundStaff == none
 		targetObject = jArray.getObj(targetArray, i)
-		;if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsStaffRanged(jMap.getForm(targetObject, "iEquipForm"))
-		; LE Only - the following line is a workaround due to missing IsStaffRanged function in LE version of iEquipUtil.  For SE uncomment the line above and comment out the following line
-		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && !(equippingOtherHand && staffEquipped && (PlayerRef.GetEquippedObject(otherHand) == jMap.getForm(targetObject, "iEquipForm")) && (PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) == 1))
+		if !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsStaffRanged(jMap.getForm(targetObject, "iEquipForm"))
+		; LE Only - the following line is a workaround due to missing IsStaffRanged function in LE version of iEquipUtil.  For SSE uncomment the line above and comment out the following line
+		;Sif !(bPreselectMode && i == WC.aiCurrentQueuePosition[Q]) && jMap.getInt(targetObject, "iEquipType") == 8 && iEquip_FormExt.IsThrowingKnife(jMap.getForm(targetObject, "iEquipForm")) && !(equippingOtherHand && staffEquipped && (PlayerRef.GetEquippedObject(otherHand) == jMap.getForm(targetObject, "iEquipForm")) && (PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) == 1))
 			foundStaff = jMap.getForm(targetObject, "iEquipForm")
 		else
 			i += 1
@@ -1971,12 +1972,17 @@ endFunction
 
 function quickHeal()
 	;debug.trace("iEquip_ProMode quickHeal start")
+	bool belowHealthThreshold = (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
 
     bQuickHealActionTaken = false
     if bQuickHealPreferMagic
-        quickHealFindAndEquipSpell()
+    	if belowHealthThreshold || bQuickHealPreferMagicIgnoreThreshold
+        	quickHealFindAndEquipSpell()
+        else
+        	bQuickHealActionTaken = true
+        endIf
     elseIf PO.getPotionTypeCount(0) > 0
-    	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
+    	if belowHealthThreshold
 	    	PO.selectAndConsumePotion(0, 0, true)
 	   	elseIf PO.iNotificationLevel > 0
 			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
@@ -1987,13 +1993,13 @@ function quickHeal()
     if !bQuickHealActionTaken && bQuickHealUseFallback
         if bQuickHealPreferMagic
         	If PO.getPotionTypeCount(0) > 0
-	        	if (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
+	        	if belowHealthThreshold
 	            	PO.selectAndConsumePotion(0, 0, true)
 	            elseIf PO.iNotificationLevel > 0
 	            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
 	            endIf
 	        endIf
-        else
+        elseIf belowHealthThreshold || bQuickHealPreferMagicIgnoreThreshold
             quickHealFindAndEquipSpell()
         endIf
     endIf
@@ -2012,7 +2018,7 @@ function quickHealFindAndEquipSpell()
 		count = jArray.count(WC.aiTargetQ[Q])
 		while i < count && targetIndex == -1
 			targetObject = jArray.getObj(WC.aiTargetQ[Q], i)
-			if jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_SpellExt.IsHealingSpell(jMap.getForm(targetObject, "iEquipForm") as spell) && GetNthEffectMagicEffect((jMap.getForm(targetObject, "iEquipForm") as spell).GetCostliestEffectIndex()).GetDeliveryType() == 0  ; Make sure it's a Self delivery type healing spell
+			if jMap.getInt(targetObject, "iEquipType") == 22 && iEquip_SpellExt.IsHealingSpell(jMap.getForm(targetObject, "iEquipForm") as spell) && (jMap.getForm(targetObject, "iEquipForm") as spell).GetNthEffectMagicEffect((jMap.getForm(targetObject, "iEquipForm") as spell).GetCostliestEffectIndex()).GetDeliveryType() == 0  ; Make sure it's a Self delivery type healing spell
 				targetIndex = i
 				containingQ = Q
 			endIf

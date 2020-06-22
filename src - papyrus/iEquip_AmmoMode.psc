@@ -99,7 +99,7 @@ endFunction
 function selectAmmoQueue(int weaponType)
 	;debug.trace("iEquip_AmmoMode selectAmmoQueue start - weaponType: " + weaponType)
 	Q = ((weaponType == 9) as int)
-	if iAmmoListSorting == 2 || iAmmoListSorting == 4
+	if iAmmoListSorting == 0 || iAmmoListSorting == 4		; Unsorted or Sorted Alphabetically - may not actually be required?
 		selectLastUsedAmmo(Q)
 	else
 		selectBestAmmo(Q)

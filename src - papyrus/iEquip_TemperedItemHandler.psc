@@ -206,7 +206,7 @@ function updateIcon(int Q, int temperLevelPercent, int targetObject)
 endFunction
 
 function updateTemperTierIndicator(int Q, int tier = 0)
-	debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator start - Q: " + Q + ", tier: " + tier + ", bShowTemperTierIndicator: " + bShowTemperTierIndicator + ", iTemperTierDisplayChoice: " + iTemperTierDisplayChoice + ", bShowFadedTiers: " + bShowFadedTiers + ", Edit Mode: " + WC.EM.isEditMode)
+	;debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator start - Q: " + Q + ", tier: " + tier + ", bShowTemperTierIndicator: " + bShowTemperTierIndicator + ", iTemperTierDisplayChoice: " + iTemperTierDisplayChoice + ", bShowFadedTiers: " + bShowFadedTiers + ", Edit Mode: " + WC.EM.isEditMode)
 	if !bShowTemperTierIndicator && !WC.EM.isEditMode
 		tier = 0
 	endIf
@@ -219,7 +219,7 @@ function updateTemperTierIndicator(int Q, int tier = 0)
 		UICallback.PushBool(iHandle, bShowFadedTiers)
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator end")
+	;debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator end")
 endFunction
 
 function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, int temperLevelPercent, int targetObject)

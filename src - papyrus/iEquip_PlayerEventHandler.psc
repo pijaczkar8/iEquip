@@ -420,23 +420,6 @@ endFunction
 
 bool bMountedRestrictionsApplied
 
-;/ Camera States:
-
-	0 - first person
-	1 - auto vanity
-	2 - VATS
-	3 - free
-	4 - iron sights
-	5 - furniture
-	6 - transition
-	7 - tweenmenu
-	8 - third person 1
-	9 - third person 2
-	10 - horse
-	11 - bleedout
-	12 - dragon
-/;
-
 Event OnPlayerCameraState(int oldState, int newState)
 	if newState == 10 && PlayerRef.IsOnMount()
 		applyMountedRestrictions()
@@ -469,6 +452,24 @@ function applyMountedRestrictions(bool apply = true, bool dragonRiding = false)
 		bMountedRestrictionsApplied = false
 	endIf
 endFunction
+
+;/ Camera States:
+
+	0 - first person
+	1 - auto vanity
+	2 - VATS
+	3 - free
+	4 - iron sights
+	5 - furniture
+	6 - transition
+	7 - tweenmenu
+	8 - third person 1
+	9 - third person 2
+	10 - horse
+	11 - bleedout
+	12 - dragon
+
+/;
 
 Event OnRaceSwitchComplete()
 	;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start - current state: " + GetState())
@@ -660,7 +661,15 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
 		TO.onTorchEquipped()
 	endIf
-	
+
+	if processingQueuedForms 					; Just in case the player has switched items before the previous equip/update has had time to complete
+		int countdown = 20
+		while processingQueuedForms && countdown > 0
+			WaitMenuMode(0.1)
+			countdown -= 1
+		endWhile
+	endIf
+
 	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && akBaseObject != iEquipTorch as form
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
@@ -745,54 +754,56 @@ function processQueuedForms(int equippedSlot = -1)
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
 		;debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
-		if queuedForm as ammo
-			if bTogglingAmmoMode
-				bTogglingAmmoMode = false
-			elseIf (PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12)
-				AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
-			endIf
-		; Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
-		elseIf !(iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "Bound Shield.esp")
-			if equippedSlot == -1
-				if PlayerRef.GetEquippedObject(0) == queuedForm
-					; Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
-					if PlayerRef.GetEquippedObject(1) == queuedForm
-						equippedSlot = 3 ;We'll use 3 to indicate the same 1H item has been found in both hands so we can update both queues and widget slots
-					else
-						equippedSlot = 0 ;Left
+		if queuedForm
+			if queuedForm as ammo
+				if bTogglingAmmoMode
+					bTogglingAmmoMode = false
+				elseIf (PlayerRef.GetEquippedItemType(1) == 7 || PlayerRef.GetEquippedItemType(1) == 12)
+					AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
+				endIf
+			; Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
+			elseIf !(queuedForm as weapon && (iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon))) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "Bound Shield.esp")
+				if equippedSlot == -1
+					if PlayerRef.GetEquippedObject(0) == queuedForm
+						; Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
+						if PlayerRef.GetEquippedObject(1) == queuedForm
+							equippedSlot = 3 ;We'll use 3 to indicate the same 1H item has been found in both hands so we can update both queues and widget slots
+						else
+							equippedSlot = 0 ;Left
+						endIf
+					elseIf PlayerRef.GetEquippedObject(1) == queuedForm
+						equippedSlot = 1 ;Right
+					elseIf PlayerRef.GetEquippedObject(2) == queuedForm
+						equippedSlot = 2 ;Shout/Power
 					endIf
-				elseIf PlayerRef.GetEquippedObject(1) == queuedForm
-					equippedSlot = 1 ;Right
-				elseIf PlayerRef.GetEquippedObject(2) == queuedForm
-					equippedSlot = 2 ;Shout/Power
 				endIf
-			endIf
-			; If the item has been equipped in the left, right or shout slot
-			if equippedSlot != -1
-				;debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
-				int itemType = queuedForm.GetType()
-				int iEquipSlot
-				; If it's a 2H or ranged weapon or a BothHands spell we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
-				if itemType == 22
-					iEquipSlot = WC.EquipSlots.Find((queuedForm as spell).GetEquipType())
-				elseIf itemType == 41
-					itemType = (queuedForm as Weapon).GetWeaponType()
-				endIf
-				if ((itemType == 5 || itemType == 6 && !WC.bIsCGOLoaded) || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
-					equippedSlot = 1
-				endIf
-				if bPlayerIsABeast
-					if equippedSlot == 3
-						BM.updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
-						BM.updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
-					else
-						BM.updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
+				; If the item has been equipped in the left, right or shout slot
+				if equippedSlot != -1
+					;debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
+					int itemType = queuedForm.GetType()
+					int iEquipSlot
+					; If it's a 2H or ranged weapon or a BothHands spell we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
+					if itemType == 22
+						iEquipSlot = WC.EquipSlots.Find((queuedForm as spell).GetEquipType())
+					elseIf itemType == 41
+						itemType = (queuedForm as Weapon).GetWeaponType()
 					endIf
-				elseIf equippedSlot == 3
-					updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
-					updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
-				else
-					updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
+					if ((itemType == 5 || itemType == 6 && !WC.bIsCGOLoaded) || itemType == 7 || itemType == 9 || (itemType == 22 && iEquipSlot == 3))
+						equippedSlot = 1
+					endIf
+					if bPlayerIsABeast
+						if equippedSlot == 3
+							BM.updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
+							BM.updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
+						else
+							BM.updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
+						endIf
+					elseIf equippedSlot == 3
+						updateSlotOnObjectEquipped(0, queuedForm, itemType, iEquipSlot)
+						updateSlotOnObjectEquipped(1, queuedForm, itemType, iEquipSlot)
+					else
+						updateSlotOnObjectEquipped(equippedSlot, queuedForm, itemType, iEquipSlot)
+					endIf
 				endIf
 			endIf
 		endIf
@@ -921,23 +932,13 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 																										; First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
 			targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
 
-			;/bool freeSpace = true
-			if targetIndex >= WC.iMaxQueueLength && queuedForm != TO.realTorchForm
-				if WC.bHardLimitQueueSize
-					freeSpace = false
-					blockCall = true
-				else
-					WC.iMaxQueueLength += 1
-				endIf
-			endIf
-			if freeSpace
-																										; If there is space in the target queue create a new jMap object and add it to the queue
-				;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - freeSpace: " + freeSpace + ", equippedSlot: " + equippedSlot)/;
 				int iEquipItem = jMap.object()
 				string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
 				jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
 				jMap.setInt(iEquipItem, "iEquipItemID", itemID)
-				jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
+				if queuedForm as weapon || queuedForm as armor
+					jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
+				endIf
 				jMap.setInt(iEquipItem, "iEquipType", itemType)
 				jMap.setStr(iEquipItem, "iEquipName", itemName)
 				jMap.setStr(iEquipItem, "iEquipBaseName", itemBaseName)

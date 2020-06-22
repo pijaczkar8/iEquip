@@ -306,10 +306,10 @@ State eqp_men_quickShieldItemType
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_quickShieldItemType")
         elseIf currentEvent == "Open"
-            MCM.fillMenu(iQuickShieldPreferredItemType, QSPreferredType, 0)
+            MCM.fillMenu(PM.iQuickShieldPreferredItemType, QSPreferredType, 0)
         elseIf currentEvent == "Accept"
             PM.iQuickShieldPreferredItemType = currentVar as int         
-            MCM.SetMenuOptionValueST(QSPreferredType[iQuickShieldPreferredItemType])
+            MCM.SetMenuOptionValueST(QSPreferredType[PM.iQuickShieldPreferredItemType])
         endIf
     endEvent
 endState

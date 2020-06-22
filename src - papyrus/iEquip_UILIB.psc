@@ -409,7 +409,7 @@ function sendListValues(bool refresh = false)
 endFunction
 
 function QueueMenu_UpdateButtons(bool hasBlacklist, bool showingBlacklist = false, bool updating = false, string toggleButtonLabel = "")
-	debug.trace("iEquip_UILIB QueueMenu_UpdateButtons - hasBlacklist: " + hasBlacklist + ", showingBlacklist: " + showingBlacklist + ", bDirectAccess: " + bDirectAccess)
+	;debug.trace("iEquip_UILIB QueueMenu_UpdateButtons - hasBlacklist: " + hasBlacklist + ", showingBlacklist: " + showingBlacklist + ", bDirectAccess: " + bDirectAccess)
 
 	Int iHandle = UICallback.Create("CustomMenu", "_root.iEquipQueueDialog.setButtons")
 		If(iHandle)
