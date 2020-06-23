@@ -118,6 +118,9 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, PM.abQuickRangedSpellSchoolAllowed[4] as int)
 	jArray.addInt(jPageObj, PM.iQuickRanged1HOtherHandAction)
 
+    jArray.addInt(jPageObj, AM.bAlwaysEquipBestAmmo as int)
+    jArray.addInt(jPageObj, AM.bAlwaysEquipMostAmmo as int)
+
     return jPageObj
 endFunction
 
@@ -144,6 +147,9 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	PM.abQuickRangedSpellSchoolAllowed[4] = jArray.getInt(jPageObj, 16)
 	PM.iQuickRanged1HOtherHandAction = jArray.getInt(jPageObj, 17)
 
+    AM.bAlwaysEquipBestAmmo = jArray.getInt(jPageObj, 18, 1)
+    AM.bAlwaysEquipMostAmmo = jArray.getInt(jPageObj, 19, 1)
+
 endFunction
 
 function drawPage()
@@ -155,6 +161,13 @@ function drawPage()
 	   MCM.AddTextOptionST("amm_txt_AmmoModeChoice", "$iEquip_MCM_amm_lbl_AmmoModeChoice", ammoModeOptions[AM.bSimpleAmmoMode as int])
     endIf
 	MCM.AddMenuOptionST("amm_men_ammoLstSrt", "$iEquip_MCM_amm_lbl_ammoLstSrt", ammoSortingOptions[AM.iAmmoListSorting])
+
+    if AM.iAmmoListSorting == 1
+        MCM.AddToggleOptionST("amm_tgl_alwaysEquipBestAmmo", "$iEquip_MCM_amm_lbl_alwaysEquipBestAmmo", AM.bAlwaysEquipBestAmmo)
+    elseIf AM.iAmmoListSorting == 3
+        MCM.AddToggleOptionST("amm_tgl_alwaysEquipMostAmmo", "$iEquip_MCM_amm_lbl_alwaysEquipMostAmmo", AM.bAlwaysEquipMostAmmo)
+    endIf
+
 	MCM.AddMenuOptionST("amm_men_whenNoAmmoLeft", "$iEquip_MCM_amm_lbl_whenNoAmmoLeft", whenNoAmmoLeftOptions[AM.iActionOnLastAmmoUsed])
 
     MCM.AddMenuOptionST("amm_men_ammoIcoStyle", "$iEquip_MCM_amm_lbl_ammoIcoStyle", ammoIconOptions[AM.iAmmoIconStyle])	
@@ -229,6 +242,29 @@ State amm_men_ammoLstSrt
             AM.iAmmoListSorting = currentVar as int
             MCM.SetMenuOptionValueST(ammoSortingOptions[AM.iAmmoListSorting])
             WC.bAmmoSortingChanged = true
+            MCM.ForcePageReset()
+        endIf
+    endEvent
+endState
+
+State amm_tgl_alwaysEquipBestAmmo
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_amm_txt_alwaysEquipBestAmmo")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !AM.bAlwaysEquipBestAmmo)
+            AM.bAlwaysEquipBestAmmo = !AM.bAlwaysEquipBestAmmo
+            MCM.SetToggleOptionValueST(AM.bAlwaysEquipBestAmmo)
+        endIf
+    endEvent
+endState
+
+State amm_tgl_alwaysEquipMostAmmo
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_amm_txt_alwaysEquipMostAmmo")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !AM.bAlwaysEquipMostAmmo)
+            AM.bAlwaysEquipMostAmmo = !AM.bAlwaysEquipMostAmmo
+            MCM.SetToggleOptionValueST(AM.bAlwaysEquipMostAmmo)
         endIf
     endEvent
 endState

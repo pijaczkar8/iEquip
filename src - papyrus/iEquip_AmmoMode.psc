@@ -22,6 +22,8 @@ FormList property iEquip_AmmoBlacklistFLST auto
 
 int property iAmmoIconStyle auto hidden
 int property iAmmoListSorting = 1 auto hidden
+bool property bAlwaysEquipBestAmmo = true auto hidden
+bool property bAlwaysEquipMostAmmo = true auto hidden
 int property iActionOnLastAmmoUsed = 1 auto hidden
 bool property bSimpleAmmoMode auto hidden
 bool property bSimpleAmmoModeOnEnter auto hidden
@@ -99,9 +101,10 @@ endFunction
 function selectAmmoQueue(int weaponType)
 	;debug.trace("iEquip_AmmoMode selectAmmoQueue start - weaponType: " + weaponType)
 	Q = ((weaponType == 9) as int)
-	if iAmmoListSorting == 0 || iAmmoListSorting == 4		; Unsorted or Sorted Alphabetically - may not actually be required?
+	;/if iAmmoListSorting == 0 || iAmmoListSorting == 4		; Unsorted or Sorted Alphabetically - may not actually be required?
 		selectLastUsedAmmo(Q)
-	else
+	else/;
+	if (iAmmoListSorting == 1 && bAlwaysEquipBestAmmo) || (iAmmoListSorting == 3 && bAlwaysEquipMostAmmo)
 		selectBestAmmo(Q)
 	endIf
 	;debug.trace("iEquip_AmmoMode sortAmmoQueue end")
@@ -813,7 +816,7 @@ function AddToAmmoQueue(form ammoForm, string ammoName, int isBolt)
 	jMap.setInt(AmmoItem, "isEnchanted", incrementDamage as int)
 	if incrementDamage
 		incrementDamage = false
-		jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage() + 1.0) ;If we've suffixed the ammo icon name in getAmmoIcon because it's enchanted ammo then +1 the damage so they sort ahead of the base ammo
+		jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage() + 10.0) ;If we've suffixed the ammo icon name in getAmmoIcon because it's enchanted ammo then +10 the damage so they sort ahead of the base ammo
 	else
 		jMap.setFlt(AmmoItem, "iEquipDamage", (ammoForm as ammo).GetDamage())
 	endIf
@@ -914,6 +917,8 @@ function sortAmmoQueue(string theKey, int targetQ, int thisQ)
         ;debug.trace("iEquip_AmmoMode - sortAmmoQueue, sorted order: " + i + ", " + jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm").GetName() + ", " + theKey + ": " + jMap.getFlt(jArray.getObj(targetQ, i), theKey))
         i += 1
     endWhile
-    selectBestAmmo(thisQ)
+    if (iAmmoListSorting == 1 && bAlwaysEquipBestAmmo) || (iAmmoListSorting == 3 && bAlwaysEquipMostAmmo)
+		selectBestAmmo(Q)
+	endIf
     ;debug.trace("iEquip_AmmoMode sortAmmoQueue end")
 EndFunction
