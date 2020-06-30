@@ -278,20 +278,20 @@ function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, in
 				endIf
 			endIf
 		endIf
-		
-		if tempName != jMap.getStr(targetObject, "lastDisplayedName")
-			
-			debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
-			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
-			If(iHandle)
-				UICallback.PushInt(iHandle, aiNameElements[Q])
-				UICallback.PushString(iHandle, tempName)
-				UICallback.Send(iHandle)
-			endIf
-			jMap.setStr(targetObject, "lastDisplayedName", tempName)
-		endIf
-
 	endIf
+
+	if tempName != jMap.getStr(targetObject, "lastDisplayedName")
+			
+		debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
+		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
+		If(iHandle)
+			UICallback.PushInt(iHandle, aiNameElements[Q])
+			UICallback.PushString(iHandle, tempName)
+			UICallback.Send(iHandle)
+		endIf
+		jMap.setStr(targetObject, "lastDisplayedName", tempName)
+	endIf
+		
 	debug.trace("iEquip_TemperedItemHandler setTemperLevelName end")
 endFunction
 
