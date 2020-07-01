@@ -2284,6 +2284,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 
 	elseIf queueLength > 1 || onItemRemoved || (Q < 3 && abQueueWasEmpty[Q]) || (Q == 0 && bGoneUnarmed || b2HSpellEquipped)
 		int	targetIndex
+		int targetObject
 		form targetItem
 	    string targetName
 
@@ -2299,9 +2300,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			if Q < 2 
 				setCounterVisibility(Q, false)
 				hidePoisonInfo(Q)
-				if CM.abIsChargeMeterShown[Q]
-					CM.updateChargeMeterVisibility(Q, false)
-				endIf
+				CM.updateChargeMeterVisibility(Q, false)
 			endIf
 		elseIf Q == 3
 			CFUpdate.unregisterForConsumableFadeUpdate()
@@ -2334,16 +2333,18 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
                         targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
                     endWhile
 			    else
-			    	if Q == 1 && bSkipRHUnarmedInCombat && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()
+			    	if Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()
 						targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 			        endIf
 			    	;If we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues we need to cycle until we find one that hasn't been Auto-Added 
-			    	if !(Q < 2 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed")
-			    		targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
+			    	targetObject = jArray.getObj(targetArray, targetIndex)
+			    	if !(Q < 2 && jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_Unarmed")
+			    		targetItem = jMap.getForm(targetObject, "iEquipForm")
 			    		int countdown = queueLength - 1
-				        while !(Q < 2 && jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName") == "$iEquip_common_Unarmed") && ((Q < 2 && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipType") != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)) || (bSkipAutoAddedItems && jMap.getInt(jArray.getObj(targetArray, targetIndex), "iEquipAutoAdded") == 1)) && countdown > 0
+				        while !(Q < 2 && jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_Unarmed") && ((Q < 2 && jMap.getInt(targetObject, "iEquipType") != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)) || (bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1)) && countdown > 0
 				            targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
-				            targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
+				            targetObject = jArray.getObj(targetArray, targetIndex)
+				            targetItem = jMap.getForm(targetObject, "iEquipForm")
 				            countdown -= 1
 				        endWhile
 				    endIf
@@ -2357,16 +2358,35 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			targetIndex = 0
 		endIf
 
+		targetObject = jArray.getObj(targetArray, targetIndex)
+
 		if Q < 2 && (bSwitchingHands || bPreselectSwitchingHands)
 			;debug.trace("iEquip_WidgetCore cycleSlot - Q: " + Q + ", bSwitchingHands: " + bSwitchingHands)
 			ignoreEquipOnPause = true
 			;if we're forcing the left hand to switch equipped items because we're switching left to right, make sure we don't leave the left hand unarmed
 			if Q == 1
-				int targetObject = jArray.getObj(targetArray, targetIndex)
 				int itemType = jMap.getInt(targetObject, "iEquipType")
+				int count = 1
 				AM.bAmmoModePending = false
-				; Check if initial target item is 2h or ranged, or if it is a 1h item but you only have one of it and you've just equipped it in the other hand, or if it is unarmed
-				if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
+				
+				; Check if initial target item is 2h or ranged, or if it is a 1h item but you only have one of it and you've just equipped it in the other hand, or if it is unarmed. If it is then starting from the currently equipped index search forward for a 1h item
+				
+				while count < queueLength && (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
+					count += 1
+					; If we've got back to the starting index without finding anything suitable then return out and don't re-equip anything 
+					if count == queueLength
+						return
+					endIf
+					targetIndex += 1
+					;if we have reached the final index in the array then loop to the start and keep counting forward until we reach the original starting point
+					if targetIndex == queueLength
+						targetIndex = 0
+					endIf
+					targetObject = jArray.getObj(targetArray, targetIndex)
+					itemType = jMap.getInt(targetObject, "iEquipType")
+				endWhile
+				
+				;/if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
 					int newIndex = targetIndex + 1
 					if newIndex == queueLength
 						newIndex = 0
@@ -2393,7 +2413,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 					else
 						targetIndex = newIndex ; if a 1h item has been found then set it as the new targetIndex
 					endIf
-				endIf
+				endIf/;
 			endIf
 		elseIf Q == 4 && bPoisonIconFaded
 			checkAndFadePoisonIcon(false)
@@ -2406,7 +2426,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		endIf
 		;Update the widget to the next queued item immediately then register for bEquipOnPause update or call cycle functions straight away
 		aiCurrentQueuePosition[Q] = targetIndex
-		asCurrentlyEquipped[Q] = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
+		asCurrentlyEquipped[Q] = jMap.getStr(targetObject, "iEquipName")
 		updateWidget(Q, targetIndex, false, true)
 		
 		if Q < 2
@@ -2436,7 +2456,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 				isPotionGroup = true
 				targetItem = none
 			else
-				targetItem = jMap.getForm(jArray.getObj(targetArray, targetIndex), "iEquipForm")
+				targetItem = jMap.getForm(targetObject, "iEquipForm")
 			endIf
 			checkAndEquipShownShoutOrConsumable(Q, Reverse, targetIndex, targetItem, isPotionGroup)
 		endIf
@@ -2957,7 +2977,7 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 	endIf
 
 	if sName == ""
-		sName =  jMap.getStr(targetObject, "iEquipName")									; New name
+		sName = jMap.getStr(targetObject, "iEquipName")									; New name
 	endIf
 
 	;debug.trace("iEquip_WidgetCore updateWidget about to call .updateWidget - Slot: " + Slot + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
