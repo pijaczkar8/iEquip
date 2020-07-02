@@ -820,6 +820,8 @@ function UpdateAllTextFormatting()                      ; Only called from OnWid
         endIf
         iIndex += 1
     endWhile
+
+    UI.InvokeBool(HUD_MENU, WidgetRoot + ".setPotionSelectorAlignment", bPotionSelectorOnLeft)
 endFunction
 
 ; ####################

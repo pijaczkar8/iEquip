@@ -88,6 +88,7 @@ bool bIsBoundSpellEquipped
 bool property bWaitingForEnchantedWeaponDrawn auto hidden
 bool bWaitingForAnimationUpdate
 bool bWaitingForOnObjectEquippedUpdate
+bool bWaitingForOnObjectUnequippedUpdate
 bool processingQueuedForms
 
 bool property bIsThunderchildLoaded auto hidden
@@ -706,6 +707,18 @@ Event OnUpdate()
 			processQueuedForms()
 		endIf
 	endIf
+	; This next section is here to catch unequip events from within menus or via vanilla hotkeys or other hotkey mods which leave the hand or shout slots with nothing equipped.
+	if bWaitingForOnObjectUnequippedUpdate
+		if !Utility.IsInMenuMode()
+		  	int Q
+		  	while Q < 3
+		  		if !PlayerRef.GetEquippedObject(Q) && !WC.abQueueWasEmpty[Q]
+		  			WC.setSlotToEmpty(Q, true, JArray.count(WC.aiTargetQ[Q]) > 0)
+		  		endIf
+		  		Q += 1
+		  	endWhile
+		endIf
+	endIf
 	;debug.trace("iEquip_PlayerEventHandler OnUpdate end")	
 EndEvent
 
@@ -1014,6 +1027,11 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
   		GoToState("PROCESSING")
     	TO.onTorchUnequipped()
   	endIf
+
+  	if !bGoingUnarmed && !TO.bSettingLightRadius && !(akBaseObject.GetType() == 31 && TO.didATorchJustBurnOut())
+	  	bWaitingForOnObjectUnequippedUpdate = true
+		registerForSingleUpdate(0.8)
+	endIf
 endEvent
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)

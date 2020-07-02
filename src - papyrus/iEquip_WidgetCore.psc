@@ -411,6 +411,8 @@ bool property bBlockSwitchBackToBoundSpell auto hidden
 bool property bMoreHUDLoaded auto hidden
 string[] property asMoreHUDIcons auto hidden
 
+bool property bPowerOfThreeExtenderLoaded auto hidden
+
 bool property bIsCGOLoaded auto hidden
 
 int iRemovedItemsCacheObj
@@ -945,18 +947,19 @@ function CheckDependencies()
 	endIf
 
 	; moreHUD Inventory Edition
-	if AhzMoreHudIE.GetVersion() > 0
-		bMoreHUDLoaded = true
+	bMoreHUDLoaded = SKSE.GetPluginVersion("Ahzaab's moreHUD Inventory Plugin") > 0
+	if bMoreHUDLoaded
 		initialisemoreHUDArray()
-	else
-		bMoreHUDLoaded = false
 	endIf
+
+	; po3's Papyrus Extender
+	bPowerOfThreeExtenderLoaded = SKSE.GetPluginVersion("powerofthree's PapyrusExtender for SSE") > 0
 
 	; Gamepad++
 	KH.registerForGPP(Game.GetModByName("Gamepad++.esp") != 255)
 
 	; ConsoleUtil
-	bConsoleUtilLoaded = ConsoleUtil.GetVersion() > 0
+	bConsoleUtilLoaded = SKSE.GetPluginVersion("ConsoleUtilSSE") > 0
 	
     ; Requiem
     bIsRequiemLoaded = Game.GetModByName("Requiem.esp") != 255
@@ -2324,9 +2327,9 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			;Set the initial target index, then check if we're cycling past the first or last items in the queue and jump to the start/end as required
 			targetIndex = confirmNewIndex(aiCurrentQueuePosition[Q] + move, queueLength, Reverse)
 
-			;Check if we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues, or we're in the consumables queue and we're checking for empty potion groups
 			if Q < 4
 		    	targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
+		    	;If we're in the consumables queue check for empty potion groups
 			    if Q == 3
                     while (asPotionGroups.Find(targetName) > -1 && (!bPotionGrouping || (PO.iEmptyPotionQueueChoice == 1 && abPotionGroupEmpty[asPotionGroups.Find(targetName)])))
                         targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
@@ -2971,13 +2974,12 @@ function updateWidget(int Q, int iIndex, bool overridePreselect = false, bool cy
 		fNameAlpha = 100
 	endIf
 
-	bool bShowTemperInfo = ((Slot < 2 || Slot == 5 || Slot == 6) && TI.aiTemperedItemTypes.Find(jMap.getInt(targetObject, "iEquipType")) != -1)
-	if bShowTemperInfo
+	if (Slot < 2 || Slot == 5 || Slot == 6) && TI.aiTemperedItemTypes.Find(jMap.getInt(targetObject, "iEquipType")) != -1
 		sName =  jMap.getStr(targetObject, "lastDisplayedName")								; Last displayed name - includes renames and temper level if applicable
 	endIf
 
 	if sName == ""
-		sName = jMap.getStr(targetObject, "iEquipName")									; New name
+		sName = jMap.getStr(targetObject, "iEquipName")										; New name
 	endIf
 
 	;debug.trace("iEquip_WidgetCore updateWidget about to call .updateWidget - Slot: " + Slot + ", sIcon: " + sIcon + ", sName: " + sName + ", fNameAlpha: " + fNameAlpha)
@@ -3093,9 +3095,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 
 	if Q < 2																; Hide any additional elements currently displayed
 		hidePoisonInfo(Q, true)
-		if CM.abIsChargeMeterShown[Q]
-			CM.updateChargeMeterVisibility(Q, false)
-		endIf
+		CM.updateChargeMeterVisibility(Q, false)
 		setCounterVisibility(Q, false)
 		if Q == 1
 			if bAmmoMode

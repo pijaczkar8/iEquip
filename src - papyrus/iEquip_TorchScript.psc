@@ -172,6 +172,10 @@ function onTorchRemoved(form torchForm)
 	;debug.trace("iEquip_TorchScript onTorchRemoved end")
 endfunction
 
+bool function didATorchJustBurnOut()
+	return bTorchJustBurnedOut
+endFunction
+
 function onTorchEquipped()
 	;debug.trace("iEquip_TorchScript onTorchEquipped start - bSettingLightRadius: " + bSettingLightRadius)
 	if bSettingLightRadius
