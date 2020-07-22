@@ -152,6 +152,11 @@ bool property bIsAGOLoaded auto hidden
 ; Legacy of the Dragonborn
 bool property bIsLOTDLoaded auto hidden
 
+; Zim's Immersive Artifacts support
+bool bIsZIALoaded
+weapon[] aZIAAltUniques
+string[] asZIAIconNames
+
 ; Animated Armoury support
 Bool bIsAALoaded
 Keyword property WeapTypePike auto hidden
@@ -687,6 +692,13 @@ Event OnWidgetInit()
 	asUniqueItemIcons[48] = "MiraaksSword"
 	asUniqueItemIcons[49] = "MiraaksSword"
 
+	aZIAAltUniques = new weapon[3]
+
+	asZIAIconNames = new string[3]
+	asZIAIconNames[0] = "Dawnbreaker"
+	asZIAIconNames[1] = "Wuuthrad"
+	asZIAIconNames[2] = "Volendrung"
+
 	aBlacklistFLSTs = new formlist[7]
 	aBlacklistFLSTs[0] = iEquip_LeftHandBlacklistFLST
 	aBlacklistFLSTs[1] = iEquip_RightHandBlacklistFLST
@@ -720,7 +732,7 @@ EndEvent
 float fCurrentVersion						; First digit = Main version, 2nd digit = Incremental, 3rd digit = Hotfix.  For example main version 1.0, hotfix 03 would be 1.03
 
 float function getiEquipVersion()
-    return 1.22
+    return 1.23
 endFunction
 
 function checkVersion()
@@ -738,6 +750,14 @@ function checkVersion()
     elseIf !bIsFirstEnabled
     	;debug.trace("iEquip_WidgetCore checkVersion - should be updating now")
         ; Let's update
+        if fCurrentVersion < 1.23
+        	aZIAAltUniques = new weapon[3]
+
+			asZIAIconNames = new string[3]
+			asZIAIconNames[0] = "Dawnbreaker"
+			asZIAIconNames[1] = "Wuuthrad"
+			asZIAIconNames[2] = "Volendrung"
+		endIf
 
         if fCurrentVersion < 1.22		
         ; We're updating to the newer refHandle manager for the first time so we need to clear all existing handles in the queue objects and in iEquipUtil, then parse the inventory again to assign new handles under the new manager. 
@@ -745,7 +765,6 @@ function checkVersion()
         	outWithTheOldInWithTheNew()
         endIf
         
-        ; Version 1.1
         if fCurrentVersion < 1.1
 
 			asQueueName = new string[7]
@@ -970,7 +989,6 @@ function CheckDependencies()
     	REQ_KW_PoisonSpell = none
     endIf
 
-
     ; Legacy of the Dragonborn
     bIsLOTDLoaded = Game.GetModByName("LegacyoftheDragonborn.esm") != 255
 
@@ -989,6 +1007,19 @@ function CheckDependencies()
 
     ; Wintersun
     EH.bIsWintersunLoaded = Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255
+
+    ; Zim's Immersive Artifacts
+    if Game.GetModByName("ZIA_Complete Pack.esp") != 255
+    	bIsZIALoaded = true
+    	aZIAAltUniques[0] = Game.GetFormFromFile(0x00016AB0, "ZIA_Complete Pack.esp") as weapon 	; 2H Dawnbreaker
+    	aZIAAltUniques[1] = Game.GetFormFromFile(0x00007EDC, "ZIA_Complete Pack.esp") as weapon 	; 1H Wuuthrad
+    	aZIAAltUniques[2] = Game.GetFormFromFile(0x001E21CB, "ZIA_Complete Pack.esp") as weapon 	; 1H Volendrung
+    else
+    	bIsZIALoaded = false
+    	aZIAAltUniques[0] = none
+    	aZIAAltUniques[1] = none
+    	aZIAAltUniques[2] = none
+    endIf
 
 	; Animated Armory
 	if Game.GetModByName("NewArmoury.esp") != 255
@@ -4437,8 +4468,12 @@ function applyPoison(int Q)
 	        
 	        int ConcentratedPoisonMultiplier = 1
 	        
-	        if PlayerRef.HasPerk(ConcentratedPoison)														; If the player has the Concentrated Poison perk apply the multiplier set in the iEquip MCM slider (default = 2 (vanilla))
-	            ConcentratedPoisonMultiplier = iPoisonChargeMultiplier
+	        if PlayerRef.HasPerk(ConcentratedPoison)														; If the player has the Concentrated Poison perk
+	            if Game.GetModByName("Ordinator - Perks of Skyrim.esp") != 255
+	            	ConcentratedPoisonMultiplier = PlayerRef.GetActorValue("Alchemy") as int % 10			; If Ordinator is loaded then apply the Bottomless Cup multiplier based on the players current Alchemy level
+	            else
+	            	ConcentratedPoisonMultiplier = iPoisonChargeMultiplier 									; Otherwise apply the multiplier set in the iEquip MCM slider (default = 2 (vanilla))
+	            endIf
 	        endIf
 	        
 	        int chargesToApply
@@ -4967,8 +5002,17 @@ string function GetItemIconName(form itemForm, int itemType, string itemName)
     if itemType < 13 														; It is a weapon
 
     	int uniqueItemIndex = aUniqueItems.Find(itemForm as weapon)			; First check if it is a Unique
+    	
+    	int ZIAAltUniqueIndex = -1
+    	if uniqueItemIndex == -1 && bIsZIALoaded
+    		ZIAAltUniqueIndex = aZIAAltUniques.Find(itemForm as weapon)		; Or if it is one of the alternative uniques from ZIA
+    	endIf
+
     	if uniqueItemIndex != -1
     		IconName = asUniqueItemIcons[uniqueItemIndex]
+
+    	elseIf ZIAAltUniqueIndex != -1
+    		IconName = aZIAAltUniques[ZIAAltUniqueIndex]
     	
     	elseIf bIsAALoaded 													; Next, if Animated Armoury is loaded check if it's a pike, halberd, quarterstaff or claw weapon (will also pick up Immersive Weapons and Heavy Armory weapons if the AA patches are loaded)
         	if itemForm.HasKeyword(WeapTypeHalberd)
