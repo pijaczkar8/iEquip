@@ -152,6 +152,9 @@ bool property bIsAGOLoaded auto hidden
 ; Legacy of the Dragonborn
 bool property bIsLOTDLoaded auto hidden
 
+; Ordinator
+bool bIsOrdinatorLoaded
+
 ; Zim's Immersive Artifacts support
 bool bIsZIALoaded
 weapon[] aZIAAltUniques
@@ -1001,6 +1004,9 @@ function CheckDependencies()
     	remove2HWeaponsFromLeftQueue()
     endIf
     bIsCGOLoaded = isCGOLoaded
+
+    ; Ordinator
+    bIsOrdinatorLoaded = Game.GetModByName("Ordinator - Perks of Skyrim.esp") != 255
 
     ; Thunderchild
     EH.bIsThunderchildLoaded = Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
@@ -4467,10 +4473,11 @@ function applyPoison(int Q)
 	        endIf
 	        
 	        int ConcentratedPoisonMultiplier = 1
+	        int AdditionalDoses
 	        
 	        if PlayerRef.HasPerk(ConcentratedPoison)														; If the player has the Concentrated Poison perk
-	            if Game.GetModByName("Ordinator - Perks of Skyrim.esp") != 255
-	            	ConcentratedPoisonMultiplier = PlayerRef.GetActorValue("Alchemy") as int % 10			; If Ordinator is loaded then apply the Bottomless Cup multiplier based on the players current Alchemy level
+	            if bIsOrdinatorLoaded
+	            	AdditionalDoses = PlayerRef.GetActorValue("Alchemy") as int % 10						; If Ordinator is loaded then apply the Bottomless Cup calculation based on the players current Alchemy level
 	            else
 	            	ConcentratedPoisonMultiplier = iPoisonChargeMultiplier 									; Otherwise apply the multiplier set in the iEquip MCM slider (default = 2 (vanilla))
 	            endIf
@@ -4479,14 +4486,17 @@ function applyPoison(int Q)
 	        int chargesToApply
 	        
 	        if iEquip_FormExt.isWax(poisonToApply as form) || iEquip_FormExt.isOil(poisonToApply as form)	; CACO waxes and Smithing Oils last for 10 uses so use that as the base value
+
 	            chargesToApply = 10 * ConcentratedPoisonMultiplier
 	        else
 	            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier						; Otherwise use the iEquip MCM 'Charges Per Vial' value as the base value (default = 1)
 	        endIf
 
 	        if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level additional charges
-	        	chargesToApply += (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() 	; DSer_PoisonCount
+	        	AdditionalDoses += (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() 	; DSer_PoisonCount
 	        endIf
+
+	        chargesToApply += AdditionalDoses
 	        
 	        if currentPoison == poisonToApply
 	            SetPoisonCount(currentWeapon as form, refHandle, chargesToApply + GetPoisonCount(currentWeapon as form, refHandle))
