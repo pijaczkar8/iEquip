@@ -208,13 +208,13 @@ State gen_tgl_onOff
                     IgnoreAltStartQuestWarnings = true
                 elseIf (LALChargen && !LALChargen.IsCompleted()) && MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenFirst", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
                     IgnoreAltStartQuestWarnings = true
-                elseIf (UnboundChargen && !UnboundChargen.IsCompleted()) && MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenUnboundFirst", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
+                elseIf (UnboundChargen && !(UnboundChargen.IsCompleted() || UnboundChargen.GetStage() == 100)) && MCM.ShowMessage("$iEquip_MCM_gen_mes_finishChargenUnboundFirst", true, iEquip_StringExt.LocalizeString("$iEquip_btn_continue"), "$Cancel")
                     IgnoreAltStartQuestWarnings = true
                 endIf
                 
                 if EH.bPlayerIsABeast
                     MCM.ShowMessage("$iEquip_MCM_gen_mes_transformBackFirst", false, "$OK")
-                elseIf !(LALChargen || UnboundChargen) || (LALChargen && LALChargen.IsCompleted()) || (UnboundChargen && UnboundChargen.IsCompleted()) || IgnoreAltStartQuestWarnings
+                elseIf !(LALChargen || UnboundChargen) || (LALChargen && LALChargen.IsCompleted()) || (UnboundChargen && (UnboundChargen.IsCompleted() || UnboundChargen.GetStage() == 100)) || IgnoreAltStartQuestWarnings
                     MCM.bEnabled = true
                     bFirstEnabled = true
                     MCM.forcePageReset()
