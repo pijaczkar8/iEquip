@@ -29,6 +29,7 @@ iEquip_AmmoMode property AM auto
 iEquip_ProMode property PM auto
 iEquip_BeastMode property BM auto
 iEquip_PotionScript property PO auto
+iEquip_ThrowingPoisons property TP auto
 iEquip_TorchScript property TO auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_BoundWeaponEventsListener property BW auto
@@ -1187,6 +1188,7 @@ state ENABLED
 		PM.OnWidgetLoad()
 		AM.OnWidgetLoad()
 		CM.OnWidgetLoad()
+		TP.OnWidgetLoad()
 		
 		OnWidgetReset()
 

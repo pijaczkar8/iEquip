@@ -36,6 +36,7 @@ int property iQuickLightKey = -1 auto hidden
 int property iQuickRestoreKey = -1 auto hidden
 int property iQuickShieldKey = -1 auto hidden
 int property iQuickRangedKey = -1 auto hidden
+int property iThrowingPoisonsKey = -1 auto hidden
 
 ; Edit Mode Keys
 int property iEditNextKey = 55 auto hidden ;Num *
@@ -78,6 +79,7 @@ int iMultiTap
 
 int[] aiGPPComboKeys
 int[] aiExtKbKeys
+int[] aiSingleFunctionKeys
 
 ; Strings
 string sPreviousState
@@ -89,12 +91,14 @@ string sPreviousState
 event onInit()
 	aiGPPComboKeys = new int[4]
     aiExtKbKeys = new int[6]
+    aiSingleFunctionKeys = new int[6]
     int i
     while i < 6
         if i < 4
     	   aiGPPComboKeys[i] = -1
         endIf
         aiExtKbKeys[i] = -1
+        aiSingleFunctionKeys[i] = -1
         i += 1
     endWhile
 endEvent
@@ -370,6 +374,7 @@ event OnKeyUp(int KeyCode, Float HoldTime)
 
     if bAllowKeyPress && KeyCode == iWaitingKeyCode && iMultiTap == 0
         iMultiTap = 1
+        if 
         RegisterForSingleUpdate(fMultiTapDelay)
     endIf
     ;debug.trace("iEquip_KeyHandler OnKeyUp end")
@@ -820,6 +825,9 @@ function RegisterForGameplayKeys()
     RegisterForKey(iUtilityKey)
     if iQuickLightKey != -1
         RegisterForKey(iQuickLightKey)
+    endIf
+    if iThrowingPoisonsKey != -1
+        RegisterForKey(iThrowingPoisonsKey)
     endIf
     if bExtendedKbControlsEnabled
         if iConsumeItemKey != -1

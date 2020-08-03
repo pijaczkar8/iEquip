@@ -4,6 +4,8 @@ import iEquip_StringExt
 
 iEquip_RechargeScript Property RC Auto
 iEquip_ChargeMeters Property CM Auto
+iEquip_ThrowingPoisons Property TP Auto
+iEquip_KeyHandler Property KH Auto
 
 string[] chargeDisplayOptions
 string[] meterFillDirectionOptions
@@ -11,6 +13,8 @@ string[] rawMeterFillDirectionOptions
 int[] meterFillDirection
 string[] poisonMessageOptions
 string[] poisonIndicatorOptions
+string[] throwingPoisonOptions
+string[] throwingPoisonHands
 
 ; #############
 ; ### SETUP ###
@@ -45,6 +49,15 @@ function initData()
     poisonIndicatorOptions[1] = "$iEquip_MCM_rep_opt_DropCount"
     poisonIndicatorOptions[2] = "$iEquip_MCM_rep_opt_Drop"
     poisonIndicatorOptions[3] = "$iEquip_MCM_rep_opt_Drops"
+
+    throwingPoisonOptions = new String[3]
+    throwingPoisonOptions[0] = "$iEquip_MCM_common_opt_disabled"
+    throwingPoisonOptions[1] = "$iEquip_MCM_rep_opt_TP_ThrowSwitchBack"
+    throwingPoisonOptions[2] = "$iEquip_MCM_rep_opt_TP_Toggle"
+
+    throwingPoisonHands = new String[2]
+    throwingPoisonHands[0] = "$iEquip_MCM_pot_opt_left"
+    throwingPoisonHands[1] = "$iEquip_MCM_pot_opt_right"
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -193,6 +206,18 @@ function drawPage()
         MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
         MCM.AddMenuOptionST("rep_men_poisonIndStyle", "$iEquip_MCM_rep_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
+
+        MCM.AddEmptyOption()
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_ThrowingPoisonOptions</font>")
+        if !WC.bPowerOfThreeExtenderLoaded
+
+        else
+            MCM.AddMenuOptionST("rep_men_throwingPoisons", "$iEquip_MCM_rep_lbl_throwingPoisons", throwingPoisonOptions[TP.iThrowingPoisonBehavior])
+            if TP.iThrowingPoisonBehavior > 0
+                MCM.AddKeyMapOptionST("rep_key_throwingPoisons", "$iEquip_MCM_rep_lbl_throwingPoisonsKey", KH.iThrowingPoisonsKey, mcmUnmapFLAG)
+                MCM.AddTextOptionST("rep_men_throwingPoisonsHand", "$iEquip_MCM_rep_lbl_throwingPoisonsHand", throwingPoisonHands[TP.iThrowingPoisonHand])
+            endIf
+        endIf
     else
         MCM.AddToggleOptionST("rep_tgl_enblPoisonSlt", "<font color='#ff7417'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
     endIf
