@@ -341,7 +341,7 @@ int property iShowPoisonMessages auto hidden
 int property iPoisonIndicatorStyle = 1 auto hidden
 bool property bPoisonIndicatorStyleChanged auto hidden
 bool property bBeastModeOptionsChanged auto hidden
-
+bool property bThrowingPoisonsDisabled auto hidden
 
 int property iPosInd = 1 auto hidden
 int property iPositionIndicatorColor = 0xFFFFFF auto hidden
@@ -5667,6 +5667,9 @@ function ApplyChanges()
 		bAmmoIconChanged = true
 		bAttributeIconsOptionChanged = true
 		bPoisonIndicatorStyleChanged = true
+		if TP.iThrowingPoisonBehavior == 0 && TP.bPoisonEquipped
+			bThrowingPoisonsDisabled = true
+		endIf
 		CM.bSettingsChanged = true
 		TO.bSettingsChanged = true
 		bTemperDisplaySettingChanged = true
@@ -5814,6 +5817,9 @@ function ApplyChanges()
 				i += 1
 			endwhile
 		endIf
+		if bThrowingPoisonsDisabled
+			TP.GoToState("DISABLED")
+		endIf
 		if bPoisonIndicatorStyleChanged
 			i = 0
 			while i < 2
@@ -5894,6 +5900,7 @@ function ApplyChanges()
 	bAmmoIconChanged = false
 	bAttributeIconsOptionChanged = false
 	bPoisonIndicatorStyleChanged = false
+	bThrowingPoisonsDisabled = false
 	CM.bSettingsChanged = false
 	bTemperDisplaySettingChanged = false
 	bPotionGroupingOptionsChanged = false

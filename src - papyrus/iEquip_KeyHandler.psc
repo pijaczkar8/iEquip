@@ -13,6 +13,7 @@ iEquip_ProMode property PM auto
 iEquip_RechargeScript property RC auto
 iEquip_HelpMenu property HM auto
 iEquip_TorchScript property TO auto
+iEquip_ThrowingPoisons property TP auto
 
 Actor property PlayerRef  auto
 
@@ -227,6 +228,8 @@ function updateExtKbKeysArray()
         aiExtKbKeys[4] = -1
         aiExtKbKeys[5] = -1
     endIf
+    aiSingleFunctionKeys = aiExtKbKeys
+    aiSingleFunctionKeys[0] = iThrowingPoisonsKey
 endFunction
 
 bool property bPlayerIsABeast
@@ -374,8 +377,11 @@ event OnKeyUp(int KeyCode, Float HoldTime)
 
     if bAllowKeyPress && KeyCode == iWaitingKeyCode && iMultiTap == 0
         iMultiTap = 1
-        if 
-        RegisterForSingleUpdate(fMultiTapDelay)
+        if aiSingleFunctionKeys.Find(KeyCode) != -1 || (KeyCode == iQuickLightKey && PlayerRef.GetEquippedItemType(0) != 11)
+            RegisterForSingleUpdate(0.0)
+        else
+            RegisterForSingleUpdate(fMultiTapDelay)
+        endIf
     endIf
     ;debug.trace("iEquip_KeyHandler OnKeyUp end")
 endEvent
@@ -450,6 +456,8 @@ function runUpdate()
             WC.cycleSlot(1, bIsUtilityKeyHeld, false, false, true)
         elseIf iWaitingKeyCode == iQuickLightKey
             TO.quickLight()
+        elseIf iWaitingKeyCode == iThrowingPoisonsKey
+            TP.OnThrowingPoisonKeyPressed()
         
         ; Extended Keyboard Controls
         elseIf iWaitingKeyCode == iConsumeItemKey && bExtendedKbControlsEnabled && WC.bConsumablesEnabled

@@ -23,6 +23,7 @@ iEquip_InventoryEventsListener Property IE Auto
 iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_TorchScript property TO auto
+iEquip_ThrowingPoisons property TP auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot

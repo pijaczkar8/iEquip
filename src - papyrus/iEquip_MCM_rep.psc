@@ -210,12 +210,13 @@ function drawPage()
         MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_ThrowingPoisonOptions</font>")
         if !WC.bPowerOfThreeExtenderLoaded
-
+            MCM.AddTextOptionST("rep_txt_throwingPoisonsDisabled_a", "$iEquip_MCM_rep_lbl_throwingPoisonsDisabled_a", "")
+            MCM.AddTextOptionST("rep_txt_throwingPoisonsDisabled_b", "$iEquip_MCM_rep_lbl_throwingPoisonsDisabled_b", "")
         else
-            MCM.AddMenuOptionST("rep_men_throwingPoisons", "$iEquip_MCM_rep_lbl_throwingPoisons", throwingPoisonOptions[TP.iThrowingPoisonBehavior])
+            MCM.AddMenuOptionST("rep_men_throwingPoisonsBehavior", "$iEquip_MCM_rep_lbl_throwingPoisonsBehavior", throwingPoisonOptions[TP.iThrowingPoisonBehavior])
             if TP.iThrowingPoisonBehavior > 0
-                MCM.AddKeyMapOptionST("rep_key_throwingPoisons", "$iEquip_MCM_rep_lbl_throwingPoisonsKey", KH.iThrowingPoisonsKey, mcmUnmapFLAG)
-                MCM.AddTextOptionST("rep_men_throwingPoisonsHand", "$iEquip_MCM_rep_lbl_throwingPoisonsHand", throwingPoisonHands[TP.iThrowingPoisonHand])
+                MCM.AddKeyMapOptionST("rep_key_throwingPoisonsKey", "$iEquip_MCM_rep_lbl_throwingPoisonsKey", KH.iThrowingPoisonsKey, mcmUnmapFLAG)
+                MCM.AddTextOptionST("rep_txt_throwingPoisonsHand", "$iEquip_MCM_rep_lbl_throwingPoisonsHand", throwingPoisonHands[TP.iThrowingPoisonHand])
             endIf
         endIf
     else
@@ -677,6 +678,59 @@ State rep_men_poisonIndStyle
             WC.iPoisonIndicatorStyle = currentVar as int
             MCM.SetMenuOptionValueST(poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
             WC.bPoisonIndicatorStyleChanged = true
+        endIf 
+    endEvent
+endState
+
+; ---------------------------
+; - Throwing Poison Options -
+; ---------------------------
+
+State rep_men_throwingPoisonsBehavior
+    event OnBeginState()
+        int prevValue = TP.iThrowingPoisonBehavior
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonsBehavior")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(TP.iThrowingPoisonBehavior, throwingPoisonOptions, 1)
+        elseIf currentEvent == "Accept"
+            TP.iThrowingPoisonBehavior = currentVar as int
+            if currentVar as int == 0 && TP.bPoisonEquipped
+                WC.bThrowingPoisonsDisabled = true
+            endIf
+            if prevValue > 0 && currentVar as int > 0
+                MCM.SetMenuOptionValueST(throwingPoisonOptions[TP.iThrowingPoisonBehavior])
+            else
+                MCM.forcePageReset()
+            endIf
+        endIf 
+    endEvent
+endState
+
+State rep_key_throwingPoisonsKey
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonsKey")
+        elseIf currentEvent == "Change" || "Default"
+            if currentEvent == "Change"
+                KH.iThrowingPoisonsKey = currentVar as int
+            else
+                KH.iThrowingPoisonsKey = -1
+            endIf
+            KH.updateExtKbKeysArray()
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iThrowingPoisonsKey)        
+        endIf
+    endEvent
+endState
+
+State rep_txt_throwingPoisonsHand
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonsHand")
+        elseIf currentEvent == "Select"
+            TP.iThrowingPoisonHand = !(TP.iThrowingPoisonHand as bool) as int
+            MCM.SetTextOptionValueST(throwingPoisonHands[TP.iThrowingPoisonHand])
         endIf 
     endEvent
 endState
