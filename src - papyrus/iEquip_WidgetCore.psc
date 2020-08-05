@@ -2433,34 +2433,6 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 					itemType = jMap.getInt(targetObject, "iEquipType")
 				endWhile
 				
-				;/if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
-					int newIndex = targetIndex + 1
-					if newIndex == queueLength
-						newIndex = 0
-					endIf
-					bool matchFound
-					; if it is then starting from the currently equipped index search forward for a 1h item
-					while newIndex != targetIndex && !matchFound
-						targetObject = jArray.getObj(targetArray, newIndex)
-						itemType = jMap.getInt(targetObject, "iEquipType")
-						; if the new target item is 2h or ranged, or if it is a 1h item but you only have one of it and it's already equipped in the other hand, or it is unarmed then move on again
-						if (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")) < 2))
-							newIndex += 1
-							;if we have reached the final index in the array then loop to the start and keep counting forward until we reach the original starting point
-							if newIndex == queueLength
-								newIndex = 0
-							endIf				
-						else
-							matchFound = true
-						endIf
-					endwhile
-					; if no suitable items found in either search then don't re-equip anything 
-					if !matchFound
-						return
-					else
-						targetIndex = newIndex ; if a 1h item has been found then set it as the new targetIndex
-					endIf
-				endIf/;
 			endIf
 		elseIf Q == 4 && bPoisonIconFaded
 			checkAndFadePoisonIcon(false)
@@ -4048,10 +4020,6 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 	    		reequipOtherHand(0)
 	    	; If we just equipped the left hand causing a 2H item to be unequipped now re-equip the last known RH 1H item
 	    	elseif Q == 0
-	    		;/currRHType = jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType")
-	    		if (ai2HWeaponTypes.Find(currRHType) > -1 && !(currRHType < 7 && bIsCGOLoaded)) && iLastRH1HItemIndex > -1 && ai2HWeaponTypes.Find(jMap.getInt(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipType")) == -1 && playerStillHasItem(jMap.getForm(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipForm"), jMap.getInt(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipHandle", 0xFFFF))
-					cycleHand(1, iLastRH1HItemIndex, jMap.getForm(jArray.getObj(aiTargetQ[1], iLastRH1HItemIndex), "iEquipForm"))
-				endIf/;
 				PM.quickShieldSwitchRightHand(31, false)
 			else
 				cycleSlot(otherHand, false, true)

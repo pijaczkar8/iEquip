@@ -38,6 +38,8 @@ form property Unarmed auto ; 1F4 Unarmed
 
 light property iEquipTorch auto
 
+weapon property iEquip_ThrowingPoisonWeapon auto
+
 Race PlayerBaseRace
 
 Race Property ArgonianRace auto
@@ -672,7 +674,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		endWhile
 	endIf
 
-	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && akBaseObject != iEquipTorch as form
+	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && akBaseObject != iEquipTorch as form && akBaseObject != iEquip_ThrowingPoisonWeapon as form
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
 			if dualCastCounter == 0
@@ -1023,7 +1025,14 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 endFunction
 
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-  	if akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && akBaseObject == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
+	if akBaseObject as weapon && akBaseObject as weapon == iEquip_ThrowingPoisonWeapon
+		if !TP.bJustUnequippedThrowingPoison
+			TP.OnThrowingPoisonUnequipped()
+		else
+			TP.bJustUnequippedThrowingPoison = false
+		endIf
+
+  	elseIf akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && akBaseObject == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
   		;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
   		GoToState("PROCESSING")
     	TO.onTorchUnequipped()

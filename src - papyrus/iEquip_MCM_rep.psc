@@ -16,6 +16,8 @@ string[] poisonIndicatorOptions
 string[] throwingPoisonOptions
 string[] throwingPoisonHands
 
+int mcmUnmapFLAG
+
 ; #############
 ; ### SETUP ###
 
@@ -58,6 +60,8 @@ function initData()
     throwingPoisonHands = new String[2]
     throwingPoisonHands[0] = "$iEquip_MCM_pot_opt_left"
     throwingPoisonHands[1] = "$iEquip_MCM_pot_opt_right"
+
+    mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -93,6 +97,10 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, WC.iPoisonChargeMultiplier)
 	
 	jArray.addInt(jPageObj, WC.iPoisonIndicatorStyle)
+
+    jArray.addInt(jPageObj, TP.iThrowingPoisonBehavior)
+    jArray.addInt(jPageObj, KH.iThrowingPoisonsKey)
+    jArray.addInt(jPageObj, TP.iThrowingPoisonHand)
 	
 	return jPageObj
 endFunction
@@ -130,6 +138,10 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	WC.iPoisonChargeMultiplier = jArray.getInt(jPageObj, 22)
 	
 	WC.iPoisonIndicatorStyle = jArray.getInt(jPageObj, 23)
+
+    TP.iThrowingPoisonBehavior = jArray.getInt(jPageObj, 24, 1)
+    KH.iThrowingPoisonsKey = jArray.getInt(jPageObj, 25, -1)
+    TP.iThrowingPoisonHand = jArray.getInt(jPageObj, 26, 1)
 endFunction
 
 function drawPage()
@@ -729,7 +741,7 @@ State rep_txt_throwingPoisonsHand
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonsHand")
         elseIf currentEvent == "Select"
-            TP.iThrowingPoisonHand = !(TP.iThrowingPoisonHand as bool) as int
+            TP.iThrowingPoisonHand = (TP.iThrowingPoisonHand + 1) % 2
             MCM.SetTextOptionValueST(throwingPoisonHands[TP.iThrowingPoisonHand])
         endIf 
     endEvent
