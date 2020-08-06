@@ -1060,7 +1060,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 																		; Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
-	elseIf akBaseItem as ammo
+	elseIf akBaseItem as ammo && Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseItem.GetFormID(), 24), 0xFF)) != "JZBai_ThrowingWpnsLite.esp"
 		AM.onAmmoRemoved(akBaseItem)
 																		; Check if a Bound Shield has just been unequipped
 	elseIf (itemType == 26) && (akBaseItem.GetName() == WC.asCurrentlyEquipped[0]) && (jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType") == 22)
