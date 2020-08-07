@@ -181,6 +181,18 @@ function drawPage()
 		MCM.AddToggleOptionST("ui_tgl_tempInfoBelow", "$iEquip_MCM_ui_lbl_tempInfoBelow", TI.bTemperInfoBelowName)
 	endIf
 
+    MCM.AddToggleOptionST("ui_tgl_altTempLvlNames", "$iEquip_MCM_ui_lbl_altTempLvlNames", TI.bUseAltTemperLevelNames)
+
+    if TI.bUseAltTemperLevelNames
+        MCM.AddInputOptionST("ui_input_tempLvlName_a", "$iEquip_MCM_ui_lbl_tempLvlName_a", TI.getTemperLevelName(0))
+        MCM.AddInputOptionST("ui_input_tempLvlName_b", "$iEquip_MCM_ui_lbl_tempLvlName_b", TI.getTemperLevelName(1))
+        MCM.AddInputOptionST("ui_input_tempLvlName_c", "$iEquip_MCM_ui_lbl_tempLvlName_c", TI.getTemperLevelName(2))
+        MCM.AddInputOptionST("ui_input_tempLvlName_d", "$iEquip_MCM_ui_lbl_tempLvlName_d", TI.getTemperLevelName(3))
+        MCM.AddInputOptionST("ui_input_tempLvlName_e", "$iEquip_MCM_ui_lbl_tempLvlName_e", TI.getTemperLevelName(4))
+        MCM.AddInputOptionST("ui_input_tempLvlName_f", "$iEquip_MCM_ui_lbl_tempLvlName_f", TI.getTemperLevelName(5))
+        MCM.AddInputOptionST("ui_input_tempLvlName_g", "$iEquip_MCM_ui_lbl_tempLvlName_g", TI.getTemperLevelName(6))
+    endIf
+
 	MCM.AddToggleOptionST("ui_tgl_tempTierDisplay", "$iEquip_MCM_ui_lbl_tempTierDisplay", TI.bShowTemperTierIndicator)
 
 	if TI.bShowTemperTierIndicator
@@ -301,6 +313,144 @@ State ui_tgl_tempInfoBelow
             MCM.SetToggleOptionValueST(TI.bTemperInfoBelowName)
             WC.bTemperDisplaySettingChanged = true
         endIf 
+    endEvent
+endState
+
+State ui_tgl_altTempLvlNames
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_altTempLvlNames")
+        elseIf currentEvent == "Select"
+            TI.bUseAltTemperLevelNames = !TI.bUseAltTemperLevelNames
+            MCM.ForcePageReset()
+            WC.bTemperDisplaySettingChanged = true
+        endIf 
+    endEvent
+endState
+
+state ui_input_tempLvlName_a
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_input_tempLvlName_a")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getTemperLevelName(0))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomTemperLevelName(0, currentStrVar)
+            else
+                TI.setCustomTemperLevelName(0, Game.GetGameSettingString("sHealthDataPrefixWeap" + 1 as string))
+            endIf
+            MCM.SetInputOptionValueST(currentStrVar)
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_tempLvlName_b
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_input_tempLvlName_b")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getTemperLevelName(1))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomTemperLevelName(1, currentStrVar)
+            else
+                TI.setCustomTemperLevelName(1, Game.GetGameSettingString("sHealthDataPrefixWeap" + 2 as string))
+            endIf
+            MCM.SetInputOptionValueST(currentStrVar)
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_tempLvlName_c
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_input_tempLvlName_c")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getTemperLevelName(2))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomTemperLevelName(2, currentStrVar)
+            else
+                TI.setCustomTemperLevelName(2, Game.GetGameSettingString("sHealthDataPrefixWeap" + 3 as string))
+            endIf
+            MCM.SetInputOptionValueST(currentStrVar)
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_tempLvlName_d
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_input_tempLvlName_d")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getTemperLevelName(3))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomTemperLevelName(3, currentStrVar)
+            else
+                TI.setCustomTemperLevelName(3, Game.GetGameSettingString("sHealthDataPrefixWeap" + 4 as string))
+            endIf
+            MCM.SetInputOptionValueST(currentStrVar)
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_tempLvlName_e
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_input_tempLvlName_e")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getTemperLevelName(4))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomTemperLevelName(4, currentStrVar)
+            else
+                TI.setCustomTemperLevelName(4, Game.GetGameSettingString("sHealthDataPrefixWeap" + 5 as string))
+            endIf
+            MCM.SetInputOptionValueST(currentStrVar)
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_tempLvlName_f
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_input_tempLvlName_f")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getTemperLevelName(5))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomTemperLevelName(5, currentStrVar)
+            else
+                TI.setCustomTemperLevelName(5, Game.GetGameSettingString("sHealthDataPrefixWeap" + 6 as string))
+            endIf
+            MCM.SetInputOptionValueST(currentStrVar)
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_tempLvlName_g
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_input_tempLvlName_g")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getTemperLevelName(6))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomTemperLevelName(6, currentStrVar)
+            else
+                TI.setCustomTemperLevelName(6, Game.GetGameSettingString("sHealthDataPrefixWeap" + 7 as string))
+            endIf
+            MCM.SetInputOptionValueST(currentStrVar)
+            WC.bTemperDisplaySettingChanged = true
+        endIf
     endEvent
 endState
 
