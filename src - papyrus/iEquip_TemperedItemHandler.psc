@@ -22,6 +22,7 @@ int[] property aiNameElements auto hidden
 ; MCM Properties
 bool property bFadeIconOnDegrade = true auto hidden
 int property iTemperNameFormat = 1 auto hidden
+bool property bUseAltTemperLevelNames auto hidden
 bool property bTemperInfoBelowName auto hidden
 int property iColoredIconStyle = 1 auto Hidden
 int property iColoredIconLevels = 1 auto hidden
@@ -30,6 +31,7 @@ int property iTemperTierDisplayChoice = 0 auto hidden
 bool property bShowFadedTiers = true auto hidden
 
 bool bFirstRun = true
+bool bOriginalLevelNamesArrayCreated
 
 function initialise()
 	debug.trace("iEquip_TemperedItemHandler initialise start")
@@ -38,7 +40,7 @@ function initialise()
 
 	if bFirstRun
 		afTemperLevelMax = new float[6]
-		afTemperLevelMax[0] = 1.0					; Untempered - same value in vanilla and Requiem, no reason to think any other mod would change it from 1.0 (100% of normal base health)
+		afTemperLevelMax[0] = 1.001					; Untempered - same value in vanilla and Requiem, no reason to think any other mod would change it from 1.0 (100% of normal base health) NB - the .001 is to allow for L&Ds micro counter
 		
 		asTemperLevelNames = new string[7]
 		
@@ -67,8 +69,10 @@ function initialise()
 		
 		bFirstRun = false
 	endIf
-	
-	updateTemperLevelArrays()
+
+	if !bUseAltTemperLevelNames
+		updateTemperLevelArrays()
+	endIf
 	
 	debug.trace("iEquip_TemperedItemHandler initialise end")
 endFunction
@@ -102,6 +106,14 @@ function updateTemperLevelArrays()
 	debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays end")
 endFunction
 
+string function getTemperLevelName(int level)
+	return asTemperLevelNames[level]
+endFunction
+
+function setCustomTemperLevelName(int level, string newName)
+	asTemperLevelNames[level] = newName
+endFunction
+
 function checkAndUpdateTemperLevelInfo(int Q)
 	debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - Q: " + Q)
 
@@ -123,7 +135,7 @@ function checkAndUpdateTemperLevelInfo(int Q)
 		
 		int i
 
-		if fItemHealth < afTemperLevelMax[0]		; First check if the item is degraded below vanilla 1.0 (only mods like Loot & Degradation do this)
+		if fItemHealth < 1.0						; First check if the item is degraded below vanilla 1.0 (only mods like Loot & Degradation do this)
 			temperLevelName = iEquip_StringExt.LocalizeString("$iEquip_TI_lbl_Damaged")
 			currentTemperLevelPercent = Round(fItemHealth * 100)
 
@@ -278,20 +290,20 @@ function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, in
 				endIf
 			endIf
 		endIf
-	endIf
-
-	if tempName != jMap.getStr(targetObject, "lastDisplayedName")
-			
-		debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
-		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
-		If(iHandle)
-			UICallback.PushInt(iHandle, aiNameElements[Q])
-			UICallback.PushString(iHandle, tempName)
-			UICallback.Send(iHandle)
-		endIf
-		jMap.setStr(targetObject, "lastDisplayedName", tempName)
-	endIf
 		
+		if tempName != jMap.getStr(targetObject, "lastDisplayedName")
+			
+			debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
+			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
+			If(iHandle)
+				UICallback.PushInt(iHandle, aiNameElements[Q])
+				UICallback.PushString(iHandle, tempName)
+				UICallback.Send(iHandle)
+			endIf
+			jMap.setStr(targetObject, "lastDisplayedName", tempName)
+		endIf
+
+	endIf
 	debug.trace("iEquip_TemperedItemHandler setTemperLevelName end")
 endFunction
 
