@@ -1059,7 +1059,11 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	endIf
 																		; Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
-		PO.onPotionRemoved(akBaseItem)
+		if TP.bBlockInventoryEvents
+			TP.bBlockInventoryEvents = false
+		else
+			PO.onPotionRemoved(akBaseItem)
+		endIf
 	elseIf akBaseItem as ammo && Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseItem.GetFormID(), 24), 0xFF)) != "JZBai_ThrowingWpnsLite.esp"
 		AM.onAmmoRemoved(akBaseItem)
 																		; Check if a Bound Shield has just been unequipped

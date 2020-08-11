@@ -10,6 +10,7 @@ iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
 iEquip_PotionScript Property PO Auto
 iEquip_TorchScript Property TO Auto
+iEquip_ThrowingPoisons property TP auto
 
 Actor Property PlayerRef Auto
 
@@ -34,7 +35,7 @@ function initialise(bool bEnabled)
 endFunction
 
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
-	if akBaseItem as weapon || akBaseItem as ammo || akBaseItem as potion || akBaseItem as light || akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch || (akBaseItem as armor && (akBaseItem as armor).IsShield()) || akBaseItem as scroll
+	if akBaseItem as weapon || akBaseItem as ammo || (akBaseItem as potion && !TP.bBlockInventoryEvents) || akBaseItem as light || akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch || (akBaseItem as armor && (akBaseItem as armor).IsShield()) || akBaseItem as scroll
 		;debug.trace("iEquip_AddedItemHandler OnItemAdded start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
 		
 		if UI.IsMenuOpen("Crafting Menu") || UI.IsMenuOpen("BarterMenu")

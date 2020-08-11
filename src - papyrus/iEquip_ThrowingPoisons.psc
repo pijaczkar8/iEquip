@@ -12,9 +12,11 @@ iEquip_AmmoMode property AM auto
 iEquip_PotionScript property PO auto
 
 Actor property PlayerRef auto
+perk property Poisoner auto
 
 weapon property iEquip_ThrowingPoisonWeapon auto
 spell property iEquip_ThrowingPoisonSpell auto
+perk property iEquip_ThrowingPoisonPerk auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
@@ -41,9 +43,12 @@ int[] aiHandEquipSlots
 
 int property targetHand = 1 auto hidden
 
-potion currentPoison
-
 int targetPoison
+
+potion currentPoison
+potion property thrownPoison auto hidden
+
+bool property bBlockInventoryEvents auto hidden
 
 event OnInit()
 	aiHandEquipSlots = new int[2]
@@ -53,7 +58,8 @@ endEvent
 
 function OnWidgetLoad()
 	;debug.trace("iEquip_TorchScript initialise start")
-	if WC.bPowerOfThreeExtenderLoaded
+	if iThrowingPoisonBehavior == 0
+	;if WC.bPowerOfThreeExtenderLoaded
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
 		RegisterForMenu("InventoryMenu")
@@ -106,8 +112,8 @@ function equipPoison()
 	if newPoison
 		if !currentPoison || currentPoison != newPoison 						; If we're throwing a different poison to last time update the magiceffects on the spell
 			currentPoison = newPoison
-			removeCurrentEffectsFromSpell()
-			addPoisonEffectsToSpell()
+			;removeCurrentEffectsFromSpell()
+			;addPoisonEffectsToSpell()
 		endIf
 		
 		PlayerRef.AddItem(iEquip_ThrowingPoisonWeapon, 1, true) 				; Add the throwing poison weapon
@@ -225,14 +231,19 @@ function addPoisonEffectsToSpell()
 endFunction
 
 function unequipPoison()
-	PlayerRef.UnequipItemEx(iEquip_ThrowingPoisonWeapon)
 	bJustUnequippedThrowingPoison = true
+	PlayerRef.UnequipItemEx(iEquip_ThrowingPoisonWeapon)
 	PlayerRef.RemoveItem(iEquip_ThrowingPoisonWeapon, 1, true)
 	bPoisonEquipped = false
 endFunction
 
 function OnThrowingPoisonUnequipped()					; Only ever called from PlayerEventHandler OnObjectUnequipped if it has been unequipped manually by the player
 	PlayerRef.RemoveItem(iEquip_ThrowingPoisonWeapon, 1, true)
+
+	if PlayerRef.HasPerk(iEquip_ThrowingPoisonPerk)
+		PlayerRef.RemovePerk(iEquip_ThrowingPoisonPerk)
+	endIf
+
 	bPoisonEquipped = false
 	bKeepThrowing = false
 endFunction
@@ -241,7 +252,13 @@ function onPoisonThrown()
 
 	unequipPoison()										; Do this first so the bottle doesn't remain visible in the player's hand at the same time as the projectile bottle appears
 
-	; Cast the spell here
+	if !PlayerRef.HasPerk(Poisoner) && !PlayerRef.HasPerk(iEquip_ThrowingPoisonPerk)
+		PlayerRef.AddPerk(iEquip_ThrowingPoisonPerk)
+	endIf
+
+	thrownPoison = currentPoison
+
+	iEquip_ThrowingPoisonSpell.Cast(PlayerRef)
 	
 	bool bLastOfCurrentPoison = PlayerRef.GetItemCount(currentPoison as form) == 1
 	bool bLastPoisonInQueue = jArray.count(WC.aiTargetQ[4]) == 1 && bLastOfCurrentPoison
@@ -295,6 +312,10 @@ function switchBack(bool unequip = true)
 	;debug.trace("iEquip_ThrowingPoisons switchBack start")
 	if unequip
 		unequipPoison()
+	endIf
+
+	if PlayerRef.HasPerk(iEquip_ThrowingPoisonPerk)
+		PlayerRef.RemovePerk(iEquip_ThrowingPoisonPerk)
 	endIf
 
 	if iPreviousLeftHandIndex != -1
