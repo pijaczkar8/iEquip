@@ -322,6 +322,9 @@ State ui_tgl_altTempLvlNames
             MCM.SetInfoText("$iEquip_MCM_ui_txt_altTempLvlNames")
         elseIf currentEvent == "Select"
             TI.bUseAltTemperLevelNames = !TI.bUseAltTemperLevelNames
+            if !TI.bUseAltTemperLevelNames
+                TI.updateTemperLevelArrays()        ; Reset the temper level names to the default game values
+            endIf
             MCM.ForcePageReset()
             WC.bTemperDisplaySettingChanged = true
         endIf 
@@ -340,7 +343,7 @@ state ui_input_tempLvlName_a
             else
                 TI.setCustomTemperLevelName(0, Game.GetGameSettingString("sHealthDataPrefixWeap" + 1 as string))
             endIf
-            MCM.SetInputOptionValueST(currentStrVar)
+            MCM.SetInputOptionValueST(TI.getTemperLevelName(0))
             WC.bTemperDisplaySettingChanged = true
         endIf
     endEvent
@@ -358,7 +361,7 @@ state ui_input_tempLvlName_b
             else
                 TI.setCustomTemperLevelName(1, Game.GetGameSettingString("sHealthDataPrefixWeap" + 2 as string))
             endIf
-            MCM.SetInputOptionValueST(currentStrVar)
+            MCM.SetInputOptionValueST(TI.getTemperLevelName(1))
             WC.bTemperDisplaySettingChanged = true
         endIf
     endEvent
@@ -376,7 +379,7 @@ state ui_input_tempLvlName_c
             else
                 TI.setCustomTemperLevelName(2, Game.GetGameSettingString("sHealthDataPrefixWeap" + 3 as string))
             endIf
-            MCM.SetInputOptionValueST(currentStrVar)
+            MCM.SetInputOptionValueST(TI.getTemperLevelName(2))
             WC.bTemperDisplaySettingChanged = true
         endIf
     endEvent
@@ -394,7 +397,7 @@ state ui_input_tempLvlName_d
             else
                 TI.setCustomTemperLevelName(3, Game.GetGameSettingString("sHealthDataPrefixWeap" + 4 as string))
             endIf
-            MCM.SetInputOptionValueST(currentStrVar)
+            MCM.SetInputOptionValueST(TI.getTemperLevelName(3))
             WC.bTemperDisplaySettingChanged = true
         endIf
     endEvent
@@ -412,7 +415,7 @@ state ui_input_tempLvlName_e
             else
                 TI.setCustomTemperLevelName(4, Game.GetGameSettingString("sHealthDataPrefixWeap" + 5 as string))
             endIf
-            MCM.SetInputOptionValueST(currentStrVar)
+            MCM.SetInputOptionValueST(TI.getTemperLevelName(4))
             WC.bTemperDisplaySettingChanged = true
         endIf
     endEvent
@@ -430,7 +433,7 @@ state ui_input_tempLvlName_f
             else
                 TI.setCustomTemperLevelName(5, Game.GetGameSettingString("sHealthDataPrefixWeap" + 6 as string))
             endIf
-            MCM.SetInputOptionValueST(currentStrVar)
+            MCM.SetInputOptionValueST(TI.getTemperLevelName(5))
             WC.bTemperDisplaySettingChanged = true
         endIf
     endEvent
@@ -448,7 +451,7 @@ state ui_input_tempLvlName_g
             else
                 TI.setCustomTemperLevelName(6, Game.GetGameSettingString("sHealthDataPrefixWeap" + 7 as string))
             endIf
-            MCM.SetInputOptionValueST(currentStrVar)
+            MCM.SetInputOptionValueST(TI.getTemperLevelName(6))
             WC.bTemperDisplaySettingChanged = true
         endIf
     endEvent
