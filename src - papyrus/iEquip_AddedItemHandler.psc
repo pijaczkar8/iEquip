@@ -10,12 +10,12 @@ iEquip_WidgetCore Property WC Auto
 iEquip_AmmoMode Property AM Auto
 iEquip_PotionScript Property PO Auto
 iEquip_TorchScript Property TO Auto
-iEquip_ThrowingPoisons property TP auto
 
 Actor Property PlayerRef Auto
 
 light property iEquipDroppedTorch auto
 MiscObject property iEquipBurntOutTorch auto
+Weapon property iEquip_ThrowingPoisonWeapon auto
 
 FormList Property iEquip_RemovedItemsFLST Auto
 FormList Property iEquip_ItemsToAddFLST Auto
@@ -25,18 +25,18 @@ bool bSwitchingTorches
 bool bCraftingOrBarterMenuOpen
 
 function initialise(bool bEnabled)
-	;debug.trace("iEquip_AddedItemHandler initialise start")
+	debug.trace("iEquip_AddedItemHandler initialise start")
 	if bEnabled
 		GoToState("")
 	else
 		GoToState("DISABLED")
 	endIf
-	;debug.trace("iEquip_AddedItemHandler initialise end")
+	debug.trace("iEquip_AddedItemHandler initialise end")
 endFunction
 
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
-	if akBaseItem as weapon || akBaseItem as ammo || (akBaseItem as potion && !TP.bBlockInventoryEvents) || akBaseItem as light || akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch || (akBaseItem as armor && (akBaseItem as armor).IsShield()) || akBaseItem as scroll
-		;debug.trace("iEquip_AddedItemHandler OnItemAdded start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
+	if (akBaseItem as weapon && akBaseItem != iEquip_ThrowingPoisonWeapon as form) || akBaseItem as ammo || akBaseItem as potion || akBaseItem as light || akBaseItem == iEquipDroppedTorch || akBaseItem == iEquipBurntOutTorch || (akBaseItem as armor && (akBaseItem as armor).IsShield()) || akBaseItem as scroll
+		debug.trace("iEquip_AddedItemHandler OnItemAdded start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference + ", bSwitchingTorches: " + bSwitchingTorches)
 		
 		if UI.IsMenuOpen("Crafting Menu") || UI.IsMenuOpen("BarterMenu")
 			bCraftingOrBarterMenuOpen = true
@@ -53,16 +53,16 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 			akItemReference.Disable()
 			TO.aDroppedTorches[TO.aDroppedTorches.Find(akItemReference)] = none
 		endIf
-		;debug.trace("iEquip_AddedItemHandler OnItemAdded end")
+		debug.trace("iEquip_AddedItemHandler OnItemAdded end")
 	endIf
 endEvent
 
 event OnUpdate()
-	;debug.trace("iEquip_AddedItemHandler OnUpdate start")
+	debug.trace("iEquip_AddedItemHandler OnUpdate start")
 	int i
 	int j
 	int numForms = iEquip_ItemsToAddFLST.GetSize()
-	;debug.trace("iEquip_AddedItemHandler OnUpdate - number of forms to process: " + numForms)
+	debug.trace("iEquip_AddedItemHandler OnUpdate - number of forms to process: " + numForms)
 	form formToAdd
 	while i < numForms
 		formToAdd = iEquip_ItemsToAddFLST.GetAt(i)
@@ -114,7 +114,7 @@ event OnUpdate()
 	endWhile
 	iEquip_ItemsToAddFLST.Revert()
 	bCraftingOrBarterMenuOpen = false
-	;debug.trace("iEquip_AddedItemHandler OnUpdate end - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
+	debug.trace("iEquip_AddedItemHandler OnUpdate end - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
 endEvent
 
 auto state DISABLED

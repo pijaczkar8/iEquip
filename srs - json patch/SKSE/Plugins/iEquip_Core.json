@@ -1520,5 +1520,573 @@
 			"formID": "0x3738EC",
 			"isLightMod": false
 		}
+	],
+	"rangedSpells": [
+		{
+			"name": "Calm",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEE9",
+			"isLightMod": false
+		},
+		{
+			"name": "Chain Lightning",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x045F9D",
+			"isLightMod": false
+		},
+		{
+			"name": "Courage",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEE8",
+			"isLightMod": false
+		},
+		{
+			"name": "Dread Zombie",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x096D95",
+			"isLightMod": false
+		},
+		{
+			"name": "Fear",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEEA",
+			"isLightMod": false
+		},
+		{
+			"name": "Fireball",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x01C789",
+			"isLightMod": false
+		},
+		{
+			"name": "Firebolt",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x012FD0",
+			"isLightMod": false
+		},
+		{
+			"name": "Frenzy",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEEE",
+			"isLightMod": false
+		},
+		{
+			"name": "Fury",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEEB",
+			"isLightMod": false
+		},
+		{
+			"name": "Ice Spike",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x02B96C",
+			"isLightMod": false
+		},
+		{
+			"name": "Ice Storm",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x045F9C",
+			"isLightMod": false
+		},
+		{
+			"name": "Icy Spear",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x10F7EC",
+			"isLightMod": false
+		},
+		{
+			"name": "Incinerate",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x10F7ED",
+			"isLightMod": false
+		},
+		{
+			"name": "Lightning Bolt",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x02DD29",
+			"isLightMod": false
+		},
+		{
+			"name": "Pacify",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEED",
+			"isLightMod": false
+		},
+		{
+			"name": "Paralyze",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x05AD5F",
+			"isLightMod": false
+		},
+		{
+			"name": "Raise Zombie",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x07E8E1",
+			"isLightMod": false
+		},
+		{
+			"name": "Rally",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEEC",
+			"isLightMod": false
+		},
+		{
+			"name": "Reanimate Corpse",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x065BD7",
+			"isLightMod": false
+		},
+		{
+			"name": "Repel Lesser Undead",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04D3F8",
+			"isLightMod": false
+		},
+		{
+			"name": "Repel Undead",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x05DD60",
+			"isLightMod": false
+		},
+		{
+			"name": "Revenant",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x096D94",
+			"isLightMod": false
+		},
+		{
+			"name": "Rout",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEEF",
+			"isLightMod": false
+		},
+		{
+			"name": "Soul Trap",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DBA4",
+			"isLightMod": false
+		},
+		{
+			"name": "Thunderbolt",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x10F7EE",
+			"isLightMod": false
+		},
+		{
+			"name": "Turn Greater Undead",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x05DD5E",
+			"isLightMod": false
+		},
+		{
+			"name": "Turn Lesser Undead",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04B146",
+			"isLightMod": false
+		},
+		{
+			"name": "Turn Undead",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x05DD5D",
+			"isLightMod": false
+		},
+		{
+			"name": "Sun Fire",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x003F52",
+			"isLightMod": false
+		},
+		{
+			"name": "Vampire's Bane",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x0038B6",
+			"isLightMod": false
+		},
+		{
+			"name": "Lightning Jolt",
+			"pluginName": "Requiem.esp",
+			"formID": "0x029AFF",
+			"isLightMod": false
+		},
+		{
+			"name": "Arcane Missile",
+			"pluginName": "Requiem.esp",
+			"formID": "0x02958A",
+			"isLightMod": false
+		},
+		{
+			"name": "Snow Spume",
+			"pluginName": "Requiem.esp",
+			"formID": "0x02A074",
+			"isLightMod": false
+		},
+		{
+			"name": "Venomous Blast",
+			"pluginName": "Requiem.esp",
+			"formID": "0x025F29",
+			"isLightMod": false
+		},
+		{
+			"name": "Firestrike",
+			"pluginName": "Requiem.esp",
+			"formID": "0x029B0E",
+			"isLightMod": false
+		},
+		{
+			"name": "Venomous Shock",
+			"pluginName": "Requiem.esp",
+			"formID": "0x028529",
+			"isLightMod": false
+		},
+		{
+			"name": "Venomous Storm",
+			"pluginName": "Requiem.esp",
+			"formID": "0x029AF4",
+			"isLightMod": false
+		},
+		{
+			"name": "Arcane Storm",
+			"pluginName": "Requiem.esp",
+			"formID": "0x45D3AC",
+			"isLightMod": false
+		},
+		{
+			"name": "Arcane Resonance",
+			"pluginName": "Requiem.esp",
+			"formID": "0x02852F",
+			"isLightMod": false
+		},
+		{
+			"name": "Blackout",
+			"pluginName": "Requiem.esp",
+			"formID": "0x073737",
+			"isLightMod": false
+		},
+		{
+			"name": "Mind Maelstrom",
+			"pluginName": "Requiem.esp",
+			"formID": "0x5C1E31",
+			"isLightMod": false
+		}
+	],
+	"rangedSpells": [
+		{
+			"name": "Staff of Calm",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B8B",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Chain Lightning",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B84",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Courage",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B88",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Fear",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B8C",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Fireballs",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B82",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Firebolts",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04C6CA",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Frenzy",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B8F",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Fury",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B89",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Ice Spikes",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DED8",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Ice Storms",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B83",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Icy Spear",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x10FCF7",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Incineration",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x10FCF2",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Lightning Bolts",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x04DEE3",
+			"isLightMod": false
+		},
+		{
+			"name": "Grand Staff of Charming",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B91",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Paralysis",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B73",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Inspiration",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B8E",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Repulsion",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B9A",
+			"isLightMod": false
+		},
+		{
+			"name": "Grand Staff of Repulsion",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B9B",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Vanquishment",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B92",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Soul Trapping",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0BE122",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Thunderbolts",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x10FCF4",
+			"isLightMod": false
+		},
+		{
+			"name": "Grand Staff of Turning",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B97",
+			"isLightMod": false
+		},
+		{
+			"name": "Minor Staff of Turning",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B94",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Turning",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B95",
+			"isLightMod": false
+		},
+		{
+			"name": "Gadnor's Staff of Charming",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x046E0B",
+			"isLightMod": false
+		},
+		{
+			"name": "Halldir's Staff",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0AB704",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Arcane Authority",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0940D8",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Jyrik Gauldurson",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x0E5F43",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Tandil",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x06A093",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Zombies",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B74",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Reanimation",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B76",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Revenants",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B7A",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Dread Zombies",
+			"pluginName": "Skyrim.esm",
+			"formID": "0x029B7C",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Chain Lightning",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x011D56",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Ruunvald",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x01958C",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Fireballs",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x011D57",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Firebolts",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x011D5D",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Ice Spikes",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x011D5E",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Ice Storms",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x011D5F",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Lightning Bolts",
+			"pluginName": "Dawnguard.esm",
+			"formID": "0x011D60",
+			"isLightMod": false
+		},
+		{
+			"name": "Daedric Staff of Infernal Flames",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072182",
+			"isLightMod": false
+		},
+		{
+			"name": "Ebony Staff of Paralysis",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072163",
+			"isLightMod": false
+		},
+		{
+			"name": "Glass Staff of Icy Spears",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072165",
+			"isLightMod": false
+		},
+		{
+			"name": "Glass Staff of Incineration",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072164",
+			"isLightMod": false
+		},
+		{
+			"name": "Glass Staff of Thunderbolts",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072166",
+			"isLightMod": false
+		},
+		{
+			"name": "Silver Staff of Fireballs",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072157",
+			"isLightMod": false
+		},
+		{
+			"name": "Silver Staff of Icestorms",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072158",
+			"isLightMod": false
+		},
+		{
+			"name": "Silver Staff of Lightning Shackles",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072159",
+			"isLightMod": false
+		},
+		{
+			"name": "Wooden Staff of Firebolts",
+			"pluginName": "Requiem.esp",
+			"formID": "0x07215E",
+			"isLightMod": false
+		},
+		{
+			"name": "Wooden Staff of Ice Spikes",
+			"pluginName": "Requiem.esp",
+			"formID": "0x07215F",
+			"isLightMod": false
+		},
+		{
+			"name": "Wooden Staff of Lightning Bolts",
+			"pluginName": "Requiem.esp",
+			"formID": "0x072160",
+			"isLightMod": false
+		},
+		{
+			"name": "Abominable Staff",
+			"pluginName": "CollegeOfWinterholdImmersive.esp",
+			"formID": "0x49A45D",
+			"isLightMod": false
+		},
+		{
+			"name": "Staff of Worms",
+			"pluginName": "Undeath.esp",
+			"formID": "0x035286",
+			"isLightMod": false
+		}
 	]
 }

@@ -101,6 +101,11 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, TP.iThrowingPoisonBehavior)
     jArray.addInt(jPageObj, KH.iThrowingPoisonsKey)
     jArray.addInt(jPageObj, TP.iThrowingPoisonHand)
+    jArray.addFlt(jPageObj, TP.fThrowingPoisonEffectsMagMult)
+    jArray.addFlt(jPageObj, TP.fPoisonHazardRadius)
+    jArray.addFlt(jPageObj, TP.fPoisonHazardDuration)
+    jArray.addInt(jPageObj, TP.iNumPoisonHazards)
+    jArray.addFlt(jPageObj, TP.fThrowingPoisonProjectileGravity)
 	
 	return jPageObj
 endFunction
@@ -142,6 +147,11 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     TP.iThrowingPoisonBehavior = jArray.getInt(jPageObj, 24, 1)
     KH.iThrowingPoisonsKey = jArray.getInt(jPageObj, 25, -1)
     TP.iThrowingPoisonHand = jArray.getInt(jPageObj, 26, 1)
+    TP.fThrowingPoisonEffectsMagMult = jArray.getFlt(jPageObj, 27, 0.6)
+    TP.fPoisonHazardRadius = jArray.getFlt(jPageObj, 28, 6.0)
+    TP.fPoisonHazardDuration = jArray.getFlt(jPageObj, 29, 5.0)
+    TP.iNumPoisonHazards = jArray.getInt(jPageObj, 30, 5)
+    TP.fThrowingPoisonProjectileGravity = jArray.getFlt(jPageObj, 31, 1.2)
 endFunction
 
 function drawPage()
@@ -220,7 +230,7 @@ function drawPage()
         MCM.AddMenuOptionST("rep_men_poisonIndStyle", "$iEquip_MCM_rep_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
 
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_ThrowingPoisonOptions</font>")
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_ThrowingPoisonOptions</font>")
         if !WC.bPowerOfThreeExtenderLoaded
             MCM.AddTextOptionST("rep_txt_throwingPoisonsDisabled_a", "$iEquip_MCM_rep_lbl_throwingPoisonsDisabled_a", "")
             MCM.AddTextOptionST("rep_txt_throwingPoisonsDisabled_b", "$iEquip_MCM_rep_lbl_throwingPoisonsDisabled_b", "")
@@ -229,6 +239,11 @@ function drawPage()
             if TP.iThrowingPoisonBehavior > 0
                 MCM.AddKeyMapOptionST("rep_key_throwingPoisonsKey", "$iEquip_MCM_rep_lbl_throwingPoisonsKey", KH.iThrowingPoisonsKey, mcmUnmapFLAG)
                 MCM.AddTextOptionST("rep_txt_throwingPoisonsHand", "$iEquip_MCM_rep_lbl_throwingPoisonsHand", throwingPoisonHands[TP.iThrowingPoisonHand])
+                MCM.AddSliderOptionST("rep_sld_throwingPoisonMagnitude", "$iEquip_MCM_rep_lbl_throwingPoisonMagnitude", TP.fThrowingPoisonEffectsMagMult, "{1}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseMag"))
+                MCM.AddSliderOptionST("rep_sld_throwingPoisonRadius", "$iEquip_MCM_rep_lbl_throwingPoisonRadius", TP.fPoisonHazardRadius, "{0} " +  iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_hzrdRadius"))
+                MCM.AddSliderOptionST("rep_sld_throwingPoisonDuration", "$iEquip_MCM_rep_lbl_throwingPoisonDuration", TP.fPoisonHazardDuration, "{0} " +  iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+                MCM.AddSliderOptionST("rep_sld_throwingPoisonLimit", "$iEquip_MCM_rep_lbl_throwingPoisonLimit", TP.iNumPoisonHazards as float, "{0} " +  iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_hzrds"))
+                MCM.AddSliderOptionST("rep_sld_throwingPoisonGravity", "$iEquip_MCM_rep_lbl_throwingPoisonGravity", TP.fThrowingPoisonProjectileGravity, "{1}")
             endIf
         endIf
     else
@@ -743,6 +758,78 @@ State rep_txt_throwingPoisonsHand
         elseIf currentEvent == "Select"
             TP.iThrowingPoisonHand = (TP.iThrowingPoisonHand + 1) % 2
             MCM.SetTextOptionValueST(throwingPoisonHands[TP.iThrowingPoisonHand])
+        endIf 
+    endEvent
+endState
+
+State rep_sld_throwingPoisonMagnitude
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonMagnitude")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(TP.fThrowingPoisonEffectsMagMult, 0.1, 1.0, 0.1, 0.6)
+        elseIf currentEvent == "Accept"
+            TP.fThrowingPoisonEffectsMagMult = currentVar
+            MCM.SetSliderOptionValueST(TP.fThrowingPoisonEffectsMagMult, "{1}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_baseMag"))
+            if TP.bPoisonEquipped
+                TP.updatePoisonEffectsOnSpell()
+            endIf
+        endIf 
+    endEvent
+endState
+
+State rep_sld_throwingPoisonRadius
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonRadius")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(TP.fPoisonHazardRadius, 1.0, 15.0, 1.0, 6.0)
+        elseIf currentEvent == "Accept"
+            TP.fPoisonHazardRadius = currentVar
+            MCM.SetSliderOptionValueST(TP.fPoisonHazardRadius, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_hzrdRadius"))
+            TP.updateHazardRadius()
+        endIf 
+    endEvent
+endState
+
+State rep_sld_throwingPoisonDuration
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonDuration")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(TP.fPoisonHazardDuration, 1.0, 30.0, 1.0, 5.0)
+        elseIf currentEvent == "Accept"
+            TP.fPoisonHazardDuration = currentVar
+            MCM.SetSliderOptionValueST(TP.fPoisonHazardDuration, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+            TP.updateHazardDuration()
+        endIf 
+    endEvent
+endState
+
+State rep_sld_throwingPoisonLimit
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonLimit")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(TP.iNumPoisonHazards as float, 1.0, 15.0, 1.0, 5.0)
+        elseIf currentEvent == "Accept"
+            TP.iNumPoisonHazards = currentVar as int
+            MCM.SetSliderOptionValueST(TP.iNumPoisonHazards as float, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_rep_lbl_hzrds"))
+            TP.updateHazardLimit()
+        endIf 
+    endEvent
+endState
+
+State rep_sld_throwingPoisonGravity
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_throwingPoisonGravity")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(TP.fThrowingPoisonProjectileGravity, 0.0, 2.0, 0.1, 1.2)
+        elseIf currentEvent == "Accept"
+            TP.fThrowingPoisonProjectileGravity = currentVar
+            MCM.SetSliderOptionValueST(TP.fThrowingPoisonProjectileGravity, "{1}")
+            TP.updateProjectileGravity()
         endIf 
     endEvent
 endState

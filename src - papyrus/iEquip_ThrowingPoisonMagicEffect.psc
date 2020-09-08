@@ -1,13 +1,8 @@
 ScriptName iEquip_ThrowingPoisonMagicEffect extends activemagiceffect Hidden
 
-iEquip_ThrowingPoisons property TP auto
-
-Actor property PlayerRef auto
+spell property deliverySpell auto
 
 event OnEffectStart(Actor akTarget, Actor akCaster)
-	form fPoison = TP.thrownPoison as form
-
-	TP.bBlockInventoryEvents = true
-	PlayerRef.AddItem(fPoison, 1, true)
-	PlayerRef.RemoveItem(fPoison, 1, false, akTarget)
+	debug.trace("iEquip_ThrowingPoisonMagicEffect OnEffectStart - " + akTarget.GetDisplayName() + " - " + akTarget as ObjectReference + " is about to cast " + deliverySpell.GetName() + " on themselves")
+	deliverySpell.Cast(akCaster, akTarget)
 endEvent

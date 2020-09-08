@@ -123,7 +123,7 @@ int[] itemTypesToProcess
 int[] specificHandedItems
 
 Event OnInit()
-	;debug.trace("iEquip_PlayerEventHandler OnInit start")
+	debug.trace("iEquip_PlayerEventHandler OnInit start")
     
     aPlayerBaseRaces = new race[10]
     aPlayerBaseRaces[0] = ArgonianRace
@@ -174,17 +174,17 @@ Event OnInit()
 
 	abSkipQueueObjectUpdate = new bool[2]
 
-	;debug.trace("iEquip_PlayerEventHandler OnInit end")
+	debug.trace("iEquip_PlayerEventHandler OnInit end")
 endEvent
 
 Event OnPlayerLoadGame()
-	;debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")
+	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")
 	initialise(WC.isEnabled)
-	;debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame end")
+	debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame end")
 endEvent
 
 function initialise(bool enabled)
-	;debug.trace("iEquip_PlayerEventHandler initialise start")	
+	debug.trace("iEquip_PlayerEventHandler initialise start")	
 	if enabled
 		gotoState("")
 		WidgetRoot = WC.WidgetRoot
@@ -221,7 +221,7 @@ function initialise(bool enabled)
 		BM.PlayerBaseRace = PlayerBaseRace
 		bPlayerIsAVampireOrLich = ((aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBaseVampireRaces.Find(PlayerRace)) || (aPlayerBaseRaces.Find(PlayerBaseRace) == aPlayerBasePOTLichRaces.Find(PlayerRace)))
 		bPlayerIsABeast = (BM.arBeastRaces.Find(PlayerRace) > -1)
-		;debug.trace("iEquip_PlayerEventHandler initialise - current PlayerRace: " + PlayerRace.GetName() + ", original race: " + PlayerBaseRace.GetName() + ", bPlayerIsABeast: " + bPlayerIsABeast)
+		debug.trace("iEquip_PlayerEventHandler initialise - current PlayerRace: " + PlayerRace.GetName() + ", original race: " + PlayerBaseRace.GetName() + ", bPlayerIsABeast: " + bPlayerIsABeast)
 		
 		if bPlayerIsABeast
 			registerForBMEvents()
@@ -244,7 +244,7 @@ function initialise(bool enabled)
 	BW.initialise(enabled)
 	TO.initialise(enabled)
 
-	;debug.trace("iEquip_PlayerEventHandler initialise end")
+	debug.trace("iEquip_PlayerEventHandler initialise end")
 endFunction
 
 function registerForCoreAnimationEvents()
@@ -376,12 +376,12 @@ endFunction
 
 bool Property boundSpellEquipped
 	bool function Get()
-		;debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get - bIsBoundSpellEquipped: " + bIsBoundSpellEquipped)
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Get - bIsBoundSpellEquipped: " + bIsBoundSpellEquipped)
 		return bIsBoundSpellEquipped
 	endFunction
 
 	function Set(Bool equipped)
-		;debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set - bIsBoundSpellEquipped: " + equipped)
+		debug.trace("iEquip_PlayerEventHandler boundSpellEquipped Set - bIsBoundSpellEquipped: " + equipped)
 		bIsBoundSpellEquipped = equipped
 		BW.bIsBoundSpellEquipped = equipped
 	endFunction
@@ -389,7 +389,7 @@ endProperty
 
 bool property bJustQuickDualCast
 	bool function Get()
-		;debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Get - bDualCasting: " + bDualCasting)
+		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Get - bDualCasting: " + bDualCasting)
 		return bDualCasting
 	endFunction
 
@@ -400,26 +400,26 @@ bool property bJustQuickDualCast
 		else
 			dualCastCounter = 0
 		endIf
-		;debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Set - bDualCasting: " + bDualCasting + ", dualCastCounter: " + dualCastCounter)
+		debug.trace("iEquip_PlayerEventHandler bJustQuickDualCast Set - bDualCasting: " + bDualCasting + ", dualCastCounter: " + dualCastCounter)
 	endFunction
 endProperty
 
 ; Inventory Event Filters filter what we receive OnItemAdded/OnItemRemoved events for, in this case only OnItemRemoved, so we only receive events for items currently known to iEquip (included in one of the three formlists)
 
 function updateAllEventFilters()
-	;debug.trace("iEquip_PlayerEventHandler updateAllEventFilters start")
+	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters start")
 	RemoveAllInventoryEventFilters()
 	AddInventoryEventFilter(iEquip_AllCurrentItemsFLST)
 	AddInventoryEventFilter(iEquip_AmmoItemsFLST)
 	AddInventoryEventFilter(iEquip_PotionItemsFLST)
-	;debug.trace("iEquip_PlayerEventHandler updateAllEventFilters end")
+	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters end")
 endFunction
 
 function updateEventFilter(formlist listToUpdate)
-	;debug.trace("iEquip_PlayerEventHandler updateEventFilter start")
+	debug.trace("iEquip_PlayerEventHandler updateEventFilter start")
 	RemoveInventoryEventFilter(listToUpdate)
 	AddInventoryEventFilter(listToUpdate)
-	;debug.trace("iEquip_PlayerEventHandler updateEventFilter end")
+	debug.trace("iEquip_PlayerEventHandler updateEventFilter end")
 endFunction
 
 bool bMountedRestrictionsApplied
@@ -476,14 +476,14 @@ endFunction
 /;
 
 Event OnRaceSwitchComplete()
-	;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start - current state: " + GetState())
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete start - current state: " + GetState())
 	if UI.IsMenuOpen("RaceSex Menu")
 		PlayerRace = PlayerRef.GetRace()
 	else
 		race newRace = PlayerRef.GetRace()
-		;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current PlayerRace: " + PlayerRace.GetName() + ", newRace: " + newRace.GetName() + ", original race: " + PlayerBaseRace.GetName())
+		debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - current PlayerRace: " + PlayerRace.GetName() + ", newRace: " + newRace.GetName() + ", original race: " + PlayerBaseRace.GetName())
 		race baseRace = iEquip_ActorExt.GetBaseRace(PlayerRef)
-		;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - baseRace: " + baseRace.GetName())
+		debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - baseRace: " + baseRace.GetName())
 
 		if PlayerRace != newRace
 			PlayerRace = newRace
@@ -491,17 +491,17 @@ Event OnRaceSwitchComplete()
 			bPlayerIsABeast = BM.arBeastRaces.Find(PlayerRace) > -1
 			KH.bPlayerIsABeast = bPlayerIsABeast
 			if bPlayerIsABeast
-				;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsABeast: " + bPlayerIsABeast)
+				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsABeast: " + bPlayerIsABeast)
 				gotoState("BEASTMODE")
 				unregisterForCoreAnimationEvents()
 				registerForBMEvents()
 			elseIf (PlayerRace == PlayerBaseRace) || bPlayerIsAVampireOrLich
-				;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsAVampireOrLich: " + bPlayerIsAVampireOrLich)
+				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - bPlayerIsAVampireOrLich: " + bPlayerIsAVampireOrLich)
 				unregisterForBMEvents()
 				registerForCoreAnimationEvents()
 				gotoState("")
 			else ;If we're not one of the supported beast races, and we're not in our original form then we must be an unsupported transformation so unregister for all events and block all relevant OnXxx events
-				;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - player is in an unsupported form")
+				debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete - player is in an unsupported form")
 				unregisterForAllEvents()
 				gotoState("DISABLED")
 			endIf
@@ -510,11 +510,11 @@ Event OnRaceSwitchComplete()
 			endIf
 		endIf
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete end - new state: " + GetState())
+	debug.trace("iEquip_PlayerEventHandler OnRaceSwitchComplete end - new state: " + GetState())
 EndEvent
 
 Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
-	;debug.trace("iEquip_PlayerEventHandler OnActorAction start - actionType: " + actionType + ", slot: " + slot)	
+	debug.trace("iEquip_PlayerEventHandler OnActorAction start - actionType: " + actionType + ", slot: " + slot)	
 	if akActor == PlayerRef
 		if actionType == 2 ;Spell Cast/Spell Fire
 			;Check if the action has come from a hand with a staff currently equipped
@@ -535,32 +535,37 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 				endIf
 			endIf
 		elseIf actionType == 7 || actionType == 8 ; Draw Begin or Draw End
-			;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
+			debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
 			WC.updateWidgetVisibility()
 			int i = (PlayerRef.GetEquippedItemType(1) == 5 || PlayerRef.GetEquippedItemType(1) == 6) as int 		; Don't need to show the left hand name/poison name if we're drawing a 2H weapon here, if it's a ranged weapon we still need to show the ammo name
 			while i < 2
-				;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, abIsNameShown: " + WC.abIsNameShown[i] + ", abIsPoisonNameShown: " + WC.abIsPoisonNameShown[i])
+				debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, abIsNameShown: " + WC.abIsNameShown[i] + ", abIsPoisonNameShown: " + WC.abIsPoisonNameShown[i])
 				if !WC.abIsNameShown[i]
 					WC.showName(i)
 				endIf
-				if !WC.abIsPoisonNameShown[i] && !(i == 0 && WC.bAmmoMode) && jMap.getInt(jArray.GetObj(WC.aiTargetQ[i], WC.aiCurrentQueuePosition[i]), "isPoisoned") == 1 	; Check and show the poison name if weapon poisoned
+				if !WC.abIsPoisonNameShown[i] && !(i == 0 && WC.bAmmoMode) && !(TP.bPoisonEquipped && TP.iThrowingPoisonHand == i) && jMap.getInt(jArray.GetObj(WC.aiTargetQ[i], WC.aiCurrentQueuePosition[i]), "isPoisoned") == 1 	; Check and show the poison name if weapon poisoned
 					WC.showName(i, true, true)
 				endIf
 				i += 1
 			endWhile
-			if actionType == 8 && bWaitingForEnchantedWeaponDrawn
+			if actionType == 8 && bWaitingForEnchantedWeaponDrawn  ; Draw End
 				CM.updateChargeMetersOnWeaponsDrawn()
 				bWaitingForEnchantedWeaponDrawn = false
 			endIf
-		elseIf actionType == 10 && WC.bIsWidgetShown && WC.bWidgetFadeoutEnabled ;Sheathe End
-			WVis.registerForWidgetFadeoutUpdate()
+		elseIf actionType == 10  ; Sheathe End
+			if TP.bPoisonEquipped
+				TP.OnThrowingPoisonUnequipped(true)
+			endIf
+			if WC.bIsWidgetShown && WC.bWidgetFadeoutEnabled
+				WVis.registerForWidgetFadeoutUpdate()
+			endIf
 		endIf
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler OnActorAction end")
+	debug.trace("iEquip_PlayerEventHandler OnActorAction end")
 endEvent
 
 function updateMeterWhileStaffCasting(int slot)
-	;debug.trace("iEquip_PlayerEventHandler updateMeterWhileStaffCasting start - slot: " + slot)
+	debug.trace("iEquip_PlayerEventHandler updateMeterWhileStaffCasting start - slot: " + slot)
 	int fallback = 20
 	if slot == 0
 		while !(PlayerRef as objectReference).GetAnimationVariableBool("IsCastingLeft") && fallback > 0
@@ -581,11 +586,11 @@ function updateMeterWhileStaffCasting(int slot)
 		     CM.updateMeterPercent(1)
 		endWhile
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler updateMeterWhileStaffCasting end")
+	debug.trace("iEquip_PlayerEventHandler updateMeterWhileStaffCasting end")
 endFunction
 
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
-	;debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
+	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
     int iTmp
     if EventName == "Soundplay.NPCWerewolfTransformation"
     	BM.OnWerewolfTransformationStart()
@@ -623,23 +628,27 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	    	endIf
 	    endIf
     else
-	    iTmp = 2 
-	    if EventName == "weaponLeftSwing"
-	        iTmp = 1
-	    endIf    
-	    if (iSlotToUpdate == -1 || (iSlotToUpdate + iTmp == 2))
-	        iSlotToUpdate += iTmp
-	        if !bWaitingForAnimationUpdate
-	            bWaitingForAnimationUpdate = true
-	            RegisterForSingleUpdate(0.8)
-	        endIf
-	    endIf
+    	if TP.bPoisonEquipped && ((EventName == "weaponSwing" && (TP.iThrowingPoisonHand == 1 || WC.bPlayerIsMounted)) || (EventName == "weaponLeftSwing" && TP.iThrowingPoisonHand == 0))
+	    	TP.onPoisonThrown()
+    	else
+		    iTmp = 2 
+		    if EventName == "weaponLeftSwing"
+		        iTmp = 1
+		    endIf    
+		    if (iSlotToUpdate == -1 || (iSlotToUpdate + iTmp == 2))
+		        iSlotToUpdate += iTmp
+		        if !bWaitingForAnimationUpdate
+		            bWaitingForAnimationUpdate = true
+		            RegisterForSingleUpdate(0.8)
+		        endIf
+		    endIf
+		endIf
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler OnAnimationEvent end")
+	debug.trace("iEquip_PlayerEventHandler OnAnimationEvent end")
 EndEvent
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
-	;debug.trace("iEquip_PlayerEventHandler OnHit start")
+	debug.trace("iEquip_PlayerEventHandler OnHit start")
 	If akAggressor && akSource as Weapon && abHitBlocked
 		int iTmp = 2
 		if PlayerRef.GetEquippedShield()	; We're tracking blocking events here, so if we've got a shield equipped we need to update the left hand, if we don't we must have blocked with out right hand/2H weapon so update right
@@ -653,16 +662,16 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	        endIf
 	    endIf
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler OnHit end")
+	debug.trace("iEquip_PlayerEventHandler OnHit end")
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)	
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)	
 	
 	int itemType = akBaseObject.GetType()
-	;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - itemType: " + itemType)
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - itemType: " + itemType)
 	if itemType == 31	; This just handles the finite torch life timer
-		;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
+		debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
 		TO.onTorchEquipped()
 	endIf
 
@@ -683,7 +692,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		else
 			if itemTypesToProcess.Find(itemType) > -1 || (itemType == 26 && (akBaseObject as Armor).GetSlotMask() == 512)
 				iEquip_OnObjectEquippedFLST.AddForm(akBaseObject)
-				;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_OnObjectEquippedFLST contains " + iEquip_OnObjectEquippedFLST.GetSize() + " entries")
+				debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - iEquip_OnObjectEquippedFLST contains " + iEquip_OnObjectEquippedFLST.GetSize() + " entries")
 				if !bWaitingForTransform
 					if itemType == 31
 						processQueuedForms(0)	; Should allow the left slot to be updated if you just re-equipped a torch having previously unequipped it during burnout, before it is switched to an iEquipTorch
@@ -695,11 +704,11 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 			endIf
 		endIf
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped end")
+	debug.trace("iEquip_PlayerEventHandler OnObjectEquipped end")
 endEvent
 
 Event OnUpdate()
-	;debug.trace("iEquip_PlayerEventHandler OnUpdate start - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate + ", bWaitingForTransform: " + bWaitingForTransform)
+	debug.trace("iEquip_PlayerEventHandler OnUpdate start - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate + ", bWaitingForTransform: " + bWaitingForTransform)
 	if bWaitingForAnimationUpdate
 		bWaitingForAnimationUpdate = false
 		updateWidgetOnWeaponSwing()
@@ -722,11 +731,11 @@ Event OnUpdate()
 		  	endWhile
 		endIf
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler OnUpdate end")	
+	debug.trace("iEquip_PlayerEventHandler OnUpdate end")	
 EndEvent
 
 function updateWidgetOnWeaponSwing()
-	;debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing start")
+	debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing start")
 	if iSlotToUpdate == 0 || iSlotToUpdate == 1
 		If bPoisonSlotEnabled
 			WC.checkAndUpdatePoisonInfo(iSlotToUpdate)
@@ -758,18 +767,18 @@ function updateWidgetOnWeaponSwing()
 		endIf
 	endIf
 	iSlotToUpdate = -1
-	;debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing end")
+	debug.trace("iEquip_PlayerEventHandler updateWidgetOnWeaponSwing end")
 endFunction
 
 ; This event handles auto-adding newly equipped items to the left, right and shout slots
 function processQueuedForms(int equippedSlot = -1)
-	;debug.trace("iEquip_PlayerEventHandler processQueuedForms start - equippedSlot: " + equippedSlot + ", number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())	
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms start - equippedSlot: " + equippedSlot + ", number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())	
 	processingQueuedForms = true
 	int i
 	form queuedForm
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
 		queuedForm = iEquip_OnObjectEquippedFLST.GetAt(i)
-		;debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
+		debug.trace("iEquip_PlayerEventHandler processQueuedForms - i: " + i + ", queuedForm: " + queuedForm + " - " + queuedForm.GetName())
 		if queuedForm
 			if queuedForm as ammo
 				if bTogglingAmmoMode
@@ -795,7 +804,7 @@ function processQueuedForms(int equippedSlot = -1)
 				endIf
 				; If the item has been equipped in the left, right or shout slot
 				if equippedSlot != -1
-					;debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
+					debug.trace("iEquip_PlayerEventHandler processQueuedForms - " + queuedForm.GetName() + " found in equippedSlot: " + equippedSlot)
 					int itemType = queuedForm.GetType()
 					int iEquipSlot
 					; If it's a 2H or ranged weapon or a BothHands spell we'll receive the event for slot 0 so we need to make sure we add it to the right hand queue instead
@@ -827,12 +836,12 @@ function processQueuedForms(int equippedSlot = -1)
 		i += 1
 	endWhile
 	iEquip_OnObjectEquippedFLST.Revert()
-	;debug.trace("iEquip_PlayerEventHandler processQueuedForms end - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
+	debug.trace("iEquip_PlayerEventHandler processQueuedForms end - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
 	processingQueuedForms = false
 endFunction
 
 function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
-	;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start - equippedSlot: " + equippedSlot + ", queuedForm: " + queuedForm + ", itemType: " + itemType + ", iEquipSlot: " + iEquipSlot)
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped start - equippedSlot: " + equippedSlot + ", queuedForm: " + queuedForm + ", itemType: " + itemType + ", iEquipSlot: " + iEquipSlot)
 	bool actionTaken
 	int targetIndex
 	bool blockCall
@@ -849,22 +858,22 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	else
 		itemHandle = WC.getHandle(equippedSlot, itemType)
 
-		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
+		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
 
 		if itemHandle != 0xFFFF
 			itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
 			itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
-			;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+			debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 		endIf
 		
 		if itemName == ""
 			itemName = queuedForm.getName()
 		endIf
 
-		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - final names being saved, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - final names being saved, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 
 		itemID = CalcCRC32Hash(itemName, Math.LogicalAND(queuedForm.GetFormID(), 0x00FFFFFF))
-		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
+		debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - received itemID: " + itemID)
 																											; Check if we've just manually equipped an item that is already in an iEquip queue
 	 	if formFound
 																											; If it's been found in the queue for the equippedSlot it's been equipped to
@@ -940,7 +949,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			endIf
 		endIf
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
 																										; Check that the queuedForm isn't blacklisted for the slot it's been equipped to
 	if !blackListFLSTs[equippedSlot].HasForm(queuedForm) && !(WC.PM.bCurrentlyQuickHealing && itemType == 22 && iEquip_SpellExt.IsHealingSpell(queuedForm as spell))
 																										; If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
@@ -1021,11 +1030,13 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	if equippedSlot == 1 && targetIndex > -1 && ((queuedForm as weapon && WC.ai2HWeaponTypes.Find(itemType) == -1) || queuedForm as scroll || (queuedForm as spell && jMap.getInt(jArray.getObj(WC.aiTargetQ[1], targetIndex), "iEquipSlot") != 3 && jMap.getStr(jArray.getObj(WC.aiTargetQ[1], targetIndex), "iEquipSchool") != "Restoration"))
 		WC.iLastRH1HItemIndex = targetIndex
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
+	debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped end")
 endFunction
 
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
+	debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped start - akBaseObject: " + akBaseObject + " - " + akBaseObject.GetName())
 	if akBaseObject as weapon && akBaseObject as weapon == iEquip_ThrowingPoisonWeapon
+		debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a throwing poison, TP.bJustUnequippedThrowingPoison: " + TP.bJustUnequippedThrowingPoison)
 		if !TP.bJustUnequippedThrowingPoison
 			TP.OnThrowingPoisonUnequipped()
 		else
@@ -1033,7 +1044,7 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
 		endIf
 
   	elseIf akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && akBaseObject == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
-  		;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
+  		debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
   		GoToState("PROCESSING")
     	TO.onTorchUnequipped()
   	endIf
@@ -1045,7 +1056,7 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
 endEvent
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
-	;debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	
+	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	
 	int i
 	int itemType = akBaseItem.GetType()
 
@@ -1059,11 +1070,11 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	endIf
 																		; Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
-		if TP.bBlockInventoryEvents
+		;/if TP.bBlockInventoryEvents
 			TP.bBlockInventoryEvents = false
-		else
+		else/;
 			PO.onPotionRemoved(akBaseItem)
-		endIf
+		;endIf
 	elseIf akBaseItem as ammo && Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseItem.GetFormID(), 24), 0xFF)) != "JZBai_ThrowingWpnsLite.esp"
 		AM.onAmmoRemoved(akBaseItem)
 																		; Check if a Bound Shield has just been unequipped
@@ -1113,11 +1124,11 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
         	i += 1
         endWhile
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
+	debug.trace("iEquip_PlayerEventHandler OnItemRemoved end")
 endEvent
 
 event OnGetUp(ObjectReference akFurniture)
-	;debug.trace("iEquip_PlayerEventHandler OnGetUp start")
+	debug.trace("iEquip_PlayerEventHandler OnGetUp start")
 	if akFurniture.HasKeyword(CraftingSmithingSharpeningWheel) || akFurniture.HasKeyword(CraftingSmithingArmorTable)
 		;Check to see if the equipped hand items have been improved
 		int i
@@ -1137,12 +1148,12 @@ event OnGetUp(ObjectReference akFurniture)
 			i += 1
 		endWhile
 	endIf
-	;debug.trace("iEquip_PlayerEventHandler OnGetUp end")
+	debug.trace("iEquip_PlayerEventHandler OnGetUp end")
 endEvent
 
 state BEASTMODE
 	event OnActorAction(int actionType, Actor akActor, Form source, int slot)
-		;debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE start - actionType: " + actionType + ", slot: " + slot)	
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE start - actionType: " + actionType + ", slot: " + slot)	
 		if akActor == PlayerRef
 			if actionType == 7 || actionType == 8 ;Draw Begin or Draw End
 				if !WC.bIsWidgetShown && !bWaitingForTransform
@@ -1159,17 +1170,17 @@ state BEASTMODE
 				WVis.registerForWidgetFadeoutUpdate()
 			endIf
 		endIf
-		;debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE end")
+		debug.trace("iEquip_PlayerEventHandler OnActorAction BEASTMODE end")
 	endEvent
 
 	event OnAnimationEvent(ObjectReference aktarg, string EventName)
-	    ;debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE received - EventName: " + EventName)
+	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE received - EventName: " + EventName)
 	    if EventName == "LandStart" || EventName == "GroundStart"
 	    	BM.showClaws()
 	    elseIf EventName == "LiftoffStart"
 	    	BM.showPreviousItems()
 	    endIf
-	    ;debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE end")
+	    debug.trace("iEquip_PlayerEventHandler OnAnimationEvent BEASTMODE end")
 	endEvent
 
 	event OnGetUp(ObjectReference akFurniture)

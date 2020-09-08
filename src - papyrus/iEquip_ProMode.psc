@@ -105,6 +105,10 @@ event OnInit()
 	asSpellSchools[2] = "Destruction"
 	asSpellSchools[3] = "Illusion"
 	asSpellSchools[4] = "Restoration"
+
+	abQuickRangedSpellSchoolAllowed = new bool[5]
+	abQuickRangedSpellSchoolAllowed[2] = true	; Destruction spells enabled by default
+	bInitialiseQRSpellSchoolsArray = false
 endEvent
 
 bool bInitialiseQRSpellSchoolsArray = true
@@ -2262,32 +2266,56 @@ function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
 endFunction
 
 bool function scanInventoryForItemOfType(int itemType, bool bFindStaff = false, int Q = -1, bool equippingOtherHand = false)
-	;debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType start - item type to find: " + itemType)
+	debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType start - item type to find: " + itemType)
 	; Possible itemType inputs are 26 - Armor (for shields) or 41 - Weapons (for ranged weapons)
 	int numFound = GetNumItemsOfType(PlayerRef, itemType)
+	debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType - numFound: " + numFound)
 	int i
 	bool found
 	form formToCheck
+	bool skipForm
+	
 	while i < numFound && !found
 		formToCheck = GetNthFormOfType(PlayerRef, itemType, i)
-		if (itemType == 26 && (formToCheck as armor).IsShield()) || (bFindStaff && (formToCheck as weapon).GetWeaponType() == 8 && iEquip_FormExt.IsThrowingKnife(formToCheck) && !((equippingOtherHand && PlayerRef.GetEquippedObject((Q + 1) % 2)) == formToCheck && PlayerRef.GetItemCount(formToCheck) == 1)) || (!bFindStaff && (itemType == 41 && (((formToCheck as weapon).GetWeaponType() == 7 && jArray.count(AM.aiTargetQ[0]) > 0) || ((formToCheck as weapon).GetWeaponType() == 9 && jArray.count(AM.aiTargetQ[1]) > 0))))
-			found = true
+		debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType - formToCheck: " + formToCheck.GetName())
+		
+		if PlayerRef.GetItemCount(formToCheck) == 0
+			debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType - we don't have any of these in our inventory")
+			numFound += 1
+			skipForm = true
+		endIf
+		
+		if !skipForm
+			if itemType == 26
+				if (formToCheck as armor).IsShield()
+					found = true
+				endIf
+			elseIf bFindStaff
+				if (formToCheck as weapon).GetWeaponType() == 8 && iEquip_FormExt.IsStaffRanged(formToCheck) && !(equippingOtherHand && PlayerRef.GetEquippedObject((Q + 1) % 2) == formToCheck && PlayerRef.GetItemCount(formToCheck) == 1)
+					found = true
+				endIf
+			elseIf ((formToCheck as weapon).GetWeaponType() == 7 && jArray.count(AM.aiTargetQ[0]) > 0) || ((formToCheck as weapon).GetWeaponType() == 9 && jArray.count(AM.aiTargetQ[1]) > 0)
+				found = true
+			endIf
 		else
+			skipForm = false
+		endIf
+		
+		if !found
 			i += 1
 		endIf
 	endWhile
 
-	if itemType == 26 	; Shields to left hand queue
-		Q = 0
-	elseIf Q == -1 		; Q will only be -1 if we're looking for a ranged weapon so put into right hand queue
-		Q = 1
-	endIf
-
 	if found
+		if itemType == 26 	; Shields to left hand queue
+			Q = 0
+		elseIf Q == -1 		; Q will only be -1 if we're looking for a ranged weapon so put into right hand queue
+			Q = 1
+		endIf
 		addNonEquippedItemToQueue(Q, formToCheck, itemType)
 	endIf
 
-	;debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType end - returning:" + found)
+	debug.trace("iEquip_ProMode scanInventoryAndAddItemOfType end - returning:" + found)
 	return found
 endFunction
 

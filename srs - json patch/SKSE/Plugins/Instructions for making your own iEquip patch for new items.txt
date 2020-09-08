@@ -1,0 +1,47 @@
+Notes for making your own patch
+
+
+Make a copy of iEquip_Template.json.txt and rename it to give it a unique name, removing the .txt extension (iEquip_WhateverYouLike.json).  
+
+Add new items to the relevant sections (detailed below).  Each item must follow the correct format - name, pluginName, formID, isLightMod.  Refer to iEquip_Core.json to see how it is structured.
+
+At present only pluginName and formID are read, the name and light mod flag are currently just for reference.
+
+The plugin name must be exact, and the formID should not include the mod index (ie if xEdit shows the formID as 0x2A008611 then enter 0x008611).
+
+Each item should be contained within {} with a comma after each.  The final entry in each section should NOT have a comma following it.  For example:
+
+
+
+"spears": [
+	{
+		"name": "Riekling Spear",
+		"pluginName": "Dragonborn.esm",
+		"formID": "0x017720",
+		"isLightMod": false
+	},
+	{
+		"name": "Riekling Spear",
+		"pluginName": "Dragonborn.esm",
+		"formID": "0x01B935",
+		"isLightMod": false
+	}
+],
+
+
+Completely remove any empty subsections you are not adding items to.  Failing to do so will break the entries for that subsection from all patch files including iEquip_Core.json.
+
+
+Sub Sections:
+
+The fire, ice, shock and poison sections are used for identifying mod-added magic arrows so they show the correct effect icon alongside the ammo icon.
+
+The spellwards section is used for identifying mod-added ward spells and any other spell you wish to have selected by QuickShield (ie Bound Shield).
+
+The other sections are all for identifying mod-added items to receive the specific icons rather than those for the base item type the records are built on.
+
+
+
+Feel free to share it or send it to us and we'll upload it to the main page.,
+
+Happy patching!

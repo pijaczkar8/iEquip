@@ -404,8 +404,12 @@ function findAndSortPotions()
         while i < numFound
             foundPotion = GetNthFormOfType(PlayerRef, 46, i) as potion
             if foundPotion
-                ;debug.trace("iEquip_PotionScript findAndSortPotions - " + i + " is a " + foundPotion.GetName())
-                checkAndAddToPotionQueue(foundPotion, true)
+                if !PlayerRef.GetItemCount(foundPotion)
+                    numFound += 1
+                else
+                    ;debug.trace("iEquip_PotionScript findAndSortPotions - " + i + " is a " + foundPotion.GetName())
+                    checkAndAddToPotionQueue(foundPotion, true)
+                endIf
             endIf
             i += 1
         endWhile

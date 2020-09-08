@@ -5,6 +5,7 @@ import StringUtil
 import iEquip_StringExt
 
 iEquip_WidgetCore property WC auto
+iEquip_KeyHandler Property KH Auto
 iEquip_MCM_gen property gen auto
 iEquip_MCM_add property add auto
 iEquip_MCM_cyc property cyc auto
@@ -21,15 +22,18 @@ bool property bEnabled auto hidden
 bool property bBusy auto hidden
 string sCurrentPage
 
+string[] asControlNames
+int[] aiHotkeys
+
 ; ###########################
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 124  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 126  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 124 && CurrentVersion < 124)
+    if (a_version >= 126 && CurrentVersion < 126)
         OnConfigInit()
     endIf
 endEvent
@@ -50,6 +54,24 @@ event OnConfigInit()
     Pages[8] = "$iEquip_MCM_lbl_MiscUI"
     Pages[9] = "$iEquip_MCM_lbl_EditMode"
     Pages[10] = "$iEquip_MCM_lbl_Info"
+
+    asControlNames = new string[12]
+    asControlNames[0] = "$iEquip_MCM_gen_lbl_leftHand"
+    asControlNames[1] = "$iEquip_MCM_gen_lbl_rightHand"
+    asControlNames[2] = "$iEquip_MCM_gen_lbl_shout"
+    asControlNames[3] = "$iEquip_MCM_gen_lbl_consumPoison"
+    asControlNames[4] = "$iEquip_MCM_gen_lbl_util"
+    asControlNames[5] = "$iEquip_MCM_gen_lbl_consItem"
+    asControlNames[6] = "$iEquip_MCM_gen_lbl_cyclePoison"
+    asControlNames[7] = "$iEquip_MCM_gen_lbl_quickRestore"
+    asControlNames[8] = "$iEquip_MCM_gen_lbl_quickShield"
+    asControlNames[9] = "$iEquip_MCM_gen_lbl_quickRanged"
+    asControlNames[10] = "$iEquip_MCM_tch_lbl_quickLight"
+    asControlNames[11] = "$iEquip_MCM_rep_lbl_throwingPoisonsKey"
+
+    aiHotkeys = new int[12]
+
+    RegisterForModEvent("iEquip_KeyHandlerReady", "updateHotkeysArray")
 
     gen.initData()
     add.initData()
@@ -80,6 +102,21 @@ function updateSettings()
     endIf
 endFunction
 
+function updateHotkeysArray()
+    aiHotkeys[0] = KH.iLeftKey
+    aiHotkeys[1] = KH.iRightKey
+    aiHotkeys[2] = KH.iShoutKey
+    aiHotkeys[3] = KH.iConsumableKey
+    aiHotkeys[4] = KH.iUtilityKey
+    aiHotkeys[5] = KH.iConsumeItemKey
+    aiHotkeys[6] = KH.iCyclePoisonKey
+    aiHotkeys[7] = KH.iQuickRestoreKey
+    aiHotkeys[8] = KH.iQuickShieldKey
+    aiHotkeys[9] = KH.iQuickRangedKey
+    aiHotkeys[10] = KH.iQuickLightKey
+    aiHotkeys[11] = KH.iThrowingPoisonsKey
+endFunction
+
 ; #################
 ; ### MCM Pages ###
 
@@ -94,28 +131,28 @@ event OnPageReset(string page)
     
         if page == "$iEquip_MCM_lbl_GeneralHotkeys"
             gen.drawPage()
-		elseIf WC.isEnabled
-			if page == "$iEquip_MCM_lbl_AddingItems"
-				add.drawPage()
-			elseIf page == "$iEquip_MCM_lbl_Cycling" 
-				cyc.drawPage()
+        elseIf WC.isEnabled
+            if page == "$iEquip_MCM_lbl_AddingItems"
+                add.drawPage()
+            elseIf page == "$iEquip_MCM_lbl_Cycling" 
+                cyc.drawPage()
             elseIf page == "$iEquip_MCM_lbl_Equipping" 
                 eqp.drawPage()
             elseIf page == "$iEquip_MCM_lbl_AmmoQuickRanged" 
                 amm.drawPage()
             elseIf page == "$iEquip_MCM_lbl_PoisoningRecharging"
                 poi.drawPage()
-			elseIf page == "$iEquip_MCM_lbl_PotionsQuickRestore" 
-				pot.drawPage()
+            elseIf page == "$iEquip_MCM_lbl_PotionsQuickRestore" 
+                pot.drawPage()
             elseIf page == "$iEquip_MCM_lbl_TorchQuickLight"
                 tch.drawPage()  
-			elseIf page == "$iEquip_MCM_lbl_MiscUI"
-				uii.drawPage()          
-			elseIf page == "$iEquip_MCM_lbl_EditMode"
-				edt.drawPage()           
-			elseIf page == "$iEquip_MCM_lbl_Info"
-				inf.drawPage()
-			endIf
+            elseIf page == "$iEquip_MCM_lbl_MiscUI"
+                uii.drawPage()          
+            elseIf page == "$iEquip_MCM_lbl_EditMode"
+                edt.drawPage()           
+            elseIf page == "$iEquip_MCM_lbl_Info"
+                inf.drawPage()
+            endIf
         endIf
     endif
 endEvent
@@ -212,16 +249,26 @@ event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
         
         if ShowMessage(msg, true, "$Yes", "$No")
             jumpToPage("Change", keyCode)
+            updateHotkeysArray()
         endIf
     else
         jumpToPage("Change", keyCode)
+        updateHotkeysArray()
     endIf
 endEvent
+
+String Function GetCustomControl(Int a_keyCode)
+    string controlName
+    if aiHotkeys.Find(a_keyCode) != -1
+        controlName = asControlNames[aiHotkeys.Find(a_keyCode)]
+    endIf
+    return iEquip_StringExt.LocalizeString(controlName)
+EndFunction
 
 ; INPUT
 
 event OnInputOpenST()
-	jumpToPage("Open")
+    jumpToPage("Open")
 endEvent
 
 event OnInputAcceptST(string sInput)
@@ -231,58 +278,58 @@ endEvent
 ; #################
 ; ### MCM TOOLS ###
 
-function savePreset(string presetName)	; Save data to JContainer file
-	int jMCMPreset = jMap.object()
-	
-	jMap.setInt(jMCMPreset, "Version", GetVersion())
-	jMap.setObj(jMCMPreset, "GeneralHotkeys", gen.saveData())
-	jMap.setObj(jMCMPreset, "AddingItems", add.saveData())
-	jMap.setObj(jMCMPreset, "Cycling", cyc.saveData())
+function savePreset(string presetName)  ; Save data to JContainer file
+    int jMCMPreset = jMap.object()
+    
+    jMap.setInt(jMCMPreset, "Version", GetVersion())
+    jMap.setObj(jMCMPreset, "GeneralHotkeys", gen.saveData())
+    jMap.setObj(jMCMPreset, "AddingItems", add.saveData())
+    jMap.setObj(jMCMPreset, "Cycling", cyc.saveData())
     jMap.setObj(jMCMPreset, "Equipping", eqp.saveData())
     jMap.setObj(jMCMPreset, "AmmoQuickRanged", amm.saveData())
-	jMap.setObj(jMCMPreset, "PoisoningRecharging", poi.saveData())
-	jMap.setObj(jMCMPreset, "PotionsQuickRestore", pot.saveData())
-	jMap.setObj(jMCMPreset, "TorchQuickLight", tch.saveData())
-	jMap.setObj(jMCMPreset, "MiscUI", uii.saveData())
-	jMap.setObj(jMCMPreset, "EditMode", edt.saveData())
-	jMap.setObj(jMCMPreset, "Info", inf.saveData())		
-	
-	jValue.writeTofile(jMCMPreset, WC.MCMSettingsPath + presetName + WC.FileExt)
-	jValue.zeroLifetime(jMCMPreset)
+    jMap.setObj(jMCMPreset, "PoisoningRecharging", poi.saveData())
+    jMap.setObj(jMCMPreset, "PotionsQuickRestore", pot.saveData())
+    jMap.setObj(jMCMPreset, "TorchQuickLight", tch.saveData())
+    jMap.setObj(jMCMPreset, "MiscUI", uii.saveData())
+    jMap.setObj(jMCMPreset, "EditMode", edt.saveData())
+    jMap.setObj(jMCMPreset, "Info", inf.saveData())     
+    
+    jValue.writeTofile(jMCMPreset, WC.MCMSettingsPath + presetName + WC.FileExt)
+    jValue.zeroLifetime(jMCMPreset)
 endFunction
 
-function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
-	if (bBusy)
-		ShowMessage("$iEquip_common_LoadPresetBusy", false)
-	else
-		int jMCMPreset
-		
-		if (bNoExt)
-			jMCMPreset = jValue.readFromFile(WC.MCMSettingsPath + presetName)
-		else
-			jMCMPreset = jValue.readFromFile(WC.MCMSettingsPath + presetName + WC.FileExt)
-		endIf
-		
-		int presetVersion = jMap.getInt(jMCMPreset, "Version")
+function loadPreset(string presetName, bool bNoExt = false) ; Load MCM data
+    if (bBusy)
+        ShowMessage("$iEquip_common_LoadPresetBusy", false)
+    else
+        int jMCMPreset
+        
+        if (bNoExt)
+            jMCMPreset = jValue.readFromFile(WC.MCMSettingsPath + presetName)
+        else
+            jMCMPreset = jValue.readFromFile(WC.MCMSettingsPath + presetName + WC.FileExt)
+        endIf
+        
+        int presetVersion = jMap.getInt(jMCMPreset, "Version")
 
         if presetVersion < 121
-			ShowMessage("$iEquip_common_LoadPresetError", false)
-		else
-			bBusy = true
-			
-			gen.loadData(jMap.getObj(jMCMPreset, "GeneralHotkeys"), presetVersion)
-			add.loadData(jMap.getObj(jMCMPreset, "AddingItems"), presetVersion)
-			cyc.loadData(jMap.getObj(jMCMPreset, "Cycling"), presetVersion)
+            ShowMessage("$iEquip_common_LoadPresetError", false)
+        else
+            bBusy = true
+            
+            gen.loadData(jMap.getObj(jMCMPreset, "GeneralHotkeys"), presetVersion)
+            add.loadData(jMap.getObj(jMCMPreset, "AddingItems"), presetVersion)
+            cyc.loadData(jMap.getObj(jMCMPreset, "Cycling"), presetVersion)
             eqp.loadData(jMap.getObj(jMCMPreset, "Equipping"), presetVersion)
-			amm.loadData(jMap.getObj(jMCMPreset, "AmmoQuickRanged"), presetVersion)
-			poi.loadData(jMap.getObj(jMCMPreset, "PoisoningRecharging"), presetVersion)
-			pot.loadData(jMap.getObj(jMCMPreset, "PotionsQuickRestore"), presetVersion)
-			tch.loadData(jMap.getObj(jMCMPreset, "TorchQuickLight"), presetVersion)
+            amm.loadData(jMap.getObj(jMCMPreset, "AmmoQuickRanged"), presetVersion)
+            poi.loadData(jMap.getObj(jMCMPreset, "PoisoningRecharging"), presetVersion)
+            pot.loadData(jMap.getObj(jMCMPreset, "PotionsQuickRestore"), presetVersion)
+            tch.loadData(jMap.getObj(jMCMPreset, "TorchQuickLight"), presetVersion)
             uii.loadData(jMap.getObj(jMCMPreset, "MiscUI"), presetVersion)
-			edt.loadData(jMap.getObj(jMCMPreset, "EditMode"), presetVersion)
-			inf.loadData(jMap.getObj(jMCMPreset, "Info"), presetVersion)
-			
-			WC.bMCMPresetLoaded = true
+            edt.loadData(jMap.getObj(jMCMPreset, "EditMode"), presetVersion)
+            inf.loadData(jMap.getObj(jMCMPreset, "Info"), presetVersion)
+            
+            WC.bMCMPresetLoaded = true
 
             if presetVersion < GetVersion() ; If we've just loaded an older preset delete it and resave to update to the current version so all new settings are included
                 deletePreset(presetName)
@@ -290,11 +337,11 @@ function loadPreset(string presetName, bool bNoExt = false)	; Load MCM data
                 ShowMessage("$iEquip_MCM_msg_presetUpdated", false)
             endIf
 
-			bBusy = false
-		endIf
-		
-		jValue.zeroLifetime(jMCMPreset)
-	endIf
+            bBusy = false
+        endIf
+        
+        jValue.zeroLifetime(jMCMPreset)
+    endIf
 endFunction
 
 function updatePreset(string presetName)
@@ -303,22 +350,22 @@ function updatePreset(string presetName)
 endFunction
 
 function deletePreset(string presetName)
-	JContainers.removeFileAtPath(WC.MCMSettingsPath + presetName + WC.FileExt)
+    JContainers.removeFileAtPath(WC.MCMSettingsPath + presetName + WC.FileExt)
 endFunction
 
 string[] function getPresets(string defFill)
-	int jObj = JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExt)
-	int i
-	string[] tmpStrArr = jMap.allKeysPArray(jObj)
-	string[] saPresets = CreateStringArray(tmpStrArr.length + 1, defFill)
-	jValue.zeroLifetime(jObj)
-	
-	while(i < tmpStrArr.length)
-		saPresets[i + 1] = Substring(tmpStrArr[i], 0, find(tmpStrArr[i], WC.FileExt))
-		i += 1
-	endWhile
-	
-	return saPresets
+    int jObj = JValue.readFromDirectory(WC.MCMSettingsPath, WC.FileExt)
+    int i
+    string[] tmpStrArr = jMap.allKeysPArray(jObj)
+    string[] saPresets = CreateStringArray(tmpStrArr.length + 1, defFill)
+    jValue.zeroLifetime(jObj)
+    
+    while(i < tmpStrArr.length)
+        saPresets[i + 1] = Substring(tmpStrArr[i], 0, find(tmpStrArr[i], WC.FileExt))
+        i += 1
+    endWhile
+    
+    return saPresets
 endFunction
 
 ; -----------
@@ -347,24 +394,24 @@ endFunction
 ; -------------------
 
 string[] function cutStrArray(string[] stringArray, int cutIndex)
-	if stringArray.length < 2
-		return stringArray
-	endIf
+    if stringArray.length < 2
+        return stringArray
+    endIf
 
-	string[] newStringArray = CreateStringArray(stringArray.length - 1)
-	int oldAIndex
-	int newAIndex
-		
-	while oldAIndex < stringArray.length && newAIndex < stringArray.length - 1
-		if oldAIndex != cutIndex
-			newStringArray[newAIndex] = stringArray[oldAIndex]
-			newAIndex += 1
-		endIf
-			
-		oldAIndex += 1
-	endWhile
-	
-	return newStringArray
+    string[] newStringArray = CreateStringArray(stringArray.length - 1)
+    int oldAIndex
+    int newAIndex
+        
+    while oldAIndex < stringArray.length && newAIndex < stringArray.length - 1
+        if oldAIndex != cutIndex
+            newStringArray[newAIndex] = stringArray[oldAIndex]
+            newAIndex += 1
+        endIf
+            
+        oldAIndex += 1
+    endWhile
+    
+    return newStringArray
 endFunction
 
 ; Deprecated in 1.2

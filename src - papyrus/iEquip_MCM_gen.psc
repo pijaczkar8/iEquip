@@ -8,6 +8,7 @@ iEquip_ProMode Property PM Auto
 iEquip_PlayerEventHandler property EH auto
 
 int mcmUnmapFLAG
+int mcmDisabledFLAG
 
 bool bFirstTimeDisablingTooltips = true
 bool bFirstEnabled = false
@@ -17,6 +18,7 @@ bool bFirstEnabled = false
 
 function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
+    mcmDisabledFLAG = MCM.OPTION_FLAG_DISABLED
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -157,11 +159,31 @@ function drawPage()
         MCM.AddToggleOptionST("gen_tgl_enblExtKbCtrls", "$iEquip_MCM_gen_lbl_enblExtKbCtrls", KH.bExtendedKbControlsEnabled)
         
         if KH.bExtendedKbControlsEnabled
-            MCM.AddKeyMapOptionST("gen_key_consItem", "$iEquip_MCM_gen_lbl_consItem", KH.iConsumeItemKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("gen_key_cyclePoison", "$iEquip_MCM_gen_lbl_cyclePoison", KH.iCyclePoisonKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("gen_key_quickRestore", "$iEquip_MCM_gen_lbl_quickRestore", KH.iQuickRestoreKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("gen_key_quickShield", "$iEquip_MCM_gen_lbl_quickShield", KH.iQuickShieldKey, mcmUnmapFLAG)
-            MCM.AddKeyMapOptionST("gen_key_quickRanged", "$iEquip_MCM_gen_lbl_quickRanged", KH.iQuickRangedKey, mcmUnmapFLAG)
+            if WC.bConsumablesEnabled
+                MCM.AddKeyMapOptionST("gen_key_consItem", "$iEquip_MCM_gen_lbl_consItem", KH.iConsumeItemKey, mcmUnmapFLAG)
+            else
+                MCM.AddKeyMapOptionST("gen_key_consItem", "$iEquip_MCM_gen_lbl_consItem", KH.iConsumeItemKey, mcmDisabledFLAG)
+            endIf
+            if WC.bPoisonsEnabled
+                MCM.AddKeyMapOptionST("gen_key_cyclePoison", "$iEquip_MCM_gen_lbl_cyclePoison", KH.iCyclePoisonKey, mcmUnmapFLAG)
+            else
+                MCM.AddKeyMapOptionST("gen_key_cyclePoison", "$iEquip_MCM_gen_lbl_cyclePoison", KH.iCyclePoisonKey, mcmDisabledFLAG)
+            endIf
+            if PM.bQuickRestoreEnabled
+                MCM.AddKeyMapOptionST("gen_key_quickRestore", "$iEquip_MCM_gen_lbl_quickRestore", KH.iQuickRestoreKey, mcmUnmapFLAG)
+            else
+                MCM.AddKeyMapOptionST("gen_key_quickRestore", "$iEquip_MCM_gen_lbl_quickRestore", KH.iQuickRestoreKey, mcmDisabledFLAG)
+            endIf
+            if PM.bQuickShieldEnabled
+                MCM.AddKeyMapOptionST("gen_key_quickShield", "$iEquip_MCM_gen_lbl_quickShield", KH.iQuickShieldKey, mcmUnmapFLAG)
+            else
+                MCM.AddKeyMapOptionST("gen_key_quickShield", "$iEquip_MCM_gen_lbl_quickShield", KH.iQuickShieldKey, mcmDisabledFLAG)
+            endIf
+            if PM.bQuickRangedEnabled
+                MCM.AddKeyMapOptionST("gen_key_quickRanged", "$iEquip_MCM_gen_lbl_quickRanged", KH.iQuickRangedKey, mcmUnmapFLAG)
+            else
+                MCM.AddKeyMapOptionST("gen_key_quickRanged", "$iEquip_MCM_gen_lbl_quickRanged", KH.iQuickRangedKey, mcmDisabledFLAG)
+            endIf
         endIf
 
 	elseIf bFirstEnabled
@@ -269,13 +291,14 @@ State gen_tgl_enblConsumSlt
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_enblConsumSlt")
-        elseIf currentEvent == "Select"
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bConsumablesEnabled)
             WC.bConsumablesEnabled = !WC.bConsumablesEnabled
             MCM.SetToggleOptionValueST(WC.bConsumablesEnabled)
-            WC.bSlotEnabledOptionsChanged = true
-        elseIf currentEvent == "Default"
-            WC.bConsumablesEnabled = true 
-            MCM.SetToggleOptionValueST(WC.bConsumablesEnabled)
+            if WC.bConsumablesEnabled
+                MCM.SetOptionFlagsST(mcmUnmapFLAG, false, "gen_key_consItem")
+            else
+                MCM.SetOptionFlagsST(mcmDisabledFLAG, false, "gen_key_consItem")
+            endIf
             WC.bSlotEnabledOptionsChanged = true
         endIf
     endEvent
@@ -285,13 +308,14 @@ State gen_tgl_enblPoisonSlt
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_enblPoisonSlt")
-        elseIf currentEvent == "Select"
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bPoisonsEnabled)
             WC.bPoisonsEnabled = !WC.bPoisonsEnabled
             MCM.SetToggleOptionValueST(WC.bPoisonsEnabled)
-            WC.bSlotEnabledOptionsChanged = true
-        elseIf currentEvent == "Default"
-            WC.bPoisonsEnabled = true 
-            MCM.SetToggleOptionValueST(WC.bPoisonsEnabled)
+            if WC.bPoisonsEnabled
+                MCM.SetOptionFlagsST(mcmUnmapFLAG, false, "gen_key_cyclePoison")
+            else
+                MCM.SetOptionFlagsST(mcmDisabledFLAG, false, "gen_key_cyclePoison")
+            endIf
             WC.bSlotEnabledOptionsChanged = true
         endIf
     endEvent

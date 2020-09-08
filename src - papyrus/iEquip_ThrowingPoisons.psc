@@ -15,15 +15,46 @@ Actor property PlayerRef auto
 perk property Poisoner auto
 
 weapon property iEquip_ThrowingPoisonWeapon auto
-spell property iEquip_ThrowingPoisonSpell auto
-perk property iEquip_ThrowingPoisonPerk auto
+projectile property iEquip_ThrowingPoisonProjectile auto
+
+spell property iEquip_ThrowPoison auto
+magiceffect property iEquip_ThrowingPoison_ProjExpl auto
+
+spell property iEquip_ApplyThrownPoisonA auto
+spell property iEquip_ApplyThrownPoisonB auto
+spell property iEquip_ApplyThrownPoisonC auto
+spell property iEquip_ApplyThrownPoisonD auto
+spell property iEquip_ApplyThrownPoisonE auto
+
+spell[] aDeliverySpells
+
+explosion property iEquip_ThrowingPoisonExplosionA auto
+explosion property iEquip_ThrowingPoisonExplosionB auto
+explosion property iEquip_ThrowingPoisonExplosionC auto
+explosion property iEquip_ThrowingPoisonExplosionD auto
+explosion property iEquip_ThrowingPoisonExplosionE auto
+
+explosion[] aExplosions
+
+hazard property iEquip_ThrowingPoisonHazardA auto
+hazard property iEquip_ThrowingPoisonHazardB auto
+hazard property iEquip_ThrowingPoisonHazardC auto
+hazard property iEquip_ThrowingPoisonHazardD auto
+hazard property iEquip_ThrowingPoisonHazardE auto
+
+hazard[] aHazards
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
 
 ; MCM Properties
-int property iThrowingPoisonBehavior = 1 auto hidden 	; 0 = Disabled, 1 = Throw & Switch Back, 2 = Keypress Toggles (keep throwing poisons until pressed again to switch back)
-int property iThrowingPoisonHand = 1 auto hidden		; 0 = Left Hand, 1 = Right Hand
+int property iThrowingPoisonBehavior = 1 auto hidden 				; 0 = Disabled, 1 = Throw & Switch Back, 2 = Keypress Toggles (keep throwing poisons until pressed again to switch back)
+int property iThrowingPoisonHand = 1 auto hidden					; 0 = Left Hand, 1 = Right Hand
+float property fThrowingPoisonEffectsMagMult = 0.6 auto hidden
+float property fPoisonHazardRadius = 6.0 auto hidden
+int property iNumPoisonHazards = 5 auto hidden
+float property fPoisonHazardDuration = 5.0 auto hidden
+float property fThrowingPoisonProjectileGravity = 1.2 auto hidden
 
 bool property bKeepThrowing auto hidden
 bool bFirstPoison
@@ -48,28 +79,74 @@ int targetPoison
 potion currentPoison
 potion property thrownPoison auto hidden
 
-bool property bBlockInventoryEvents auto hidden
+string[] asMindAlteringEffects
+
+int iIndex
+
+bool bCreateArrays = true
+
+bool bLastOfCurrentPoison
+bool bLastPoisonInQueue
 
 event OnInit()
+	createArrays()
+endEvent
+
+function createArrays()
 	aiHandEquipSlots = new int[2]
 	aiHandEquipSlots[0] = 2
 	aiHandEquipSlots[1] = 1
-endEvent
+
+	asMindAlteringEffects = new string[5]
+	asMindAlteringEffects[0] = "Calm"
+	asMindAlteringEffects[1] = "Demoralize"
+	asMindAlteringEffects[2] = "Frenzy"
+	asMindAlteringEffects[3] = "Paralysis"
+	asMindAlteringEffects[4] = "TurnUndead"
+
+	aDeliverySpells = new spell[5]
+	aDeliverySpells[0] = iEquip_ApplyThrownPoisonA
+	aDeliverySpells[1] = iEquip_ApplyThrownPoisonB
+	aDeliverySpells[2] = iEquip_ApplyThrownPoisonC
+	aDeliverySpells[3] = iEquip_ApplyThrownPoisonD
+	aDeliverySpells[4] = iEquip_ApplyThrownPoisonE
+
+	aExplosions = new explosion[5]
+	aExplosions[0] = iEquip_ThrowingPoisonExplosionA
+	aExplosions[1] = iEquip_ThrowingPoisonExplosionB
+	aExplosions[2] = iEquip_ThrowingPoisonExplosionC
+	aExplosions[3] = iEquip_ThrowingPoisonExplosionD
+	aExplosions[4] = iEquip_ThrowingPoisonExplosionE
+
+	aHazards = new hazard[5]
+	aHazards[0] = iEquip_ThrowingPoisonHazardA
+	aHazards[1] = iEquip_ThrowingPoisonHazardB
+	aHazards[2] = iEquip_ThrowingPoisonHazardC
+	aHazards[3] = iEquip_ThrowingPoisonHazardD
+	aHazards[4] = iEquip_ThrowingPoisonHazardE
+
+	bCreateArrays = false
+endFunction
 
 function OnWidgetLoad()
-	;debug.trace("iEquip_TorchScript initialise start")
-	if iThrowingPoisonBehavior == 0
-	;if WC.bPowerOfThreeExtenderLoaded
+	debug.trace("iEquip_ThrowingPoisons OnWidgetLoad start")
+	;if iThrowingPoisonBehavior == 0
+	if WC.bPowerOfThreeExtenderLoaded
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
-		RegisterForMenu("InventoryMenu")
 		
+		if bCreateArrays
+			createArrays()
+		endIf
+
+		RegisterForMenu("InventoryMenu")
+		updateSpellsOnLoad()
 	else
 		UnregisterForAllMenus()
 		
 		GoToState("DISABLED")
 	endIf
-	;debug.trace("iEquip_TorchScript initialise end")
+	debug.trace("iEquip_ThrowingPoisons OnWidgetLoad end")
 endFunction
 
 ; Thinking I might need to do something here so that the 'equipped poison' can show as a weapon in the Inventory Menu and can be unequipped again from there - NB Should probably do the same with the iEquipTorch
@@ -83,7 +160,119 @@ event OnMenuClose(string MenuName)
 
 endEvent
 
+function updateSpellsOnLoad() 							; Just in case values and effects haven't persisted through save/load
+	debug.trace("iEquip_ThrowingPoisons updateSpellsOnLoad start")
+	updateProjectileGravity()
+	if bPoisonEquipped
+		updatePoisonEffectsOnSpell()
+	endIf
+	updateHazardRadius()
+	updateHazardDuration()
+	updateHazardLimit()
+	debug.trace("iEquip_ThrowingPoisons updateSpellsOnLoad end")
+endFunction
+
+function updateHazardRadius()
+	debug.trace("iEquip_ThrowingPoisons updateHazardRadius start - fPoisonHazardRadius: " + fPoisonHazardRadius)
+	int i
+	while i < 5
+		SetHazardRadius(aHazards[i], fPoisonHazardRadius)
+		i += 1
+	endWhile
+	debug.trace("iEquip_ThrowingPoisons updateHazardRadius end")
+endFunction
+
+function updateHazardDuration()
+	debug.trace("iEquip_ThrowingPoisons updateHazardDuration start - fPoisonHazardDuration: " + fPoisonHazardDuration)
+	int i
+	while i < 5
+		SetHazardLifetime(aHazards[i], fPoisonHazardDuration)
+		i += 1
+	endWhile
+	debug.trace("iEquip_ThrowingPoisons updateHazardDuration end")
+endFunction
+
+function updateHazardLimit()
+	debug.trace("iEquip_ThrowingPoisons updateHazardLimit start - iNumPoisonHazards: " + iNumPoisonHazards)
+	int i
+	while i < 5
+		SetHazardLimit(aHazards[i], iNumPoisonHazards)
+		i += 1
+	endWhile
+	debug.trace("iEquip_ThrowingPoisons updateHazardLimit end")
+endFunction
+
+function updateProjectileGravity()
+	debug.trace("iEquip_ThrowingPoisons updateProjectileGravity start - fThrowingPoisonProjectileGravity: " + fThrowingPoisonProjectileGravity)
+	SetProjectileGravity(iEquip_ThrowingPoisonProjectile, fThrowingPoisonProjectileGravity)
+	debug.trace("iEquip_ThrowingPoisons updateProjectileGravity end")
+endFunction
+
+function updatePoisonEffectsOnSpell()
+	debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell start")
+	if currentPoison
+		debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell - currentPoison: " + currentPoison.GetName())
+		removeCurrentEffectsFromSpell()
+		addPoisonEffectsToSpell()
+	endIf
+	debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell end")
+endFunction
+
+; For reference from PO3_SKSEFunctions - Function RemoveMagicEffectFromSpell(Spell akSpell, MagicEffect mgef, float magnitude, int area, int duration, float cost = 0.0) global native
+
+function removeCurrentEffectsFromSpell()
+	debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell start")
+	spell targetSpell = aDeliverySpells[iIndex]
+	debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - targetSpell: " + targetSpell.GetName())
+	int i = targetSpell.GetNumEffects()
+	if i > 1
+		magicEffect effectToRemove
+		debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - about to remove " + (i - 1) + " effect(s) from spell")
+		while i > 1  ; It's 1 so we never try to remove the base effect in index 0 (the 0 magnitude DamageHealth effect which needed to be there in the CK to allow me to save the spell!)
+		;while i > 0
+			i -= 1
+			effectToRemove = targetSpell.GetNthEffectMagicEffect(i)
+			debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - about to remove " + effectToRemove.GetName())
+			RemoveMagicEffectFromSpell(targetSpell, effectToRemove, targetSpell.GetNthEffectMagnitude(i), targetSpell.GetNthEffectArea(i), targetSpell.GetNthEffectDuration(i))
+		endWhile
+		debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell end - should have just removed all current effects, current number of effects = " + targetSpell.GetNumEffects())
+	else
+		debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - spell only has the play cough sound effect so nothing to remove")
+	endIf
+endFunction
+
+; For reference from PO3_SKSEFunctions - Function AddMagicEffectToSpell(Spell akSpell, MagicEffect mgef, float magnitude, int area, int duration, float cost = 0.0, String[] conditionList = None) global native
+
+function addPoisonEffectsToSpell()
+	debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell start")
+	int i
+	magicEffect effectToAdd
+	float fMagnitude
+	int iDuration
+	string[] conditionList = new string[1]
+
+	debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to add " + currentPoison.GetNumEffects() + " new effects to spell")
+	while i < currentPoison.GetNumEffects()
+		effectToAdd = currentPoison.GetNthEffectMagicEffect(i)
+		debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to process " + effectToAdd.GetName() + ", base magnitude: " + currentPoison.GetNthEffectMagnitude(i) + ", base duration: " + currentPoison.GetNthEffectDuration(i))
+		if asMindAlteringEffects.Find(GetEffectArchetypeAsString(effectToAdd)) == -1				; If it is not a mind altering effect then the multiplier affects the effect magnitude
+			debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - this is not a mind altering effect so adjusting magnitude")
+			fMagnitude = currentPoison.GetNthEffectMagnitude(i) * fThrowingPoisonEffectsMagMult
+			iDuration = currentPoison.GetNthEffectDuration(i)
+		else 																						; If it is a mind altering effect (fear, frenzy, paralysis, calm, turn undead) then the multiplier affects the effect duration
+			debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - this is a mind altering effect so adjusting duration")
+			fMagnitude = currentPoison.GetNthEffectMagnitude(i)
+			iDuration = (currentPoison.GetNthEffectDuration(i) * fThrowingPoisonEffectsMagMult) as int
+		endIf
+		debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to add " + effectToAdd.GetName() + " to " + aDeliverySpells[iIndex].GetName() + ", magnitude: " + fMagnitude + ", duration: " + iDuration + ", area: " + currentPoison.GetNthEffectArea(i))
+		AddMagicEffectToSpell(aDeliverySpells[iIndex], effectToAdd, fMagnitude, currentPoison.GetNthEffectArea(i), iDuration, 0.0, conditionList)
+		i += 1
+	endWhile
+	debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell end - should have just added the new effects, current number of effects = " + aDeliverySpells[iIndex].GetNumEffects())
+endFunction
+
 function OnThrowingPoisonKeyPressed()
+	debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonKeyPressed start - iThrowingPoisonBehavior: " + iThrowingPoisonBehavior)
 	bFirstPoison = true
 	if jArray.count(WC.aiTargetQ[4]) < 1				; No poisons left in the poison queue
 		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TP_not_noPoisons"))
@@ -93,9 +282,11 @@ function OnThrowingPoisonKeyPressed()
 	else 												; Toggle throwing poisons
 		toggleThrowingPoisons()
 	endIf
+	debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonKeyPressed end")
 endFunction
 
 function toggleThrowingPoisons()
+	debug.trace("iEquip_ThrowingPoisons toggleThrowingPoisons start - bKeepThrowing: " + bKeepThrowing)
 	bKeepThrowing = !bKeepThrowing
 	if bKeepThrowing
 		saveCurrentItemsForSwitchBack()
@@ -103,17 +294,32 @@ function toggleThrowingPoisons()
 	elseIf bPoisonEquipped
 		switchBack()
 	endIf
+	debug.trace("iEquip_ThrowingPoisons toggleThrowingPoisons end")
 endFunction
 
 function equipPoison()
+	debug.trace("iEquip_ThrowingPoisons equipPoison start - iIndex: " + iIndex)
 	targetPoison = jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4])
 	potion newPoison = jMap.getForm(targetPoison, "iEquipForm") as potion
 	
 	if newPoison
+		debug.trace("iEquip_ThrowingPoisons equipPoison - newPoison: " + newPoison.GetName())
 		if !currentPoison || currentPoison != newPoison 						; If we're throwing a different poison to last time update the magiceffects on the spell
+			
+			if currentPoison
+				debug.trace("iEquip_ThrowingPoisons equipPoison - we're equipping a different one to " + currentPoison.GetName())
+				iIndex += 1
+				if iIndex == 5
+					iIndex = 0
+				endIf
+			else
+				debug.trace("iEquip_ThrowingPoisons equipPoison - we're equipping a poison for the first time")
+			endIf
+
 			currentPoison = newPoison
-			;removeCurrentEffectsFromSpell()
-			;addPoisonEffectsToSpell()
+			debug.trace("iEquip_ThrowingPoisons equipPoison - currentPoison now: " + currentPoison.GetName() + " , iIndex now: " + iIndex)
+			iEquip_ThrowingPoison_ProjExpl.SetExplosion(aExplosions[iIndex])
+			updatePoisonEffectsOnSpell()		
 		endIf
 		
 		PlayerRef.AddItem(iEquip_ThrowingPoisonWeapon, 1, true) 				; Add the throwing poison weapon
@@ -127,12 +333,12 @@ function equipPoison()
 		if AM.bAmmoMode 														; Exit Ammo Mode if we need to which will re-equip the left hand if the poison is going to the right hand
 			exitAmmoMode()
 		endIf
-		
-		PlayerRef.EquipItemEx(iEquip_ThrowingPoisonWeapon, targetHand)
-
-		updateWidget()															; Hide all additional widget elements and copy the poison icon and name currently displayed in the poison slot to the equipped hand
 
 		bPoisonEquipped = true
+		
+		PlayerRef.EquipItemEx(iEquip_ThrowingPoisonWeapon, aiHandEquipSlots[targetHand])
+
+		updateWidget()															; Hide all additional widget elements and copy the poison icon and name currently displayed in the poison slot to the equipped hand
 
 		if bPreviously2H && bFirstPoison										; If we were wielding a 2H weapon (without CGO) equip something 1H in the other hand
 			equipOtherHand()
@@ -145,6 +351,7 @@ function equipPoison()
 			switchBack(false)
 		endIf
 	endIf
+	debug.trace("iEquip_ThrowingPoisons equipPoison end")
 endFunction
 
 function equipOtherHand()
@@ -152,6 +359,7 @@ function equipOtherHand()
 endFunction
 
 function exitAmmoMode()
+	debug.trace("iEquip_ThrowingPoisons exitAmmoMode start")
 	PM.bCurrentlyQuickRanged = false
 	AM.toggleAmmoMode((!PM.bPreselectMode || !PM.abPreselectSlotEnabled[0]), targetHand == 0) 	; If we're toggling out of ammo mode only equip left if we're equipping the throwing poison in the right hand
 
@@ -165,11 +373,12 @@ function exitAmmoMode()
 	if WC.bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
+	debug.trace("iEquip_ThrowingPoisons exitAmmoMode end")
 endFunction
 
 function updateWidget()
-	;debug.trace("iEquip_ThrowingPoisons updateWidget start")
-	WC.hidePoisonInfo(targetHand)
+	debug.trace("iEquip_ThrowingPoisons updateWidget start")
+	WC.hidePoisonInfo(targetHand, true)
 	WC.CM.updateChargeMeterVisibility(targetHand, false)
 	WC.setCounterVisibility(targetHand, false)
 	WC.checkAndFadeLeftIcon(1, 4)
@@ -185,11 +394,16 @@ function updateWidget()
 	if fNameAlpha < 1
 		fNameAlpha = 100
 	endIf
+
+	string iconName = "ThrowingPoisonRight"
+	if targetHand == 0
+		iconName = "ThrowingPoisonLeft"
+	endIf
 	
 	int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 	if(iHandle)
 		UICallback.PushInt(iHandle, targetHand)
-		UICallback.PushString(iHandle, jMap.getStr(targetPoison, "iEquipIcon"))
+		UICallback.PushString(iHandle, iconName)
 		UICallback.PushString(iHandle, jMap.getStr(targetPoison, "iEquipName"))
 		UICallback.PushFloat(iHandle, fNameAlpha)
 		UICallback.PushFloat(iHandle, WC.afWidget_A[iconElement])
@@ -203,65 +417,37 @@ function updateWidget()
 	if WC.bNameFadeoutEnabled && !WC.abIsNameShown[targetHand]
 		WC.showName(targetHand)
 	endIf
-	;debug.trace("iEquip_ThrowingPoisons updateWidget end")
-endFunction
-
-; For reference from PO3_SKSEFunctions - Function RemoveMagicEffectFromSpell(Spell akSpell, MagicEffect mgef, float magnitude, int area, int duration, float cost = 0.0) global native
-
-function removeCurrentEffectsFromSpell()
-	int i
-	magicEffect effectToRemove
-	while i < iEquip_ThrowingPoisonSpell.GetNumEffects()
-		effectToRemove = iEquip_ThrowingPoisonSpell.GetNthEffectMagicEffect(i)
-		RemoveMagicEffectFromSpell(iEquip_ThrowingPoisonSpell, effectToRemove, iEquip_ThrowingPoisonSpell.GetNthEffectMagnitude(i), iEquip_ThrowingPoisonSpell.GetNthEffectArea(i), iEquip_ThrowingPoisonSpell.GetNthEffectDuration(i))
-		i += 1
-	endWhile
-endFunction
-
-; For reference from PO3_SKSEFunctions - Function AddMagicEffectToSpell(Spell akSpell, MagicEffect mgef, float magnitude, int area, int duration, float cost = 0.0, String[] conditionList = None) global native
-
-function addPoisonEffectsToSpell()
-	int i
-	magicEffect effectToAdd
-	while i < currentPoison.GetNumEffects()
-		effectToAdd = currentPoison.GetNthEffectMagicEffect(i)
-		AddMagicEffectToSpell(iEquip_ThrowingPoisonSpell, effectToAdd, currentPoison.GetNthEffectMagnitude(i), currentPoison.GetNthEffectArea(i), currentPoison.GetNthEffectDuration(i))
-		i += 1
-	endWhile
+	debug.trace("iEquip_ThrowingPoisons updateWidget end")
 endFunction
 
 function unequipPoison()
+	debug.trace("iEquip_ThrowingPoisons unequipPoison start")
 	bJustUnequippedThrowingPoison = true
 	PlayerRef.UnequipItemEx(iEquip_ThrowingPoisonWeapon)
 	PlayerRef.RemoveItem(iEquip_ThrowingPoisonWeapon, 1, true)
 	bPoisonEquipped = false
+	debug.trace("iEquip_ThrowingPoisons unequipPoison end")
 endFunction
 
-function OnThrowingPoisonUnequipped()					; Only ever called from PlayerEventHandler OnObjectUnequipped if it has been unequipped manually by the player
+function OnThrowingPoisonUnequipped(bool onWeaponsSheathed = false)					; Only ever called from PlayerEventHandler OnObjectUnequipped if it has been unequipped manually by the player
+	debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonUnequipped start")
 	PlayerRef.RemoveItem(iEquip_ThrowingPoisonWeapon, 1, true)
-
-	if PlayerRef.HasPerk(iEquip_ThrowingPoisonPerk)
-		PlayerRef.RemovePerk(iEquip_ThrowingPoisonPerk)
+	if onWeaponsSheathed
+		switchBack(false)
 	endIf
-
 	bPoisonEquipped = false
 	bKeepThrowing = false
+	debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonUnequipped end")
 endFunction
 
 function onPoisonThrown()
-
+	debug.trace("iEquip_ThrowingPoisons onPoisonThrown start - explosion currently set on iEquip_ThrowingPoison_ProjExpl: " + iEquip_ThrowingPoison_ProjExpl.GetExplosion().GetName())
 	unequipPoison()										; Do this first so the bottle doesn't remain visible in the player's hand at the same time as the projectile bottle appears
 
-	if !PlayerRef.HasPerk(Poisoner) && !PlayerRef.HasPerk(iEquip_ThrowingPoisonPerk)
-		PlayerRef.AddPerk(iEquip_ThrowingPoisonPerk)
-	endIf
-
-	thrownPoison = currentPoison
-
-	iEquip_ThrowingPoisonSpell.Cast(PlayerRef)
+	iEquip_ThrowPoison.Cast(PlayerRef)
 	
-	bool bLastOfCurrentPoison = PlayerRef.GetItemCount(currentPoison as form) == 1
-	bool bLastPoisonInQueue = jArray.count(WC.aiTargetQ[4]) == 1 && bLastOfCurrentPoison
+	bLastOfCurrentPoison = PlayerRef.GetItemCount(currentPoison as form) == 1
+	bLastPoisonInQueue = jArray.count(WC.aiTargetQ[4]) == 1 && bLastOfCurrentPoison
 
 	PlayerRef.RemoveItem(currentPoison, 1, true)		; Remove one poison from the player's inventory.  This will also trigger the poison queue to update the count and cycle forwards if the last of the current poison has just been thrown.
 
@@ -274,10 +460,11 @@ function onPoisonThrown()
 	else 												; If we've selected Throw & Switch Back, or if we've just thrown our last poison, switch back to the previous equipped item(s)
 		switchBack(false)
 	endIf
+	debug.trace("iEquip_ThrowingPoisons onPoisonThrown end")
 endFunction
 
 function saveCurrentItemsForSwitchBack()
-	;debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack start")
+	debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack start")
 	
 	fPreviousLeftHandForm = PlayerRef.GetEquippedObject(0)
 	if fPreviousLeftHandForm && (fPreviousLeftHandForm == jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
@@ -304,18 +491,14 @@ function saveCurrentItemsForSwitchBack()
 	endIf
 
 	bPreviouslyUnarmed = (fPreviousRightHandForm == none && fPreviousLeftHandForm == none) || (fPreviousRightHandForm == WC.EH.Unarmed)
-	;debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack end")
+	debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack end")
 endFunction
 
 
 function switchBack(bool unequip = true)
-	;debug.trace("iEquip_ThrowingPoisons switchBack start")
+	debug.trace("iEquip_ThrowingPoisons switchBack start")
 	if unequip
 		unequipPoison()
-	endIf
-
-	if PlayerRef.HasPerk(iEquip_ThrowingPoisonPerk)
-		PlayerRef.RemovePerk(iEquip_ThrowingPoisonPerk)
 	endIf
 
 	if iPreviousLeftHandIndex != -1
@@ -379,9 +562,9 @@ function switchBack(bool unequip = true)
 			endIf
 		endIf
 	else
-		;debug.trace("iEquip_ThrowingPoisons switchBack - Something went wrong!")
+		debug.trace("iEquip_ThrowingPoisons switchBack - Something went wrong!")
 	endIf
-	;debug.trace("iEquip_ThrowingPoisons switchBack end")
+	debug.trace("iEquip_ThrowingPoisons switchBack end")
 endFunction
 
 

@@ -1,0 +1,30 @@
+{
+	"spears": [
+	],
+	"javelins": [
+	],
+	"grenades": [
+	],
+	"throwingAxes": [
+	],
+	"throwingKnives": [
+	],
+	"waxes": [
+	],
+	"oils": [
+	],
+	"spellWards": [
+	],
+	"fire": [
+	],
+	"ice": [
+	],
+	"shock": [
+	],
+	"poison": [
+	],
+	"salves": [
+	],
+	"bandages": [
+	]
+}
