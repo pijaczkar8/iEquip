@@ -1317,6 +1317,12 @@
 			"isLightMod": false
 		},
 		{
+			"name": "Arcane Ward (Rank I)",
+			"pluginName": "Requiem.esp",
+			"formID": "0x225F3B",
+			"isLightMod": false
+		},
+		{
 			"name": "Bound Shield",
 			"pluginName": "Bound Shield.esp",
 			"formID": "0x000D64",
