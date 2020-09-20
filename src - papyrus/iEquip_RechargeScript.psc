@@ -17,6 +17,7 @@ bool Property bUseLargestSoul = true Auto Hidden
 bool Property bUsePartFilledGems Auto Hidden
 bool Property bAllowOversizedSouls Auto Hidden
 bool Property bIsRequiemLoaded Auto Hidden
+int property iRechargeFX = 3 auto hidden
 
 float[] afAmountToRecharge
 float[] afSkillPointsToAdd
@@ -73,8 +74,10 @@ function rechargeWeapon(int Q)
                 int soulSize = iEquip_SoulSeeker.bringMeASoul(requiredSoul, bUseLargestSoul as int, bUsePartFilledGems, bAllowOversizedSouls)
                 ;debug.trace("iEquip_RechargeScript rechargeWeapon - bringMeASoul returned me a size " + soulSize + " soul")
                 if soulSize > 0
-                    iEquip_Recharge_SFX.Play(PlayerRef)
-                    if PlayerRef.IsWeaponDrawn()
+                    if iRechargeFX == 1 || iRechargeFX == 3
+                        iEquip_Recharge_SFX.Play(PlayerRef)
+                    endIf
+                    if PlayerRef.IsWeaponDrawn() && iRechargeFX > 1
                         if Q == 0 || PlayerRef.GetEquippedItemType(0) == 7
     						LFX.cast(PlayerRef, PlayerRef)
                         else

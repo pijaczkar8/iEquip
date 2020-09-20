@@ -163,9 +163,8 @@ endEvent
 function updateSpellsOnLoad() 							; Just in case values and effects haven't persisted through save/load
 	debug.trace("iEquip_ThrowingPoisons updateSpellsOnLoad start")
 	updateProjectileGravity()
-	if bPoisonEquipped
-		updatePoisonEffectsOnSpell()
-	endIf
+	iEquip_ThrowingPoison_ProjExpl.SetExplosion(aExplosions[iIndex])
+	updatePoisonEffectsOnSpell()
 	updateHazardRadius()
 	updateHazardDuration()
 	updateHazardLimit()

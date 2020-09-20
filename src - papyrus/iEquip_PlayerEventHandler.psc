@@ -1060,11 +1060,6 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	int i
 	int itemType = akBaseItem.GetType()
 
-	if WC.bAutoEquipHardcore && WC.bJustDroppedCurrentItem && akBaseItem == WC.fLastDroppedItem
-		WC.bJustDroppedCurrentItem = false
-		Wait(1.5)
-	endIf
-
 	If itemType == 41 													; If it is a weapon get the weapon type
 		itemType = (akBaseItem as Weapon).GetWeaponType()
 	endIf
@@ -1083,7 +1078,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
 		updateEventFilter(iEquip_AllCurrentItemsFLST)
     																	; Otherwise handle anything else in left, right or shout queue other than bound weapons
-	elseIf !((akBaseItem as weapon) && iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon))
+	elseIf !(akBaseItem as weapon && ((TI.aiTemperedItemTypes.Find(itemType) != -1 && !(itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem))) || iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon)))  ; The aiTemperedItemTypes exclusion here is because they are now removed through OnRefHandleInvalidated
 		if itemType == 31	; Torch
 			TO.onTorchRemoved(akBaseItem)
 		endIf
@@ -1099,19 +1094,19 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 					WC.removeItemFromQueue(i, foundAt)
 					actionTaken = true
 				else
+					int itemCount = PlayerRef.GetItemCount(akBaseItem)
 					int otherHand = (i + 1) % 2
-																		; Check if it's contained in the other hand queue as well
 					int foundAtOtherHand = -1
-					if specificHandedItems.Find(itemType) == -1
+					
+					if specificHandedItems.Find(itemType) == -1 || (WC.bIsCGOLoaded && itemType < 7)
 						foundAtOtherHand = WC.findInQueue(otherHand, itemName, akBaseItem)
 					endIf
-					int itemCount = PlayerRef.GetItemCount(akBaseItem)
 																		; If it's ammo, scrolls, torch or other throwing weapons which require a counter update
 					if WC.asCurrentlyEquipped[i] == itemName && itemCount > 0 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)))
 						WC.setSlotCount(i, itemCount)
 						actionTaken = true
 																		; Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
-					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0 && !TI.aiTemperedItemTypes.Find(itemType) != -1		; The aiTemperedItemTypes exclusion here is because they are now removed through OnRefHandleInvalidated
+					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
 						WC.removeItemFromQueue(i, foundAt, false, false, true)
 																		; If the removed item was in both queues and we've got none left remove from the other queue as well
 						if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))

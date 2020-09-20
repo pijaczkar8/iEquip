@@ -15,6 +15,7 @@ string[] poisonMessageOptions
 string[] poisonIndicatorOptions
 string[] throwingPoisonOptions
 string[] throwingPoisonHands
+string[] effectsOptions
 
 int mcmUnmapFLAG
 
@@ -61,6 +62,12 @@ function initData()
     throwingPoisonHands[0] = "$iEquip_MCM_pot_opt_left"
     throwingPoisonHands[1] = "$iEquip_MCM_pot_opt_right"
 
+    effectsOptions = new String[4]
+    effectsOptions[0] = "$iEquip_MCM_rep_opt_noFX"
+    effectsOptions[1] = "$iEquip_MCM_rep_opt_SFXOnly"
+    effectsOptions[2] = "$iEquip_MCM_rep_opt_VFXOnly"
+    effectsOptions[3] = "$iEquip_MCM_rep_opt_bothFX"
+
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
 endFunction
 
@@ -106,6 +113,9 @@ int function saveData()             ; Save page data and return jObject
     jArray.addFlt(jPageObj, TP.fPoisonHazardDuration)
     jArray.addInt(jPageObj, TP.iNumPoisonHazards)
     jArray.addFlt(jPageObj, TP.fThrowingPoisonProjectileGravity)
+
+    jArray.addInt(jPageObj, RC.iRechargeFX)
+    jArray.addInt(jPageObj, WC.iPoisonFX)
 	
 	return jPageObj
 endFunction
@@ -152,12 +162,16 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     TP.fPoisonHazardDuration = jArray.getFlt(jPageObj, 29, 5.0)
     TP.iNumPoisonHazards = jArray.getInt(jPageObj, 30, 5)
     TP.fThrowingPoisonProjectileGravity = jArray.getFlt(jPageObj, 31, 1.2)
+
+    RC.iRechargeFX = jArray.getInt(jPageObj, 32, 3)
+    WC.iPoisonFX = jArray.getInt(jPageObj, 33, 3)
 endFunction
 
 function drawPage()
 	MCM.AddTextOptionST("rep_txt_showEnchRechHelp", "<font color='#a6bffe'>$iEquip_MCM_rep_lbl_showEnchRechHelp</font>", "")
     if RC.bRechargingEnabled
         MCM.AddToggleOptionST("rep_tgl_enblEnchRech", "<font color='#c7ea46'>$iEquip_MCM_rep_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
+        MCM.AddMenuOptionST("rep_men_rechargeFX", "$iEquip_MCM_rep_lbl_FX", effectsOptions[RC.iRechargeFX])
         MCM.AddEmptyOption()
 
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_soulgemUseOpts</font>")
@@ -209,6 +223,7 @@ function drawPage()
     MCM.AddTextOptionST("rep_txt_showPoisonHelp", "<font color='#a6bffe'>$iEquip_MCM_rep_lbl_showPoisonHelp</font>", "")
     if WC.bPoisonsEnabled
         MCM.AddToggleOptionST("rep_tgl_enblPoisonSlt", "<font color='#c7ea46'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
+        MCM.AddMenuOptionST("rep_men_poisonFX", "$iEquip_MCM_rep_lbl_FX", effectsOptions[WC.iPoisonFX])
         MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rep_lbl_poisonUseOpts</font>")
         MCM.AddMenuOptionST("rep_men_confMsg", "$iEquip_MCM_rep_lbl_confMsg", poisonMessageOptions[WC.iShowPoisonMessages])
@@ -274,6 +289,23 @@ State rep_tgl_enblEnchRech
         endIf
 
         MCM.forcePageReset()
+    endEvent
+endState
+
+; -------------------
+; - VFX/SFX Options -
+; -------------------
+
+State rep_men_rechargeFX
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_rechargeFX")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(RC.iRechargeFX, effectsOptions, 3)
+        elseIf currentEvent == "Accept"
+            RC.iRechargeFX = currentVar as int
+            MCM.SetMenuOptionValueST(effectsOptions[RC.iRechargeFX])
+        endIf 
     endEvent
 endState
 
@@ -613,6 +645,23 @@ State rep_tgl_enblPoisonSlt
             WC.bSlotEnabledOptionsChanged = true
             MCM.ForcePageReset()
         endIf
+    endEvent
+endState
+
+; -------------------
+; - VFX/SFX Options -
+; -------------------
+
+State rep_men_poisonFX
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rep_txt_poisonFX")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(WC.iPoisonFX, effectsOptions, 3)
+        elseIf currentEvent == "Accept"
+            WC.iPoisonFX = currentVar as int
+            MCM.SetMenuOptionValueST(effectsOptions[WC.iPoisonFX])
+        endIf 
     endEvent
 endState
 

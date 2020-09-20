@@ -183,6 +183,9 @@ bool property bIsLOTDLoaded auto hidden
 ; Ordinator
 bool bIsOrdinatorLoaded
 
+; Adamant
+bool bIsAdamantLoaded
+
 ; Zim's Immersive Artifacts support
 bool bIsZIALoaded
 weapon[] aZIAAltUniques
@@ -360,6 +363,7 @@ bool[] property abPotionGroupAddedBack auto hidden
 bool property bPotionGroupingOptionsChanged auto hidden
 bool property bRestorePotionWarningSettingChanged auto hidden
 
+int property iPoisonFX = 3 auto hidden
 bool property bAllowPoisonSwitching = true auto hidden
 bool property bAllowPoisonTopUp = true auto hidden
 int property iPoisonChargeMultiplier = 2 auto hidden
@@ -1036,6 +1040,9 @@ function CheckDependencies()
     ; Ordinator
     bIsOrdinatorLoaded = Game.GetModByName("Ordinator - Perks of Skyrim.esp") != 255
 
+    ; Adamant
+    bIsAdamantLoaded = Game.GetModByName("Adamant.esp") != 255
+
     ; Thunderchild
     EH.bIsThunderchildLoaded = Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
 
@@ -1360,7 +1367,10 @@ function refreshWidgetOnLoad()
 		UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", true)
 	endIf
 	initQueuePositionIndicators()
+	
 	int count
+	bool doneHere
+	
 	while Q < 8
 		abIsNameShown[Q] = true
 		if Q < 5
@@ -1371,48 +1381,60 @@ function refreshWidgetOnLoad()
 				if Q < 3 && iPosInd == 2
 					updateQueuePositionIndicator(Q, count, aiCurrentQueuePosition[Q], aiCurrentQueuePosition[Q])
 				endIf
+
 				if Q < 2
-					checkAndUpdatePoisonInfo(Q)
-					TI.checkAndUpdateTemperLevelInfo(Q)
 					CM.initChargeMeter(Q)
 					CM.initSoulGem(Q)
 					CM.initRadialMeter(Q)
+
+					if TP.bPoisonEquipped && Q == TP.iThrowingPoisonHand
+						TP.updateWidget()
+						doneHere = true
+					endIf
 				endIf
-				if Q == 0 && bAmmoMode
-					updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
-				else
-					updateWidget(Q, aiCurrentQueuePosition[Q])
-				endIf
-				if Q < 2
-					if abIsCounterShown[Q]
-						if !abPoisonInfoDisplayed[Q]
-							if Q == 0 && bAmmoMode
-								setSlotCount(Q, PlayerRef.GetItemCount(AM.currentAmmoForm))
-							else
-								setSlotCount(Q, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")))
+
+				if !doneHere
+					if Q == 0 && bAmmoMode
+						updateWidget(Q, AM.aiCurrentAmmoIndex[AM.Q])
+					else
+						updateWidget(Q, aiCurrentQueuePosition[Q])
+					endIf
+					if Q < 2
+						checkAndUpdatePoisonInfo(Q)
+						TI.checkAndUpdateTemperLevelInfo(Q)
+						
+						if abIsCounterShown[Q]
+							if !abPoisonInfoDisplayed[Q]
+								if Q == 0 && bAmmoMode
+									setSlotCount(Q, PlayerRef.GetItemCount(AM.currentAmmoForm))
+								else
+									setSlotCount(Q, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")))
+								endIf
 							endIf
+						else
+							setCounterVisibility(Q, false)
 						endIf
-					else
-						setCounterVisibility(Q, false)
-					endIf
-				
-				elseIf Q == 3 && potionGroup != -1
-					count = PO.getPotionGroupCount(potionGroup)
-					setSlotCount(3, count)
-					if count < 1
-						checkAndFadeConsumableIcon(true)
-					elseIf bConsumableIconFaded
-						checkAndFadeConsumableIcon(false)
-					endIf
-				elseIf Q == 4
-					if count < 1
-						handleEmptyPoisonQueue()
-					else
-						setSlotCount(4, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")))
-						if bPoisonIconFaded
-							checkAndFadePoisonIcon(false)
+					
+					elseIf Q == 3 && potionGroup != -1
+						count = PO.getPotionGroupCount(potionGroup)
+						setSlotCount(3, count)
+						if count < 1
+							checkAndFadeConsumableIcon(true)
+						elseIf bConsumableIconFaded
+							checkAndFadeConsumableIcon(false)
 						endIf
-					endIf			
+					elseIf Q == 4
+						if count < 1
+							handleEmptyPoisonQueue()
+						else
+							setSlotCount(4, PlayerRef.GetItemCount(jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipForm")))
+							if bPoisonIconFaded
+								checkAndFadePoisonIcon(false)
+							endIf
+						endIf			
+					endIf
+				else
+					doneHere = false
 				endIf
 			endIf
 		else
@@ -2577,7 +2599,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 			doneHere = true  
 
 	    ; If you already have the item equipped in the slot you are cycling then refresh the poison, charge and count info and hide the attribute icons
-	    elseif (itemHandle != 0xFFFF && ((itemType == 26 && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2)) || itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q)))
+	    elseif PlayerRef.GetEquippedObject(Q) && (itemHandle != 0xFFFF && ((itemType == 26 && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2)) || itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q)))
 	    	hideAttributeIcons(Q)
 	    	checkAndUpdatePoisonInfo(Q, false, false, itemHandle)
 			CM.checkAndUpdateChargeMeter(Q)
@@ -3630,7 +3652,7 @@ function addBackCachedItem(form addedForm)
 	debug.trace("iEquip_WidgetCore addBackCachedItem end")
 endFunction
 
-; New in v1.2 - Battle Royale style auto equipping
+; New in v1.5 - Battle Royale style auto equipping
 int property iAutoEquipEnabled = 0 auto hidden 			; 0 = Disabled, 1 = Any time, 2 = Weapons drawn (Recommended), 3 = In combat only
 int property iAutoEquip = 1 auto hidden 				; 0 = Always Equip, 1 = Equip if better than current, 2 = Equip if unarmed
 int property iCurrentItemEnchanted auto hidden 			; 0 = Don't switch, 1 = Switch if no charge, 2 = Always switch
@@ -3799,7 +3821,7 @@ function onWeaponOrShieldAdded(form addedForm)
 endFunction
 
 function DropItem(form itemToDrop)
-	debug.trace("iEquip_WidgetCore Drop start")
+	debug.trace("iEquip_WidgetCore DropItem start")
 	objectreference droppedItem = PlayerRef.DropObject(itemToDrop, 1)
 	
 	Float OffsetX = 48.0 * Math.Sin(PlayerRef.GetAngleZ() - 15)
@@ -3997,16 +4019,12 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 		    			debug.trace("iEquip_WidgetCore cycleHand - We still haven't succeeded in equipping anything so falling back on EquipItemEx and taking pot luck")
 		    			PlayerRef.EquipItemEx(targetItem, iEquipSlotId)
 	    				EH.abSkipQueueObjectUpdate[Q] = true 	
-	    			;else
-	    				debug.trace("iEquip_WidgetCore cycleHand - item successfully equipped")
 		    		endIf
-		    	;else
-		    		debug.trace("iEquip_WidgetCore cycleHand - item successfully equipped")
 		    	endIf
 		    endIf
 		endIf
 		Utility.WaitMenuMode(0.2)
-	; If we've just directly equipped and are auto adding a 2H spell now we need to show it in the left slot as well, which will also sit b2HSpellEquipped to true blocking cycleHand(0) below
+	; If we've just directly equipped and are auto adding a 2H spell now we need to show it in the left slot as well, which will also set b2HSpellEquipped to true blocking cycleHand(0) below
 	elseIf itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3
 		updateOtherHandOn2HSpellEquipped(0)
 	endIf
@@ -4476,8 +4494,14 @@ function applyPoison(int Q)
 	        
 	        int ConcentratedPoisonMultiplier = 1
 	        int AdditionalDoses
+
+	        if bIsAdamantLoaded && PlayerRef.HasPerk(Game.GetFormFromFile(0x001E6934, "Adamant.esp") as Perk) 	; MAG_Intensity30 - Intensity Lvl 1 - Plus 4 hits
+	        	AdditionalDoses = 4
+	        	if PlayerRef.HasPerk(Game.GetFormFromFile(0x0037B9F1, "Adamant.esp") as Perk) 					; MAG_Intensity60 - Intensity Lvl 2 - Plus an additional 5 hits
+	        		AdditionalDoses = 9
+	        	endIf
 	        
-	        if PlayerRef.HasPerk(ConcentratedPoison)														; If the player has the Concentrated Poison perk
+	        elseIf PlayerRef.HasPerk(ConcentratedPoison)													; If the player has the Concentrated Poison perk
 	            if bIsOrdinatorLoaded
 	            	AdditionalDoses = PlayerRef.GetActorValue("Alchemy") as int % 10						; If Ordinator is loaded then apply the Bottomless Cup calculation based on the players current Alchemy level
 	            else
@@ -4514,9 +4538,11 @@ function applyPoison(int Q)
 	            checkAndUpdatePoisonInfo(Q, false, false, refHandle)
 	        endIf
 	        ; Play sound
-	        iEquip_ITMPoisonUse.Play(PlayerRef)
+	        if iPoisonFX == 1 || iPoisonFX == 3
+	        	iEquip_ITMPoisonUse.Play(PlayerRef)
+	        endIf
 	        ; Add Poison FX to weapon
-	        if PlayerRef.IsWeaponDrawn()
+	        if PlayerRef.IsWeaponDrawn() && iPoisonFX > 1
 		        if Q == 0 || PlayerRef.GetEquippedItemType(0) == 7
 					PLFX.cast(PlayerRef, PlayerRef)
 		        else

@@ -13,7 +13,13 @@ function initialise(bool bEnabled)
 endFunction
 
 Event OnRefHandleInvalidated(Form a_item, Int a_refHandle)
-	;debug.trace("iEquip_InventoryEventsListener OnRefHandleInvalidated event received - form: " + a_item + "(" + a_item.GetName() + "), refHandle: " + a_refHandle)
+	debug.trace("iEquip_InventoryEventsListener OnRefHandleInvalidated event received - form: " + a_item + "(" + a_item.GetName() + "), refHandle: " + a_refHandle)
+	
+	if WC.bAutoEquipHardcore && WC.bJustDroppedCurrentItem && a_item == WC.fLastDroppedItem 		; This just allows auto-equipping a new item to finish adding the new one before removing the dropped item from the queue
+		WC.bJustDroppedCurrentItem = false
+		Utility.Wait(1.5)
+	endIf
+	
 	int foundAt = JArray.FindInt(WC.iRefHandleArray, a_refHandle)
 	if foundAt != -1
 		int i

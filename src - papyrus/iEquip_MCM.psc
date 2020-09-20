@@ -29,11 +29,11 @@ int[] aiHotkeys
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 126  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 127  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 126 && CurrentVersion < 126)
+    if (a_version >= 127 && CurrentVersion < 127)
         OnConfigInit()
     endIf
 endEvent
@@ -262,7 +262,10 @@ String Function GetCustomControl(Int a_keyCode)
     if aiHotkeys.Find(a_keyCode) != -1
         controlName = asControlNames[aiHotkeys.Find(a_keyCode)]
     endIf
-    return iEquip_StringExt.LocalizeString(controlName)
+    if controlName != ""
+        controlName = iEquip_StringExt.LocalizeString(controlName)
+    endIf
+    return controlName
 EndFunction
 
 ; INPUT
