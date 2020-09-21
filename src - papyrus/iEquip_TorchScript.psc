@@ -457,11 +457,16 @@ endFunction
 
 ; Simple Drop Lit Torches - Courtesy of, and with full permission from, Snotgurg
 
-Function DropTorch()
+Function DropTorch(bool torchDroppedFromInventoryMenu = false)
 	;debug.trace("iEquip_TorchScript DropTorch start")
 	if bDropLitTorchesEnabled
 		
-		form equippedTorch = PlayerRef.GetEquippedObject(0)
+		form equippedTorch
+		if torchDroppedFromInventoryMenu
+			equippedTorch = iEquipTorch
+		else
+			equippedTorch = PlayerRef.GetEquippedObject(0)
+		endIf
 		int remainingTorches
 		int queueLength = JArray.count(WC.aiTargetQ[0])
 
@@ -481,7 +486,9 @@ Function DropTorch()
 				queueLength -= 1
 			endIf
 
-			PlayerRef.UnequipItemEx(equippedTorch)
+			if !torchDroppedFromInventoryMenu
+				PlayerRef.UnequipItemEx(equippedTorch)
+			endIf
 
 			if equippedTorch == iEquipTorch || (fCurrentTorchLife < 30.0 && bReduceLightAsTorchRunsOut)			; Switch to using the one with the display name so if the player wants to pick it up again it will have the same name/value/weight displayed as Torch01
 				equippedTorch = iEquipDroppedTorch
@@ -528,29 +535,33 @@ Function DropTorch()
 
 			PlayerRef.RemoveItem(realTorchForm, 1, true, None)
 			
-			if equippedTorch == iEquipDroppedTorch
+			if equippedTorch == iEquipDroppedTorch && !torchDroppedFromInventoryMenu
 				PlayerRef.RemoveItem(iEquipTorch, 1, true, None)
 			endIf
 		endIf
 
 		if bJustDroppedTorch
-			; iDropLitTorchBehaviour - 0: Do Nothing, 1: Torch/Nothing, 2: Torch/Cycle, 3: Cycle, 4: QuickShield
-			if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || ((iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3) && queueLength == 0)	; Do Nothing and set left hand to empty
-				WC.setSlotToEmpty(0, false, true)
-				if WC.bPlayerIsMounted
+			if torchDroppedFromInventoryMenu
+				bJustDroppedTorch = false
+			else
+				; iDropLitTorchBehaviour - 0: Do Nothing, 1: Torch/Nothing, 2: Torch/Cycle, 3: Cycle, 4: QuickShield
+				if iDropLitTorchBehavior == 0 || (iDropLitTorchBehavior == 1 && remainingTorches < 1) || ((iDropLitTorchBehavior == 2 || iDropLitTorchBehavior == 3) && queueLength == 0)	; Do Nothing and set left hand to empty
+					WC.setSlotToEmpty(0, false, true)
+					if WC.bPlayerIsMounted
+						WC.KH.UnregisterForLeftKey()
+						WC.fadeLeftIcon(true)
+					endIf
+				elseIf iDropLitTorchBehavior == 1 || (iDropLitTorchBehavior == 2 && remainingTorches > 0)																					; Equip another torch
+					Wait(fRealisticReEquipDelay)
+					PlayerRef.EquipItemEx(realTorchForm, 0)
+				elseIf WC.bPlayerIsMounted
 					WC.KH.UnregisterForLeftKey()
 					WC.fadeLeftIcon(true)
+				elseIf iDropLitTorchBehavior < 4																																			; Cycle left hand
+					WC.cycleSlot(0, false, true)
+				else 																																										; QuickShield
+					PM.QuickShield(false, true)
 				endIf
-			elseIf iDropLitTorchBehavior == 1 || (iDropLitTorchBehavior == 2 && remainingTorches > 0)																					; Equip another torch
-				Wait(fRealisticReEquipDelay)
-				PlayerRef.EquipItemEx(realTorchForm, 0)
-			elseIf WC.bPlayerIsMounted
-				WC.KH.UnregisterForLeftKey()
-				WC.fadeLeftIcon(true)
-			elseIf iDropLitTorchBehavior < 4																																			; Cycle left hand
-				WC.cycleSlot(0, false, true)
-			else 																																										; QuickShield
-				PM.QuickShield(false, true)
 			endIf
 		endIf
 	endIf

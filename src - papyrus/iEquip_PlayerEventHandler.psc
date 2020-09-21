@@ -409,6 +409,8 @@ endProperty
 function updateAllEventFilters()
 	debug.trace("iEquip_PlayerEventHandler updateAllEventFilters start")
 	RemoveAllInventoryEventFilters()
+	AddInventoryEventFilter(iEquip_ThrowingPoisonWeapon as form)
+	AddInventoryEventFilter(iEquipTorch as form)
 	AddInventoryEventFilter(iEquip_AllCurrentItemsFLST)
 	AddInventoryEventFilter(iEquip_AmmoItemsFLST)
 	AddInventoryEventFilter(iEquip_PotionItemsFLST)
@@ -1059,6 +1061,41 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	
 	int i
 	int itemType = akBaseItem.GetType()
+
+	if akBaseItem == iEquipTorch as form || akBaseItem == iEquip_ThrowingPoisonWeapon as form 		; If the player has just dropped or stored one of these items
+
+		form RealItem																				; Get the equivalent real item
+		if akBaseItem == iEquipTorch
+			RealItem = TO.Torch01 as form
+		else
+			RealItem = jMap.getForm(jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4]), "iEquipForm")
+		endIf
+		
+		if !akDestContainer 																		; If it has been dropped
+			ObjectReference DroppedItem
+			if akItemReference  																	; If we've got an ObjectReference use that
+				DroppedItem = akItemReference
+			else
+				DroppedItem = Game.FindClosestReferenceOfTypeFromRef(akBaseItem, PlayerRef, 200)	; Otherwise find the closest one to the player
+			endIf
+			if DroppedItem
+				DroppedItem.delete() 																; Delete and disable the dummy item
+				DroppedItem.disable()
+
+				if akBaseItem as light && TO.bDropLitTorchesEnabled 								; If we've dropped an iEquipTorch and we have enabled Drop Lit Torches then run that now
+					TO.DropTorch(true)
+				
+				elseIf PlayerRef.GetItemCount(RealItem) 											; Drop the real item in its place
+					PlayerRef.DropObject(RealItem, 1)
+				endIf
+			endIf
+		else 																						; If it has been moved to another container
+			akDestContainer.RemoveItem(akBaseItem, 1, true) 										; Remove the dummy item form the destination container
+			if PlayerRef.GetItemCount(RealItem)
+				PlayerRef.RemoveItem(RealItem, 1, true, akDestContainer) 							; Replace it with the real item from the players inventory
+			endIf
+		endIf
+	endIf
 
 	If itemType == 41 													; If it is a weapon get the weapon type
 		itemType = (akBaseItem as Weapon).GetWeaponType()
