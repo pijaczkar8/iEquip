@@ -2236,7 +2236,9 @@ function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
 			AM.toggleAmmoMode()
 
 		else
-			if AM.bSimpleAmmoMode
+			bool wasAmmoMode
+			if AM.bAmmoMode && AM.bSimpleAmmoMode
+				wasAmmoMode = true
 				AM.bAmmoMode = false
 				WC.bAmmoMode = false
 				WC.setCounterVisibility(0, false)
@@ -2274,6 +2276,11 @@ function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
 				else
 					PlayerRef.EquipItemEx(fPreviousRightHandForm, 1)
 				endIf
+			endIf
+
+			if wasAmmoMode && WC.bPlayerIsMounted
+				WC.KH.UnregisterForLeftKey()
+				WC.fadeLeftIcon(true)
 			endIf
 		endIf
 	else
