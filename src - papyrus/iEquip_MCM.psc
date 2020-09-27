@@ -29,11 +29,11 @@ int[] aiHotkeys
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 127  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 149  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 127 && CurrentVersion < 127)
+    if (a_version >= 149 && CurrentVersion < 149)
         OnConfigInit()
     endIf
 endEvent
