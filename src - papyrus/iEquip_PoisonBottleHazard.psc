@@ -5,8 +5,8 @@ actor property PlayerRef auto
 
 event OnLoad()
 
-	float ForceAngle = self.GetAngleZ() + self.GetHeadingAngle(PlayerRef) - 180 		; This makes sure the havok impulse is applied directly away from the bearing to the player
-	float ForceMagnitude = self.GetDistance(PlayerRef) / 100							; This adjusts the amount of force applied depending on how far the bottle has been thrown
+	float ForceAngle = self.GetAngleZ() + self.GetHeadingAngle(PlayerRef) - 180 			; This makes sure the havok impulse is applied directly away from the bearing to the player
+	float ForceMagnitude = self.GetDistance(PlayerRef) / 100								; This adjusts the amount of force applied depending on how far the bottle has been thrown
 	
 	if ForceMagnitude > 14.0																; This applies Min/Max value caps to the force
 		ForceMagnitude = 14.0

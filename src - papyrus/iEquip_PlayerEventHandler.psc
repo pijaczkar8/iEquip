@@ -710,7 +710,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 endEvent
 
 Event OnUpdate()
-	debug.trace("iEquip_PlayerEventHandler OnUpdate start - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate + ", bWaitingForTransform: " + bWaitingForTransform)
+	debug.trace("iEquip_PlayerEventHandler OnUpdate start - bWaitingForAnimationUpdate: " + bWaitingForAnimationUpdate + ", bWaitingForOnObjectEquippedUpdate: " + bWaitingForOnObjectEquippedUpdate + ", bWaitingForOnObjectUnequippedUpdate: " + bWaitingForOnObjectUnequippedUpdate + ", bWaitingForTransform: " + bWaitingForTransform)
 	if bWaitingForAnimationUpdate
 		bWaitingForAnimationUpdate = false
 		updateWidgetOnWeaponSwing()
@@ -723,7 +723,9 @@ Event OnUpdate()
 	endIf
 	; This next section is here to catch unequip events from within menus or via vanilla hotkeys or other hotkey mods which leave the hand or shout slots with nothing equipped.
 	if bWaitingForOnObjectUnequippedUpdate
+		bWaitingForOnObjectUnequippedUpdate = false
 		if !Utility.IsInMenuMode()
+			Utility.Wait(0.4)
 		  	int Q
 		  	while Q < 3
 		  		if !PlayerRef.GetEquippedObject(Q) && !WC.abQueueWasEmpty[Q]

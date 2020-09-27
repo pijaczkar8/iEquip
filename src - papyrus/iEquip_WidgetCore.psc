@@ -990,6 +990,8 @@ function CheckDependencies()
 		aUniqueItems[47] = Game.GetFormFromFile(0x000397F6, "Dragonborn.esm") as Weapon 	; DLC2MKMiraakSword1
 		aUniqueItems[48] = Game.GetFormFromFile(0x00039FB1, "Dragonborn.esm") as Weapon 	; DLC2MKMiraakSword2
 		aUniqueItems[49] = Game.GetFormFromFile(0x00039FB4, "Dragonborn.esm") as Weapon 	; DLC2MKMiraakSword3
+
+		DLC2DRAllowedSpells = Game.GetFormFromFile(0x00033C8A, "Dragonborn.esm") as formlist
 	else
 		aUniqueItems[43] = none
 		aUniqueItems[44] = none
@@ -998,6 +1000,8 @@ function CheckDependencies()
 		aUniqueItems[47] = none
 		aUniqueItems[48] = none
 		aUniqueItems[49] = none
+
+		DLC2DRAllowedSpells = none
 	endIf
 
 	; moreHUD Inventory Edition
@@ -2381,6 +2385,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		showName(Q)
 
 	elseIf queueLength > 1 || onItemRemoved || (Q < 3 && abQueueWasEmpty[Q]) || (Q == 0 && bGoneUnarmed || b2HSpellEquipped)
+		int i
 		int	targetIndex
 		int targetObject
 		form targetItem
@@ -2422,30 +2427,55 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			; Set the initial target index, then check if we're cycling past the first or last items in the queue and jump to the start/end as required
 			targetIndex = confirmNewIndex(aiCurrentQueuePosition[Q] + move, queueLength, Reverse)
 
+			; Now we need to apply any conditional cycling restrictions if required
 			if Q < 4
-		    	targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
-		    	; If we're in the consumables queue check for empty potion groups
-			    if Q == 3
-                    while (asPotionGroups.Find(targetName) > -1 && (!bPotionGrouping || (PO.iEmptyPotionQueueChoice == 1 && abPotionGroupEmpty[asPotionGroups.Find(targetName)])))
+				i = queueLength - 1
+				targetObject = jArray.getObj(targetArray, targetIndex)
+		    	targetName = jMap.getStr(targetObject, "iEquipName")
+		    	
+			    if Q == 3 					; If we're in the consumables queue check for empty potion groups
+                    while i > 0 && (asPotionGroups.Find(targetName) > -1 && (!bPotionGrouping || (PO.iEmptyPotionQueueChoice == 1 && abPotionGroupEmpty[asPotionGroups.Find(targetName)])))
                         targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
                         targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
+                        i -= 1
                     endWhile
-			    else
-			    	if Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()
-						targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
-			        endIf
-			    	; If we have disallowed 1H switching and the same 1H item which is currently equipped in the other hand, or we have enabled Skip Auto-Added Items in the left/right/shout queues we need to cycle until we find one that hasn't been Auto-Added 
-			    	targetObject = jArray.getObj(targetArray, targetIndex)
-			    	if !(Q < 2 && jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_Unarmed")
+			    elseIf Q == 2 				; For the shout queue all we need to do is skip auto-added items if required
+			    	while  i > 0 && bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1
+			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
+			    		targetObject = jArray.getObj(targetArray, targetIndex)
+			    		i -= 1
+			    	endWhile
+			    elseIf bPlayerIsMounted		; cycleSlot will only ever be called for Q == 1 if bPlayerIsMounted so no need check for Q here - we're skipping Unarmed in combat if required, auto-added items if required, spells, scrolls and staffs as not able to be used on horseback (vanilla)
+			    	int itemType = jMap.getInt(targetObject, "iEquipType")
+			    	while  i > 0 && ((bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || (bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1) || itemType == 8 || itemType == 22 || itemType == 23)
+			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
+			    		targetObject = jArray.getObj(targetArray, targetIndex)
+			    		targetName = jMap.getStr(targetObject, "iEquipName")
+			    		itemType = jMap.getInt(targetObject, "iEquipType")
+			    		i -= 1
+			    	endWhile
+			    elseIf bDragonRiding 		; For dragon riding we need to restrict the selectable items to staffs, scrolls and allowed spells only, as well as skipping Unarmed in combat if required, and auto-added items if required
+			    	int itemType = jMap.getInt(targetObject, "iEquipType")
+			    	targetItem = jMap.getForm(targetObject, "iEquipForm")
+			    	while  i > 0 && ((Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || (bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1) && !(itemType == 8 || itemType == 23 || (itemType == 22 && DLC2DRAllowedSpells.HasForm(targetItem))))
+			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
+			    		targetObject = jArray.getObj(targetArray, targetIndex)
 			    		targetItem = jMap.getForm(targetObject, "iEquipForm")
-			    		int countdown = queueLength - 1
-				        while !(Q < 2 && jMap.getStr(targetObject, "iEquipName") == "$iEquip_common_Unarmed") && ((Q < 2 && jMap.getInt(targetObject, "iEquipType") != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)) || (bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1)) && countdown > 0
-				            targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
-				            targetObject = jArray.getObj(targetArray, targetIndex)
-				            targetItem = jMap.getForm(targetObject, "iEquipForm")
-				            countdown -= 1
-				        endWhile
-				    endIf
+			    		targetName = jMap.getStr(targetObject, "iEquipName")
+			    		itemType = jMap.getInt(targetObject, "iEquipType")
+			    		i -= 1
+			    	endWhile
+			    else			    		; And finally if we're cycling one of the hand queues and none of the above apply, we need to check for 1H switching if the same 1H item which is currently equipped in the other hand, as well as skipping Unarmed in combat if required, and auto-added items if required
+				    int itemType = jMap.getInt(targetObject, "iEquipType")
+			    	targetItem = jMap.getForm(targetObject, "iEquipForm")
+				    while  i > 0 && ((Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || (bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1) && (itemType != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)))
+			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
+			    		targetObject = jArray.getObj(targetArray, targetIndex)
+			    		targetItem = jMap.getForm(targetObject, "iEquipForm")
+			    		targetName = jMap.getStr(targetObject, "iEquipName")
+			    		itemType = jMap.getInt(targetObject, "iEquipType")
+			    		i -= 1
+			    	endWhile
 			    endIf
 		    endIf
 			; If we're switching because of a hand to hand swap in EquipPreselectedItem then if the targetIndex matches the currently preselected item skip past it when advancing the main queue.
@@ -2464,15 +2494,15 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			; If we're forcing the left hand to switch equipped items because we're switching left to right, make sure we don't leave the left hand unarmed
 			if Q == 1
 				int itemType = jMap.getInt(targetObject, "iEquipType")
-				int count = 1
+				i = 1
 				AM.bAmmoModePending = false
 				
 				; Check if initial target item is 2h or ranged, or if it is a 1h item but you only have one of it and you've just equipped it in the other hand, or if it is unarmed. If it is then starting from the currently equipped index search forward for a 1h item
 				
-				while count < queueLength && (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
-					count += 1
+				while i < queueLength && (itemType == 0 || (ai2HWeaponTypes.Find(itemType) > -1 && !(itemType < 7 && bIsCGOLoaded)) || (itemType == 22 && jMap.getInt(targetObject, "iEquipSlot") == 3 || ai2HWeaponTypes.Find(iEquip_SpellExt.GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as spell)) > -1) || ((asCurrentlyEquipped[0] == jMap.getStr(targetObject, "iEquipName")) && PlayerRef.GetItemCount(targetItem) < 2))
+					i += 1
 					; If we've got back to the starting index without finding anything suitable then return out and don't re-equip anything 
-					if count == queueLength
+					if i == queueLength
 						return
 					endIf
 					targetIndex += 1
@@ -2587,6 +2617,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
     endIf
     
     bool doneHere
+    form currentObject = PlayerRef.GetEquippedObject(Q)
     
     if !equippingOnAutoAdd
 	    ; If we're equipping Fists
@@ -2599,7 +2630,7 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 			doneHere = true  
 
 	    ; If you already have the item equipped in the slot you are cycling then refresh the poison, charge and count info and hide the attribute icons
-	    elseif PlayerRef.GetEquippedObject(Q) && (itemHandle != 0xFFFF && ((itemType == 26 && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2)) || itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q)))
+	    elseif currentObject && itemHandle != 0xFFFF && (currentObject as weapon && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(Q)) || (currentObject as armor && itemHandle == iEquip_InventoryExt.GetRefHandleFromWornObject(2))
 	    	hideAttributeIcons(Q)
 	    	checkAndUpdatePoisonInfo(Q, false, false, itemHandle)
 			CM.checkAndUpdateChargeMeter(Q)
@@ -2738,6 +2769,7 @@ function onPlayerMount()
 endFunction
 
 function onPlayerDismount()
+	debug.trace("iEquip_WidgetCore onPlayerDismount start, bWasSimpleAmmoMode: " + bWasSimpleAmmoMode)
 	AM.bSimpleAmmoMode = bWasSimpleAmmoMode
 
 	if bLeftIconFaded && !AM.bAmmoModePending && !(bFadeLeftIcon && PlayerRef.GetEquippedObject(1) as weapon && (PlayerRef.GetEquippedWeapon().GetWeaponType() == 5 || PlayerRef.GetEquippedWeapon().GetWeaponType() == 6) && PlayerRef.GetEquippedWeapon().GetEquipType() == EquipSlots[3])
@@ -2745,10 +2777,12 @@ function onPlayerDismount()
 	endIf
 
 	if (bPreselectMode && PM.abPreselectSlotEnabled[0]) || (bAmmoMode && !AM.bSimpleAmmoMode)
-		
+
+		debug.trace("iEquip_WidgetCore onPlayerDismount - need to reshow left preselect slot")
 		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateWidget")
 		
 		if(iHandle)
+			debug.trace("iEquip_WidgetCore onPlayerDismount - got iHandle")
 			UICallback.PushInt(iHandle, 5) 													; Which slot we're updating
 			if bPreselectMode || jArray.count(aiTargetQ[0]) > 0
 				UICallback.PushString(iHandle, jMap.getStr(jArray.getObj(aiTargetQ[0], aiCurrentlyPreselected[0]), "iEquipIcon"))
@@ -2763,9 +2797,17 @@ function onPlayerDismount()
 			UICallback.Send(iHandle)
 		endIf
 		
-		bool[] args = new bool[3]
-		args[2] = true
-		UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn", args)
+		debug.trace("iEquip_WidgetCore onPlayerDismount - should be reshowing left preselect now")
+		iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn")
+		if(iHandle)
+			UICallback.PushBool(iHandle, true)
+			UICallback.PushBool(iHandle, false)
+			UICallback.PushBool(iHandle, false)
+			UICallback.PushFloat(iHandle, afWidget_A[35]) ; rightPreselectBackground alpha
+			UICallback.PushFloat(iHandle, afWidget_A[36]) ; rightPreselectIcon alpha
+			UICallback.PushFloat(iHandle, afWidget_A[37]) ; rightPreselectName alpha
+			UICallback.Send(iHandle)
+		endIf
 
 		if bAmmoMode
 			bCyclingLHPreselectInAmmoMode = true
@@ -3710,12 +3752,12 @@ function onWeaponOrShieldAdded(form addedForm)
 			debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHItemType: " + currLHItemType + ", currRHItemType: " + currRHItemType + ", new weapon type: " + weaponType + ", newWeaponDamage: " + newWeaponDamage)
 
 			if currRHItemType > 0 && currRHItemType < 8 || currRHItemType == 12
-				rightWeaponDamage = PlayerRef.GetEquippedWeapon().GetBaseDamage()
+				rightWeaponDamage = currRHWeapon.GetBaseDamage()
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currRHWeapon: " + currRHWeapon.GetName() + ", rightWeaponDamage: " + rightWeaponDamage)
 			endIf
 
 			if currLHItemType > 0 && (currLHItemType < 5 || (currLHItemType < 7 && bIsCGOLoaded))
-				leftWeaponDamage = PlayerRef.GetEquippedWeapon(true).GetBaseDamage()
+				leftWeaponDamage = currLHWeapon.GetBaseDamage()
 				debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHWeapon: " + currLHWeapon.GetName() + ", leftWeaponDamage: " + leftWeaponDamage)
 			endIf
 
@@ -4244,7 +4286,6 @@ function reequipOtherHand(int Q, bool equip = true)
 	endIf
 	if equip
 		cycleHand(Q, aiCurrentQueuePosition[Q], jMap.getForm(targetObject, "iEquipForm"), jMap.getInt(targetObject, "iEquipType"))
-		;cycleHand(Q, aiCurrentQueuePosition[Q], jMap.getForm(targetObject, "iEquipForm"), jMap.getInt(targetObject, "iEquipType"), true)
 	endIf
 	debug.trace("iEquip_WidgetCore reequipOtherHand end")
 endFunction
@@ -4726,7 +4767,7 @@ bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 	if cycling || (Q == 0 && (ai2HWeaponTypesAlt.Find(PlayerRef.GetEquippedItemType(1)) > -1) && !(PlayerRef.GetEquippedItemType(1) < 7 && bIsCGOLoaded))
 		isPoisoned = jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "isPoisoned") as bool
 	;Otherwise we're checking an equipped item so we can check the actual data from the weapon
-	else
+	elseIf PlayerRef.GetEquippedObject(Q) as weapon
 		Potion currentPoison = iEquip_InventoryExt.GetPoison(PlayerRef.GetEquippedObject(Q), GetRefHandleFromWornObject(Q))
 		if currentPoison
 			isPoisoned = true
@@ -5826,9 +5867,16 @@ function ApplyChanges()
 						UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[5]]) 						; Current item icon scale
 						UICallback.Send(iHandle)
 					endIf
-					bool[] args = new bool[3]
-					args[2] = true
-					UI.InvokeboolA(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn", args)
+					iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".PreselectModeAnimateIn")
+					if(iHandle)
+						UICallback.PushBool(iHandle, true)
+						UICallback.PushBool(iHandle, false)
+						UICallback.PushBool(iHandle, false)
+						UICallback.PushFloat(iHandle, afWidget_A[35]) ; rightPreselectBackground alpha
+						UICallback.PushFloat(iHandle, afWidget_A[36]) ; rightPreselectIcon alpha
+						UICallback.PushFloat(iHandle, afWidget_A[37]) ; rightPreselectName alpha
+						UICallback.Send(iHandle)
+					endIf
 				endIf
 				AM.bSimpleAmmoModeOnEnter = false
 		    endIf

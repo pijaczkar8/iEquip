@@ -149,17 +149,6 @@ function OnWidgetLoad()
 	debug.trace("iEquip_ThrowingPoisons OnWidgetLoad end")
 endFunction
 
-; Thinking I might need to do something here so that the 'equipped poison' can show as a weapon in the Inventory Menu and can be unequipped again from there - NB Should probably do the same with the iEquipTorch
-; This might be as simple as allowing the weapon to show in the Inventory, and then using the OnObjectUnequipped event in PlayerEventHandler to catch it being unequipped and remove it from the player inventory
-
-event OnMenuOpen(string MenuName)
-
-endEvent
-
-event OnMenuClose(string MenuName)
-
-endEvent
-
 function updateSpellsOnLoad() 							; Just in case values and effects haven't persisted through save/load
 	debug.trace("iEquip_ThrowingPoisons updateSpellsOnLoad start")
 	updateProjectileGravity()
@@ -276,8 +265,16 @@ function OnThrowingPoisonKeyPressed()
 	if jArray.count(WC.aiTargetQ[4]) < 1				; No poisons left in the poison queue
 		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TP_not_noPoisons"))
 	elseIf iThrowingPoisonBehavior == 1					; Throw & Switch Back
-		saveCurrentItemsForSwitchBack()
-		equipPoison()
+		if bPoisonEquipped 								; If we haven't thrown the poison yet...
+			if currentPoison != jMap.getForm(jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4]), "iEquipForm") as potion 	; If we have cycled the poison slot without throwing the equipped poison switch to the new one and update the widget
+				equipPoison()
+			else 																													; Otherwise switch back to the previously equipped item(s)
+				switchBack()
+			endIf
+		else 											; We don't currently have a poison equipped so save current item(s) and equip one now
+			saveCurrentItemsForSwitchBack()
+			equipPoison()
+		endIf
 	else 												; Toggle throwing poisons
 		toggleThrowingPoisons()
 	endIf
@@ -287,11 +284,16 @@ endFunction
 function toggleThrowingPoisons()
 	debug.trace("iEquip_ThrowingPoisons toggleThrowingPoisons start - bKeepThrowing: " + bKeepThrowing)
 	bKeepThrowing = !bKeepThrowing
-	if bKeepThrowing
+	if bKeepThrowing 						; We don't currently have a poison equipped so save current item(s) and equip one now
 		saveCurrentItemsForSwitchBack()
 		equipPoison()
 	elseIf bPoisonEquipped
-		switchBack()
+		if currentPoison != jMap.getForm(jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4]), "iEquipForm") as potion 		; If we have cycled the poison slot without throwing the equipped poison switch to the new one and update the widget
+			bKeepThrowing = true 																									; And set bKeepThrowing back to true
+			equipPoison()
+		else
+			switchBack() 																											; Otherwise switch back to the previously equipped item(s)
+		endIf
 	endIf
 	debug.trace("iEquip_ThrowingPoisons toggleThrowingPoisons end")
 endFunction
@@ -321,27 +323,29 @@ function equipPoison()
 			updatePoisonEffectsOnSpell()		
 		endIf
 		
-		PlayerRef.AddItem(iEquip_ThrowingPoisonWeapon, 1, true) 				; Add the throwing poison weapon
-		
-		if WC.bPlayerIsMounted 													; If the player is on horseback (vanilla) make sure we equip to the right hand
-			targetHand = 1
-		else
-			targetHand = iThrowingPoisonHand
-		endIf
+		if !bPoisonEquipped
+			PlayerRef.AddItem(iEquip_ThrowingPoisonWeapon, 1, true) 				; Add the throwing poison weapon
+			
+			if WC.bPlayerIsMounted 													; If the player is on horseback (vanilla) make sure we equip to the right hand
+				targetHand = 1
+			else
+				targetHand = iThrowingPoisonHand
+			endIf
 
-		if AM.bAmmoMode 														; Exit Ammo Mode if we need to which will re-equip the left hand if the poison is going to the right hand
-			exitAmmoMode()
-		endIf
+			if AM.bAmmoMode 														; Exit Ammo Mode if we need to which will re-equip the left hand if the poison is going to the right hand
+				exitAmmoMode()
+			endIf
 
-		bPoisonEquipped = true
-		
-		PlayerRef.EquipItemEx(iEquip_ThrowingPoisonWeapon, aiHandEquipSlots[targetHand])
+			bPoisonEquipped = true
+			
+			PlayerRef.EquipItemEx(iEquip_ThrowingPoisonWeapon, aiHandEquipSlots[targetHand])
+		endIf
 
 		updateWidget()															; Hide all additional widget elements and copy the poison icon and name currently displayed in the poison slot to the equipped hand
 
-		if bPreviously2H && bFirstPoison										; If we were wielding a 2H weapon (without CGO) equip something 1H in the other hand
+		;/if bPreviously2H && bFirstPoison										; If we were wielding a 2H weapon (without CGO) equip something 1H in the other hand
 			equipOtherHand()
-		endIf
+		endIf/;
 		
 	else 																		; Something went wrong and we haven't been able to get the poison form, so switch back to the previously equipped item(s)
 		bKeepThrowing = false

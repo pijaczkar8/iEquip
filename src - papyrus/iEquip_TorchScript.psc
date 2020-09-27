@@ -437,8 +437,13 @@ function quickLight()
 				targetSlot = bPreviously2HOrRanged as int
 			endIf
 
-			previousItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(targetSlot)
-			previousItemForm = currentItemForm
+			if currentItemForm
+				previousItemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(targetSlot)
+				previousItemForm = currentItemForm
+			else
+				previousItemHandle = 0xFFFF
+				previousItemForm = none
+			endIf
 
 			if playerKnowsSpell && (bQuickLightPreferMagic || (!playerHasATorch && bQuickLightUseMagicIfNoTorch)) && (PlayerRef.GetActorValue("Magicka") > Candlelight.GetEffectiveMagickaCost(PlayerRef) || (PO.getRestoreCount(1) > 0 && bQuickLightConsumePotion))
 				if PlayerRef.GetActorValue("Magicka") < Candlelight.GetEffectiveMagickaCost(PlayerRef)

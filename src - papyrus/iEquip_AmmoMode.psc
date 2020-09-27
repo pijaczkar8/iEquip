@@ -271,6 +271,9 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			endIf
 		;Toggle out
 		else
+			int targetIndex
+			int targetObject
+			WC.setCounterVisibility(0, false)
 			if !toggleWithoutAnimation
 				; The only way of toggling out of Simple Ammo Mode is by cycling and equipping the right hand, so now we need to re-equip the left hand as well
 				if bSimpleAmmoMode && bSimpleAmmoModeOnEnter
@@ -297,9 +300,12 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 					WC.aiCurrentQueuePosition[0] = WC.aiCurrentlyPreselected[0]
 					WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipName")
 				endIf
+
 				;And re-equip the left hand item, which should in turn force a re-equip on the right hand to a 1H item, as long as we've not just toggled out of ammo mode as a result of us equipping a 2H weapon in the right hand or cycling the right hand to exit Simple Ammo Mode
 				if !toggleWithoutEquipping || bSimpleAmmoMode
-					WC.cycleHand(0, WC.aiCurrentQueuePosition[0], jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"), jMap.getInt(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipType"), bSimpleAmmoMode)
+					targetIndex = WC.aiCurrentQueuePosition[0]
+					targetObject = jArray.getObj(WC.aiTargetQ[0], targetIndex)
+					WC.cycleHand(0, targetIndex, jMap.getForm(targetObject, "iEquipForm"), jMap.getInt(targetObject, "iEquipType"), bSimpleAmmoMode)
 				endIf
 			endIf
 			ammo currentAmmo = currentAmmoForm as Ammo
@@ -310,21 +316,19 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[0] ;Left Name
 				WC.showName(0)
 			endIf
-			;Hide the left hand counter again if the new left hand item doesn't need it
-			if mainQueueIsEmpty || (!WC.itemRequiresCounter(0) && !WC.isWeaponPoisoned(0, WC.aiCurrentQueuePosition[0], true))
-				WC.setCounterVisibility(0, false)
-			;Otherwise update the counter for the new left hand item
-			else
-				int leftPreselectObject = -1
-				if jArray.count(WC.aiTargetQ[0]) > 0
-					leftPreselectObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0])
-				endIf
-				if WC.itemRequiresCounter(0) && leftPreselectObject != -1
-					WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(leftPreselectObject, "iEquipForm")))
-				elseif WC.isWeaponPoisoned(0, WC.aiCurrentQueuePosition[0], true)
-					WC.checkAndUpdatePoisonInfo(0)
-				endIf
+ 
+
+			targetObject = -1
+			if jArray.count(WC.aiTargetQ[0]) > 0
+				targetObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0])
 			endIf
+			
+			if WC.itemRequiresCounter(0) && targetObject != -1
+				WC.setSlotCount(0, PlayerRef.GetItemCount(jMap.getForm(targetObject, "iEquipForm")))
+			elseif WC.isWeaponPoisoned(0, WC.aiCurrentQueuePosition[0], true)
+				WC.checkAndUpdatePoisonInfo(0)
+			endIf
+
 			if !mainQueueIsEmpty
 				WC.CM.checkAndUpdateChargeMeter(0)
 				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
