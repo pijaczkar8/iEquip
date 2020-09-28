@@ -439,18 +439,18 @@ function applyMountedRestrictions(bool apply = true, bool dragonRiding = false)
 		if dragonRiding && bRelevantItemsOnlyWhileDragonRiding
 			WC.bDragonRiding = true
 
-		elseIf bVanillaHorses && !WC.bPlayerIsMounted
-			bMountedRestrictionsApplied = true
+		elseIf bVanillaHorses
 			WC.bPlayerIsMounted = true
 			WC.onPlayerMount()
 			KH.UnregisterForLeftKey()
 		endIf
+		bMountedRestrictionsApplied = true
 
 	elseIf bMountedRestrictionsApplied
 		if dragonRiding
 			WC.bDragonRiding = false
 
-		elseIf WC.bPlayerIsMounted
+		else
 			WC.bPlayerIsMounted = false
 			WC.onPlayerDismount()
 			KH.RegisterForLeftKey()

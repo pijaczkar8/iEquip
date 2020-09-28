@@ -1212,7 +1212,7 @@ state ENABLED
 		self.RegisterForMenu("Dialogue Menu")
 		self.RegisterForMenu("BarterMenu")
 
-		bPlayerIsMounted = PlayerRef.IsOnMount()
+		;bPlayerIsMounted = PlayerRef.IsOnMount()
 
 		bool bPreselectEnabledOnLoad = bPreselectMode
 
@@ -1285,7 +1285,15 @@ state ENABLED
 		Utility.WaitMenuMode(0.5)
 		
 		if !EH.bPlayerIsABeast
-			checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+			if bPlayerIsMounted && !PlayerRef.IsOnMount() 	; Just in case the player has dismounted on load before the widget has had a chance to initialise
+				EH.applyMountedRestrictions(false)
+			else
+				checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+			endIf
+		endIf
+
+		if !PlayerRef.IsOnMount()
+			bDragonRiding = false 							; Again, just to be safe! Just in case the player has dismounted on load before the widget has had a chance to initialise
 		endIf
 
 		if bPreselectEnabledOnLoad
@@ -2742,9 +2750,9 @@ endFunction
 function checkAndFadeLeftIcon(int Q, int itemType)
 	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon start - Q: " + Q + ", itemType: " + itemType + ", bFadeLeftIcon: " + bFadeLeftIcon + ", bLeftIconFaded: " + bLeftIconFaded + ", AM.bAmmoModePending: " + AM.bAmmoModePending)
 	
-	if Q == 1 && bFadeLeftIcon && ((itemType == 5 || itemType == 6) && !bIsCGOLoaded) && !bLeftIconFaded
+	if bFadeLeftIcon && !bLeftIconFaded && (Q == 1 && ((itemType == 5 || itemType == 6) && !bIsCGOLoaded)) || (bPlayerIsMounted && !bAmmoMode)
 		fadeLeftIcon(true)						; If we're equipping 2H or ranged then check and fade left icon
-	elseif Q < 2 && bLeftIconFaded && !AM.bAmmoModePending && !(itemType == 5 || itemType == 6) && (!(bFadeLeftIcon && bPlayerIsMounted) || bAmmoMode)
+	elseif Q < 2 && bLeftIconFaded && !(AM.bAmmoModePending || ((itemType == 5 || itemType == 6) && !bIsCGOLoaded) || (bPlayerIsMounted && bFadeLeftIcon && !bAmmoMode))
 		fadeLeftIcon()							; For anything else check if it is currently faded and if so fade it back in
 	endIf
 	debug.trace("iEquip_WidgetCore checkAndFadeLeftIcon end")
