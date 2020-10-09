@@ -34,7 +34,7 @@ bool bFirstRun = true
 bool bOriginalLevelNamesArrayCreated
 
 function initialise()
-	debug.trace("iEquip_TemperedItemHandler initialise start")
+	;debug.trace("iEquip_TemperedItemHandler initialise start")
 
 	WidgetRoot = WC.WidgetRoot
 
@@ -74,7 +74,7 @@ function initialise()
 		updateTemperLevelArrays()
 	endIf
 	
-	debug.trace("iEquip_TemperedItemHandler initialise end")
+	;debug.trace("iEquip_TemperedItemHandler initialise end")
 endFunction
 
 function onVersionUpdate()
@@ -84,7 +84,7 @@ function onVersionUpdate()
 endFunction
 
 function updateTemperLevelArrays()
-	debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays start")
+	;debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays start")
 	int i = 1
 	int j
 	string sValue
@@ -100,10 +100,10 @@ function updateTemperLevelArrays()
 			afTemperLevelMax[j] = Game.GetGameSettingFloat(sValue)
 		endIf
 
-		debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays - checking temper levels, Level " + i + ", maxValue: " + afTemperLevelMax[j] + ", level name: " + asTemperLevelNames[i])
+		;debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays - checking temper levels, Level " + i + ", maxValue: " + afTemperLevelMax[j] + ", level name: " + asTemperLevelNames[i])
 		i += 1
 	endWhile
-	debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays end")
+	;debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays end")
 endFunction
 
 string function getTemperLevelName(int level)
@@ -115,7 +115,7 @@ function setCustomTemperLevelName(int level, string newName)
 endFunction
 
 function checkAndUpdateTemperLevelInfo(int Q)
-	debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - Q: " + Q)
+	;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - Q: " + Q)
 
 	int targetObject = jArray.getObj(WC.aiTargetQ[Q], WC.aiCurrentQueuePosition[Q])
 
@@ -131,7 +131,7 @@ function checkAndUpdateTemperLevelInfo(int Q)
 			fItemHealth = WornObject.GetItemHealthPercent(PlayerRef, Q, 0)
 		endIf
 
-		debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo - fItemHealth: " + fItemHealth)
+		;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo - fItemHealth: " + fItemHealth)
 		
 		int i
 
@@ -160,7 +160,7 @@ function checkAndUpdateTemperLevelInfo(int Q)
 			currentTemperLevelPercent = 100
 		endIf
 
-		debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - temperLevelName: " + temperLevelName + ", currentTemperLevelPercent: " + currentTemperLevelPercent + "%")
+		;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - temperLevelName: " + temperLevelName + ", currentTemperLevelPercent: " + currentTemperLevelPercent + "%")
 		updateIcon(Q, currentTemperLevelPercent, targetObject)
 		setTemperLevelName(Q, fItemHealth, temperLevelName, currentTemperLevelPercent, targetObject)
 		jMap.setInt(targetObject, "lastKnownItemHealth", currentTemperLevelPercent)
@@ -168,16 +168,16 @@ function checkAndUpdateTemperLevelInfo(int Q)
 		jMap.setInt(targetObject, "lastKnownTemperTier", i)
 	
 	endIf
-	debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo end")
+	;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo end")
 endFunction
 
 function updateIcon(int Q, int temperLevelPercent, int targetObject)
-	debug.trace("iEquip_TemperedItemHandler updateIcon start - Q: " + Q + ", " + temperLevelPercent + "%")
+	;debug.trace("iEquip_TemperedItemHandler updateIcon start - Q: " + Q + ", " + temperLevelPercent + "%")
 
 	string newIcon = jMap.getStr(targetObject, "iEquipBaseIcon")	; Retrieve the original base icon name
 	int temperLvl = RoundToTens(temperLevelPercent)
 
-	debug.trace("iEquip_TemperedItemHandler updateIcon - checking we've got a value rounded to the nearest 10, temperLvl: " + temperLvl)
+	;debug.trace("iEquip_TemperedItemHandler updateIcon - checking we've got a value rounded to the nearest 10, temperLvl: " + temperLvl)
 
 	if WC.aUniqueItems.Find(jMap.getForm(targetObject, "iEquipForm") as weapon) == -1
 		if bFadeIconOnDegrade && temperLvl < 100																		; If we have enabled icon fade on degrade
@@ -201,24 +201,24 @@ function updateIcon(int Q, int temperLevelPercent, int targetObject)
 
 	if newIcon != jMap.getStr(targetObject, "iEquipIcon")
 
-		debug.trace("iEquip_TemperedItemHandler updateIcon - about to update the icon to: " + newIcon)
+		;debug.trace("iEquip_TemperedItemHandler updateIcon - about to update the icon to: " + newIcon)
 
 		jMap.setStr(targetObject, "iEquipIcon", newIcon)				; Update the icon name in the queue object so it shows correctly while cycling (it'll be updated again at next equip)
 
 		int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateIcon")											; And update the widget
 		if(iHandle)
-			debug.trace("iEquip_TemperedItemHandler updateIcon - got iHandle")
+			;debug.trace("iEquip_TemperedItemHandler updateIcon - got iHandle")
 			UICallback.PushInt(iHandle, Q)
 			UICallback.PushString(iHandle, newIcon)
 			UICallback.Send(iHandle)
 		endIf
 
 	endIf
-	debug.trace("iEquip_TemperedItemHandler setTemperLevelFade end")
+	;debug.trace("iEquip_TemperedItemHandler setTemperLevelFade end")
 endFunction
 
 function updateTemperTierIndicator(int Q, int tier = 0)
-	debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator start - Q: " + Q + ", tier: " + tier + ", bShowTemperTierIndicator: " + bShowTemperTierIndicator + ", iTemperTierDisplayChoice: " + iTemperTierDisplayChoice + ", bShowFadedTiers: " + bShowFadedTiers + ", Edit Mode: " + WC.EM.isEditMode)
+	;debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator start - Q: " + Q + ", tier: " + tier + ", bShowTemperTierIndicator: " + bShowTemperTierIndicator + ", iTemperTierDisplayChoice: " + iTemperTierDisplayChoice + ", bShowFadedTiers: " + bShowFadedTiers + ", Edit Mode: " + WC.EM.isEditMode)
 	if !bShowTemperTierIndicator && !WC.EM.isEditMode
 		tier = 0
 	endIf
@@ -231,11 +231,11 @@ function updateTemperTierIndicator(int Q, int tier = 0)
 		UICallback.PushBool(iHandle, bShowFadedTiers)
 		UICallback.Send(iHandle)
 	endIf
-	debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator end")
+	;debug.trace("iEquip_TemperedItemHandler updateTemperTierIndicator end")
 endFunction
 
 function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, int temperLevelPercent, int targetObject)
-	debug.trace("iEquip_TemperedItemHandler setTemperLevelName start - Q: " + Q + ", " + temperLevelName)
+	;debug.trace("iEquip_TemperedItemHandler setTemperLevelName start - Q: " + Q + ", " + temperLevelName)
 	
 	string tempName = jMap.getStr(targetObject, "iEquipBaseName")
 	
@@ -293,7 +293,7 @@ function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, in
 		
 		if tempName != jMap.getStr(targetObject, "lastDisplayedName")
 			
-			debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
+			;debug.trace("iEquip_TemperedItemHandler setTemperLevelName - setting name string to `" + tempName + "`")
 			int iHandle = UICallback.Create(HUD_MENU, WidgetRoot + ".updateDisplayedText")
 			If(iHandle)
 				UICallback.PushInt(iHandle, aiNameElements[Q])
@@ -304,7 +304,7 @@ function setTemperLevelName(int Q, float fItemHealth, string temperLevelName, in
 		endIf
 
 	endIf
-	debug.trace("iEquip_TemperedItemHandler setTemperLevelName end")
+	;debug.trace("iEquip_TemperedItemHandler setTemperLevelName end")
 endFunction
 
 int function Round(float i)

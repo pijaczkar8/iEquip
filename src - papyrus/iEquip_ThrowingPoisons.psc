@@ -129,7 +129,7 @@ function createArrays()
 endFunction
 
 function OnWidgetLoad()
-	debug.trace("iEquip_ThrowingPoisons OnWidgetLoad start")
+	;debug.trace("iEquip_ThrowingPoisons OnWidgetLoad start")
 	;if iThrowingPoisonBehavior == 0
 	if WC.bPowerOfThreeExtenderLoaded
 		GoToState("")
@@ -146,121 +146,121 @@ function OnWidgetLoad()
 		
 		GoToState("DISABLED")
 	endIf
-	debug.trace("iEquip_ThrowingPoisons OnWidgetLoad end")
+	;debug.trace("iEquip_ThrowingPoisons OnWidgetLoad end")
 endFunction
 
 function updateSpellsOnLoad() 							; Just in case values and effects haven't persisted through save/load
-	debug.trace("iEquip_ThrowingPoisons updateSpellsOnLoad start")
+	;debug.trace("iEquip_ThrowingPoisons updateSpellsOnLoad start")
 	updateProjectileGravity()
 	iEquip_ThrowingPoison_ProjExpl.SetExplosion(aExplosions[iIndex])
 	updatePoisonEffectsOnSpell()
 	updateHazardRadius()
 	updateHazardDuration()
 	updateHazardLimit()
-	debug.trace("iEquip_ThrowingPoisons updateSpellsOnLoad end")
+	;debug.trace("iEquip_ThrowingPoisons updateSpellsOnLoad end")
 endFunction
 
 function updateHazardRadius()
-	debug.trace("iEquip_ThrowingPoisons updateHazardRadius start - fPoisonHazardRadius: " + fPoisonHazardRadius)
+	;debug.trace("iEquip_ThrowingPoisons updateHazardRadius start - fPoisonHazardRadius: " + fPoisonHazardRadius)
 	int i
 	while i < 5
 		SetHazardRadius(aHazards[i], fPoisonHazardRadius)
 		i += 1
 	endWhile
-	debug.trace("iEquip_ThrowingPoisons updateHazardRadius end")
+	;debug.trace("iEquip_ThrowingPoisons updateHazardRadius end")
 endFunction
 
 function updateHazardDuration()
-	debug.trace("iEquip_ThrowingPoisons updateHazardDuration start - fPoisonHazardDuration: " + fPoisonHazardDuration)
+	;debug.trace("iEquip_ThrowingPoisons updateHazardDuration start - fPoisonHazardDuration: " + fPoisonHazardDuration)
 	int i
 	while i < 5
 		SetHazardLifetime(aHazards[i], fPoisonHazardDuration)
 		i += 1
 	endWhile
-	debug.trace("iEquip_ThrowingPoisons updateHazardDuration end")
+	;debug.trace("iEquip_ThrowingPoisons updateHazardDuration end")
 endFunction
 
 function updateHazardLimit()
-	debug.trace("iEquip_ThrowingPoisons updateHazardLimit start - iNumPoisonHazards: " + iNumPoisonHazards)
+	;debug.trace("iEquip_ThrowingPoisons updateHazardLimit start - iNumPoisonHazards: " + iNumPoisonHazards)
 	int i
 	while i < 5
 		SetHazardLimit(aHazards[i], iNumPoisonHazards)
 		i += 1
 	endWhile
-	debug.trace("iEquip_ThrowingPoisons updateHazardLimit end")
+	;debug.trace("iEquip_ThrowingPoisons updateHazardLimit end")
 endFunction
 
 function updateProjectileGravity()
-	debug.trace("iEquip_ThrowingPoisons updateProjectileGravity start - fThrowingPoisonProjectileGravity: " + fThrowingPoisonProjectileGravity)
+	;debug.trace("iEquip_ThrowingPoisons updateProjectileGravity start - fThrowingPoisonProjectileGravity: " + fThrowingPoisonProjectileGravity)
 	SetProjectileGravity(iEquip_ThrowingPoisonProjectile, fThrowingPoisonProjectileGravity)
-	debug.trace("iEquip_ThrowingPoisons updateProjectileGravity end")
+	;debug.trace("iEquip_ThrowingPoisons updateProjectileGravity end")
 endFunction
 
 function updatePoisonEffectsOnSpell()
-	debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell start")
+	;debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell start")
 	if currentPoison
-		debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell - currentPoison: " + currentPoison.GetName())
+		;debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell - currentPoison: " + currentPoison.GetName())
 		removeCurrentEffectsFromSpell()
 		addPoisonEffectsToSpell()
 	endIf
-	debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell end")
+	;debug.trace("iEquip_ThrowingPoisons updatePoisonEffectsOnSpell end")
 endFunction
 
 ; For reference from PO3_SKSEFunctions - Function RemoveMagicEffectFromSpell(Spell akSpell, MagicEffect mgef, float magnitude, int area, int duration, float cost = 0.0) global native
 
 function removeCurrentEffectsFromSpell()
-	debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell start")
+	;debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell start")
 	spell targetSpell = aDeliverySpells[iIndex]
-	debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - targetSpell: " + targetSpell.GetName())
+	;debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - targetSpell: " + targetSpell.GetName())
 	int i = targetSpell.GetNumEffects()
 	if i > 1
 		magicEffect effectToRemove
-		debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - about to remove " + (i - 1) + " effect(s) from spell")
+		;debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - about to remove " + (i - 1) + " effect(s) from spell")
 		while i > 1  ; It's 1 so we never try to remove the base effect in index 0 (the 0 magnitude DamageHealth effect which needed to be there in the CK to allow me to save the spell!)
 		;while i > 0
 			i -= 1
 			effectToRemove = targetSpell.GetNthEffectMagicEffect(i)
-			debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - about to remove " + effectToRemove.GetName())
+			;debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - about to remove " + effectToRemove.GetName())
 			RemoveMagicEffectFromSpell(targetSpell, effectToRemove, targetSpell.GetNthEffectMagnitude(i), targetSpell.GetNthEffectArea(i), targetSpell.GetNthEffectDuration(i))
 		endWhile
-		debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell end - should have just removed all current effects, current number of effects = " + targetSpell.GetNumEffects())
+		;debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell end - should have just removed all current effects, current number of effects = " + targetSpell.GetNumEffects())
 	else
-		debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - spell only has the play cough sound effect so nothing to remove")
+		;debug.trace("iEquip_ThrowingPoisons removeCurrentEffectsFromSpell - spell only has the empty effect so nothing to remove")
 	endIf
 endFunction
 
 ; For reference from PO3_SKSEFunctions - Function AddMagicEffectToSpell(Spell akSpell, MagicEffect mgef, float magnitude, int area, int duration, float cost = 0.0, String[] conditionList = None) global native
 
 function addPoisonEffectsToSpell()
-	debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell start")
+	;debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell start")
 	int i
 	magicEffect effectToAdd
 	float fMagnitude
 	int iDuration
 	string[] conditionList = new string[1]
 
-	debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to add " + currentPoison.GetNumEffects() + " new effects to spell")
+	;debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to add " + currentPoison.GetNumEffects() + " new effects to spell")
 	while i < currentPoison.GetNumEffects()
 		effectToAdd = currentPoison.GetNthEffectMagicEffect(i)
-		debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to process " + effectToAdd.GetName() + ", base magnitude: " + currentPoison.GetNthEffectMagnitude(i) + ", base duration: " + currentPoison.GetNthEffectDuration(i))
+		;debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to process " + effectToAdd.GetName() + ", base magnitude: " + currentPoison.GetNthEffectMagnitude(i) + ", base duration: " + currentPoison.GetNthEffectDuration(i))
 		if asMindAlteringEffects.Find(GetEffectArchetypeAsString(effectToAdd)) == -1				; If it is not a mind altering effect then the multiplier affects the effect magnitude
-			debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - this is not a mind altering effect so adjusting magnitude")
+			;debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - this is not a mind altering effect so adjusting magnitude")
 			fMagnitude = currentPoison.GetNthEffectMagnitude(i) * fThrowingPoisonEffectsMagMult
 			iDuration = currentPoison.GetNthEffectDuration(i)
 		else 																						; If it is a mind altering effect (fear, frenzy, paralysis, calm, turn undead) then the multiplier affects the effect duration
-			debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - this is a mind altering effect so adjusting duration")
+			;debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - this is a mind altering effect so adjusting duration")
 			fMagnitude = currentPoison.GetNthEffectMagnitude(i)
 			iDuration = (currentPoison.GetNthEffectDuration(i) * fThrowingPoisonEffectsMagMult) as int
 		endIf
-		debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to add " + effectToAdd.GetName() + " to " + aDeliverySpells[iIndex].GetName() + ", magnitude: " + fMagnitude + ", duration: " + iDuration + ", area: " + currentPoison.GetNthEffectArea(i))
+		;debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell - about to add " + effectToAdd.GetName() + " to " + aDeliverySpells[iIndex].GetName() + ", magnitude: " + fMagnitude + ", duration: " + iDuration + ", area: " + currentPoison.GetNthEffectArea(i))
 		AddMagicEffectToSpell(aDeliverySpells[iIndex], effectToAdd, fMagnitude, currentPoison.GetNthEffectArea(i), iDuration, 0.0, conditionList)
 		i += 1
 	endWhile
-	debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell end - should have just added the new effects, current number of effects = " + aDeliverySpells[iIndex].GetNumEffects())
+	;debug.trace("iEquip_ThrowingPoisons addPoisonEffectsToSpell end - should have just added the new effects, current number of effects = " + aDeliverySpells[iIndex].GetNumEffects())
 endFunction
 
 function OnThrowingPoisonKeyPressed()
-	debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonKeyPressed start - iThrowingPoisonBehavior: " + iThrowingPoisonBehavior)
+	;debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonKeyPressed start - iThrowingPoisonBehavior: " + iThrowingPoisonBehavior)
 	bFirstPoison = true
 	if jArray.count(WC.aiTargetQ[4]) < 1				; No poisons left in the poison queue
 		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TP_not_noPoisons"))
@@ -278,11 +278,11 @@ function OnThrowingPoisonKeyPressed()
 	else 												; Toggle throwing poisons
 		toggleThrowingPoisons()
 	endIf
-	debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonKeyPressed end")
+	;debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonKeyPressed end")
 endFunction
 
 function toggleThrowingPoisons()
-	debug.trace("iEquip_ThrowingPoisons toggleThrowingPoisons start - bKeepThrowing: " + bKeepThrowing)
+	;debug.trace("iEquip_ThrowingPoisons toggleThrowingPoisons start - bKeepThrowing: " + bKeepThrowing)
 	bKeepThrowing = !bKeepThrowing
 	if bKeepThrowing 						; We don't currently have a poison equipped so save current item(s) and equip one now
 		saveCurrentItemsForSwitchBack()
@@ -295,30 +295,30 @@ function toggleThrowingPoisons()
 			switchBack() 																											; Otherwise switch back to the previously equipped item(s)
 		endIf
 	endIf
-	debug.trace("iEquip_ThrowingPoisons toggleThrowingPoisons end")
+	;debug.trace("iEquip_ThrowingPoisons toggleThrowingPoisons end")
 endFunction
 
 function equipPoison()
-	debug.trace("iEquip_ThrowingPoisons equipPoison start - iIndex: " + iIndex)
+	;debug.trace("iEquip_ThrowingPoisons equipPoison start - iIndex: " + iIndex)
 	targetPoison = jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4])
 	potion newPoison = jMap.getForm(targetPoison, "iEquipForm") as potion
 	
 	if newPoison
-		debug.trace("iEquip_ThrowingPoisons equipPoison - newPoison: " + newPoison.GetName())
+		;debug.trace("iEquip_ThrowingPoisons equipPoison - newPoison: " + newPoison.GetName())
 		if !currentPoison || currentPoison != newPoison 						; If we're throwing a different poison to last time update the magiceffects on the spell
 			
 			if currentPoison
-				debug.trace("iEquip_ThrowingPoisons equipPoison - we're equipping a different one to " + currentPoison.GetName())
+				;debug.trace("iEquip_ThrowingPoisons equipPoison - we're equipping a different one to " + currentPoison.GetName())
 				iIndex += 1
 				if iIndex == 5
 					iIndex = 0
 				endIf
 			else
-				debug.trace("iEquip_ThrowingPoisons equipPoison - we're equipping a poison for the first time")
+				;debug.trace("iEquip_ThrowingPoisons equipPoison - we're equipping a poison for the first time")
 			endIf
 
 			currentPoison = newPoison
-			debug.trace("iEquip_ThrowingPoisons equipPoison - currentPoison now: " + currentPoison.GetName() + " , iIndex now: " + iIndex)
+			;debug.trace("iEquip_ThrowingPoisons equipPoison - currentPoison now: " + currentPoison.GetName() + " , iIndex now: " + iIndex)
 			iEquip_ThrowingPoison_ProjExpl.SetExplosion(aExplosions[iIndex])
 			updatePoisonEffectsOnSpell()		
 		endIf
@@ -354,7 +354,7 @@ function equipPoison()
 			switchBack(false)
 		endIf
 	endIf
-	debug.trace("iEquip_ThrowingPoisons equipPoison end")
+	;debug.trace("iEquip_ThrowingPoisons equipPoison end")
 endFunction
 
 function equipOtherHand()
@@ -362,7 +362,7 @@ function equipOtherHand()
 endFunction
 
 function exitAmmoMode()
-	debug.trace("iEquip_ThrowingPoisons exitAmmoMode start")
+	;debug.trace("iEquip_ThrowingPoisons exitAmmoMode start")
 	PM.bCurrentlyQuickRanged = false
 	AM.toggleAmmoMode((!PM.bPreselectMode || !PM.abPreselectSlotEnabled[0]), targetHand == 0) 	; If we're toggling out of ammo mode only equip left if we're equipping the throwing poison in the right hand
 
@@ -376,11 +376,11 @@ function exitAmmoMode()
 	if WC.bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
 		PlayerRef.UnequipItemEx(targetAmmo)
 	endIf
-	debug.trace("iEquip_ThrowingPoisons exitAmmoMode end")
+	;debug.trace("iEquip_ThrowingPoisons exitAmmoMode end")
 endFunction
 
 function updateWidget()
-	debug.trace("iEquip_ThrowingPoisons updateWidget start")
+	;debug.trace("iEquip_ThrowingPoisons updateWidget start")
 	WC.hidePoisonInfo(targetHand, true)
 	WC.CM.updateChargeMeterVisibility(targetHand, false)
 	WC.setCounterVisibility(targetHand, false)
@@ -420,31 +420,31 @@ function updateWidget()
 	if WC.bNameFadeoutEnabled && !WC.abIsNameShown[targetHand]
 		WC.showName(targetHand)
 	endIf
-	debug.trace("iEquip_ThrowingPoisons updateWidget end")
+	;debug.trace("iEquip_ThrowingPoisons updateWidget end")
 endFunction
 
 function unequipPoison()
-	debug.trace("iEquip_ThrowingPoisons unequipPoison start")
+	;debug.trace("iEquip_ThrowingPoisons unequipPoison start")
 	bJustUnequippedThrowingPoison = true
 	PlayerRef.UnequipItemEx(iEquip_ThrowingPoisonWeapon)
 	PlayerRef.RemoveItem(iEquip_ThrowingPoisonWeapon, 1, true)
 	bPoisonEquipped = false
-	debug.trace("iEquip_ThrowingPoisons unequipPoison end")
+	;debug.trace("iEquip_ThrowingPoisons unequipPoison end")
 endFunction
 
 function OnThrowingPoisonUnequipped(bool onWeaponsSheathed = false)					; Only ever called from PlayerEventHandler OnObjectUnequipped if it has been unequipped manually by the player
-	debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonUnequipped start")
+	;debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonUnequipped start")
 	PlayerRef.RemoveItem(iEquip_ThrowingPoisonWeapon, 1, true)
 	if onWeaponsSheathed
 		switchBack(false)
 	endIf
 	bPoisonEquipped = false
 	bKeepThrowing = false
-	debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonUnequipped end")
+	;debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonUnequipped end")
 endFunction
 
 function onPoisonThrown()
-	debug.trace("iEquip_ThrowingPoisons onPoisonThrown start - explosion currently set on iEquip_ThrowingPoison_ProjExpl: " + iEquip_ThrowingPoison_ProjExpl.GetExplosion().GetName())
+	;debug.trace("iEquip_ThrowingPoisons onPoisonThrown start - explosion currently set on iEquip_ThrowingPoison_ProjExpl: " + iEquip_ThrowingPoison_ProjExpl.GetExplosion().GetName())
 	unequipPoison()										; Do this first so the bottle doesn't remain visible in the player's hand at the same time as the projectile bottle appears
 
 	iEquip_ThrowPoison.Cast(PlayerRef)
@@ -463,11 +463,11 @@ function onPoisonThrown()
 	else 												; If we've selected Throw & Switch Back, or if we've just thrown our last poison, switch back to the previous equipped item(s)
 		switchBack(false)
 	endIf
-	debug.trace("iEquip_ThrowingPoisons onPoisonThrown end")
+	;debug.trace("iEquip_ThrowingPoisons onPoisonThrown end")
 endFunction
 
 function saveCurrentItemsForSwitchBack()
-	debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack start")
+	;debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack start")
 	
 	fPreviousLeftHandForm = PlayerRef.GetEquippedObject(0)
 	if fPreviousLeftHandForm && (fPreviousLeftHandForm == jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
@@ -494,12 +494,12 @@ function saveCurrentItemsForSwitchBack()
 	endIf
 
 	bPreviouslyUnarmed = (fPreviousRightHandForm == none && fPreviousLeftHandForm == none) || (fPreviousRightHandForm == WC.EH.Unarmed)
-	debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack end")
+	;debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack end")
 endFunction
 
 
 function switchBack(bool unequip = true)
-	debug.trace("iEquip_ThrowingPoisons switchBack start")
+	;debug.trace("iEquip_ThrowingPoisons switchBack start")
 	if unequip
 		unequipPoison()
 	endIf
@@ -565,9 +565,9 @@ function switchBack(bool unequip = true)
 			endIf
 		endIf
 	else
-		debug.trace("iEquip_ThrowingPoisons switchBack - Something went wrong!")
+		;debug.trace("iEquip_ThrowingPoisons switchBack - Something went wrong!")
 	endIf
-	debug.trace("iEquip_ThrowingPoisons switchBack end")
+	;debug.trace("iEquip_ThrowingPoisons switchBack end")
 endFunction
 
 
