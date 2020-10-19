@@ -31,18 +31,27 @@ int property iTemperTierDisplayChoice = 0 auto hidden
 bool property bShowFadedTiers = true auto hidden
 
 bool bFirstRun = true
+bool bUpdate = true
 bool bOriginalLevelNamesArrayCreated
+
+bool bLootAndDegradationLoaded
+_edquestscript property LDQuest auto
 
 function initialise()
 	;debug.trace("iEquip_TemperedItemHandler initialise start")
 
 	WidgetRoot = WC.WidgetRoot
 
-	if bFirstRun
+	bLootAndDegradationLoaded = Game.GetModByName("LootandDegradation.esp") != 255
+	if bLootAndDegradationLoaded
+		LDQuest = Quest.GetQuest("_EDQuest") as _edquestscript
+	endIf
+
+	if bFirstRun || bUpdate
 		afTemperLevelMax = new float[6]
-		afTemperLevelMax[0] = 1.001					; Untempered - same value in vanilla and Requiem, no reason to think any other mod would change it from 1.0 (100% of normal base health) NB - the .001 is to allow for L&Ds micro counter
 		
 		asTemperLevelNames = new string[7]
+		asTemperLevelNames[0] = iEquip_StringExt.LocalizeString("$iEquip_TI_lbl_Honed")
 		
 		asNamePaths = new string[7]
 		asNamePaths[0] = ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text"
@@ -68,11 +77,10 @@ function initialise()
 		aiTemperedItemTypes[8] = 26		; Shields
 		
 		bFirstRun = false
+		bUpdate = false
 	endIf
 
-	if !bUseAltTemperLevelNames
-		updateTemperLevelArrays()
-	endIf
+	updateTemperLevelArrays()
 	
 	;debug.trace("iEquip_TemperedItemHandler initialise end")
 endFunction
@@ -89,20 +97,34 @@ function updateTemperLevelArrays()
 	int j
 	string sValue
 	string sName
+
+	if !bUseAltTemperLevelNames
+		asTemperLevelNames[0] = iEquip_StringExt.LocalizeString("$iEquip_TI_lbl_Honed")
+	endIf
+
 	while i < 7
 
-		sName = "sHealthDataPrefixWeap" + i as string
-		asTemperLevelNames[i] = Game.GetGameSettingString(sName)
-
-		if i > 1
-			j = i - 1
-			sValue = "fHealthDataValue" + i as string
-			afTemperLevelMax[j] = Game.GetGameSettingFloat(sValue)
+		if !bUseAltTemperLevelNames
+			sName = "sHealthDataPrefixWeap" + i as string
+			asTemperLevelNames[i] = Game.GetGameSettingString(sName)
 		endIf
 
-		;debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays - checking temper levels, Level " + i + ", maxValue: " + afTemperLevelMax[j] + ", level name: " + asTemperLevelNames[i])
+		j = i - 1
+		sValue = "fHealthDataValue" + i as string
+		afTemperLevelMax[j] = Game.GetGameSettingFloat(sValue)
+
 		i += 1
 	endWhile
+
+	; Next section is for debugging only, comment out when testing is complete
+	;debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays - checking temper levels, Level 0, range: 1.0 - " + afTemperLevelMax[0] + " (Untempered)")
+	i = 1
+	while i < 6
+		j = i - 1
+		;debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays - checking temper levels, Level " + i + ", range: " + afTemperLevelMax[j] + " - " + afTemperLevelMax[i] + ", level name: " + asTemperLevelNames[i])
+		i += 1
+	endWhile
+	;debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays - checking temper levels, Level 6, range: " + afTemperLevelMax[5] + "+, level name: " + asTemperLevelNames[6])
 	;debug.trace("iEquip_TemperedItemHandler updateTemperLevelArrays end")
 endFunction
 
@@ -111,7 +133,9 @@ string function getTemperLevelName(int level)
 endFunction
 
 function setCustomTemperLevelName(int level, string newName)
-	asTemperLevelNames[level] = newName
+	if newName != "" || level == 0 		; Allow users to set an empty string only for the 'Honed' level (1.0-1.1) in case they don't want a mismatch between the widget and the Inventory menu
+		asTemperLevelNames[level] = newName
+	endIf
 endFunction
 
 function checkAndUpdateTemperLevelInfo(int Q)
@@ -122,7 +146,7 @@ function checkAndUpdateTemperLevelInfo(int Q)
 	if aiTemperedItemTypes.Find(jMap.getInt(targetObject, "iEquipType")) != -1
 		
 		string temperLevelName
-		int currentTemperLevelPercent
+		int currentTemperLevelPercent = 100 		; Fully white. Change below if required
 		float fItemHealth
 		
 		if Q == 0 && PlayerRef.GetEquippedShield()
@@ -139,25 +163,33 @@ function checkAndUpdateTemperLevelInfo(int Q)
 			temperLevelName = iEquip_StringExt.LocalizeString("$iEquip_TI_lbl_Damaged")
 			currentTemperLevelPercent = Round(fItemHealth * 100)
 
-		elseIf fItemHealth > afTemperLevelMax[0] 	; Next check if the item has been improved
+		elseIf fItemHealth == 1.0 || afTemperLevelMax.Find(fItemHealth) != -1
+			if fItemHealth != 1.0					; If it's 1.0 (Untempered) we don't need to set a temperLevelName string, otherwise if it matches exactly one of the other tier values set the name
+				i = afTemperLevelMax.Find(fItemHealth)
+				temperLevelName = asTemperLevelNames[i]
+			endIf
 
-			i = 1									; Now if it has find which level range it is currently within
-			while i < 6 && fItemHealth > afTemperLevelMax[i]
+		else 					 					; Otherwise find which level range it is currently within
+													
+			while i < 6 && fItemHealth >= afTemperLevelMax[i]
 				i += 1
 			endWhile
 			
-			temperLevelName = asTemperLevelNames[i]
+			temperLevelName = asTemperLevelNames[i] ; Retrieve the temper level string
 			
-			if i == 6								; If it has been tempered to Legendary set it to full
-				currentTemperLevelPercent = 100
-			else 									; Otherwise calculate the current % value within the level range and retrieve the temper level string
-				int j = i - 1
-				currentTemperLevelPercent = Round((fItemHealth - afTemperLevelMax[j]) / (afTemperLevelMax[i] - afTemperLevelMax[j]) * 100)
+			if i < 6								; If it has been tempered to Legendary (6) leave the icon set at fully white, otherwise calculate the current % value within the level range and retrieve the temper level string
+				float TemperLevelMin = 1.0
+				if i > 0
+					int j = i - 1
+					TemperLevelMin = afTemperLevelMax[j]
+				endIf
+				
+				if bLootAndDegradationLoaded && !WC.bIsRequiemLoaded && LDQuest.DecayChance > 0 			; If Loot & Degradation is loaded, and it's degradation feature is enabled, and we're not using Requiem use L&D's micro counter to set the % so it matches L&D
+					currentTemperLevelPercent = Round((fItemHealth - ((fItemHealth * 10.0) as Int / 10.0)) / 0.00099 * 100.0)
+				else 																						; Otherwise use the actual item health % within the current tier
+					currentTemperLevelPercent = Round((fItemHealth - TemperLevelMin) / (afTemperLevelMax[i] - TemperLevelMin) * 100)
+				endIf
 			endIf
-		
-		else										; Untempered
-			temperLevelName = ""
-			currentTemperLevelPercent = 100
 		endIf
 
 		;debug.trace("iEquip_TemperedItemHandler checkAndUpdateTemperLevelInfo start - temperLevelName: " + temperLevelName + ", currentTemperLevelPercent: " + currentTemperLevelPercent + "%")

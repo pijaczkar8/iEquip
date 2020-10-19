@@ -672,7 +672,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	
 	int itemType = akBaseObject.GetType()
 	;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - itemType: " + itemType)
-	if itemType == 31	; This just handles the finite torch life timer
+	if itemType == 31 && !(TO.bIsTCSLoaded && akBaseObject == TO.Torch01 as form)	; This just handles the finite torch life timer. If Torches Cast Shadows is loaded then ignore the Torch01 equip and wait for the TCS torch to be equipped before proceeding
 		;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - just equipped a torch")
 		TO.onTorchEquipped()
 	endIf
@@ -685,7 +685,7 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		endWhile
 	endIf
 
-	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && akBaseObject != iEquipTorch as form && akBaseObject != iEquip_ThrowingPoisonWeapon as form
+	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && akBaseObject != iEquipTorch as form && akBaseObject != iEquip_ThrowingPoisonWeapon as form && !(akBaseObject as light && Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "TorchesCastShadows.esp") && akBaseObject.GetName() != "DummyArrow"
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
 			if dualCastCounter == 0
@@ -920,7 +920,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 
 		        bool bCurrentlyDualCasting = !WC.b2HSpellEquipped && jMap.getInt(jArray.GetObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipType") == 22 && WC.asCurrentlyEquipped[1] == UI.GetString(HUD_MENU, WidgetRoot + ".widgetMaster.LeftHandWidget.leftName_mc.leftName.text")
 
-				if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || TO.bJustCalledQuickLight)			; If it's somehow already shown in the widget
+				if WC.aiCurrentQueuePosition[equippedSlot] == targetIndex && WC.asCurrentlyEquipped[equippedSlot] != "" && !((equippedSlot == 0 && (WC.bGoneUnarmed || bCurrentlyDualCasting)) || TO.bJustCalledQuickLight)			; If it's somehow already shown in the widget
 					if equippedSlot < 2
 						if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator																				; Update the name and temper level if required
 							TI.checkAndUpdateTemperLevelInfo(equippedSlot)
@@ -1050,16 +1050,20 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
 			TP.bJustUnequippedThrowingPoison = false
 		endIf
 
-  	elseIf akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && akBaseObject == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
+  	elseIf akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !(TO.bIsTCSLoaded && akBaseObject == TO.Torch01 as form) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && akBaseObject == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
   		;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
   		GoToState("PROCESSING")
     	TO.onTorchUnequipped()
   	endIf
 
-  	if !bGoingUnarmed && !TO.bSettingLightRadius && !(akBaseObject.GetType() == 31 && TO.didATorchJustBurnOut())
+  	if akBaseObject.GetName() == "DummyArrow" && PlayerRef.GetEquippedItemType(1) == 12 && !PlayerRef.IsEquipped(AM.currentAmmoForm)
+  		PlayerRef.EquipItemEx(AM.currentAmmoForm as Ammo)
+
+  	elseIf !bGoingUnarmed && !TO.bSettingLightRadius && !(akBaseObject.GetType() == 31 && TO.didATorchJustBurnOut())
 	  	bWaitingForOnObjectUnequippedUpdate = true
 		registerForSingleUpdate(0.8)
 	endIf
+	;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped end")
 endEvent
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
@@ -1107,11 +1111,8 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 	endIf
 																		; Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
-		;/if TP.bBlockInventoryEvents
-			TP.bBlockInventoryEvents = false
-		else/;
-			PO.onPotionRemoved(akBaseItem)
-		;endIf
+		PO.onPotionRemoved(akBaseItem)
+
 	elseIf akBaseItem as ammo && Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseItem.GetFormID(), 24), 0xFF)) != "JZBai_ThrowingWpnsLite.esp"
 		AM.onAmmoRemoved(akBaseItem)
 																		; Check if a Bound Shield has just been unequipped
@@ -1127,37 +1128,38 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		i = 0
 		int foundAt
 		bool actionTaken
+		string itemName = akBaseItem.GetName()
 		while i < 3 && !actionTaken
-			string itemName = akBaseItem.GetName()
-			foundAt = WC.findInQueue(i, itemName, akBaseItem)
-			if foundAt != -1
-																		; If it's a shout or power remove it straight away
-				if i == 2
-					WC.removeItemFromQueue(i, foundAt)
-					actionTaken = true
-				else
-					int itemCount = PlayerRef.GetItemCount(akBaseItem)
-					int otherHand = (i + 1) % 2
-					int foundAtOtherHand = -1
-					
-					if specificHandedItems.Find(itemType) == -1 || (WC.bIsCGOLoaded && itemType < 7)
-						foundAtOtherHand = WC.findInQueue(otherHand, itemName, akBaseItem)
-					endIf
-																		; If it's ammo, scrolls, torch or other throwing weapons which require a counter update
-					if WC.asCurrentlyEquipped[i] == itemName && itemCount > 0 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)))
-						WC.setSlotCount(i, itemCount)
+			if WC.isItemValidForSlot(i, akBaseItem, itemType, itemName)
+				foundAt = WC.findInQueue(i, itemName, akBaseItem)
+				if foundAt != -1
+					if i == 2 												; If it's a shout or power remove it straight away
+						WC.removeItemFromQueue(i, foundAt)
 						actionTaken = true
-																		; Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
-					elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
-						WC.removeItemFromQueue(i, foundAt, false, false, true)
-																		; If the removed item was in both queues and we've got none left remove from the other queue as well
-						if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))
-							WC.removeItemFromQueue(otherHand, foundAtOtherHand)
+					else
+						int itemCount = PlayerRef.GetItemCount(akBaseItem)
+						int otherHand = (i + 1) % 2
+						int foundAtOtherHand = -1
+						
+						if specificHandedItems.Find(itemType) == -1 || (WC.bIsCGOLoaded && itemType < 7)
+							foundAtOtherHand = WC.findInQueue(otherHand, itemName, akBaseItem)
 						endIf
-						actionTaken = true
-		    		endIf
-		    	endIf
-        	endIf
+																			; If it's ammo, scrolls, torch or other throwing weapons which require a counter update
+						if WC.asCurrentlyEquipped[i] == itemName && itemCount > 0 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem)))
+							WC.setSlotCount(i, itemCount)
+							actionTaken = true
+																			; Otherwise check if we've removed the last of the currently equipped item, or if we're currently dual wielding it and only have one left make sure we remove the correct one
+						elseIf (itemCount == 1 && foundAtOtherHand != -1 && PlayerRef.GetEquippedObject(i) != akBaseItem) || itemCount == 0
+							WC.removeItemFromQueue(i, foundAt, false, false, true)
+																			; If the removed item was in both queues and we've got none left remove from the other queue as well
+							if foundAtOtherHand != -1 && (itemCount == 0 || (itemCount == 1 && PlayerRef.GetEquippedObject(i) == akBaseItem))
+								WC.removeItemFromQueue(otherHand, foundAtOtherHand)
+							endIf
+							actionTaken = true
+			    		endIf
+			    	endIf
+	        	endIf
+	        endIf
         	i += 1
         endWhile
 	endIf

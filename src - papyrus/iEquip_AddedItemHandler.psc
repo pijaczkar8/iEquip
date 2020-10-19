@@ -44,7 +44,7 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 
 		if bSwitchingTorches && akBaseItem == TO.realTorchForm
 			bSwitchingTorches = false
-		elseIf !(akBaseItem == iEquipDroppedTorch as form && TO.bSettingLightRadius)
+		elseIf !(akBaseItem == iEquipDroppedTorch as form && TO.bSettingLightRadius) && !(akBaseItem as ammo && akBaseItem.GetName() == "DummyArrow")
 			iEquip_ItemsToAddFLST.AddForm(akBaseItem)
 			registerForSingleUpdate(0.5)
 		endIf
@@ -57,15 +57,25 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	endIf
 endEvent
 
+bool bProcessingUpdate
+
 event OnUpdate()
 	;debug.trace("iEquip_AddedItemHandler OnUpdate start")
+	
+	while bProcessingUpdate
+		Utility.WaitMenuMode(0.05)
+	endWhile
+
+	bProcessingUpdate = true
+
 	int i
-	int j
 	int numForms = iEquip_ItemsToAddFLST.GetSize()
 	;debug.trace("iEquip_AddedItemHandler OnUpdate - number of forms to process: " + numForms)
 	form formToAdd
-	while i < numForms
-		formToAdd = iEquip_ItemsToAddFLST.GetAt(i)
+	while numForms > 0
+		formToAdd = iEquip_ItemsToAddFLST.GetAt(0)
+		;debug.trace("iEquip_AddedItemHandler OnUpdate - processing " + formToAdd + ", " + formToAdd.GetName())
+		iEquip_ItemsToAddFLST.RemoveAddedForm(formToAdd)
 																											; Handle Potions, Ammo and bound ammo first
 		if formToAdd
 			if formToAdd as potion
@@ -97,22 +107,23 @@ event OnUpdate()
 					PlayerRef.AddItem(formToAdd, 1, true)
 				endIf
 		    																								; Finally check if we've just added one of a currently equipped item which requires a counter update
-				j = 0
+				i = 0
 				int itemType = formToAdd.GetType()
-				while j < 2
-					if WC.asCurrentlyEquipped[j] == formToAdd.GetName()
+				while i < 2
+					if WC.asCurrentlyEquipped[i] == formToAdd.GetName()
 						;Ammo, scrolls, torch or other throwing weapons
-						if itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 41 && iEquip_FormExt.IsGrenade(formToAdd))	
-			    			WC.setSlotCount(j, PlayerRef.GetItemCount(formToAdd))
+						if itemType == 42 || itemType == 23 || (itemType == 31 && Game.GetModName(Math.LogicalAnd(Math.RightShift(formToAdd.GetFormID(), 24), 0xFF)) != "TorchesCastShadows.esp") || (itemType == 41 && iEquip_FormExt.IsGrenade(formToAdd))	
+			    			WC.setSlotCount(i, PlayerRef.GetItemCount(formToAdd))
 			    		endIf
 		        	endIf
-		        	j += 1
+		        	i += 1
 		        endWhile
 			endIf
 		endIf
-		i += 1
+		numForms -= 1
 	endWhile
-	iEquip_ItemsToAddFLST.Revert()
+	;iEquip_ItemsToAddFLST.Revert()
+	bProcessingUpdate = false
 	bCraftingOrBarterMenuOpen = false
 	;debug.trace("iEquip_AddedItemHandler OnUpdate end - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
 endEvent

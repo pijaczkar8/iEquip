@@ -19,9 +19,14 @@ Faction property PlayerFaction auto
 
 spell property Candlelight auto
 
+; Torches Cast Shadows SE
+spell TCSCandlelightDummySpell
+
 light property Torch01 auto
 light property iEquipTorch auto
 light property iEquipDroppedTorch auto
+
+formlist property TrapGasOnEnter auto
 
 ObjectReference[] property aDroppedTorches auto hidden
 int iCurrentDroppedTorchesIndex
@@ -60,6 +65,9 @@ int previousLeftHandIndex = -1
 string previousLeftHandName
 
 bool bFirstRun = true
+bool bUpdate = true
+
+bool property bIsTCSLoaded auto
 
 ; MCM Properties
 bool property bQuickLightPreferMagic auto hidden
@@ -88,16 +96,34 @@ function initialise(bool bEnabled)
 		GoToState("")
 		WidgetRoot = WC.WidgetRoot
 		RegisterForMenu("Journal Menu")
-		realTorchForm = Torch01
+		bIsTCSLoaded = Game.GetModByName("TorchesCastShadows.esp") != 255
+		
+		if bIsTCSLoaded
+			TCSCandlelightDummySpell = Game.GetFormFromFile(0x00006ED5, "TorchesCastShadows.esp") as Spell
+		else
+			TCSCandlelightDummySpell = none
+		endIf
+
 		if !aDroppedTorches
 			aDroppedTorches = new ObjectReference[4]
 		endIf
-		fTorchRadius = iEquip_LightExt.GetLightRadius(Torch01) as float
-		if bFirstRun
-			bFirstRun = false
-			fDefaultRadius = fTorchRadius
+
+		if bFirstRun || bUpdate
+			realTorchForm = Torch01
 		endIf
-		fMaxTorchDuration = iEquip_LightExt.GetLightDuration(Torch01) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
+
+		fTorchRadius = iEquip_LightExt.GetLightRadius(realTorchForm as light) as float
+		fMaxTorchDuration = iEquip_LightExt.GetLightDuration(realTorchForm as light) as float - 5.0 	; Actual light duration minus 5s to allow time for torch meter flash on empty before unequipping
+
+		if bFirstRun || bUpdate
+			bFirstRun = false
+			bUpdate = false
+			fDefaultRadius = fTorchRadius
+			TrapGasOnEnter.AddForm(Torch01)
+			TrapGasOnEnter.AddForm(iEquipTorch)
+			TrapGasOnEnter.AddForm(iEquipDroppedTorch)
+		endIf
+		
 		if fMaxTorchDuration < fTorchDuration
 			fTorchDuration = fMaxTorchDuration
 		endIf
@@ -105,12 +131,16 @@ function initialise(bool bEnabled)
 		if fCurrentTorchLife > fTorchDuration || fCurrentTorchLife == 0.0
 			fCurrentTorchLife = fTorchDuration
 		endIf
+
 	else
 		UnregisterForAllMenus()
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
 		if fDefaultRadius > 0 && iEquip_LightExt.GetLightRadius(Torch01) as float != fDefaultRadius
 			iEquip_LightExt.SetLightRadius(Torch01, fDefaultRadius as int)
 		endIf
+
+		TrapGasOnEnter.Revert()
+
 		GoToState("DISABLED")
 	endIf
 	;debug.trace("iEquip_TorchScript initialise end")
@@ -164,6 +194,7 @@ function onTorchRemoved(form torchForm)
 			if bRealisticReEquip
 				Wait(fRealisticReEquipDelay)
 			endIf
+			;debug.trace("iEquip_TorchScript onTorchRemoved - should be equipping the next torch now, torchForm: " + torchForm)
 			PlayerRef.EquipItemEx(torchForm)
 		endIf
 		bTorchJustBurnedOut = false
@@ -173,7 +204,7 @@ function onTorchRemoved(form torchForm)
 endfunction
 
 bool function didATorchJustBurnOut()
-	return bTorchJustBurnedOut
+	return bTorchJustBurnedOut || bJustDroppedTorch
 endFunction
 
 function onTorchEquipped()
@@ -182,51 +213,64 @@ function onTorchEquipped()
 		Wait(1.0) ; Just in case the unequipped event is received after this one
 		bSettingLightRadius = false
 	else
-
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
 
-		if !(Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
-			iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
-			PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
+		if equippedTorch
+			string modName = Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF))
 
-			if equippedTorch != iEquipTorch
+			if !(modName == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
+				iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
+				PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
+
+				if equippedTorch != iEquipTorch
+					if modName == "TorchesCastShadows.esp"
+						TrapGasOnEnter.AddForm(realTorchForm)
+						realTorchForm = Torch01
+					else
+						realTorchForm = equippedTorch
+					endIf
+
+					fTorchRadius = iEquip_LightExt.GetLightRadius(equippedTorch as light) as float
+					fMaxTorchDuration = iEquip_LightExt.GetLightDuration(equippedTorch as light) as float - 5.0
+				endIf
+				;debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fMaxTorchDuration: " + fMaxTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
+
+				if fCurrentTorchLife < 30.0
+					if bReduceLightAsTorchRunsOut
+						
+						int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
+						
+						iEquip_LightExt.SetLightRadius(iEquipTorch, newRadius)
+						iEquip_LightExt.SetLightRadius(iEquipDroppedTorch, newRadius)
+						if !(PlayerRef.IsWeaponDrawn() || bIsTCSLoaded)
+							bSettingLightRadius = true
+							if PlayerRef.GetItemCount(iEquipTorch) < 1
+								PlayerRef.AddItem(iEquipTorch, 1, true)
+							endIf
+			            	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
+			            endIf
+					endIf
+					RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
+				else
+					RegisterForSingleUpdate(fCurrentTorchLife - 30.1)
+				endIf
+				
+				if bShowTorchMeter	; Show torch meter if enabled
+					if CM.abIsChargeMeterShown[0]
+						;updateTorchMeterVisibility(false)
+						CM.updateChargeMeterVisibility(0, false)
+						WaitMenuMode(0.2)
+					endIf
+					showTorchMeter()
+				endIf
+			else
 				realTorchForm = equippedTorch
 				fTorchRadius = iEquip_LightExt.GetLightRadius(equippedTorch as light) as float
-				fMaxTorchDuration = iEquip_LightExt.GetLightDuration(equippedTorch as light) as float - 5.0
 			endIf
-			;debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + " - " + equippedTorch.GetName() + ", fMaxTorchDuration: " + fMaxTorchDuration + ", fTorchRadius: " + fTorchRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
 
-			if fCurrentTorchLife < 30.0
-				if bReduceLightAsTorchRunsOut
-					
-					int newRadius = (fTorchRadius * (fCurrentTorchLife / 5 + 1) as int * 0.15) as int
-					
-					iEquip_LightExt.SetLightRadius(iEquipTorch, newRadius)
-					iEquip_LightExt.SetLightRadius(iEquipDroppedTorch, newRadius)
-					if !PlayerRef.IsWeaponDrawn()
-						bSettingLightRadius = true
-						if PlayerRef.GetItemCount(iEquipTorch) < 1
-							PlayerRef.AddItem(iEquipTorch, 1, true)
-						endIf
-		            	PlayerRef.EquipItemEx(iEquipTorch, 0, false, false)
-		            endIf
-				endIf
-				RegisterForSingleUpdate(fCurrentTorchLife - ((fCurrentTorchLife / 5) as int * 5))
-			else
-				RegisterForSingleUpdate(fCurrentTorchLife - 30.1)
+			if realTorchForm != Torch01
+				TrapGasOnEnter.AddForm(realTorchForm)
 			endIf
-			
-			if bShowTorchMeter	; Show torch meter if enabled
-				if CM.abIsChargeMeterShown[0]
-					;updateTorchMeterVisibility(false)
-					CM.updateChargeMeterVisibility(0, false)
-					WaitMenuMode(0.2)
-				endIf
-				showTorchMeter()
-			endIf
-		else
-			realTorchForm = equippedTorch
-			fTorchRadius = iEquip_LightExt.GetLightRadius(equippedTorch as light) as float
 		endIf
 	endIf
 	;debug.trace("iEquip_TorchScript onTorchEquipped end")
@@ -285,6 +329,7 @@ event OnUpdate()
 			iEquip_LightExt.SetLightRadius(iEquipDroppedTorch, newRadius)
 			
 			if !((PlayerRef as objectReference).GetAnimationVariableBool("IsCastingRight") || (PlayerRef as objectReference).GetAnimationVariableBool("IsAttacking") || (PlayerRef as objectReference).GetAnimationVariableBool("IsBlocking") || (PlayerRef as objectReference).GetAnimationVariableBool("IsBashing"))
+			;if !(bIsTCSLoaded || (PlayerRef as objectReference).GetAnimationVariableBool("IsCastingRight") || (PlayerRef as objectReference).GetAnimationVariableBool("IsAttacking") || (PlayerRef as objectReference).GetAnimationVariableBool("IsBlocking") || (PlayerRef as objectReference).GetAnimationVariableBool("IsBashing"))
 
 				bSettingLightRadius = true
 				
@@ -327,6 +372,9 @@ event OnUpdate()
 			bTorchJustBurnedOut = true 					; So re-equip only triggers on our torch events, not Realistic Torches or any other Drop Lit Torch mod
 			PlayerRef.RemoveItem(iEquipTorch, 1, true)	; Remove the fadeable torch
 			PlayerRef.RemoveItem(realTorchForm)			; Remove the real torch which will trigger the timer reset and re-equip
+			if bIsTCSLoaded
+				SendModEvent("iEquip_ResetTCS") 		; Forces Torches Cast Shadows to reset ready for the next time we equip a Torch01
+			endIf
 		else
 			RegisterForSingleUpdate(5.0)
 		endIf
@@ -350,7 +398,7 @@ function quickLight()
 	form currentItemForm = PlayerRef.GetEquippedObject(0)
 	int currentItemType = PlayerRef.GetEquippedItemType(0)
 	bool torchEquipped = currentItemType == 11	; Torch - this covers any torch, including the iEquipTorch used during the burnout sequence
-	bool candlelightEquipped = (currentItemType == 9 && (currentItemForm as spell) == Candlelight)
+	bool candlelightEquipped = (currentItemType == 9 && ((currentItemForm as spell) == Candlelight) || (bIsTCSLoaded && (currentItemForm as spell) == TCSCandlelightDummySpell))
 	int targetSlot
 	
 	;debug.trace("iEquip_TorchScript quickLight start - torch equipped: " + torchEquipped + ", currentItemForm: " + currentItemForm + ", currentItemType: " + currentItemType + ", bPreviously2HOrRanged: " + bPreviously2HOrRanged)
@@ -369,7 +417,7 @@ function quickLight()
 
 			PlayerRef.UnequipItemEx(currentItemForm)
 		else
-			PlayerRef.UnequipSpell(Candlelight, 0)
+			PlayerRef.UnequipSpell(PlayerRef.GetEquippedSpell(0), 0)
 		endIf
 
 		if bPreviously2HOrRanged
@@ -402,7 +450,7 @@ function quickLight()
 
 	else
 		bool playerHasATorch = PlayerRef.GetItemCount(realTorchForm) > 0
-		bool playerKnowsSpell = PlayerRef.HasSpell(Candlelight)
+		bool playerKnowsSpell = PlayerRef.HasSpell(Candlelight) || (bIsTCSLoaded && PlayerRef.HasSpell(TCSCandlelightDummySpell))
 
 		if playerHasATorch || playerKnowsSpell
 		
@@ -445,11 +493,26 @@ function quickLight()
 				previousItemForm = none
 			endIf
 
-			if playerKnowsSpell && (bQuickLightPreferMagic || (!playerHasATorch && bQuickLightUseMagicIfNoTorch)) && (PlayerRef.GetActorValue("Magicka") > Candlelight.GetEffectiveMagickaCost(PlayerRef) || (PO.getRestoreCount(1) > 0 && bQuickLightConsumePotion))
-				if PlayerRef.GetActorValue("Magicka") < Candlelight.GetEffectiveMagickaCost(PlayerRef)
+			spell targetSpell
+			if playerKnowsSpell
+				if bIsTCSLoaded && PlayerRef.HasSpell(TCSCandlelightDummySpell)
+					targetSpell = TCSCandlelightDummySpell
+				else
+					targetSpell = Candlelight
+				endIf
+			endIf
+
+			if playerKnowsSpell && (bQuickLightPreferMagic || (!playerHasATorch && bQuickLightUseMagicIfNoTorch)) && (PlayerRef.GetActorValue("Magicka") > targetSpell.GetEffectiveMagickaCost(PlayerRef) || (PO.getRestoreCount(1) > 0 && bQuickLightConsumePotion))
+				if PlayerRef.GetActorValue("Magicka") < targetSpell.GetEffectiveMagickaCost(PlayerRef)
 					PO.selectAndConsumePotion(1, 0)
 				endIf
-				PlayerRef.EquipSpell(Candlelight, 0)
+				PlayerRef.EquipSpell(targetSpell, 0)
+				if bIsTCSLoaded && targetSpell == Candlelight
+					Wait(0.5)
+					if !PlayerRef.GetEquippedObject(0) && PlayerRef.HasSpell(TCSCandlelightDummySpell) 	; Just in case this is the first time casting Candlelight with TCS loaded, TCS will have removed the vanilla spell and added the TCS dummy spell, but not re-equipped it
+						PlayerRef.EquipSpell(TCSCandlelightDummySpell, 0)
+					endIf
+				endIf
 			elseIf playerHasATorch
 				PlayerRef.EquipItemEx(realTorchForm) ; This should then be caught by EH.onObjectEquipped and trigger all the relevant widget/torch/RH stuff as required
 			endIf
@@ -495,8 +558,12 @@ Function DropTorch(bool torchDroppedFromInventoryMenu = false)
 				PlayerRef.UnequipItemEx(equippedTorch)
 			endIf
 
-			if equippedTorch == iEquipTorch || (fCurrentTorchLife < 30.0 && bReduceLightAsTorchRunsOut)			; Switch to using the one with the display name so if the player wants to pick it up again it will have the same name/value/weight displayed as Torch01
-				equippedTorch = iEquipDroppedTorch
+			if bIsTCSLoaded
+				SendModEvent("iEquip_ResetTCS") 		; Forces Torches Cast Shadows to reset ready for the next time we equip a Torch01
+			endIf
+
+			if equippedTorch == iEquipTorch || (fCurrentTorchLife < 30.0 && bReduceLightAsTorchRunsOut) || Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF)) == "TorchesCastShadows.esp"
+				equippedTorch = iEquipDroppedTorch 		; Switch to using the one with the display name so if the player wants to pick it up again it will have the same name/value/weight displayed as Torch01
 			endIf
 
 			ObjectReference DroppedTorch = PlayerRef.PlaceAtMe(equippedTorch, 1, false, true)

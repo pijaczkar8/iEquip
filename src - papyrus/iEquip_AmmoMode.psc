@@ -559,7 +559,9 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 				WC.LHUpdate.registerForEquipOnPauseUpdate(Reverse, true)
 			else
 				;debug.trace("iEquip_AmmoMode checkAndEquipAmmo - about to equip " + asCurrentAmmo[Q])
-				PlayerRef.EquipItemEx(currentAmmoForm as Ammo)
+				if !PlayerRef.IsEquipped(currentAmmoForm)
+					PlayerRef.EquipItemEx(currentAmmoForm as Ammo)
+				endIf
 				if WC.iPosInd > 0
 					WC.LHPosUpdate.registerForFadeoutUpdate()
 				endIf
@@ -600,7 +602,10 @@ function setSlotCount(int count)
 endFunction
 
 bool function switchingRangedWeaponType(int itemType)
-	return Q != ((itemType == 9) as int)
+	;debug.trace("iEquip_AmmoMode switchingRangedWeaponType start - itemType: " + itemType + ", current ammo queue: " + Q)
+	bool switching = (Q != ((itemType == 9) as int))
+	;debug.trace("iEquip_AmmoMode switchingRangedWeaponType returning: " + switching)
+	return switching
 endFunction
 
 function equipAmmo()
@@ -678,12 +683,14 @@ endFunction
 
 function checkAndRemoveBoundAmmo(int weaponType)
 	;debug.trace("iEquip_AmmoMode checkAndRemoveBoundAmmo start")
-	Q = (weaponType == 9) as int
-	int targetIndex = jArray.count(aiTargetQ[Q]) - 1
-	if iEquip_AmmoExt.IsAmmoBound(jMap.getForm(jArray.getObj(aiTargetQ[Q], targetIndex), "iEquipForm") as ammo)
-		iEquip_AmmoItemsFLST.RemoveAddedForm(jMap.getForm(jArray.getObj(aiTargetQ[Q], targetIndex), "iEquipForm"))
+	int i = (weaponType == 9) as int
+	int targetQ = aiTargetQ[i]
+	int targetIndex = jArray.count(targetQ) - 1
+	form ammoToCheck = jMap.getForm(jArray.getObj(targetQ, targetIndex), "iEquipForm")
+	if iEquip_AmmoExt.IsAmmoBound(ammoToCheck as ammo)
+		iEquip_AmmoItemsFLST.RemoveAddedForm(ammoToCheck)
 		EH.updateEventFilter(iEquip_AmmoItemsFLST)
-		jArray.eraseIndex(aiTargetQ[Q], targetIndex)
+		jArray.eraseIndex(targetQ, targetIndex)
 	endIf
 	abBoundAmmoInQueue[Q] = false
 	;debug.trace("iEquip_AmmoMode checkAndRemoveBoundAmmo end")

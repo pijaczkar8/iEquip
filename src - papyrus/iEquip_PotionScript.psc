@@ -281,14 +281,18 @@ function initialise()
     endIf
     
     aPAF_RestoreEffects = new MagicEffect[6]
-    if Game.GetModByName("PotionAnimatedFix.esp") != 255
+    if Game.GetModByName("PotionAnimatedFix.esp") != 255 || Game.GetModByName("PotionAnimatedfx.esp") != 255
         bIsPAFLoaded = true
-        aPAF_RestoreEffects[0] = Game.GetFormFromFile(0x006B2D4, "PotionAnimatedFix.esp") as MagicEffect
-        aPAF_RestoreEffects[1] = Game.GetFormFromFile(0x00754DB, "PotionAnimatedFix.esp") as MagicEffect
-        aPAF_RestoreEffects[2] = Game.GetFormFromFile(0x00754DC, "PotionAnimatedFix.esp") as MagicEffect
-        aPAF_RestoreEffects[3] = Game.GetFormFromFile(0x00754DD, "PotionAnimatedFix.esp") as MagicEffect
-        aPAF_RestoreEffects[4] = Game.GetFormFromFile(0x00754DE, "PotionAnimatedFix.esp") as MagicEffect
-        aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DF, "PotionAnimatedFix.esp") as MagicEffect
+        string PAFPlugin = "PotionAnimatedFix.esp"
+        if Game.GetModByName("PotionAnimatedfx.esp") != 255
+            PAFPlugin = "PotionAnimatedfx.esp"
+        endIf
+        aPAF_RestoreEffects[0] = Game.GetFormFromFile(0x006B2D4, PAFPlugin) as MagicEffect
+        aPAF_RestoreEffects[1] = Game.GetFormFromFile(0x00754DB, PAFPlugin) as MagicEffect
+        aPAF_RestoreEffects[2] = Game.GetFormFromFile(0x00754DC, PAFPlugin) as MagicEffect
+        aPAF_RestoreEffects[3] = Game.GetFormFromFile(0x00754DD, PAFPlugin) as MagicEffect
+        aPAF_RestoreEffects[4] = Game.GetFormFromFile(0x00754DE, PAFPlugin) as MagicEffect
+        aPAF_RestoreEffects[5] = Game.GetFormFromFile(0x00754DF, PAFPlugin) as MagicEffect
     else
         bIsPAFLoaded = false
         i = 0

@@ -100,7 +100,9 @@ function drawPage()
 		MCM.AddToggleOptionST("tch_tgl_quickLightUseMagicIfNoTorch", "$iEquip_MCM_tch_lbl_quickLightUseMagicIfNoTorch", TO.bQuickLightUseMagicIfNoTorch)
 	endIf
 	MCM.AddToggleOptionST("tch_tgl_quickLightEquipRH", "$iEquip_MCM_tch_lbl_quickLightEquipRH", TO.bQuickLightEquipRH)
-	MCM.AddToggleOptionST("tch_tgl_quickLightConsumePotion", "$iEquip_MCM_tch_lbl_quickLightConsumePotion", TO.bQuickLightConsumePotion)
+    if TO.bQuickLightPreferMagic || TO.bQuickLightUseMagicIfNoTorch
+	   MCM.AddToggleOptionST("tch_tgl_quickLightConsumePotion", "$iEquip_MCM_tch_lbl_quickLightConsumePotion", TO.bQuickLightConsumePotion)
+    endIf
 
 	MCM.AddEmptyOption()
 

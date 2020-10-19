@@ -123,6 +123,7 @@ State inf_txt_dumpJcontainer
             MCM.SetInfoText("$iEquip_MCM_inf_txt_dumpJcontainer")
         elseIf currentEvent == "Select"
 			jValue.writeTofile(WC.iEquipQHolderObj, "Data/iEquip/Debug/JCDebug.json")
+			MCM.ShowMessage("$iEquip_MCM_inf_msg_queuesSavedToFile")
         endIf 
     endEvent
 endState
