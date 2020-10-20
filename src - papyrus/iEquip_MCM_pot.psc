@@ -93,7 +93,9 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, PM.bQuickHealUseFallback as int)
     jArray.addInt(jPageObj, PM.iQuickHealEquipChoice)
     jArray.addInt(jPageObj, PM.bQuickHealSwitchBackEnabled as int)
-    jArray.addInt(jPageObj, PM.bQuickHealSwitchBackAndRestore as int)   
+    jArray.addInt(jPageObj, PM.bQuickHealSwitchBackAndRestore as int)
+
+     jArray.addInt(jPageObj, PO.bExcludeHostilePotions as int)
     
 	return jPageObj
 endFunction
@@ -134,6 +136,8 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 28)
     PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 29)
     PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 30)
+
+    PO.bExcludeHostilePotions = jArray.getInt(jPageObj, 31, 1)
 endFunction
 
 function drawPage()
@@ -143,6 +147,9 @@ function drawPage()
 			
 	if WC.bPotionGrouping
 		MCM.AddToggleOptionST("pot_tgl_checkAllEffects", "$iEquip_MCM_pot_lbl_checkAllEffects", PO.bCheckOtherEffects)
+        if PO.bCheckOtherEffects
+            MCM.AddToggleOptionST("pot_tgl_exclHostilePotions", "$iEquip_MCM_pot_lbl_exclHostilePotions", PO.bExcludeHostilePotions)
+        endIf
 		MCM.AddToggleOptionST("pot_tgl_exclRestAllEffects", "$iEquip_MCM_pot_lbl_exclRestAllEffects", PO.bExcludeRestoreAllEffects)
 		MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
 		
@@ -257,6 +264,21 @@ State pot_tgl_checkAllEffects
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bCheckOtherEffects)
             PO.bCheckOtherEffects = !PO.bCheckOtherEffects
             MCM.SetToggleOptionValueST(PO.bCheckOtherEffects)
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_tgl_exclHostilePotions
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_exclHostilePotions")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bExcludeHostilePotions)
+            PO.bExcludeHostilePotions = !PO.bExcludeHostilePotions
+            MCM.SetToggleOptionValueST(PO.bExcludeHostilePotions)
+            if PO.bExcludeHostilePotions
+                PO.removeHostilePotionsFromGroups()
+            endIf
         endIf
     endEvent
 endState

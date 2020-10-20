@@ -460,6 +460,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 			};
 
 		//skyui.util.Debug.log("iEquipWidget updateWidget - currAlpha: " + currAlpha + ", currScale: " + currScale)
+		//skyui.util.Debug.log("iEquipWidget updateWidget - currently displayed item name: " + itemName.text)
 
 		if(currAlpha == undefined){
 			currAlpha = iconClip._alpha;
@@ -472,18 +473,37 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		//skyui.util.Debug.log("iEquipWidget updateWidget - iSlot: " + iSlot + ", currAlpha: " + currAlpha + ", currScale: " + currScale)
 		//Create the animation timeline
 		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
-		//Fade out and shrink the icon
-		tl.to(iconClip, 0.05, {_alpha:0, _xscale:0.25, _yscale:0.25, ease:Quad.easeOut}, 0)
-		//Fade out the name
-		.to(nameClip, 0.05, {_alpha:0, ease:Quad.easeOut}, 0)
-		//Set the new icon and name and update the icon colour if potion/poison whilst not visible
-		.call(updateIconAndName, [iSlot, itemIcon, itemName, sIcon, sName])
-		//Fade and scale the new icon back in
-		.to(iconClip, 0.10, {_alpha:currAlpha, _xscale:currScale, _yscale:currScale, ease:Quad.easeOut}, 0.08)
-		//Finally fade the new name back in
-		.to(nameClip, 0.10, {_alpha:iNameAlpha, ease:Quad.easeOut}, 0.08);
+
+		if (isAlreadyOnFrame(itemIcon, sIcon) && ((itemName.text == sName) || (sIcon == "Fist" && sName == "$iEquip_common_Unarmed"))){
+			//Fade and scale the current icon - won't do anything if the values match current
+			tl.to(iconClip, 0.10, {_alpha:currAlpha, _xscale:currScale, _yscale:currScale, ease:Quad.easeOut}, 0.08)
+			//And the same with the name
+			.to(nameClip, 0.10, {_alpha:iNameAlpha, ease:Quad.easeOut}, 0.08);
+		} else {
+			//Fade out and shrink the icon
+			tl.to(iconClip, 0.05, {_alpha:0, _xscale:0.25, _yscale:0.25, ease:Quad.easeOut}, 0)
+			//Fade out the name
+			.to(nameClip, 0.05, {_alpha:0, ease:Quad.easeOut}, 0)
+			//Set the new icon and name and update the icon colour if potion/poison whilst not visible
+			.call(updateIconAndName, [itemIcon, itemName, sIcon, sName])
+			//Fade and scale the new icon back in
+			.to(iconClip, 0.10, {_alpha:currAlpha, _xscale:currScale, _yscale:currScale, ease:Quad.easeOut}, 0.08)
+			//Finally fade the new name back in
+			.to(nameClip, 0.10, {_alpha:iNameAlpha, ease:Quad.easeOut}, 0.08);
+		}
 		//And ACTION!
 		tl.play();
+	}
+
+	public function isAlreadyOnFrame(itemIcon: MovieClip, sIcon: String):Boolean 
+	{		
+		var currentFrame:Number = itemIcon._currentframe;
+		var mc:MovieClip = itemIcon.duplicateMovieClip("_tempMC", itemIcon._parent.getNextHighestDepth()); 
+		mc.gotoAndStop(sIcon);
+		var endFrame:Number = mc._currentframe;
+		mc.removeMovieClip();
+		
+		return (currentFrame == endFrame);
 	}
 
 	public function updateAttributeIcons(iSlot: Number, sAttributes: String): Void
@@ -519,9 +539,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		TweenLite.to(attributesClip, 0.1, {_alpha:currAttributesAlpha, ease:Quad.easeOut});
 	}
 
-	public function updateIconAndName(iSlot: Number, itemIcon: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
+	public function updateIconAndName(itemIcon: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
 	{
-		//skyui.util.Debug.log("iEquipWidget updateIconAndName - iSlot: " + iSlot + ", sName: " + sName + ", sIcon: " + sIcon);
 		//Set the Icon
 		itemIcon.gotoAndStop(sIcon);
 		//Save the current text formatting to preserve any Edit Mode changes
@@ -581,7 +600,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 			sFrame += iTier.toString();
 		}
 
-		skyui.util.Debug.log("iEquipWidget updateTemperTierIndicator - sFrame: " + sFrame)
+		//skyui.util.Debug.log("iEquipWidget updateTemperTierIndicator - sFrame: " + sFrame)
 
 		targetIndicator.gotoAndStop(sFrame);
 	}
@@ -1890,6 +1909,9 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	{
 		//skyui.util.Debug.log("iEquipWidget setTextColorAndAlignment - textElement: " + textElement + ", a_align: " + a_align + ", newColor: " + newColor)
 		selectedText = textElementArray[textElement];
+		if (selectedText.text == ""){
+			selectedText.text = " ";
+		}
 		var new_format:TextFormat = selectedText.getTextFormat();
 
 		switch(a_align) {
@@ -1905,7 +1927,5 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		}
 		new_format.color = newColor;
 		selectedText.setTextFormat(new_format);
-		//setTextColor(textElement, newColor)
-		//setTextAlignment(textElement, a_align)
 	}
 }

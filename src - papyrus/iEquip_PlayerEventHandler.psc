@@ -957,77 +957,84 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		endIf
 	endIf
 	;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - equippedSlot: " + equippedSlot + ", formFound: " + formFound + ", targetIndex: " + targetIndex + ", blockCall: " + blockCall)
-																										; Check that the queuedForm isn't blacklisted for the slot it's been equipped to
-	if !blackListFLSTs[equippedSlot].HasForm(queuedForm) && !(WC.PM.bCurrentlyQuickHealing && itemType == 22 && iEquip_SpellExt.IsHealingSpell(queuedForm as spell))
-																										; If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
-		if !actionTaken && ((equippedSlot < 2 && bAutoAddNewItems || queuedForm == TO.realTorchForm) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers))))
-																										; First check if the target Q has space or can grow organically - ie bHardLimitQueueSize is disabled
+																										
+	if !blackListFLSTs[equippedSlot].HasForm(queuedForm) && !(WC.PM.bCurrentlyQuickHealing && itemType == 22 && iEquip_SpellExt.IsHealingSpell(queuedForm as spell)) 	; Check that the queuedForm isn't blacklisted for the slot it's been equipped to
+
+		if !actionTaken 																			; If it isn't already contained in the AllCurrentItems formlist, or it is but findInQueue has returned -1 meaning it's a 1H item contained in the other hand queue
+
 			targetIndex = jArray.count(WC.aiTargetQ[equippedSlot])
 
-				int iEquipItem = jMap.object()
-				string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
-				jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
-				jMap.setInt(iEquipItem, "iEquipItemID", itemID)
-				if queuedForm as weapon || queuedForm as armor
-					jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
+			int iEquipItem = jMap.object()
+			string itemIcon = WC.GetItemIconName(queuedForm, itemType, itemName)
+			jMap.setForm(iEquipItem, "iEquipForm", queuedForm)
+			jMap.setInt(iEquipItem, "iEquipItemID", itemID)
+			if queuedForm as weapon || queuedForm as armor
+				jMap.setInt(iEquipItem, "iEquipHandle", itemHandle)
+			endIf
+			jMap.setInt(iEquipItem, "iEquipType", itemType)
+			jMap.setStr(iEquipItem, "iEquipName", itemName)
+			jMap.setStr(iEquipItem, "iEquipBaseName", itemBaseName)
+			jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+			
+			if equippedSlot < 2
+				if itemType == 22
+					if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
+						jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
+					else
+						jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
+					endIf
+					jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
+				else
+					jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
+					jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
+					jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)								; These will be set correctly by WC.CycleHand() and associated functions
+					jMap.setInt(iEquipItem, "isEnchanted", 0)
+					jMap.setInt(iEquipItem, "isPoisoned", 0)
 				endIf
-				jMap.setInt(iEquipItem, "iEquipType", itemType)
-				jMap.setStr(iEquipItem, "iEquipName", itemName)
-				jMap.setStr(iEquipItem, "iEquipBaseName", itemBaseName)
-				jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+			endIf
+
+			if ((equippedSlot < 2 && bAutoAddNewItems || queuedForm == TO.realTorchForm) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers))))
 				jMap.setInt(iEquipItem, "iEquipAutoAdded", 1)
-				if equippedSlot < 2
-					if itemType == 22
-						if itemIcon == "DestructionFire" || itemIcon == "DestructionFrost" || itemIcon == "DestructionShock"
-							jMap.setStr(iEquipItem, "iEquipSchool", "Destruction")
-						else
-							jMap.setStr(iEquipItem, "iEquipSchool", itemIcon)
-						endIf
-						jMap.setInt(iEquipItem, "iEquipSlot", iEquipSlot)
-					else
-						jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
-						jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
-						jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)								; These will be set correctly by WC.CycleHand() and associated functions
-						jMap.setInt(iEquipItem, "isEnchanted", 0)
-						jMap.setInt(iEquipItem, "isPoisoned", 0)
-					endIf
-				endIf
-				jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
+			else
+				jMap.setInt(iEquipItem, "iEquipTempItem", 1)
+			endIf
 
-				if !formFound 																			; If it's not already in the AllItems formlist because it's in the other hand queue add it now
-					iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
-					updateEventFilter(iEquip_AllCurrentItemsFLST)
-				endIf
+			jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
 
-				if itemHandle != 0xFFFF																	; Add the new itemHandle to the ref handle array
-					JArray.AddInt(WC.iRefHandleArray, itemHandle)
-					JArray.unique(WC.iRefHandleArray)
-				endIf
-																										; Send to moreHUD if loaded
-				if WC.bMoreHUDLoaded
-					if formFound
-						AhzMoreHudIE.RemoveIconItem(itemID)
-						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) 							; Both queues
-					else
-						AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
-					endIf
-				endIf
-																										; Now update the widget to show the equipped item
-				WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
-				WC.asCurrentlyEquipped[equippedSlot] = itemName
-				
-				if WC.abQueueWasEmpty[equippedSlot] && WC.iBackgroundStyle > 0
-					int[] args = new int[2]
-					args[0] = equippedSlot
-					args[1] = WC.iBackgroundStyle
-					UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)					; Show the background if required if it was previously hidden
-				endIf
-				WC.abQueueWasEmpty[equippedSlot] = false
+			if !formFound 																			; If it's not already in the AllItems formlist because it's in the other hand queue add it now
+				iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
+				updateEventFilter(iEquip_AllCurrentItemsFLST)
+			endIf
 
-				if equippedSlot < 2 || WC.bShoutEnabled
-					WC.updateWidget(equippedSlot, targetIndex, true, true)
+			if itemHandle != 0xFFFF																	; Add the new itemHandle to the ref handle array
+				JArray.AddInt(WC.iRefHandleArray, itemHandle)
+				JArray.unique(WC.iRefHandleArray)
+			endIf
+																									; Send to moreHUD if loaded
+			if WC.bMoreHUDLoaded
+				if formFound
+					AhzMoreHudIE.RemoveIconItem(itemID)
+					AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) 							; Both queues
+				else
+					AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
 				endIf
-			;endIf
+			endIf
+																									; Now update the widget to show the equipped item
+			WC.aiCurrentQueuePosition[equippedSlot] = targetIndex
+			WC.asCurrentlyEquipped[equippedSlot] = itemName
+			
+			if WC.abQueueWasEmpty[equippedSlot] && WC.iBackgroundStyle > 0
+				int[] args = new int[2]
+				args[0] = equippedSlot
+				args[1] = WC.iBackgroundStyle
+				UI.InvokeIntA(HUD_MENU, WidgetRoot + ".setWidgetBackground", args)					; Show the background if required if it was previously hidden
+			endIf
+			WC.abQueueWasEmpty[equippedSlot] = false
+
+			if equippedSlot < 2 || WC.bShoutEnabled
+				WC.updateWidget(equippedSlot, targetIndex, true, true)
+			endIf
+
 		endIf
 																										; And run the rest of the hand equip cycle without actually equipping to toggle ammo mode if needed and update count, poison and charge info
 		if equippedSlot < 2 && !blockCall
@@ -1059,12 +1066,31 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
   	if akBaseObject.GetName() == "DummyArrow" && PlayerRef.GetEquippedItemType(1) == 12 && !PlayerRef.IsEquipped(AM.currentAmmoForm)
   		PlayerRef.EquipItemEx(AM.currentAmmoForm as Ammo)
 
-  	elseIf !bGoingUnarmed && !TO.bSettingLightRadius && !(akBaseObject.GetType() == 31 && TO.didATorchJustBurnOut())
-	  	bWaitingForOnObjectUnequippedUpdate = true
-		registerForSingleUpdate(0.8)
+  	else
+  		checkAndRemoveTempItem(akBaseObject)
+
+  		if !bGoingUnarmed && !TO.bSettingLightRadius && !(akBaseObject.GetType() == 31 && TO.didATorchJustBurnOut())
+		  	bWaitingForOnObjectUnequippedUpdate = true
+			registerForSingleUpdate(0.8)
+		endIf
 	endIf
 	;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped end")
 endEvent
+
+function checkAndRemoveTempItem(form formToCheck)
+	int Q
+	int i
+	bool actionTaken
+
+	while Q < 3 && !actionTaken
+		i = WC.findInQueue(Q, formToCheck.GetName(), formToCheck)
+		if i != -1 && jMap.getInt(jArray.getObj(WC.aiTargetQ[Q], i), "iEquipTempItem") == 1
+			WC.removeItemFromQueue(Q, i, false, false, false, false)
+			actionTaken = true
+		endIf
+		Q += 1
+	endWhile
+endFunction
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	;debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	

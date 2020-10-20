@@ -105,6 +105,7 @@ bool property bautoAddPoisons = true auto hidden
 bool property bautoAddPotions = true auto hidden
 bool property bCheckOtherEffects = true auto hidden
 bool property bExcludeRestoreAllEffects auto hidden
+bool property bExcludeHostilePotions = true auto hidden
 bool property bautoAddConsumables = true auto hidden
 bool property bQuickRestoreUseSecondChoice = true auto Hidden
 bool property bFlashPotionWarning = true auto hidden
@@ -594,6 +595,27 @@ function removeRestoreAllPotionsFromGroups()
     ;debug.trace("iEquip_PotionScript removeRestoreAllPotionsFromQueues end")
 endFunction
 
+function removeHostilePotionsFromGroups()
+    ;debug.trace("iEquip_PotionScript removeHostilePotionsFromGroups start")
+    int Q
+    int i
+    int count
+    while Q < 7
+        count = jArray.count(aiPotionQ[Q])
+        while i < count
+            if (jMap.getForm(jArray.getObj(aiPotionQ[Q], i), "iEquipForm") as Potion).IsHostile()
+                removePotionFromQueue(Q, i)
+                count -= 1
+            else
+                i += 1
+            endIf
+        endWhile
+        i = 0
+        Q += 1
+    endWhile
+    ;debug.trace("iEquip_PotionScript removeHostilePotionsFromGroups end")
+endFunction
+
 function removeGroupedPotionsFromConsumableQueue(int potionGroup)
     ;debug.trace("iEquip_PotionScript removeGroupedPotionsFromConsumableQueue start")
     int Q = potionGroup * 3
@@ -824,11 +846,13 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
 
     else
         ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue - foundPotion: " + foundPotion.GetName())
-        int Q = getPotionQueue(foundPotion, true)
+        int Q
 
-        ; Exclude Skooma from groups if CACO or Requiem loaded to avoid unintended negative effects including possibility of death (Requiem)!  Will still be added directly to the consumables queue if enabled.
-        if (bIsCACOLoaded && foundPotion.HasKeyword(VendorItemIllicitDrug)) || (bIsRequiemLoaded && foundPotion.HasKeyword(REQ_KW_VendorItem_BlackMarket))
+        ; Exclude multi-effect potions with one or more detrimental effects. Also exclude Skooma from groups if CACO or Requiem loaded to avoid unintended negative effects including possibility of death (Requiem)!  Will still be added directly to the consumables queue if enabled.
+        if (bExcludeHostilePotions && foundPotion.IsHostile()) || (bIsCACOLoaded && foundPotion.HasKeyword(VendorItemIllicitDrug)) || (bIsRequiemLoaded && foundPotion.HasKeyword(REQ_KW_VendorItem_BlackMarket))
             Q = -1
+        else
+            Q = getPotionQueue(foundPotion, true)
         endIf
 
         int group ; Q < 3 defaults to 0

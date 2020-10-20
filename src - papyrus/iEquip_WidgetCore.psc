@@ -3764,7 +3764,7 @@ function onWeaponOrShieldAdded(form addedForm)
 		if addedForm as armor														; Only shields will have been passed through from OnItemAdded
 			;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - new shield added, currLHItemType: " + currLHItemType)
 
-			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquip == 1 && (addedForm as armor).GetArmorRating() >= PlayerRef.GetEquippedShield().GetArmorRating()) || iAutoEquip == 0) && (PlayerRef.GetEquippedShield().GetEnchantment() == none || (iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && (addedForm as armor).GetEnchantment() != none && (addedForm as armor).GetArmorRating() >= PlayerRef.GetEquippedShield().GetArmorRating()))))
+			if currLHItemType == 0 || (currLHItemType == 10 && ((iAutoEquip == 1 && (addedForm as armor).GetArmorRating() > (PlayerRef.GetEquippedShield().GetArmorRating() * WornObject.GetItemHealthPercent(PlayerRef, 0, 512))) || iAutoEquip == 0) && (PlayerRef.GetEquippedShield().GetEnchantment() == none || (iCurrentItemEnchanted == 2 || (iCurrentItemEnchanted == 1 && (addedForm as armor).GetEnchantment() != none && (addedForm as armor).GetArmorRating() > (PlayerRef.GetEquippedShield().GetArmorRating() * WornObject.GetItemHealthPercent(PlayerRef, 0, 512))))))
 
 				doEquip = true
 
@@ -3794,12 +3794,12 @@ function onWeaponOrShieldAdded(form addedForm)
 			;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHItemType: " + currLHItemType + ", currRHItemType: " + currRHItemType + ", new weapon type: " + weaponType + ", newWeaponDamage: " + newWeaponDamage)
 
 			if currRHItemType > 0 && currRHItemType < 8 || currRHItemType == 12
-				rightWeaponDamage = currRHWeapon.GetBaseDamage()
+				rightWeaponDamage = (currRHWeapon.GetBaseDamage() * WornObject.GetItemHealthPercent(PlayerRef, 1, 0)) as int
 				;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currRHWeapon: " + currRHWeapon.GetName() + ", rightWeaponDamage: " + rightWeaponDamage)
 			endIf
 
 			if currLHItemType > 0 && (currLHItemType < 5 || (currLHItemType < 7 && bIsCGOLoaded))
-				leftWeaponDamage = currLHWeapon.GetBaseDamage()
+				leftWeaponDamage = (currLHWeapon.GetBaseDamage() * WornObject.GetItemHealthPercent(PlayerRef, 0, 0)) as int
 				;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded - currLHWeapon: " + currLHWeapon.GetName() + ", leftWeaponDamage: " + leftWeaponDamage)
 			endIf
 
