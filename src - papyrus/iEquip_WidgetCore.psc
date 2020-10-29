@@ -2364,6 +2364,11 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	endIf
 	
 	int targetArray = aiTargetQ[Q]
+
+	if Q < 3 && jMap.getInt(jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q]), "iEquipTempItem") == 1
+		removeTempItemFromQueue(Q, aiCurrentQueuePosition[Q])
+	endIf
+
 	int queueLength = JArray.count(targetArray)
 	;debug.trace("iEquip_WidgetCore cycleSlot - queueLength: " + queueLength)
 	
@@ -3213,7 +3218,7 @@ function setSlotToEmpty(int Q, bool hidePoisonCount = true, bool leaveFlag = fal
 		else
 			;debug.trace("iEquip_WidgetCore setSlotToEmpty - should be setting "+asQueueName[Q]+" to Empty")
 			UICallback.PushString(iHandle, "Empty") 						; New icon
-			UICallback.PushString(iHandle, "") 							; New name
+			UICallback.PushString(iHandle, " ") 							; New name
 		endIf
 		UICallback.PushFloat(iHandle, fNameAlpha * adjustment)					; Current item name alpha value
 		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[Q]] * adjustment) 	; Current item icon alpha value
@@ -3276,7 +3281,7 @@ function handleEmptyPoisonQueue()
 	If(iHandle)
 		UICallback.PushInt(iHandle, 4) 								; Which slot we're updating
 		UICallback.PushString(iHandle, "Poison") 					; New icon
-		UICallback.PushString(iHandle, "") 							; New name
+		UICallback.PushString(iHandle, " ") 							; New name
 		UICallback.PushFloat(iHandle, fNameAlpha) 					; Current item name alpha value
 		UICallback.PushFloat(iHandle, afWidget_A[aiIconClips[4]]) 	; Current item icon alpha value
 		UICallback.PushFloat(iHandle, afWidget_S[aiIconClips[4]]) 	; Current item icon scale value
@@ -3576,6 +3581,13 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 	endIf
 	;debug.trace("iEquip_WidgetCore findInQueue end - returning index: " + iIndex)
 	return iIndex
+endFunction
+
+function removeTempItemFromQueue(int Q, int iIndex)
+	if bMoreHUDLoaded
+		AhzMoreHudIE.RemoveIconItem(jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "iEquipItemID"))
+    endIf
+    jArray.eraseIndex(aiTargetQ[Q], iIndex)
 endFunction
 
 function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cyclingAmmo = false, bool onItemRemoved = false, bool addToCache = true)

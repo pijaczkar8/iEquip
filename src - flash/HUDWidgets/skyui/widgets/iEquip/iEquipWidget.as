@@ -306,20 +306,20 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		consumableCount = widgetMaster.ConsumableWidget.consumableCount_mc.consumableCount;
 		poisonName = widgetMaster.PoisonWidget.poisonName_mc.poisonName;
 		poisonCount = widgetMaster.PoisonWidget.poisonCount_mc.poisonCount;
-		leftName.text = "";
-		leftPoisonName.text = "";
-		leftCount.text = "";
-		leftPreselectName.text = "";
-		rightName.text = "";
-		rightPoisonName.text = "";
-		rightCount.text = "";
-		rightPreselectName.text = "";
-		shoutName.text = "";
-		shoutPreselectName.text = "";
-		consumableName.text = "";
-		consumableCount.text = "";
-		poisonName.text = "";
-		poisonCount.text = "";
+		leftName.text = " ";
+		leftPoisonName.text = " ";
+		leftCount.text = " ";
+		leftPreselectName.text = " ";
+		rightName.text = " ";
+		rightPoisonName.text = " ";
+		rightCount.text = " ";
+		rightPreselectName.text = " ";
+		shoutName.text = " ";
+		shoutPreselectName.text = " ";
+		consumableName.text = " ";
+		consumableCount.text = " ";
+		poisonName.text = " ";
+		poisonCount.text = " ";
 		leftName.verticalAutoSize = "top";
 		leftPoisonName.verticalAutoSize = "top";
 		leftCount.verticalAutoSize = "top";
@@ -403,6 +403,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	public function updateWidget(iSlot: Number, sIcon: String, sName: String, iNameAlpha: Number, currAlpha: Number, currScale: Number): Void
 	{
 		//skyui.util.Debug.log("iEquipWidget updateWidget - iSlot: " + iSlot + ", sIcon: " + sIcon + ", sName: " + sName);
+		if (sName == undefined || sName == ""){
+			sName = " ";
+		}
+
 		var iconClip: MovieClip;
 		var itemIcon: MovieClip;
 		var nameClip: MovieClip;
@@ -541,6 +545,10 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 	public function updateIconAndName(itemIcon: MovieClip, itemName: TextField, sIcon: String, sName: String): Void
 	{
+		if (sName == undefined || sName == ""){
+			sName = " ";
+		}
+
 		//Set the Icon
 		itemIcon.gotoAndStop(sIcon);
 		//Save the current text formatting to preserve any Edit Mode changes
@@ -555,8 +563,8 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	{
 		//skyui.util.Debug.log("iEquipWidget updateDisplayedText - iSlot: " + iIndex + ", sString: " + sString)
 
-		if (sString == undefined){
-			sString = "";
+		if (sString == undefined || sString == ""){
+			sString = " ";
 		}
 
 		var targetText: TextField = textElementArray[iIndex];
