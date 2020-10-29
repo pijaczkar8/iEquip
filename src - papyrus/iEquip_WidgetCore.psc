@@ -889,6 +889,14 @@ function checkVersion()
 				refreshVisibleItems()
 			endIf
         endIf
+
+        if CurrentVersion < 1.5
+        	PO.bShowConsumedNotifications = PO.iNotificationLevel > 0  			; If previously Minimal or Verbose
+        	PO.bShowNoPotionsNotifications = PO.iNotificationLevel > 0			; If previously Minimal or Verbose
+        	PO.bShowEffectActiveNotifications = PO.iNotificationLevel == 2		; If previously Verbose
+        	PO.bShowStatFullNotifications = PO.iNotificationLevel == 2			; If previously Verbose
+        endIf
+
         Utility.Wait(3.0)									; Just to make sure the notification hasn't been and gone before you're fully loaded in
         debug.notification("$iEquip_wc_not_updating")		; Remember to change the version number in the strings files
     endIf

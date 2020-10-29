@@ -6,7 +6,6 @@ iEquip_ProMode Property PM Auto
 string[] emptyPotionQueueOptions
 string[] potionSelectOptions
 string[] showSelectorOptions
-string[] notificationOptions
 
 string[] QHEquipOptions
 string[] QBuffControlOptions
@@ -32,11 +31,6 @@ function initData()
     potionSelectOptions[0] = "$iEquip_MCM_pot_opt_alwaysStrongest"
     potionSelectOptions[1] = "$iEquip_MCM_pot_opt_smartSelect"
     potionSelectOptions[2] = "$iEquip_MCM_pot_opt_alwaysWeakest"
-
-    notificationOptions = new String[3]
-    notificationOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    notificationOptions[1] = "$iEquip_MCM_common_opt_minimal"
-    notificationOptions[2] = "$iEquip_MCM_common_opt_verbose"
 
     QHEquipOptions = new String[4]
     QHEquipOptions[0] = "$iEquip_MCM_pot_opt_left"
@@ -78,7 +72,10 @@ int function saveData()             ; Save page data and return jObject
 	jArray.addInt(jPageObj, PO.bFlashPotionWarning as int)
 	jArray.addInt(jPageObj, PO.bEnableRestorePotionWarnings as int)
 	jArray.addInt(jPageObj, PO.bNotificationOnLowRestorePotions as int)
-    jArray.addInt(jPageObj, PO.iNotificationLevel)
+    jArray.addInt(jPageObj, PO.bShowConsumedNotifications as int)
+    jArray.addInt(jPageObj, PO.bShowNoPotionsNotifications as int)
+    jArray.addInt(jPageObj, PO.bShowEffectActiveNotifications as int)
+    jArray.addInt(jPageObj, PO.bShowStatFullNotifications as int)
 
     jArray.addInt(jPageObj, PM.bQuickRestoreEnabled as int)
     jArray.addInt(jPageObj, PM.bQuickHealEnabled as int)
@@ -95,7 +92,8 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, PM.bQuickHealSwitchBackEnabled as int)
     jArray.addInt(jPageObj, PM.bQuickHealSwitchBackAndRestore as int)
 
-     jArray.addInt(jPageObj, PO.bExcludeHostilePotions as int)
+    jArray.addInt(jPageObj, PO.bPrioritiseRestoreEffects as int)
+    jArray.addInt(jPageObj, PO.bExcludeHostilePotions as int)
     
 	return jPageObj
 endFunction
@@ -120,24 +118,53 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	PO.bFlashPotionWarning = jArray.getInt(jPageObj, 13)
 	PO.bEnableRestorePotionWarnings = jArray.getInt(jPageObj, 14)
 	PO.bNotificationOnLowRestorePotions = jArray.getInt(jPageObj, 15)
-    PO.iNotificationLevel = jArray.getInt(jPageObj, 16)
 
-    PM.bQuickRestoreEnabled = jArray.getInt(jPageObj, 17)
-    PM.bQuickHealEnabled = jArray.getInt(jPageObj, 18)
-    PM.bQuickMagickaEnabled = jArray.getInt(jPageObj, 19)
-    PM.bQuickStaminaEnabled = jArray.getInt(jPageObj, 20)
-    PM.fQuickRestoreThreshold = jArray.getFlt(jPageObj, 21)
-    PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 22)
-    PM.iQuickBuffControl = jArray.getInt(jPageObj, 23)
-    PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 24)
-    PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 25)
-    PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 26)
-    PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 27)
-    PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 28)
-    PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 29)
-    PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 30)
+    if presetVersion < 150
+        PO.iNotificationLevel = jArray.getInt(jPageObj, 16)
+        
+        ; Update new notification settings from old value in preset
+        PO.bShowConsumedNotifications = PO.iNotificationLevel > 0           ; If previously Minimal or Verbose
+        PO.bShowNoPotionsNotifications = PO.iNotificationLevel > 0          ; If previously Minimal or Verbose
+        PO.bShowEffectActiveNotifications = PO.iNotificationLevel == 2      ; If previously Verbose
+        PO.bShowStatFullNotifications = PO.iNotificationLevel == 2          ; If previously Verbose
 
-    PO.bExcludeHostilePotions = jArray.getInt(jPageObj, 31, 1)
+        PM.bQuickRestoreEnabled = jArray.getInt(jPageObj, 17)
+        PM.bQuickHealEnabled = jArray.getInt(jPageObj, 18)
+        PM.bQuickMagickaEnabled = jArray.getInt(jPageObj, 19)
+        PM.bQuickStaminaEnabled = jArray.getInt(jPageObj, 20)
+        PM.fQuickRestoreThreshold = jArray.getFlt(jPageObj, 21)
+        PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 22)
+        PM.iQuickBuffControl = jArray.getInt(jPageObj, 23)
+        PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 24)
+        PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 25)
+        PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 26)
+        PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 27)
+        PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 28)
+        PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 29)
+        PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 30)
+    else
+        PO.bShowConsumedNotifications = jArray.getInt(jPageObj, 16)
+        PO.bShowNoPotionsNotifications = jArray.getInt(jPageObj, 17)
+        PO.bShowEffectActiveNotifications = jArray.getInt(jPageObj, 18)
+        PO.bShowStatFullNotifications = jArray.getInt(jPageObj, 19)
+        PM.bQuickRestoreEnabled = jArray.getInt(jPageObj, 20)
+        PM.bQuickHealEnabled = jArray.getInt(jPageObj, 21)
+        PM.bQuickMagickaEnabled = jArray.getInt(jPageObj, 22)
+        PM.bQuickStaminaEnabled = jArray.getInt(jPageObj, 23)
+        PM.fQuickRestoreThreshold = jArray.getFlt(jPageObj, 24)
+        PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 25)
+        PM.iQuickBuffControl = jArray.getInt(jPageObj, 26)
+        PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 27)
+        PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 28)
+        PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 29)
+        PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 30)
+        PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 31)
+        PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 32)
+        PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 33)
+        PO.bPrioritiseRestoreEffects = jArray.getInt(jPageObj, 34, 1)
+        PO.bExcludeHostilePotions = jArray.getInt(jPageObj, 35, 1)
+    endIf
+
 endFunction
 
 function drawPage()
@@ -148,6 +175,7 @@ function drawPage()
 	if WC.bPotionGrouping
 		MCM.AddToggleOptionST("pot_tgl_checkAllEffects", "$iEquip_MCM_pot_lbl_checkAllEffects", PO.bCheckOtherEffects)
         if PO.bCheckOtherEffects
+            MCM.AddToggleOptionST("pot_tgl_prioritiseRestoreEffects", "$iEquip_MCM_pot_lbl_prioritiseRestoreEffects", PO.bPrioritiseRestoreEffects)
             MCM.AddToggleOptionST("pot_tgl_exclHostilePotions", "$iEquip_MCM_pot_lbl_exclHostilePotions", PO.bExcludeHostilePotions)
         endIf
 		MCM.AddToggleOptionST("pot_tgl_exclRestAllEffects", "$iEquip_MCM_pot_lbl_exclRestAllEffects", PO.bExcludeRestoreAllEffects)
@@ -183,7 +211,10 @@ function drawPage()
 
     MCM.AddEmptyOption()
     MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_NotifOptions</font>")
-    MCM.AddMenuOptionST("pot_men_ConsumeNotifications", "$iEquip_MCM_pot_lbl_ConsumeNotifications", notificationOptions[PO.iNotificationLevel])
+    MCM.AddToggleOptionST("pot_tgl_showConsumedNotifications", "$iEquip_MCM_pot_lbl_showConsumedNotifications", PO.bShowConsumedNotifications)
+    MCM.AddToggleOptionST("pot_tgl_showNoPotionsNotifications", "$iEquip_MCM_pot_lbl_showNoPotionsNotifications", PO.bShowNoPotionsNotifications) 
+    MCM.AddToggleOptionST("pot_tgl_showEffectActiveNotifications", "$iEquip_MCM_pot_lbl_showEffectActiveNotifications", PO.bShowEffectActiveNotifications)
+    MCM.AddToggleOptionST("pot_tgl_showStatFullNotifications", "$iEquip_MCM_pot_lbl_showStatFullNotifications", PO.bShowStatFullNotifications)
 
     MCM.SetCursorPosition(1)
 
@@ -265,6 +296,17 @@ State pot_tgl_checkAllEffects
             PO.bCheckOtherEffects = !PO.bCheckOtherEffects
             MCM.SetToggleOptionValueST(PO.bCheckOtherEffects)
             MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_tgl_prioritiseRestoreEffects
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_prioritiseRestoreEffects")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bPrioritiseRestoreEffects)
+            PO.bPrioritiseRestoreEffects = !PO.bPrioritiseRestoreEffects
+            MCM.SetToggleOptionValueST(PO.bPrioritiseRestoreEffects)
         endIf
     endEvent
 endState
@@ -466,22 +508,57 @@ State pot_tgl_lowRestPotNot
     endEvent
 endState
 
-State pot_men_ConsumeNotifications
+; ------------------------
+; - Notification Options -
+; ------------------------
+
+State pot_tgl_showConsumedNotifications
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_ConsumeNotifications")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(PO.iNotificationLevel, notificationOptions, 2)
-        elseIf currentEvent == "Accept"
-            PO.iNotificationLevel = currentVar as int
-            MCM.SetMenuOptionValueST(notificationOptions[PO.iNotificationLevel])
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_showConsumedNotifications")
+        elseIf currentEvent == "Select"
+            PO.bShowConsumedNotifications = !PO.bShowConsumedNotifications
+            MCM.SetToggleOptionValueST(PO.bShowConsumedNotifications)
         endIf
     endEvent
 endState
 
-; ---------------------
+State pot_tgl_showNoPotionsNotifications
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_showNoPotionsNotifications")
+        elseIf currentEvent == "Select"
+            PO.bShowNoPotionsNotifications = !PO.bShowNoPotionsNotifications
+            MCM.SetToggleOptionValueST(PO.bShowNoPotionsNotifications)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_showEffectActiveNotifications
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_showEffectActiveNotifications")
+        elseIf currentEvent == "Select"
+            PO.bShowEffectActiveNotifications = !PO.bShowEffectActiveNotifications
+            MCM.SetToggleOptionValueST(PO.bShowEffectActiveNotifications)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_showStatFullNotifications
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_showStatFullNotifications")
+        elseIf currentEvent == "Select"
+            PO.bShowStatFullNotifications = !PO.bShowStatFullNotifications
+            MCM.SetToggleOptionValueST(PO.bShowStatFullNotifications)
+        endIf
+    endEvent
+endState
+
+; ------------------------
 ; - QuickRestore Options -
-; ---------------------
+; ------------------------
 
 State pot_txt_whatQuickRestore
     event OnBeginState()
@@ -674,3 +751,6 @@ State pot_tgl_swtchBckRest
         endIf
     endEvent
 endState
+
+; Deprecated in v1.5
+string[] notificationOptions

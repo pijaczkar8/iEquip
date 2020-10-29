@@ -1930,7 +1930,7 @@ function quickRestore()
 		        	If PO.getPotionTypeCount(1) > 0 || PO.getPotionTypeCount(2) > 0
 			        	;debug.trace("iEquip_ProMode quickRestore - calling quickBuff health")
 						PO.quickBuffFindAndConsumePotions(0)
-					elseIf PO.iNotificationLevel > 0
+					elseIf PO.bShowNoPotionsNotifications
 						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noHealthBuffPotions"))
 					endIf
 				endIf
@@ -1941,7 +1941,7 @@ function quickRestore()
 	    		if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
 			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
 			    	PO.selectAndConsumePotion(2, 0) ;Stamina
-			    elseIf PO.iNotificationLevel > 0
+			    elseIf PO.bShowStatFullNotifications
 			    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_StaminaFull"))
 			    endIf
 				
@@ -1949,7 +1949,7 @@ function quickRestore()
 					If PO.getPotionTypeCount(7) > 0 || PO.getPotionTypeCount(8) > 0
 						;debug.trace("iEquip_ProMode quickRestore - calling quickBuff stamina")
 						PO.quickBuffFindAndConsumePotions(2)
-					elseIf PO.iNotificationLevel > 0
+					elseIf PO.bShowNoPotionsNotifications
 						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noStaminaBuffPotions"))
 					endIf
 				endIf
@@ -1960,7 +1960,7 @@ function quickRestore()
 		    	if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
 			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
 			    	PO.selectAndConsumePotion(1, 0) ;Magicka
-			    elseIf PO.iNotificationLevel > 0
+			    elseIf PO.bShowStatFullNotifications
 			    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_MagickaFull"))
 			    endIf
 				
@@ -1968,7 +1968,7 @@ function quickRestore()
 					If PO.getPotionTypeCount(4) > 0 || PO.getPotionTypeCount(5) > 0
 						;debug.trace("iEquip_ProMode quickRestore - calling quickBuff magicka")
 						PO.quickBuffFindAndConsumePotions(1)
-					elseIf PO.iNotificationLevel > 0
+					elseIf PO.bShowNoPotionsNotifications
 						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noMagickaBuffPotions"))
 					endIf
 				endIf
@@ -1992,7 +1992,7 @@ function quickHeal()
     elseIf PO.getPotionTypeCount(0) > 0
     	if belowHealthThreshold
 	    	PO.selectAndConsumePotion(0, 0, true)
-	   	elseIf PO.iNotificationLevel > 0
+	   	elseIf PO.bShowStatFullNotifications
 			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
 	    endIf
 	    bQuickHealActionTaken = true
@@ -2003,7 +2003,7 @@ function quickHeal()
         	If PO.getPotionTypeCount(0) > 0
 	        	if belowHealthThreshold
 	            	PO.selectAndConsumePotion(0, 0, true)
-	            elseIf PO.iNotificationLevel > 0
+	            elseIf PO.bShowStatFullNotifications
 	            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
 	            endIf
 	        endIf

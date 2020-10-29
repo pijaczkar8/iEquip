@@ -104,6 +104,7 @@ float fActiveEffectMagnitude
 bool property bautoAddPoisons = true auto hidden
 bool property bautoAddPotions = true auto hidden
 bool property bCheckOtherEffects = true auto hidden
+bool property bPrioritiseRestoreEffects = true auto hidden
 bool property bExcludeRestoreAllEffects auto hidden
 bool property bExcludeHostilePotions = true auto hidden
 bool property bautoAddConsumables = true auto hidden
@@ -115,7 +116,10 @@ bool property bNotificationOnLowRestorePotions = true auto hidden
 bool property bBlockIfRestEffectActive = true auto hidden
 bool property bSuspendChecksInCombat = true auto hidden
 bool property bBlockIfBuffEffectActive = true auto hidden
-int property iNotificationLevel = 2 auto hidden
+bool property bShowConsumedNotifications = true auto hidden
+bool property bShowNoPotionsNotifications = true auto hidden
+bool property bShowEffectActiveNotifications = true auto hidden
+bool property bShowStatFullNotifications = true auto hidden
 
 bool bInitialised
 
@@ -720,21 +724,26 @@ int function getPotionTypeCount(int Q)
     return jArray.count(aiPotionQ[Q])
 endFunction
 
+bool function isRestoreQueue(int Q)
+    return Q == 0 || Q == 3 || Q == 6
+endFunction
+
 int function getPotionQueue(potion potionToCheck, bool bAdding = false)
     ;debug.trace("iEquip_PotionScript getPotionQueue start")
+    int numEffects = potionToCheck.GetNumEffects()
     int selectedEffIndx = potionToCheck.GetCostliestEffectIndex()
     magicEffect effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
     int Q = checkEffects(effectToCheck)
     ;debug.trace("iEquip_PotionScript getPotionQueue - " + potionToCheck.GetName() + " CostliestEffectIndex: " + selectedEffIndx + ", strongest magic effect: " + effectToCheck as string)
     
     ; If the strongest effect isn't a restore/fortify/regen effect then if the potion has more than one effect check if any of the other effects are
-    if Q < 0
-        int numEffects = potionToCheck.GetNumEffects()
+    if numEffects > 1 && bCheckOtherEffects && (Q < 0 || (bPrioritiseRestoreEffects && !isRestoreQueue(Q)))
+        int firstQueueSelected = Q
         ;debug.trace("iEquip_PotionScript getPotionQueue - costliest effect isn't a health, magicka or stamina effect, checking for additional effects - numEffects: " + numEffects + ", other index: " + (!selectedEffIndx as bool) as int)
         if numEffects == 2      ; If potion has two effects then check the other for any restore/fortify/regen effect
-            selectedEffIndx = (!selectedEffIndx as bool) as int
+            selectedEffIndx = (selectedEffIndx + 1) % 2
             effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
-            Q = checkEffects(effectToCheck)
+            Q = checkEffects(effectToCheck, (firstQueueSelected != -1 && bPrioritiseRestoreEffects))
             
         elseIf numEffects > 2   ; If potion has > 2 effects we need to check all the others first for a restore effect, and if none found recheck for a fortify/regen effect
             bool bFirstRun = true
@@ -762,12 +771,13 @@ int function getPotionQueue(potion potionToCheck, bool bAdding = false)
                 endIf
             endWhile
         endIf
+
+        if Q == -1 && firstQueueSelected != -1
+            Q = firstQueueSelected
+        endIf
     endIf
-    ;If it doesn't have a health, magicka or stamina restore/fortify/regen effect then there's nothing to do here
-    if Q < 0
-        ;debug.trace("iEquip_PotionScript getPotionQueue -" + potionToCheck.GetName() + " does not appear to be a health, stamina or magicka potion")
-    ;Otherwise store the strength and duration in the temp variables
-    elseIf bAdding
+    
+    if Q >= 0 && bAdding
         fTempStrength = potionToCheck.GetNthEffectMagnitude(selectedEffIndx)
         iTempDuration = potionToCheck.GetNthEffectDuration(selectedEffIndx)
     endIf
@@ -1203,7 +1213,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
     ;debug.trace("iEquip_PotionScript selectAndConsumePotion start - potionGroup: " + potionGroup + ", potionType: " + potionType + ", bQuickHealing: " + bQuickHealing + ", targetAV: " + sTargetAV)
     ;debug.trace("iEquip_PotionScript selectAndConsumePotion - GetAVDamage: " + currAVDamage + ", GetActorValue: " + PlayerRef.GetActorValue(sTargetAV))
     
-    if isRestore && currAVDamage == 0 && iNotificationLevel == 2
+    if isRestore && currAVDamage == 0 && bShowStatFullNotifications
         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_AVFull{"+sTargetAV+"}"))
 
     else
@@ -1262,7 +1272,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                     ;debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion in index " + targetPotion + " is " + potionToConsume + ", " + potionToConsume.GetName())
                     ; Consume the potion
                     PlayerRef.EquipItemEx(potionToConsume)
-                    if iNotificationLevel > 0
+                    if bShowConsumedNotifications
                         debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
                     endIf
                     if isRestore
@@ -1280,7 +1290,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                 sortPotionQueue(Q, "iEquipStrengthTotal") ;Resort the queue by total magnitude ready for next time
                 bQueueSortedBy3sStrength = false
             endIf
-        elseIf iNotificationLevel > 0
+        elseIf bShowNoPotionsNotifications
             debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+sTargetAV+"}"))
         endIf
     endIf
@@ -1341,7 +1351,7 @@ function quickBuffFindAndConsumePotions(int potionGroup)
         if potionToConsume
             ; Consume the potion
             PlayerRef.EquipItemEx(potionToConsume)
-            if iNotificationLevel > 0
+            if bShowConsumedNotifications
                 debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
             endIf
         	bFortifyConsumed = true
@@ -1358,7 +1368,7 @@ function quickBuffFindAndConsumePotions(int potionGroup)
         if potionToConsume
             ; Consume the potion
             PlayerRef.EquipItemEx(potionToConsume)
-            if iNotificationLevel > 0
+            if bShowConsumedNotifications
                 debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
             endIf
         endIf
@@ -1395,7 +1405,7 @@ bool function isEffectAlreadyActive(int Q, bool bIsRestore)
 
     bool bAlreadyActive = fActiveEffectMagnitude > 0.0
 
-    if bAlreadyActive && iNotificationLevel == 2
+    if bAlreadyActive && bShowEffectActiveNotifications
     	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive{"+asEffectNames[Q]+"}"))
     endIf
 
@@ -1433,3 +1443,6 @@ state PROCESSING
         ;Blocking in case of OnItemRemoved firing twice
     endFunction
 endState
+
+; Deprecated in v1.5
+int property iNotificationLevel = 2 auto hidden
