@@ -754,8 +754,8 @@ int function getPotionQueue(potion potionToCheck, bool bAdding = false)
                 if selectedEffIndx != strongestEffIndx
                     effectToCheck = potionToCheck.GetNthEffectMagicEffect(selectedEffIndx)
                     
-                    Q = checkEffects(effectToCheck, bFirstRun)  ; Checking for restore
-                    if Q != -1  ; If found exit loop
+                    Q = checkEffects(effectToCheck, bFirstRun)  ; bFirstRun == true means we're checking for restore effects
+                    if Q != -1 || (bFirstRun && firstQueueSelected != -1 && bPrioritiseRestoreEffects)  ; If found exit loop
                         numEffects = -1
                     else
                         selectedEffIndx += 1
