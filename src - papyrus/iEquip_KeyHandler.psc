@@ -382,7 +382,7 @@ event OnKeyUp(int KeyCode, Float HoldTime)
 
     if bAllowKeyPress && KeyCode == iWaitingKeyCode && iMultiTap == 0
         iMultiTap = 1
-        if aiSingleFunctionKeys.Find(KeyCode) != -1 || (KeyCode == iQuickLightKey && PlayerRef.GetEquippedItemType(0) != 11)
+        if aiSingleFunctionKeys.Find(KeyCode) != -1 || (KeyCode == iConsumableKey && bExtendedKbControlsEnabled && iCyclePoisonKey != -1 && iQuickRestoreKey != -1) || (KeyCode == iQuickLightKey && PlayerRef.GetEquippedItemType(0) != 11)
             RegisterForSingleUpdate(0.0)
         else
             RegisterForSingleUpdate(fMultiTapDelay)
@@ -493,7 +493,7 @@ function runUpdate()
     elseIf iMultiTap == 2  ; Double tap
         int LHItemType
         if iWaitingKeyCode == iConsumableKey 
-            if !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true) && WC.bConsumablesEnabled && WC.bPoisonsEnabled
+            if !(IsMenuOpen("Loot Menu") && UI.GetBool("Loot Menu", "_root.Menu_mc._visible") == true) && WC.bConsumablesEnabled && (WC.bPoisonsEnabled && (!bExtendedKbControlsEnabled || iCyclePoisonKey == -1))
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
             endIf
         elseIf iWaitingKeyCode == iQuickLightKey && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
