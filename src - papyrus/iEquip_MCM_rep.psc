@@ -56,7 +56,7 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     
     WC.iPoisonIndicatorStyle = jArray.getInt(jPageObj, 23)
 
-    TP.iThrowingPoisonBehavior = jArray.getInt(jPageObj, 24, 1)
+    TP.iThrowingPoisonBehavior = jArray.getInt(jPageObj, 24, 0)
     KH.iThrowingPoisonsKey = jArray.getInt(jPageObj, 25, -1)
     TP.iThrowingPoisonHand = jArray.getInt(jPageObj, 26, 1)
     TP.fThrowingPoisonEffectsMagMult = jArray.getFlt(jPageObj, 27, 0.6)

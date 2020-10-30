@@ -167,7 +167,7 @@ State add_tgl_autoAddHandItems
             If currentEvent == "Select"
                 EH.bAutoAddNewItems = !EH.bAutoAddNewItems
             elseIf currentEvent == "Default"
-                EH.bAutoAddNewItems = true
+                EH.bAutoAddNewItems = false
             endIf
             MCM.SetToggleOptionValueST(EH.bAutoAddNewItems)
         endIf
@@ -182,7 +182,7 @@ State add_tgl_autoAddShouts
             If currentEvent == "Select"
                 EH.bAutoAddShouts = !EH.bAutoAddShouts
             elseIf currentEvent == "Default"
-                EH.bAutoAddShouts = true
+                EH.bAutoAddShouts = false
             endIf
             MCM.SetToggleOptionValueST(EH.bAutoAddShouts)
         endIf
@@ -197,7 +197,7 @@ State add_tgl_autoAddPowers
             If currentEvent == "Select"
                 EH.bAutoAddPowers = !EH.bAutoAddPowers
             elseIf currentEvent == "Default"
-                EH.bAutoAddPowers = true
+                EH.bAutoAddPowers = false
             endIf
             MCM.SetToggleOptionValueST(EH.bAutoAddPowers)
         endIf

@@ -48,7 +48,8 @@ string HUD_MENU = "HUD Menu"
 string WidgetRoot
 
 ; MCM Properties
-int property iThrowingPoisonBehavior = 0 auto hidden 				; 0 = Disabled, 1 = Throw & Switch Back, 2 = Keypress Toggles (keep throwing poisons until pressed again to switch back)
+bool property bThrowingPoisonsEnabled auto hidden
+int property iThrowingPoisonBehavior = 0 auto hidden 				; 0 = Throw & Switch Back, 1 = Keypress Toggles (keep throwing poisons until pressed again to switch back)
 int property iThrowingPoisonHand = 1 auto hidden					; 0 = Left Hand, 1 = Right Hand
 float property fThrowingPoisonEffectsMagMult = 0.6 auto hidden
 float property fPoisonHazardRadius = 6.0 auto hidden
@@ -137,7 +138,7 @@ function OnWidgetLoad()
 		createArrays()
 	endIf
 
-	if WC.bPowerOfThreeExtenderLoaded && iThrowingPoisonBehavior > 0
+	if WC.bPowerOfThreeExtenderLoaded && bThrowingPoisonsEnabled
 		RegisterForMenu("InventoryMenu")
 		updateSpellsOnLoad()
 		GoToState("")
@@ -268,7 +269,7 @@ function OnThrowingPoisonKeyPressed()
 	bFirstPoison = true
 	if jArray.count(WC.aiTargetQ[4]) < 1				; No poisons left in the poison queue
 		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TP_not_noPoisons"))
-	elseIf iThrowingPoisonBehavior == 1					; Throw & Switch Back
+	elseIf iThrowingPoisonBehavior == 0					; Throw & Switch Back
 		if bPoisonEquipped 								; If we haven't thrown the poison yet...
 			if currentPoison != jMap.getForm(jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4]), "iEquipForm") as potion 	; If we have cycled the poison slot without throwing the equipped poison switch to the new one and update the widget
 				equipPoison()

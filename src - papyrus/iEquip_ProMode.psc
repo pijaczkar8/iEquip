@@ -1938,7 +1938,7 @@ function quickRestore()
 
 		    if bQuickStaminaEnabled
 		    	currAV = PlayerRef.GetActorValue("Stamina")
-	    		if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= fQuickRestoreThreshold)
+	    		if bQuickRestore && (currAV / (currAV + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, 26))) <= fQuickRestoreThreshold)
 			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
 			    	PO.selectAndConsumePotion(2, 0) ;Stamina
 			    elseIf PO.bShowStatFullNotifications
@@ -1957,7 +1957,7 @@ function quickRestore()
 
 		    if bQuickMagickaEnabled
 		    	currAV = PlayerRef.GetActorValue("Magicka")
-		    	if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= fQuickRestoreThreshold)
+		    	if bQuickRestore && (currAV / (currAV + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, 25))) <= fQuickRestoreThreshold)
 			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
 			    	PO.selectAndConsumePotion(1, 0) ;Magicka
 			    elseIf PO.bShowStatFullNotifications
@@ -1980,7 +1980,7 @@ endFunction
 
 function quickHeal()
 	;debug.trace("iEquip_ProMode quickHeal start")
-	bool belowHealthThreshold = (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= fQuickRestoreThreshold)
+	bool belowHealthThreshold = (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, 24))) <= fQuickRestoreThreshold)
 
     bQuickHealActionTaken = false
     if bQuickHealPreferMagic

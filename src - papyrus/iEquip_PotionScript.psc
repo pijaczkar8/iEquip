@@ -1206,7 +1206,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
     
     string sTargetAV = asActorValues[potionGroup]
     int iTargetAV = aiActorValues[potionGroup]
-    float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)
+    float currAVDamage = Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV))
     int Q = (potionGroup * 3) + potionType
     bool isRestore = (Q == 0 || Q == 3 || Q == 6)
     

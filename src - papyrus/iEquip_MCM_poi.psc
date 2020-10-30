@@ -1,4 +1,4 @@
-Scriptname iEquip_MCM_rep extends iEquip_MCM_Page
+Scriptname iEquip_MCM_poi extends iEquip_MCM_Page
 
 import iEquip_StringExt
 
@@ -30,10 +30,9 @@ function initData()
     poisonIndicatorOptions[2] = "$iEquip_MCM_poi_opt_Drop"
     poisonIndicatorOptions[3] = "$iEquip_MCM_poi_opt_Drops"
 
-    throwingPoisonOptions = new String[3]
-    throwingPoisonOptions[0] = "$iEquip_MCM_common_opt_disabled"
-    throwingPoisonOptions[1] = "$iEquip_MCM_poi_opt_TP_ThrowSwitchBack"
-    throwingPoisonOptions[2] = "$iEquip_MCM_poi_opt_TP_Toggle"
+    throwingPoisonOptions = new String[2]
+    throwingPoisonOptions[0] = "$iEquip_MCM_poi_opt_TP_ThrowSwitchBack"
+    throwingPoisonOptions[1] = "$iEquip_MCM_poi_opt_TP_Toggle"
 
     throwingPoisonHands = new String[2]
     throwingPoisonHands[0] = "$iEquip_MCM_pot_opt_left"
@@ -104,7 +103,7 @@ function drawPage()
     MCM.AddTextOptionST("poi_txt_showPoisonHelp", "<font color='#a6bffe'>$iEquip_MCM_poi_lbl_showPoisonHelp</font>", "")
     if WC.bPoisonsEnabled
         MCM.AddToggleOptionST("poi_tgl_enblPoisonSlt", "<font color='#c7ea46'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
-        MCM.AddMenuOptionST("poi_men_poisonFX", "$iEquip_MCM_poi_lbl_FX", effectsOptions[WC.iPoisonFX])
+        MCM.AddMenuOptionST("poi_men_poisonFX", "$iEquip_MCM_common_lbl_FX", effectsOptions[WC.iPoisonFX])
         MCM.AddEmptyOption()
         MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_poi_lbl_poisonUseOpts</font>")
         MCM.AddMenuOptionST("poi_men_confMsg", "$iEquip_MCM_poi_lbl_confMsg", poisonMessageOptions[WC.iShowPoisonMessages])
@@ -126,15 +125,17 @@ function drawPage()
         MCM.AddMenuOptionST("poi_men_poisonIndStyle", "$iEquip_MCM_poi_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
 
         MCM.SetCursorPosition(1)
+        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_throwingPoisonsOpts</font>")
         MCM.AddTextOptionST("poi_txt_showThrowingPoisonHelp", "<font color='#a6bffe'>$iEquip_MCM_poi_lbl_showThrowingPoisonHelp</font>", "")
         if !WC.bPowerOfThreeExtenderLoaded
-            MCM.AddMenuOptionST("poi_men_throwingPoisonsBehavior", "<font color='#ff7417'>$iEquip_MCM_poi_lbl_throwingPoisonsBehavior</font>", throwingPoisonOptions[TP.iThrowingPoisonBehavior], mcmDisabledFLAG)
+            MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='#ff7417'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled, mcmDisabledFLAG)
             MCM.AddEmptyOption()
             MCM.AddTextOptionST("poi_txt_throwingPoisonsDisabled_a", "$iEquip_MCM_poi_lbl_throwingPoisonsDisabled_a", "")
             MCM.AddTextOptionST("poi_txt_throwingPoisonsDisabled_b", "$iEquip_MCM_poi_lbl_throwingPoisonsDisabled_b", "")
         else
-            if TP.iThrowingPoisonBehavior > 0
-                MCM.AddMenuOptionST("poi_men_throwingPoisonsBehavior", "<font color='#c7ea46'>$iEquip_MCM_poi_lbl_throwingPoisonsBehavior</font>", throwingPoisonOptions[TP.iThrowingPoisonBehavior])
+            if TP.bThrowingPoisonsEnabled
+                MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='#c7ea46'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled)
+                MCM.AddTextOptionST("poi_txt_throwingPoisonsBehavior", "$iEquip_MCM_poi_lbl_throwingPoisonsBehavior", throwingPoisonOptions[TP.iThrowingPoisonBehavior])
                 MCM.AddKeyMapOptionST("poi_key_throwingPoisonsKey", "$iEquip_MCM_poi_lbl_throwingPoisonsKey", KH.iThrowingPoisonsKey, mcmUnmapFLAG)
                 MCM.AddTextOptionST("poi_txt_throwingPoisonsHand", "$iEquip_MCM_poi_lbl_throwingPoisonsHand", throwingPoisonHands[TP.iThrowingPoisonHand])
                 MCM.AddSliderOptionST("poi_sld_throwingPoisonMagnitude", "$iEquip_MCM_poi_lbl_throwingPoisonMagnitude", TP.fThrowingPoisonEffectsMagMult, "{1}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_poi_lbl_baseMag"))
@@ -143,7 +144,7 @@ function drawPage()
                 MCM.AddSliderOptionST("poi_sld_throwingPoisonLimit", "$iEquip_MCM_poi_lbl_throwingPoisonLimit", TP.iNumPoisonHazards as float, "{0} " +  iEquip_StringExt.LocalizeString("$iEquip_MCM_poi_lbl_hzrds"))
                 MCM.AddSliderOptionST("poi_sld_throwingPoisonGravity", "$iEquip_MCM_poi_lbl_throwingPoisonGravity", TP.fThrowingPoisonProjectileGravity, "{1}")
             else
-                MCM.AddMenuOptionST("poi_men_throwingPoisonsBehavior", "<font color='#ff7417'>$iEquip_MCM_poi_lbl_throwingPoisonsBehavior</font>", throwingPoisonOptions[TP.iThrowingPoisonBehavior])
+                MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='#ff7417'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled)
             endIf
         endIf
     else
@@ -302,25 +303,27 @@ State poi_txt_showThrowingPoisonHelp
     endEvent
 endState
 
-State poi_men_throwingPoisonsBehavior
+State poi_tgl_enableThrowingPoisons
     event OnBeginState()
-        int prevValue = TP.iThrowingPoisonBehavior
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_poi_txt_throwingPoisonsBehavior")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(TP.iThrowingPoisonBehavior, throwingPoisonOptions, 1)
-        elseIf currentEvent == "Accept"
-            TP.iThrowingPoisonBehavior = currentVar as int
-            if currentVar as int == 0 && TP.bPoisonEquipped
+        if currentEvent == "Select" || (currentEvent == "Default" && TP.bThrowingPoisonsEnabled)
+            TP.bThrowingPoisonsEnabled = !TP.bThrowingPoisonsEnabled
+            if !TP.bThrowingPoisonsEnabled && TP.bPoisonEquipped
                 WC.bThrowingPoisonsDisabled = true
-            elseIf currentVar > 0
+            else
                 TP.enableThrowingPoisons()
             endIf
-            if prevValue > 0 && currentVar as int > 0
-                MCM.SetMenuOptionValueST(throwingPoisonOptions[TP.iThrowingPoisonBehavior])
-            else
-                MCM.forcePageReset()
-            endIf
+            MCM.forcePageReset()
+        endIf 
+    endEvent
+endState
+
+State poi_txt_throwingPoisonsBehavior
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_poi_txt_throwingPoisonsBehavior")
+        elseIf currentEvent == "Select"
+            TP.iThrowingPoisonBehavior = (TP.iThrowingPoisonBehavior + 1) % 2
+            MCM.SetTextOptionValueST(throwingPoisonOptions[TP.iThrowingPoisonBehavior])
         endIf 
     endEvent
 endState

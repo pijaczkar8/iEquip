@@ -4479,9 +4479,9 @@ function consumeItem()
     if bConsumablesEnabled
         int potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
         if potionGroupIndex != -1
-        	bool statDamaged = iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]) > 0
-        	;debug.trace("iEquip_WidgetCore consumeItem - stat: " + asActorValues[potionGroupIndex] + ", current damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]) + ", statDamaged: " + statDamaged + ", potion selector shown: " + bPotionSelectorShown)
-        	;debug.trace("iEquip_WidgetCore consumeItem - iPotionSelectorChoice: " + iPotionSelectorChoice + ", current stat %: " + (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) + ", threshold: " + fSmartConsumeThreshold)
+        	bool statDamaged = Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])) > 0
+        	;debug.trace("iEquip_WidgetCore consumeItem - stat: " + asActorValues[potionGroupIndex] + ", current damage: " + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])) + ", statDamaged: " + statDamaged + ", potion selector shown: " + bPotionSelectorShown)
+        	;debug.trace("iEquip_WidgetCore consumeItem - iPotionSelectorChoice: " + iPotionSelectorChoice + ", current stat %: " + (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) + ", threshold: " + fSmartConsumeThreshold)
         	; If the potion selector is currently shown then select and consume a potion of the selected type
         	if bPotionSelectorShown
         		PO.selectAndConsumePotion(potionGroupIndex, iPotionTypeChoice)
@@ -4489,7 +4489,7 @@ function consumeItem()
         	; If the selector isn't currently shown and conditions to show selector are met then show it now
         	elseIf iPotionSelectorChoice > 0 || !statDamaged
         		; If we have selected Consume & Show and the stat has any damage, or Smart Consume & Show and the stat is below the threshold then consume a suitable restore potion before showing the selector
-        		if (iPotionSelectorChoice == 1 && statDamaged) || (iPotionSelectorChoice == 2 && (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) < fSmartConsumeThreshold)
+        		if (iPotionSelectorChoice == 1 && statDamaged) || (iPotionSelectorChoice == 2 && (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])))) < fSmartConsumeThreshold)
         			PO.selectAndConsumePotion(potionGroupIndex, 0)
 				endIf
 				updatePotionSelector()
@@ -5817,7 +5817,7 @@ function ApplyChanges()
 		bAmmoIconChanged = true
 		bAttributeIconsOptionChanged = true
 		bPoisonIndicatorStyleChanged = true
-		if TP.iThrowingPoisonBehavior == 0 && TP.bPoisonEquipped
+		if !TP.bThrowingPoisonsEnabled && TP.bPoisonEquipped
 			bThrowingPoisonsDisabled = true
 		endIf
 		CM.bSettingsChanged = true

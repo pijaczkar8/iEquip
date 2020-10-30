@@ -188,7 +188,8 @@ endEvent
 function registerForGPPKeys()
     ;debug.trace("iEquip_KeyHandler registerForGPPKeys")
     int i
-    int hexBase = 0x00003DE2
+    ;int hexBase = 0x00003DE2   ; esp
+    int hexBase = 0x00000801    ; esl
     
     unregisterForGPPKeys()
     
