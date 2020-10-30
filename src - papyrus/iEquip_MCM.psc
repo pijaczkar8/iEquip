@@ -11,7 +11,8 @@ iEquip_MCM_add property add auto
 iEquip_MCM_cyc property cyc auto
 iEquip_MCM_eqp property eqp auto
 iEquip_MCM_amm property amm auto
-iEquip_MCM_rep property poi auto
+iEquip_MCM_poi property pois auto
+iEquip_MCM_rec property rec auto
 iEquip_MCM_pot property pot auto
 iEquip_MCM_tch property tch auto
 iEquip_MCM_ui property uii auto
@@ -42,18 +43,19 @@ endEvent
 ; ### MCM Internal Settings ###
 
 event OnConfigInit()
-    Pages = new String[11]
+    Pages = new String[12]
     Pages[0] = "$iEquip_MCM_lbl_GeneralHotkeys"
     Pages[1] = "$iEquip_MCM_lbl_AddingItems"
     Pages[2] = "$iEquip_MCM_lbl_Cycling"
     Pages[3] = "$iEquip_MCM_lbl_Equipping"
     Pages[4] = "$iEquip_MCM_lbl_AmmoQuickRanged"
-    Pages[5] = "$iEquip_MCM_lbl_PoisoningRecharging"
-    Pages[6] = "$iEquip_MCM_lbl_PotionsQuickRestore"
-    Pages[7] = "$iEquip_MCM_lbl_TorchQuickLight"
-    Pages[8] = "$iEquip_MCM_lbl_MiscUI"
-    Pages[9] = "$iEquip_MCM_lbl_EditMode"
-    Pages[10] = "$iEquip_MCM_lbl_Info"
+    Pages[5] = "$iEquip_MCM_lbl_Poisoning"
+    Pages[6] = "$iEquip_MCM_lbl_Recharging"
+    Pages[7] = "$iEquip_MCM_lbl_PotionsQuickRestore"
+    Pages[8] = "$iEquip_MCM_lbl_TorchQuickLight"
+    Pages[9] = "$iEquip_MCM_lbl_MiscUI"
+    Pages[10] = "$iEquip_MCM_lbl_EditMode"
+    Pages[11] = "$iEquip_MCM_lbl_Info"
 
     asControlNames = new string[12]
     asControlNames[0] = "$iEquip_MCM_gen_lbl_leftHand"
@@ -78,7 +80,8 @@ event OnConfigInit()
     cyc.initData()
     eqp.initData()
     amm.initData()
-    poi.initData()
+    pois.initData()
+    rec.initData()
     pot.initData()    
     tch.initData()
     uii.initData()
@@ -140,8 +143,10 @@ event OnPageReset(string page)
                 eqp.drawPage()
             elseIf page == "$iEquip_MCM_lbl_AmmoQuickRanged" 
                 amm.drawPage()
-            elseIf page == "$iEquip_MCM_lbl_PoisoningRecharging"
-                poi.drawPage()
+            elseIf page == "$iEquip_MCM_lbl_Poisoning"
+                pois.drawPage()
+            elseIf page == "$iEquip_MCM_lbl_Recharging"
+                rec.drawPage()
             elseIf page == "$iEquip_MCM_lbl_PotionsQuickRestore" 
                 pot.drawPage()
             elseIf page == "$iEquip_MCM_lbl_TorchQuickLight"
@@ -170,8 +175,10 @@ function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
         eqp.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_AmmoQuickRanged"
         amm.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
-    elseIf sCurrentPage == "$iEquip_MCM_lbl_PoisoningRecharging"
-        poi.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Poisoning"
+        pois.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
+    elseIf sCurrentPage == "$iEquip_MCM_lbl_Recharging"
+        rec.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_PotionsQuickRestore"
         pot.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     elseIf sCurrentPage == "$iEquip_MCM_lbl_TorchQuickLight"
@@ -290,7 +297,8 @@ function savePreset(string presetName)  ; Save data to JContainer file
     jMap.setObj(jMCMPreset, "Cycling", cyc.saveData())
     jMap.setObj(jMCMPreset, "Equipping", eqp.saveData())
     jMap.setObj(jMCMPreset, "AmmoQuickRanged", amm.saveData())
-    jMap.setObj(jMCMPreset, "PoisoningRecharging", poi.saveData())
+    jMap.setObj(jMCMPreset, "Poisoning", pois.saveData())
+    jMap.setObj(jMCMPreset, "Recharging", rec.saveData())
     jMap.setObj(jMCMPreset, "PotionsQuickRestore", pot.saveData())
     jMap.setObj(jMCMPreset, "TorchQuickLight", tch.saveData())
     jMap.setObj(jMCMPreset, "MiscUI", uii.saveData())
@@ -325,7 +333,12 @@ function loadPreset(string presetName, bool bNoExt = false) ; Load MCM data
             cyc.loadData(jMap.getObj(jMCMPreset, "Cycling"), presetVersion)
             eqp.loadData(jMap.getObj(jMCMPreset, "Equipping"), presetVersion)
             amm.loadData(jMap.getObj(jMCMPreset, "AmmoQuickRanged"), presetVersion)
-            poi.loadData(jMap.getObj(jMCMPreset, "PoisoningRecharging"), presetVersion)
+            if presetVersion < 150
+                poi.loadData(jMap.getObj(jMCMPreset, "PoisoningRecharging"), presetVersion)
+            else
+                pois.loadData(jMap.getObj(jMCMPreset, "Poisoning"), presetVersion)
+                rec.loadData(jMap.getObj(jMCMPreset, "Recharging"), presetVersion)
+            endIf
             pot.loadData(jMap.getObj(jMCMPreset, "PotionsQuickRestore"), presetVersion)
             tch.loadData(jMap.getObj(jMCMPreset, "TorchQuickLight"), presetVersion)
             uii.loadData(jMap.getObj(jMCMPreset, "MiscUI"), presetVersion)
@@ -421,3 +434,5 @@ endFunction
 iEquip_MCM_htk property htk auto
 iEquip_MCM_que property que auto
 iEquip_MCM_pro property pro auto
+; Deprecated in 1.5
+iEquip_MCM_rep property poi auto

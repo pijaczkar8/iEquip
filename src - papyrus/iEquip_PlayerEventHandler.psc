@@ -103,9 +103,9 @@ bool property bTogglingAmmoMode auto hidden
 
 int dualCastCounter
 
-bool property bAutoAddNewItems = true auto hidden
-bool property bAutoAddShouts = true auto hidden
-bool property bAutoAddPowers = true auto hidden
+bool property bAutoAddNewItems = false auto hidden
+bool property bAutoAddShouts = false auto hidden
+bool property bAutoAddPowers = false auto hidden
 
 bool property bPlayerIsABeast auto hidden
 bool property bPlayerIsAVampireOrLich auto hidden
@@ -1085,7 +1085,7 @@ function checkAndRemoveTempItem(form formToCheck)
 	while Q < 3 && !actionTaken
 		i = WC.findInQueue(Q, formToCheck.GetName(), formToCheck)
 		if i != -1 && jMap.getInt(jArray.getObj(WC.aiTargetQ[Q], i), "iEquipTempItem") == 1
-			WC.removeItemFromQueue(Q, i, false, false, false, false)
+			WC.removeTempItemFromQueue(Q, i)
 			actionTaken = true
 		endIf
 		Q += 1
@@ -1138,6 +1138,10 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 																		; Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
 		PO.onPotionRemoved(akBaseItem)
+		if (akBaseItem as potion).IsPoison() && !PlayerRef.GetItemCount(akBaseItem) && TP.bPoisonEquipped
+			Utility.WaitMenuMode(0.3)
+			TP.onPoisonRemoved(akBaseItem as potion)
+		endIf
 
 	elseIf akBaseItem as ammo && Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseItem.GetFormID(), 24), 0xFF)) != "JZBai_ThrowingWpnsLite.esp"
 		AM.onAmmoRemoved(akBaseItem)

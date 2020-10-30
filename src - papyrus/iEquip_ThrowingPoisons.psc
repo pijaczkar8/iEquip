@@ -48,7 +48,7 @@ string HUD_MENU = "HUD Menu"
 string WidgetRoot
 
 ; MCM Properties
-int property iThrowingPoisonBehavior = 1 auto hidden 				; 0 = Disabled, 1 = Throw & Switch Back, 2 = Keypress Toggles (keep throwing poisons until pressed again to switch back)
+int property iThrowingPoisonBehavior = 0 auto hidden 				; 0 = Disabled, 1 = Throw & Switch Back, 2 = Keypress Toggles (keep throwing poisons until pressed again to switch back)
 int property iThrowingPoisonHand = 1 auto hidden					; 0 = Left Hand, 1 = Right Hand
 float property fThrowingPoisonEffectsMagMult = 0.6 auto hidden
 float property fPoisonHazardRadius = 6.0 auto hidden
@@ -90,6 +90,7 @@ bool bLastPoisonInQueue
 
 event OnInit()
 	createArrays()
+	GoToState("DISABLED")
 endEvent
 
 function createArrays()
@@ -130,23 +131,26 @@ endFunction
 
 function OnWidgetLoad()
 	;debug.trace("iEquip_ThrowingPoisons OnWidgetLoad start")
-	;if iThrowingPoisonBehavior == 0
-	if WC.bPowerOfThreeExtenderLoaded
-		GoToState("")
-		WidgetRoot = WC.WidgetRoot
+	WidgetRoot = WC.WidgetRoot
 		
-		if bCreateArrays
-			createArrays()
-		endIf
+	if bCreateArrays
+		createArrays()
+	endIf
 
+	if WC.bPowerOfThreeExtenderLoaded && iThrowingPoisonBehavior > 0
 		RegisterForMenu("InventoryMenu")
 		updateSpellsOnLoad()
+		GoToState("")
 	else
 		UnregisterForAllMenus()
-		
 		GoToState("DISABLED")
 	endIf
 	;debug.trace("iEquip_ThrowingPoisons OnWidgetLoad end")
+endFunction
+
+function enableThrowingPoisons()
+	RegisterForMenu("InventoryMenu")
+	GoToState("")
 endFunction
 
 function updateSpellsOnLoad() 							; Just in case values and effects haven't persisted through save/load
@@ -443,6 +447,16 @@ function OnThrowingPoisonUnequipped(bool onWeaponsSheathed = false)					; Only e
 	;debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonUnequipped end")
 endFunction
 
+function onPoisonRemoved(potion removedPoison) 										; Only ever called from PlayerEventHandler OnObjectRemoved if the player has manually removed the last one of a poison from inventory and we currently have a throwing poison equipped
+	if removedPoison == currentPoison
+		if jArray.count(WC.aiTargetQ[4]) > 0 && bKeepThrowing
+			equipPoison()
+		else
+			switchBack()
+		endIf
+	endIf
+endFunction
+
 function onPoisonThrown()
 	;debug.trace("iEquip_ThrowingPoisons onPoisonThrown start - explosion currently set on iEquip_ThrowingPoison_ProjExpl: " + iEquip_ThrowingPoison_ProjExpl.GetExplosion().GetName())
 	unequipPoison()										; Do this first so the bottle doesn't remain visible in the player's hand at the same time as the projectile bottle appears
@@ -567,6 +581,7 @@ function switchBack(bool unequip = true)
 	else
 		;debug.trace("iEquip_ThrowingPoisons switchBack - Something went wrong!")
 	endIf
+	bKeepThrowing = false
 	;debug.trace("iEquip_ThrowingPoisons switchBack end")
 endFunction
 
@@ -580,6 +595,9 @@ auto state DISABLED
 	endEvent
 
 	function OnThrowingPoisonKeyPressed()
+		if !WC.bPowerOfThreeExtenderLoaded
+			debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TP_not_poExtenderNoLoaded"))
+		endIf
 	endFunction
 
 endState

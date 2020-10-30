@@ -90,13 +90,13 @@ string sPreviousState
 ; ------------------
 
 event onInit()
-	aiGPPComboKeys = new int[4]
+    aiGPPComboKeys = new int[4]
     aiExtKbKeys = new int[6]
     aiSingleFunctionKeys = new int[6]
     int i
     while i < 6
         if i < 4
-    	   aiGPPComboKeys[i] = -1
+           aiGPPComboKeys[i] = -1
         endIf
         aiExtKbKeys[i] = -1
         aiSingleFunctionKeys[i] = -1
@@ -168,52 +168,52 @@ function registerForGPP(bool bGPPLoaded)
     ;debug.trace("iEquip_KeyHandler registerForGPP - bGPPLoaded: " + bGPPLoaded)
     bIsGPPLoaded = bGPPLoaded
 
-	if bGPPLoaded
-		Self.RegisterForModEvent("GPP_ComboKeysUpdated", "onGPPComboKeysUpdated")
-		registerForGPPKeys()
-	else
-		unregisterForGPPKeys()
-		Self.UnregisterForModEvent("GPP_ComboKeysUpdated")
-	endIf
+    if bGPPLoaded
+        Self.RegisterForModEvent("GPP_ComboKeysUpdated", "onGPPComboKeysUpdated")
+        registerForGPPKeys()
+    else
+        unregisterForGPPKeys()
+        Self.UnregisterForModEvent("GPP_ComboKeysUpdated")
+    endIf
 endFunction
 
 event onGPPComboKeysUpdated(string sEventName, string sStringArg, Float fNumArg, Form kSender)
-	;debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated")
-	If(sEventName == "GPP_ComboKeysUpdated")
-		registerForGPPKeys()
-	endIf
-	;debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated end")
+    ;debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated")
+    If(sEventName == "GPP_ComboKeysUpdated")
+        registerForGPPKeys()
+    endIf
+    ;debug.trace("iEquip_KeyHandler onGPPComboKeysUpdated end")
 endEvent
 
 function registerForGPPKeys()
-	;debug.trace("iEquip_KeyHandler registerForGPPKeys")
-	int i
-	int hexBase = 0x00003DE2
-	
-	unregisterForGPPKeys()
-	
-	while i < 4
-		int tmpKey = (Game.GetFormFromFile(hexBase + i, "Gamepad++.esp") as GlobalVariable).GetValueInt()
-		
-		if (tmpKey != iUtilityKey && tmpKey != -1)
-			aiGPPComboKeys[i] = tmpKey
+    ;debug.trace("iEquip_KeyHandler registerForGPPKeys")
+    int i
+    int hexBase = 0x00003DE2
+    
+    unregisterForGPPKeys()
+    
+    while i < 4
+        int tmpKey = (Game.GetFormFromFile(hexBase + i, "Gamepad++.esp") as GlobalVariable).GetValueInt()
+        
+        if (tmpKey != iUtilityKey && tmpKey != -1)
+            aiGPPComboKeys[i] = tmpKey
             ;debug.trace("iEquip_KeyHandler registerForGPPKeys - about to register for GPP combo key " + i + ": " + tmpKey)
-			RegisterForKey(tmpKey)
-		endIf
-		
-		i += 1
-	endWhile
+            RegisterForKey(tmpKey)
+        endIf
+        
+        i += 1
+    endWhile
 endFunction
 
 function unregisterForGPPKeys()
-	int i
-	while i < 4
-		if aiGPPComboKeys[i] != -1 && aiGPPComboKeys[i] != iUtilityKey
+    int i
+    while i < 4
+        if aiGPPComboKeys[i] != -1 && aiGPPComboKeys[i] != iUtilityKey
             UnregisterForKey(aiGPPComboKeys[i])
-		endIf
+        endIf
         aiGPPComboKeys[i] = -1
-		i += 1
-	endWhile
+        i += 1
+    endWhile
 endFunction
 
 function updateExtKbKeysArray()
@@ -350,7 +350,7 @@ event OnKeyDown(int KeyCode)
             endIf
         endIf
         iWaitingKeyCode = KeyCode
-   	
+    
         if iMultiTap == 0       ; This is the first time the key has been pressed
             RegisterForSingleUpdate(fLongPressDelay)
         elseIf iMultiTap == 1   ; This is the second time the key has been pressed.
@@ -451,7 +451,7 @@ function runUpdate()
             endIf        
         elseIf iWaitingKeyCode == iLeftKey
             int RHItemType = PlayerRef.GetEquippedItemType(1)
-			
+            
             if AM.bAmmoMode || (PM.bPreselectMode && (RHItemType == 7 || RHItemType == 12))
                 AM.cycleAmmo(bIsUtilityKeyHeld, false, true)
             elseIf !WC.bPlayerIsMounted
@@ -497,7 +497,7 @@ function runUpdate()
                 WC.cycleSlot(4, bIsUtilityKeyHeld, false, false, true)
             endIf
         elseIf iWaitingKeyCode == iQuickLightKey && PlayerRef.GetEquippedItemType(0) == 11 ; Torch
-			TO.DropTorch()
+            TO.DropTorch()
         elseif PM.bPreselectMode
             if iWaitingKeyCode == iLeftKey
                 int RHItemType = PlayerRef.GetEquippedItemType(1)
@@ -546,8 +546,8 @@ function runUpdate()
                 if bIsUtilityKeyHeld
                     WC.openQueueManagerMenu(1)
                 elseIf !AM.bAmmoMode
-					LHItemType = PlayerRef.GetEquippedItemType(0)
-				
+                    LHItemType = PlayerRef.GetEquippedItemType(0)
+                
                     if LHItemType == 9 ; Spell
                         PM.quickDualCastOnDoubleTap(0)
                     elseIf LHItemType == 11 ; Torch
@@ -689,8 +689,8 @@ state EDITMODE
             endIf
             
         elseIf iMultiTap == 1   ; Single tap
-			if iWaitingKeyCode == iUtilityKey
-				ToggleEditMode()
+            if iWaitingKeyCode == iUtilityKey
+                ToggleEditMode()
             elseIf iWaitingKeyCode == iEditUpKey
                 EM.MoveElement(0)
             elseIf iWaitingKeyCode == iEditDownKey

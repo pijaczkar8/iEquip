@@ -6,6 +6,7 @@ Actor property PlayerRef auto
 
 Message property iEquip_HelpMenuMain Auto
 Message property iEquip_HelpMenuProMode Auto
+Message property iEquip_HelpMenuPoisons Auto
 Message property iEquip_MessageNextPageExit Auto
 
 Quest property iEquip_MessageQuest auto ; populated by CK
@@ -21,19 +22,19 @@ function showHelpMenuMain()
         
         if iAction != 7             ; Exit
             if iAction == 0         ; Controls
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls0"))
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_controls0"))
                 if iAction == 0
-                    iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls1"))
+                    iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_controls1"))
                     if iAction == 0
-                        iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls2"))
+                        iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_controls2"))
                         if iAction == 0         ; Controls
-                            iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls3"))
+                            iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_controls3"))
                             if iAction == 0
-                                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls4"))
+                                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_controls4"))
                                 if iAction == 0
-                                    iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls5"))
+                                    iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_controls5"))
                                     if iAction == 0
-                                        iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_controls6"))
+                                        iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_controls6"))
                                         if iAction == 0
                                             debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_controls7"))
                                         endIf
@@ -45,28 +46,25 @@ function showHelpMenuMain()
                 endIf
 
             elseif iAction == 1     ; Adding Items
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_addingItems1"))
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_addingItems1"))
                 if iAction == 0
                     debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_addingItems2"))
                 endIf
             
             elseif iAction == 2     ; Ammo Mode
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_AmmoMode1"))
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_AmmoMode1"))
                 if iAction == 0
                     debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_AmmoMode2"))
                 endIf
             
             elseif iAction == 3     ; Recharging
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_recharging1"))
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_recharging1"))
                 if iAction == 0
                     debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_recharging2"))
                 endIf
             
             elseif iAction == 4     ; Using Poisons
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_poisoning1"))
-                if iAction == 0
-                    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_poisoning2"))
-                endIf
+                bShowAgain = showHelpMenuPoisons()
             
             elseif iAction == 5     ; Potion Groups
                 debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_potionGroups"))
@@ -80,21 +78,55 @@ function showHelpMenuMain()
     endWhile
 endFunction
 
-bool function showHelpMenuProMode() ; Return false to exit
+bool function showHelpMenuPoisons() ; Return false to exit
     bool bShowAgain = true
     bool bShowAgainMain = true
     
     while bShowAgain
         int iAction = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_help_title"))
         
+        if iAction  != 3            ; Exit
+            
+            if iAction == 0         ; Back
+                bShowAgain = false
+            
+            elseif iAction == 1     ; Applying Poisons
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_poisoning1"))
+                if iAction == 0
+                    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_poisoning2"))
+                endIf
+            
+            elseif iAction == 2     ; Throwing Poisons
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_throwingPoisons1"))
+                if iAction == 0
+                    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_throwingPoisons2"))
+                endIf
+            
+            endIf
+        else
+            bShowAgain = false
+            bShowAgainMain = false
+        endIf
+    endWhile
+    
+    return bShowAgainMain
+endFunction
+
+bool function showHelpMenuProMode() ; Return false to exit
+    bool bShowAgain = true
+    bool bShowAgainMain = true
+    
+    while bShowAgain
+        int iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_title"))
+        
         if iAction  != 6            ; Exit
             
             if iAction == 0         ; Back
                 bShowAgain = false
             elseif iAction == 1     ; Preselect
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_preselect1"))
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_preselect1"))
                 if iAction == 0
-                    iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_preselect2"))
+                    iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_preselect2"))
                     if iAction == 0
                         debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_preselect3"))
                     endIf
@@ -104,16 +136,16 @@ bool function showHelpMenuProMode() ; Return false to exit
                 debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickranged"))
             
             elseif iAction == 3     ; QuickShield
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_quickshield1"))
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_quickshield1"))
                 if iAction == 0
-                    iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_quickshield2"))
+                    iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_quickshield2"))
                     if iAction == 0
                         debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickshield3"))
                     endIf
                 endIf
             
             elseif iAction == 4     ; QuickRestore
-                iAction = showTranslatedMessage(2, iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore1"))
+                iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore1"))
                 if iAction == 0
                     debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore2"))
                     if iAction == 0
@@ -146,6 +178,8 @@ int function showTranslatedMessage(int theMenu, string theString)
     if theMenu == 0
         iButton = iEquip_HelpMenuMain.Show()
     elseIf theMenu == 1
+        iButton = iEquip_HelpMenuPoisons.Show()
+    elseIf theMenu == 2
         iButton = iEquip_HelpMenuProMode.Show()
     else
         iButton = iEquip_MessageNextPageExit.Show()
