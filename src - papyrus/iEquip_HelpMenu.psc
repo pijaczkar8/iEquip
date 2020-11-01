@@ -99,7 +99,10 @@ bool function showHelpMenuPoisons() ; Return false to exit
             elseif iAction == 2     ; Throwing Poisons
                 iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_throwingPoisons1"))
                 if iAction == 0
-                    debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_throwingPoisons2"))
+                    iAction = showTranslatedMessage(3, iEquip_StringExt.LocalizeString("$iEquip_help_throwingPoisons2"))
+                    if iAction == 0
+                        debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_throwingPoisons3"))
+                    endIf
                 endIf
             
             endIf

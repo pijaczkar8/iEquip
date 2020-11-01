@@ -62,6 +62,7 @@ int function saveData()             ; Save page data and return jObject
 	
 	jArray.addInt(jPageObj, WC.iPoisonIndicatorStyle)
 
+    jArray.addInt(jPageObj, TP.bThrowingPoisonsEnabled as int)
     jArray.addInt(jPageObj, TP.iThrowingPoisonBehavior)
     jArray.addInt(jPageObj, KH.iThrowingPoisonsKey)
     jArray.addInt(jPageObj, TP.iThrowingPoisonHand)
@@ -87,14 +88,15 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	
 	WC.iPoisonIndicatorStyle = jArray.getInt(jPageObj, 6)
 
-    TP.iThrowingPoisonBehavior = jArray.getInt(jPageObj, 7, 1)
-    KH.iThrowingPoisonsKey = jArray.getInt(jPageObj, 8, -1)
-    TP.iThrowingPoisonHand = jArray.getInt(jPageObj, 9, 1)
-    TP.fThrowingPoisonEffectsMagMult = jArray.getFlt(jPageObj, 10, 0.6)
-    TP.fPoisonHazardRadius = jArray.getFlt(jPageObj, 11, 6.0)
-    TP.fPoisonHazardDuration = jArray.getFlt(jPageObj, 12, 5.0)
-    TP.iNumPoisonHazards = jArray.getInt(jPageObj, 13, 5)
-    TP.fThrowingPoisonProjectileGravity = jArray.getFlt(jPageObj, 14, 1.2)
+    TP.bThrowingPoisonsEnabled = jArray.getInt(jPageObj, 7, 0)
+    TP.iThrowingPoisonBehavior = jArray.getInt(jPageObj, 8, 1)
+    KH.iThrowingPoisonsKey = jArray.getInt(jPageObj, 9, -1)
+    TP.iThrowingPoisonHand = jArray.getInt(jPageObj, 10, 1)
+    TP.fThrowingPoisonEffectsMagMult = jArray.getFlt(jPageObj, 11, 0.6)
+    TP.fPoisonHazardRadius = jArray.getFlt(jPageObj, 12, 6.0)
+    TP.fPoisonHazardDuration = jArray.getFlt(jPageObj, 13, 5.0)
+    TP.iNumPoisonHazards = jArray.getInt(jPageObj, 14, 5)
+    TP.fThrowingPoisonProjectileGravity = jArray.getFlt(jPageObj, 15, 1.2)
 
 endFunction
 
@@ -297,7 +299,9 @@ State poi_txt_showThrowingPoisonHelp
     event OnBeginState()
         if currentEvent == "Select"
             if MCM.ShowMessage("$iEquip_help_throwingPoisons1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                MCM.ShowMessage("$iEquip_help_throwingPoisons2", false, "$iEquip_common_msg_Exit")
+                if MCM.ShowMessage("$iEquip_help_throwingPoisons2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                    MCM.ShowMessage("$iEquip_help_throwingPoisons3", false, "$iEquip_common_msg_Exit")
+                endIf
             endIf
         endIf 
     endEvent
@@ -352,6 +356,7 @@ State poi_txt_throwingPoisonsHand
         elseIf currentEvent == "Select"
             TP.iThrowingPoisonHand = (TP.iThrowingPoisonHand + 1) % 2
             MCM.SetTextOptionValueST(throwingPoisonHands[TP.iThrowingPoisonHand])
+            WC.bThrowingPoisonsHandChanged = true
         endIf 
     endEvent
 endState

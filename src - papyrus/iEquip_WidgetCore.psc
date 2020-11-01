@@ -259,8 +259,7 @@ Form boots
 float property fEquipOnPauseDelay = 1.6 auto hidden
 
 bool property bPotionGrouping = true auto hidden
-int property iPotionSelectorChoice = 2 auto hidden
-float property fSmartConsumeThreshold = 0.8 auto hidden
+int property iPotionSelectorChoice auto hidden
 float property fPotionSelectorFadeoutDelay = 3.0 auto hidden
 
 bool property bPreselectMode auto hidden
@@ -373,6 +372,7 @@ int property iPoisonIndicatorStyle = 1 auto hidden
 bool property bPoisonIndicatorStyleChanged auto hidden
 bool property bBeastModeOptionsChanged auto hidden
 bool property bThrowingPoisonsDisabled auto hidden
+bool property bThrowingPoisonsHandChanged auto hidden
 
 int property iPosInd = 1 auto hidden
 int property iPositionIndicatorColor = 0xFFFFFF auto hidden
@@ -2777,6 +2777,10 @@ bool bShoutSlotWasVisible
 function onPlayerMount()
 	bWasSimpleAmmoMode = AM.bSimpleAmmoMode
 
+	if TP.bPoisonEquipped && TP.iThrowingPoisonHand == 0
+		TP.OnThrowingPoisonUnequipped(true)
+	endIf
+
 	if bFadeLeftIcon && !bLeftIconFaded && !bAmmoMode
 		fadeLeftIcon(true)						; Fade out
 	endIf
@@ -4479,24 +4483,28 @@ function consumeItem()
     if bConsumablesEnabled
         int potionGroupIndex = asPotionGroups.find(jMap.getStr(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipName"))
         if potionGroupIndex != -1
-        	bool statDamaged = Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])) > 0
-        	;debug.trace("iEquip_WidgetCore consumeItem - stat: " + asActorValues[potionGroupIndex] + ", current damage: " + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])) + ", statDamaged: " + statDamaged + ", potion selector shown: " + bPotionSelectorShown)
-        	;debug.trace("iEquip_WidgetCore consumeItem - iPotionSelectorChoice: " + iPotionSelectorChoice + ", current stat %: " + (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) + ", threshold: " + fSmartConsumeThreshold)
+        	
         	; If the potion selector is currently shown then select and consume a potion of the selected type
         	if bPotionSelectorShown
         		PO.selectAndConsumePotion(potionGroupIndex, iPotionTypeChoice)
         		PSUpdate.registerForPotionSelectorFadeUpdate(fPotionSelectorFadeoutDelay)
         	; If the selector isn't currently shown and conditions to show selector are met then show it now
-        	elseIf iPotionSelectorChoice > 0 || !statDamaged
-        		; If we have selected Consume & Show and the stat has any damage, or Smart Consume & Show and the stat is below the threshold then consume a suitable restore potion before showing the selector
-        		if (iPotionSelectorChoice == 1 && statDamaged) || (iPotionSelectorChoice == 2 && (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) / (PlayerRef.GetActorValue(asActorValues[potionGroupIndex]) + Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex])))) < fSmartConsumeThreshold)
-        			PO.selectAndConsumePotion(potionGroupIndex, 0)
-				endIf
-				updatePotionSelector()
-        	; Or if we have selected COnsume Or Show and the stat is damaged carry on and select and consume a restore potion without showing the selector
         	else
-            	PO.selectAndConsumePotion(potionGroupIndex, 0)
-            endIf
+        		float currAV = PlayerRef.GetActorValue(asActorValues[potionGroupIndex])
+	        	bool belowThreshold = (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) < PO.fConsRestoreThreshold
+	        	;debug.trace("iEquip_WidgetCore consumeItem - stat: " + asActorValues[potionGroupIndex] + ", current damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]) + ", belowThreshold: " + belowThreshold + ", potion selector shown: " + bPotionSelectorShown)
+	        	;debug.trace("iEquip_WidgetCore consumeItem - iPotionSelectorChoice: " + iPotionSelectorChoice + ", current stat %: " + (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroupIndex]))) + ", threshold: " + fSmartConsumeThreshold)
+        		if iPotionSelectorChoice > 0 || !belowThreshold
+	        		; If we have selected Consume & Show and the stat has any damage, or Smart Consume & Show and the stat is below the threshold then consume a suitable restore potion before showing the selector
+	        		if iPotionSelectorChoice == 1 && belowThreshold
+	        			PO.selectAndConsumePotion(potionGroupIndex, 0)
+					endIf
+					updatePotionSelector()
+	        	; Or if we have selected Consume Or Show and the stat is damaged carry on and select and consume a restore potion without showing the selector
+	        	else
+	            	PO.selectAndConsumePotion(potionGroupIndex, 0)
+	            endIf
+	        endIf
         else
             form itemForm = jMap.getForm(jArray.getObj(aiTargetQ[3], aiCurrentQueuePosition[3]), "iEquipForm")
             if itemForm
@@ -5976,6 +5984,10 @@ function ApplyChanges()
 		endIf
 		if bThrowingPoisonsDisabled
 			TP.GoToState("DISABLED")
+		elseIf bThrowingPoisonsHandChanged && TP.bPoisonEquipped
+			if !PlayerRef.GetEquippedObject(TP.iThrowingPoisonHand) || PlayerRef.GetEquippedObject(TP.iThrowingPoisonHand) != TP.iEquip_ThrowingPoisonWeapon as form
+				TP.switchHands()
+			endIf
 		endIf
 		if bPoisonIndicatorStyleChanged
 			i = 0
@@ -6058,6 +6070,7 @@ function ApplyChanges()
 	bAttributeIconsOptionChanged = false
 	bPoisonIndicatorStyleChanged = false
 	bThrowingPoisonsDisabled = false
+	bThrowingPoisonsHandChanged = false
 	CM.bSettingsChanged = false
 	bTemperDisplaySettingChanged = false
 	bPotionGroupingOptionsChanged = false
@@ -6073,6 +6086,7 @@ bool property bHardLimitQueueSize = true auto hidden
 bool property bHardLimitEnabledPending auto hidden
 bool property bProModeEnabled auto hidden
 bool property bFadeLeftIconWhen2HEquipped auto hidden
+float property fSmartConsumeThreshold = 0.8 auto hidden
 
 function reduceMaxQueueLength()
 	;/;debug.trace("iEquip_WidgetCore reduceMaxQueueLength start")

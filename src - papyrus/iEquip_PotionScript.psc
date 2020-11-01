@@ -78,6 +78,7 @@ string[] asActorValues
 int[] aiActorValues
 
 int property iPotionSelectChoice = 1 auto hidden ; 0 = Always use strongest, 1 = Smart Select, 2 = Always Use Weakest
+float property fConsRestoreThreshold = 0.7 auto hidden
 float property fSmartSelectThreshold = 0.4 auto hidden
 int property iQuickBuffsToApply = 3 auto hidden
 
@@ -119,7 +120,7 @@ bool property bBlockIfBuffEffectActive = true auto hidden
 bool property bShowConsumedNotifications = true auto hidden
 bool property bShowNoPotionsNotifications = true auto hidden
 bool property bShowEffectActiveNotifications = true auto hidden
-bool property bShowStatFullNotifications = true auto hidden
+bool property bShowStatFullNotifications auto hidden
 
 bool bInitialised
 
@@ -1206,7 +1207,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
     
     string sTargetAV = asActorValues[potionGroup]
     int iTargetAV = aiActorValues[potionGroup]
-    float currAVDamage = Math.abs(iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV))
+    float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, iTargetAV)
     int Q = (potionGroup * 3) + potionType
     bool isRestore = (Q == 0 || Q == 3 || Q == 6)
     
@@ -1291,7 +1292,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                 bQueueSortedBy3sStrength = false
             endIf
         elseIf bShowNoPotionsNotifications
-            debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+sTargetAV+"}"))
+            debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+asEffectNames[Q]+"}"))
         endIf
     endIf
     ;debug.trace("iEquip_PotionScript selectAndConsumePotion end")

@@ -437,7 +437,7 @@ function unequipPoison()
 	;debug.trace("iEquip_ThrowingPoisons unequipPoison end")
 endFunction
 
-function OnThrowingPoisonUnequipped(bool onWeaponsSheathed = false)					; Only ever called from PlayerEventHandler OnObjectUnequipped if it has been unequipped manually by the player
+function OnThrowingPoisonUnequipped(bool onWeaponsSheathed = false)					; Only ever called from PlayerEventHandler OnObjectUnequipped if it has been unequipped manually by the player, or OnPlayerMount if the player currently has a Throwing Poison equipped in the left hand
 	;debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonUnequipped start")
 	PlayerRef.RemoveItem(iEquip_ThrowingPoisonWeapon, 1, true)
 	if onWeaponsSheathed
@@ -483,16 +483,19 @@ endFunction
 
 function saveCurrentItemsForSwitchBack()
 	;debug.trace("iEquip_ThrowingPoisons saveCurrentItemsForSwitchBack start")
+	int targetObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0])
 	
 	fPreviousLeftHandForm = PlayerRef.GetEquippedObject(0)
-	if fPreviousLeftHandForm && (fPreviousLeftHandForm == jMap.getForm(jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentQueuePosition[0]), "iEquipForm"))
+	if fPreviousLeftHandForm && (fPreviousLeftHandForm == jMap.getForm(targetObject, "iEquipForm") && jMap.getInt(targetObject, "iEquipTempItem") == 0)
 		iPreviousLeftHandIndex = WC.aiCurrentQueuePosition[0]
 	else
 		iPreviousLeftHandIndex = -1
 	endIf
 
+	targetObject = jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1])
+
 	fPreviousRightHandForm = PlayerRef.GetEquippedObject(1)
-	if fPreviousRightHandForm && (fPreviousRightHandForm == jMap.getForm(jArray.getObj(WC.aiTargetQ[1], WC.aiCurrentQueuePosition[1]), "iEquipForm"))
+	if fPreviousRightHandForm && (fPreviousRightHandForm == jMap.getForm(targetObject, "iEquipForm") && jMap.getInt(targetObject, "iEquipTempItem") == 0)
 		iPreviousRightHandIndex = WC.aiCurrentQueuePosition[1]
 	else
 		iPreviousRightHandIndex = -1
@@ -513,29 +516,33 @@ function saveCurrentItemsForSwitchBack()
 endFunction
 
 
-function switchBack(bool unequip = true)
+function switchBack(bool unequip = true, bool switchingHands = false)
 	;debug.trace("iEquip_ThrowingPoisons switchBack start")
 	if unequip
 		unequipPoison()
 	endIf
 
-	if iPreviousLeftHandIndex != -1
-		WC.aiCurrentQueuePosition[0] = iPreviousLeftHandIndex
-		WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], iPreviousLeftHandIndex), "iEquipName")
-	endIf
-
-	if iPreviousRightHandIndex != -1
-		WC.aiCurrentQueuePosition[1] = iPreviousRightHandIndex
-		WC.asCurrentlyEquipped[1] = jMap.getStr(jArray.getObj(WC.aiTargetQ[1], iPreviousRightHandIndex), "iEquipName")
-	endIf
-	
 	int Q = targetHand
+
+	if switchingHands
+		Q = (Q + 1) % 2
+	endIf
 	
 	if bPreviously2H
 		Q = 2
 	endIf
+
+	if Q != 1 && iPreviousLeftHandIndex != -1
+		WC.aiCurrentQueuePosition[0] = iPreviousLeftHandIndex
+		WC.asCurrentlyEquipped[0] = jMap.getStr(jArray.getObj(WC.aiTargetQ[0], iPreviousLeftHandIndex), "iEquipName")
+	endIf
+
+	if Q > 0 && iPreviousRightHandIndex != -1
+		WC.aiCurrentQueuePosition[1] = iPreviousRightHandIndex
+		WC.asCurrentlyEquipped[1] = jMap.getStr(jArray.getObj(WC.aiTargetQ[1], iPreviousRightHandIndex), "iEquipName")
+	endIf
 	
-	if bPreviouslyUnarmed
+	if bPreviouslyUnarmed && !switchingHands
 		if iPreviousRightHandIndex != -1 && WC.asCurrentlyEquipped[1] == "$iEquip_common_Unarmed"
 			WC.updateWidget(1, WC.aiCurrentQueuePosition[1], true)
 		endIf
@@ -553,7 +560,10 @@ function switchBack(bool unequip = true)
 			endIf
 
 			if previousItemForm == none
-				WC.UnequipHand(Q)
+				if !unequip
+					WC.UnequipHand(Q)
+				endIf
+				WC.setSlotToEmpty(Q, false, jArray.count(WC.aiTargetQ[Q]) > 0)
 			elseIf previousItemForm as spell
 				PlayerRef.EquipSpell(previousItemForm as Spell, aiHandEquipSlots.Find(Q))
 			else
@@ -586,6 +596,28 @@ function switchBack(bool unequip = true)
 	;debug.trace("iEquip_ThrowingPoisons switchBack end")
 endFunction
 
+function switchHands()
+	;debug.trace("iEquip_ThrowingPoisons switchHands start")
+	if !(WC.bPlayerIsMounted && iThrowingPoisonHand == 0)
+
+		targetHand = iThrowingPoisonHand
+		int prevHand = (iThrowingPoisonHand + 1) % 2
+
+		bJustUnequippedThrowingPoison = true
+		PlayerRef.UnequipItemEx(iEquip_ThrowingPoisonWeapon)
+		PlayerRef.EquipItemEx(iEquip_ThrowingPoisonWeapon, aiHandEquipSlots[iThrowingPoisonHand])
+		updateWidget()
+		
+		if bPreviously2H
+			WC.setSlotToEmpty(prevHand, false, jArray.count(WC.aiTargetQ[prevHand]) > 0)
+		else
+			switchBack(false, true)
+		endIf
+	else
+		switchBack(true, true)
+	endIf
+	;debug.trace("iEquip_ThrowingPoisons switchHands end")
+endFunction
 
 auto state DISABLED
 	

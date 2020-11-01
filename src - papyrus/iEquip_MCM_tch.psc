@@ -17,9 +17,9 @@ int mcmUnmapFLAG
 function initData()                  ; Initialize page specific data
 
 	meterFillDirectionOptions = new string[3]
-    meterFillDirectionOptions[0] = "$iEquip_MCM_rep_opt_left"
-    meterFillDirectionOptions[1] = "$iEquip_MCM_rep_opt_right"
-    meterFillDirectionOptions[2] = "$iEquip_MCM_rep_opt_both"
+    meterFillDirectionOptions[0] = "$iEquip_MCM_rec_opt_left"
+    meterFillDirectionOptions[1] = "$iEquip_MCM_rec_opt_right"
+    meterFillDirectionOptions[2] = "$iEquip_MCM_rec_opt_both"
 
     rawMeterFillDirectionOptions = new string[3] ;DO NOT TRANSLATE!
     rawMeterFillDirectionOptions[0] = "left"
