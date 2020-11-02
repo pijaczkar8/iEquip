@@ -3,6 +3,7 @@ Scriptname iEquip_ThrowingPoisons extends Quest
 
 import UI
 import iEquip_StringExt
+import iEquip_InventoryExt
 import PO3_SKSEFunctions
 
 iEquip_WidgetCore property WC auto
@@ -345,6 +346,8 @@ function equipPoison()
 			
 			PlayerRef.EquipItemEx(iEquip_ThrowingPoisonWeapon, aiHandEquipSlots[targetHand])
 		endIf
+
+		SetPoison(iEquip_ThrowingPoisonWeapon as form, GetRefHandleFromWornObject(iThrowingPoisonHand), currentPoison, 1) 	; Poison the dummy weapon so the player can't apply and waste through the inventory menu
 
 		updateWidget()															; Hide all additional widget elements and copy the poison icon and name currently displayed in the poison slot to the equipped hand
 

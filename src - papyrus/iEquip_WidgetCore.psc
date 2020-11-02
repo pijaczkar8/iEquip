@@ -4551,7 +4551,7 @@ endFunction
 
 function applyPoison(int Q)
 	;debug.trace("iEquip_WidgetCore applyPoison start")
-    if bPoisonsEnabled
+    if bPoisonsEnabled && !(TP.bPoisonEquipped && TP.iThrowingPoisonHand == Q)
         int targetObject = jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4])
         Potion poisonToApply = jMap.getForm(targetObject, "iEquipForm") as Potion
         if !poisonToApply
@@ -4705,9 +4705,10 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 	int iHandle
 	int[] args
 
-	if !forceHide
+	if !forceHide && !(TP.bPoisonEquipped && TP.iThrowingPoisonHand == Q)
 		int targetObject = jArray.getObj(aiTargetQ[Q], aiCurrentQueuePosition[Q])
 		itemType = jMap.getInt(targetObject, "iEquipType")
+
 		form equippedItem = PlayerRef.GetEquippedObject(Q)
 
 		if !equippedItem && !bGoneUnarmed && !(Q == 0 && (b2HSpellEquipped || itemType == 26))
@@ -5106,7 +5107,7 @@ function addToQueue(int Q)
 	;debug.trace("iEquip_WidgetCore addToQueue end")
 endFunction
 
-bool function isItemValidForSlot(int Q, form itemForm, int itemType, string itemName)
+bool function isItemValidForSlot(int Q, form itemForm, int itemType, string itemName, bool bSilent = false)
 	;debug.trace("iEquip_WidgetCore isItemValidForSlot start - slot: " + Q + ", itemType: " + itemType)
 	bool isValid
 	bool isShout
@@ -5127,7 +5128,7 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
     	if itemType == 41 || (itemType == 22 && !isShout) || itemType == 23 || (itemType == 26 && itemName == "Rocket Launcher") ;Any weapon, Spell, Scroll, oh and the Rocket Launcher from Junks Guns because Kojak...
     		isValid = true
     	elseif itemType == 42 ;Ammo - looking for throwing weapons here, and these can only be equipped in the right hand
-        	if iEquip_FormExt.IsJavelin(itemForm) || iEquip_FormExt.IsSpear(itemForm) || iEquip_FormExt.IsGrenade(itemForm) || iEquip_FormExt.IsThrowingKnife(itemForm) || iEquip_FormExt.IsThrowingAxe(itemForm)
+        	if !bSilent && (iEquip_FormExt.IsJavelin(itemForm) || iEquip_FormExt.IsSpear(itemForm) || iEquip_FormExt.IsGrenade(itemForm) || iEquip_FormExt.IsThrowingKnife(itemForm) || iEquip_FormExt.IsThrowingAxe(itemForm))
 				int iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_throwingWeapons{" + itemName + "}{" + itemName + "}{" + asQueueName[Q] + "}"))
 				if iButton == 0
         			isValid = true

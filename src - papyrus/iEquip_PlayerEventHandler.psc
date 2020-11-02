@@ -1160,7 +1160,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		bool actionTaken
 		string itemName = akBaseItem.GetName()
 		while i < 3 && !actionTaken
-			if WC.isItemValidForSlot(i, akBaseItem, itemType, itemName)
+			if WC.isItemValidForSlot(i, akBaseItem, itemType, itemName, true)
 				foundAt = WC.findInQueue(i, itemName, akBaseItem)
 				if foundAt != -1
 					if i == 2 												; If it's a shout or power remove it straight away
