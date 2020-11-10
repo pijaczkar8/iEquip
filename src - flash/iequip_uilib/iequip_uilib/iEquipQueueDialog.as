@@ -26,6 +26,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	private var moveDownControls_: Object;
 	private var removeControls_: Object;
 	private var clearControls_: Object;
+	private var clearFlagControls_: Object;
 	private var toggleListControls_: Object;
 	private var exitControls_: Object;
 	
@@ -33,6 +34,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	private var moveDownKey_: Number = -1;
 	private var removeKey_: Number = -1;
 	private var clearKey_: Number = -1;
+	private var clearFlagKey_: Number = -1;
 	private var toggleListKey_: Number = -1;
 	private var exitKey_: Number = -1;
 
@@ -47,10 +49,12 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	public var menuList: ScrollingList;
 	public var titleTextField: TextField;
 	public var ammoSortTextField: TextField;
+	public var flagKeyTextField: TextField;
 	public var moveUpButtonPanel: ButtonPanel;
 	public var moveDownButtonPanel: ButtonPanel;
 	public var removeButtonPanel: ButtonPanel;
 	public var clearButtonPanel: ButtonPanel;
+	public var clearFlagButtonPanel: ButtonPanel;
 	public var toggleListButtonPanel: ButtonPanel;
 	public var exitButtonPanel: ButtonPanel;
 	
@@ -91,6 +95,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		titleText_Y = titleTextField._y;
 
 		ammoSortTextField.text = "";
+		flagKeyTextField._visible = false;
 		
 		// SKSE functions not yet available and there's no InitExtensions...
 		// This should do the trick.
@@ -110,6 +115,8 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 				onRemovePress();
 			} else if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_Y || details.skseKeycode == 20) {
 				onClearPress();
+			} else if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_A || details.skseKeycode == 33) {
+				onClearFlagPress();
 			} else if (details.navEquivalent == gfx.ui.NavigationCode.GAMEPAD_R1 || details.skseKeycode == 48) {
 				onToggleListPress();
 			} else if (details.navEquivalent == NavigationCode.TAB) {
@@ -149,6 +156,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 			moveDownControls_ = {keyCode: 38}; //L
 			removeControls_ = {keyCode: 19}; //R
 			clearControls_ = {keyCode: 20}; //T
+			clearFlagControls_ = {keyCode: 33}; //F
 			toggleListControls_ = {keyCode: 48}; //B
 			exitControls_ = {keyCode: 15}; //Tab
 		} else {
@@ -156,6 +164,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 			moveDownControls_ = {keyCode: 280}; //Gamepad LT
 			removeControls_ = {keyCode: 278}; //Gamepad X
 			clearControls_ = {keyCode: 279}; //Gamepad Y
+			clearFlagControls_ = {keyCode: 276}; //Gamepad A
 			toggleListControls_ = {keyCode: 275}; //Gamepad Right Shoulder
 			exitControls_ = {keyCode: 277}; //Gamepad B
 		}
@@ -168,6 +177,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		moveDownButtonPanel.clearButtons();
 		removeButtonPanel.clearButtons();
 		clearButtonPanel.clearButtons();
+		clearFlagButtonPanel.clearButtons();
 		toggleListButtonPanel.clearButtons();
 		exitButtonPanel.clearButtons();
 		
@@ -177,6 +187,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 			
 			moveUpButtonPanel._visible = false;
 			moveDownButtonPanel._visible = false;
+			clearFlagButtonPanel._visible = false;
 			removeButtonPanel._y = moveUpButtonPanel._y;
 			clearButtonPanel._y = moveDownButtonPanel._y;
 			remStr = "$iEquip_btn_removeFromList";
@@ -187,6 +198,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 			
 			moveUpButtonPanel._visible = true;
 			moveDownButtonPanel._visible = true;
+			clearFlagButtonPanel._visible = true;
 			removeButtonPanel._y = removeControls_Y;
 			clearButtonPanel._y = clearControls_Y;
 
@@ -197,6 +209,10 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 			var moveDownButton = moveDownButtonPanel.addButton({text: "$iEquip_btn_moveDown", controls: moveDownControls_});
 			moveDownButton.addEventListener("press", this, "onMoveDownPress");
 			moveDownButtonPanel.updateButtons();
+
+			var clearFlagButton = clearFlagButtonPanel.addButton({text: "$iEquip_btn_clearFlag", controls: clearFlagControls_});
+			clearFlagButton.addEventListener("press", this, "onClearFlagPress");
+			clearFlagButtonPanel.updateButtons();
 			
 			remStr = "$iEquip_btn_removeFromQueue";
 			clrStr = "$iEquip_btn_clearQueue";
@@ -254,6 +270,19 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 	{
 		skse.SendModEvent("iEquip_queueMenuClear", null);
 		skse.CloseMenu("CustomMenu");
+	}
+
+	private function onClearFlagPress(): Void
+	{
+		var a_index = getActiveMenuIndex();
+		var str = menuList.entryList[a_index].text
+		var newStr:String;
+		if (str.charAt(0) == "(" && str.charAt(2) == ")"){
+			newStr = str.substring(4);
+			menuList.entryList[a_index].text = newStr;
+		}
+		redrawList(a_index)
+		skse.SendModEvent("iEquip_queueMenuClearFlag", null, a_index);
 	}
 
 	private function onToggleListPress(): Void
@@ -329,6 +358,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		moveDownKey_ = GlobalFunctions.getMappedKey("Left Attack/Block", Input.CONTEXT_GAMEPLAY, isGamepad);
 		removeKey_ = GlobalFunctions.getMappedKey("Ready Weapon", Input.CONTEXT_GAMEPLAY, isGamepad);
 		clearKey_ = GlobalFunctions.getMappedKey("Jump", Input.CONTEXT_GAMEPLAY, isGamepad);
+		clearFlagKey_ = GlobalFunctions.getMappedKey("Activate", Input.CONTEXT_GAMEPLAY, isGamepad);
 		toggleListControls_ = {keyCode: 275}; //Gamepad Right Shoulder
 		exitKey_ = GlobalFunctions.getMappedKey("Tween Menu", Input.CONTEXT_GAMEPLAY, isGamepad);
 		
@@ -336,6 +366,7 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		moveDownButtonPanel.setPlatform(platform, false);
 		removeButtonPanel.setPlatform(platform, false);
 		clearButtonPanel.setPlatform(platform, false);
+		clearFlagButtonPanel.setPlatform(platform, false);
 		toggleListButtonPanel.setPlatform(platform, false);
 		exitButtonPanel.setPlatform(platform, false);
 		setupButtons(platform);
@@ -418,6 +449,10 @@ class iEquip_uilib.iEquipQueueDialog extends MovieClip
 		// Ammo Sorting Text
 		if (ammoSortingText != undefined && ammoSortingText != "") {
 			ammoSortTextField.text = ammoSortingText;
+		}
+
+		if (!bIsAmmoList && !bIsBlacklist){
+			flagKeyTextField._visible = true;
 		}
 		
 		// Store default index

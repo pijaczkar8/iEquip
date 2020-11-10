@@ -373,6 +373,7 @@ Function QueueMenu_Open(Form akClient) Global
 	akClient.RegisterForModEvent("iEquip_queueMenuMoveDown", "OnQueueMenuMoveDown")
 	akClient.RegisterForModEvent("iEquip_queueMenuRemove", "OnQueueMenuRemove")
 	akClient.RegisterForModEvent("iEquip_queueMenuClear", "OnQueueMenuClear")
+	akClient.RegisterForModEvent("iEquip_queueMenuClearFlag", "OnQueueMenuClearFlag")
 	akClient.RegisterForModEvent("iEquip_queueMenuToggleList", "OnQueueMenuToggleList")
 	akClient.RegisterForModEvent("iEquip_queueMenuExit", "OnQueueMenuExit")
 	UI.OpenCustomMenu("iEquip_uilib/iEquip_UILIB_queuemenu")
@@ -455,6 +456,7 @@ Function QueueMenu_Release(Form akClient) Global
 	akClient.UnregisterForModEvent("iEquip_queueMenuMoveDown")
 	akClient.UnregisterForModEvent("iEquip_queueMenuRemove")
 	akClient.UnregisterForModEvent("iEquip_queueMenuClear")
+	akClient.UnregisterForModEvent("iEquip_queueMenuClearFlag")
 	akClient.UnregisterForModEvent("iEquip_queueMenuToggleList")
 	akClient.UnregisterForModEvent("iEquip_queueMenuExit")
 	;debug.trace("iEquip_UILIB QueueMenu_Release end")
@@ -482,6 +484,14 @@ Event OnQueueMenuRemove(String asEventName, String asStringArg, Float afNumArg, 
 		WC.QueueMenuRemoveFromQueue(afNumArg as int)
 	EndIf
 	;debug.trace("iEquip_UILIB OnQueueMenuRemove end")
+EndEvent
+
+Event OnQueueMenuClearFlag(String asEventName, String asStringArg, Float afNumArg, Form akSender)
+	;debug.trace("iEquip_UILIB OnQueueMenuClearFlag start - asStringArg: " + asStringArg)
+	If(asEventName == "iEquip_queueMenuClearFlag")
+		WC.QueueMenuClearFlag(afNumArg as int)
+	EndIf
+	;debug.trace("iEquip_UILIB OnQueueMenuClearFlag end")
 EndEvent
 
 Event OnQueueMenuClear(String asEventName, String asStringArg, Float afNumArg, Form akSender)

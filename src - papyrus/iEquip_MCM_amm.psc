@@ -154,7 +154,7 @@ endFunction
 
 function drawPage()
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_amm_lbl_AmmoMode</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_amm_lbl_AmmoMode</font>")
     if WC.bPlayerIsMounted
         MCM.AddTextOptionST("amm_txt_AmmoModeChoice", "$iEquip_MCM_amm_lbl_AmmoModeChoice", ammoModeOptions[WC.bWasSimpleAmmoMode as int])
     else
@@ -176,11 +176,11 @@ function drawPage()
 				
 	MCM.SetCursorPosition(1)
 			
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_amm_lbl_quickRangedOpts</font>")
-	MCM.AddTextOptionST("amm_txt_whatQuickranged", "<font color='#a6bffe'>$iEquip_MCM_amm_lbl_whatQuickranged</font>", "")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_amm_lbl_quickRangedOpts</font>")
+	MCM.AddTextOptionST("amm_txt_whatQuickranged", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_amm_lbl_whatQuickranged</font>", "")
 
 	if PM.bQuickRangedEnabled
-		MCM.AddToggleOptionST("amm_tgl_enblQuickranged", "<font color='#c7ea46'>$iEquip_MCM_amm_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
+		MCM.AddToggleOptionST("amm_tgl_enblQuickranged", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_amm_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
 		MCM.AddMenuOptionST("amm_men_prefWepTyp", "$iEquip_MCM_amm_lbl_prefWepTyp", QRPreferredWeaponType[PM.iQuickRangedPreferredWeaponType])
 		MCM.AddToggleOptionST("amm_tgl_gimmeAnything", "$iEquip_MCM_amm_lbl_gimmeAnything", PM.bQuickRangedGiveMeAnythingGoddamit)
 
@@ -207,7 +207,7 @@ function drawPage()
 	   
 		MCM.AddMenuOptionST("amm_men_inPreselectQuickrangedMode", "$iEquip_MCM_common_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickRanged])
 	else
-		MCM.AddToggleOptionST("amm_tgl_enblQuickranged", "<font color='#ff7417'>$iEquip_MCM_amm_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
+		MCM.AddToggleOptionST("amm_tgl_enblQuickranged", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_amm_lbl_enblQuickranged</font>", PM.bQuickRangedEnabled)
 	endIf
 
 endFunction

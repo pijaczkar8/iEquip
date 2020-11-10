@@ -155,6 +155,9 @@ bool function showHelpMenuProMode() ; Return false to exit
                         debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore3"))
                         if iAction == 0
                             debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore4"))
+                            if iAction == 0
+                                debug.MessageBox(iEquip_StringExt.LocalizeString("$iEquip_help_quickRestore5"))
+                            endIf
                         endIf
                     endIf
                 endIf

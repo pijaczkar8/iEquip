@@ -90,7 +90,7 @@ endFunction
 
 function drawPage()
  
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_cyc_lbl_Cycling</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_cyc_lbl_Cycling</font>")
     MCM.AddToggleOptionST("cyc_tgl_eqpPaus", "$iEquip_MCM_cyc_lbl_eqpPaus", WC.bEquipOnPause)
             
     if WC.bEquipOnPause
@@ -108,16 +108,18 @@ function drawPage()
     endIf
 
     MCM.AddToggleOptionST("cyc_tgl_skipUnarmed", "$iEquip_MCM_cyc_lbl_skipUnarmed", WC.bSkipRHUnarmedInCombat)
-    MCM.AddToggleOptionST("cyc_tgl_skipAutoAddedItems", "$iEquip_MCM_cyc_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
+    if WC.EH.bAutoAddNewItems || WC.EH.bAutoAddShouts || WC.EH.bAutoAddPowers
+        MCM.AddToggleOptionST("cyc_tgl_skipAutoAddedItems", "$iEquip_MCM_cyc_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
+    endIf
 
     MCM.AddEmptyOption()
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
     MCM.AddToggleOptionST("cyc_tgl_showAtrIco", "$iEquip_MCM_cyc_lbl_showAtrIco", WC.bShowAttributeIcons)
     MCM.AddMenuOptionST("cyc_men_showPosInd", "$iEquip_MCM_cyc_lbl_queuePosInd", posIndBehaviour[WC.iPosInd])
 
     if WC.iPosInd > 0
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_cyc_lbl_posIndOpts</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_cyc_lbl_posIndOpts</font>")
         MCM.AddColorOptionST("cyc_col_posIndColor", "$iEquip_MCM_cyc_lbl_posIndColor", WC.iPositionIndicatorColor)
         MCM.AddSliderOptionST("cyc_sld_posIndAlpha", "$iEquip_MCM_cyc_lbl_posIndAlpha", WC.fPositionIndicatorAlpha, "{0}%")
         MCM.AddColorOptionST("cyc_col_currPosIndColor", "$iEquip_MCM_cyc_lbl_currPosIndColor", WC.iCurrPositionIndicatorColor)
@@ -127,17 +129,17 @@ function drawPage()
 
     MCM.SetCursorPosition(1)
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_cyc_lbl_preselectOpts</font>")
-    MCM.AddTextOptionST("cyc_txt_whatPreselect", "<font color='#a6bffe'>$iEquip_MCM_cyc_lbl_whatPreselect</font>", "")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_cyc_lbl_preselectOpts</font>")
+    MCM.AddTextOptionST("cyc_txt_whatPreselect", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_cyc_lbl_whatPreselect</font>", "")
 
     if PM.bPreselectEnabled
-        MCM.AddToggleOptionST("cyc_tgl_enblPreselect", "<font color='#c7ea46'>$iEquip_MCM_cyc_lbl_enblPreselect</font>", PM.bPreselectEnabled)
+        MCM.AddToggleOptionST("cyc_tgl_enblPreselect", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_cyc_lbl_enblPreselect</font>", PM.bPreselectEnabled)
         MCM.AddToggleOptionST("cyc_tgl_enblShoutPreselect", "$iEquip_MCM_cyc_lbl_enblShoutPreselect", PM.bShoutPreselectEnabled)
         MCM.AddToggleOptionST("cyc_tgl_swapPreselectItm", "$iEquip_MCM_cyc_lbl_swapPreselectItm", PM.bPreselectSwapItemsOnEquip)
         MCM.AddToggleOptionST("cyc_tgl_swapPreselectAdv", "$iEquip_MCM_cyc_lbl_swapPreselectAdv", PM.bPreselectSwapItemsOnQuickAction)
         MCM.AddToggleOptionST("cyc_tgl_eqpAllExitPreselectMode", "$iEquip_MCM_cyc_lbl_eqpAllExitPreselectMode", PM.bTogglePreselectOnEquipAll)
     else
-        MCM.AddToggleOptionST("cyc_tgl_enblPreselect", "<font color='#ff7417'>$iEquip_MCM_cyc_lbl_enblPreselect</font>", PM.bPreselectEnabled)
+        MCM.AddToggleOptionST("cyc_tgl_enblPreselect", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_cyc_lbl_enblPreselect</font>", PM.bPreselectEnabled)
     endIf
 
 endFunction

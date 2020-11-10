@@ -38,6 +38,8 @@ bool[] abNeedsSorting
 int[] property aiCurrentAmmoIndex auto hidden
 string[] property asCurrentAmmo auto hidden
 form property currentAmmoForm auto hidden
+form property lastKnownAmmoArrows auto hidden
+form property lastKnownAmmoBolts auto hidden
 
 int property ilastSortType auto hidden
 
@@ -100,13 +102,40 @@ endFunction
 function selectAmmoQueue(int weaponType)
 	;debug.trace("iEquip_AmmoMode selectAmmoQueue start - weaponType: " + weaponType)
 	Q = ((weaponType == 9) as int)
-	;/if iAmmoListSorting == 0 || iAmmoListSorting == 4		; Unsorted or Sorted Alphabetically - may not actually be required?
-		selectLastUsedAmmo(Q)
-	else/;
-	if (iAmmoListSorting == 1 && bAlwaysEquipBestAmmo) || (iAmmoListSorting == 3 && bAlwaysEquipMostAmmo)
+	if iAmmoListSorting == 0 || iAmmoListSorting == 4 && WC.bUnequipAmmo		; If Auto Unequip Ammo is enabled but not Sort By Damage or Quantity we need to make sure we re-equip the last known ammo
+		form lastKnownAmmo
+		if Q == 0
+			lastKnownAmmo = lastKnownAmmoArrows
+		else
+			lastKnownAmmo = lastKnownAmmoBolts
+		endIf
+		aiCurrentAmmoIndex[Q] = findInQueue(lastKnownAmmo)
+	elseIf (iAmmoListSorting == 1 && bAlwaysEquipBestAmmo) || (iAmmoListSorting == 3 && bAlwaysEquipMostAmmo)
 		selectBestAmmo(Q)
 	endIf
 	;debug.trace("iEquip_AmmoMode sortAmmoQueue end")
+endFunction
+
+int function findInQueue(form formToFind)
+	;debug.trace("iEquip_AmmoMode findInQueue start - Q: " + Q + ", formToFind: " + formToFind)
+	int i
+	bool found
+	int targetQ = aiTargetQ[Q]
+	int count = jArray.count(targetQ)
+	int targetObj
+	while i < count && !found
+		targetObj = jArray.getObj(targetQ, i)
+		if formToFind == jMap.getForm(targetObj, "iEquipForm") || formToFind.GetName() == jMap.getStr(targetObj, "iEquipName")
+			found = true
+		else
+			i += 1
+		endIf
+	endwhile
+	if !found
+		i = 0
+	endIf
+	;debug.trace("iEquip_AmmoMode findInQueue end - found: " + found + ", returning index: " + iIndex)
+	return i
 endFunction
 
 int function getCurrentAmmoObject()
@@ -310,7 +339,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 			endIf
 			ammo currentAmmo = currentAmmoForm as Ammo
 			if currentAmmo && PlayerRef.isEquipped(currentAmmo) && WC.bUnequipAmmo
-				PlayerRef.UnequipItemEx(currentAmmo)
+				unequipAmmo(currentAmmo)
 			endIf
 			;Show the left name if previously faded out on timer
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[0] ;Left Name
@@ -618,6 +647,15 @@ function equipAmmo()
 	endIf
 	PlayerRef.EquipItemEx(currentAmmoForm as Ammo)
 	;debug.trace("iEquip_AmmoMode equipAmmo end")
+endFunction
+
+function unequipAmmo(ammo ammoToUnequip)
+	PlayerRef.UnequipItemEx(ammoToUnequip)
+	if ammoToUnequip.IsBolt()
+		lastKnownAmmoBolts = ammoToUnequip
+	else
+		lastKnownAmmoArrows = ammoToUnequip
+	endIf
 endFunction
 
 function onBoundRangedWeaponEquipped(int weaponType)

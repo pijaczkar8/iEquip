@@ -3,6 +3,7 @@ Scriptname iEquip_MCM_pot extends iEquip_MCM_Page
 iEquip_PotionScript Property PO Auto
 iEquip_ProMode Property PM Auto
 
+string[] whenEffectActiveOptions
 string[] emptyPotionQueueOptions
 string[] potionSelectOptions
 string[] showSelectorOptions
@@ -10,11 +11,18 @@ string[] showSelectorOptions
 string[] QHEquipOptions
 string[] QBuffControlOptions
 string[] QBuffOptions
+string[] QResistOptions
 
 ; #############
 ; ### SETUP ###
 
 function initData()
+
+    whenEffectActiveOptions = new string[4]
+    whenEffectActiveOptions[0] = "$iEquip_MCM_pot_opt_allow"
+    whenEffectActiveOptions[1] = "$iEquip_MCM_pot_opt_allowIfStronger"
+    whenEffectActiveOptions[2] = "$iEquip_MCM_pot_opt_onlyInCombat"
+    whenEffectActiveOptions[3] = "$iEquip_MCM_pot_opt_block"
     
     emptyPotionQueueOptions = new String[3]
     emptyPotionQueueOptions[0] = "$iEquip_MCM_pot_opt_fadeIcon"
@@ -43,6 +51,11 @@ function initData()
     QBuffOptions[2] = "$iEquip_MCM_pot_opt_regenOnly"
     QBuffOptions[3] = "$iEquip_MCM_pot_opt_bothBuffs"
 
+    QResistOptions = new string[3]
+    QResistOptions[0] = "$iEquip_MCM_pot_opt_byMag"
+    QResistOptions[1] = "$iEquip_MCM_pot_opt_byDur"
+    QResistOptions[2] = "$iEquip_MCM_pot_opt_byMagxDur"
+
     QBuffControlOptions = new string[3]
     QBuffControlOptions[0] = "$iEquip_MCM_pot_opt_alwaysQB"
     QBuffControlOptions[1] = "$iEquip_MCM_pot_opt_QBOn2ndPress"
@@ -61,9 +74,8 @@ int function saveData()             ; Save page data and return jObject
     jArray.addFlt(jPageObj, PO.fConsRestoreThreshold)
     jArray.addInt(jPageObj, PO.iPotionSelectChoice)
 	jArray.addFlt(jPageObj, PO.fSmartSelectThreshold)
-	jArray.addInt(jPageObj, PO.bBlockIfRestEffectActive as int)
-	jArray.addInt(jPageObj, PO.bSuspendChecksInCombat as int)
-	jArray.addInt(jPageObj, PO.bBlockIfBuffEffectActive as int)
+	jArray.addInt(jPageObj, PO.iActiveEffectRule)
+	jArray.addFlt(jPageObj, PO.fAboveCurrentEffectMag)
 	
 	jArray.addInt(jPageObj, WC.iPotionSelectorChoice)
 	jArray.addFlt(jPageObj, WC.fPotionSelectorFadeoutDelay)
@@ -85,6 +97,13 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, PM.iQuickBuffControl)
     jArray.addFlt(jPageObj, PM.fQuickBuff2ndPressDelay)
     jArray.addInt(jPageObj, PO.iQuickBuffsToApply)
+    jArray.addInt(jPageObj, PM.bQuickResistEnabled as int)
+    jArray.addInt(jPageObj, PO.iResistSortingMethod)
+    jArray.AddInt(jPageObj, PO.abQuickResist[0] as int)
+    jArray.AddInt(jPageObj, PO.abQuickResist[1] as int)
+    jArray.AddInt(jPageObj, PO.abQuickResist[2] as int)
+    jArray.AddInt(jPageObj, PO.abQuickResist[3] as int)
+    jArray.AddInt(jPageObj, PO.abQuickResist[4] as int)
     jArray.addInt(jPageObj, PM.bQuickHealPreferMagic as int)
     jArray.addInt(jPageObj, PM.bQuickHealUseFallback as int)
     jArray.addInt(jPageObj, PM.iQuickHealEquipChoice)
@@ -96,7 +115,6 @@ endFunction
 
 function loadData(int jPageObj, int presetVersion)     ; Load page data from jPageObj
 	
-
     if presetVersion < 152
         WC.bPotionGrouping = jArray.getInt(jPageObj, 0)
         PO.bCheckOtherEffects = jArray.getInt(jPageObj, 1)
@@ -106,7 +124,14 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
         PO.fSmartSelectThreshold = jArray.getFlt(jPageObj, 4)
         PO.bBlockIfRestEffectActive = jArray.getInt(jPageObj, 5)
         PO.bSuspendChecksInCombat = jArray.getInt(jPageObj, 6)
-        PO.bBlockIfBuffEffectActive = jArray.getInt(jPageObj, 7)
+        ;PO.bBlockIfBuffEffectActive = jArray.getInt(jPageObj, 7)
+        if PO.bBlockIfRestEffectActive
+            if !PO.bSuspendChecksInCombat
+                PO.iActiveEffectRule = 3
+            endIf
+        else
+            PO.iActiveEffectRule = 1
+        endIf
 
         WC.iPotionSelectorChoice = jArray.getInt(jPageObj, 8)
         if WC.iPotionSelectorChoice > 1
@@ -151,42 +176,48 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
         PO.fConsRestoreThreshold = jArray.getFlt(jPageObj, 5)
         PO.iPotionSelectChoice = jArray.getInt(jPageObj, 6)
         PO.fSmartSelectThreshold = jArray.getFlt(jPageObj, 7)
-        PO.bBlockIfRestEffectActive = jArray.getInt(jPageObj, 8)
-        PO.bSuspendChecksInCombat = jArray.getInt(jPageObj, 9)
-        PO.bBlockIfBuffEffectActive = jArray.getInt(jPageObj, 10)
+        PO.iActiveEffectRule = jArray.getInt(jPageObj, 8)
+        PO.fAboveCurrentEffectMag = jArray.getFlt(jPageObj, 9)
 
-        WC.iPotionSelectorChoice = jArray.getInt(jPageObj, 11)
-        WC.fPotionSelectorFadeoutDelay = jArray.getFlt(jPageObj, 12)
-        PO.iEmptyPotionQueueChoice = jArray.getInt(jPageObj, 13)
-        WC.fconsIconFadeAmount = jArray.getFlt(jPageObj, 14)
-        PO.bFlashPotionWarning = jArray.getInt(jPageObj, 15)
-        PO.bEnableRestorePotionWarnings = jArray.getInt(jPageObj, 16)
-        PO.bNotificationOnLowRestorePotions = jArray.getInt(jPageObj, 17)
-        PO.bShowConsumedNotifications = jArray.getInt(jPageObj, 18)
-        PO.bShowNoPotionsNotifications = jArray.getInt(jPageObj, 19)
-        PO.bShowEffectActiveNotifications = jArray.getInt(jPageObj, 20)
-        PO.bShowStatFullNotifications = jArray.getInt(jPageObj, 21)
+        WC.iPotionSelectorChoice = jArray.getInt(jPageObj, 10)
+        WC.fPotionSelectorFadeoutDelay = jArray.getFlt(jPageObj, 11)
+        PO.iEmptyPotionQueueChoice = jArray.getInt(jPageObj, 12)
+        WC.fconsIconFadeAmount = jArray.getFlt(jPageObj, 13)
+        PO.bFlashPotionWarning = jArray.getInt(jPageObj, 14)
+        PO.bEnableRestorePotionWarnings = jArray.getInt(jPageObj, 15)
+        PO.bNotificationOnLowRestorePotions = jArray.getInt(jPageObj, 16)
+        PO.bShowConsumedNotifications = jArray.getInt(jPageObj, 17)
+        PO.bShowNoPotionsNotifications = jArray.getInt(jPageObj, 18)
+        PO.bShowEffectActiveNotifications = jArray.getInt(jPageObj, 19)
+        PO.bShowStatFullNotifications = jArray.getInt(jPageObj, 20)
         
-        PM.bQuickRestoreEnabled = jArray.getInt(jPageObj, 22)
-        PM.bQuickHealEnabled = jArray.getInt(jPageObj, 23)
-        PM.bQuickMagickaEnabled = jArray.getInt(jPageObj, 24)
-        PM.bQuickStaminaEnabled = jArray.getInt(jPageObj, 25)
-        PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 26)
-        PM.iQuickBuffControl = jArray.getInt(jPageObj, 27)
-        PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 28)
-        PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 29)
-        PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 30)
-        PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 31)
-        PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 32)
-        PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 33)
-        PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 34)
+        PM.bQuickRestoreEnabled = jArray.getInt(jPageObj, 21)
+        PM.bQuickHealEnabled = jArray.getInt(jPageObj, 22)
+        PM.bQuickMagickaEnabled = jArray.getInt(jPageObj, 23)
+        PM.bQuickStaminaEnabled = jArray.getInt(jPageObj, 24)
+        PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 25)
+        PM.iQuickBuffControl = jArray.getInt(jPageObj, 26)
+        PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 27)
+        PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 28)
+        PM.bQuickResistEnabled = jArray.getInt(jPageObj, 29)
+        PO.iResistSortingMethod = jArray.getInt(jPageObj, 30)
+        PO.abQuickResist[0] = jArray.getInt(jPageObj, 31)
+        PO.abQuickResist[1] = jArray.getInt(jPageObj, 32)
+        PO.abQuickResist[2] = jArray.getInt(jPageObj, 33)
+        PO.abQuickResist[3] = jArray.getInt(jPageObj, 34)
+        PO.abQuickResist[4] = jArray.getInt(jPageObj, 35)
+        PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 36)
+        PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 37)
+        PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 38)
+        PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 39)
+        PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 40)
     endIf
 
 endFunction
 
 function drawPage()
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_potOpts</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_pot_lbl_potOpts</font>")
 	MCM.AddToggleOptionST("pot_tgl_enblPotionGroup", "$iEquip_MCM_pot_lbl_enblPotionGroup", WC.bPotionGrouping)
 			
 	if WC.bPotionGrouping
@@ -199,25 +230,25 @@ function drawPage()
 	endIf
 
     MCM.AddEmptyOption()
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_potConsOpts</font>")
-    MCM.AddSliderOptionST("pot_sld_ConsRestoreThreshold", "$iEquip_MCM_pot_lbl_ConsRestoreThreshold", PO.fConsRestoreThreshold*100, "{0} %")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_pot_lbl_potConsOpts</font>")
+    MCM.AddSliderOptionST("pot_sld_ConsRestoreThreshold", "$iEquip_MCM_pot_lbl_ConsRestoreThreshold", PO.fConsRestoreThreshold*100, "{0}%")
+    MCM.AddTextOptionST("pot_txt_whatSmartSelect", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_pot_lbl_whatSmartSelect</font>", "")
     MCM.AddMenuOptionST("pot_men_PotionSelect", "$iEquip_MCM_pot_lbl_PotionSelect", potionSelectOptions[PO.iPotionSelectChoice])
     if PO.iPotionSelectChoice == 1 ; Smart Select
-        MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartSelectThreshold*100, "{0} %")
+        MCM.AddSliderOptionST("pot_sld_StatThreshold", "$iEquip_MCM_pot_lbl_StatThreshold", PO.fSmartSelectThreshold*100, "{0}%")
     endIf
-    MCM.AddToggleOptionST("pot_tgl_blockIfRestEffect", "$iEquip_MCM_pot_lbl_blockIfRestEffect", PO.bBlockIfRestEffectActive)
-    if PO.bBlockIfRestEffectActive
-        MCM.AddToggleOptionST("pot_tgl_addCombatException", "$iEquip_MCM_pot_lbl_addCombatException", PO.bSuspendChecksInCombat)
+    MCM.AddMenuOptionST("pot_men_whenEffectActive", "$iEquip_MCM_pot_lbl_whenEffectActive", whenEffectActiveOptions[PO.iActiveEffectRule])
+    if PO.iActiveEffectRule == 1 || PO.iActiveEffectRule == 2
+        MCM.AddSliderOptionST("pot_sld_aboveCurrEffectMagThreshold", "$iEquip_MCM_pot_lbl_aboveCurrEffectMagThreshold", PO.fAboveCurrentEffectMag*100, "{0}% stronger")
     endIf
-    MCM.AddToggleOptionST("pot_tgl_blockIfBuffEffect", "$iEquip_MCM_pot_lbl_blockIfBuffEffect", PO.bBlockIfBuffEffectActive)
 
 	MCM.AddEmptyOption()
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_potSelOpts</font>")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_pot_lbl_potSelOpts</font>")
 	MCM.AddMenuOptionST("pot_men_showSelector", "$iEquip_MCM_pot_lbl_showSelector", showSelectorOptions[WC.iPotionSelectorChoice])
 	MCM.AddSliderOptionST("pot_sld_selectorFadeDelay", "$iEquip_MCM_pot_lbl_selectorFadeDelay", WC.fPotionSelectorFadeoutDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
 	
 	MCM.AddEmptyOption()
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
 	MCM.AddMenuOptionST("pot_men_whenNoPotions", "$iEquip_MCM_pot_lbl_whenNoPotions", emptyPotionQueueOptions[PO.iEmptyPotionQueueChoice])
 	if PO.iEmptyPotionQueueChoice == 0
 		MCM.AddSliderOptionST("pot_sld_consIcoFade", "$iEquip_MCM_pot_lbl_consIcoFade", WC.fconsIconFadeAmount, "{0}%")
@@ -229,7 +260,7 @@ function drawPage()
 	endIf
 
     MCM.AddEmptyOption()
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_NotifOptions</font>")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_NotifOptions</font>")
     MCM.AddToggleOptionST("pot_tgl_showConsumedNotifications", "$iEquip_MCM_pot_lbl_showConsumedNotifications", PO.bShowConsumedNotifications)
     MCM.AddToggleOptionST("pot_tgl_showNoPotionsNotifications", "$iEquip_MCM_pot_lbl_showNoPotionsNotifications", PO.bShowNoPotionsNotifications) 
     MCM.AddToggleOptionST("pot_tgl_showEffectActiveNotifications", "$iEquip_MCM_pot_lbl_showEffectActiveNotifications", PO.bShowEffectActiveNotifications)
@@ -237,11 +268,11 @@ function drawPage()
 
     MCM.SetCursorPosition(1)
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_quickRestoreOpts</font>")
-    MCM.AddTextOptionST("pot_txt_whatQuickRestore", "<font color='#a6bffe'>$iEquip_MCM_pot_lbl_whatQuickRestore</font>", "")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_pot_lbl_quickRestoreOpts</font>")
+    MCM.AddTextOptionST("pot_txt_whatQuickRestore", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_pot_lbl_whatQuickRestore</font>", "")
 
     if PM.bQuickRestoreEnabled
-        MCM.AddToggleOptionST("pot_tgl_enblQuickRestore", "<font color='#c7ea46'>$iEquip_MCM_pot_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
+        MCM.AddToggleOptionST("pot_tgl_enblQuickRestore", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_pot_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
         ;QuickHeal
         MCM.AddToggleOptionST("pot_tgl_enblQuickheal", "$iEquip_MCM_pot_lbl_enblQuickheal", PM.bQuickHealEnabled) 
         ;QuickMagicka
@@ -250,20 +281,32 @@ function drawPage()
         MCM.AddToggleOptionST("pot_tgl_enblQuickStamina", "$iEquip_MCM_pot_lbl_enblQuickStamina", PM.bQuickStaminaEnabled)        
         ;Core settings
         
-        MCM.AddToggleOptionST("pot_tgl_quickBuff", "$iEquip_MCM_pot_lbl_quickBuff", PM.bQuickBuffEnabled)
-        
         if PM.bQuickBuffEnabled
+            MCM.AddToggleOptionST("pot_tgl_quickBuff", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_pot_lbl_quickBuff</font>", PM.bQuickBuffEnabled)
             MCM.AddMenuOptionST("pot_men_quickBuffControl", "$iEquip_MCM_pot_lbl_quickBuffControl", QBuffControlOptions[PM.iQuickBuffControl])
             
             if PM.iQuickBuffControl > 0
                 MCM.AddSliderOptionST("pot_sld_quickBuffDelay", "$iEquip_MCM_pot_lbl_quickBuffDelay", PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
             endIf
             MCM.AddMenuOptionST("pot_men_buffsToApply", "$iEquip_MCM_pot_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
+            if PM.bQuickResistEnabled
+                MCM.AddToggleOptionST("pot_tgl_quickResist", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_pot_lbl_quickResist</font>", PM.bQuickResistEnabled)
+                MCM.AddMenuOptionST("pot_men_quickResistPref", "$iEquip_MCM_pot_lbl_quickResistPref",QResistOptions[PO.iResistSortingMethod])
+                MCM.AddToggleOptionST("pot_tgl_quickResistMagic", "$iEquip_MCM_pot_lbl_quickResistMagic", PO.abQuickResist[2])
+                MCM.AddToggleOptionST("pot_tgl_quickResistFire", "$iEquip_MCM_pot_lbl_quickResistFire", PO.abQuickResist[0])
+                MCM.AddToggleOptionST("pot_tgl_quickResistFrost", "$iEquip_MCM_pot_lbl_quickResistFrost", PO.abQuickResist[1])
+                MCM.AddToggleOptionST("pot_tgl_quickResistShock", "$iEquip_MCM_pot_lbl_quickResistShock", PO.abQuickResist[4])
+                MCM.AddToggleOptionST("pot_tgl_quickResistPoison", "$iEquip_MCM_pot_lbl_quickResistPoison", PO.abQuickResist[3])
+            else
+                MCM.AddToggleOptionST("pot_tgl_quickResist", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_pot_lbl_quickResist</font>", PM.bQuickResistEnabled)
+            endIf
+        else
+            MCM.AddToggleOptionST("pot_tgl_quickBuff", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_pot_lbl_quickBuff</font>", PM.bQuickBuffEnabled)
         endIf
         ;QuickHeal Options
         if PM.bQuickHealEnabled
             MCM.AddEmptyOption()
-            MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_quickHealOpts</font>")
+            MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_pot_lbl_quickHealOpts</font>")
             MCM.AddToggleOptionST("pot_tgl_prefHealMag", "$iEquip_MCM_common_lbl_prefMag", PM.bQuickHealPreferMagic)
             MCM.AddToggleOptionST("pot_tgl_useFallback", "$iEquip_MCM_pot_lbl_useFallback", PM.bQuickHealUseFallback)
                     
@@ -279,7 +322,7 @@ function drawPage()
             endIf
         endIf
     else
-        MCM.AddToggleOptionST("pot_tgl_enblQuickRestore", "<font color='#ff7417'>$iEquip_MCM_pot_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
+        MCM.AddToggleOptionST("pot_tgl_enblQuickRestore", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_pot_lbl_enblQuickRestore</font>", PM.bQuickRestoreEnabled)
     endIf
 endFunction
 
@@ -372,7 +415,15 @@ State pot_sld_ConsRestoreThreshold
             MCM.fillSlider(PO.fConsRestoreThreshold*100, 5.0, 100.0, 5.0, 70.0)
         elseIf currentEvent == "Accept"
             PO.fConsRestoreThreshold = currentVar/100
-            MCM.SetSliderOptionValueST(PO.fConsRestoreThreshold*100, "{0} %")
+            MCM.SetSliderOptionValueST(PO.fConsRestoreThreshold*100, "{0}%")
+        endIf
+    endEvent
+endState
+
+State pot_txt_whatSmartSelect
+    event OnBeginState()
+        if currentEvent == "Select"
+            MCM.ShowMessage("$iEquip_MCM_pot_msg_whatSmartSelect", false, "$iEquip_common_msg_Exit")
         endIf
     endEvent
 endState
@@ -398,40 +449,33 @@ State pot_sld_StatThreshold
             MCM.fillSlider(PO.fSmartSelectThreshold*100, 5.0, 100.0, 5.0, 40.0)
         elseIf currentEvent == "Accept"
             PO.fSmartSelectThreshold = currentVar/100
-            MCM.SetSliderOptionValueST(PO.fSmartSelectThreshold*100, "{0} %")
+            MCM.SetSliderOptionValueST(PO.fSmartSelectThreshold*100, "{0}%")
         endIf
     endEvent
 endState
 
-State pot_tgl_blockIfRestEffect
+State pot_men_whenEffectActive
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_blockIfRestEffect")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bBlockIfRestEffectActive)
-            PO.bBlockIfRestEffectActive = !PO.bBlockIfRestEffectActive
-            MCM.SetToggleOptionValueST(PO.bBlockIfRestEffectActive)
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_whenEffectActive")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(PO.iActiveEffectRule, whenEffectActiveOptions, 2)
+        elseIf currentEvent == "Accept"
+            PO.iActiveEffectRule = currentVar as int
+            MCM.forcePageReset()
         endIf
     endEvent
 endState
 
-State pot_tgl_addCombatException
+State pot_sld_aboveCurrEffectMagThreshold
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_addCombatException")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bSuspendChecksInCombat)
-            PO.bSuspendChecksInCombat = !PO.bSuspendChecksInCombat
-            MCM.SetToggleOptionValueST(PO.bSuspendChecksInCombat)
-        endIf
-    endEvent
-endState
-
-State pot_tgl_blockIfBuffEffect
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_blockIfBuffEffect")
-        elseIf currentEvent == "Select" || (currentEvent == "Default" && !PO.bBlockIfBuffEffectActive)
-            PO.bBlockIfBuffEffectActive = !PO.bBlockIfBuffEffectActive
-            MCM.SetToggleOptionValueST(PO.bBlockIfBuffEffectActive)
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_aboveCurrEffectMagThreshold")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(PO.fAboveCurrentEffectMag*100, 0.0, 100.0, 5.0, 30.0)
+        elseIf currentEvent == "Accept"
+            PO.fAboveCurrentEffectMag = currentVar/100
+            MCM.SetSliderOptionValueST(PO.fAboveCurrentEffectMag*100, "{0}% stronger")
         endIf
     endEvent
 endState
@@ -593,7 +637,9 @@ State pot_txt_whatQuickRestore
             if MCM.ShowMessage("$iEquip_help_quickRestore1", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
                 if MCM.ShowMessage("$iEquip_help_quickRestore2", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
                     if MCM.ShowMessage("$iEquip_help_quickRestore3", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
-                        MCM.ShowMessage("$iEquip_help_quickRestore4", false, "$iEquip_common_msg_Exit")
+                        if MCM.ShowMessage("$iEquip_help_quickRestore4", true, "$iEquip_common_msg_NextPage", "$iEquip_common_msg_Exit")
+                            MCM.ShowMessage("$iEquip_help_quickRestore5", false, "$iEquip_common_msg_Exit")
+                        endIf
                     endIf
                 endIf
             endIf
@@ -694,6 +740,85 @@ State pot_men_buffsToApply
         elseIf currentEvent == "Accept"
             PO.iQuickBuffsToApply = currentVar as int
             MCM.SetMenuOptionValueST(QBuffOptions[PO.iQuickBuffsToApply])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickResist
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickResist")
+        elseIf currentEvent == "Select"
+            PM.bQuickResistEnabled = !PM.bQuickResistEnabled
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_men_quickResistPref
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickResistPref")
+        elseIf currentEvent == "Open"
+            MCM.fillMenu(PO.iResistSortingMethod, QResistOptions, 0)
+        elseIf currentEvent == "Accept"
+            PO.iResistSortingMethod = currentVar as int
+            MCM.SetMenuOptionValueST(QResistOptions[PO.iResistSortingMethod])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickResistFire
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[0]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickResist[0] = !PO.abQuickResist[0]
+            MCM.SetToggleOptionValueST(PO.abQuickResist[0])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickResistFrost
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[1]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickResist[1] = !PO.abQuickResist[1]
+            MCM.SetToggleOptionValueST(PO.abQuickResist[1])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickResistMagic
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[2]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickResist[2] = !PO.abQuickResist[2]
+            MCM.SetToggleOptionValueST(PO.abQuickResist[2])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickResistPoison
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[3]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickResist[3] = !PO.abQuickResist[3]
+            MCM.SetToggleOptionValueST(PO.abQuickResist[3])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickResistShock
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[4]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickResist[4] = !PO.abQuickResist[4]
+            MCM.SetToggleOptionValueST(PO.abQuickResist[4])
         endIf
     endEvent
 endState

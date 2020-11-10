@@ -993,9 +993,9 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 				endIf
 			endIf
 
-			if ((equippedSlot < 2 && bAutoAddNewItems || queuedForm == TO.realTorchForm) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers))))
+			if (equippedSlot < 2 && bAutoAddNewItems) || (equippedSlot == 2 && ((itemType == 22 && bAutoAddShouts) || (itemType == 119 && bAutoAddPowers)))
 				jMap.setInt(iEquipItem, "iEquipAutoAdded", 1)
-			else
+			elseIf queuedForm != TO.realTorchForm 													; Torch will always be added to the left hand queue and not flagged as temp
 				jMap.setInt(iEquipItem, "iEquipTempItem", 1)
 			endIf
 
@@ -1067,7 +1067,7 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
   		PlayerRef.EquipItemEx(AM.currentAmmoForm as Ammo)
 
   	else
-  		checkAndRemoveTempItem(akBaseObject)
+  		checkAndRemoveTempItems()
 
   		if !bGoingUnarmed && !TO.bSettingLightRadius && !(akBaseObject.GetType() == 31 && TO.didATorchJustBurnOut())
 		  	bWaitingForOnObjectUnequippedUpdate = true
@@ -1077,19 +1077,54 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
 	;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped end")
 endEvent
 
-function checkAndRemoveTempItem(form formToCheck)
-	int Q
-	int i
-	bool actionTaken
+bool bRemovingTempItems
 
-	while Q < 3 && !actionTaken
-		i = WC.findInQueue(Q, formToCheck.GetName(), formToCheck)
-		if i != -1 && jMap.getInt(jArray.getObj(WC.aiTargetQ[Q], i), "iEquipTempItem") == 1
-			WC.removeTempItemFromQueue(Q, i)
-			actionTaken = true
-		endIf
-		Q += 1
-	endWhile
+function checkAndRemoveTempItems()
+	
+	if !bRemovingTempItems 																			; Should block multiple runs in the case of two or three items being unequipped in quick succession
+
+		bRemovingTempItems = true
+
+		int Q
+		int i
+		int targetQ
+		int targetObj
+		int handle
+		int slot
+		form currentObject
+
+		Utility.Wait(1.0) 																			; Should be enough time to let any equipping events happen, triggering Ammo Mode, etc, before we remove temp items
+
+		while Q < 3
+			targetQ = WC.aiTargetQ[Q]
+			currentObject = PlayerRef.GetEquippedObject(Q)
+			i = jArray.count(targetQ) - 1															; Temp items will always have been added at the end of the queue so start at the end and work backwards
+			while i > 0
+				targetObj = jArray.getObj(targetQ, i)
+				if jMap.getInt(targetObj, "iEquipTempItem") == 1
+					if !currentObject || jMap.getForm(targetObj, "iEquipForm") != currentObject 	; If we don't have anything currently equipped, or the equipped form doesn't match the temp item, remove the temp item
+						WC.removeTempItemFromQueue(Q, i)
+					elseIf Q < 2																	; Otherwise if we're checking left/right queues and the forms do match, check the temp item refHandle against the worn one 
+						handle = jMap.getInt(targetObj, "iEquipHandle", 0xFFFF)
+						if handle != 0xFFFF
+							if Q == 0 && currentObject as armor && (currentObject as armor).IsShield()
+								slot = 2
+							else
+								slot = Q
+							endIf
+							
+							if handle != iEquip_InventoryExt.GetRefHandleFromWornObject(slot) 		; And remove the temp item if the refHandle doesn't match the currently equipped one
+								WC.removeTempItemFromQueue(Q, i)
+							endIf
+						endIf
+					endIf
+				endIf
+				i -= 1
+			endWhile	
+			Q += 1
+		endWhile
+		bRemovingTempItems = false
+	endIf
 endFunction
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
@@ -1160,7 +1195,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		bool actionTaken
 		string itemName = akBaseItem.GetName()
 		while i < 3 && !actionTaken
-			if WC.isItemValidForSlot(i, akBaseItem, itemType, itemName)
+			if WC.isItemValidForSlot(i, akBaseItem, itemType, itemName, true)
 				foundAt = WC.findInQueue(i, itemName, akBaseItem)
 				if foundAt != -1
 					if i == 2 												; If it's a shout or power remove it straight away

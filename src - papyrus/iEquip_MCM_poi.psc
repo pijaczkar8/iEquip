@@ -102,18 +102,18 @@ endFunction
 
 function drawPage()
 
-    MCM.AddTextOptionST("poi_txt_showPoisonHelp", "<font color='#a6bffe'>$iEquip_MCM_poi_lbl_showPoisonHelp</font>", "")
+    MCM.AddTextOptionST("poi_txt_showPoisonHelp", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_poi_lbl_showPoisonHelp</font>", "")
     if WC.bPoisonsEnabled
-        MCM.AddToggleOptionST("poi_tgl_enblPoisonSlt", "<font color='#c7ea46'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
+        MCM.AddToggleOptionST("poi_tgl_enblPoisonSlt", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
         MCM.AddMenuOptionST("poi_men_poisonFX", "$iEquip_MCM_common_lbl_FX", effectsOptions[WC.iPoisonFX])
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_poi_lbl_poisonUseOpts</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_poi_lbl_poisonUseOpts</font>")
         MCM.AddMenuOptionST("poi_men_confMsg", "$iEquip_MCM_poi_lbl_confMsg", poisonMessageOptions[WC.iShowPoisonMessages])
         MCM.AddToggleOptionST("poi_tgl_allowPoisonSwitch", "$iEquip_MCM_poi_lbl_allowPoisonSwitch", WC.bAllowPoisonSwitching)
         MCM.AddToggleOptionST("poi_tgl_allowPoisonTopup", "$iEquip_MCM_poi_lbl_allowPoisonTopup", WC.bAllowPoisonTopUp)
                 
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_poi_lbl_poisonChargeOpts</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_poi_lbl_poisonChargeOpts</font>")
         MCM.AddSliderOptionST("poi_sld_chargePerVial", "$iEquip_MCM_poi_lbl_chargePerVial", WC.iPoisonChargesPerVial, "{0} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_poi_lbl_chrgs"))
 
         if WC.iPoisonChargeMultiplier < 2
@@ -123,20 +123,20 @@ function drawPage()
         MCM.AddSliderOptionST("poi_sld_chargeMult", "$iEquip_MCM_poi_lbl_chargeMult", WC.iPoisonChargeMultiplier, "{0}x " + iEquip_StringExt.LocalizeString("$iEquip_MCM_poi_lbl_baseChrgs"))
                 
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
         MCM.AddMenuOptionST("poi_men_poisonIndStyle", "$iEquip_MCM_poi_lbl_poisonIndStyle", poisonIndicatorOptions[WC.iPoisonIndicatorStyle])
 
         MCM.SetCursorPosition(1)
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_pot_lbl_throwingPoisonsOpts</font>")
-        MCM.AddTextOptionST("poi_txt_showThrowingPoisonHelp", "<font color='#a6bffe'>$iEquip_MCM_poi_lbl_showThrowingPoisonHelp</font>", "")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_pot_lbl_throwingPoisonsOpts</font>")
+        MCM.AddTextOptionST("poi_txt_showThrowingPoisonHelp", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_poi_lbl_showThrowingPoisonHelp</font>", "")
         if !WC.bPowerOfThreeExtenderLoaded
-            MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='#ff7417'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled, mcmDisabledFLAG)
+            MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled, mcmDisabledFLAG)
             MCM.AddEmptyOption()
             MCM.AddTextOptionST("poi_txt_throwingPoisonsDisabled_a", "$iEquip_MCM_poi_lbl_throwingPoisonsDisabled_a", "")
             MCM.AddTextOptionST("poi_txt_throwingPoisonsDisabled_b", "$iEquip_MCM_poi_lbl_throwingPoisonsDisabled_b", "")
         else
             if TP.bThrowingPoisonsEnabled
-                MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='#c7ea46'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled)
+                MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled)
                 MCM.AddTextOptionST("poi_txt_throwingPoisonsBehavior", "$iEquip_MCM_poi_lbl_throwingPoisonsBehavior", throwingPoisonOptions[TP.iThrowingPoisonBehavior])
                 MCM.AddKeyMapOptionST("poi_key_throwingPoisonsKey", "$iEquip_MCM_poi_lbl_throwingPoisonsKey", KH.iThrowingPoisonsKey, mcmUnmapFLAG)
                 MCM.AddTextOptionST("poi_txt_throwingPoisonsHand", "$iEquip_MCM_poi_lbl_throwingPoisonsHand", throwingPoisonHands[TP.iThrowingPoisonHand])
@@ -146,11 +146,11 @@ function drawPage()
                 MCM.AddSliderOptionST("poi_sld_throwingPoisonLimit", "$iEquip_MCM_poi_lbl_throwingPoisonLimit", TP.iNumPoisonHazards as float, "{0} " +  iEquip_StringExt.LocalizeString("$iEquip_MCM_poi_lbl_hzrds"))
                 MCM.AddSliderOptionST("poi_sld_throwingPoisonGravity", "$iEquip_MCM_poi_lbl_throwingPoisonGravity", TP.fThrowingPoisonProjectileGravity, "{1}")
             else
-                MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='#ff7417'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled)
+                MCM.AddToggleOptionST("poi_tgl_enableThrowingPoisons", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_poi_lbl_enableThrowingPoisons</font>", TP.bThrowingPoisonsEnabled)
             endIf
         endIf
     else
-        MCM.AddToggleOptionST("poi_tgl_enblPoisonSlt", "<font color='#ff7417'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
+        MCM.AddToggleOptionST("poi_tgl_enblPoisonSlt", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_gen_lbl_enblPoisonSlt</font>", WC.bPoisonsEnabled)
     endIf
 endFunction
 

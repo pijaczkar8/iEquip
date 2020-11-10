@@ -10,6 +10,8 @@ iEquip_PlayerEventHandler property EH auto
 int mcmUnmapFLAG
 int mcmDisabledFLAG
 
+string[] asTextColourOptions
+
 bool bFirstTimeDisablingTooltips = true
 bool bFirstEnabled = false
 
@@ -19,6 +21,10 @@ bool bFirstEnabled = false
 function initData()
     mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
     mcmDisabledFLAG = MCM.OPTION_FLAG_DISABLED
+
+    asTextColourOptions = new string[2]
+    asTextColourOptions[0] = "$iEquip_common_Default"
+    asTextColourOptions[1] = "$iEquip_MCM_inf_opt_paperColours"
 endFunction
 
 int function saveData()             ; Save page data and return jObject
@@ -98,15 +104,15 @@ endFunction
 function drawPage()
 
     if MCM.bEnabled
-        MCM.AddToggleOptionST("gen_tgl_onOff", "<font color='#c7ea46'>$iEquip_MCM_gen_lbl_onOff</font>", MCM.bEnabled)
+        MCM.AddToggleOptionST("gen_tgl_onOff", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_gen_lbl_onOff</font>", MCM.bEnabled)
     else
-        MCM.AddToggleOptionST("gen_tgl_onOff", "<font color='#ff7417'>$iEquip_MCM_gen_lbl_onOff</font>", MCM.bEnabled)
+        MCM.AddToggleOptionST("gen_tgl_onOff", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_gen_lbl_onOff</font>", MCM.bEnabled)
     endIf
     MCM.AddToggleOptionST("gen_tgl_showTooltips", "$iEquip_MCM_gen_lbl_showTooltips", WC.bShowTooltips)
     MCM.AddEmptyOption()
 	
     if WC.isEnabled
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+		MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
 		MCM.AddToggleOptionST("gen_tgl_enblShoutSlt", "$iEquip_MCM_gen_lbl_enblShoutSlt", WC.bShoutEnabled)
 		MCM.AddToggleOptionST("gen_tgl_enblConsumSlt", "$iEquip_MCM_gen_lbl_enblConsumSlt", WC.bConsumablesEnabled)
 		MCM.AddToggleOptionST("gen_tgl_enblPoisonSlt", "$iEquip_MCM_gen_lbl_enblPoisonSlt", WC.bPoisonsEnabled)
@@ -117,12 +123,12 @@ function drawPage()
 
         MCM.AddEmptyOption()
 
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_MountedOptions</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_gen_lbl_MountedOptions</font>")
         MCM.AddToggleOptionST("gen_tgl_vanillaHorses", "$iEquip_MCM_gen_lbl_vanillaHorses", EH.bVanillaHorses)
         MCM.AddToggleOptionST("gen_tgl_dragonRiding", "$iEquip_MCM_gen_lbl_dragonRiding", EH.bRelevantItemsOnlyWhileDragonRiding)
 
 		MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_BeastMode</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_gen_lbl_BeastMode</font>")
 		MCM.AddToggleOptionST("gen_tgl_BM_werewolf", "$iEquip_MCM_gen_lbl_BM_werewolf", BM.abShowInTransformedState[0])
 		if Game.GetModByName("Dawnguard.esm") != 255
 			MCM.AddToggleOptionST("gen_tgl_BM_vampLord", "$iEquip_MCM_gen_lbl_BM_vampLord", BM.abShowInTransformedState[1])
@@ -136,26 +142,26 @@ function drawPage()
 
         MCM.SetCursorPosition(1)
 
-        MCM.AddTextOptionST("gen_txt_htkHelp", "<font color='#a6bffe'>$iEquip_MCM_gen_lbl_htkHelp</font>", "")
+        MCM.AddTextOptionST("gen_txt_htkHelp", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_gen_lbl_htkHelp</font>", "")
         
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_MainHtks</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_gen_lbl_MainHtks</font>")
         MCM.AddKeyMapOptionST("gen_key_leftHand", "$iEquip_MCM_gen_lbl_leftHand", KH.iLeftKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("gen_key_rightHand", "$iEquip_MCM_gen_lbl_rightHand", KH.iRightKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("gen_key_shout", "$iEquip_MCM_gen_lbl_shout", KH.iShoutKey, mcmUnmapFLAG)
         MCM.AddKeyMapOptionST("gen_key_consumPoison", "$iEquip_MCM_gen_lbl_consumPoison", KH.iConsumableKey, mcmUnmapFLAG)
         MCM.AddEmptyOption()
                 
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_UtHtkOpts</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_gen_lbl_UtHtkOpts</font>")
         MCM.AddKeyMapOptionST("gen_key_util", "$iEquip_MCM_gen_lbl_util", KH.iUtilityKey, mcmUnmapFLAG)
         MCM.AddToggleOptionST("gen_tgl_blockUtilMenuInCombat", "$iEquip_MCM_gen_lbl_blockUtilMenuInCombat", KH.bNoUtilMenuInCombat)
         
         MCM.AddEmptyOption()
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_KeyPressOpts</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_gen_lbl_KeyPressOpts</font>")
         MCM.AddSliderOptionST("gen_sld_multiTapDelay", "$iEquip_MCM_gen_lbl_multiTapDelay", KH.fMultiTapDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         MCM.AddSliderOptionST("gen_sld_longPrsDelay", "$iEquip_MCM_gen_lbl_longPrsDelay", KH.fLongPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
         MCM.AddEmptyOption()
         
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_gen_lbl_ExtKbCtrls</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_gen_lbl_ExtKbCtrls</font>")
         MCM.AddToggleOptionST("gen_tgl_enblExtKbCtrls", "$iEquip_MCM_gen_lbl_enblExtKbCtrls", KH.bExtendedKbControlsEnabled)
         
         if KH.bExtendedKbControlsEnabled
@@ -186,18 +192,27 @@ function drawPage()
             endIf
         endIf
 
-	elseIf bFirstEnabled
-		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
-		MCM.AddTextOptionST("gen_txt_firstEnabled2", "$iEquip_MCM_common_lbl_firstEnabled2", "")
-		MCM.AddTextOptionST("gen_txt_firstEnabled3", "$iEquip_MCM_common_lbl_firstEnabled3", "")
-		MCM.AddEmptyOption()
-		MCM.AddTextOptionST("gen_txt_firstEnabled4", "$iEquip_MCM_common_lbl_firstEnabled4", "")
-		MCM.AddTextOptionST("gen_txt_firstEnabled5", "$iEquip_MCM_common_lbl_firstEnabled5", "")
-    else
-        MCM.AddTextOptionST("gen_txt_altStartWarning1", "$iEquip_MCM_common_lbl_altStartWarning1", "")
-        MCM.AddTextOptionST("gen_txt_altStartWarning2", "$iEquip_MCM_common_lbl_altStartWarning2", "")
-        MCM.AddTextOptionST("gen_txt_altStartWarning3", "$iEquip_MCM_common_lbl_altStartWarning3", "")
-        MCM.AddTextOptionST("gen_txt_altStartWarning4", "$iEquip_MCM_common_lbl_altStartWarning4", "")
+	else
+        If bFirstEnabled
+    		MCM.AddTextOptionST("gen_txt_firstEnabled1", "$iEquip_MCM_common_lbl_firstEnabled1", "")
+    		MCM.AddTextOptionST("gen_txt_firstEnabled2", "$iEquip_MCM_common_lbl_firstEnabled2", "")
+    		MCM.AddTextOptionST("gen_txt_firstEnabled3", "$iEquip_MCM_common_lbl_firstEnabled3", "")
+    		MCM.AddEmptyOption()
+    		MCM.AddTextOptionST("gen_txt_firstEnabled4", "$iEquip_MCM_common_lbl_firstEnabled4", "")
+    		MCM.AddTextOptionST("gen_txt_firstEnabled5", "$iEquip_MCM_common_lbl_firstEnabled5", "")
+        else
+            MCM.AddTextOptionST("gen_txt_altStartWarning1", "$iEquip_MCM_common_lbl_altStartWarning1", "")
+            MCM.AddTextOptionST("gen_txt_altStartWarning2", "$iEquip_MCM_common_lbl_altStartWarning2", "")
+            MCM.AddTextOptionST("gen_txt_altStartWarning3", "$iEquip_MCM_common_lbl_altStartWarning3", "")
+            MCM.AddTextOptionST("gen_txt_altStartWarning4", "$iEquip_MCM_common_lbl_altStartWarning4", "")
+        endIf
+        MCM.SetCursorPosition(1)
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_inf_lbl_mcmColours</font>")
+        MCM.AddTextOptionST("inf_gen_textColour", "$iEquip_MCM_inf_lbl_textColour", asTextColourOptions[MCM.bPaperColours as int])
+        MCM.AddTextOptionST("inf_gen_headerColour", "<font color='"+MCM.headerColour+"'>$iEquip_MCM_inf_lbl_headerColour</font>", "")
+        MCM.AddTextOptionST("inf_gen_helpColour", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_inf_lbl_helpColour</font>", "")
+        MCM.AddTextOptionST("inf_gen_enabledColour", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_inf_lbl_enabledColour</font>", "")
+        MCM.AddTextOptionST("inf_gen_disabledColour", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_inf_lbl_disabledColour</font>", "")
     endIf
 endFunction
 
@@ -264,6 +279,17 @@ State gen_tgl_showTooltips
             WC.bShowTooltips = true 
             MCM.SetToggleOptionValueST(WC.bShowTooltips)
         endIf
+    endEvent
+endState
+
+State inf_gen_textColour
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_textColours")
+        elseIf currentEvent == "Select"
+            MCM.bPaperColours = !MCM.bPaperColours
+            MCM.ForcePageReset()
+        endIf 
     endEvent
 endState
             

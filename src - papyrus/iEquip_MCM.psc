@@ -26,15 +26,32 @@ string sCurrentPage
 string[] asControlNames
 int[] aiHotkeys
 
+string headerColourDefault = "#c1a57a"
+string helpColourDefault = "#a6bffe"
+string enabledColourDefault = "#c7ea46"
+string disabledColourDefault = "#ff7417"
+
+string headerColourPaper = "#723012"
+string helpColourPaper = "#0c2263"
+string enabledColourPaper = "#135a09"
+string disabledColourPaper = "#d05300"
+
+string property headerColour auto hidden
+string property helpColour auto hidden
+string property enabledColour auto hidden
+string property disabledColour auto hidden
+
+bool bUsePaperColours
+
 ; ###########################
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 152  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 156  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 152 && CurrentVersion < 152)
+    if (a_version >= 156 && CurrentVersion < 156)
         OnConfigInit()
     endIf
 endEvent
@@ -72,6 +89,11 @@ event OnConfigInit()
     asControlNames[11] = "$iEquip_MCM_rep_lbl_throwingPoisonsKey"
 
     aiHotkeys = new int[12]
+
+    headerColour = headerColourDefault
+    helpColour = helpColourDefault
+    enabledColour = enabledColourDefault
+    disabledColour = disabledColourDefault
 
     RegisterForModEvent("iEquip_KeyHandlerReady", "updateHotkeysArray")
 
@@ -191,6 +213,28 @@ function jumpToPage(string eventName, float tmpVar = -1.0, string tmpStr = "")
         inf.jumpToState(sCurrentState, eventName, tmpVar, tmpStr)
     endIf
 endFunction
+
+bool property bPaperColours
+    bool function Get()
+        Return bUsePaperColours
+    endFunction
+    
+    function Set(bool usePaperColours)
+        bUsePaperColours = usePaperColours
+        
+        if bUsePaperColours
+            headerColour = headerColourPaper
+            helpColour = helpColourPaper
+            enabledColour = enabledColourPaper
+            disabledColour = disabledColourPaper
+        else
+            headerColour = headerColourDefault
+            helpColour = helpColourDefault
+            enabledColour = enabledColourDefault
+            disabledColour = disabledColourDefault
+        endIf
+    endFunction
+EndProperty
 
 
 ; #######################

@@ -49,6 +49,7 @@ bool property bQuickStaminaEnabled = true auto hidden
 bool property bQuickMagickaEnabled = true auto hidden
 bool property bQuickBuffEnabled = true auto hidden
 int property iQuickBuffControl = 1 auto hidden
+bool property bQuickResistEnabled auto hidden
 float property fQuickBuff2ndPressDelay = 4.0 auto hidden
 bool property bPreselectEnabled auto hidden
 bool property bShoutPreselectEnabled = true auto hidden
@@ -465,8 +466,9 @@ function equipPreselectedItem(int Q)
 			else
 				bAmmoModeActiveOnTogglePreselect = false ;Reset
 			endIf
-			if WC.bUnequipAmmo && PlayerRef.isEquipped(AM.currentAmmoForm as Ammo)
-				PlayerRef.UnequipItemEx(AM.currentAmmoForm as Ammo)
+			ammo targetAmmo = AM.currentAmmoForm as Ammo
+			if WC.bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
+				AM.unequipAmmo(targetAmmo)
 			endIf
 			if WC.bNameFadeoutEnabled && WC.bLeftRightNameFadeEnabled
 				WC.LNUpdate.registerForNameFadeoutUpdate(WC.aiNameElements[Q])
@@ -862,7 +864,7 @@ function quickShield(bool forceSwitch = false, bool onTorchDropped = false, bool
 				endIf
 				ammo targetAmmo = AM.currentAmmoForm as Ammo
 				if WC.bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
-					PlayerRef.UnequipItemEx(targetAmmo)
+					AM.unequipAmmo(targetAmmo)
 				endIf
 			endIf
 
@@ -1844,7 +1846,7 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 		endIf
 		int otherHandIndex = WC.findInQueue(otherHand, spellName)
 		if !bQuickDualCastMustBeInBothQueues || otherHandIndex > -1 || onDoubleTapSpell
-			WC.EH.bJustQuickDualCast = true
+			WC.EH.bJustQuickDualCast = !onDoubleTapSpell
 			WC.bBlockSwitchBackToBoundSpell = true
 			PlayerRef.EquipSpell(spellToEquip as Spell, otherHand)
 			Float fNameAlpha = WC.afWidget_A[nameElement]
@@ -1864,7 +1866,7 @@ bool function quickDualCastEquipSpellInOtherHand(int Q, form spellToEquip, strin
 				endwhile
 				UICallback.Send(iHandle)
 			endIf
-			WC.checkAndUpdatePoisonInfo(otherHand)
+			WC.hidePoisonInfo(otherHand, true)
 			TI.updateTemperTierIndicator(otherHand)
 			WC.CM.checkAndUpdateChargeMeter(otherHand)
 			if WC.bNameFadeoutEnabled && !WC.abIsNameShown[otherHand]
@@ -1938,6 +1940,7 @@ function quickRestore()
 
 		    if bQuickStaminaEnabled
 		    	currAV = PlayerRef.GetActorValue("Stamina")
+		    	;debug.trace("iEquip_ProMode quickRestore - current stamina: " + currAV + ", current stamina damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, 26))
 	    		if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= PO.fConsRestoreThreshold)
 			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
 			    	PO.selectAndConsumePotion(2, 0) ;Stamina
@@ -1959,6 +1962,7 @@ function quickRestore()
 
 		    if bQuickMagickaEnabled
 		    	currAV = PlayerRef.GetActorValue("Magicka")
+		    	;debug.trace("iEquip_ProMode quickRestore - current magicka: " + currAV + ", current magicka damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, 25))
 		    	if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= PO.fConsRestoreThreshold)
 			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
 			    	PO.selectAndConsumePotion(1, 0) ;Magicka
@@ -1977,14 +1981,19 @@ function quickRestore()
 					endIf
 				endIf
 		    endIf
+
+		    if bQuickBuff && bQuickResistEnabled
+		    	PO.quickResistSelectAndConsumePotions()
+		    endIf
 		endIf
 	endIf
     ;debug.trace("iEquip_ProMode quickRestore end")
 endFunction
 
 function quickHeal()
-	;debug.trace("iEquip_ProMode quickHeal start")
-	bool belowHealthThreshold = (PlayerRef.GetActorValue("Health") / (PlayerRef.GetActorValue("Health") + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= PO.fConsRestoreThreshold)
+	float currAV = PlayerRef.GetActorValue("Health")
+	;debug.trace("iEquip_ProMode quickHeal start - current health: " + currAV + ", current health damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, 24))
+	bool belowHealthThreshold = (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 24)) <= PO.fConsRestoreThreshold)
 
     bQuickHealActionTaken = false
     if bQuickHealPreferMagic
@@ -2085,7 +2094,7 @@ function quickHealEquipSpell(int iEquipSlot, int Q, int iIndex, bool equippingOt
 		endIf
 		ammo targetAmmo = AM.currentAmmoForm as Ammo
 		if WC.bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
-			PlayerRef.UnequipItemEx(targetAmmo)
+			AM.unequipAmmo(targetAmmo)
 		endIf
 	endIf
 	
@@ -2256,7 +2265,7 @@ function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
 				WC.setCounterVisibility(0, false)
 				ammo currentAmmo = AM.currentAmmoForm as Ammo
 				if currentAmmo && WC.bUnequipAmmo && PlayerRef.isEquipped(currentAmmo)
-					PlayerRef.UnequipItemEx(currentAmmo)
+					AM.unequipAmmo(currentAmmo)
 				endIf
 			endIf
 

@@ -374,7 +374,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 
 		temperTierStyleArray = new Array("Uniform", "Increasing", "Diamond", "Star", "Hammer", "Anvil", "Asterisk", "Caret");
 		
-		backgroundStyleArray = new Array("Hidden", "Square", "SquareNoBorder", "Round", "RoundNoBorder", "RoundFade", "Dialogue", "DarkSouls");
+		backgroundStyleArray = new Array("Hidden", "Square", "SquareNoBorder", "Round", "RoundNoBorder", "RoundFade", "Dialogue", "DarkSouls", "DarkSoulsSimple");
 		backgroundClipArray = new Array(leftBg_mc, rightBg_mc, shoutBg_mc, leftPreselectBg_mc, rightPreselectBg_mc, shoutPreselectBg_mc, consumableBg_mc, poisonBg_mc);
 
 		enchantmentMeterArray = new Array(leftEnchantmentMeter_mc, leftSoulgem_mc, leftRadialMeter_mc, rightEnchantmentMeter_mc, rightSoulgem_mc, rightRadialMeter_mc);

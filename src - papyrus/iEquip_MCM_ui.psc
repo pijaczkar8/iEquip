@@ -19,7 +19,7 @@ string[] temperTierIndicatorStyles
 
 function initData()
     
-    backgroundStyleOptions = new String[8]
+    backgroundStyleOptions = new String[9]
     backgroundStyleOptions[0] = "$iEquip_MCM_ui_opt_NoBg"
     backgroundStyleOptions[1] = "$iEquip_MCM_ui_opt_SqBBg"
     backgroundStyleOptions[2] = "$iEquip_MCM_ui_opt_SqNoBBg"
@@ -28,6 +28,7 @@ function initData()
     backgroundStyleOptions[5] = "$iEquip_MCM_ui_opt_RoFade"
     backgroundStyleOptions[6] = "$iEquip_MCM_ui_opt_Dialogue"
     backgroundStyleOptions[7] = "$iEquip_MCM_ui_opt_DarkSouls"
+    backgroundStyleOptions[8] = "$iEquip_MCM_ui_opt_DarkSoulsSimple"
     
     fadeoutOptions = new String[4]
     fadeoutOptions[0] = "$iEquip_MCM_ui_opt_Slow"
@@ -193,7 +194,7 @@ endFunction
 
 function drawPage()
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_temperedItemOpts</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_ui_lbl_temperedItemOpts</font>")
 	MCM.AddMenuOptionST("ui_men_tmpLvlTxt", "$iEquip_MCM_ui_lbl_tmpLvlTxt", temperLevelTextOptions[TI.iTemperNameFormat])
 	
 	if TI.iTemperNameFormat > 0 && TI.iTemperNameFormat < 9
@@ -230,7 +231,7 @@ function drawPage()
 	endIf
 	MCM.AddEmptyOption()
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_iconBgOpts</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_ui_lbl_iconBgOpts</font>")
 
 	MCM.AddToggleOptionST("ui_tgl_fadeLeftIco2h", "$iEquip_MCM_ui_lbl_fadeLeftIco2h", WC.bFadeLeftIcon)
 			
@@ -243,7 +244,7 @@ function drawPage()
 	
 	MCM.SetCursorPosition(1)
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_fadeoutopts</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_ui_lbl_fadeoutopts</font>")
 	MCM.AddToggleOptionST("ui_tgl_enblWdgetFade", "$iEquip_MCM_ui_lbl_enblWdgetFade", WC.bWidgetFadeoutEnabled)
 			
 	if WC.bWidgetFadeoutEnabled
@@ -286,7 +287,7 @@ function drawPage()
 
 	;We don't want drop shadow settings being messed around with while we are in Edit Mode
 	if !WC.EM.isEditMode
-		MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_ui_lbl_txtShadOpts</font>")
+		MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_ui_lbl_txtShadOpts</font>")
 		MCM.AddToggleOptionST("ui_tgl_dropShadow", "$iEquip_MCM_ui_lbl_dropShadow", WC.bDropShadowEnabled)
 		
 		if WC.bDropShadowEnabled

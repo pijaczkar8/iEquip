@@ -66,7 +66,7 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 endFunction
 
 function drawPage()
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_edt_lbl_EMOptions</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_edt_lbl_EMOptions</font>")
 	MCM.AddSliderOptionST("edt_sld_slowTimeStr", "$iEquip_MCM_common_lbl_slowTimeStr", EM.iEditModeSlowTimeStrength as float, "{0}%")
 
 	MCM.SetCursorPosition(1)               

@@ -3,6 +3,7 @@ Scriptname iEquip_ThrowingPoisons extends Quest
 
 import UI
 import iEquip_StringExt
+import iEquip_InventoryExt
 import PO3_SKSEFunctions
 
 iEquip_WidgetCore property WC auto
@@ -346,6 +347,8 @@ function equipPoison()
 			PlayerRef.EquipItemEx(iEquip_ThrowingPoisonWeapon, aiHandEquipSlots[targetHand])
 		endIf
 
+		SetPoison(iEquip_ThrowingPoisonWeapon as form, GetRefHandleFromWornObject(iThrowingPoisonHand), currentPoison, 1) 	; Poison the dummy weapon so the player can't apply and waste through the inventory menu
+
 		updateWidget()															; Hide all additional widget elements and copy the poison icon and name currently displayed in the poison slot to the equipped hand
 
 		;/if bPreviously2H && bFirstPoison										; If we were wielding a 2H weapon (without CGO) equip something 1H in the other hand
@@ -379,7 +382,7 @@ function exitAmmoMode()
 
 	ammo targetAmmo = AM.currentAmmoForm as Ammo
 	if WC.bUnequipAmmo && PlayerRef.isEquipped(targetAmmo)
-		PlayerRef.UnequipItemEx(targetAmmo)
+		AM.unequipAmmo(targetAmmo)
 	endIf
 	;debug.trace("iEquip_ThrowingPoisons exitAmmoMode end")
 endFunction

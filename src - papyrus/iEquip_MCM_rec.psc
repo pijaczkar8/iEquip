@@ -99,24 +99,24 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 endFunction
 
 function drawPage()
-	MCM.AddTextOptionST("rec_txt_showEnchRechHelp", "<font color='#a6bffe'>$iEquip_MCM_rec_lbl_showEnchRechHelp</font>", "")
+	MCM.AddTextOptionST("rec_txt_showEnchRechHelp", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_rec_lbl_showEnchRechHelp</font>", "")
     if RC.bRechargingEnabled
-        MCM.AddToggleOptionST("rec_tgl_enblEnchRech", "<font color='#c7ea46'>$iEquip_MCM_rec_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
+        MCM.AddToggleOptionST("rec_tgl_enblEnchRech", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_rec_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
         MCM.AddMenuOptionST("rec_men_rechargeFX", "$iEquip_MCM_common_lbl_FX", effectsOptions[RC.iRechargeFX])
         MCM.AddEmptyOption()
 
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rec_lbl_soulgemUseOpts</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_rec_lbl_soulgemUseOpts</font>")
         MCM.AddToggleOptionST("rec_tgl_useLargSoul", "$iEquip_MCM_rec_lbl_useLargSoul", RC.bUseLargestSoul)
         MCM.AddToggleOptionST("rec_tgl_useOvrsizSoul", "$iEquip_MCM_rec_lbl_useOvrsizSoul", RC.bAllowOversizedSouls)
         MCM.AddToggleOptionST("rec_tgl_usePartGem", "$iEquip_MCM_rec_lbl_usePartGem", RC.bUsePartFilledGems)
 
         MCM.AddEmptyOption()        
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_rec_lbl_StaffCasting</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_rec_lbl_StaffCasting</font>")
         MCM.AddToggleOptionST("rec_tgl_realTimeStaffMeters", "$iEquip_MCM_rec_lbl_realTimeStaffMeters", WC.EH.bRealTimeStaffMeters)
        
         MCM.SetCursorPosition(1)
 
-        MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
         MCM.AddMenuOptionST("rec_men_showEnchCharge", "$iEquip_MCM_rec_lbl_showEnchCharge", chargeDisplayOptions[CM.iChargeDisplayType])
         if CM.iChargeDisplayType > 0
             MCM.AddToggleOptionST("rec_tgl_enableChargeFadeout", "$iEquip_MCM_rec_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
@@ -147,7 +147,7 @@ function drawPage()
             endIf
         endIf
 	else
-        MCM.AddToggleOptionST("rec_tgl_enblEnchRech", "<font color='#ff7417'>$iEquip_MCM_rec_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
+        MCM.AddToggleOptionST("rec_tgl_enblEnchRech", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_rec_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
 	endIf
 
 endFunction

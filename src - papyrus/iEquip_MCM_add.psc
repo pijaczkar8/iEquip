@@ -53,13 +53,13 @@ endFunction
 
 function drawPage()
 
-	MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_add_lbl_addToQueOpts</font>")
+	MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_add_lbl_addToQueOpts</font>")
 	MCM.AddToggleOptionST("add_tgl_showConfMsg", "$iEquip_MCM_add_lbl_showConfMsg", WC.bShowQueueConfirmationMessages)
 	MCM.AddToggleOptionST("add_tgl_signlBothQue", "$iEquip_MCM_add_lbl_signlBothQue", WC.bAllowSingleItemsInBothQueues)
     MCM.AddToggleOptionST("add_tgl_dsblAddToQue", "$iEquip_MCM_add_lbl_dsblAddToQue", KH.bDisableAddToQueue)
 
 	MCM.AddEmptyOption()
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_add_lbl_autoAddOpts</font>")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_add_lbl_autoAddOpts</font>")
     MCM.AddToggleOptionST("add_tgl_autoAddHandItems", "$iEquip_MCM_add_lbl_autoAddHandItems", EH.bAutoAddNewItems)
     MCM.AddToggleOptionST("add_tgl_autoAddShouts", "$iEquip_MCM_add_lbl_autoAddShouts", EH.bAutoAddShouts)
     MCM.AddToggleOptionST("add_tgl_autoAddPowers", "$iEquip_MCM_add_lbl_autoAddPowers", EH.bAutoAddPowers)
@@ -71,7 +71,7 @@ function drawPage()
 
 	MCM.SetCursorPosition(1)
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_add_lbl_cacheBlkLst</font>")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_add_lbl_cacheBlkLst</font>")
     MCM.AddToggleOptionST("add_tgl_allowCacheRmvItm", "$iEquip_MCM_add_lbl_allowCacheRmvItm", WC.bEnableRemovedItemCaching)
             
     if WC.bEnableRemovedItemCaching
@@ -81,7 +81,7 @@ function drawPage()
     MCM.AddToggleOptionST("add_tgl_enblBlacklist", "$iEquip_MCM_add_lbl_enblBlacklist", WC.bBlacklistEnabled)
     
     MCM.AddEmptyOption()
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_add_lbl_addBack</font>")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_add_lbl_addBack</font>")
     
     if WC.findInQueue(0, "$iEquip_common_Unarmed") == -1
         MCM.AddTextOptionST("add_txt_addFistsLeft", "$iEquip_MCM_add_lbl_AddUnarmedLeft", "")

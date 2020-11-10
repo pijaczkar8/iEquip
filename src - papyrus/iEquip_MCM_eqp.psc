@@ -125,7 +125,7 @@ endFunction
 
 function drawPage()
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_eqp_lbl_AutoEquip</font>")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_eqp_lbl_AutoEquip</font>")
     MCM.AddMenuOptionST("eqp_men_enableAutoEquip", "$iEquip_MCM_eqp_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
 
     if WC.iAutoEquipEnabled > 0
@@ -140,11 +140,11 @@ function drawPage()
 
     MCM.SetCursorPosition(1)
 
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_eqp_lbl_quickShieldOpts</font>")
-    MCM.AddTextOptionST("eqp_txt_whatQuickshield", "<font color='#a6bffe'>$iEquip_MCM_eqp_lbl_whatQuickshield</font>", "")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_eqp_lbl_quickShieldOpts</font>")
+    MCM.AddTextOptionST("eqp_txt_whatQuickshield", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_eqp_lbl_whatQuickshield</font>", "")
     
     if PM.bQuickShieldEnabled
-        MCM.AddToggleOptionST("eqp_tgl_enblQuickshield", "<font color='#c7ea46'>$iEquip_MCM_eqp_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
+        MCM.AddToggleOptionST("eqp_tgl_enblQuickshield", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_eqp_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
         MCM.AddToggleOptionST("eqp_tgl_with2hReqp", "$iEquip_MCM_eqp_lbl_with2hReqp", PM.bQuickShield2HSwitchAllowed)
         MCM.AddMenuOptionST("eqp_men_quickShieldItemType", "$iEquip_MCM_eqp_lbl_quickShieldItemType", QSPreferredType[PM.iQuickShieldPreferredItemType])
         MCM.AddToggleOptionST("eqp_tgl_quickShieldUseAlt", "$iEquip_MCM_eqp_lbl_quickShieldUseAlt", PM.bQuickShieldUseAlt)
@@ -155,15 +155,15 @@ function drawPage()
         MCM.AddToggleOptionST("eqp_tgl_ifNotFound", "$iEquip_MCM_eqp_lbl_ifNotFound", PM.bQuickShieldUnequipLeftIfNotFound)
         MCM.AddMenuOptionST("eqp_men_inPreselectQuickshieldMode", "$iEquip_MCM_common_lbl_inPreselect", preselectQuickFunctionOptions[PM.iPreselectQuickShield])
     else
-        MCM.AddToggleOptionST("eqp_tgl_enblQuickshield", "<font color='#ff7417'>$iEquip_MCM_eqp_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
+        MCM.AddToggleOptionST("eqp_tgl_enblQuickshield", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_eqp_lbl_enblQuickshield</font>", PM.bQuickShieldEnabled)
     endIf
 
     MCM.AddEmptyOption()
-    MCM.AddHeaderOption("<font color='#C1A57A'>$iEquip_MCM_eqp_lbl_dualEquipSpells</font>")
-    MCM.AddTextOptionST("eqp_txt_whatDualEquipSpells", "<font color='#a6bffe'>$iEquip_MCM_eqp_lbl_whatQuickdualcast</font>", "")
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_eqp_lbl_dualEquipSpells</font>")
+    MCM.AddTextOptionST("eqp_txt_whatDualEquipSpells", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_eqp_lbl_whatQuickdualcast</font>", "")
 
     if WC.bQuickDualCastEnabled
-        MCM.AddToggleOptionST("eqp_tgl_enblDualEquipSpells", "<font color='#c7ea46'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
+        MCM.AddToggleOptionST("eqp_tgl_enblDualEquipSpells", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
         MCM.AddTextOption("$iEquip_MCM_eqp_lbl_enableQDCSchools", "")
         MCM.AddToggleOptionST("eqp_tgl_altSpll", "$iEquip_MCM_common_lbl_altSpll", WC.abQuickDualCastSchoolAllowed[0])
         MCM.AddToggleOptionST("eqp_tgl_conjSpll", "$iEquip_MCM_common_lbl_conjSpll", WC.abQuickDualCastSchoolAllowed[1])
@@ -172,7 +172,7 @@ function drawPage()
         MCM.AddToggleOptionST("eqp_tgl_restSpll", "$iEquip_MCM_common_lbl_restSpll", WC.abQuickDualCastSchoolAllowed[4])
         MCM.AddToggleOptionST("eqp_tgl_reqBothQue", "$iEquip_MCM_eqp_lbl_reqBothQue", PM.bQuickDualCastMustBeInBothQueues)
     else
-        MCM.AddToggleOptionST("eqp_tgl_enblDualEquipSpells", "<font color='#ff7417'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
+        MCM.AddToggleOptionST("eqp_tgl_enblDualEquipSpells", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_eqp_lbl_enblQuickdualcast</font>", WC.bQuickDualCastEnabled)
     endIf
 
 endFunction
