@@ -4586,6 +4586,7 @@ function applyPoison(int Q)
     	int targetQ = aiTargetQ[Q]
         int targetObj = jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4])
         Potion poisonToApply = jMap.getForm(targetObj, "iEquipForm") as Potion
+
         if !poisonToApply
             return
         endIf
