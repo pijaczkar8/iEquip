@@ -1369,14 +1369,30 @@ function sortPoisonQueue()
     ;debug.trace("iEquip_PotionScript sortPoisonQueue end")
 endFunction
 
-function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHealing = false)
+bool bInCombat
+bool bDontConsume
+bool bCheckEffectMag
+
+function checkPotionConditions()
+    ;debug.trace("iEquip_PotionScript checkPotionConditions start - iActiveEffectRule: " + iActiveEffectRule)
+    bInCombat = PlayerRef.IsInCombat()
+    bDontConsume = iActiveEffectRule == 3 || (iActiveEffectRule == 2 && !bInCombat)
+    bCheckEffectMag = iActiveEffectRule == 1 || (iActiveEffectRule == 2 && bInCombat)
+    ;debug.trace("iEquip_PotionScript checkPotionConditions end - bInCombat: " + bInCombat + ", bDontConsume: " + bDontConsume + ", bCheckEffectMag: " + bCheckEffectMag)
+endFunction
+
+function selectAndConsumePotion(int potionGroup, int potionType, bool bCheckConditions = true, bool bQuickHealing = false)
+
+    if bCheckConditions
+        checkPotionConditions()
+    endIf
     
     string sTargetAV = asActorValues[potionGroup]
     float currAVDamage = iEquip_ActorExt.GetAVDamage(PlayerRef, aiActorValues[potionGroup])
     int Q = (potionGroup * 3) + potionType
     bool isRestore = Q % 3 == 0
     
-    ;debug.trace("iEquip_PotionScript selectAndConsumePotion start - potionGroup: " + potionGroup + ", potionType: " + potionType + ", bQuickHealing: " + bQuickHealing + ", targetAV: " + sTargetAV)
+    ;debug.trace("iEquip_PotionScript selectAndConsumePotion start - potionGroup: " + potionGroup + ", potionType: " + potionType + ", bCheckConditions: " + bCheckConditions + ", bQuickHealing: " + bQuickHealing + ", targetAV: " + sTargetAV)
     ;debug.trace("iEquip_PotionScript selectAndConsumePotion - GetAVDamage: " + currAVDamage + ", GetActorValue: " + PlayerRef.GetActorValue(sTargetAV))
     
     if isRestore && currAVDamage == 0 && bShowStatFullNotifications
@@ -1387,7 +1403,6 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
         int count = jArray.count(aiPotionQ[Q])
         if count > 0
             int targetPotion                                                                    ; Default value is 0 which is the array index for the strongest potion of the type requested. If iPotionSelectChoice is 0 (Use Strongest) this will stay at 0
-            bool bInCombat = PlayerRef.IsInCombat()
             float currAV = PlayerRef.GetActorValue(sTargetAV)
             bool bBelowThreshold = currAV/(currAV + currAVDamage) <= fSmartSelectThreshold
             
@@ -1411,8 +1426,9 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
             if potionToConsume
                 ;debug.trace("iEquip_PotionScript selectAndConsumePotion - selected potion is " + potionToConsume + ", " + potionToConsume.GetName())
                 float currEffectMagOnPlayer = getCurrentActiveEffectMagnitude(aStrongestEffects[Q], true, Q)
-
-                if currEffectMagOnPlayer > 0 && iActiveEffectRule > 0 && (iActiveEffectRule == 3 || (iActiveEffectRule == 2 && !bInCombat) || (iActiveEffectRule == 1 || (iActiveEffectRule == 2 && bInCombat) && jMap.getFlt(targetPotion, "iEquipStrength") <= currEffectMagOnPlayer * (1.0 + fAboveCurrentEffectMag)))
+                ;debug.trace("iEquip_PotionScript selectAndConsumePotion - currEffectMagOnPlayer: " + currEffectMagOnPlayer + ", target potion magnitude: " + jMap.getFlt(targetPotion, "iEquipStrength") + ", min required: " + currEffectMagOnPlayer * (1.0 + fAboveCurrentEffectMag))
+                if currEffectMagOnPlayer > 0 && iActiveEffectRule > 0 && (bDontConsume || (bCheckEffectMag && jMap.getFlt(targetPotion, "iEquipStrength") <= currEffectMagOnPlayer * (1.0 + fAboveCurrentEffectMag)))
+                    ;debug.trace("iEquip_PotionScript selectAndConsumePotion - failed the active effects check")
                     if bShowEffectActiveNotifications
                         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive{"+asEffectNames[Q]+"}"))
                     endIf
@@ -1420,7 +1436,7 @@ function selectAndConsumePotion(int potionGroup, int potionType, bool bQuickHeal
                         PM.bQuickHealActionTaken = true
                     endIf
                 else
-                    ; Consume the potion
+                    ;debug.trace("iEquip_PotionScript selectAndConsumePotion - should be consuming a " + potionToConsume.GetName() + " now")
                     PlayerRef.EquipItemEx(potionToConsume)
                     if bShowConsumedNotifications
                         debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
@@ -1585,9 +1601,6 @@ function quickBuffFindAndConsumePotions(int potionGroup)
     form potionToConsume
     int targetObj
     float currEffectMagOnPlayer
-    bool bInCombat = PlayerRef.IsInCombat()
-    bool bDontConsume = iActiveEffectRule == 3 || (iActiveEffectRule == 2 && !bInCombat)
-    bool bCheckEffectMag = iActiveEffectRule == 1 || (iActiveEffectRule == 2 && bInCombat)
 
     bool bFortifyConsumed
 
@@ -1678,21 +1691,20 @@ endFunction
 endFunction/;
 
 function quickResistSelectAndConsumePotions()
+    ;debug.trace("iEquip_PotionScript quickResistSelectAndConsumePotions start")
     int i
     int count
     int targetArray
     int targetObj
     form potionToConsume
     float currEffectMagOnPlayer
-    bool bInCombat = PlayerRef.IsInCombat()
-    bool bDontConsume = iActiveEffectRule == 3 || (iActiveEffectRule == 2 && !bInCombat)
-    bool bCheckEffectMag = iActiveEffectRule == 1 || (iActiveEffectRule == 2 && bInCombat)
 
     while i < 5
         currEffectMagOnPlayer = iEquip_ActorExt.GetMagicEffectMagnitude(PlayerRef, aResistEffects[i])                                                       ; Will return 0 if effect isn't currently active on the player
         targetArray = aiResistQ[i]
         count = jArray.count(targetArray)
-        if count == 0                                                                                                                                       ; If we've got nothing left in this resist queue show notification if requested
+        if count == 0
+            ;debug.trace("iEquip_PotionScript quickResistSelectAndConsumePotions - no " + asResistEffectNames[i] + " potions left")                         ; If we've got nothing left in this resist queue show notification if requested
             if bShowNoPotionsNotifications
                 debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+asResistEffectNames[i]+"}"))
             endIf
@@ -1700,11 +1712,14 @@ function quickResistSelectAndConsumePotions()
             targetObj = jArray.getObj(targetArray, 0)
             potionToConsume = jMap.getForm(targetObj, "iEquipForm")
             if potionToConsume && PlayerRef.GetItemCount(potionToConsume)
+                ;debug.trace("iEquip_PotionScript quickResistSelectAndConsumePotions - target potion: " + potionToConsume + "(" + potionToConsume.GetName() + "), currEffectMagOnPlayer: " + currEffectMagOnPlayer + ", targetPotion strength: " + jMap.getFlt(targetObj, "iEquipStrength") + ", min reqd: " + currEffectMagOnPlayer * (1.0 + fAboveCurrentEffectMag))
                 if currEffectMagOnPlayer > 0 && iActiveEffectRule > 0 && (bDontConsume || (bCheckEffectMag && jMap.getFlt(targetObj, "iEquipStrength") <= currEffectMagOnPlayer * (1.0 + fAboveCurrentEffectMag)))  ; Check if we're allowed to consume if the effect is already active
+                    ;debug.trace("iEquip_PotionScript quickResistSelectAndConsumePotions - failed the active effects check")
                     if bShowEffectActiveNotifications
                         debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive{"+asResistEffectNames[i]+"}"))
                     endIf
                 else
+                    ;debug.trace("iEquip_PotionScript quickResistSelectAndConsumePotions - about to consume a " + potionToConsume.GetName())
                     PlayerRef.EquipItemEx(potionToConsume)                                                                                                  ; If we've got a resist potion and we've passed the active effect check carry on and consume it
                     if bShowConsumedNotifications
                         debug.notification(potionToConsume.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
@@ -1716,6 +1731,7 @@ function quickResistSelectAndConsumePotions()
         endIf
         i += 1
     endWhile
+    ;debug.trace("iEquip_PotionScript quickResistSelectAndConsumePotions end")
 endFunction
 
 float function getCurrentActiveEffectMagnitude(magicEffect effectToCheck, bool bIsRestore = false, int Q = 0)

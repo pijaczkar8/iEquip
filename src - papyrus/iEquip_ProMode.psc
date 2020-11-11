@@ -1890,13 +1890,15 @@ function quickRestore()
 	;debug.trace("iEquip_ProMode quickRestore start")
 	if bQuickRestoreEnabled
 
-		bool bPlayerIsInCombat = PlayerRef.IsInCombat()
+		PO.checkPotionConditions()
+
+		bool bInCombat = PlayerRef.IsInCombat()
 		bool bDoBoth
 		bool bQuickBuff
-		bool bRunningQuickBuffOnSecondPress = bQuickBuffEnabled && ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay && (iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bPlayerIsInCombat)))
+		bool bRunningQuickBuffOnSecondPress = bQuickBuffEnabled && ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay && (iQuickBuffControl == 1 || (iQuickBuffControl == 2 && bInCombat)))
 
 		if bQuickBuffEnabled
-			bDoBoth = iQuickBuffControl == 0 || (iQuickBuffControl == 2 && !bPlayerIsInCombat)
+			bDoBoth = iQuickBuffControl == 0 || (iQuickBuffControl == 2 && !bInCombat)
 			bQuickBuff = bDoBoth || bRunningQuickBuffOnSecondPress
 		endIf
 
@@ -1907,7 +1909,7 @@ function quickRestore()
 		if bCurrentlyQuickHealing && !bRunningQuickBuffOnSecondPress
 
 			if !((iQuickSlotsEquipped > 0 && (PlayerRef as objectReference).GetAnimationVariableBool("IsCastingRight")) || ((iQuickSlotsEquipped == 0 || iQuickSlotsEquipped == 2) && (PlayerRef as objectReference).GetAnimationVariableBool("IsCastingLeft")))
-				quickSwitchBack(true, bPlayerIsInCombat)
+				quickSwitchBack(true, bInCombat)
 			endIf
 
 		else
@@ -1915,7 +1917,7 @@ function quickRestore()
 
 			float currAV
 
-			;debug.trace("iEquip_ProMode quickRestore - bPlayerIsInCombat: " + bPlayerIsInCombat + ", bIn2ndPressWindow: " + ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay) + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore + ", fConsRestoreThreshold: " + PO.fConsRestoreThreshold)
+			;debug.trace("iEquip_ProMode quickRestore - bInCombat: " + bInCombat + ", bIn2ndPressWindow: " + ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay) + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore + ", fConsRestoreThreshold: " + PO.fConsRestoreThreshold)
 
 			if bQuickRestore
 				fTimeOfLastQuickRestore = Utility.GetCurrentRealTime()
@@ -1943,7 +1945,7 @@ function quickRestore()
 		    	;debug.trace("iEquip_ProMode quickRestore - current stamina: " + currAV + ", current stamina damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, 26))
 	    		if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 26)) <= PO.fConsRestoreThreshold)
 			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Stamina")
-			    	PO.selectAndConsumePotion(2, 0) ;Stamina
+			    	PO.selectAndConsumePotion(2, 0, false) ;Stamina
 			    elseIf PO.getPotionTypeCount(6) == 0 && PO.bShowNoPotionsNotifications
 			    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+"$iEquip_PO_restoreStamina"+"}"))
 			    elseIf PO.bShowStatFullNotifications
@@ -1965,7 +1967,7 @@ function quickRestore()
 		    	;debug.trace("iEquip_ProMode quickRestore - current magicka: " + currAV + ", current magicka damage: " + iEquip_ActorExt.GetAVDamage(PlayerRef, 25))
 		    	if bQuickRestore && (currAV / (currAV + iEquip_ActorExt.GetAVDamage(PlayerRef, 25)) <= PO.fConsRestoreThreshold)
 			    	;debug.trace("iEquip_ProMode quickRestore - calling selectAndConsumePotion for Magicka")
-			    	PO.selectAndConsumePotion(1, 0) ;Magicka
+			    	PO.selectAndConsumePotion(1, 0, false) ;Magicka
 			    elseIf PO.getPotionTypeCount(3) == 0 && PO.bShowNoPotionsNotifications
 			    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_noneLeft{"+"$iEquip_PO_restoreMagicka"+"}"))
 			    elseIf PO.bShowStatFullNotifications
@@ -2004,7 +2006,7 @@ function quickHeal()
         endIf
     elseIf PO.getPotionTypeCount(0) > 0
     	if belowHealthThreshold
-	    	PO.selectAndConsumePotion(0, 0, true)
+	    	PO.selectAndConsumePotion(0, 0, false, true)
 	   	elseIf PO.bShowStatFullNotifications
 			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_HealthFull"))
 	    endIf
@@ -2017,7 +2019,7 @@ function quickHeal()
         if bQuickHealPreferMagic
         	If PO.getPotionTypeCount(0) > 0
 	        	if belowHealthThreshold
-	            	PO.selectAndConsumePotion(0, 0, true)
+	            	PO.selectAndConsumePotion(0, 0, false, true)
 	            elseIf PO.bShowStatFullNotifications
 	            	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_PrefMagicHealthFull"))
 	            endIf
@@ -2204,7 +2206,7 @@ function saveCurrentItemsForSwitchBack()
 	;debug.trace("iEquip_ProMode saveCurrentItemsForSwitchBack end")
 endFunction
 
-function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
+function quickSwitchBack(bool bQuickHealing, bool bInCombat)
 	;debug.trace("iEquip_ProMode quickSwitchBack start")
 	;debug.trace("iEquip_ProMode quickSwitchBack - iPreviousLeftHandIndex: " + iPreviousLeftHandIndex + ", fPreviousLeftHandForm: " + fPreviousLeftHandForm.GetName())
 	;debug.trace("iEquip_ProMode quickSwitchBack - iPreviousRightHandIndex: " + iPreviousRightHandIndex + ", fPreviousRightHandForm: " + fPreviousRightHandForm.GetName() + ", bPreviouslyUnarmed: " + bPreviouslyUnarmed + ", bPreviously2H: " + bPreviously2H)
@@ -2307,7 +2309,7 @@ function quickSwitchBack(bool bQuickHealing, bool bPlayerIsInCombat)
 	else
 		;debug.trace("iEquip_ProMode quickHealSwitchBack - Something went wrong!")
 	endIf
-	if bQuickHealing && bQuickHealSwitchBackAndRestore && bPlayerIsInCombat
+	if bQuickHealing && bQuickHealSwitchBackAndRestore && bInCombat
 		PO.selectAndConsumePotion(1, 0) ;Magicka potions
 	endIf
 	iQuickSlotsEquipped = -1 ;Reset
@@ -2410,7 +2412,7 @@ function addNonEquippedItemToQueue(int Q, form formToAdd, int itemType = -1)
 endFunction
 
 ; Deprecated in v1.2
-function quickHealSwitchBack(bool bPlayerIsInCombat)
+function quickHealSwitchBack(bool bInCombat)
 endFunction
 
 bool property bQuickShieldPreferMagic auto hidden
