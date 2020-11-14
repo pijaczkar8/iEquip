@@ -45,12 +45,6 @@ function initData()
     QHEquipOptions[2] = "$iEquip_MCM_pot_opt_both"
     QHEquipOptions[3] = "$iEquip_MCM_pot_opt_whereFound"
 
-    QBuffOptions = new string[4]
-    QBuffOptions[0] = "$iEquip_MCM_pot_opt_eitherBuff"
-    QBuffOptions[1] = "$iEquip_MCM_pot_opt_fortifyOnly"
-    QBuffOptions[2] = "$iEquip_MCM_pot_opt_regenOnly"
-    QBuffOptions[3] = "$iEquip_MCM_pot_opt_bothBuffs"
-
     QResistOptions = new string[3]
     QResistOptions[0] = "$iEquip_MCM_pot_opt_byMag"
     QResistOptions[1] = "$iEquip_MCM_pot_opt_byDur"
@@ -97,13 +91,25 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, PM.iQuickBuffControl)
     jArray.addFlt(jPageObj, PM.fQuickBuff2ndPressDelay)
     jArray.addInt(jPageObj, PO.iQuickBuffsToApply)
-    jArray.addInt(jPageObj, PM.bQuickResistEnabled as int)
-    jArray.addInt(jPageObj, PO.iResistSortingMethod)
-    jArray.AddInt(jPageObj, PO.abQuickResist[0] as int)
-    jArray.AddInt(jPageObj, PO.abQuickResist[1] as int)
-    jArray.AddInt(jPageObj, PO.abQuickResist[2] as int)
-    jArray.AddInt(jPageObj, PO.abQuickResist[3] as int)
-    jArray.AddInt(jPageObj, PO.abQuickResist[4] as int)
+    jArray.addInt(jPageObj, PM.bQuickBuffResistances as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[0] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[1] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[2] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[3] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[4] as int)
+    jArray.addInt(jPageObj, PM.bQuickBuffCombatSkills as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[5] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[6] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[7] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[8] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[9] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[10] as int)
+    jArray.addInt(jPageObj, PM.bQuickBuffMagicSkills as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[11] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[12] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[13] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[14] as int)
+    jArray.AddInt(jPageObj, PO.abQuickBuff[15] as int)
     jArray.addInt(jPageObj, PM.bQuickHealPreferMagic as int)
     jArray.addInt(jPageObj, PM.bQuickHealUseFallback as int)
     jArray.addInt(jPageObj, PM.iQuickHealEquipChoice)
@@ -160,7 +166,9 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
         PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 22)
         PM.iQuickBuffControl = jArray.getInt(jPageObj, 23)
         PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 24)
-        PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 25)
+        int i = jArray.getInt(jPageObj, 25)
+        PO.bQuickBuffFortify = i != 2
+        PO.bQuickBuffRegen = i != 1
         PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 26)
         PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 27)
         PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 28)
@@ -198,19 +206,32 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
         PM.bQuickBuffEnabled = jArray.getInt(jPageObj, 25)
         PM.iQuickBuffControl = jArray.getInt(jPageObj, 26)
         PM.fQuickBuff2ndPressDelay = jArray.getFlt(jPageObj, 27)
-        PO.iQuickBuffsToApply = jArray.getInt(jPageObj, 28)
-        PM.bQuickResistEnabled = jArray.getInt(jPageObj, 29)
-        PO.iResistSortingMethod = jArray.getInt(jPageObj, 30)
-        PO.abQuickResist[0] = jArray.getInt(jPageObj, 31)
-        PO.abQuickResist[1] = jArray.getInt(jPageObj, 32)
-        PO.abQuickResist[2] = jArray.getInt(jPageObj, 33)
-        PO.abQuickResist[3] = jArray.getInt(jPageObj, 34)
-        PO.abQuickResist[4] = jArray.getInt(jPageObj, 35)
-        PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 36)
-        PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 37)
-        PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 38)
-        PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 39)
-        PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 40)
+        PO.bQuickBuffFortify = jArray.getInt(jPageObj, 28)
+        PO.bQuickBuffRegen = jArray.getInt(jPageObj, 29)
+        PM.bQuickBuffResistances = jArray.getInt(jPageObj, 30)
+        PO.abQuickBuff[0] = jArray.getInt(jPageObj, 31)
+        PO.abQuickBuff[1] = jArray.getInt(jPageObj, 32)
+        PO.abQuickBuff[2] = jArray.getInt(jPageObj, 33)
+        PO.abQuickBuff[3] = jArray.getInt(jPageObj, 34)
+        PO.abQuickBuff[4] = jArray.getInt(jPageObj, 35)
+        PM.bQuickBuffCombatSkills = jArray.getInt(jPageObj, 36)
+        PO.abQuickBuff[5] = jArray.getInt(jPageObj, 37)
+        PO.abQuickBuff[6] = jArray.getInt(jPageObj, 38)
+        PO.abQuickBuff[7] = jArray.getInt(jPageObj, 39)
+        PO.abQuickBuff[8] = jArray.getInt(jPageObj, 40)
+        PO.abQuickBuff[9] = jArray.getInt(jPageObj, 41)
+        PO.abQuickBuff[10] = jArray.getInt(jPageObj, 42)
+        PM.bQuickBuffMagicSkills = jArray.getInt(jPageObj, 43)
+        PO.abQuickBuff[11] = jArray.getInt(jPageObj, 44)
+        PO.abQuickBuff[12] = jArray.getInt(jPageObj, 45)
+        PO.abQuickBuff[13] = jArray.getInt(jPageObj, 46)
+        PO.abQuickBuff[14] = jArray.getInt(jPageObj, 47)
+        PO.abQuickBuff[15] = jArray.getInt(jPageObj, 48)
+        PM.bQuickHealPreferMagic = jArray.getInt(jPageObj, 49)
+        PM.bQuickHealUseFallback = jArray.getInt(jPageObj, 50)
+        PM.iQuickHealEquipChoice = jArray.getInt(jPageObj, 51)
+        PM.bQuickHealSwitchBackEnabled = jArray.getInt(jPageObj, 52)
+        PM.bQuickHealSwitchBackAndRestore = jArray.getInt(jPageObj, 53)
     endIf
 
 endFunction
@@ -284,21 +305,35 @@ function drawPage()
         if PM.bQuickBuffEnabled
             MCM.AddToggleOptionST("pot_tgl_quickBuff", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_pot_lbl_quickBuff</font>", PM.bQuickBuffEnabled)
             MCM.AddMenuOptionST("pot_men_quickBuffControl", "$iEquip_MCM_pot_lbl_quickBuffControl", QBuffControlOptions[PM.iQuickBuffControl])
-            
             if PM.iQuickBuffControl > 0
                 MCM.AddSliderOptionST("pot_sld_quickBuffDelay", "$iEquip_MCM_pot_lbl_quickBuffDelay", PM.fQuickBuff2ndPressDelay, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
             endIf
-            MCM.AddMenuOptionST("pot_men_buffsToApply", "$iEquip_MCM_pot_lbl_buffsToApply", QBuffOptions[PO.iQuickBuffsToApply])
-            if PM.bQuickResistEnabled
-                MCM.AddToggleOptionST("pot_tgl_quickResist", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_pot_lbl_quickResist</font>", PM.bQuickResistEnabled)
-                MCM.AddMenuOptionST("pot_men_quickResistPref", "$iEquip_MCM_pot_lbl_quickResistPref",QResistOptions[PO.iResistSortingMethod])
-                MCM.AddToggleOptionST("pot_tgl_quickResistMagic", "$iEquip_MCM_pot_lbl_quickResistMagic", PO.abQuickResist[2])
-                MCM.AddToggleOptionST("pot_tgl_quickResistFire", "$iEquip_MCM_pot_lbl_quickResistFire", PO.abQuickResist[0])
-                MCM.AddToggleOptionST("pot_tgl_quickResistFrost", "$iEquip_MCM_pot_lbl_quickResistFrost", PO.abQuickResist[1])
-                MCM.AddToggleOptionST("pot_tgl_quickResistShock", "$iEquip_MCM_pot_lbl_quickResistShock", PO.abQuickResist[4])
-                MCM.AddToggleOptionST("pot_tgl_quickResistPoison", "$iEquip_MCM_pot_lbl_quickResistPoison", PO.abQuickResist[3])
-            else
-                MCM.AddToggleOptionST("pot_tgl_quickResist", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_pot_lbl_quickResist</font>", PM.bQuickResistEnabled)
+            MCM.AddToggleOptionST("pot_tgl_quickBuffFortify", "$iEquip_MCM_pot_lbl_quickBuffFortify", PO.bQuickBuffFortify)
+            MCM.AddToggleOptionST("pot_tgl_quickBuffRegen", "$iEquip_MCM_pot_lbl_quickBuffRegen", PO.bQuickBuffRegen)
+            MCM.AddToggleOptionST("pot_tgl_quickBuffResistances", "$iEquip_MCM_pot_lbl_quickBuffResistances", PM.bQuickBuffResistances)
+            if PM.bQuickBuffResistances
+                MCM.AddToggleOptionST("pot_tgl_quickBuffResistMagic", "$iEquip_MCM_pot_lbl_quickBuffResistMagic", PO.abQuickBuff[2])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffResistFire", "$iEquip_MCM_pot_lbl_quickBuffResistFire", PO.abQuickBuff[0])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffResistFrost", "$iEquip_MCM_pot_lbl_quickBuffResistFrost", PO.abQuickBuff[1])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffResistShock", "$iEquip_MCM_pot_lbl_quickBuffResistShock", PO.abQuickBuff[4])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffResistPoison", "$iEquip_MCM_pot_lbl_quickBuffResistPoison", PO.abQuickBuff[3])
+            endIf
+            MCM.AddToggleOptionST("pot_tgl_quickBuffCombatSkills", "$iEquip_MCM_pot_lbl_quickBuffCombatSkills", PM.bQuickBuffCombatSkills)
+            if PM.bQuickBuffCombatSkills
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyLightArmor", "$iEquip_MCM_pot_lbl_quickBuffFortifyLightArmor", PO.abQuickBuff[5])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyHeavyArmor", "$iEquip_MCM_pot_lbl_quickBuffFortifyHeavyArmor", PO.abQuickBuff[6])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyBlock", "$iEquip_MCM_pot_lbl_quickBuffFortifyBlock", PO.abQuickBuff[7])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyOneHanded", "$iEquip_MCM_pot_lbl_quickBuffFortifyOneHanded", PO.abQuickBuff[8])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyTwoHanded", "$iEquip_MCM_pot_lbl_quickBuffFortifyTwoHanded", PO.abQuickBuff[9])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyMarksman", "$iEquip_MCM_pot_lbl_quickBuffFortifyMarksman", PO.abQuickBuff[10])
+            endIf
+            MCM.AddToggleOptionST("pot_tgl_quickBuffMagicSkills", "$iEquip_MCM_pot_lbl_quickBuffMagicSkills", PM.bQuickBuffMagicSkills)
+            if PM.bQuickBuffMagicSkills
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyAlteration", "$iEquip_MCM_pot_lbl_quickBuffFortifyAlteration", PO.abQuickBuff[11])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyConjuration", "$iEquip_MCM_pot_lbl_quickBuffFortifyConjuration", PO.abQuickBuff[12])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyDestruction", "$iEquip_MCM_pot_lbl_quickBuffFortifyDestruction", PO.abQuickBuff[13])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyIllusion", "$iEquip_MCM_pot_lbl_quickBuffFortifyIllusion", PO.abQuickBuff[14])
+                MCM.AddToggleOptionST("pot_tgl_quickBuffFortifyRestoration", "$iEquip_MCM_pot_lbl_quickBuffFortifyRestoration", PO.abQuickBuff[15])
             endIf
         else
             MCM.AddToggleOptionST("pot_tgl_quickBuff", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_pot_lbl_quickBuff</font>", PM.bQuickBuffEnabled)
@@ -731,94 +766,254 @@ State pot_sld_quickBuffDelay
     endEvent
 endState
 
-State pot_men_buffsToApply
+State pot_tgl_quickBuffFortify
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_buffsToApply")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(PO.iQuickBuffsToApply, QBuffOptions, 3)
-        elseIf currentEvent == "Accept"
-            PO.iQuickBuffsToApply = currentVar as int
-            MCM.SetMenuOptionValueST(QBuffOptions[PO.iQuickBuffsToApply])
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickBuffFortify")
+        elseIf currentEvent == "Select"
+            PO.bQuickBuffFortify = !PO.bQuickBuffFortify
+            MCM.SetToggleOptionValueST(PO.bQuickBuffFortify)
         endIf
     endEvent
 endState
 
-State pot_tgl_quickResist
+State pot_tgl_quickBuffRegen
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickResist")
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickBuffRegen")
         elseIf currentEvent == "Select"
-            PM.bQuickResistEnabled = !PM.bQuickResistEnabled
+            PO.bQuickBuffRegen = !PO.bQuickBuffRegen
+            MCM.SetToggleOptionValueST(PO.bQuickBuffRegen)
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffResistances
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickBuffResistances")
+        elseIf currentEvent == "Select"
+            PM.bQuickBuffResistances = !PM.bQuickBuffResistances
+            if !PM.bQuickBuffResistances
+                int i
+                while i < 5
+                    PO.abQuickBuff[i] = false
+                    i += 1
+                endWhile
+            endIf
             MCM.forcePageReset()
         endIf
     endEvent
 endState
 
-State pot_men_quickResistPref
+State pot_tgl_quickBuffResistFire
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickResistPref")
-        elseIf currentEvent == "Open"
-            MCM.fillMenu(PO.iResistSortingMethod, QResistOptions, 0)
-        elseIf currentEvent == "Accept"
-            PO.iResistSortingMethod = currentVar as int
-            MCM.SetMenuOptionValueST(QResistOptions[PO.iResistSortingMethod])
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[0]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[0] = !PO.abQuickBuff[0]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[0])
         endIf
     endEvent
 endState
 
-State pot_tgl_quickResistFire
+State pot_tgl_quickBuffResistFrost
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[0]+"}"))
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[1]+"}"))
         elseIf currentEvent == "Select"
-            PO.abQuickResist[0] = !PO.abQuickResist[0]
-            MCM.SetToggleOptionValueST(PO.abQuickResist[0])
+            PO.abQuickBuff[1] = !PO.abQuickBuff[1]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[1])
         endIf
     endEvent
 endState
 
-State pot_tgl_quickResistFrost
+State pot_tgl_quickBuffResistMagic
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[1]+"}"))
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[2]+"}"))
         elseIf currentEvent == "Select"
-            PO.abQuickResist[1] = !PO.abQuickResist[1]
-            MCM.SetToggleOptionValueST(PO.abQuickResist[1])
+            PO.abQuickBuff[2] = !PO.abQuickBuff[2]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[2])
         endIf
     endEvent
 endState
 
-State pot_tgl_quickResistMagic
+State pot_tgl_quickBuffResistPoison
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[2]+"}"))
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[3]+"}"))
         elseIf currentEvent == "Select"
-            PO.abQuickResist[2] = !PO.abQuickResist[2]
-            MCM.SetToggleOptionValueST(PO.abQuickResist[2])
+            PO.abQuickBuff[3] = !PO.abQuickBuff[3]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[3])
         endIf
     endEvent
 endState
 
-State pot_tgl_quickResistPoison
+State pot_tgl_quickBuffResistShock
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[3]+"}"))
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[4]+"}"))
         elseIf currentEvent == "Select"
-            PO.abQuickResist[3] = !PO.abQuickResist[3]
-            MCM.SetToggleOptionValueST(PO.abQuickResist[3])
+            PO.abQuickBuff[4] = !PO.abQuickBuff[4]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[4])
         endIf
     endEvent
 endState
 
-State pot_tgl_quickResistShock
+State pot_tgl_quickBuffCombatSkills
     event OnBeginState()
         if currentEvent == "Highlight"
-            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickResistIncl{"+PO.asResistEffectNames[4]+"}"))
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickBuffCombatSkills")
         elseIf currentEvent == "Select"
-            PO.abQuickResist[4] = !PO.abQuickResist[4]
-            MCM.SetToggleOptionValueST(PO.abQuickResist[4])
+            PM.bQuickBuffCombatSkills = !PM.bQuickBuffCombatSkills
+            if !PM.bQuickBuffCombatSkills
+                int i = 5
+                while i < 11
+                    PO.abQuickBuff[i] = false
+                    i += 1
+                endWhile
+            endIf
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyLightArmor
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[5]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[5] = !PO.abQuickBuff[5]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[5])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyHeavyArmor
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[6]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[6] = !PO.abQuickBuff[6]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[6])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyBlock
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[7]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[7] = !PO.abQuickBuff[7]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[7])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyOneHanded
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[8]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[8] = !PO.abQuickBuff[8]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[8])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyTwoHanded
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[9]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[9] = !PO.abQuickBuff[9]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[9])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyMarksman
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[10]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[10] = !PO.abQuickBuff[10]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[10])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffMagicSkills
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_pot_txt_quickBuffMagicSkills")
+        elseIf currentEvent == "Select"
+            PM.bQuickBuffMagicSkills = !PM.bQuickBuffMagicSkills
+            if !PM.bQuickBuffMagicSkills
+                int i = 11
+                while i < 16
+                    PO.abQuickBuff[i] = false
+                    i += 1
+                endWhile
+            endIf
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyAlteration
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[11]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[11] = !PO.abQuickBuff[11]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[11])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyConjuration
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[12]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[12] = !PO.abQuickBuff[12]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[12])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyDestruction
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[13]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[13] = !PO.abQuickBuff[13]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[13])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyIllusion
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[14]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[14] = !PO.abQuickBuff[14]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[14])
+        endIf
+    endEvent
+endState
+
+State pot_tgl_quickBuffFortifyRestoration
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText(iEquip_StringExt.LocalizeString("$iEquip_MCM_pot_txt_quickBuffIncl{"+PO.asBuffEffectNames[15]+"}"))
+        elseIf currentEvent == "Select"
+            PO.abQuickBuff[15] = !PO.abQuickBuff[15]
+            MCM.SetToggleOptionValueST(PO.abQuickBuff[15])
         endIf
     endEvent
 endState

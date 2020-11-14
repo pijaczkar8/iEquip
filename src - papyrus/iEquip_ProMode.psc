@@ -49,7 +49,9 @@ bool property bQuickStaminaEnabled = true auto hidden
 bool property bQuickMagickaEnabled = true auto hidden
 bool property bQuickBuffEnabled = true auto hidden
 int property iQuickBuffControl = 1 auto hidden
-bool property bQuickResistEnabled auto hidden
+bool property bQuickBuffResistances auto hidden
+bool property bQuickBuffCombatSkills auto hidden
+bool property bQuickBuffMagicSkills auto hidden
 float property fQuickBuff2ndPressDelay = 4.0 auto hidden
 bool property bPreselectEnabled auto hidden
 bool property bShoutPreselectEnabled = true auto hidden
@@ -1914,7 +1916,7 @@ function quickRestore()
 
 		else
 			bool bQuickRestore = bDoBoth || !bQuickBuff
-
+			bool bDoBuffs = bQuickBuff && (PO.bQuickBuffFortify || PO.bQuickBuffRegen)
 			float currAV
 
 			;debug.trace("iEquip_ProMode quickRestore - bInCombat: " + bInCombat + ", bIn2ndPressWindow: " + ((Utility.GetCurrentRealTime() - fTimeOfLastQuickRestore) < fQuickBuff2ndPressDelay) + ", bDoBoth: " + bDoBoth + ", bQuickBuff: " + bQuickBuff + ", bQuickRestore: " + bQuickRestore + ", fConsRestoreThreshold: " + PO.fConsRestoreThreshold)
@@ -1930,13 +1932,8 @@ function quickRestore()
 		        	quickHeal()
 		        endIf
 
-		        if bQuickBuff
-		        	If PO.getPotionTypeCount(1) > 0 || PO.getPotionTypeCount(2) > 0
-			        	;debug.trace("iEquip_ProMode quickRestore - calling quickBuff health")
-						PO.quickBuffFindAndConsumePotions(0)
-					elseIf PO.bShowNoPotionsNotifications
-						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noHealthBuffPotions"))
-					endIf
+		        if bDoBuffs
+					PO.quickBuffFindAndConsumePotions(0)
 				endIf
 		    endIf
 
@@ -1952,13 +1949,8 @@ function quickRestore()
 			    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_StaminaFull"))
 			    endIf
 				
-				if bQuickBuff
-					If PO.getPotionTypeCount(7) > 0 || PO.getPotionTypeCount(8) > 0
-						;debug.trace("iEquip_ProMode quickRestore - calling quickBuff stamina")
-						PO.quickBuffFindAndConsumePotions(2)
-					elseIf PO.bShowNoPotionsNotifications
-						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noStaminaBuffPotions"))
-					endIf
+				if bDoBuffs
+					PO.quickBuffFindAndConsumePotions(2)
 				endIf
 		    endIf
 
@@ -1974,18 +1966,13 @@ function quickRestore()
 			    	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_MagickaFull"))
 			    endIf
 				
-				if bQuickBuff
-					If PO.getPotionTypeCount(4) > 0 || PO.getPotionTypeCount(5) > 0
-						;debug.trace("iEquip_ProMode quickRestore - calling quickBuff magicka")
-						PO.quickBuffFindAndConsumePotions(1)
-					elseIf PO.bShowNoPotionsNotifications
-						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PM_not_noMagickaBuffPotions"))
-					endIf
+				if bDoBuffs
+					PO.quickBuffFindAndConsumePotions(1)
 				endIf
 		    endIf
 
-		    if bQuickBuff && bQuickResistEnabled
-		    	PO.quickResistSelectAndConsumePotions()
+		    if bQuickBuff && (bQuickBuffResistances || bQuickBuffCombatSkills || bQuickBuffMagicSkills)
+		    	PO.quickBuffGimmeStims()
 		    endIf
 		endIf
 	endIf
@@ -2390,12 +2377,12 @@ function addNonEquippedItemToQueue(int Q, form formToAdd, int itemType = -1)
 	jMap.setInt(iEquipItem, "iEquipType", itemType)
 	jMap.setStr(iEquipItem, "iEquipName", itemName)
 	jMap.setStr(iEquipItem, "iEquipIcon", itemIcon)
+	jMap.setInt(iEquipItem, "iEquipTempItem", 1)
 
 	if itemType == 22
 		jMap.setStr(iEquipItem, "iEquipSchool", WC.getSpellSchool(formToAdd as spell))
 	else
 		jMap.setStr(iEquipItem, "iEquipBaseName", itemName)
-		jMap.setInt(iEquipItem, "iEquipautoAdded", 1)
 		jMap.setStr(iEquipItem, "iEquipBaseIcon", itemIcon)
 		jMap.setStr(iEquipItem, "lastDisplayedName", itemName)
 		jMap.setInt(iEquipItem, "lastKnownItemHealth", 100)

@@ -265,9 +265,6 @@ event OnMenuOpen(string MenuName)
         if MenuName == "FavoritesMenu" && bIsGPPLoaded
             registerForGPPKeys()
         endIf
-        if !bDisableAddToQueue
-            RegisterForMenuKeys()
-        endIf
     else
         GoToState("DISABLED")
     endIf
@@ -293,16 +290,21 @@ event OnMenuClose(string MenuName)
     if !utility.IsInMenuMode() && !UI.IsMenuOpen("Dialogue Menu") && !UI.IsMenuOpen("Crafting Menu")
         if EM.isEditMode
             GoToState("EDITMODE")
-        elseIf _bPlayerIsABeast
-            GoToState("BEASTMODE")
         else
-            GoToState("")
+            RegisterForGameplayKeys()
+            If _bPlayerIsABeast
+                GoToState("BEASTMODE")
+            else
+                GoToState("")
+            endIf
         endIf
 
         if Game.UsingGamepad() && iUtilityKey == 277
+            UnregisterForKey(iUtilityKey)
             Utility.Wait(0.5)
+            RegisterForKey(iUtilityKey)
         endIf
-        RegisterForKey(iUtilityKey)
+        
     else
         GotoState(sPreviousState)
     endIf
@@ -625,6 +627,12 @@ endState
 
 ; - Inventory
 state INVENTORYMENU
+    event OnBeginState()
+        UnregisterForAllKeys()
+        if !bDisableAddToQueue
+            RegisterForMenuKeys()
+        endIf
+    endEvent
     event OnKeyDown(int KeyCode)
         ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU start - keyCode: " + keyCode)
         if bIsGPPLoaded && aiGPPComboKeys.Find(KeyCode) > -1
@@ -632,7 +640,7 @@ state INVENTORYMENU
         endIf
      
         ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU - bAllowKeyPress: " + bAllowKeyPress + ", bGPPKeyHeld: " + bGPPKeyHeld)
-        if bAllowKeyPress && !bGPPKeyHeld
+        if bAllowKeyPress && !bGPPKeyHeld && !UI.IsTextInputEnabled()
             bAllowKeyPress = false
         
             if KeyCode == iLeftKey
@@ -653,6 +661,9 @@ endState
 
 ; - Editmode
 state EDITMODE
+    event OnBeginState()
+        RegisterForEditModeKeys()
+    EndEvent
     event OnKeyUp(int KeyCode, Float HoldTime)
         ;debug.trace("iEquip_KeyHandler OnKeyUp EDITMODE start - bAllowKeyPress: " + bAllowKeyPress + ", KeyCode: " + KeyCode)
         

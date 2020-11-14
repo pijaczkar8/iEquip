@@ -235,8 +235,7 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 		
 		if PlayerRef.IsWeaponDrawn()
 			int isEnchanted
-			bool isLeftHand = !(Q as bool)
-			weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
+			weapon currentWeapon = PlayerRef.GetEquippedWeapon(Q == 0)
 			bool isBound
 			if currentWeapon
 				isBound = iEquip_WeaponExt.IsWeaponBound(currentWeapon)
@@ -244,7 +243,7 @@ function checkAndUpdateChargeMeter(int Q, bool forceUpdate = false)
 			endIf
 			enchantment currentEnchantment
 			if currentWeapon && !isBound
-				;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + isLeftHand + ", currentWeapon: " + currentWeapon.GetName())
+				;debug.trace("iEquip_ChargeMeters checkAndUpdateChargeMeter - Q: " + Q + ", isLeftHand: " + Q == 0 + ", currentWeapon: " + currentWeapon.GetName())
 				currentEnchantment = currentWeapon.GetEnchantment()
 				if !currentEnchantment
 					currentEnchantment = wornobject.GetEnchantment(PlayerRef, Q, 0)

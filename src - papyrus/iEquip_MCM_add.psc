@@ -6,8 +6,20 @@ iEquip_PotionScript property PO auto
 iEquip_PlayerEventHandler property EH auto
 iEquip_KeyHandler Property KH Auto
 
+bool bAutoAddEnabled
+bool bUpdateAutoAddSettings = true
+
 ; #############
 ; ### SETUP ###
+
+function initData()
+    if bUpdateAutoAddSettings
+        if EH.bAutoAddNewItems || EH.bAutoAddShouts || EH.bAutoAddPowers || PO.bAutoAddPotions || PO.bAutoAddPoisons || PO.bAutoAddConsumables
+            bAutoAddEnabled = true
+        endIf
+        bUpdateAutoAddSettings = false
+    endIf
+endFunction
 
 int function saveData()             ; Save page data and return jObject
 	int jPageObj = jArray.object()
@@ -22,11 +34,12 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, PO.bAutoAddPotions as int)
     jArray.addInt(jPageObj, PO.bAutoAddPoisons as int)
     jArray.addInt(jPageObj, PO.bAutoAddConsumables as int)
-    jArray.addInt(jPageObj, WC.bShowAutoAddedFlag as int)
 	
 	jArray.addInt(jPageObj, WC.bEnableRemovedItemCaching as int)
 	jArray.addInt(jPageObj, WC.iMaxCachedItems)
 	jArray.addInt(jPageObj, WC.bBlacklistEnabled as int)
+
+    jArray.addInt(jPageObj, bAutoAddEnabled as int)
     
 	return jPageObj
 endFunction
@@ -37,17 +50,21 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	WC.bAllowSingleItemsInBothQueues = jArray.getInt(jPageObj, 1)
 	KH.bDisableAddToQueue = jArray.getInt(jPageObj, 2)
 	
-	EH.bAutoAddNewItems = jArray.getInt(jPageObj, 3)
+    EH.bAutoAddNewItems = jArray.getInt(jPageObj, 3)
 	EH.bAutoAddShouts = jArray.getInt(jPageObj, 4)
 	EH.bAutoAddPowers = jArray.getInt(jPageObj, 5)
 	PO.bAutoAddPotions = jArray.getInt(jPageObj, 6)
 	PO.bAutoAddPoisons = jArray.getInt(jPageObj, 7)
 	PO.bAutoAddConsumables = jArray.getInt(jPageObj, 8)
-	WC.bShowAutoAddedFlag = jArray.getInt(jPageObj, 9)
+	;WC.bShowAutoAddedFlag = jArray.getInt(jPageObj, 9)
 
     WC.bEnableRemovedItemCaching = jArray.getInt(jPageObj, 10)
     WC.iMaxCachedItems = jArray.getInt(jPageObj, 11)
     WC.bBlacklistEnabled = jArray.getInt(jPageObj, 12)
+
+    if presetVersion >= 157
+        bAutoAddEnabled = jArray.getInt(jPageObj, 13)
+    endIf
 
 endFunction
 
@@ -60,14 +77,15 @@ function drawPage()
 
 	MCM.AddEmptyOption()
     MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_add_lbl_autoAddOpts</font>")
-    MCM.AddToggleOptionST("add_tgl_autoAddHandItems", "$iEquip_MCM_add_lbl_autoAddHandItems", EH.bAutoAddNewItems)
-    MCM.AddToggleOptionST("add_tgl_autoAddShouts", "$iEquip_MCM_add_lbl_autoAddShouts", EH.bAutoAddShouts)
-    MCM.AddToggleOptionST("add_tgl_autoAddPowers", "$iEquip_MCM_add_lbl_autoAddPowers", EH.bAutoAddPowers)
-    MCM.AddToggleOptionST("add_tgl_autoAddPotions", "$iEquip_MCM_add_lbl_autoAddPotions", PO.bAutoAddPotions)
-    MCM.AddToggleOptionST("add_tgl_autoAddPoisons", "$iEquip_MCM_add_lbl_autoAddPoisons", PO.bAutoAddPoisons)
-    MCM.AddToggleOptionST("add_tgl_autoAddConsumables", "$iEquip_MCM_add_lbl_autoAddConsumables", PO.bAutoAddConsumables)
-    MCM.AddEmptyOption()
-    MCM.AddToggleOptionST("add_tgl_queueMenuAAFlags", "$iEquip_MCM_add_lbl_queueMenuAAFlags", WC.bShowAutoAddedFlag)
+    MCM.AddToggleOptionST("add_tgl_autoAdd", "$iEquip_MCM_add_lbl_autoAdd", bAutoAddEnabled)
+    if bAutoAddEnabled
+        MCM.AddToggleOptionST("add_tgl_autoAddHandItems", "$iEquip_MCM_add_lbl_autoAddHandItems", EH.bAutoAddNewItems)
+        MCM.AddToggleOptionST("add_tgl_autoAddShouts", "$iEquip_MCM_add_lbl_autoAddShouts", EH.bAutoAddShouts)
+        MCM.AddToggleOptionST("add_tgl_autoAddPowers", "$iEquip_MCM_add_lbl_autoAddPowers", EH.bAutoAddPowers)
+        MCM.AddToggleOptionST("add_tgl_autoAddPotions", "$iEquip_MCM_add_lbl_autoAddPotions", PO.bAutoAddPotions)
+        MCM.AddToggleOptionST("add_tgl_autoAddPoisons", "$iEquip_MCM_add_lbl_autoAddPoisons", PO.bAutoAddPoisons)
+        MCM.AddToggleOptionST("add_tgl_autoAddConsumables", "$iEquip_MCM_add_lbl_autoAddConsumables", PO.bAutoAddConsumables)
+    endIf
 
 	MCM.SetCursorPosition(1)
 
@@ -159,6 +177,25 @@ endState
 ; - Auto Add Options -
 ; --------------------
 
+State add_tgl_autoAdd
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_add_txt_autoAdd")
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && bAutoAddEnabled)
+                bAutoAddEnabled = !bAutoAddEnabled
+                if !bAutoAddEnabled
+                    EH.bAutoAddNewItems = false
+                    EH.bAutoAddShouts = false
+                    EH.bAutoAddPowers = false
+                    PO.bAutoAddConsumables = false
+                    PO.bAutoAddPotions = false
+                    PO.bAutoAddPoisons = false
+                endIf
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
 State add_tgl_autoAddHandItems
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -245,19 +282,6 @@ State add_tgl_autoAddConsumables
                 PO.bAutoAddConsumables = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddConsumables)
-        endIf 
-    endEvent
-endState
-
-State add_tgl_queueMenuAAFlags
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_add_txt_queueMenuAAFlags")
-        else
-            If currentEvent == "Select" || (currentEvent == "Default" && WC.bShowAutoAddedFlag)
-                WC.bShowAutoAddedFlag = !WC.bShowAutoAddedFlag
-            endIf
-            MCM.SetToggleOptionValueST(WC.bShowAutoAddedFlag)
         endIf 
     endEvent
 endState

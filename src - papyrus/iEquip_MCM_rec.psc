@@ -66,6 +66,8 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, meterFillDirection[1])
 
     jArray.addInt(jPageObj, WC.EH.bRealTimeStaffMeters as int)
+
+    jArray.addInt(jPageObj, RC.bShowNotifications as int)
 	
 	return jPageObj
 endFunction
@@ -95,6 +97,7 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	CM.asMeterFillDirection[1] = rawMeterFillDirectionOptions[meterFillDirection[1]]
 
     WC.EH.bRealTimeStaffMeters = jArray.getInt(jPageObj, 18)
+    RC.bShowNotifications = jArray.getInt(jPageObj, 19, 1)
 
 endFunction
 
@@ -103,53 +106,52 @@ function drawPage()
     if RC.bRechargingEnabled
         MCM.AddToggleOptionST("rec_tgl_enblEnchRech", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_rec_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
         MCM.AddMenuOptionST("rec_men_rechargeFX", "$iEquip_MCM_common_lbl_FX", effectsOptions[RC.iRechargeFX])
+        MCM.AddToggleOptionST("rec_tgl_warningNotifications", "$iEquip_MCM_rec_lbl_warningNotifications", RC.bShowNotifications)
+        MCM.AddToggleOptionST("rec_tgl_gemUseNotifications", "$iEquip_MCM_rec_lbl_gemUseNotifications", RC.bShowGemUseNotifications)
         MCM.AddEmptyOption()
 
         MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_rec_lbl_soulgemUseOpts</font>")
         MCM.AddToggleOptionST("rec_tgl_useLargSoul", "$iEquip_MCM_rec_lbl_useLargSoul", RC.bUseLargestSoul)
         MCM.AddToggleOptionST("rec_tgl_useOvrsizSoul", "$iEquip_MCM_rec_lbl_useOvrsizSoul", RC.bAllowOversizedSouls)
         MCM.AddToggleOptionST("rec_tgl_usePartGem", "$iEquip_MCM_rec_lbl_usePartGem", RC.bUsePartFilledGems)
+    else
+        MCM.AddToggleOptionST("rec_tgl_enblEnchRech", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_rec_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
+    endIf
 
-        MCM.AddEmptyOption()        
+    MCM.SetCursorPosition(1)
+
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
+    MCM.AddMenuOptionST("rec_men_showEnchCharge", "$iEquip_MCM_rec_lbl_showEnchCharge", chargeDisplayOptions[CM.iChargeDisplayType])
+    if CM.iChargeDisplayType > 0
+        MCM.AddToggleOptionST("rec_tgl_enableChargeFadeout", "$iEquip_MCM_rec_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
+        if CM.bChargeFadeoutEnabled
+            MCM.AddSliderOptionST("rec_sld_chargeFadeDelay", "$iEquip_MCM_rec_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rec_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds")))
+        endIf
+        
+        MCM.AddColorOptionST("rec_col_normFillCol", "$iEquip_MCM_rec_lbl_normFillCol", CM.iPrimaryFillColor)
+        MCM.AddToggleOptionST("rec_tgl_enableCustomFlashCol", "$iEquip_MCM_rec_lbl_enableCustomFlashCol", CM.bCustomFlashColor)
+        if CM.bCustomFlashColor
+            MCM.AddColorOptionST("rec_col_meterFlashCol", "$iEquip_MCM_rec_lbl_meterFlashCol", CM.iFlashColor)
+        endIf
+        
+        MCM.AddToggleOptionST("rec_tgl_changeColLowCharge", "$iEquip_MCM_rec_lbl_changeColLowCharge", CM.bEnableLowCharge)
+        if CM.bEnableLowCharge
+            MCM.AddSliderOptionST("rec_sld_setLowChargeTresh", "$iEquip_MCM_rec_lbl_setLowChargeTresh", CM.fLowChargeThreshold*100, "{0}%")
+            MCM.AddColorOptionST("rec_col_lowFillCol", "$iEquip_MCM_rec_lbl_lowFillCol", CM.iLowChargeFillColor)
+        endIf
+        
+        if CM.iChargeDisplayType == 1
+            MCM.AddToggleOptionST("rec_tgl_enableGradientFill", "$iEquip_MCM_rec_lbl_enableGradientFill", CM.bEnableGradientFill)
+            if CM.bEnableGradientFill
+                MCM.AddColorOptionST("rec_col_gradFillCol", "$iEquip_MCM_rec_lbl_gradFillCol", CM.iSecondaryFillColor)
+            endIf
+            
+            MCM.AddMenuOptionST("rec_men_leftFillDir", "$iEquip_MCM_rec_lbl_leftFillDir", meterFillDirectionOptions[meterFillDirection[0]])
+            MCM.AddMenuOptionST("rec_men_rightFillDir", "$iEquip_MCM_rec_lbl_rightFillDir", meterFillDirectionOptions[meterFillDirection[1]])
+        endIf
         MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_rec_lbl_StaffCasting</font>")
         MCM.AddToggleOptionST("rec_tgl_realTimeStaffMeters", "$iEquip_MCM_rec_lbl_realTimeStaffMeters", WC.EH.bRealTimeStaffMeters)
-       
-        MCM.SetCursorPosition(1)
-
-        MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
-        MCM.AddMenuOptionST("rec_men_showEnchCharge", "$iEquip_MCM_rec_lbl_showEnchCharge", chargeDisplayOptions[CM.iChargeDisplayType])
-        if CM.iChargeDisplayType > 0
-            MCM.AddToggleOptionST("rec_tgl_enableChargeFadeout", "$iEquip_MCM_rec_lbl_enableChargeFadeout", CM.bChargeFadeoutEnabled)
-            if CM.bChargeFadeoutEnabled
-                MCM.AddSliderOptionST("rec_sld_chargeFadeDelay", "$iEquip_MCM_rec_lbl_chargeFadeDelay", CM.fChargeFadeoutDelay, (iEquip_StringExt.LocalizeString("$iEquip_MCM_rec_lbl_fadeAfter") + " {1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds")))
-            endIf
-            
-            MCM.AddColorOptionST("rec_col_normFillCol", "$iEquip_MCM_rec_lbl_normFillCol", CM.iPrimaryFillColor)
-            MCM.AddToggleOptionST("rec_tgl_enableCustomFlashCol", "$iEquip_MCM_rec_lbl_enableCustomFlashCol", CM.bCustomFlashColor)
-            if CM.bCustomFlashColor
-                MCM.AddColorOptionST("rec_col_meterFlashCol", "$iEquip_MCM_rec_lbl_meterFlashCol", CM.iFlashColor)
-            endIf
-            
-            MCM.AddToggleOptionST("rec_tgl_changeColLowCharge", "$iEquip_MCM_rec_lbl_changeColLowCharge", CM.bEnableLowCharge)
-            if CM.bEnableLowCharge
-                MCM.AddSliderOptionST("rec_sld_setLowChargeTresh", "$iEquip_MCM_rec_lbl_setLowChargeTresh", CM.fLowChargeThreshold*100, "{0}%")
-                MCM.AddColorOptionST("rec_col_lowFillCol", "$iEquip_MCM_rec_lbl_lowFillCol", CM.iLowChargeFillColor)
-            endIf
-            
-            if CM.iChargeDisplayType == 1
-                MCM.AddToggleOptionST("rec_tgl_enableGradientFill", "$iEquip_MCM_rec_lbl_enableGradientFill", CM.bEnableGradientFill)
-                if CM.bEnableGradientFill
-                    MCM.AddColorOptionST("rec_col_gradFillCol", "$iEquip_MCM_rec_lbl_gradFillCol", CM.iSecondaryFillColor)
-                endIf
-                
-                MCM.AddMenuOptionST("rec_men_leftFillDir", "$iEquip_MCM_rec_lbl_leftFillDir", meterFillDirectionOptions[meterFillDirection[0]])
-                MCM.AddMenuOptionST("rec_men_rightFillDir", "$iEquip_MCM_rec_lbl_rightFillDir", meterFillDirectionOptions[meterFillDirection[1]])
-            endIf
-        endIf
-	else
-        MCM.AddToggleOptionST("rec_tgl_enblEnchRech", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_rec_lbl_enblEnchRech</font>", RC.bRechargingEnabled)
-	endIf
-
+    endIf
 endFunction
 
 ; ##############################
@@ -195,6 +197,31 @@ State rec_men_rechargeFX
     endEvent
 endState
 
+; ------------------------
+; - Notification Options -
+; ------------------------
+
+State rec_tgl_warningNotifications
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rec_txt_warningNotifications")
+        elseIf currentEvent == "Select"
+            RC.bShowNotifications = !RC.bShowNotifications
+            MCM.SetToggleOptionValueST(RC.bShowNotifications)
+        endIf 
+    endEvent
+endState
+
+State rec_tgl_gemUseNotifications
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_rec_txt_gemUseNotifications")
+        elseIf currentEvent == "Select"
+            RC.bShowGemUseNotifications = !RC.bShowGemUseNotifications
+            MCM.SetToggleOptionValueST(RC.bShowGemUseNotifications)
+        endIf 
+    endEvent
+endState
 ; -----------------------
 ; - Soulgem Use Options -
 ; -----------------------

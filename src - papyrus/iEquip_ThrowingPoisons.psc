@@ -140,18 +140,15 @@ function OnWidgetLoad()
 	endIf
 
 	if WC.bPowerOfThreeExtenderLoaded && bThrowingPoisonsEnabled
-		RegisterForMenu("InventoryMenu")
 		updateSpellsOnLoad()
 		GoToState("")
 	else
-		UnregisterForAllMenus()
 		GoToState("DISABLED")
 	endIf
 	;debug.trace("iEquip_ThrowingPoisons OnWidgetLoad end")
 endFunction
 
 function enableThrowingPoisons()
-	RegisterForMenu("InventoryMenu")
 	GoToState("")
 endFunction
 

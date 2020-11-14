@@ -3,6 +3,7 @@ scriptName iEquip_RechargeScript extends Quest
 
 import iEquip_SoulSeeker
 import iEquip_StringExt
+Import WornObject
 
 iEquip_ChargeMeters Property CM Auto
 
@@ -19,10 +20,14 @@ bool Property bAllowOversizedSouls Auto Hidden
 bool Property bIsRequiemLoaded Auto Hidden
 int property iRechargeFX = 3 auto hidden
 
+bool property bShowNotifications = true auto hidden
+bool property bShowGemUseNotifications = true auto hidden
+
 float[] afAmountToRecharge
 float[] afSkillPointsToAdd
 
 string[] asSoulNames
+string[] asHandNames
 
 event OnInit()
 	;debug.trace("iEquip_RechargeScript OnInit start")
@@ -50,15 +55,42 @@ event OnInit()
     asSoulNames[3] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_common")
     asSoulNames[4] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_greater")
     asSoulNames[5] = iEquip_StringExt.LocalizeString("$iEquip_RC_not_grand")
+
+    asHandNames = new string[2]
+    asHandNames[0] = "$iEquip_common_left"
+    asHandNames[1] = "$iEquip_common_right"
     ;debug.trace("iEquip_RechargeScript OnInit end")
 endEvent
 
+function onVersionUpdate(float version)
+    if version == 1.5
+        asHandNames = new string[2]
+        asHandNames[0] = "$iEquip_common_left"
+        asHandNames[1] = "$iEquip_common_right"
+    endIf
+endFunction
+
 function rechargeWeapon(int Q)
     ;debug.trace("iEquip_RechargeScript rechargeWeapon start - Q: " + Q)
+    form currentItem = PlayerRef.GetEquippedObject(Q)
 	if !bRechargingEnabled
 		; Do nothing
+    elseIf !currentItem
+        if bShowNotifications
+            debug.Notification("$iEquip_RC_not_nothingEquipped{"+asHandNames[Q]+"}")
+        endIf
+    elseIf !currentItem as weapon
+        if bShowNotifications
+            debug.Notification("$iEquip_RC_not_notAWeapon{"+asHandNames[Q]+"}")
+        endIf
+    elseIf !(currentItem as weapon).GetEnchantment() && !wornobject.GetEnchantment(PlayerRef, Q, 0)
+        if bShowNotifications
+            debug.Notification("$iEquip_RC_not_notEnchanted{"+currentItem.GetName()+"}{"+asHandNames[Q]+"}")
+        endIf
     elseIf bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
-        debug.notification("$iEquip_RequiemEnchantingPerkMissing")
+        if bShowNotifications
+            debug.notification("$iEquip_RequiemEnchantingPerkMissing")
+        endIf
     else
         string weaponToRecharge = CM.asItemCharge[Q]
         float currentCharge = PlayerRef.GetActorValue(weaponToRecharge)
@@ -67,7 +99,9 @@ function rechargeWeapon(int Q)
 
         ;debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
         if requiredCharge < 1.0
-            debug.Notification("$iEquip_RC_not_alreadyFull")
+            if bShowNotifications
+                debug.Notification("$iEquip_RC_not_alreadyFull{"+currentItem.GetName()+"}{"+asHandNames[Q]+"}")
+            endIf
         else
             int requiredSoul = getRequiredSoul(Q, requiredCharge)
             if requiredSoul > 0
@@ -91,9 +125,11 @@ function rechargeWeapon(int Q)
                         PlayerRef.ModActorValue(weaponToRecharge, requiredCharge)
                     endIf
                     game.AdvanceSkill("Enchanting", afSkillPointsToAdd[soulSize])
-                    debug.Notification(asSoulNames[soulSize])
+                    if bShowGemUseNotifications
+                        debug.Notification(asSoulNames[soulSize])
+                    endIf
                     CM.checkAndUpdateChargeMeter(Q, true)
-                else
+                elseif bShowGemUseNotifications
                     debug.Notification("$iEquip_RC_not_noSoul")
                 endIf
             endIf

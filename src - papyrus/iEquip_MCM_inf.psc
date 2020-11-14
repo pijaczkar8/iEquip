@@ -93,7 +93,7 @@ function drawPage()
     MCM.AddTextOptionST("inf_txt_eve", "$iEquip_MCM_inf_lbl_eve", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Gamepad++.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_gpp", "$iEquip_MCM_inf_lbl_gpp", modStates[modFound], aiFlags[modFound])
-    modFound = (Game.GetModByName("LegacyoftheDragonborn.esp") != 255) as int
+    modFound = (Game.GetModByName("LegacyoftheDragonborn.esm") != 255) as int
     MCM.AddTextOptionST("inf_txt_lotd", "$iEquip_MCM_inf_lbl_lotd", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("LootandDegradation.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_ld", "$iEquip_MCM_inf_lbl_ld", modStates[modFound], aiFlags[modFound])

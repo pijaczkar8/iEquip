@@ -250,7 +250,7 @@ bool bJustLeftAmmoMode
 bool bAmmoModeFirstLook = true
 
 ; Auto Unequip Ammo
-bool property bUnequipAmmo = true auto hidden
+bool property bUnequipAmmo auto hidden
 
 ; Geared Up properties and variables
 bool property bEnableGearedUp auto hidden
@@ -277,11 +277,9 @@ bool property bSlotEnabledOptionsChanged auto hidden
 
 bool property bAllowWeaponSwitchHands auto hidden
 bool property bAllowSingleItemsInBothQueues auto hidden
-bool property bSkipAutoAddedItems auto hidden
 bool property bEnableRemovedItemCaching = true auto hidden
 int property iMaxCachedItems = 60 auto hidden
 bool property bBlacklistEnabled auto hidden
-bool property bShowAutoAddedFlag auto hidden
 
 int property iCurrentWidgetFadeoutChoice
 	int function Get()
@@ -895,6 +893,8 @@ function checkVersion()
         	PO.bShowNoPotionsNotifications = PO.iNotificationLevel > 0			; If previously Minimal or Verbose
         	PO.bShowEffectActiveNotifications = PO.iNotificationLevel == 2		; If previously Verbose
         	PO.bShowStatFullNotifications = PO.iNotificationLevel == 2			; If previously Verbose
+        	RC.onVersionUpdate(CurrentVersion)
+        	handleAutoAddedItems()
         endIf
 
         Utility.Wait(3.0)									; Just to make sure the notification hasn't been and gone before you're fully loaded in
@@ -963,6 +963,35 @@ function outWithTheOldInWithTheNew()
 	endWhile
 
 	;debug.trace("iEquip_WidgetCore outWithTheOldInWithTheNew end")
+endFunction
+
+function handleAutoAddedItems()
+	;debug.trace("iEquip_WidgetCore handleAutoAddedItems start")
+	int Q
+	int targetArray
+	int targetObject
+	int i
+	form equippedItem
+	while Q < 3
+		equippedItem = PlayerRef.GetEquippedObject(Q)
+		targetArray = aiTargetQ[Q]
+		while i < JArray.count(targetArray)
+			targetObject = jArray.GetObj(targetArray, i)
+			if jMap.getInt(targetObject, "iEquipAutoAdded") == 1
+				if bSkipAutoAddedItems && (!equippedItem || equippedItem != jMap.getForm(targetObject, "iEquipForm")) 		; If updating from an earlier version and bSkipAutoAddedItems = true then no need to keep auto-added items in the queues so remove them (unless they're the currently equipped item)
+					removeItemFromQueue(Q, i, true)
+				else
+					jMap.removeKey(targetObject, "iEquipAutoAdded") 														; If bSkipAutoAddedItems = false or the item is currently equipped then leave the items in the queue but remove the iEquipAutoAdded key
+					i += 1
+				endIf
+			else 
+				i += 1
+			endIf
+		endWhile
+		i = 0
+		Q += 1
+	endWhile
+	;debug.trace("iEquip_WidgetCore handleAutoAddedItems end")
 endFunction
 
 ; #########################
@@ -1283,14 +1312,16 @@ state ENABLED
 		endIf
 		bRefreshingWidget = false
 		
-		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
-		updateWidgetVisibility() ; Show the widget
 		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
 		if CM.iChargeDisplayType > 0
 			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
 			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
 			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ; SkyHUD alt charge meter
+		else
+			CM.updateChargeMeters() ; This will hide the iEquip charge meters if they are turned off in the MCM
 		endIf
+		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
+		updateWidgetVisibility() ; Show the widget
 		
 		Utility.WaitMenuMode(0.5)
 		
@@ -1712,7 +1743,6 @@ function addFists(int Q)
 		jMap.setInt(Fists, "iEquipType", 0)
 		jMap.setStr(Fists, "iEquipName", "$iEquip_common_Unarmed")
 		jMap.setStr(Fists, "iEquipIcon", "Fist")
-		jMap.setInt(Fists, "iEquipAutoAdded", 0)
 		jArray.addObj(aiTargetQ[Q], Fists)
 	endIf
 	;debug.trace("iEquip_WidgetCore addFists end")
@@ -2462,15 +2492,11 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
                         targetName = jMap.getStr(jArray.getObj(targetArray, targetIndex), "iEquipName")
                         i -= 1
                     endWhile
-			    elseIf Q == 2 				; For the shout queue all we need to do is skip auto-added items if required
-			    	while  i > 0 && bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1
-			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
-			    		targetObject = jArray.getObj(targetArray, targetIndex)
-			    		i -= 1
-			    	endWhile
+			    elseIf Q == 2 				
+			    	; Nothing to do here, used to be skip auto added items, but we've removed that now
 			    elseIf bPlayerIsMounted		; cycleSlot will only ever be called for Q == 1 if bPlayerIsMounted so no need check for Q here - we're skipping Unarmed in combat if required, auto-added items if required, spells, scrolls and staffs as not able to be used on horseback (vanilla)
 			    	int itemType = jMap.getInt(targetObject, "iEquipType")
-			    	while  i > 0 && ((bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || (bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1) || itemType == 8 || itemType == 22 || itemType == 23)
+			    	while  i > 0 && ((bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || itemType == 8 || itemType == 22 || itemType == 23)
 			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 			    		targetObject = jArray.getObj(targetArray, targetIndex)
 			    		targetName = jMap.getStr(targetObject, "iEquipName")
@@ -2480,7 +2506,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			    elseIf bDragonRiding 		; For dragon riding we need to restrict the selectable items to staffs, scrolls and allowed spells only, as well as skipping Unarmed in combat if required, and auto-added items if required
 			    	int itemType = jMap.getInt(targetObject, "iEquipType")
 			    	targetItem = jMap.getForm(targetObject, "iEquipForm")
-			    	while  i > 0 && ((Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || (bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1) && !(itemType == 8 || itemType == 23 || (itemType == 22 && DLC2DRAllowedSpells.HasForm(targetItem))))
+			    	while  i > 0 && ((Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) && !(itemType == 8 || itemType == 23 || (itemType == 22 && DLC2DRAllowedSpells.HasForm(targetItem))))
 			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 			    		targetObject = jArray.getObj(targetArray, targetIndex)
 			    		targetItem = jMap.getForm(targetObject, "iEquipForm")
@@ -2491,7 +2517,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			    else			    		; And finally if we're cycling one of the hand queues and none of the above apply, we need to check for 1H switching if the same 1H item which is currently equipped in the other hand, as well as skipping Unarmed in combat if required, and auto-added items if required
 				    int itemType = jMap.getInt(targetObject, "iEquipType")
 			    	targetItem = jMap.getForm(targetObject, "iEquipForm")
-				    while  i > 0 && ((Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || (bSkipAutoAddedItems && jMap.getInt(targetObject, "iEquipAutoAdded") == 1) && (itemType != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)))
+				    while  i > 0 && ((Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) && (itemType != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)))
 			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 			    		targetObject = jArray.getObj(targetArray, targetIndex)
 			    		targetItem = jMap.getForm(targetObject, "iEquipForm")
@@ -4584,139 +4610,150 @@ function applyPoison(int Q)
 
     if bPoisonsEnabled && !(TP.bPoisonEquipped && TP.iThrowingPoisonHand == Q)
     	int targetQ = aiTargetQ[Q]
-        int targetObj = jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4])
-        Potion poisonToApply = jMap.getForm(targetObj, "iEquipForm") as Potion
+    	if jArray.count(targetQ) == 0
+    		if iShowPoisonMessages == 0
+    			debug.notification("$iEquip_WC_not_noPoison")
+    		endIf
+    	else
+	        int targetObj = jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4])
+	        Potion poisonToApply = jMap.getForm(targetObj, "iEquipForm") as Potion
+	        if !poisonToApply || PlayerRef.GetItemCount(poisonToApply as form) < 1
+	        	removeItemFromQueue(4, aiCurrentQueuePosition[4])
+	            return
+	        endIf
+	        bool ApplyWithoutUpdatingWidget
+	        int iButton
+	        string newPoison = jMap.getStr(targetObj, "iEquipName")
+	        bool isLeftHand = !(Q as bool)
+	        string handName = "$iEquip_common_left"
+	        if Q == 1
+	            handName = "$iEquip_common_right"
+	        endIf
+	        Weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
+	        string weaponName
+	        int tempWeapType = -1
+	        if currentWeapon
+	            weaponName = currentWeapon.GetName()
+	            tempWeapType = currentWeapon.GetWeaponType()
+	        endIf
 
-        if !poisonToApply
-            return
-        endIf
-        bool ApplyWithoutUpdatingWidget
-        int iButton
-        string newPoison = jMap.getStr(targetObj, "iEquipName")
-        bool isLeftHand = !(Q as bool)
-        string handName = "$iEquip_common_left"
-        if Q == 1
-            handName = "$iEquip_common_right"
-        endIf
-        Weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
-        string weaponName
-        int tempWeapType = -1
-        if currentWeapon
-            weaponName = currentWeapon.GetName()
-            tempWeapType = currentWeapon.GetWeaponType()
-        endIf
-
-        if (!currentWeapon) || tempWeapType == 0 || tempWeapType == 8
-        	if iShowPoisonMessages == 0
-        		if tempWeapType == 8
-        			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noStaffPoisoning"))
-        		else
-            		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noWeapon{" + handName + "}"))
-            	endIf
-            endIf
-            return
-        elseif currentWeapon != jMap.getForm(jArray.getObj(targetQ, aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon && !iEquip_WeaponExt.IsWeaponBound(currentWeapon)
-            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"))
-            if iButton != 0
-                return
-            endIf
-            ApplyWithoutUpdatingWidget = true
-        endIf
-
-        int refHandle = GetRefHandleFromWornObject(Q)
-
-        if refHandle == 0xFFFF
-        	debug.messagebox(iEquip_StringExt.LocalizeString("$iEquip_common_msg_noRefHandle"))
-        else
-	        Potion currentPoison = iEquip_InventoryExt.GetPoison(currentWeapon as form, refHandle) 
-	        ;debug.trace("iEquip_WidgetCore applyPoison - Q: " + Q + ", isLeftHand: " + isLeftHand + ", current weapon: " + currentWeapon + ", current poison: " + currentPoison)
-	        if currentPoison
-	            string currentPoisonName = currentPoison.GetName()
-	            if currentPoison != poisonToApply
-	                if !bAllowPoisonSwitching
-	                    debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_alreadyPoisioned{" + weaponName + "}{" + currentPoisonName + "}"))
-	                    return
-	                else
-	                    if iShowPoisonMessages < 2
-	                        iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_CleanApply{" + weaponName + "}{" + currentPoisonName + "}{" + newPoison + "}"))
-	                        if iButton != 0
-	                            return
-	                        endIf
-	                    endIf
-	                    RemovePoison(currentWeapon as form, refHandle)
-	                endIf	
-	            elseif iShowPoisonMessages < 2
-	                iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"))
-	                if iButton != 0
-	                    return
-	                endIf
+	        if (!currentWeapon) || tempWeapType == 0 || tempWeapType == 8
+	        	if iShowPoisonMessages == 0
+	        		if tempWeapType == 8
+	        			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noStaffPoisoning"))
+	        		else
+	            		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noWeapon{" + handName + "}"))
+	            	endIf
 	            endIf
-	        elseif iShowPoisonMessages == 0
-	            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_WouldYouLikeToApply{" + newPoison + "}{" + weaponName + "}"))
+	            return
+	        elseif currentWeapon != jMap.getForm(jArray.getObj(targetQ, aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon && !iEquip_WeaponExt.IsWeaponBound(currentWeapon)
+	            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"))
 	            if iButton != 0
 	                return
 	            endIf
+	            ApplyWithoutUpdatingWidget = true
 	        endIf
-	        
-	        int ConcentratedPoisonMultiplier = 1
-	        int AdditionalDoses
 
-	        if bIsAdamantLoaded && PlayerRef.HasPerk(Game.GetFormFromFile(0x001E6934, "Adamant.esp") as Perk) 	; MAG_Intensity30 - Intensity Lvl 1 - Plus 4 hits
-	        	AdditionalDoses = 4
-	        	if PlayerRef.HasPerk(Game.GetFormFromFile(0x0037B9F1, "Adamant.esp") as Perk) 					; MAG_Intensity60 - Intensity Lvl 2 - Plus an additional 5 hits
-	        		AdditionalDoses = 9
-	        	endIf
-	        
-	        elseIf PlayerRef.HasPerk(ConcentratedPoison)													; If the player has the Concentrated Poison perk
-	            if bIsOrdinatorLoaded
-	            	AdditionalDoses = (PlayerRef.GetActorValue("Alchemy") / 10) as int						; If Ordinator is loaded then apply the Bottomless Cup calculation based on the players current Alchemy level
-	            else
-	            	ConcentratedPoisonMultiplier = iPoisonChargeMultiplier 									; Otherwise apply the multiplier set in the iEquip MCM slider (default = 2 (vanilla))
-	            endIf
-	        endIf
-	        
-	        int chargesToApply
-	        
-	        if iEquip_FormExt.isWax(poisonToApply as form) || iEquip_FormExt.isOil(poisonToApply as form)	; CACO waxes and Smithing Oils last for 10 uses so use that as the base value
+	        int refHandle = GetRefHandleFromWornObject(Q)
 
-	            chargesToApply = 10 * ConcentratedPoisonMultiplier
+	        if refHandle == 0xFFFF
+	        	debug.messagebox(iEquip_StringExt.LocalizeString("$iEquip_common_msg_noRefHandle"))
 	        else
-	            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier						; Otherwise use the iEquip MCM 'Charges Per Vial' value as the base value (default = 1)
-	        endIf
-
-	        if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level additional charges
-	        	AdditionalDoses += (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() 	; DSer_PoisonCount
-	        endIf
-
-	        chargesToApply += AdditionalDoses
-	        
-	        if currentPoison == poisonToApply
-	            SetPoisonCount(currentWeapon as form, refHandle, chargesToApply + GetPoisonCount(currentWeapon as form, refHandle))
-	        else
-	            SetPoison(currentWeapon as form, refHandle, poisonToApply, chargesToApply)
-	        endIf
-	        ; Remove one item from the player
-	        PlayerRef.RemoveItem(poisonToApply, 1, true)
-	        ; Flag the item as poisoned
-	        targetObj = jArray.getObj(targetQ, aiCurrentQueuePosition[Q])
-	        jMap.setInt(targetObj, "isPoisoned", 1)
-	        jMap.setForm(targetObj, "lastKnownPoison", poisonToApply as Form)
-	        if !ApplyWithoutUpdatingWidget
-	            checkAndUpdatePoisonInfo(Q, false, false, refHandle)
-	        endIf
-	        ; Play sound
-	        if iPoisonFX == 1 || iPoisonFX == 3
-	        	iEquip_ITMPoisonUse.Play(PlayerRef)
-	        endIf
-	        ; Add Poison FX to weapon
-	        if PlayerRef.IsWeaponDrawn() && iPoisonFX > 1
-		        if Q == 0 || PlayerRef.GetEquippedItemType(0) == 7
-					PLFX.cast(PlayerRef, PlayerRef)
-		        else
-					PRFX.cast(PlayerRef, PlayerRef)
+		        Potion currentPoison = iEquip_InventoryExt.GetPoison(currentWeapon as form, refHandle) 
+		        ;debug.trace("iEquip_WidgetCore applyPoison - Q: " + Q + ", isLeftHand: " + isLeftHand + ", current weapon: " + currentWeapon + ", current poison: " + currentPoison)
+		        if currentPoison
+		            string currentPoisonName = currentPoison.GetName()
+		            if currentPoison != poisonToApply
+		                if !bAllowPoisonSwitching
+		                    debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_alreadyPoisioned{" + weaponName + "}{" + currentPoisonName + "}"))
+		                    return
+		                else
+		                    if iShowPoisonMessages < 2
+		                        iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_CleanApply{" + weaponName + "}{" + currentPoisonName + "}{" + newPoison + "}"))
+		                        if iButton != 0
+		                            return
+		                        endIf
+		                    endIf
+		                    RemovePoison(currentWeapon as form, refHandle)
+		                endIf	
+		            elseIf bAllowPoisonTopup
+		            	if iShowPoisonMessages < 2
+			                iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_TopUp{" + weaponName + "}{" + currentPoisonName + "}"))
+			                if iButton != 0
+			                    return
+			                endIf
+			            endIf
+			        else
+			        	debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_alreadyPoisioned{" + weaponName + "}{" + currentPoisonName + "}"))
+			        	return
+		            endIf
+		        elseif iShowPoisonMessages == 0
+		            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_WouldYouLikeToApply{" + newPoison + "}{" + weaponName + "}"))
+		            if iButton != 0
+		                return
+		            endIf
 		        endIf
+		        
+		        int ConcentratedPoisonMultiplier = 1
+		        int AdditionalDoses
+
+		        if bIsAdamantLoaded && PlayerRef.HasPerk(Game.GetFormFromFile(0x001E6934, "Adamant.esp") as Perk) 	; MAG_Intensity30 - Intensity Lvl 1 - Plus 4 hits
+		        	AdditionalDoses = 4
+		        	if PlayerRef.HasPerk(Game.GetFormFromFile(0x0037B9F1, "Adamant.esp") as Perk) 					; MAG_Intensity60 - Intensity Lvl 2 - Plus an additional 5 hits
+		        		AdditionalDoses = 9
+		        	endIf
+		        
+		        elseIf PlayerRef.HasPerk(ConcentratedPoison)													; If the player has the Concentrated Poison perk
+		            if bIsOrdinatorLoaded
+		            	AdditionalDoses = (PlayerRef.GetActorValue("Alchemy") / 10) as int						; If Ordinator is loaded then apply the Bottomless Cup calculation based on the players current Alchemy level
+		            else
+		            	ConcentratedPoisonMultiplier = iPoisonChargeMultiplier 									; Otherwise apply the multiplier set in the iEquip MCM slider (default = 2 (vanilla))
+		            endIf
+		        endIf
+		        
+		        int chargesToApply
+		        
+		        if iEquip_FormExt.isWax(poisonToApply as form) || iEquip_FormExt.isOil(poisonToApply as form)	; CACO waxes and Smithing Oils last for 10 uses so use that as the base value
+
+		            chargesToApply = 10 * ConcentratedPoisonMultiplier
+		        else
+		            chargesToApply = iPoisonChargesPerVial * ConcentratedPoisonMultiplier						; Otherwise use the iEquip MCM 'Charges Per Vial' value as the base value (default = 1)
+		        endIf
+
+		        if tempWeapType == 7 && bIsAGOLoaded															; If Archery Gameplay Overhaul is loaded check and apply the Marksman level additional charges
+		        	AdditionalDoses += (Game.GetFormFromFile(0x00005380, "DSerArcheryGameplayOverhaul.esp") as GlobalVariable).GetValueInt() - 1 	; DSer_PoisonCount - additional doses added are 1 less than the global value used to decide on the perk level
+		        endIf
+
+		        chargesToApply += AdditionalDoses
+		        
+		        if currentPoison == poisonToApply
+		            SetPoisonCount(currentWeapon as form, refHandle, chargesToApply + GetPoisonCount(currentWeapon as form, refHandle))
+		        else
+		            SetPoison(currentWeapon as form, refHandle, poisonToApply, chargesToApply)
+		        endIf
+		        ; Remove one item from the player
+		        PlayerRef.RemoveItem(poisonToApply, 1, true)
+		        ; Flag the item as poisoned
+		        targetObj = jArray.getObj(targetQ, aiCurrentQueuePosition[Q])
+		        jMap.setInt(targetObj, "isPoisoned", 1)
+		        jMap.setForm(targetObj, "lastKnownPoison", poisonToApply as Form)
+		        if !ApplyWithoutUpdatingWidget
+		            checkAndUpdatePoisonInfo(Q, false, false, refHandle)
+		        endIf
+		        ; Play sound
+		        if iPoisonFX == 1 || iPoisonFX == 3
+		        	iEquip_ITMPoisonUse.Play(PlayerRef)
+		        endIf
+		        ; Add Poison FX to weapon
+		        if PlayerRef.IsWeaponDrawn() && iPoisonFX > 1
+			        if Q == 0 || PlayerRef.GetEquippedItemType(0) == 7
+						PLFX.cast(PlayerRef, PlayerRef)
+			        else
+						PRFX.cast(PlayerRef, PlayerRef)
+			        endIf
+			    endIf
 		    endIf
-	    endIf
+		endIf
     endIf
     ;debug.trace("iEquip_WidgetCore applyPoison end")
 endFunction
@@ -5042,9 +5079,6 @@ function addToQueue(int Q)
 						if iButton != 0
 							return
 						endIf
-						if foundInOtherHandQueue
-							jMap.setInt(jarray.getObj(aiTargetQ[(Q + 1) % 2], findInQueue((Q + 1) % 2, itemName, itemForm, itemHandle)), "iEquipAutoAdded", 0)
-						endIf
 					endIf
 
 					int iEquipItem = jMap.object()
@@ -5078,8 +5112,6 @@ function addToQueue(int Q)
 							jMap.setInt(iEquipItem, "isEnchanted", isEnchanted as int)
 							jMap.setInt(iEquipItem, "isPoisoned", isPoisoned as int)
 						endIf
-						jMap.setInt(iEquipItem, "iEquipAutoAdded", 0)
-
 						EH.blackListFLSTs[Q].RemoveAddedForm(itemForm) 				; iEquip_LeftHandBlacklistFLST or iEquip_RightHandBlacklistFLST
 					else
 			        	EH.blackListFLSTs[2].RemoveAddedForm(itemForm) 				; iEquip_GeneralBlacklistFLST
@@ -5114,23 +5146,15 @@ function addToQueue(int Q)
 			else
 				int i = findInQueue(Q, itemName, itemForm, itemHandle)
 				int targetObj = jarray.getObj(aiTargetQ[Q], i)
-				if jMap.getInt(targetObj, "iEquipAutoAdded") == 1
-					iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_RemoveAAFlag{" + itemName + "}{" + asQueueName[Q] + "}"))
-					if iButton == 0
-						jMap.setInt(targetObj, "iEquipAutoAdded", 0)
-						i = (Q + 1) % 2
-						if Q < 2 && isAlreadyInQueue(i, itemForm, itemID, itemHandle)
-							targetObj = jarray.getObj(aiTargetQ[i], findInQueue(i, itemName, itemForm, itemHandle))
-							jMap.setInt(targetObj, "iEquipAutoAdded", 0)
+				if jMap.getInt(targetObj, "iEquipTempItem") == 1
+					if bShowQueueConfirmationMessages
+						iButton = showTranslatedMessage(1, LocalizeString("$iEquip_WC_msg_AddToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
+						if iButton != 0
+							return
 						endIf
-						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AAFlagRemoved"))
 					endIf
-				elseIf jMap.getInt(targetObj, "iEquipTempItem") == 1
-					iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_RemoveTempFlag{" + itemName + "}{" + asQueueName[Q] + "}"))
-					if iButton == 0
-						jMap.setInt(targetObj, "iEquipTempItem", 0)
-						debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_TempFlagRemoved"))
-					endIf
+					jMap.removeKey(targetObj, "iEquipTempItem")
+					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AddedToQ{" + itemName + "}{" + asQueueName[Q] + "}"))
 				else	
 					debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_AlreadyAdded{" + itemName + "}{" + asQueueName[Q] + "}"))
 				endIf
@@ -5200,11 +5224,11 @@ bool function isAlreadyInQueue(int Q, form itemForm, int itemID, int itemHandle 
 	while i < JArray.count(targetArray) && !found
 		targetObject = jArray.getObj(targetArray, i)
 		if itemHandle != 0xFFFF
-			found = (itemHandle == jMap.getInt(targetObject, "iEquipHandle", 0xFFFF))
+			found = (itemHandle == jMap.getInt(targetObject, "iEquipHandle", 0xFFFF) && jMap.getInt(targetObject, "iEquipTempItem") == 0)
 		elseIf itemID as bool
-		    found = (itemID == jMap.getInt(targetObject, "iEquipItemID"))
+		    found = (itemID == jMap.getInt(targetObject, "iEquipItemID") && jMap.getInt(targetObject, "iEquipTempItem") == 0)
 		else
-		    found = (itemform == jMap.getForm(targetObject, "iEquipForm"))
+		    found = (itemform == jMap.getForm(targetObject, "iEquipForm") && jMap.getInt(targetObject, "iEquipTempItem") == 0)
 		endIf
 		i += 1
 	endWhile
@@ -5556,8 +5580,6 @@ function initQueueMenu(int queueLength, bool update = false, int iIndex = 0)
 		if iQueueMenuCurrentQueue < 3
 			if JMap.getInt(targetObject, "iEquipTempItem") == 1
 				itemName = "(T) " + itemName
-			elseIf bShowAutoAddedFlag && JMap.getInt(targetObject, "iEquipAutoAdded") == 1
-				itemName = "(A) " + itemName
 			endIf
 		endIf
 		if iQueueMenuCurrentQueue > 3 || (iQueueMenuCurrentQueue == 3 && asPotionGroups.Find(itemName) == -1) || (iQueueMenuCurrentQueue < 2 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.isGrenade(jMap.getForm(targetObject, "iEquipForm")))))
@@ -5639,10 +5661,7 @@ function QueueMenuSwap(int upDown, int iIndex)
 endFunction
 
 function QueueMenuClearFlag(int index)
-	int targetObj = jarray.getObj(iQueueMenuCurrentArray, index)
-	jMap.setInt(targetObj, "iEquipAutoAdded", 0)
-	jMap.setInt(targetObj, "iEquipTempItem", 0)
-	;QueueMenuUpdate(jArray.count(iQueueMenuCurrentArray), index)
+	jMap.removeKey(jarray.getObj(iQueueMenuCurrentArray, index), "iEquipTempItem")
 endFunction
 
 function QueueMenuRemoveFromQueue(int iIndex)
@@ -6142,6 +6161,8 @@ bool property bHardLimitEnabledPending auto hidden
 bool property bProModeEnabled auto hidden
 bool property bFadeLeftIconWhen2HEquipped auto hidden
 float property fSmartConsumeThreshold = 0.8 auto hidden
+bool property bSkipAutoAddedItems auto hidden
+bool property bShowAutoAddedFlag auto hidden
 
 function reduceMaxQueueLength()
 	;/;debug.trace("iEquip_WidgetCore reduceMaxQueueLength start")

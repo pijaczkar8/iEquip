@@ -27,7 +27,6 @@ int function saveData()             ; Save page data and return jObject
 
     jArray.addInt(jPageObj, WC.bAllowWeaponSwitchHands as int)
     jArray.addInt(jPageObj, WC.bSkipRHUnarmedInCombat as int)
-    jArray.addInt(jPageObj, WC.bSkipAutoAddedItems as int)
     
     jArray.addInt(jPageObj, WC.iPosInd)
     jArray.addInt(jPageObj, WC.iPositionIndicatorColor)
@@ -63,7 +62,7 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 
     WC.bAllowWeaponSwitchHands = jArray.getInt(jPageObj, 4)
     WC.bSkipRHUnarmedInCombat = jArray.getInt(jPageObj, 5)
-    WC.bSkipAutoAddedItems = jArray.getInt(jPageObj, 6)
+    ;WC.bSkipAutoAddedItems = jArray.getInt(jPageObj, 6)
     
     WC.iPosInd = jArray.getInt(jPageObj, 7)
     WC.iPositionIndicatorColor = jArray.getInt(jPageObj, 8)
@@ -108,9 +107,6 @@ function drawPage()
     endIf
 
     MCM.AddToggleOptionST("cyc_tgl_skipUnarmed", "$iEquip_MCM_cyc_lbl_skipUnarmed", WC.bSkipRHUnarmedInCombat)
-    if WC.EH.bAutoAddNewItems || WC.EH.bAutoAddShouts || WC.EH.bAutoAddPowers
-        MCM.AddToggleOptionST("cyc_tgl_skipAutoAddedItems", "$iEquip_MCM_cyc_lbl_skipAutoAddedItems", WC.bSkipAutoAddedItems)
-    endIf
 
     MCM.AddEmptyOption()
     MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
@@ -223,31 +219,6 @@ State cyc_tgl_skipUnarmed
             WC.bSkipRHUnarmedInCombat = !WC.bSkipRHUnarmedInCombat
             MCM.SetToggleOptionValueST(WC.bSkipRHUnarmedInCombat)
         endIf
-    endEvent
-endState
-
-State cyc_tgl_skipAutoAddedItems
-    event OnBeginState()
-        if currentEvent == "Highlight"
-            MCM.SetInfoText("$iEquip_MCM_cyc_txt_skipAutoAddedItems")
-        else
-            If currentEvent == "Select"
-                WC.bSkipAutoAddedItems = !WC.bSkipAutoAddedItems
-            elseIf currentEvent == "Default"
-                WC.bSkipAutoAddedItems = false
-            endIf
-
-            if WC.bSkipAutoAddedItems
-				if WC.iPosInd == 2
-					WC.iPosInd = 1
-					WC.bPositionIndicatorSettingsChanged = true
-				elseIf WC.iPosInd == 1
-					WC.iPosInd = 0
-				endIf
-            endIf
-			
-			MCM.SetToggleOptionValueST(WC.bSkipAutoAddedItems)
-        endIf 
     endEvent
 endState
 
