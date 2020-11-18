@@ -234,7 +234,7 @@ State cyc_men_showPosInd
             MCM.fillMenu(WC.iPosInd, posIndBehaviour, 1)
         elseIf currentEvent == "Accept"
             WC.iPosInd = currentVar as int
-            MCM.SetMenuOptionValueST(posIndBehaviour[WC.iPosInd])
+            MCM.forcePageReset()
         endIf
     endEvent
 endState

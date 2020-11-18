@@ -26,6 +26,7 @@ Int iDefaultColor
 Int[] aCustomColors
 Int iInput
 Int iLoadDelete
+Int iMenuType
 
 iEquip_EditMode Property EM Auto
 iEquip_WidgetCore Property WC Auto
@@ -123,9 +124,10 @@ Function ListMenu_Open(Form akClient) Global
 	;debug.trace("iEquip_UILIB ListMenu_Open end")
 EndFunction
 
-Function ListMenu_SetData(String asTitle, String[] asOptions, Int aiStartIndex, Int aiDefaultIndex) Global
+Function ListMenu_SetData(String asTitle, String[] asOptions, Int aiStartIndex, Int aiDefaultIndex, int aiMenuType) Global
 	;debug.trace("iEquip_UILIB ListMenu_SetData start")
-	UI.InvokeNumber("CustomMenu", "_root.iEquipListDialog.setPlatform", (Game.UsingGamepad() as Int))
+	UI.InvokeInt("CustomMenu", "_root.iEquipListDialog.setMenuType", aiMenuType)
+	UI.InvokeInt("CustomMenu", "_root.iEquipListDialog.setPlatform", (Game.UsingGamepad() as Int))
 	UI.InvokeStringA("CustomMenu", "_root.iEquipListDialog.initListData", asOptions)
 	Int iHandle = UICallback.Create("CustomMenu", "_root.iEquipListDialog.initListParams")
 	If(iHandle)
@@ -146,7 +148,7 @@ Function ListMenu_Release(Form akClient) Global
 	;debug.trace("iEquip_UILIB ListMenu_Release end")
 EndFunction
 
-Int[] Function ShowList(String asTitle, String[] asOptions, Int aiStartIndex, Int aiDefaultIndex)
+Int[] Function ShowList(String asTitle, String[] asOptions, Int aiStartIndex, Int aiDefaultIndex, int iUpdatePreset)
 	;debug.trace("iEquip_UILIB ShowList start")
 	int[] args = new int[2]
 	args[0] = -1
@@ -156,6 +158,7 @@ Int[] Function ShowList(String asTitle, String[] asOptions, Int aiStartIndex, In
 	bMenuOpen = True
 	iInput = -1
 	iLoadDelete = -1 ;Set to 1 to send delete preset arg to EM.showEMPresetList, set to 0 to send load preset arg
+	iMenuType = iUpdatePreset
 	sTitle = asTitle
 	sOptions = asOptions
 	iStartIndex = aiStartIndex
@@ -174,7 +177,7 @@ EndFunction
 Event OnListMenuOpen(String asEventName, String asStringArg, Float afNumArg, Form akSender)
 	;debug.trace("iEquip_UILIB OnListMenuOpen start")
 	If(asEventName == "iEquip_listMenuOpen")
-		ListMenu_SetData(sTitle, sOptions, iStartIndex, iDefaultIndex)
+		ListMenu_SetData(sTitle, sOptions, iStartIndex, iDefaultIndex, iMenuType)
 	EndIf
 	;debug.trace("iEquip_UILIB OnListMenuOpen end")
 EndEvent

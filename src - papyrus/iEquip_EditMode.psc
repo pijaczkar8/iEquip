@@ -947,7 +947,8 @@ endFunction
 ; #############
 ; ### Menus ###
 
-function ShowPresetList()
+function ShowPresetList(bool updateExistingPreset = false)
+
     bool bDontExit = true
     
     while bDontExit
@@ -960,99 +961,113 @@ function ShowPresetList()
                 sPresetList[i] = Substring(sPresetList[i], 0, Find(sPresetList[i], "."))
                 i += 1
             endWhile
+
+            string tempStr
+            if updateExistingPreset
+                tempStr = "$iEquip_EM_lbl_presetListTitleUpdate"
+            else
+                tempStr = "$iEquip_EM_lbl_presetListTitle"
+            endIf
         
-            int[] MenuReturnArgs = ((Self as Form) as iEquip_UILIB).ShowList("$iEquip_EM_lbl_presetListTitle", sPresetList, 0, 0)
+            int[] MenuReturnArgs = ((Self as Form) as iEquip_UILIB).ShowList(tempStr, sPresetList, 0, 0, updateExistingPreset as int)
             
-            if MenuReturnArgs[1] == 0       ; Load preset
-				int jPreset = jValue.readFromFile(WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
-				int jPresetVersion = jMap.getInt(jPreset, "Version")
-				
-				if (jPresetVersion == GetVersion())
-					LoadPreset(jPreset)
-					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
-				elseIf jPresetVersion < GetVersion()
-                    
-                    int[] aiInsertAtIndex
-                    if jPresetVersion == 1
-    					aiInsertAtIndex = new int[6]
-                        aiInsertAtIndex[0] = 15
-    					aiInsertAtIndex[1] = 16
-    					aiInsertAtIndex[2] = 22
-                        aiInsertAtIndex[3] = 32
-    					aiInsertAtIndex[4] = 33
-    					aiInsertAtIndex[5] = 39
-                    else
-                        aiInsertAtIndex = new int[2]
-                        aiInsertAtIndex[0] = 15
-                        aiInsertAtIndex[1] = 32
-                    endIf
-					
-                    int j = 0
-					
-					while j < 8
-						string jKey
-						float[] fltArr
-						int[] intArr
-						string[] strArr
-					
-						if j == 0
-							jKey = "_X"
-							fltArr = afWidget_CurX
-						elseIf j == 1
-							jKey = "_Y"
-							fltArr = afWidget_CurY
-						elseIf j == 2
-							jKey = "_S"
-							fltArr = afWidget_CurS
-						elseIf j == 3
-							jKey = "_R"
-							fltArr = afWidget_CurR
-						elseIf j == 4
-							jKey = "_A"
-							fltArr = afWidget_CurA
-						elseIf j == 5					
-							jKey = "_D"
-							intArr = aiWidget_CurD
-						elseIf j == 6
-							jKey = "_TC"
-							intArr = aiWidget_CurTC
-						else
-							jKey = "_TA"
-							strArr = asWidget_CurTA
-						endIf
-					
-						int jTmpObj = jMap.getObj(jPreset, jKey)
-						int k = 0
-						while k < aiInsertAtIndex.Length
-							if fltArr
-								jArray.addFlt(jTmpObj, fltArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
-							elseIf intArr
-								jArray.addInt(jTmpObj, intArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
-							else
-								jArray.addStr(jTmpObj, strArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
-							endIf
+            if MenuReturnArgs[1] == 0       ; Load preset or Update Existing Preset
+                if updateExistingPreset
+                    tempStr = sPresetList[MenuReturnArgs[0]]
+                    JContainers.removeFileAtPath(WC.WidgetPresetPath + tempStr + WC.FileExt)
+                    savePreset(true, tempStr)
+                    bDontExit = false
+                else
+    				int jPreset = jValue.readFromFile(WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+    				int jPresetVersion = jMap.getInt(jPreset, "Version")
+    				
+    				if (jPresetVersion == self.GetVersion())
+    					LoadPreset(jPreset)
+    					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+    				elseIf jPresetVersion < self.GetVersion()
+                        
+                        int[] aiInsertAtIndex
+                        if jPresetVersion == 1
+        					aiInsertAtIndex = new int[6]
+                            aiInsertAtIndex[0] = 15
+        					aiInsertAtIndex[1] = 16
+        					aiInsertAtIndex[2] = 22
+                            aiInsertAtIndex[3] = 32
+        					aiInsertAtIndex[4] = 33
+        					aiInsertAtIndex[5] = 39
+                        else
+                            aiInsertAtIndex = new int[2]
+                            aiInsertAtIndex[0] = 15
+                            aiInsertAtIndex[1] = 32
+                        endIf
+    					
+                        int j = 0
+    					
+    					while j < 8
+    						string jKey
+    						float[] fltArr
+    						int[] intArr
+    						string[] strArr
+    					
+    						if j == 0
+    							jKey = "_X"
+    							fltArr = afWidget_CurX
+    						elseIf j == 1
+    							jKey = "_Y"
+    							fltArr = afWidget_CurY
+    						elseIf j == 2
+    							jKey = "_S"
+    							fltArr = afWidget_CurS
+    						elseIf j == 3
+    							jKey = "_R"
+    							fltArr = afWidget_CurR
+    						elseIf j == 4
+    							jKey = "_A"
+    							fltArr = afWidget_CurA
+    						elseIf j == 5					
+    							jKey = "_D"
+    							intArr = aiWidget_CurD
+    						elseIf j == 6
+    							jKey = "_TC"
+    							intArr = aiWidget_CurTC
+    						else
+    							jKey = "_TA"
+    							strArr = asWidget_CurTA
+    						endIf
+    					
+    						int jTmpObj = jMap.getObj(jPreset, jKey)
+    						int k = 0
+    						while k < aiInsertAtIndex.Length
+    							if fltArr
+    								jArray.addFlt(jTmpObj, fltArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
+    							elseIf intArr
+    								jArray.addInt(jTmpObj, intArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
+    							else
+    								jArray.addStr(jTmpObj, strArr[aiInsertAtIndex[k]], aiInsertAtIndex[k]+k)
+    							endIf
 
-							k += 1
-						endWhile
-						
-						fltArr = none
-						intArr = none
-						strArr = none
-						
-						j += 1
-					endWhile
+    							k += 1
+    						endWhile
+    						
+    						fltArr = none
+    						intArr = none
+    						strArr = none
+    						
+    						j += 1
+    					endWhile
 
-					jMap.setInt(jPreset, "Version", GetVersion())
-					jValue.writeTofile(jPreset, WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
-					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_presetUpdated{" + sPresetList[MenuReturnArgs[0]] + WC.FileExt + "}"))
-					LoadPreset(jPreset)
-					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
-				else
-					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_common_LoadPresetError"))
-				endIf
-				
-				jValue.zeroLifetime(jPreset)
-                bDontExit = false
+    					jMap.setInt(jPreset, "Version", GetVersion())
+    					jValue.writeTofile(jPreset, WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+    					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_presetUpdated{" + sPresetList[MenuReturnArgs[0]] + WC.FileExt + "}"))
+    					LoadPreset(jPreset)
+    					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_layoutSwitched") + " " + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
+    				else
+    					Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_common_LoadPresetError"))
+    				endIf
+    				
+    				jValue.zeroLifetime(jPreset)
+                    bDontExit = false
+                endIf
             elseIf MenuReturnArgs[1] == 1   ; Delete preset
                 bDontExit = true
                 JContainers.removeFileAtPath(WC.WidgetPresetPath + sPresetList[MenuReturnArgs[0]] + WC.FileExt)
@@ -1127,29 +1142,43 @@ endFunction
 
 ; - Save -
 
-function SavePreset()
-    string textInput = ((Self as Form) as iEquip_UILIB).ShowTextInput("$iEquip_EM_lbl_namePreset", "")
-    
-    if textInput != ""
-        int jSavePreset = jMap.object()
+function SavePreset(bool bUpdatingPreset = false, string presetName = "")
+    int updateExistingPreset
+    if !bUpdatingPreset
+        updateExistingPreset = WC.showTranslatedmessage(10, iEquip_StringExt.LocalizeString("$iEquip_utilitymenu_title"))
+    endIf
+    if updateExistingPreset == 1
+        ShowPresetList(true)
+    else
+        if !bUpdatingPreset
+            presetName = ((Self as Form) as iEquip_UILIB).ShowTextInput("$iEquip_EM_lbl_namePreset", "")
+        endIf
+        
+        if presetName != ""
+            int jSavePreset = jMap.object()
 
-		jMap.setInt(jSavePreset, "Version", GetVersion())
-        jMap.setObj(jSavePreset, "_X", jArray.objectWithFloats(WC.afWidget_X))
-        jMap.setObj(jSavePreset, "_Y", jArray.objectWithFloats(WC.afWidget_Y))
-        jMap.setObj(jSavePreset, "_S", jArray.objectWithFloats(WC.afWidget_S))
-        jMap.setObj(jSavePreset, "_R", jArray.objectWithFloats(WC.afWidget_R))
-        jMap.setObj(jSavePreset, "_A", jArray.objectWithFloats(WC.afWidget_A))
-        jMap.setObj(jSavePreset, "_D", jArray.objectWithInts(WC.aiWidget_D))
-        jMap.setObj(jSavePreset, "_TC", jArray.objectWithInts(WC.aiWidget_TC))
-        jMap.setObj(jSavePreset, "_TA", jArray.objectWithStrings(WC.asWidget_TA))
-		jMap.setInt(jSavePreset, "potionSelectorAlignment", bPotionSelectorOnLeft as int)
-		jMap.setInt(jSavePreset, "chargeDisplayType", CM.iChargeDisplayType)
-		jMap.setInt(jSavePreset, "backgroundStyle", WC.iBackgroundStyle)
-        jMap.setInt(jSavePreset, "dontFadeBackgrounds", WC.bDontFadeBackgrounds as int)
+    		jMap.setInt(jSavePreset, "Version", GetVersion())
+            jMap.setObj(jSavePreset, "_X", jArray.objectWithFloats(WC.afWidget_X))
+            jMap.setObj(jSavePreset, "_Y", jArray.objectWithFloats(WC.afWidget_Y))
+            jMap.setObj(jSavePreset, "_S", jArray.objectWithFloats(WC.afWidget_S))
+            jMap.setObj(jSavePreset, "_R", jArray.objectWithFloats(WC.afWidget_R))
+            jMap.setObj(jSavePreset, "_A", jArray.objectWithFloats(WC.afWidget_A))
+            jMap.setObj(jSavePreset, "_D", jArray.objectWithInts(WC.aiWidget_D))
+            jMap.setObj(jSavePreset, "_TC", jArray.objectWithInts(WC.aiWidget_TC))
+            jMap.setObj(jSavePreset, "_TA", jArray.objectWithStrings(WC.asWidget_TA))
+    		jMap.setInt(jSavePreset, "potionSelectorAlignment", bPotionSelectorOnLeft as int)
+    		jMap.setInt(jSavePreset, "chargeDisplayType", CM.iChargeDisplayType)
+    		jMap.setInt(jSavePreset, "backgroundStyle", WC.iBackgroundStyle)
+            jMap.setInt(jSavePreset, "dontFadeBackgrounds", WC.bDontFadeBackgrounds as int)
 
-        jValue.writeTofile(jSavePreset, WC.WidgetPresetPath + textInput + WC.FileExt)
-        jValue.zeroLifetime(jSavePreset)
-        Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_savedAs") + " " + textInput + WC.FileExt)
+            jValue.writeTofile(jSavePreset, WC.WidgetPresetPath + presetName + WC.FileExt)
+            jValue.zeroLifetime(jSavePreset)
+            if bUpdatingPreset
+                Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_presetUpdated{"+(presetName + WC.FileExt)+"}"))
+            else
+                Debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_EM_not_savedAs") + " " + presetName + WC.FileExt)
+            endIf
+        endIf
     endIf
 endFunction
 

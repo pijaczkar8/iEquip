@@ -29,6 +29,8 @@ class iEquip_uilib.iEquipListDialog extends MovieClip
 	private var deleteKey_: Number = -1;
 	private var loadKey_: Number = -1;
 
+	private var menuType: Number = 0;
+
   /* STAGE ELEMENTS */
 	
 	public var menuList: ScrollingList;
@@ -109,13 +111,9 @@ class iEquip_uilib.iEquipListDialog extends MovieClip
 	
 		if (platform == 0) {
 			cancelControls_ = Input.Tab;
-		} else {
-			cancelControls_ = Input.Cancel;
-		}
-		
-		if (platform == 0) {
 			loadControls_ = Input.Enter;
 		} else {
+			cancelControls_ = Input.Cancel;
 			loadControls_ = Input.Accept;
 		}
 		
@@ -125,12 +123,18 @@ class iEquip_uilib.iEquipListDialog extends MovieClip
 		cancelButtonPanel.updateButtons();
 		
 		deleteButtonPanel.clearButtons();
-		var deleteButton = deleteButtonPanel.addButton({text: "Delete Preset", controls: deleteControls_});
-		deleteButton.addEventListener("press", this, "onDeletePress");
-		deleteButtonPanel.updateButtons();
+		if (menuType == 1){
+			deleteButtonPanel._visible=false;
+		} else {
+			deleteButtonPanel._visible=true;
+			var deleteButton = deleteButtonPanel.addButton({text: "Delete Preset", controls: deleteControls_});
+			deleteButton.addEventListener("press", this, "onDeletePress");
+			deleteButtonPanel.updateButtons();
+		}
 		
 		loadButtonPanel.clearButtons();
-		var loadButton = loadButtonPanel.addButton({text: "Load Preset", controls: loadControls_});
+		var buttonText: String = menuType == 0 ? "Load Preset" : "Update Preset";
+		var loadButton = loadButtonPanel.addButton({text: buttonText, controls: loadControls_});
 		loadButton.addEventListener("press", this, "onLoadPress");
 		loadButtonPanel.updateButtons();
 	}
@@ -216,6 +220,11 @@ class iEquip_uilib.iEquipListDialog extends MovieClip
 			var entry = {text: menuOptions[i], align: "center", enabled: true, state: "normal"};
 			menuList.entryList.push(entry);
 		}
+	}
+
+	public function setMenuType(iMenuType: Number): Void
+	{
+		menuType = iMenuType;
 	}
 
 	public function initListParams(titleText: String, startIndex: Number, defaultIndex: Number): Void

@@ -165,7 +165,7 @@ function checkAndUpdateTemperLevelInfo(int Q)
 
 		elseIf fItemHealth == 1.0 || afTemperLevelMax.Find(fItemHealth) != -1
 			if fItemHealth != 1.0					; If it's 1.0 (Untempered) we don't need to set a temperLevelName string, otherwise if it matches exactly one of the other tier values set the name
-				i = afTemperLevelMax.Find(fItemHealth)
+				i = afTemperLevelMax.Find(fItemHealth) + 1
 				temperLevelName = asTemperLevelNames[i]
 			endIf
 
@@ -186,6 +186,10 @@ function checkAndUpdateTemperLevelInfo(int Q)
 				
 				if bLootAndDegradationLoaded && !WC.bIsRequiemLoaded && LDQuest.DecayChance > 0 			; If Loot & Degradation is loaded, and it's degradation feature is enabled, and we're not using Requiem use L&D's micro counter to set the % so it matches L&D
 					currentTemperLevelPercent = Round((fItemHealth - ((fItemHealth * 10.0) as Int / 10.0)) / 0.00099 * 100.0)
+					if currentTemperLevelPercent > 100
+						float tmpVal = currentTemperLevelPercent / 100
+						currentTemperLevelPercent = Round((tmpVal - tmpVal as int) * 100)
+					endIf
 				else 																						; Otherwise use the actual item health % within the current tier
 					currentTemperLevelPercent = Round((fItemHealth - TemperLevelMin) / (afTemperLevelMax[i] - TemperLevelMin) * 100)
 				endIf

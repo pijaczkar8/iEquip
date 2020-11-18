@@ -109,7 +109,9 @@ function selectAmmoQueue(int weaponType)
 		else
 			lastKnownAmmo = lastKnownAmmoBolts
 		endIf
-		aiCurrentAmmoIndex[Q] = findInQueue(lastKnownAmmo)
+		if lastKnownAmmo
+			aiCurrentAmmoIndex[Q] = findInQueue(lastKnownAmmo)
+		endIf
 	elseIf (iAmmoListSorting == 1 && bAlwaysEquipBestAmmo) || (iAmmoListSorting == 3 && bAlwaysEquipMostAmmo)
 		selectBestAmmo(Q)
 	endIf

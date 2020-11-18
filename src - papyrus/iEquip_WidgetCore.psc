@@ -77,6 +77,7 @@ Message property iEquip_ConfirmDeletePreset auto
 Message property iEquip_ConfirmReset auto
 Message property iEquip_ConfirmResetParent auto
 Message property iEquip_ConfirmDiscardChanges auto
+message property iEquip_SavePresetOptions auto
 Spell property PLFX Auto
 Spell property PRFX Auto
 
@@ -888,12 +889,9 @@ function checkVersion()
 			endIf
         endIf
 
-        if CurrentVersion < 1.5
-        	PO.bShowConsumedNotifications = PO.iNotificationLevel > 0  			; If previously Minimal or Verbose
-        	PO.bShowNoPotionsNotifications = PO.iNotificationLevel > 0			; If previously Minimal or Verbose
-        	PO.bShowEffectActiveNotifications = PO.iNotificationLevel == 2		; If previously Verbose
-        	PO.bShowStatFullNotifications = PO.iNotificationLevel == 2			; If previously Verbose
-        	RC.onVersionUpdate(CurrentVersion)
+        if fCurrentVersion < 1.5
+        	PO.onVersionUpdate(fCurrentVersion)
+        	RC.onVersionUpdate(fCurrentVersion)
         	handleAutoAddedItems()
         endIf
 
@@ -4597,6 +4595,8 @@ int function showTranslatedMessage(int theMenu, string theString)
 		iButton = iEquip_ConfirmResetParent.Show()
 	elseIf theMenu == 9
 		iButton = iEquip_ConfirmDiscardChanges.Show()
+	elseIf theMenu == 10
+		iButton = iEquip_SavePresetOptions.Show()
 	endIf
 	iEquip_MessageAlias.Clear()
 	iEquip_MessageObjectReference.Disable()
