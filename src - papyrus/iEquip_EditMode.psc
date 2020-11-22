@@ -1177,6 +1177,7 @@ function SavePreset(bool bUpdatingPreset = false, string presetName = "")
             jMap.setFlt(jSavePreset, "DSDistance", WC.fDropShadowDistance)
             jMap.setFlt(jSavePreset, "DSStrength", WC.fDropShadowStrength)
 
+
             jValue.writeTofile(jSavePreset, WC.WidgetPresetPath + presetName + WC.FileExt)
             jValue.zeroLifetime(jSavePreset)
             if bUpdatingPreset
