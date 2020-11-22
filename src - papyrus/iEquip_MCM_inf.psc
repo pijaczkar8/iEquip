@@ -93,6 +93,8 @@ function drawPage()
     MCM.AddTextOptionST("inf_txt_eve", "$iEquip_MCM_inf_lbl_eve", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Gamepad++.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_gpp", "$iEquip_MCM_inf_lbl_gpp", modStates[modFound], aiFlags[modFound])
+    modFound = JContainers.fileExistsAtPath("Data/NetScriptFramework/Plugins/ItemDurability.dll") as int
+    MCM.AddTextOptionST("inf_txt_id", "$iEquip_MCM_inf_lbl_id", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("LegacyoftheDragonborn.esm") != 255) as int
     MCM.AddTextOptionST("inf_txt_lotd", "$iEquip_MCM_inf_lbl_lotd", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("LootandDegradation.esp") != 255) as int
@@ -263,6 +265,14 @@ State inf_txt_gpp
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_gpp")
+        endIf 
+    endEvent
+endState
+
+State inf_txt_id
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_id")
         endIf 
     endEvent
 endState

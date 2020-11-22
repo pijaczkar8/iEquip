@@ -24,6 +24,7 @@ iEquip_BoundWeaponEventsListener Property BW Auto
 iEquip_WidgetVisUpdateScript property WVis auto
 iEquip_TorchScript property TO auto
 iEquip_ThrowingPoisons property TP auto
+iEquip_TempItemCleanupUpdateScript property CU auto
 
 string HUD_MENU = "HUD Menu"
 string WidgetRoot
@@ -117,6 +118,8 @@ bool property bRealTimeStaffMeters = true auto hidden
 
 bool property bVanillaHorses = false auto hidden
 bool property bRelevantItemsOnlyWhileDragonRiding = true auto hidden
+
+bool property bIsItemDurabilityFound auto hidden
 
 int iSlotToUpdate = -1
 int[] itemTypesToProcess
@@ -850,24 +853,46 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 	bool actionTaken
 	int targetIndex
 	bool blockCall
+	form equippedForm = PlayerRef.GetEquippedObject(equippedSlot)
 	bool formFound = iEquip_AllCurrentItemsFLST.HasForm(queuedForm)
 	string itemName
 	string itemBaseName
 	int itemID
-	int itemHandle
+	int itemHandle = 0xFFFF
 
 	if equippedSlot < 2 && queuedForm == Unarmed && WC.asCurrentlyEquipped[equippedSlot] != "$iEquip_common_Unarmed"		; If the player is brawling then don't add the fistWeapon to the queue, and if not currently showing Unarmed do so now.
 
 		WC.setSlotToEmpty(equippedSlot, true, true)
 
 	else
-		itemHandle = WC.getHandle(equippedSlot, itemType)
+		if queuedForm != equippedForm ; Just in case something has gone wrong, make sure we're updating the slot for what is actually equipped
+			queuedForm = equippedForm
+			itemType = queuedForm.GetType()
+			if itemType == 22
+				iEquipSlot = WC.EquipSlots.Find((queuedForm as spell).GetEquipType())
+			elseIf itemType == 41
+				itemType = (queuedForm as Weapon).GetWeaponType()
+			endIf
+		endIf
+
+		if (queuedForm as weapon || queuedForm as armor)
+			itemHandle = WC.getHandle(equippedSlot, itemType, queuedForm)
+		endIf
 
 		;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - itemHandle: " + itemHandle)
 
 		if itemHandle != 0xFFFF
 			itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
 			itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
+			if bIsItemDurabilityFound
+				int i = StringUtil.Find(itemBaseName, "(")
+				if i == -1
+					i = StringUtil.Find(itemBaseName, "[")
+				endIf
+				if i != -1
+					itemBaseName = StringUtil.Substring(itemBaseName, 0, i - 1)
+				endIf
+			endIf
 			;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 		endIf
 		
@@ -1059,7 +1084,7 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
   		PlayerRef.EquipItemEx(AM.currentAmmoForm as Ammo)
 
   	else
-  		checkAndRemoveTempItems()
+  		CU.registerForCleanupUpdate()
 
   		if !bGoingUnarmed && !TO.bSettingLightRadius && !(akBaseObject.GetType() == 31 && TO.didATorchJustBurnOut())
 		  	bWaitingForOnObjectUnequippedUpdate = true
@@ -1068,58 +1093,6 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
 	endIf
 	;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped end")
 endEvent
-
-bool bRemovingTempItems
-
-function checkAndRemoveTempItems()
-	
-	if !bRemovingTempItems 																			; Should block multiple runs in the case of two or three items being unequipped in quick succession
-
-		bRemovingTempItems = true
-
-		int Q
-		int i
-		int targetQ
-		int targetObj
-		int handle
-		int slot
-		form currentObject
-
-		Utility.Wait(1.0) 																			; Should be enough time to let any equipping events happen, triggering Ammo Mode, etc, before we remove temp items
-
-		while Q < 3
-			targetQ = WC.aiTargetQ[Q]
-			currentObject = PlayerRef.GetEquippedObject(Q)
-			i = jArray.count(targetQ) - 1															; Temp items will always have been added at the end of the queue so start at the end and work backwards
-			while i > 0
-				if !PM.bPreselectMode || i != WC.aiCurrentlyPreselected[Q]
-					targetObj = jArray.getObj(targetQ, i)
-					if jMap.getInt(targetObj, "iEquipTempItem") == 1
-						if !currentObject || jMap.getForm(targetObj, "iEquipForm") != currentObject 	; If we don't have anything currently equipped, or the equipped form doesn't match the temp item, remove the temp item
-							WC.removeTempItemFromQueue(Q, i)
-						elseIf Q < 2																	; Otherwise if we're checking left/right queues and the forms do match, check the temp item refHandle against the worn one 
-							handle = jMap.getInt(targetObj, "iEquipHandle", 0xFFFF)
-							if handle != 0xFFFF
-								if Q == 0 && currentObject as armor && (currentObject as armor).IsShield()
-									slot = 2
-								else
-									slot = Q
-								endIf
-								
-								if handle != iEquip_InventoryExt.GetRefHandleFromWornObject(slot) 		; And remove the temp item if the refHandle doesn't match the currently equipped one
-									WC.removeTempItemFromQueue(Q, i)
-								endIf
-							endIf
-						endIf
-					endIf
-				endIf
-				i -= 1
-			endWhile	
-			Q += 1
-		endWhile
-		bRemovingTempItems = false
-	endIf
-endFunction
 
 Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	;debug.trace("iEquip_PlayerEventHandler OnItemRemoved start - akBaseItem: " + akBaseItem + " - " + akBaseItem.GetName() + ", aiItemCount: " + aiItemCount + ", akItemReference: " + akItemReference)	

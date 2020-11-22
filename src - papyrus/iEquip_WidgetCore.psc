@@ -77,6 +77,7 @@ Message property iEquip_ConfirmDeletePreset auto
 Message property iEquip_ConfirmReset auto
 Message property iEquip_ConfirmResetParent auto
 Message property iEquip_ConfirmDiscardChanges auto
+message property iEquip_SavePresetOptions auto
 Spell property PLFX Auto
 Spell property PRFX Auto
 
@@ -346,15 +347,14 @@ bool property bDontFadeBackgrounds auto hidden
 bool property bFadeLeftIcon = true auto hidden
 float property fLeftIconFadeAmount = 70.0 auto hidden
 bool property bTemperDisplaySettingChanged auto hidden
-bool property bShoutCooldownFadeEnabled = true auto hidden
 
 bool property bDropShadowEnabled = true auto hidden
 bool property bDropShadowSettingChanged auto hidden
-float property fDropShadowAlpha = 0.8 auto hidden
+float property fDropShadowAlpha = 0.85 auto hidden
 float property fDropShadowAngle = 105.0 auto hidden
 int property iDropShadowBlur = 2 auto hidden
-float property fDropShadowDistance = 2.0 auto hidden
-float property fDropShadowStrength = 1.0 auto hidden
+float property fDropShadowDistance = 1.0 auto hidden
+float property fDropShadowStrength = 4.0 auto hidden
 
 bool[] property abPotionGroupAddedBack auto hidden
 bool property bPotionGroupingOptionsChanged auto hidden
@@ -452,6 +452,8 @@ string[] property asMoreHUDIcons auto hidden
 bool property bPowerOfThreeExtenderLoaded auto hidden
 
 bool property bIsCGOLoaded auto hidden
+
+bool bIsItemDurabilityLoaded
 
 int iRemovedItemsCacheObj
 int property iRefHandleArray auto hidden
@@ -888,12 +890,9 @@ function checkVersion()
 			endIf
         endIf
 
-        if CurrentVersion < 1.5
-        	PO.bShowConsumedNotifications = PO.iNotificationLevel > 0  			; If previously Minimal or Verbose
-        	PO.bShowNoPotionsNotifications = PO.iNotificationLevel > 0			; If previously Minimal or Verbose
-        	PO.bShowEffectActiveNotifications = PO.iNotificationLevel == 2		; If previously Verbose
-        	PO.bShowStatFullNotifications = PO.iNotificationLevel == 2			; If previously Verbose
-        	RC.onVersionUpdate(CurrentVersion)
+        if fCurrentVersion < 1.5
+        	PO.onVersionUpdate(fCurrentVersion)
+        	RC.onVersionUpdate(fCurrentVersion)
         	handleAutoAddedItems()
         endIf
 
@@ -951,7 +950,7 @@ function outWithTheOldInWithTheNew()
 		
 		if equippedItem && (equippedItem as Weapon || equippedItem as Armor) && equippedItem == jMap.getForm(targetObject, "iEquipForm")
 
-	        int itemHandle = getHandle(Q, jMap.getInt(targetObject, "iEquipType"))
+	        int itemHandle = getHandle(Q, jMap.getInt(targetObject, "iEquipType"), jMap.getForm(targetObject, "iEquipForm"))
 
 			if itemHandle != 0xFFFF
 				JArray.AddInt(iRefHandleArray, itemHandle)
@@ -1080,6 +1079,10 @@ function CheckDependencies()
 
     ; Ordinator
     bIsOrdinatorLoaded = Game.GetModByName("Ordinator - Perks of Skyrim.esp") != 255
+
+    ; Item Durability
+    bIsItemDurabilityLoaded = JContainers.fileExistsAtPath("Data/NetScriptFramework/Plugins/ItemDurability.dll")
+    EH.bIsItemDurabilityFound = bIsItemDurabilityLoaded
 
     ; Adamant
     bIsAdamantLoaded = Game.GetModByName("Adamant.esp") != 255
@@ -1308,7 +1311,7 @@ state ENABLED
 			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
 			UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
 			UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-			UI.InvokeBool(HUD_MENU, WidgetRoot + ".handleTextFieldDropShadow", !bDropShadowEnabled)
+			updateTextFieldDropShadow()
 		endIf
 		bRefreshingWidget = false
 		
@@ -1772,6 +1775,7 @@ endEvent
 event OnMenuClose(string _sCurrentMenu)
 	;debug.trace("iEquip_WidgetCore OnMenuClose start - current menu: " + _sCurrentMenu)
 	int i
+	form targetForm
 
 	if _sCurrentMenu == "InventoryMenu"																				; Just in case user has decided to poison or recharge a currently equipped weapon through the Inventory Menu, yawn...
 		int leftItemType = PlayerRef.GetEquippedItemType(0)
@@ -1782,8 +1786,9 @@ event OnMenuClose(string _sCurrentMenu)
 		while i < 2
 			int targetObject = jArray.getObj(aiTargetQ[i], aiCurrentQueuePosition[i])
 			form equippedItem = PlayerRef.GetEquippedObject(i)
-			int itemHandle = getHandle(i)
-			if equippedItem && (equippedItem as Weapon || (i == 0 && equippedItem as armor && (equippedItem as armor).IsShield())) && equippedItem == jMap.GetForm(targetObject, "iEquipForm") && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
+			targetForm = jMap.GetForm(targetObject, "iEquipForm")
+			int itemHandle = getHandle(i, -1, targetForm)
+			if equippedItem && (equippedItem as Weapon || (i == 0 && equippedItem as armor && (equippedItem as armor).IsShield())) && equippedItem == targetForm && (itemHandle == 0xFFFF || itemHandle == jMap.GetInt(targetObject, "iEquipHandle", 0xFFFF))
 				checkAndUpdatePoisonInfo(i)
 				CM.checkAndUpdateChargeMeter(i)
 				if TI.bFadeIconOnDegrade || TI.iTemperNameFormat > 0 || TI.bShowTemperTierIndicator
@@ -1799,11 +1804,11 @@ event OnMenuClose(string _sCurrentMenu)
 			int count = jArray.count(aiTargetQ[Q])
 			while i < count
 				if jMap.getInt(jArray.getObj(aiTargetQ[Q], i), "iEquipType") == 22
-					form spellForm = jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm")
-					if Game.GetModName(Math.LogicalAnd(Math.RightShift(spellForm.GetFormID(), 24), 0xFF)) == "Bound Armory Extravaganza.esp"		; If it's a Bound Armory Spell
-						string spellName = spellForm.GetName()														; Get the new spell name
+					targetForm = jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm")
+					if Game.GetModName(Math.LogicalAnd(Math.RightShift(targetForm.GetFormID(), 24), 0xFF)) == "Bound Armory Extravaganza.esp"		; If it's a Bound Armory Spell
+						string spellName = targetForm.GetName()														; Get the new spell name
 						jMap.setStr(jArray.getObj(aiTargetQ[Q], i), "iEquipName", spellName)						; Update the queue object
-						if aiCurrentQueuePosition[Q] == i && PlayerRef.GetEquippedSpell(Q) == spellForm 			; Now check if the spell is currently displayed and equipped
+						if aiCurrentQueuePosition[Q] == i && PlayerRef.GetEquippedSpell(Q) == targetForm 			; Now check if the spell is currently displayed and equipped
 							int element = 8		; LeftName
 							if Q == 1
 								element = 22	; rightName
@@ -1907,7 +1912,7 @@ function addCurrentItemsOnFirstEnable()
 	        	itemType = (equippedItem as Weapon).GetWeaponType()
 	        endIf
 
-			itemHandle = getHandle(Q, itemType)
+			itemHandle = getHandle(Q, itemType, equippedItem)
 
 			;debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - Q: " + Q + ", itemHandle received: " + itemHandle)
 
@@ -1916,6 +1921,15 @@ function addCurrentItemsOnFirstEnable()
 				JArray.unique(iRefHandleArray)
 				itemName = iEquip_InventoryExt.GetLongName(equippedItem, itemHandle)
 				itemBaseName = iEquip_InventoryExt.GetShortName(equippedItem, itemHandle)
+				if bIsItemDurabilityLoaded
+					int i = StringUtil.Find(itemBaseName, "[")
+					if i != -1
+						i = StringUtil.Find(itemBaseName, "(")
+					endIf
+					if i != -1
+						itemBaseName = StringUtil.Substring(itemBaseName, 0, i - 1)
+					endIf
+				endIf
 				;debug.trace("iEquip_WidgetCore addCurrentItemsOnFirstEnable - names from handle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 			endIf
 			
@@ -2287,31 +2301,30 @@ function ResetWidgetArrays()
 	;debug.trace("iEquip_WidgetCore ResetWidgetArrays end")
 endFunction
 
-int function getHandle(int Q, int itemType = -1)
+int function getHandle(int Q, int itemType = -1, form targetForm)
 	;debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType)
 	int itemHandle = 0xFFFF
 	if Q < 2
-		if itemType == -1
-			form equippedItem = PlayerRef.GetEquippedObject(Q)
-			if equippedItem
+		form equippedItem = PlayerRef.GetEquippedObject(Q)
+		if equippedItem && equippedItem == targetForm && (equippedItem as weapon || equippedItem as armor)
+			if itemType == -1
 				;debug.trace("iEquip_WidgetCore getHandle - equippedItem: " + equippedItem + " (" + equippedItem.GetName() + ")")
 				itemType = equippedItem.GetType()
 				if itemType == 41 														; If it is a weapon get the weapon type
 		        	itemType = (equippedItem as Weapon).GetWeaponType()
 		        endIf
-	        ;else
-				;debug.trace("iEquip_WidgetCore getHandle - nothing returned by GetEquippedObject")
+		        ;debug.trace("iEquip_WidgetCore getHandle - itemType: " + itemType)
 			endIf
-	        ;debug.trace("iEquip_WidgetCore getHandle - itemType: " + itemType)
-		endIf
-		if TI.aiTemperedItemTypes.Find(itemType) > -1
-			if itemType == 26														; Shield
-				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(2)
-			elseIf (itemType > 4 && itemType < 8) || itemType == 9					; 2H or ranged
-				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(1)
-			else
+			if TI.aiTemperedItemTypes.Find(itemType) != -1
+				if itemType == 26														; Shield
+					Q = 2
+				elseIf (itemType > 4 && itemType < 8) || itemType == 9					; 2H or ranged
+					Q = 1
+				endIf
 				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)
 			endIf
+		;else
+			;debug.trace("iEquip_WidgetCore getHandle - nothing returned by GetEquippedObject")
 		endIf
 	endIf
 	;debug.trace("iEquip_WidgetCore getHandle end - returning itemHandle: " + itemHandle)
@@ -2440,7 +2453,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	elseIf queueLength > 1 || onItemRemoved || (Q < 3 && abQueueWasEmpty[Q]) || (Q == 0 && bGoneUnarmed || b2HSpellEquipped)
 		int i
 		int	targetIndex
-		int targetObject
+		int targetObject = jArray.getObj(targetArray, aiCurrentQueuePosition[Q])
 		form targetItem
 	    string targetName
 
@@ -2463,9 +2476,9 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		endIf
 		
 		; Make sure we're starting from the correct index, in case somehow the queue has been amended without the aiCurrentQueuePosition array being updated
-		if asCurrentlyEquipped[Q] != "" && asCurrentlyEquipped[Q] != jMap.getStr(jArray.getObj(targetArray, aiCurrentQueuePosition[Q]), "iEquipName")
+		if asCurrentlyEquipped[Q] != "" && asCurrentlyEquipped[Q] != jMap.getStr(targetObject, "iEquipName")
 			if Q < 2
-				aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q], PlayerRef.GetEquippedObject(Q), getHandle(Q))
+				aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q], PlayerRef.GetEquippedObject(Q), getHandle(Q, -1, jMap.getForm(targetObject, "iEquipForm")))
 			else
 				aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q])
 			endIf
@@ -3628,31 +3641,29 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 endFunction
 
 function removeTempItemFromQueue(int Q, int iIndex)
-	if !(Q == 0 && bAmmoMode && iIndex == aiCurrentQueuePosition[0])
-		int tempObj = jArray.getObj(aiTargetQ[Q], iIndex)
-		form tempForm = jMap.getForm(tempObj, "iEquipForm")
-		string tempName = jMap.getStr(tempObj, "iEquipName")
-		int tempHandle = jMap.getInt(tempObj, "iEquipHandle", 0xFFFF)
-		int otherQ
-		if Q < 2
-			otherQ = (Q + 1) % 2
-		endIf
-
-		if bMoreHUDLoaded
-			int tempID = jMap.getInt(tempObj, "iEquipItemID")
-			AhzMoreHudIE.RemoveIconItem(tempID)
-			if Q < 2 && findInQueue(otherQ, tempName, tempForm, tempHandle) != -1
-				AhzMoreHudIE.AddIconItem(tempID, asMoreHUDIcons[otherQ])
-	        endIf
-	    endIf
-	    
-	    jArray.eraseIndex(aiTargetQ[Q], iIndex)
-
-	    if Q == 2 || (findInQueue(Q, tempName, tempForm, tempHandle) == -1 && findInQueue(otherQ, tempName, tempForm, tempHandle) == -1)
-	    	iEquip_AllCurrentItemsFLST.RemoveAddedForm(tempForm)
-			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
-	    endIf
+	int tempObj = jArray.getObj(aiTargetQ[Q], iIndex)
+	form tempForm = jMap.getForm(tempObj, "iEquipForm")
+	string tempName = jMap.getStr(tempObj, "iEquipName")
+	int tempHandle = jMap.getInt(tempObj, "iEquipHandle", 0xFFFF)
+	int otherQ
+	if Q < 2
+		otherQ = (Q + 1) % 2
 	endIf
+
+	if bMoreHUDLoaded
+		int tempID = jMap.getInt(tempObj, "iEquipItemID")
+		AhzMoreHudIE.RemoveIconItem(tempID)
+		if Q < 2 && findInQueue(otherQ, tempName, tempForm, tempHandle) != -1
+			AhzMoreHudIE.AddIconItem(tempID, asMoreHUDIcons[otherQ])
+        endIf
+    endIf
+    
+    jArray.eraseIndex(aiTargetQ[Q], iIndex)
+
+    if Q == 2 || (findInQueue(Q, tempName, tempForm, tempHandle) == -1 && findInQueue(otherQ, tempName, tempForm, tempHandle) == -1)
+    	iEquip_AllCurrentItemsFLST.RemoveAddedForm(tempForm)
+		EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+    endIf
 endFunction
 
 function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cyclingAmmo = false, bool onItemRemoved = false, bool addToCache = true)
@@ -4152,7 +4163,10 @@ function cycleHand(int Q, int targetIndex, form targetItem, int itemType = -1, b
 			endIf
 		else
 			; If item is anything other than a spell check if it is already equipped, possibly in the other hand, and there is only 1 of it
-			int itemCount = PlayerRef.GetItemCount(targetItem)
+			int itemCount
+			if targetItem
+				itemCount = PlayerRef.GetItemCount(targetItem)
+			endIf
 		    if !otherHandUnequipped && (targetItem == PlayerRef.GetEquippedObject(otherHand)) && itemCount < 2
 		    	;debug.trace("iEquip_WidgetCore cycleHand - targetItem found in other hand and only one of them")
 		    	; If it is already equipped and player has allowed switching hands then unequip the other hand first before equipping the target item in this hand
@@ -4597,6 +4611,8 @@ int function showTranslatedMessage(int theMenu, string theString)
 		iButton = iEquip_ConfirmResetParent.Show()
 	elseIf theMenu == 9
 		iButton = iEquip_ConfirmDiscardChanges.Show()
+	elseIf theMenu == 10
+		iButton = iEquip_SavePresetOptions.Show()
 	endIf
 	iEquip_MessageAlias.Clear()
 	iEquip_MessageObjectReference.Disable()
@@ -4781,19 +4797,20 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 		itemType = jMap.getInt(targetObject, "iEquipType")
 
 		form equippedItem = PlayerRef.GetEquippedObject(Q)
+		form targetForm = jMap.getForm(targetObject, "iEquipForm")
 
 		if !equippedItem && !bGoneUnarmed && !(Q == 0 && (b2HSpellEquipped || itemType == 26))
 			return
 		endIf
 
-		if itemType == 22 && IsBoundSpell(jMap.getForm(targetObject, "iEquipForm") as Spell) && equippedItem as Weapon && iEquip_WeaponExt.IsWeaponBound(equippedItem as Weapon)
-			itemType = GetBoundSpellWeapType(jMap.getForm(targetObject, "iEquipForm") as Spell)
+		if itemType == 22 && IsBoundSpell(targetForm as Spell) && equippedItem as Weapon && iEquip_WeaponExt.IsWeaponBound(equippedItem as Weapon)
+			itemType = GetBoundSpellWeapType(targetForm as Spell)
 		endIf
 
-		if isPoisonable(itemType)
+		if equippedItem as weapon && isPoisonable(itemType)
 			if refHandle == 0xFFFF
 				;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetRefHandleFromWornObject, Q: " + Q)
-				refHandle = getHandle(Q)
+				refHandle = getHandle(Q, itemType, targetForm)
 			endIf
 			;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetPoisonCount, equippedItem: " + equippedItem + ", refHandle: " + refHandle)
 			charges = GetPoisonCount(equippedItem, refHandle)
@@ -4801,19 +4818,19 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 			if charges > 0
 				currentPoison = iEquip_InventoryExt.GetPoison(equippedItem, refHandle)
 			endIf
+
+			;if item isn't poisoned remove the poisoned flag
+			if equippedItem == jMap.getForm(targetObject, "iEquipForm")
+				;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - setting isPoisoned flag")
+				if currentPoison
+					jMap.setInt(targetObject, "isPoisoned", 1)
+				else
+					jMap.setInt(targetObject, "isPoisoned", 0)
+				endIf
+			endIf
 		endIf
 		
 		;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - Q: " + Q + ", cycling: " + cycling + ", itemType: " + itemType + ", currentPoison: " + currentPoison + ", charges: " + charges)
-		
-		;if item isn't poisoned remove the poisoned flag
-		if equippedItem && (equippedItem == jMap.getForm(targetObject, "iEquipForm"))
-			;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - setting isPoisoned flag")
-			if currentPoison
-				jMap.setInt(targetObject, "isPoisoned", 1)
-			else
-				jMap.setInt(targetObject, "isPoisoned", 0)
-			endIf
-		endIf
 	endIf
 	
 	;if the currently equipped item isn't poisonable, or if it isn't currently poisoned check and remove poison info is showing
@@ -6163,6 +6180,7 @@ bool property bFadeLeftIconWhen2HEquipped auto hidden
 float property fSmartConsumeThreshold = 0.8 auto hidden
 bool property bSkipAutoAddedItems auto hidden
 bool property bShowAutoAddedFlag auto hidden
+bool property bShoutCooldownFadeEnabled = true auto hidden
 
 function reduceMaxQueueLength()
 	;/;debug.trace("iEquip_WidgetCore reduceMaxQueueLength start")

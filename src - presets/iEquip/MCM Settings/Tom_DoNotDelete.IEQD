@@ -141,11 +141,11 @@
     0,
     0,
     1,
-    0.80000001192092896,
+    0.85000002384185791,
     105.0,
     2,
-    2.0,
     1.0,
+    4.0,
     0,
     20.0,
     1,
@@ -171,7 +171,12 @@
     "Exquisite",
     "Flawless",
     "Epic",
-    "Legendary"
+    "Legendary",
+    "Ruined",
+    "broken",
+    "Damaged",
+    "Chipped",
+    "Blemished"
   ],
   "Poisoning": [
     3,
@@ -287,5 +292,5 @@
     0,
     512.0
   ],
-  "version": 158
+  "version": 159
 }

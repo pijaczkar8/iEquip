@@ -136,6 +136,12 @@ int function saveData()             ; Save page data and return jObject
     jArray.addStr(jPageObj, TI.getTemperLevelName(4))
     jArray.addStr(jPageObj, TI.getTemperLevelName(5))
     jArray.addStr(jPageObj, TI.getTemperLevelName(6))
+
+    jArray.addStr(jPageObj, TI.getDamageLevelName(0))
+    jArray.addStr(jPageObj, TI.getDamageLevelName(1))
+    jArray.addStr(jPageObj, TI.getDamageLevelName(2))
+    jArray.addStr(jPageObj, TI.getDamageLevelName(3))
+    jArray.addStr(jPageObj, TI.getDamageLevelName(4))
     
 	return jPageObj
 endFunction
@@ -190,6 +196,12 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	TI.setCustomTemperLevelName(5, jArray.getStr(jPageObj, 39))
 	TI.setCustomTemperLevelName(6, jArray.getStr(jPageObj, 40))
 
+	TI.setCustomDamageLevelName(0, jArray.getStr(jPageObj, 41))
+	TI.setCustomDamageLevelName(1, jArray.getStr(jPageObj, 42))
+	TI.setCustomDamageLevelName(2, jArray.getStr(jPageObj, 43))
+	TI.setCustomDamageLevelName(3, jArray.getStr(jPageObj, 44))
+	TI.setCustomDamageLevelName(4, jArray.getStr(jPageObj, 45))
+
 endFunction
 
 function drawPage()
@@ -204,6 +216,11 @@ function drawPage()
     MCM.AddToggleOptionST("ui_tgl_altTempLvlNames", "$iEquip_MCM_ui_lbl_altTempLvlNames", TI.bUseAltTemperLevelNames)
 
     if TI.bUseAltTemperLevelNames
+    	MCM.AddInputOptionST("ui_input_damageLvlName_a", "", TI.getDamageLevelName(0))
+        MCM.AddInputOptionST("ui_input_damageLvlName_b", "", TI.getDamageLevelName(1))
+        MCM.AddInputOptionST("ui_input_damageLvlName_c", "", TI.getDamageLevelName(2))
+        MCM.AddInputOptionST("ui_input_damageLvlName_d", "", TI.getDamageLevelName(3))
+        MCM.AddInputOptionST("ui_input_damageLvlName_e", "", TI.getDamageLevelName(4))
     	MCM.AddInputOptionST("ui_input_tempLvlName_aa", "", TI.getTemperLevelName(0))
         MCM.AddInputOptionST("ui_input_tempLvlName_a", "", TI.getTemperLevelName(1))
         MCM.AddInputOptionST("ui_input_tempLvlName_b", "", TI.getTemperLevelName(2))
@@ -344,10 +361,101 @@ State ui_tgl_altTempLvlNames
             TI.bUseAltTemperLevelNames = !TI.bUseAltTemperLevelNames
             if !TI.bUseAltTemperLevelNames
                 TI.updateTemperLevelArrays()        ; Reset the temper level names to the default game values
+                TI.resetDefaultDamageLevelNames()	; Reset the damage level names to the default values
             endIf
             MCM.ForcePageReset()
             WC.bTemperDisplaySettingChanged = true
         endIf 
+    endEvent
+endState
+
+state ui_input_damageLvlName_a
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_damageLvlName{" + TI.getDamageLevelMax(0) + "}{" + TI.getDefaultDamageLevelName(0) + "}")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getDamageLevelName(0))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomDamageLevelName(0, currentStrVar)
+            else
+                TI.setCustomDamageLevelName(0, TI.getDefaultDamageLevelName(0))
+            endIf
+            MCM.SetInputOptionValueST(TI.getDamageLevelName(0))
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_damageLvlName_b
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_damageLvlName{" + TI.getDamageLevelMax(1) + "}{" + TI.getDefaultDamageLevelName(1) + "}")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getDamageLevelName(1))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomDamageLevelName(1, currentStrVar)
+            else
+                TI.setCustomDamageLevelName(1, TI.getDefaultDamageLevelName(1))
+            endIf
+            MCM.SetInputOptionValueST(TI.getDamageLevelName(1))
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_damageLvlName_c
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_damageLvlName{" + TI.getDamageLevelMax(2) + "}{" + TI.getDefaultDamageLevelName(2) + "}")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getDamageLevelName(2))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomDamageLevelName(2, currentStrVar)
+            else
+                TI.setCustomDamageLevelName(2, TI.getDefaultDamageLevelName(2))
+            endIf
+            MCM.SetInputOptionValueST(TI.getDamageLevelName(2))
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_damageLvlName_d
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_damageLvlName{" + TI.getDamageLevelMax(3) + "}{" + TI.getDefaultDamageLevelName(3) + "}")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getDamageLevelName(3))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomDamageLevelName(3, currentStrVar)
+            else
+                TI.setCustomDamageLevelName(3, TI.getDefaultDamageLevelName(3))
+            endIf
+            MCM.SetInputOptionValueST(TI.getDamageLevelName(3))
+            WC.bTemperDisplaySettingChanged = true
+        endIf
+    endEvent
+endState
+
+state ui_input_damageLvlName_e
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_ui_txt_damageLvlName{" + TI.getDamageLevelMax(4) + "}{" + TI.getDefaultDamageLevelName(4) + "}")
+        elseIf currentEvent == "Open"
+            MCM.SetInputDialogStartText(TI.getDamageLevelName(4))
+        elseIf currentEvent == "Accept" || currentEvent == "Default"
+            if currentEvent == "Accept"
+                TI.setCustomDamageLevelName(4, currentStrVar)
+            else
+                TI.setCustomDamageLevelName(4, TI.getDefaultDamageLevelName(4))
+            endIf
+            MCM.SetInputOptionValueST(TI.getDamageLevelName(4))
+            WC.bTemperDisplaySettingChanged = true
+        endIf
     endEvent
 endState
 

@@ -1248,7 +1248,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		.to(tempIcon, 0.4, {_x:leftTargetX, _y:leftTargetY, _rotation:targetRotation, _alpha:leftPIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
 		.to(leftPreselectIcon, 0, {_alpha:leftPIconAlpha, ease:Linear.easeNone}, 0.4)
 		.to(leftIcon, 0.25, {_alpha:leftIconAlpha, _xscale:100, _yscale:100, ease:Elastic.easeOut}, 0.2)
-		.to(leftPreselectBg_mc, 0.25, {_rotation:180, _alpha:100, ease:Back.easeOut}, 0.25)
+		.to(leftPreselectBg_mc, 0.25, {_rotation:"+=360", _alpha:100, ease:Back.easeOut}, 0.25)
 		.to(leftName_mc, 0.2, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.4)
 		.to(leftPreselectName_mc, 0.2, {_alpha:leftPNameAlpha, ease:Quad.easeOut}, 0.4);
 
@@ -1276,7 +1276,7 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 		.call(updateNamesForEquipPreselect, [leftName, leftPreselectName, newName, ""])
 		.to(tempIcon, 0.4, {_x:leftTargetX, _y:((tempIcon._height) / 2), _rotation:"+=90", _alpha:0, _xscale:25, _yscale:25, ease:Quad.easeOut}, 0)
 		.to(tempPIcon, 0.4, {_x:leftPTargetX, _y:leftPTargetY, _rotation:targetRotation, _alpha:leftIconAlpha, _xscale:leftTargetScale, _yscale:leftTargetScale, ease:Quad.easeOut}, 0)
-		.to(leftPreselectBg_mc, 0.25, {_rotation:"-=120", _alpha:0, ease:Back.easeOut}, 0)
+		.to(leftPreselectBg_mc, 0.25, {_rotation:"-=360", _alpha:0, ease:Back.easeOut}, 0)
 		.to(leftIcon, 0, {_alpha:leftIconAlpha, ease:Linear.easeNone})
 		.to(tempPIcon, 0, {_alpha:0, ease:Linear.easeNone})
 		.to(leftName_mc, 0.2, {_alpha:leftNameAlpha, ease:Quad.easeOut}, 0.4);

@@ -109,7 +109,9 @@ function selectAmmoQueue(int weaponType)
 		else
 			lastKnownAmmo = lastKnownAmmoBolts
 		endIf
-		aiCurrentAmmoIndex[Q] = findInQueue(lastKnownAmmo)
+		if lastKnownAmmo
+			aiCurrentAmmoIndex[Q] = findInQueue(lastKnownAmmo)
+		endIf
 	elseIf (iAmmoListSorting == 1 && bAlwaysEquipBestAmmo) || (iAmmoListSorting == 3 && bAlwaysEquipMostAmmo)
 		selectBestAmmo(Q)
 	endIf
@@ -346,7 +348,6 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				WC.showName(0)
 			endIf
  
-
 			targetObject = -1
 			if jArray.count(WC.aiTargetQ[0]) > 0
 				targetObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0])

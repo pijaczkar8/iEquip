@@ -214,8 +214,9 @@ function onTorchEquipped()
 		bSettingLightRadius = false
 	else
 		form equippedTorch = PlayerRef.GetEquippedObject(0)
+		;debug.trace("iEquip_TorchScript onTorchEquipped - equippedTorch: " + equippedTorch + ", " + equippedTorch.GetName() + ", type: " + equippedTorch.GetType() + ", when cast as light: " + equippedTorch as light)
 
-		if equippedTorch
+		if equippedTorch as light
 			string modName = Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF))
 
 			if !(modName == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))

@@ -47,11 +47,11 @@ bool bUsePaperColours
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 158  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 159  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 158 && CurrentVersion < 158)
+    if (a_version >= 159 && CurrentVersion < 159)
         OnConfigInit()
     endIf
 endEvent
@@ -292,10 +292,10 @@ event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
         
         if (conflictName != "")
             ;msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n(" + conflictName + ")\n\nAre you sure you want to continue?"
-            msg = "$iEquip_MCM_msg_AlreadyMapped1{" + conflictControl + "}{" + conflictName + "}"
+            msg = iEquip_StringExt.LocalizeString("$iEquip_MCM_msg_AlreadyMapped1{" + conflictControl + "}{" + conflictName + "}")
         else
             ;msg = "This key is already mapped to:\n\"" + conflictControl + "\"\n\nAre you sure you want to continue?"
-            msg = "$iEquip_MCM_msg_AlreadyMapped2{" + conflictControl + "}"
+            msg = iEquip_StringExt.LocalizeString("$iEquip_MCM_msg_AlreadyMapped2{" + conflictControl + "}")
         endIf
         
         if ShowMessage(msg, true, "$Yes", "$No")

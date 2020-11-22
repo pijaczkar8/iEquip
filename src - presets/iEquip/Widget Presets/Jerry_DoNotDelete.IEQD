@@ -466,6 +466,12 @@
   "backgroundStyle": 0,
   "chargeDisplayType": 1,
   "dontFadeBackgrounds": 0,
+  "DSAlpha": 0.85000002384185791,
+  "DSAngle": 105.0,
+  "DSBlur": 2,
+  "DSDistance": 1.0,
+  "DSEnabled": 1,
+  "DSStrength": 4.0,
   "potionSelectorAlignment": 1,
   "version": 3
 }
