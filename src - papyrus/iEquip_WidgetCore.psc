@@ -1250,10 +1250,6 @@ state ENABLED
 
 		checkVersion()
 
-		self.RegisterForMenu("Crafting Menu")
-		self.RegisterForMenu("Dialogue Menu")
-		self.RegisterForMenu("BarterMenu")
-
 		;bPlayerIsMounted = PlayerRef.IsOnMount()
 
 		bool bPreselectEnabledOnLoad = bPreselectMode
@@ -1282,6 +1278,14 @@ state ENABLED
 		bool[] args = new bool[5]
 		
 		if !bIsFirstEnabled
+			self.RegisterForMenu("InventoryMenu")
+			self.RegisterForMenu("MagicMenu")
+			self.RegisterForMenu("FavoritesMenu")
+			self.RegisterForMenu("ContainerMenu")
+			self.RegisterForMenu("Journal Menu")
+			self.RegisterForMenu("Crafting Menu")
+			self.RegisterForMenu("Dialogue Menu")
+			self.RegisterForMenu("BarterMenu")
 
 			CheckDependencies()
 			if KH.bIsGPPLoaded && Game.UsingGamepad() && !bGPPMessageShown
@@ -2404,7 +2408,6 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	;Q: 0 = Left hand, 1 = Right hand, 2 = Shout, 3 = Consumables, 4 = Poisons
 
 	if onKeyPress
-		
 		; Apply Slow Time effect if enabled
 		addSlowTimeEffect(Q)
 
@@ -2582,8 +2585,10 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			Utility.WaitMenuMode(0.3)
 		endIf
 		; Show the queue position indicator if required (only if cycleSlot was called as a result of a cycle hotkey key press)
-		if Q < 3 && onKeyPress && iPosInd > 0
-			updateQueuePositionIndicator(Q, queueLength, aiCurrentQueuePosition[Q], targetIndex)
+		if Q < 3 && onKeyPress
+			if iPosInd > 0
+				updateQueuePositionIndicator(Q, queueLength, aiCurrentQueuePosition[Q], targetIndex)
+			endIf
 			abCyclingQueue[Q] = true
 		endIf
 		; Update the widget to the next queued item immediately then register for bEquipOnPause update or call cycle functions straight away
@@ -2638,7 +2643,7 @@ function addSlowTimeEffect(int Q, bool bCyclingAmmo = false)
 				f = 0.001
 			endIf
 			ConsoleUtil.ExecuteCommand("sgtm " + f)
-		else
+		elseIf !PlayerRef.HasSpell(iEquip_SlowTimeSpell)
 			iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
 			PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
 		endIf
@@ -2661,7 +2666,10 @@ function checkAndEquipShownHandItem(int Q, bool Reverse = false, bool equippingO
 	;debug.trace("iEquip_WidgetCore checkAndEquipShownHandItem start - Q: " + Q + ", Reverse: " + Reverse + ", equippingOnAutoAdd: " + equippingOnAutoAdd + ", calledByQuickRanged: " + calledByQuickRanged)
 	; Hide the position indicator if not set to always show (if !bEquipOnPause we've registered for an update which will handle this)
 	if bEquipOnPause
-		removeSlowTimeEffect()
+		int otherHand = (Q + 1) % 2
+		if !abCyclingQueue[otherHand]
+			removeSlowTimeEffect()
+		endIf
 		abCyclingQueue[Q] = false
 		if iPosInd != 2
 			UI.invokeInt(HUD_MENU, WidgetRoot + ".hideQueuePositionIndicator", Q)
@@ -5552,6 +5560,7 @@ function QueueMenuShowBlacklist(int count = -1, bool update = false, int iIndex 
 
 		if iQueueMenuCurrentQueue > 2 || (iQueueMenuCurrentQueue < 2 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.isGrenade(tmpForm))))
 			tmpName += " (" + PlayerRef.GetItemCount(tmpForm) + ")"
+
 		endIf
 		iconNames[i] = "Empty"
 		itemNames[i] = tmpName

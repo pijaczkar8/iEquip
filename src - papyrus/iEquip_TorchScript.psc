@@ -133,7 +133,7 @@ function initialise(bool bEnabled)
 		endIf
 
 	else
-		UnregisterForAllMenus()
+		;UnregisterForAllMenus()
 		PlayerRef.RemoveSpell(iEquip_TorchTimerSpell)
 		if fDefaultRadius > 0 && iEquip_LightExt.GetLightRadius(Torch01) as float != fDefaultRadius
 			iEquip_LightExt.SetLightRadius(Torch01, fDefaultRadius as int)
@@ -148,7 +148,7 @@ endFunction
 
 event OnMenuClose(string MenuName)											; This is purely to handle custom torch duration and/or radius set in the MCM
 	;debug.trace("iEquip_TorchScript OnMenuClose start - " + MenuName + ", bTorchDurationSettingChanged: " + bTorchDurationSettingChanged)
-	if bTorchDurationSettingChanged || bTorchRadiusSettingChanged
+	if MenuName == "Journal Menu" && bTorchDurationSettingChanged || bTorchRadiusSettingChanged
 		;bSettingDuration = true
 		if bTorchRadiusSettingChanged
 			iEquip_LightExt.SetLightRadius(Torch01, fTorchRadius as int)

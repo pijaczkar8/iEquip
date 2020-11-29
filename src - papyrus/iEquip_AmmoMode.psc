@@ -348,6 +348,7 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				WC.showName(0)
 			endIf
  
+
 			targetObject = -1
 			if jArray.count(WC.aiTargetQ[0]) > 0
 				targetObject = jArray.getObj(WC.aiTargetQ[0], WC.aiCurrentlyPreselected[0])

@@ -460,23 +460,27 @@ endFunction
 
 function onPoisonThrown()
 	;debug.trace("iEquip_ThrowingPoisons onPoisonThrown start - explosion currently set on iEquip_ThrowingPoison_ProjExpl: " + iEquip_ThrowingPoison_ProjExpl.GetExplosion().GetName())
-	unequipPoison()										; Do this first so the bottle doesn't remain visible in the player's hand at the same time as the projectile bottle appears
+	if PlayerRef.IsEquipped(iEquip_ThrowingPoisonWeapon)
+		unequipPoison()										; Do this first so the bottle doesn't remain visible in the player's hand at the same time as the projectile bottle appears
 
-	iEquip_ThrowPoison.Cast(PlayerRef)
-	
-	bLastOfCurrentPoison = PlayerRef.GetItemCount(currentPoison as form) == 1
-	bLastPoisonInQueue = jArray.count(WC.aiTargetQ[4]) == 1 && bLastOfCurrentPoison
+		iEquip_ThrowPoison.Cast(PlayerRef)
+		
+		bLastOfCurrentPoison = PlayerRef.GetItemCount(currentPoison as form) == 1
+		bLastPoisonInQueue = jArray.count(WC.aiTargetQ[4]) == 1 && bLastOfCurrentPoison
 
-	PlayerRef.RemoveItem(currentPoison, 1, true)		; Remove one poison from the player's inventory.  This will also trigger the poison queue to update the count and cycle forwards if the last of the current poison has just been thrown.
+		PlayerRef.RemoveItem(currentPoison, 1, true)		; Remove one poison from the player's inventory.  This will also trigger the poison queue to update the count and cycle forwards if the last of the current poison has just been thrown.
 
-	if bKeepThrowing && !bLastPoisonInQueue 			; If we have toggled Throwing Poisons rather than Throw & Switch back, as long as we have at least one poison left in the queue carry on and equip the next bottle
-		if bLastOfCurrentPoison
-			Utility.WaitMenuMode(0.5)					; Allow for OnItemRemoved to remove the current poison from the queue and cycle on to the next				
+		if bKeepThrowing && !bLastPoisonInQueue 			; If we have toggled Throwing Poisons rather than Throw & Switch back, as long as we have at least one poison left in the queue carry on and equip the next bottle
+			if bLastOfCurrentPoison
+				Utility.WaitMenuMode(0.5)					; Allow for OnItemRemoved to remove the current poison from the queue and cycle on to the next				
+			endIf
+			bFirstPoison = false
+			equipPoison()
+		else 												; If we've selected Throw & Switch Back, or if we've just thrown our last poison, switch back to the previous equipped item(s)
+			switchBack(false)
 		endIf
-		bFirstPoison = false
-		equipPoison()
-	else 												; If we've selected Throw & Switch Back, or if we've just thrown our last poison, switch back to the previous equipped item(s)
-		switchBack(false)
+	else
+		bPoisonEquipped = false
 	endIf
 	;debug.trace("iEquip_ThrowingPoisons onPoisonThrown end")
 endFunction
