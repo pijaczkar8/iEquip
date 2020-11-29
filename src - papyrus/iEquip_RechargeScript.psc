@@ -77,19 +77,19 @@ function rechargeWeapon(int Q)
 		; Do nothing
     elseIf !currentItem
         if bShowNotifications
-            debug.Notification("$iEquip_RC_not_nothingEquipped{"+asHandNames[Q]+"}")
+            debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_RC_not_nothingEquipped{"+asHandNames[Q]+"}"))
         endIf
     elseIf !currentItem as weapon
         if bShowNotifications
-            debug.Notification("$iEquip_RC_not_notAWeapon{"+asHandNames[Q]+"}")
+            debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_RC_not_notAWeapon{"+asHandNames[Q]+"}"))
         endIf
     elseIf !(currentItem as weapon).GetEnchantment() && !wornobject.GetEnchantment(PlayerRef, Q, 0)
         if bShowNotifications
-            debug.Notification("$iEquip_RC_not_notEnchanted{"+currentItem.GetName()+"}{"+asHandNames[Q]+"}")
+            debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_RC_not_notEnchanted{"+currentItem.GetName()+"}{"+asHandNames[Q]+"}"))
         endIf
     elseIf bIsRequiemLoaded && !PlayerRef.HasPerk(Enchanter00)
         if bShowNotifications
-            debug.notification("$iEquip_RequiemEnchantingPerkMissing")
+            debug.notification(iEquip_StringExt.LocalizeString("$iEquip_RequiemEnchantingPerkMissing"))
         endIf
     else
         string weaponToRecharge = CM.asItemCharge[Q]
@@ -100,7 +100,7 @@ function rechargeWeapon(int Q)
         ;debug.trace("iEquip_RechargeScript rechargeWeapon - maxCharge: " + maxCharge + ", currentCharge: " + currentCharge + ", requiredCharge: " + requiredCharge)
         if requiredCharge < 1.0
             if bShowNotifications
-                debug.Notification("$iEquip_RC_not_alreadyFull{"+currentItem.GetName()+"}{"+asHandNames[Q]+"}")
+                debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_RC_not_alreadyFull{"+currentItem.GetName()+"}{"+asHandNames[Q]+"}"))
             endIf
         else
             int requiredSoul = getRequiredSoul(Q, requiredCharge)
@@ -130,7 +130,7 @@ function rechargeWeapon(int Q)
                     endIf
                     CM.checkAndUpdateChargeMeter(Q, true)
                 elseif bShowGemUseNotifications
-                    debug.Notification("$iEquip_RC_not_noSoul")
+                    debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_RC_not_noSoul"))
                 endIf
             endIf
         endIf

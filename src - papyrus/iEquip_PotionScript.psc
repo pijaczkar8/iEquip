@@ -369,7 +369,6 @@ function createResistEffectsArrays()
     aiArmorSlots[4] = 39    ; Shield
     bArmorSlotsArrayUpdated = true
 
-
     if bInitialised && !bResistQueuesCreated
         aiQuickBuffQ[0] = JArray.object()
         JMap.setObj(WC.iEquipQHolderObj, "resistFireQ", aiQuickBuffQ[0])
@@ -410,7 +409,6 @@ endFunction
 function onVersionUpdate(float fCurrentVersion)
     ; Resist effects - added in 1.5
     if fCurrentVersion < 1.5
-
         bQuickBuffFortify = iQuickBuffsToApply != 2
         bQuickBuffRegen = iQuickBuffsToApply != 1
         bShowConsumedNotifications = iNotificationLevel > 0           ; If previously Minimal or Verbose
@@ -432,7 +430,6 @@ function initialise()
     WC.abPotionGroupEmpty[1] = true
     WC.abPotionGroupEmpty[2] = true
 
-
     if !bResistQueuesCreated
         createResistEffectsArrays()
     endIf
@@ -446,7 +443,6 @@ function initialise()
         aiArmorSlots[4] = 39    ; Shield
         bArmorSlotsArrayUpdated = true
     endIf
-
 
     int i
 
@@ -1742,6 +1738,8 @@ function quickBuffGimmeStims()
                 endIf
                 i += 1
             endWhile
+
+            ;debug.trace("iEquip_PotionScript quickBuffGimmeStims - lightArmorFound: " + lightArmorFound + ", heavyArmorFound: " + heavyArmorFound)
         endIf
 
         bSuitableGearFound = new bool[6]

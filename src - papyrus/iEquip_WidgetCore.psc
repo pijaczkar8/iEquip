@@ -2642,7 +2642,7 @@ function addSlowTimeEffect(int Q, bool bCyclingAmmo = false)
 			iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
 			PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
 		endIf
-		if Q > 1 || (Q == 0 && bCyclingAmmo) || !bEquipOnPause
+		if Q > 1 || bPreselectMode || (Q == 0 && bCyclingAmmo) || !bEquipOnPause
 			STUpdate.registerForSlowTimeEffectUpdate()
 		endIf
 	endIf
@@ -5212,11 +5212,15 @@ bool function isItemValidForSlot(int Q, form itemForm, int itemType, string item
     	if itemType == 41 || (itemType == 22 && !isShout) || itemType == 23 || (itemType == 26 && itemName == "Rocket Launcher") ;Any weapon, Spell, Scroll, oh and the Rocket Launcher from Junks Guns because Kojak...
     		isValid = true
     	elseif itemType == 42 ;Ammo - looking for throwing weapons here, and these can only be equipped in the right hand
-        	if !bSilent && (iEquip_FormExt.IsJavelin(itemForm) || iEquip_FormExt.IsSpear(itemForm) || iEquip_FormExt.IsGrenade(itemForm) || iEquip_FormExt.IsThrowingKnife(itemForm) || iEquip_FormExt.IsThrowingAxe(itemForm))
-				int iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_throwingWeapons{" + itemName + "}{" + itemName + "}{" + asQueueName[Q] + "}"))
-				if iButton == 0
+        	if iEquip_FormExt.IsJavelin(itemForm) || iEquip_FormExt.IsSpear(itemForm) || iEquip_FormExt.IsGrenade(itemForm) || iEquip_FormExt.IsThrowingKnife(itemForm) || iEquip_FormExt.IsThrowingAxe(itemForm)
+        		if bSilent
         			isValid = true
-        		endIf
+        		else
+					int iButton = showTranslatedMessage(1, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_throwingWeapons{" + itemName + "}{" + itemName + "}{" + asQueueName[Q] + "}"))
+					if iButton == 0
+	        			isValid = true
+	        		endIf
+	        	endIf
         	endIf
     	endIf
     elseif Q == 2 ;Shout
@@ -5548,7 +5552,6 @@ function QueueMenuShowBlacklist(int count = -1, bool update = false, int iIndex 
 
 		if iQueueMenuCurrentQueue > 2 || (iQueueMenuCurrentQueue < 2 && (itemType == 42 || itemType == 23 || itemType == 31 || (itemType == 4 && iEquip_FormExt.isGrenade(tmpForm))))
 			tmpName += " (" + PlayerRef.GetItemCount(tmpForm) + ")"
-
 		endIf
 		iconNames[i] = "Empty"
 		itemNames[i] = tmpName

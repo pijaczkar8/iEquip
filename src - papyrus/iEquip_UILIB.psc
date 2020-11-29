@@ -192,7 +192,7 @@ EndEvent
 
 Event OnListMenuDeletePreset(String asEventName, String asStringArg, Float afInput, Form akSender)
 	;debug.trace("iEquip_UILIB OnListMenuDeletePreset start")
-	If(asEventName == "iEquip_listMenuDeletePreset")
+	If(asEventName == "iEquip_listMenuDeletePreset") && iMenuType == 0
 		int iButton = WC.showTranslatedMessage(6, iEquip_StringExt.LocalizeString("$iEquip_msg_delPreset"))
         if iButton != 1
         	iInput = 0

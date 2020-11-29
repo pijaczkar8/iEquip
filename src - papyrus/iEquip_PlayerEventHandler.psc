@@ -614,7 +614,7 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 
     elseIf EventName == "IdleChairSitting" 											; We're checking here for Wintersun/Thunderchild meditation to disable iEquip controls while meditating
     	Utility.WaitMenuMode(1.0) 													; Just in case the magic effect isn't added straight away - in testing this took less than 0.25s so 1s should be sufficient for most cases
-    	if (PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect) || PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect))
+    	if ((bIsThunderchildLoaded && PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x06CAED, "Thunderchild - Epic Shout Package.esp") as MagicEffect)) || (bIsWintersunLoaded && PlayerRef.HasMagicEffect(Game.GetFormFromFile(0x023dd5, "Wintersun - Faiths of Skyrim.esp") as MagicEffect)))
 	    	bPlayerIsMeditating = true
 	    	KH.bAllowKeyPress = false
 	    endIf
@@ -1019,9 +1019,18 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 
 		jArray.addObj(WC.aiTargetQ[equippedSlot], iEquipItem)
 
+		bool bSwitchedQueues
+
 		if !formFound 																			; If it's not already in the AllItems formlist because it's in the other hand queue add it now
 			iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
 			updateEventFilter(iEquip_AllCurrentItemsFLST)
+		elseIf equippedSlot < 2 && !WC.bAllowSingleItemsInBothQueues
+			int otherHand = (equippedSlot + 1) % 2
+			int otherHandIndex = WC.findInQueue(otherHand, itemName, queuedForm, itemHandle)
+			if PlayerRef.GetItemCount(queuedForm) == 1 || otherHandIndex != -1
+				WC.removeItemFromQueue(otherHand, otherHandIndex, false, false, false, false)
+				bSwitchedQueues = true
+			endIf
 		endIf
 
 		if itemHandle != 0xFFFF																	; Add the new itemHandle to the ref handle array
@@ -1030,8 +1039,8 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		endIf
 
 		if WC.bMoreHUDLoaded 																	; Send to moreHUD if loaded
-			if formFound
-				AhzMoreHudIE.RemoveIconItem(itemID)
+			AhzMoreHudIE.RemoveIconItem(itemID)													; Reset
+			if formFound && !bSwitchedQueues
 				AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[3]) 							; Both queues
 			else
 				AhzMoreHudIE.AddIconItem(itemID, WC.asMoreHUDIcons[equippedSlot])
@@ -1134,8 +1143,10 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		endIf
 	endIf
 
+	int weaponType
+
 	If itemType == 41 													; If it is a weapon get the weapon type
-		itemType = (akBaseItem as Weapon).GetWeaponType()
+		weaponType = (akBaseItem as Weapon).GetWeaponType()
 	endIf
 																		; Handle potions/consumales/poisons and ammo in AmmoMode first
 	if akBaseItem as potion
@@ -1153,7 +1164,7 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 		iEquip_AllCurrentItemsFLST.RemoveAddedForm(akBaseItem)
 		updateEventFilter(iEquip_AllCurrentItemsFLST)
     																	; Otherwise handle anything else in left, right or shout queue other than bound weapons
-	elseIf !(akBaseItem as weapon && ((TI.aiTemperedItemTypes.Find(itemType) != -1 && !(itemType == 4 && iEquip_FormExt.IsGrenade(akBaseItem))) || iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon)))  ; The aiTemperedItemTypes exclusion here is because they are now removed through OnRefHandleInvalidated
+	elseIf !(akBaseItem as weapon && ((TI.aiTemperedItemTypes.Find(weaponType) != -1 && !(weaponType == 4 && iEquip_FormExt.IsGrenade(akBaseItem))) || iEquip_WeaponExt.IsWeaponBound(akBaseItem as weapon)))  ; The aiTemperedItemTypes exclusion here is because they are now removed through OnRefHandleInvalidated
 		if itemType == 31	; Torch
 			TO.onTorchRemoved(akBaseItem)
 		endIf
@@ -1172,6 +1183,10 @@ Event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemRefe
 						int itemCount = PlayerRef.GetItemCount(akBaseItem)
 						int otherHand = (i + 1) % 2
 						int foundAtOtherHand = -1
+
+						if itemType == 41
+							itemType = weaponType
+						endIf
 						
 						if specificHandedItems.Find(itemType) == -1 || (WC.bIsCGOLoaded && itemType < 7)
 							foundAtOtherHand = WC.findInQueue(otherHand, itemName, akBaseItem)

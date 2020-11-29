@@ -77,6 +77,8 @@ function drawPage()
     MCM.AddTextOptionST("inf_txt_ada", "$iEquip_MCM_inf_lbl_ada", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("NewArmoury.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_aa", "$iEquip_MCM_inf_lbl_aa", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("ccbgssse002-exoticarrows.esl") != 255) as int
+    MCM.AddTextOptionST("inf_txt_arc", "$iEquip_MCM_inf_lbl_arc", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("DSerArcheryGameplayOverhaul.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_ago", "$iEquip_MCM_inf_lbl_ago", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Bound Armory Extravaganza.esp") != 255) as int
@@ -87,12 +89,20 @@ function drawPage()
     MCM.AddTextOptionST("inf_txt_cgo", "$iEquip_MCM_inf_lbl_cgo", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Complete Alchemy & Cooking Overhaul.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_caco", "$iEquip_MCM_inf_lbl_caco", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("ElementalArrows.esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_ea", "$iEquip_MCM_inf_lbl_ea", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Enderal - Forgotten Stories.esm") != 255) as int
     MCM.AddTextOptionST("inf_txt_end", "$iEquip_MCM_inf_lbl_end", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Undriel_Everlight.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_eve", "$iEquip_MCM_inf_lbl_eve", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Gamepad++.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_gpp", "$iEquip_MCM_inf_lbl_gpp", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("GIST soul trap.esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_gist", "$iEquip_MCM_inf_lbl_gist", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("PrvtI_HeavyArmory.esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_ha", "$iEquip_MCM_inf_lbl_ha", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("Immersive Weapons.esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_iw", "$iEquip_MCM_inf_lbl_iw", modStates[modFound], aiFlags[modFound])
     modFound = JContainers.fileExistsAtPath("Data/NetScriptFramework/Plugins/ItemDurability.dll") as int
     MCM.AddTextOptionST("inf_txt_id", "$iEquip_MCM_inf_lbl_id", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("LegacyoftheDragonborn.esm") != 255) as int
@@ -109,6 +119,10 @@ function drawPage()
     MCM.AddTextOptionST("inf_txt_rt", "$iEquip_MCM_inf_lbl_rt", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Requiem.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_req", "$iEquip_MCM_inf_lbl_req", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("SmithingOils.esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_so", "$iEquip_MCM_inf_lbl_so", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("Sneak Tools.esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_st", "$iEquip_MCM_inf_lbl_st", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("JZBai_ThrowingWpnsLite.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_tw", "$iEquip_MCM_inf_lbl_tw", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255) as int
@@ -117,6 +131,10 @@ function drawPage()
     MCM.AddTextOptionST("inf_txt_tcs", "$iEquip_MCM_inf_lbl_tcs", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Undeath.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_ud", "$iEquip_MCM_inf_lbl_ud", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("Vigor - Combat and Injuries (SE).esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_vig", "$iEquip_MCM_inf_lbl_vig", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("WardsFunctionalitiesExtended.esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_wf", "$iEquip_MCM_inf_lbl_wf", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_ws", "$iEquip_MCM_inf_lbl_ws", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("ZIA_Complete Pack.esp") != 255) as int
@@ -213,6 +231,14 @@ State inf_txt_ago
     endEvent
 endState
 
+State inf_txt_arc
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_arc")
+        endIf 
+    endEvent
+endState
+
 State inf_txt_bae
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -245,6 +271,14 @@ State inf_txt_caco
     endEvent
 endState
 
+State inf_txt_ea
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_ea")
+        endIf 
+    endEvent
+endState
+
 State inf_txt_end
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -265,6 +299,30 @@ State inf_txt_gpp
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_gpp")
+        endIf 
+    endEvent
+endState
+
+State inf_txt_gist
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_gist")
+        endIf 
+    endEvent
+endState
+
+State inf_txt_ha
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_ha")
+        endIf 
+    endEvent
+endState
+
+State inf_txt_iw
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_iw")
         endIf 
     endEvent
 endState
@@ -333,6 +391,22 @@ State inf_txt_req
     endEvent
 endState
 
+State inf_txt_so
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_so")
+        endIf 
+    endEvent
+endState
+
+State inf_txt_st
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_st")
+        endIf 
+    endEvent
+endState
+
 State inf_txt_tw
     event OnBeginState()
         if currentEvent == "Highlight"
@@ -361,6 +435,22 @@ State inf_txt_ud
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_ud")
+        endIf 
+    endEvent
+endState
+
+State inf_txt_vig
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_vig")
+        endIf 
+    endEvent
+endState
+
+State inf_txt_wf
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_wf")
         endIf 
     endEvent
 endState

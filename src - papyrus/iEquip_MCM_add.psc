@@ -56,14 +56,16 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 	PO.bAutoAddPotions = jArray.getInt(jPageObj, 6)
 	PO.bAutoAddPoisons = jArray.getInt(jPageObj, 7)
 	PO.bAutoAddConsumables = jArray.getInt(jPageObj, 8)
-	;WC.bShowAutoAddedFlag = jArray.getInt(jPageObj, 9)
 
-    WC.bEnableRemovedItemCaching = jArray.getInt(jPageObj, 10)
-    WC.iMaxCachedItems = jArray.getInt(jPageObj, 11)
-    WC.bBlacklistEnabled = jArray.getInt(jPageObj, 12)
-
-    if presetVersion >= 157
-        bAutoAddEnabled = jArray.getInt(jPageObj, 13)
+    if presetVersion < 157
+        WC.bEnableRemovedItemCaching = jArray.getInt(jPageObj, 10)
+        WC.iMaxCachedItems = jArray.getInt(jPageObj, 11)
+        WC.bBlacklistEnabled = jArray.getInt(jPageObj, 12)
+    else
+        WC.bEnableRemovedItemCaching = jArray.getInt(jPageObj, 9)
+        WC.iMaxCachedItems = jArray.getInt(jPageObj, 10)
+        WC.bBlacklistEnabled = jArray.getInt(jPageObj, 11)
+        bAutoAddEnabled = jArray.getInt(jPageObj, 12)
     endIf
 
 endFunction

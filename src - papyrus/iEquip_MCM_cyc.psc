@@ -62,28 +62,50 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
 
     WC.bAllowWeaponSwitchHands = jArray.getInt(jPageObj, 4)
     WC.bSkipRHUnarmedInCombat = jArray.getInt(jPageObj, 5)
-    ;WC.bSkipAutoAddedItems = jArray.getInt(jPageObj, 6)
     
-    WC.iPosInd = jArray.getInt(jPageObj, 7)
-    WC.iPositionIndicatorColor = jArray.getInt(jPageObj, 8)
-    WC.fPositionIndicatorAlpha = jArray.getFlt(jPageObj, 9)
-    WC.iCurrPositionIndicatorColor = jArray.getInt(jPageObj, 10)
-    WC.fCurrPositionIndicatorAlpha = jArray.getFlt(jPageObj, 11)
+    if presetVersion < 157
+        WC.iPosInd = jArray.getInt(jPageObj, 7)
+        WC.iPositionIndicatorColor = jArray.getInt(jPageObj, 8)
+        WC.fPositionIndicatorAlpha = jArray.getFlt(jPageObj, 9)
+        WC.iCurrPositionIndicatorColor = jArray.getInt(jPageObj, 10)
+        WC.fCurrPositionIndicatorAlpha = jArray.getFlt(jPageObj, 11)
 
-    WC.bShowAttributeIcons = jArray.getInt(jPageObj, 12)
+        WC.bShowAttributeIcons = jArray.getInt(jPageObj, 12)
 
-    WC.iAutoEquipEnabled = jArray.getInt(jPageObj, 13)
-    WC.iAutoEquip = jArray.getInt(jPageObj, 14)
-    WC.iCurrentItemEnchanted = jArray.getInt(jPageObj, 15)
-    WC.iCurrentItemPoisoned = jArray.getInt(jPageObj, 16)
-    WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 17)
-    WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 18)
+        WC.iAutoEquipEnabled = jArray.getInt(jPageObj, 13)
+        WC.iAutoEquip = jArray.getInt(jPageObj, 14)
+        WC.iCurrentItemEnchanted = jArray.getInt(jPageObj, 15)
+        WC.iCurrentItemPoisoned = jArray.getInt(jPageObj, 16)
+        WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 17)
+        WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 18)
 
-    PM.bPreselectEnabled = jArray.getInt(jPageObj, 19)
-    PM.bShoutPreselectEnabled = jArray.getInt(jPageObj, 20)
-    PM.bPreselectSwapItemsOnEquip = jArray.getInt(jPageObj, 21)
-    PM.bTogglePreselectOnEquipAll = jArray.getInt(jPageObj, 22)
-    PM.bPreselectSwapItemsOnQuickAction = jArray.getInt(jPageObj, 23)
+        PM.bPreselectEnabled = jArray.getInt(jPageObj, 19)
+        PM.bShoutPreselectEnabled = jArray.getInt(jPageObj, 20)
+        PM.bPreselectSwapItemsOnEquip = jArray.getInt(jPageObj, 21)
+        PM.bTogglePreselectOnEquipAll = jArray.getInt(jPageObj, 22)
+        PM.bPreselectSwapItemsOnQuickAction = jArray.getInt(jPageObj, 23)
+    else
+        WC.iPosInd = jArray.getInt(jPageObj, 6)
+        WC.iPositionIndicatorColor = jArray.getInt(jPageObj, 7)
+        WC.fPositionIndicatorAlpha = jArray.getFlt(jPageObj, 8)
+        WC.iCurrPositionIndicatorColor = jArray.getInt(jPageObj, 9)
+        WC.fCurrPositionIndicatorAlpha = jArray.getFlt(jPageObj, 10)
+
+        WC.bShowAttributeIcons = jArray.getInt(jPageObj, 11)
+
+        WC.iAutoEquipEnabled = jArray.getInt(jPageObj, 12)
+        WC.iAutoEquip = jArray.getInt(jPageObj, 13)
+        WC.iCurrentItemEnchanted = jArray.getInt(jPageObj, 14)
+        WC.iCurrentItemPoisoned = jArray.getInt(jPageObj, 15)
+        WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 16)
+        WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 17)
+
+        PM.bPreselectEnabled = jArray.getInt(jPageObj, 18)
+        PM.bShoutPreselectEnabled = jArray.getInt(jPageObj, 19)
+        PM.bPreselectSwapItemsOnEquip = jArray.getInt(jPageObj, 20)
+        PM.bTogglePreselectOnEquipAll = jArray.getInt(jPageObj, 21)
+        PM.bPreselectSwapItemsOnQuickAction = jArray.getInt(jPageObj, 22)
+    endIf
 
 endFunction
 

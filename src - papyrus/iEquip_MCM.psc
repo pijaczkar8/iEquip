@@ -47,11 +47,11 @@ bool bUsePaperColours
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 159  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 160  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 159 && CurrentVersion < 159)
+    if (a_version >= 160 && CurrentVersion < 160)
         OnConfigInit()
     endIf
 endEvent
@@ -86,7 +86,7 @@ event OnConfigInit()
     asControlNames[8] = "$iEquip_MCM_gen_lbl_quickShield"
     asControlNames[9] = "$iEquip_MCM_gen_lbl_quickRanged"
     asControlNames[10] = "$iEquip_MCM_tch_lbl_quickLight"
-    asControlNames[11] = "$iEquip_MCM_rep_lbl_throwingPoisonsKey"
+    asControlNames[11] = "$iEquip_MCM_poi_lbl_throwingPoisonsKey"
 
     aiHotkeys = new int[12]
 
