@@ -460,7 +460,7 @@ endFunction
 
 function onPoisonThrown()
 	;debug.trace("iEquip_ThrowingPoisons onPoisonThrown start - explosion currently set on iEquip_ThrowingPoison_ProjExpl: " + iEquip_ThrowingPoison_ProjExpl.GetExplosion().GetName())
-	if PlayerRef.IsEquipped(iEquip_ThrowingPoisonWeapon)
+	if PlayerRef.IsEquipped(iEquip_ThrowingPoisonWeapon) || PlayerRef.GetEquippedObject(0) == iEquip_ThrowingPoisonWeapon
 		unequipPoison()										; Do this first so the bottle doesn't remain visible in the player's hand at the same time as the projectile bottle appears
 
 		iEquip_ThrowPoison.Cast(PlayerRef)

@@ -2306,7 +2306,7 @@ function ResetWidgetArrays()
 endFunction
 
 int function getHandle(int Q, int itemType = -1, form targetForm)
-	;debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType)
+	;debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType + ", targetForm: " + targetForm + " (" + targetForm.GetName() + "")
 	int itemHandle = 0xFFFF
 	if Q < 2
 		form equippedItem = PlayerRef.GetEquippedObject(Q)
@@ -2442,6 +2442,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		;debug.trace("iEquip_WidgetCore cycleSlot - abIsNameShown[Q + 5]: " + abIsNameShown[Q + 5])
 		if bFirstPressShowsName && !abIsNameShown[Q + 5]
 			showName(Q + 5)
+			removeSlowTimeEffect()
 		else
 			if Q == 0 && bAmmoMode
 				bCyclingLHPreselectInAmmoMode = true
@@ -2452,6 +2453,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 	; If name not shown then first cycle press shows name without advancing the queue
 	elseif bFirstPressShowsName && !onItemRemoved && !bSwitchingHands && !bPreselectSwitchingHands && !abIsNameShown[Q] && asCurrentlyEquipped[Q] != ""
 		showName(Q)
+		removeSlowTimeEffect()
 
 	elseIf queueLength > 1 || onItemRemoved || (Q < 3 && abQueueWasEmpty[Q]) || (Q == 0 && bGoneUnarmed || b2HSpellEquipped)
 		int i
@@ -2647,7 +2649,7 @@ function addSlowTimeEffect(int Q, bool bCyclingAmmo = false)
 			iEquip_SlowTimeStrength.SetValueInt(iCycleSlowTimeStrength)
 			PlayerRef.AddSpell(iEquip_SlowTimeSpell, false)
 		endIf
-		if Q > 1 || bPreselectMode || (Q == 0 && bCyclingAmmo) || !bEquipOnPause
+		if Q > 1 || bPreselectMode || (Q == 0 && bAmmoMode) || !bEquipOnPause
 			STUpdate.registerForSlowTimeEffectUpdate()
 		endIf
 	endIf
@@ -3488,13 +3490,13 @@ function showName(int Q, bool fadeIn = true, bool targetingPoisonName = false, f
 	if bNameFadeoutEnabled && !EM.isEditMode
 		if Q == 0 && bLeftRightNameFadeEnabled
 			if targetingPoisonName
-				LPoisonNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
+				LPoisonNUpdate.registerForNameFadeoutUpdate(aiPoisonNameElements[Q])
 			else
 				LNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 			endIf
 		elseif Q == 1 && bLeftRightNameFadeEnabled
 			if targetingPoisonName
-				RPoisonNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
+				RPoisonNUpdate.registerForNameFadeoutUpdate(aiPoisonNameElements[Q])
 			else
 				RNUpdate.registerForNameFadeoutUpdate(aiNameElements[Q])
 			endIf
@@ -4821,10 +4823,13 @@ function checkAndUpdatePoisonInfo(int Q, bool cycling = false, bool forceHide = 
 				refHandle = getHandle(Q, itemType, targetForm)
 			endIf
 			;debug.trace("iEquip_WidgetCore checkAndUpdatePoisonInfo - about to call GetPoisonCount, equippedItem: " + equippedItem + ", refHandle: " + refHandle)
-			charges = GetPoisonCount(equippedItem, refHandle)
-		
-			if charges > 0
-				currentPoison = iEquip_InventoryExt.GetPoison(equippedItem, refHandle)
+				
+			if refHandle != 0xFFFF
+				charges = GetPoisonCount(equippedItem, refHandle)
+			
+				if charges > 0
+					currentPoison = iEquip_InventoryExt.GetPoison(equippedItem, refHandle)
+				endIf
 			endIf
 
 			;if item isn't poisoned remove the poisoned flag

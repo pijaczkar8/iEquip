@@ -258,7 +258,9 @@ function registerForCoreAnimationEvents()
 	RegisterForAnimationEvent(PlayerRef, "weaponSwing")
 	RegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	RegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	RegisterForAnimationEvent(PlayerRef, "bashStart")
 	RegisterForAnimationEvent(PlayerRef, "bashStop")
+	RegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHumanCombatShieldBash")
 	RegisterForAnimationEvent(PlayerRef, "CastStop")
 	;Listeners for the beast form transformation sAttributes
 	RegisterForAnimationEvent(PlayerRef, "SetRace")
@@ -293,7 +295,9 @@ function unregisterForCoreAnimationEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "weaponSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	UnRegisterForAnimationEvent(PlayerRef, "bashStart")
 	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+	UnRegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHumanCombatShieldBash")
 	UnRegisterForAnimationEvent(PlayerRef, "CastStop")
 	;Listeners for the beast form transformation sAttributes
 	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
@@ -352,7 +356,9 @@ function unregisterForAllEvents()
 	UnRegisterForAnimationEvent(PlayerRef, "weaponSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "weaponLeftSwing")
 	UnRegisterForAnimationEvent(PlayerRef, "arrowRelease")
+	UnRegisterForAnimationEvent(PlayerRef, "bashStart")
 	UnRegisterForAnimationEvent(PlayerRef, "bashStop")
+	UnRegisterForAnimationEvent(PlayerRef, "SoundPlay.NPCHumanCombatShieldBash")
 	UnRegisterForAnimationEvent(PlayerRef, "CastStop")
 	;Beast Mode animation events
 	UnRegisterForAnimationEvent(PlayerRef, "SetRace")
@@ -542,13 +548,13 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 		elseIf actionType == 7 || actionType == 8 ; Draw Begin or Draw End
 			;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, bIsWidgetShown: " + WC.bIsWidgetShown)
 			WC.updateWidgetVisibility()
-			int i = (PlayerRef.GetEquippedItemType(1) == 5 || PlayerRef.GetEquippedItemType(1) == 6) as int 		; Don't need to show the left hand name/poison name if we're drawing a 2H weapon here, if it's a ranged weapon we still need to show the ammo name
-			while i < 2
+			int i
+			while i < 5
 				;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, abIsNameShown: " + WC.abIsNameShown[i] + ", abIsPoisonNameShown: " + WC.abIsPoisonNameShown[i])
 				if !WC.abIsNameShown[i]
 					WC.showName(i)
 				endIf
-				if !WC.abIsPoisonNameShown[i] && !(i == 0 && WC.bAmmoMode) && !(TP.bPoisonEquipped && TP.iThrowingPoisonHand == i) && jMap.getInt(jArray.GetObj(WC.aiTargetQ[i], WC.aiCurrentQueuePosition[i]), "isPoisoned") == 1 	; Check and show the poison name if weapon poisoned
+				if i < 2 && !WC.abIsPoisonNameShown[i] && !(i == 0 && WC.bAmmoMode) && !(TP.bPoisonEquipped && TP.iThrowingPoisonHand == i) && jMap.getInt(jArray.GetObj(WC.aiTargetQ[i], WC.aiCurrentQueuePosition[i]), "isPoisoned") == 1 	; Check and show the poison name if weapon poisoned
 					WC.showName(i, true, true)
 				endIf
 				i += 1
@@ -596,7 +602,7 @@ endFunction
 
 Event OnAnimationEvent(ObjectReference aktarg, string EventName)
 	;debug.trace("iEquip_PlayerEventHandler OnAnimationEvent received - EventName: " + EventName)
-    int iTmp
+
     if EventName == "Soundplay.NPCWerewolfTransformation"
     	BM.OnWerewolfTransformationStart()
 
@@ -636,8 +642,8 @@ Event OnAnimationEvent(ObjectReference aktarg, string EventName)
     	if TP.bPoisonEquipped && ((EventName == "weaponSwing" && (TP.iThrowingPoisonHand == 1 || WC.bPlayerIsMounted)) || (EventName == "weaponLeftSwing" && TP.iThrowingPoisonHand == 0))
 	    	TP.onPoisonThrown()
     	else
-		    iTmp = 2 
-		    if EventName == "weaponLeftSwing"
+		    int iTmp = 2 
+		    if EventName == "weaponLeftSwing" || EventName == "bashStart" || EventName == "SoundPlay.NPCHumanCombatShieldBash" || EventName == "bashStop"
 		        iTmp = 1
 		    endIf    
 		    if (iSlotToUpdate == -1 || (iSlotToUpdate + iTmp == 2))
@@ -654,7 +660,7 @@ EndEvent
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 	;debug.trace("iEquip_PlayerEventHandler OnHit start")
-	If akAggressor && akSource as Weapon && abHitBlocked
+	If abHitBlocked
 		int iTmp = 2
 		if PlayerRef.GetEquippedShield()	; We're tracking blocking events here, so if we've got a shield equipped we need to update the left hand, if we don't we must have blocked with our right hand/2H weapon so update right
 			iTmp = 1
@@ -885,7 +891,11 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 			itemName = iEquip_InventoryExt.GetLongName(queuedForm, itemHandle)
 			itemBaseName = iEquip_InventoryExt.GetShortName(queuedForm, itemHandle)
 			if bIsItemDurabilityFound
-				int i = StringUtil.Find(itemBaseName, "(")
+				int i = StringUtil.Find(itemName, "[")
+				if i != -1
+					itemName = StringUtil.Substring(itemName, 0, i - 1)
+				endIf
+				i = StringUtil.Find(itemBaseName, "(")
 				if i == -1
 					i = StringUtil.Find(itemBaseName, "[")
 				endIf
@@ -893,7 +903,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 					itemBaseName = StringUtil.Substring(itemBaseName, 0, i - 1)
 				endIf
 			endIf
-			;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle, itemName: " + itemName + ", itemBaseName: " + itemBaseName)
+			;debug.trace("iEquip_PlayerEventHandler updateSlotOnObjectEquipped - attempting to set names from itemHandle: " + itemHandle + ", itemName: " + itemName + ", itemBaseName: " + itemBaseName)
 		endIf
 		
 		if itemName == ""
@@ -1024,7 +1034,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		if !formFound 																			; If it's not already in the AllItems formlist because it's in the other hand queue add it now
 			iEquip_AllCurrentItemsFLST.AddForm(queuedForm)
 			updateEventFilter(iEquip_AllCurrentItemsFLST)
-		elseIf equippedSlot < 2 && !WC.bAllowSingleItemsInBothQueues
+		elseIf equippedSlot < 2 && !WC.bAllowSingleItemsInBothQueues && queuedForm as weapon
 			int otherHand = (equippedSlot + 1) % 2
 			int otherHandIndex = WC.findInQueue(otherHand, itemName, queuedForm, itemHandle)
 			if PlayerRef.GetItemCount(queuedForm) == 1 || otherHandIndex != -1

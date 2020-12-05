@@ -1798,7 +1798,7 @@ function quickBuffGimmeStims()
                     currEffectMagOnPlayer = iEquip_ActorExt.GetMagicEffectMagnitude(PlayerRef, aQuickBuffEffects[i])                                            ; Will return 0 if effect isn't currently active on the player
                     ;debug.trace("iEquip_PotionScript quickBuffGimmeStims - target potion: " + potionToConsume + "(" + potionToConsume.GetName() + "), currEffectMagOnPlayer: " + currEffectMagOnPlayer + ", targetPotion strength: " + jMap.getFlt(targetObj, "iEquipStrength") + ", min reqd: " + currEffectMagOnPlayer * (1.0 + fAboveCurrentEffectMag))
                     if currEffectMagOnPlayer > 0 && iActiveEffectRule > 0 && (bDontConsume || (bCheckEffectMag && jMap.getFlt(targetObj, "iEquipStrength") <= currEffectMagOnPlayer * (1.0 + fAboveCurrentEffectMag)))  ; Check if we're allowed to consume if the effect is already active
-                       ; debug.trace("iEquip_PotionScript quickBuffGimmeStims - failed the active effects check")
+                       ;debug.trace("iEquip_PotionScript quickBuffGimmeStims - failed the active effects check")
                         if bShowEffectActiveNotifications
                             debug.notification(iEquip_StringExt.LocalizeString("$iEquip_PO_not_EffectActive{"+asBuffEffectNames[i]+"}"))
                         endIf
