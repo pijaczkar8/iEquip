@@ -5,10 +5,9 @@ Import iEquip_InventoryExt
 iEquip_WidgetCore Property WC Auto
 
 function initialise(bool bEnabled)
+	iEquip_InventoryExt.UnregisterForOnRefHandleInvalidatedEvent(self)
 	if bEnabled
 		iEquip_InventoryExt.RegisterForOnRefHandleInvalidatedEvent(self)
-	else
-		iEquip_InventoryExt.UnregisterForOnRefHandleInvalidatedEvent(self)
 	endIf
 endFunction
 

@@ -280,7 +280,7 @@ endfunction
 function onTorchUnequipped()
 	;debug.trace("iEquip_TorchScript onTorchUnequipped start - bSettingLightRadius: " + bSettingLightRadius + ", fCurrentTorchLife: " + fCurrentTorchLife)
 	if !bSettingLightRadius
-		if bFiniteTorchLife
+		if bFiniteTorchLife && TorchTimer
 			fCurrentTorchLife -= TorchTimer.GetTimeElapsed()
 		else
 			fCurrentTorchLife = fTorchDuration

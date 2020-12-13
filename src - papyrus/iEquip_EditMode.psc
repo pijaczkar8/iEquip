@@ -816,7 +816,13 @@ function UpdateAllTextFormatting()                      ; Only called from OnWid
     while iIndex < WC.asWidgetDescriptions.length
         if WC.abWidget_isText[iIndex] || iIndex == 51   ; potionSelector_mc
             iArgs[0] = iIndex
-            UpdateElementText(iArgs, WC.aiWidget_TC[iIndex])
+            int i = iIndex
+            if i == 9 && WC.abPoisonInfoDisplayed[0]
+                i = 11
+            elseIf i == 26 && WC.abPoisonInfoDisplayed[1]
+                i = 28
+            endIf
+            UpdateElementText(iArgs, WC.aiWidget_TC[i])
         endIf
         iIndex += 1
     endWhile

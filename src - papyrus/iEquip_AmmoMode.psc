@@ -136,7 +136,7 @@ int function findInQueue(form formToFind)
 	if !found
 		i = 0
 	endIf
-	;debug.trace("iEquip_AmmoMode findInQueue end - found: " + found + ", returning index: " + iIndex)
+	;debug.trace("iEquip_AmmoMode findInQueue end - found: " + found + ", returning i: " + i)
 	return i
 endFunction
 

@@ -127,6 +127,8 @@ class iEquip_uilib.iEquipTextInputDialog extends MovieClip
 		if (initText == "RRGGBB"){
 			textInput.textField.maxChars = 6;
 			textInput.textField.restrict = "a-fA-F0-9";
+		}else{
+			textInput.textField.restrict = "^\\\\/\\:\\*\\?\"\\<\\>\\|";
 		}
 		gfx.managers.FocusHandler.instance.setFocus(textInput.textField);
 		textInput.focused = true;

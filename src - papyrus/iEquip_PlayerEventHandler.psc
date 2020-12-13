@@ -550,11 +550,12 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 			WC.updateWidgetVisibility()
 			int i
 			while i < 5
-				;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, abIsNameShown: " + WC.abIsNameShown[i] + ", abIsPoisonNameShown: " + WC.abIsPoisonNameShown[i])
 				if !WC.abIsNameShown[i]
+					;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, name for slot " + i + " not currently visible, showing now")
 					WC.showName(i)
 				endIf
 				if i < 2 && !WC.abIsPoisonNameShown[i] && !(i == 0 && WC.bAmmoMode) && !(TP.bPoisonEquipped && TP.iThrowingPoisonHand == i) && jMap.getInt(jArray.GetObj(WC.aiTargetQ[i], WC.aiCurrentQueuePosition[i]), "isPoisoned") == 1 	; Check and show the poison name if weapon poisoned
+					;debug.trace("iEquip_PlayerEventHandler OnActorAction - weapon drawn, weapon in slot " + i + " is poisoned and poison name not currently visible, showing now")
 					WC.showName(i, true, true)
 				endIf
 				i += 1

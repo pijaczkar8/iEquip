@@ -767,7 +767,7 @@ EndEvent
 float fCurrentVersion						; First digit = Main version, 2nd digit = Incremental, 3rd digit = Hotfix.  For example main version 1.0, hotfix 03 would be 1.03
 
 float function getiEquipVersion()
-    return 1.50
+    return 1.52
 endFunction
 
 function checkVersion()
@@ -2306,7 +2306,7 @@ function ResetWidgetArrays()
 endFunction
 
 int function getHandle(int Q, int itemType = -1, form targetForm)
-	;debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType + ", targetForm: " + targetForm + " (" + targetForm.GetName() + "")
+	;debug.trace("iEquip_WidgetCore getHandle start - Q: " + Q + ", itemType: " + itemType + ", targetForm: " + targetForm + " (" + targetForm.GetName() + ")")
 	int itemHandle = 0xFFFF
 	if Q < 2
 		form equippedItem = PlayerRef.GetEquippedObject(Q)
@@ -2327,7 +2327,7 @@ int function getHandle(int Q, int itemType = -1, form targetForm)
 				endIf
 				itemHandle = iEquip_InventoryExt.GetRefHandleFromWornObject(Q)
 			endIf
-		;else
+		else
 			;debug.trace("iEquip_WidgetCore getHandle - nothing returned by GetEquippedObject")
 		endIf
 	endIf
@@ -2459,8 +2459,6 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		int i
 		int	targetIndex
 		int targetObject = jArray.getObj(targetArray, aiCurrentQueuePosition[Q])
-		form targetItem
-	    string targetName
 
 		if Q < 3
 			if iBackgroundStyle > 0
@@ -2479,11 +2477,14 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 		elseIf Q == 3
 			CFUpdate.unregisterForConsumableFadeUpdate()
 		endIf
+
+		string targetName = jMap.getStr(targetObject, "iEquipName")
+		form targetItem = jMap.getForm(targetObject, "iEquipForm")
 		
 		; Make sure we're starting from the correct index, in case somehow the queue has been amended without the aiCurrentQueuePosition array being updated
-		if asCurrentlyEquipped[Q] != "" && asCurrentlyEquipped[Q] != jMap.getStr(targetObject, "iEquipName")
-			if Q < 2
-				aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q], PlayerRef.GetEquippedObject(Q), getHandle(Q, -1, jMap.getForm(targetObject, "iEquipForm")))
+		if asCurrentlyEquipped[Q] != "" && asCurrentlyEquipped[Q] != targetName
+			if Q < 2 && targetName != "$iEquip_common_Unarmed" && (targetItem as weapon || targetItem as armor)
+				aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q], targetItem, getHandle(Q, -1, targetItem))
 			else
 				aiCurrentQueuePosition[Q] = findInQueue(Q, asCurrentlyEquipped[Q])
 			endIf
@@ -3670,6 +3671,10 @@ function removeTempItemFromQueue(int Q, int iIndex)
     
     jArray.eraseIndex(aiTargetQ[Q], iIndex)
 
+    if aiCurrentQueuePosition[Q] > iIndex
+    	aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
+    endIf
+
     if Q == 2 || (findInQueue(Q, tempName, tempForm, tempHandle) == -1 && findInQueue(otherQ, tempName, tempForm, tempHandle) == -1)
     	iEquip_AllCurrentItemsFLST.RemoveAddedForm(tempForm)
 		EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
@@ -4636,9 +4641,9 @@ function applyPoison(int Q)
 
     if bPoisonsEnabled && !(TP.bPoisonEquipped && TP.iThrowingPoisonHand == Q)
     	int targetQ = aiTargetQ[Q]
-    	if jArray.count(targetQ) == 0
+    	if jArray.count(aiTargetQ[4]) == 0
     		if iShowPoisonMessages == 0
-    			debug.notification("$iEquip_WC_not_noPoison")
+    			debug.notification("$iEquip_WC_not_noPoisons")
     		endIf
     	else
 	        int targetObj = jArray.getObj(aiTargetQ[4], aiCurrentQueuePosition[4])
@@ -4650,9 +4655,11 @@ function applyPoison(int Q)
 	        bool ApplyWithoutUpdatingWidget
 	        int iButton
 	        string newPoison = jMap.getStr(targetObj, "iEquipName")
-	        bool isLeftHand = !(Q as bool)
-	        string handName = "$iEquip_common_left"
-	        if Q == 1
+	        bool isLeftHand = Q == 0
+	        string handName
+	        if isLeftHand
+	        	handName = "$iEquip_common_left"
+	        else
 	            handName = "$iEquip_common_right"
 	        endIf
 	        Weapon currentWeapon = PlayerRef.GetEquippedWeapon(isLeftHand)
@@ -4663,7 +4670,7 @@ function applyPoison(int Q)
 	            tempWeapType = currentWeapon.GetWeaponType()
 	        endIf
 
-	        if (!currentWeapon) || tempWeapType == 0 || tempWeapType == 8
+	        if !currentWeapon || tempWeapType == 0 || tempWeapType == 8
 	        	if iShowPoisonMessages == 0
 	        		if tempWeapType == 8
 	        			debug.notification(iEquip_StringExt.LocalizeString("$iEquip_WC_not_noStaffPoisoning"))
@@ -4960,11 +4967,9 @@ bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 		isPoisoned = jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "isPoisoned") as bool
 	;Otherwise we're checking an equipped item so we can check the actual data from the weapon
 	elseIf PlayerRef.GetEquippedObject(Q) as weapon
-		Potion currentPoison = iEquip_InventoryExt.GetPoison(PlayerRef.GetEquippedObject(Q), GetRefHandleFromWornObject(Q))
-		if currentPoison
+		int itemHandle = GetRefHandleFromWornObject(Q)
+		if itemHandle != 0xFFFF && iEquip_InventoryExt.GetPoison(PlayerRef.GetEquippedObject(Q), itemHandle)
 			isPoisoned = true
-		else
-			isPoisoned = false
 		endIf
 	endIf
 	;debug.trace("iEquip_WidgetCore isWeaponPoisoned end - Q: " + Q + ", iIndex: " + iIndex + ", isPoisoned: " + isPoisoned)

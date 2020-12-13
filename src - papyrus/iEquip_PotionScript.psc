@@ -252,6 +252,10 @@ event OnInit()
     asEffectNames[7] = "$iEquip_PO_fortifyStamina"
     asEffectNames[8] = "$iEquip_PO_regenStamina"
 
+    aCACO_RestoreEffects = new MagicEffect[9]
+    aPAF_RestoreEffects = new MagicEffect[6]
+    aEnderal_RestoreEffects = new MagicEffect[3]
+
     createResistEffectsArrays()
     bInitialised = true
     ;debug.trace("iEquip_PotionScript OnInit end")
@@ -446,9 +450,8 @@ function initialise()
 
     int i
 
-    aCACO_RestoreEffects = new MagicEffect[9]
     if Game.GetModByName("Complete Alchemy & Cooking Overhaul.esp") != 255
-        if !bIsCACOLoaded
+        if !bIsCACOLoaded || (bIsCACOLoaded && aCACO_RestoreEffects[0] == none)
             aCACO_RestoreEffects[0] = Game.GetFormFromFile(0x001AA0B6, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
             aCACO_RestoreEffects[1] = Game.GetFormFromFile(0x001AA0B7, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
             aCACO_RestoreEffects[2] = Game.GetFormFromFile(0x001AA0B8, "Complete Alchemy & Cooking Overhaul.esp") as MagicEffect
@@ -470,9 +473,8 @@ function initialise()
         bIsCACOLoaded = false
     endIf
     
-    aPAF_RestoreEffects = new MagicEffect[6]
     if Game.GetModByName("PotionAnimatedFix.esp") != 255 || Game.GetModByName("PotionAnimatedfx.esp") != 255
-        if !bIsPAFLoaded
+        if !bIsPAFLoaded || (bIsPAFLoaded && aPAF_RestoreEffects[0] == none)
             string PAFPlugin = "PotionAnimatedFix.esp"
             if Game.GetModByName("PotionAnimatedfx.esp") != 255
                 PAFPlugin = "PotionAnimatedfx.esp"
@@ -494,9 +496,8 @@ function initialise()
         endWhile
     endIf
     
-    aEnderal_RestoreEffects = new MagicEffect[3]
     if Game.GetModByName("Enderal - Forgotten Stories.esm") != 255
-        if !bIsEnderalLoaded
+        if !bIsEnderalLoaded || (bIsEnderalLoaded && aEnderal_RestoreEffects[0] == none)
             aEnderal_RestoreEffects[0] = Game.GetFormFromFile(0x000028C3, "Skyrim.esm") as MagicEffect  ; 00E_AlchRestoreHealth
             aEnderal_RestoreEffects[1] = Game.GetFormFromFile(0x000028DD, "Skyrim.esm") as MagicEffect  ; 00E_AlchRestoreMagicka
             aEnderal_RestoreEffects[2] = Game.GetFormFromFile(0x000028DC, "Skyrim.esm") as MagicEffect  ; 00E_AlchRestoreStamina
@@ -504,6 +505,11 @@ function initialise()
         endIf
     else
         bIsEnderalLoaded = false
+        i = 0
+        while i < 3
+            aEnderal_RestoreEffects[i] = none
+            i += 1
+        endWhile
     endIf
     
     if Game.GetModByName("Requiem.esp") != 255
