@@ -5,7 +5,7 @@ iEquip_PotionScript property PO auto
 bool bWaitingForRemovedPotionUpdate
 
 function registerForRemovedPotionUpdate()
-	RegisterForSingleUpdate(0.5)
+	RegisterForSingleUpdate(0.3)
 	bWaitingForRemovedPotionUpdate = true
 endFunction
 

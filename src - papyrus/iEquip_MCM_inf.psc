@@ -57,19 +57,19 @@ function drawPage()
     if version > 0
         MCM.AddTextOptionST("inf_txt_POVersion", "$iEquip_MCM_inf_lbl_versionPO", version)
     else
-        MCM.AddTextOptionST("inf_txt_POVersion", "$iEquip_MCM_inf_lbl_versionPO", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_common_notDetected")
+        MCM.AddTextOptionST("inf_txt_POVersion", "$iEquip_MCM_inf_lbl_versionPO", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_common_notDetected</font>")
     endIf
     if SKSE.GetPluginVersion("Ahzaab's moreHUD Inventory Plugin") > 0
         versionStr = AhzMoreHudIE.GetVersion()
         MCM.AddTextOptionST("inf_txt_moreHUDIEVersion", "$iEquip_MCM_inf_lbl_versionMoreHUDIE", GetNthChar(versionStr, 0) + "." + GetNthChar(versionStr, 2) + "." + Substring(versionStr, 3))
     else
-        MCM.AddTextOptionST("inf_txt_moreHUDIEVersion", "$iEquip_MCM_inf_lbl_versionMoreHUDIE", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_common_notDetected")
+        MCM.AddTextOptionST("inf_txt_moreHUDIEVersion", "$iEquip_MCM_inf_lbl_versionMoreHUDIE", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_common_notDetected</font>")
     endIf
     version = SKSE.GetPluginVersion("ConsoleUtilSSE")
     if version > 0
         MCM.AddTextOptionST("inf_txt_ConsUtilVersion", "$iEquip_MCM_inf_lbl_versionConsUtil", ConsoleUtil.GetVersion())
     else
-        MCM.AddTextOptionST("inf_txt_ConsUtilVersion", "$iEquip_MCM_inf_lbl_versionConsUtil", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_common_notDetected")
+        MCM.AddTextOptionST("inf_txt_ConsUtilVersion", "$iEquip_MCM_inf_lbl_versionConsUtil", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_common_notDetected</font>")
     endIf
     ;+++Supported mods detected
     MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_inf_lbl_supportedMods</font>")

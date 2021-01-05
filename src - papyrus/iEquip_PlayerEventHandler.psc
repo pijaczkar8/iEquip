@@ -872,7 +872,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		WC.setSlotToEmpty(equippedSlot, true, true)
 
 	else
-		if queuedForm != equippedForm ; Just in case something has gone wrong, make sure we're updating the slot for what is actually equipped
+		if equippedForm && queuedForm != equippedForm ; Just in case something has gone wrong, make sure we're updating the slot for what is actually equipped
 			queuedForm = equippedForm
 			itemType = queuedForm.GetType()
 			if itemType == 22
@@ -1094,7 +1094,7 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
 			TP.bJustUnequippedThrowingPoison = false
 		endIf
 
-  	elseIf akBaseObject.GetType() == 31 && !WC.bAddingItemsOnFirstEnable && !(TO.bIsTCSLoaded && akBaseObject == TO.Torch01 as form) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && akBaseObject == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
+  	elseIf akBaseObject.GetType() == 31 && !(WC.bAddingItemsOnFirstEnable || (TO.bIsTCSLoaded && akBaseObject == TO.Torch01 as form) || (Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && akBaseObject == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm")))
   		;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped - just unequipped a torch")
   		GoToState("PROCESSING")
     	TO.onTorchUnequipped()

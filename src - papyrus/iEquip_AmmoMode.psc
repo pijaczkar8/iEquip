@@ -727,7 +727,7 @@ function checkAndRemoveBoundAmmo(int weaponType)
 	int targetQ = aiTargetQ[i]
 	int targetIndex = jArray.count(targetQ) - 1
 	form ammoToCheck = jMap.getForm(jArray.getObj(targetQ, targetIndex), "iEquipForm")
-	if iEquip_AmmoExt.IsAmmoBound(ammoToCheck as ammo)
+	if ammoToCheck && iEquip_AmmoExt.IsAmmoBound(ammoToCheck as ammo)
 		iEquip_AmmoItemsFLST.RemoveAddedForm(ammoToCheck)
 		EH.updateEventFilter(iEquip_AmmoItemsFLST)
 		jArray.eraseIndex(targetQ, targetIndex)

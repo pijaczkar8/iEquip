@@ -794,7 +794,7 @@ function checkVersion()
 			asZIAIconNames[2] = "Volendrung"
 		endIf
 
-        if fCurrentVersion < 1.22		
+        if fCurrentVersion < 1.52		
         ; We're updating to the newer refHandle manager for the first time so we need to clear all existing handles in the queue objects and in iEquipUtil, then parse the inventory again to assign new handles under the new manager. 
         ; The queue objects will be updated with the newly assigned handles when each item is next equipped, other than any currently equipped items which will be updated during this initial process.
         	outWithTheOldInWithTheNew()
@@ -897,7 +897,9 @@ function checkVersion()
         endIf
 
         Utility.Wait(3.0)									; Just to make sure the notification hasn't been and gone before you're fully loaded in
-        debug.notification("$iEquip_wc_not_updating")		; Remember to change the version number in the strings files
+        string sThisVersion = fThisVersion as string
+        string versionStr = GetNthChar(sThisVersion, 0) + "." + GetNthChar(sThisVersion, 2) + "." + GetNthChar(sThisVersion, 3)
+        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_wc_not_updating{" + versionStr + "}"))
     endIf
     fCurrentVersion = fThisVersion
     ;debug.trace("iEquip_WidgetCore checkVersion end")
@@ -4967,8 +4969,8 @@ bool function isWeaponPoisoned(int Q, int iIndex, bool cycling = false)
 		isPoisoned = jMap.getInt(jArray.getObj(aiTargetQ[Q], iIndex), "isPoisoned") as bool
 	;Otherwise we're checking an equipped item so we can check the actual data from the weapon
 	elseIf PlayerRef.GetEquippedObject(Q) as weapon
-		int itemHandle = GetRefHandleFromWornObject(Q)
-		if itemHandle != 0xFFFF && iEquip_InventoryExt.GetPoison(PlayerRef.GetEquippedObject(Q), itemHandle)
+		Potion currentPoison = iEquip_InventoryExt.GetPoison(PlayerRef.GetEquippedObject(Q), GetRefHandleFromWornObject(Q))
+		if currentPoison
 			isPoisoned = true
 		endIf
 	endIf
@@ -5052,6 +5054,7 @@ function addToQueue(int Q)
 		if itemType == 41 || itemType == 26 ; Weapons and shields only
 			if listIndex > -1
 				itemHandle = iEquip_InventoryExt.GetRefHandleAtInvIndex(listIndex)
+				;debug.notification(itemName + " has been assigned handle: " + itemHandle)
 				;debug.trace("iEquip_WidgetCore addToQueue - listIndex: " + listIndex + ", itemHandle: " + itemHandle)
 				if itemHandle != 0xFFFF
 					JArray.AddInt(iRefHandleArray, itemHandle)

@@ -219,7 +219,7 @@ function onTorchEquipped()
 		if equippedTorch as light
 			string modName = Game.GetModName(Math.LogicalAnd(Math.RightShift(equippedTorch.GetFormID(), 24), 0xFF))
 
-			if !(modName == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm"))
+			if !((modName == "Undriel_Everlight.esp") || (WC.bIsLOTDLoaded && equippedTorch == Game.GetFormFromFile(0x7666F4, "LegacyoftheDragonborn.esm")))
 				iEquip_TorchTimerSpell.SetNthEffectDuration(0, fCurrentTorchLife as int)
 				PlayerRef.AddSpell(iEquip_TorchTimerSpell, false)
 

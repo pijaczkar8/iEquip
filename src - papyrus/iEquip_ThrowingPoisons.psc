@@ -87,6 +87,8 @@ int iIndex
 
 bool bCreateArrays = true
 
+int poisonQ
+
 bool bLastOfCurrentPoison
 bool bLastPoisonInQueue
 
@@ -134,6 +136,7 @@ endFunction
 function OnWidgetLoad()
 	;debug.trace("iEquip_ThrowingPoisons OnWidgetLoad start")
 	WidgetRoot = WC.WidgetRoot
+	poisonQ = WC.aiTargetQ[4]
 		
 	if bCreateArrays
 		createArrays()
@@ -265,11 +268,11 @@ endFunction
 function OnThrowingPoisonKeyPressed()
 	;debug.trace("iEquip_ThrowingPoisons OnThrowingPoisonKeyPressed start - iThrowingPoisonBehavior: " + iThrowingPoisonBehavior)
 	bFirstPoison = true
-	if jArray.count(WC.aiTargetQ[4]) < 1				; No poisons left in the poison queue
+	if jArray.count(poisonQ) < 1				; No poisons left in the poison queue
 		debug.Notification(iEquip_StringExt.LocalizeString("$iEquip_TP_not_noPoisons"))
 	elseIf iThrowingPoisonBehavior == 0					; Throw & Switch Back
 		if bPoisonEquipped 								; If we haven't thrown the poison yet...
-			if currentPoison != jMap.getForm(jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4]), "iEquipForm") as potion 	; If we have cycled the poison slot without throwing the equipped poison switch to the new one and update the widget
+			if currentPoison != jMap.getForm(jArray.getObj(poisonQ, WC.aiCurrentQueuePosition[4]), "iEquipForm") as potion 	; If we have cycled the poison slot without throwing the equipped poison switch to the new one and update the widget
 				equipPoison()
 			else 																													; Otherwise switch back to the previously equipped item(s)
 				switchBack()
@@ -291,7 +294,7 @@ function toggleThrowingPoisons()
 		saveCurrentItemsForSwitchBack()
 		equipPoison()
 	elseIf bPoisonEquipped
-		if currentPoison != jMap.getForm(jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4]), "iEquipForm") as potion 		; If we have cycled the poison slot without throwing the equipped poison switch to the new one and update the widget
+		if currentPoison != jMap.getForm(jArray.getObj(poisonQ, WC.aiCurrentQueuePosition[4]), "iEquipForm") as potion 		; If we have cycled the poison slot without throwing the equipped poison switch to the new one and update the widget
 			bKeepThrowing = true 																									; And set bKeepThrowing back to true
 			equipPoison()
 		else
@@ -303,7 +306,7 @@ endFunction
 
 function equipPoison()
 	;debug.trace("iEquip_ThrowingPoisons equipPoison start - iIndex: " + iIndex)
-	targetPoison = jArray.getObj(WC.aiTargetQ[4], WC.aiCurrentQueuePosition[4])
+	targetPoison = jArray.getObj(poisonQ, WC.aiCurrentQueuePosition[4])
 	potion newPoison = jMap.getForm(targetPoison, "iEquipForm") as potion
 	
 	if newPoison
@@ -344,9 +347,10 @@ function equipPoison()
 			PlayerRef.EquipItemEx(iEquip_ThrowingPoisonWeapon, aiHandEquipSlots[targetHand])
 		endIf
 
-		SetPoison(iEquip_ThrowingPoisonWeapon as form, GetRefHandleFromWornObject(iThrowingPoisonHand), currentPoison, 1) 	; Poison the dummy weapon so the player can't apply and waste through the inventory menu
-
 		updateWidget()															; Hide all additional widget elements and copy the poison icon and name currently displayed in the poison slot to the equipped hand
+
+		Utility.WaitMenuMode(0.3)
+		SetPoison(iEquip_ThrowingPoisonWeapon as form, GetRefHandleFromWornObject(iThrowingPoisonHand), currentPoison, 1) 	; Poison the dummy weapon so the player can't apply and waste through the inventory menu
 
 		;/if bPreviously2H && bFirstPoison										; If we were wielding a 2H weapon (without CGO) equip something 1H in the other hand
 			equipOtherHand()
@@ -450,7 +454,7 @@ endFunction
 
 function onPoisonRemoved(potion removedPoison) 										; Only ever called from PlayerEventHandler OnObjectRemoved if the player has manually removed the last one of a poison from inventory and we currently have a throwing poison equipped
 	if removedPoison == currentPoison
-		if jArray.count(WC.aiTargetQ[4]) > 0 && bKeepThrowing
+		if jArray.count(poisonQ) > 0 && bKeepThrowing
 			equipPoison()
 		else
 			switchBack()
@@ -466,13 +470,19 @@ function onPoisonThrown()
 		iEquip_ThrowPoison.Cast(PlayerRef)
 		
 		bLastOfCurrentPoison = PlayerRef.GetItemCount(currentPoison as form) == 1
-		bLastPoisonInQueue = jArray.count(WC.aiTargetQ[4]) == 1 && bLastOfCurrentPoison
+		bLastPoisonInQueue = jArray.count(poisonQ) == 1 && bLastOfCurrentPoison
 
 		PlayerRef.RemoveItem(currentPoison, 1, true)		; Remove one poison from the player's inventory.  This will also trigger the poison queue to update the count and cycle forwards if the last of the current poison has just been thrown.
 
 		if bKeepThrowing && !bLastPoisonInQueue 			; If we have toggled Throwing Poisons rather than Throw & Switch back, as long as we have at least one poison left in the queue carry on and equip the next bottle
 			if bLastOfCurrentPoison
-				Utility.WaitMenuMode(0.5)					; Allow for OnItemRemoved to remove the current poison from the queue and cycle on to the next				
+				;/Utility.WaitMenuMode(0.6)					; Allow for OnItemRemoved to remove the current poison from the queue and cycle on to the next
+				while PO.GetState() == "PROCESSING"
+					Utility.WaitMenuMode(0.1)
+				endWhile/;
+				while jMap.getForm(jArray.getObj(poisonQ, WC.aiCurrentQueuePosition[4]), "iEquipForm") as potion == currentPoison
+					Utility.WaitMenuMode(0.05)
+				endWhile
 			endIf
 			bFirstPoison = false
 			equipPoison()

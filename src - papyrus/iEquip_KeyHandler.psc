@@ -188,8 +188,12 @@ endEvent
 function registerForGPPKeys()
     ;debug.trace("iEquip_KeyHandler registerForGPPKeys")
     int i
-    ;int hexBase = 0x00003DE2   ; esp
-    int hexBase = 0x00000801    ; esl
+    int hexBase = 0x00003DE2   ; esp
+
+    if !Game.GetFormFromFile(hexBase, "Gamepad++.esp")
+        ;debug.trace("iEquip_KeyHandler registerForGPPKeys - esl version detected")
+        hexBase = 0x00000801    ; esl
+    endIf
     
     unregisterForGPPKeys()
     
@@ -342,7 +346,7 @@ event OnKeyDown(int KeyCode)
 
     ;debug.trace("iEquip_KeyHandler OnKeyDown - bGPPKeyHeld: " + bGPPKeyHeld + ", bIsUtilityKeyHeld: " + bIsUtilityKeyHeld + ", bAllowKeyPress: " + bAllowKeyPress)
 
-    if bAllowKeyPress && (!bGPPKeyHeld || aiExtKbKeys.Find(KeyCode) > -1)
+    if bAllowKeyPress && (!bGPPKeyHeld || (aiExtKbKeys.Find(KeyCode) > -1 || KeyCode == iQuickLightKey || KeyCode == iThrowingPoisonsKey))
         if KeyCode != iWaitingKeyCode && iWaitingKeyCode != -1
             if iWaitingKeyCode != iUtilityKey 
                 ; The player pressed a different key, so force the current one to process if there is one
@@ -816,6 +820,9 @@ function updateKeyMaps()
     iEquipConsumableKey.SetValueInt(iConsumableKey)
     iEquipUtilityKey.SetValueInt(iUtilityKey)
     SendModEvent("iEquip_KeysUpdated")
+    if bIsGPPLoaded
+        registerForGPPKeys()
+    endIf
     ;debug.trace("iEquip_KeyHandler updateKeyMaps end")
 endFunction
 
