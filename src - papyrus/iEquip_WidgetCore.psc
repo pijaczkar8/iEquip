@@ -494,6 +494,8 @@ string property MCMSettingsPath = "Data/iEquip/MCM Settings/" autoReadOnly
 string property FileExtDef = ".IEQD" autoReadOnly
 string property FileExt = ".IEQP" autoReadonly
 
+bool bShowVersionUpdateNotification
+
 ; ###############################
 ; ### Initialization & Checks ###
 
@@ -767,7 +769,7 @@ EndEvent
 float fCurrentVersion						; First digit = Main version, 2nd digit = Incremental, 3rd digit = Hotfix.  For example main version 1.0, hotfix 03 would be 1.03
 
 float function getiEquipVersion()
-    return 1.52
+    return 1.53
 endFunction
 
 function checkVersion()
@@ -896,10 +898,7 @@ function checkVersion()
         	handleAutoAddedItems()
         endIf
 
-        Utility.Wait(3.0)									; Just to make sure the notification hasn't been and gone before you're fully loaded in
-        string sThisVersion = fThisVersion as string
-        string versionStr = GetNthChar(sThisVersion, 0) + "." + GetNthChar(sThisVersion, 2) + "." + GetNthChar(sThisVersion, 3)
-        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_wc_not_updating{" + versionStr + "}"))
+        bShowVersionUpdateNotification = true
     endIf
     fCurrentVersion = fThisVersion
     ;debug.trace("iEquip_WidgetCore checkVersion end")
@@ -1250,6 +1249,8 @@ state ENABLED
 	Event OnWidgetLoad()
 		;debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
 
+		bShowVersionUpdateNotification = false
+
 		checkVersion()
 
 		;bPlayerIsMounted = PlayerRef.IsOnMount()
@@ -1331,6 +1332,12 @@ state ENABLED
 		endIf
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
 		updateWidgetVisibility() ; Show the widget
+
+		if bShowVersionUpdateNotification
+	        string sThisVersion = getiEquipVersion() as string
+	        string versionStr = GetNthChar(sThisVersion, 0) + "." + GetNthChar(sThisVersion, 2) + "." + GetNthChar(sThisVersion, 3)
+	        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_wc_not_updating{" + versionStr + "}"))
+	    endIf
 		
 		Utility.WaitMenuMode(0.5)
 		
@@ -1351,6 +1358,7 @@ state ENABLED
 		endIf
 
 		KH.RegisterForGameplayKeys()
+
 		debug.notification("$iEquip_WC_not_controlsUnlocked")
 		
 		;debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
@@ -1399,20 +1407,7 @@ Auto state DISABLED
 endState
 
 function checkAndSetKeysForGamepadPlusPlus()
-	if showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_setDefaultKeysForGPP")) == 0
-		KH.iLeftKey = 268						; Dpad Left
-		KH.iEquipLeftKey.SetValueInt(268)
-		KH.iRightKey = 269						; DPad Right
-		KH.iEquipRightKey.SetValueInt(269)
-		KH.iShoutKey = 266						; DPad Up
-		KH.iEquipShoutKey.SetValueInt(266)
-		KH.iConsumableKey = 267					; DPad Down
-		KH.iEquipConsumableKey.SetValueInt(267)
-		KH.iUtilityKey = 277					; B
-		KH.iEquipUtilityKey.SetValueInt(277)
-		SendModEvent("iEquip_KeysUpdated")
-	endIf
-	bGPPMessageShown = true
+	
 endFunction
 
 function refreshWidgetOnLoad()
@@ -3859,9 +3854,9 @@ form property fLastDroppedItem auto hidden
 11: Torch
 12: Crossbow/;
 
-function onWeaponOrShieldAdded(form addedForm)
+function onWeaponOrShieldAdded(form addedForm, bool forceEquip = false, bool forceAdd = false)
 	;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded start - addedForm: " + addedForm.GetName() + ", iAutoEquipEnabled: " + iAutoEquipEnabled)
-	if !EH.bPlayerIsABeast && (iAutoEquipEnabled == 1 || (iAutoEquipEnabled == 2 && PlayerRef.IsWeaponDrawn()) || (iAutoEquipEnabled == 3 && PlayerRef.IsInCombat()))
+	if !EH.bPlayerIsABeast && (iAutoEquipEnabled == 1 || (iAutoEquipEnabled == 2 && PlayerRef.IsWeaponDrawn()) || (iAutoEquipEnabled == 3 && PlayerRef.IsInCombat()) || forceEquip)
 
 		int currLHItemType = PlayerRef.GetEquippedItemType(0)
 		form currItem

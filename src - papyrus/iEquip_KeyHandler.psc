@@ -122,6 +122,20 @@ function GameLoaded()
     ;debug.trace("iEquip_KeyHandler GameLoaded end")
 endFunction
 
+function setKeysForGamepad()
+    iLeftKey = 268                       ; Dpad Left
+    iRightKey = 269                      ; DPad Right
+    iShoutKey = 266                      ; DPad Up
+    iConsumableKey = 267                 ; DPad Down
+    iUtilityKey = 277                    ; B
+    iEquipLeftKey.SetValueInt(iLeftKey)
+    iEquipRightKey.SetValueInt(iRightKey)
+    iEquipShoutKey.SetValueInt(iShoutKey)
+    iEquipConsumableKey.SetValueInt(iConsumableKey)
+    iEquipUtilityKey.SetValueInt(iUtilityKey)
+    SendModEvent("iEquip_KeysUpdated")
+endFunction
+
 function RegisterForMenus()
     RegisterForMenu("BarterMenu")
     RegisterForMenu("Book Menu")
