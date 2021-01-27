@@ -318,14 +318,15 @@ function toggleAmmoMode(bool toggleWithoutAnimation = false, bool toggleWithoutE
 				endIf
 			endIf
 			bool mainQueueIsEmpty = (jArray.count(WC.aiTargetQ[0]) < 1)
-			if mainQueueIsEmpty
+			;/if mainQueueIsEmpty
 				if (jArray.count(WC.aiTargetQ[1]) < 2)
 					WC.UnequipHand(1)
 					WC.setSlotToEmpty(1, true, true)
 				else
 					WC.cycleSlot(1, false, true)
 				endIf
-			else
+			else/;
+			if !mainQueueIsEmpty
 				;Update the main slot index in case we're in Advanced Ammo Mode and have cycled the left preselect slot in the meantime
 				if !WC.bPreselectMode && !bSimpleAmmoMode
 					WC.aiCurrentQueuePosition[0] = WC.aiCurrentlyPreselected[0]

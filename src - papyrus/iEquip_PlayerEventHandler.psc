@@ -744,6 +744,7 @@ Event OnUpdate()
 		  		Q += 1
 		  	endWhile
 		endIf
+		CU.registerForCleanupUpdate(0.0)
 	endIf
 	;debug.trace("iEquip_PlayerEventHandler OnUpdate end")	
 EndEvent
@@ -1104,11 +1105,11 @@ event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
   		PlayerRef.EquipItemEx(AM.currentAmmoForm as Ammo)
 
   	else
-  		CU.registerForCleanupUpdate()
-
   		if !bGoingUnarmed && !TO.bSettingLightRadius && !(akBaseObject.GetType() == 31 && TO.didATorchJustBurnOut())
 		  	bWaitingForOnObjectUnequippedUpdate = true
 			registerForSingleUpdate(0.8)
+		else
+			CU.registerForCleanupUpdate()
 		endIf
 	endIf
 	;debug.trace("iEquip_PlayerEventHandler OnObjectUnequipped end")

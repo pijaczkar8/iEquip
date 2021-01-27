@@ -11,8 +11,8 @@ Actor property PlayerRef auto
 bool bWaitingForCleanupUpdate
 bool bRemovingTempItems
 
-function registerForCleanupUpdate()
-	RegisterForSingleUpdate(1.0)
+function registerForCleanupUpdate(float delay = 1.0)
+	RegisterForSingleUpdate(delay)
 	bWaitingForCleanupUpdate = true
 endFunction
 
@@ -43,7 +43,7 @@ event OnUpdate()
 				;else
 					;debug.trace("iEquip_TempItemCleanupUpdateScript checking Q: " + Q + " for temp items, nothing currently equipped")
 				;endIf
-				while i > 0
+				while i >= 0
 					targetObj = jArray.getObj(targetQ, i)
 					if jMap.getInt(targetObj, "iEquipTempItem") == 1
 						;debug.trace("iEquip_TempItemCleanupUpdateScript - temp item found in Q: " + Q + " at index: " + i)
