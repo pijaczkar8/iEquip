@@ -20,6 +20,8 @@ Weapon property iEquip_ThrowingPoisonWeapon auto
 FormList Property iEquip_RemovedItemsFLST Auto
 FormList Property iEquip_ItemsToAddFLST Auto
 
+bool property bProcessingAddedForms auto hidden
+
 bool bSwitchingTorches
 
 bool bCraftingOrBarterMenuOpen
@@ -57,16 +59,14 @@ Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	endIf
 endEvent
 
-bool bProcessingUpdate
-
 event OnUpdate()
 	;debug.trace("iEquip_AddedItemHandler OnUpdate start")
 	
-	while bProcessingUpdate
+	while bProcessingAddedForms
 		Utility.WaitMenuMode(0.05)
 	endWhile
 
-	bProcessingUpdate = true
+	bProcessingAddedForms = true
 
 	int i
 	int numForms = iEquip_ItemsToAddFLST.GetSize()
@@ -124,7 +124,7 @@ event OnUpdate()
 		numForms -= 1
 	endWhile
 	;iEquip_ItemsToAddFLST.Revert()
-	bProcessingUpdate = false
+	bProcessingAddedForms = false
 	bCraftingOrBarterMenuOpen = false
 	;debug.trace("iEquip_AddedItemHandler OnUpdate end - all added forms processed, iEquip_ItemsToAddFLST count: " + iEquip_ItemsToAddFLST.GetSize() + " (should be 0)")
 endEvent
@@ -134,3 +134,7 @@ auto state DISABLED
 		;Do nothing
 	endEvent
 endState
+
+; Deprecated
+
+bool bProcessingUpdate

@@ -93,7 +93,7 @@ bool property bWaitingForEnchantedWeaponDrawn auto hidden
 bool bWaitingForAnimationUpdate
 bool bWaitingForOnObjectEquippedUpdate
 bool bWaitingForOnObjectUnequippedUpdate
-bool processingQueuedForms
+bool  property bProcessingQueuedForms auto hidden
 
 bool property bIsThunderchildLoaded auto hidden
 bool property bIsWintersunLoaded auto hidden
@@ -678,7 +678,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 EndEvent
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", processingQueuedForms: " + processingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)	
+	;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped start - just equipped " + akBaseObject.GetName() + ", akReference: " + akReference + ", WC.bAddingItemsOnFirstEnable: " + WC.bAddingItemsOnFirstEnable + ", bProcessingQueuedForms: " + bProcessingQueuedForms + ", bJustQuickDualCast: " + bJustQuickDualCast)	
 	
 	int itemType = akBaseObject.GetType()
 	;debug.trace("iEquip_PlayerEventHandler OnObjectEquipped - itemType: " + itemType)
@@ -687,15 +687,15 @@ Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 		TO.onTorchEquipped()
 	endIf
 
-	if processingQueuedForms 					; Just in case the player has switched items before the previous equip/update has had time to complete
+	if bProcessingQueuedForms 					; Just in case the player has switched items before the previous equip/update has had time to complete
 		int countdown = 20
-		while processingQueuedForms && countdown > 0
+		while bProcessingQueuedForms && countdown > 0
 			WaitMenuMode(0.1)
 			countdown -= 1
 		endWhile
 	endIf
 
-	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !processingQueuedForms && akBaseObject != iEquipTorch as form && akBaseObject != iEquip_ThrowingPoisonWeapon as form && !(akBaseObject as light && Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "TorchesCastShadows.esp") && akBaseObject.GetName() != "DummyArrow"
+	if !WC.bAddingItemsOnFirstEnable && !bGoingUnarmed && !bProcessingQueuedForms && akBaseObject != iEquipTorch as form && akBaseObject != iEquip_ThrowingPoisonWeapon as form && !(akBaseObject as light && Game.GetModName(Math.LogicalAnd(Math.RightShift(akBaseObject.GetFormID(), 24), 0xFF)) == "TorchesCastShadows.esp") && akBaseObject.GetName() != "DummyArrow"
 		if akBaseObject as spell && bDualCasting
 			dualCastCounter -=1
 			if dualCastCounter == 0
@@ -789,7 +789,7 @@ endFunction
 ; This event handles auto-adding newly equipped items to the left, right and shout slots
 function processQueuedForms(int equippedSlot = -1)
 	;debug.trace("iEquip_PlayerEventHandler processQueuedForms start - equippedSlot: " + equippedSlot + ", number of forms to process: " + iEquip_OnObjectEquippedFLST.GetSize())	
-	processingQueuedForms = true
+	bProcessingQueuedForms = true
 	int i
 	form queuedForm
 	while i < iEquip_OnObjectEquippedFLST.GetSize()
@@ -803,7 +803,7 @@ function processQueuedForms(int equippedSlot = -1)
 					AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
 				endIf
 			; Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
-			elseIf !(queuedForm as weapon && (iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon))) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "Bound Shield.esp")
+			elseIf !(queuedForm as weapon && iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "Bound Shield.esp")
 				if equippedSlot == -1
 					if PlayerRef.GetEquippedObject(0) == queuedForm
 						; Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time
@@ -853,7 +853,7 @@ function processQueuedForms(int equippedSlot = -1)
 	endWhile
 	iEquip_OnObjectEquippedFLST.Revert()
 	;debug.trace("iEquip_PlayerEventHandler processQueuedForms end - all added forms processed, iEquip_OnObjectEquippedFLST count: " + iEquip_OnObjectEquippedFLST.GetSize() + " (should be 0)")
-	processingQueuedForms = false
+	bProcessingQueuedForms = false
 endFunction
 
 function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemType, int iEquipSlot)
@@ -1315,3 +1315,7 @@ auto state DISABLED
 	event OnGetUp(ObjectReference akFurniture)
 	endEvent
 endState
+
+; Deprecated
+
+bool processingQueuedForms

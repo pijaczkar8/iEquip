@@ -769,7 +769,7 @@ EndEvent
 float fCurrentVersion						; First digit = Main version, 2nd digit = Incremental, 3rd digit = Hotfix.  For example main version 1.0, hotfix 03 would be 1.03
 
 float function getiEquipVersion()
-    return 1.54
+    return 1.55
 endFunction
 
 function checkVersion()
@@ -1407,7 +1407,10 @@ Auto state DISABLED
 endState
 
 function checkAndSetKeysForGamepadPlusPlus()
-	
+	if showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_setDefaultKeysForGPP")) == 0
+		KH.setKeysForGamepad()
+	endIf
+	bGPPMessageShown = true
 endFunction
 
 function refreshWidgetOnLoad()
@@ -4035,6 +4038,14 @@ function onWeaponOrShieldAdded(form addedForm, int forceToHand = -1)
 
 	endIf
 	;debug.trace("iEquip_WidgetCore onWeaponOrShieldAdded end")
+endFunction
+
+function jumpToPoisonQueueIndex(string poisonName, form poisonForm)
+    int targetIndex = findInQueue(4, poisonName, poisonForm)
+    aiCurrentQueuePosition[4] = targetIndex
+    asCurrentlyEquipped[4] = poisonName
+    updateWidget(4, targetIndex)
+    checkAndEquipShownShoutOrConsumable(4, false, targetIndex, poisonForm, false)
 endFunction
 
 function DropItem(form itemToDrop)

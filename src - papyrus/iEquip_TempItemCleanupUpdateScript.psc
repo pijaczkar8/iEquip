@@ -1,3 +1,4 @@
+
 ScriptName iEquip_TempItemCleanupUpdateScript Extends Quest Hidden
 
 import iEquip_InventoryExt
@@ -5,6 +6,8 @@ import iEquip_InventoryExt
 iEquip_WidgetCore property WC auto
 iEquip_ProMode property PM auto
 iEquip_AmmoMode property AM auto
+iEquip_PlayerEventHandler property EH auto
+iEquip_AddedItemHandler property AD auto
 
 Actor property PlayerRef auto
 
@@ -18,8 +21,10 @@ endFunction
 
 event OnUpdate()
 	if bWaitingForCleanupUpdate
-		if !bRemovingTempItems 																			; Should block multiple runs in the case of two or three items being unequipped in quick succession
+		if bRemovingTempItems || EH.bProcessingQueuedForms || AD.bProcessingAddedForms
+			RegisterForSingleUpdate(0.1)
 
+		else
 			bRemovingTempItems = true
 
 			int Q
