@@ -26,7 +26,7 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, WC.iCycleSlowTimeStrength)
 
     jArray.addInt(jPageObj, WC.bAllowWeaponSwitchHands as int)
-    jArray.addInt(jPageObj, WC.bSkipRHUnarmedInCombat as int)
+    jArray.addInt(jPageObj, WC.bSkipUnarmedInCombat as int)
     
     jArray.addInt(jPageObj, WC.iPosInd)
     jArray.addInt(jPageObj, WC.iPositionIndicatorColor)
@@ -49,6 +49,8 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, PM.bTogglePreselectOnEquipAll as int)
     jArray.addInt(jPageObj, PM.bPreselectSwapItemsOnQuickAction as int)
 
+    jArray.addInt(jPageObj, WC.bSkipTorchInCombat as int)
+
 	return jPageObj
 endFunction
 
@@ -61,7 +63,7 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     WC.iCycleSlowTimeStrength = jArray.getInt(jPageObj, 3)
 
     WC.bAllowWeaponSwitchHands = jArray.getInt(jPageObj, 4)
-    WC.bSkipRHUnarmedInCombat = jArray.getInt(jPageObj, 5)
+    WC.bSkipUnarmedInCombat = jArray.getInt(jPageObj, 5)
     
     if presetVersion < 157
         WC.iPosInd = jArray.getInt(jPageObj, 7)
@@ -105,6 +107,8 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
         PM.bPreselectSwapItemsOnEquip = jArray.getInt(jPageObj, 20)
         PM.bTogglePreselectOnEquipAll = jArray.getInt(jPageObj, 21)
         PM.bPreselectSwapItemsOnQuickAction = jArray.getInt(jPageObj, 22)
+
+        WC.bSkipTorchInCombat = jArray.getInt(jPageObj, 23)
     endIf
 
 endFunction
@@ -128,7 +132,8 @@ function drawPage()
         MCM.AddToggleOptionST("cyc_tgl_allow1hSwitch", "$iEquip_MCM_cyc_lbl_allow1hSwitch", WC.bAllowWeaponSwitchHands)
     endIf
 
-    MCM.AddToggleOptionST("cyc_tgl_skipUnarmed", "$iEquip_MCM_cyc_lbl_skipUnarmed", WC.bSkipRHUnarmedInCombat)
+    MCM.AddToggleOptionST("cyc_tgl_skipUnarmed", "$iEquip_MCM_cyc_lbl_skipUnarmed", WC.bSkipUnarmedInCombat)
+    MCM.AddToggleOptionST("cyc_tgl_skipTorch", "$iEquip_MCM_cyc_lbl_skipTorch", WC.bSkipTorchInCombat)
 
     MCM.AddEmptyOption()
     MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_common_lbl_WidgetOptions</font>")
@@ -238,8 +243,19 @@ State cyc_tgl_skipUnarmed
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_cyc_txt_skipUnarmed")
         elseIf currentEvent == "Select"
-            WC.bSkipRHUnarmedInCombat = !WC.bSkipRHUnarmedInCombat
-            MCM.SetToggleOptionValueST(WC.bSkipRHUnarmedInCombat)
+            WC.bSkipUnarmedInCombat = !WC.bSkipUnarmedInCombat
+            MCM.SetToggleOptionValueST(WC.bSkipUnarmedInCombat)
+        endIf
+    endEvent
+endState
+
+State cyc_tgl_skipTorch
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_cyc_txt_skipTorch")
+        elseIf currentEvent == "Select"
+            WC.bSkipTorchInCombat = !WC.bSkipTorchInCombat
+            MCM.SetToggleOptionValueST(WC.bSkipTorchInCombat)
         endIf
     endEvent
 endState

@@ -474,7 +474,8 @@ int property iLastRH1HItemIndex = -1 auto hidden
 bool property bEquipOnPause = true auto hidden
 bool property bSlowTimeWhileCycling auto Hidden
 int property iCycleSlowTimeStrength = 50 auto hidden
-bool property bSkipRHUnarmedInCombat auto hidden
+bool property bSkipUnarmedInCombat auto hidden
+bool property bSkipTorchInCombat auto hidden
 
 bool bGPPMessageShown
 
@@ -896,6 +897,10 @@ function checkVersion()
         	PO.onVersionUpdate(fCurrentVersion)
         	RC.onVersionUpdate(fCurrentVersion)
         	handleAutoAddedItems()
+        endIf
+
+        if fCurrentVersion < 1.55
+        	bSkipUnarmedInCombat = bSkipRHUnarmedInCombat
         endIf
 
         bShowVersionUpdateNotification = true
@@ -2517,7 +2522,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			    	; Nothing to do here, used to be skip auto added items, but we've removed that now
 			    elseIf bPlayerIsMounted		; cycleSlot will only ever be called for Q == 1 if bPlayerIsMounted so no need check for Q here - we're skipping Unarmed in combat if required, auto-added items if required, spells, scrolls and staffs as not able to be used on horseback (vanilla)
 			    	int itemType = jMap.getInt(targetObject, "iEquipType")
-			    	while  i > 0 && ((bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || itemType == 8 || itemType == 22 || itemType == 23)
+			    	while  i > 0 && ((bSkipUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || itemType == 8 || itemType == 22 || itemType == 23)
 			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 			    		targetObject = jArray.getObj(targetArray, targetIndex)
 			    		targetName = jMap.getStr(targetObject, "iEquipName")
@@ -2527,7 +2532,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			    elseIf bDragonRiding 		; For dragon riding we need to restrict the selectable items to staffs, scrolls and allowed spells only, as well as skipping Unarmed in combat if required, and auto-added items if required
 			    	int itemType = jMap.getInt(targetObject, "iEquipType")
 			    	targetItem = jMap.getForm(targetObject, "iEquipForm")
-			    	while  i > 0 && ((Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) && !(itemType == 8 || itemType == 23 || (itemType == 22 && DLC2DRAllowedSpells.HasForm(targetItem))))
+			    	while  i > 0 && ((Q == 1 && bSkipUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) || !(itemType == 8 || itemType == 23 || (itemType == 22 && DLC2DRAllowedSpells.HasForm(targetItem))))
 			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 			    		targetObject = jArray.getObj(targetArray, targetIndex)
 			    		targetItem = jMap.getForm(targetObject, "iEquipForm")
@@ -2538,7 +2543,7 @@ function cycleSlot(int Q, bool Reverse = false, bool ignoreEquipOnPause = false,
 			    else			    		; And finally if we're cycling one of the hand queues and none of the above apply, we need to check for 1H switching if the same 1H item which is currently equipped in the other hand, as well as skipping Unarmed in combat if required, and auto-added items if required
 				    int itemType = jMap.getInt(targetObject, "iEquipType")
 			    	targetItem = jMap.getForm(targetObject, "iEquipForm")
-				    while  i > 0 && ((Q == 1 && bSkipRHUnarmedInCombat && targetName == "$iEquip_common_Unarmed" && PlayerRef.IsInCombat()) && (itemType != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)))
+				    while  i > 0 && ((PlayerRef.IsInCombat() && ((bSkipUnarmedInCombat && targetName == "$iEquip_common_Unarmed") || (bSkipTorchInCombat && itemType == 31))) || (itemType != 22 && !bAllowWeaponSwitchHands && targetItem == PlayerRef.GetEquippedObject((Q + 1) % 2) && (PlayerRef.GetItemCount(targetItem) < 2)))
 			    		targetIndex = confirmNewIndex(targetIndex + move, queueLength, Reverse)
 			    		targetObject = jArray.getObj(targetArray, targetIndex)
 			    		targetItem = jMap.getForm(targetObject, "iEquipForm")
@@ -6225,6 +6230,7 @@ float property fSmartConsumeThreshold = 0.8 auto hidden
 bool property bSkipAutoAddedItems auto hidden
 bool property bShowAutoAddedFlag auto hidden
 bool property bShoutCooldownFadeEnabled = true auto hidden
+bool property bSkipRHUnarmedInCombat auto hidden
 
 function reduceMaxQueueLength()
 	;/;debug.trace("iEquip_WidgetCore reduceMaxQueueLength start")

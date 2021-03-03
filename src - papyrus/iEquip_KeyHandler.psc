@@ -892,6 +892,9 @@ function RegisterForGameplayKeys()
             RegisterForKey(iQuickRangedKey)
         endIf
     endIf
+    if bIsGPPLoaded
+        registerForGPPKeys()
+    endIf
     ;debug.trace("iEquip_KeyHandler RegisterForGameplayKeys end")
 endFunction
 

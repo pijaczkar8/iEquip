@@ -47,11 +47,11 @@ bool bUsePaperColours
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 160  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 161  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 160 && CurrentVersion < 160)
+    if (a_version >= 161 && CurrentVersion < 161)
         OnConfigInit()
     endIf
 endEvent
