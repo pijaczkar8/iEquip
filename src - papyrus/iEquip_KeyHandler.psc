@@ -14,6 +14,7 @@ iEquip_RechargeScript property RC auto
 iEquip_HelpMenu property HM auto
 iEquip_TorchScript property TO auto
 iEquip_ThrowingPoisons property TP auto
+iEquip_EquipLastItem property EL auto
 
 Actor property PlayerRef  auto
 
@@ -38,6 +39,9 @@ int property iQuickRestoreKey = -1 auto hidden
 int property iQuickShieldKey = -1 auto hidden
 int property iQuickRangedKey = -1 auto hidden
 int property iThrowingPoisonsKey = -1 auto hidden
+
+; Equip Last Item key
+int property iEquipLastItemKey = -1 auto hidden
 
 ; Edit Mode Keys
 int property iEditNextKey = 55 auto hidden ;Num *
@@ -92,13 +96,15 @@ string sPreviousState
 event onInit()
     aiGPPComboKeys = new int[4]
     aiExtKbKeys = new int[6]
-    aiSingleFunctionKeys = new int[6]
+    aiSingleFunctionKeys = new int[7]
     int i
-    while i < 6
-        if i < 4
-           aiGPPComboKeys[i] = -1
+    while i < 7
+        if i < 6
+            aiExtKbKeys[i] = -1
+            if i < 4
+               aiGPPComboKeys[i] = -1
+            endIf
         endIf
-        aiExtKbKeys[i] = -1
         aiSingleFunctionKeys[i] = -1
         i += 1
     endWhile
@@ -250,8 +256,14 @@ function updateExtKbKeysArray()
         aiExtKbKeys[4] = -1
         aiExtKbKeys[5] = -1
     endIf
-    aiSingleFunctionKeys = aiExtKbKeys
+    aiSingleFunctionKeys = new int[7]
     aiSingleFunctionKeys[0] = iThrowingPoisonsKey
+    int i = 1
+    while i < 6
+        aiSingleFunctionKeys[i] = aiExtKbKeys[i]
+        i += 1
+    endWhile
+    aiSingleFunctionKeys[6] = iEquipLastItemKey
 endFunction
 
 bool property bPlayerIsABeast
@@ -283,6 +295,8 @@ event OnMenuOpen(string MenuName)
         if MenuName == "FavoritesMenu" && bIsGPPLoaded
             registerForGPPKeys()
         endIf
+    elseIf (MenuName == "BarterMenu" || MenuName == "Crafting Menu")
+        GoToState("EQUIPLASTITEMONLY")
     else
         GoToState("DISABLED")
     endIf
@@ -484,6 +498,8 @@ function runUpdate()
             TO.quickLight()
         elseIf iWaitingKeyCode == iThrowingPoisonsKey
             TP.OnThrowingPoisonKeyPressed()
+        elseIf iWaitingKeyCode == iEquipLastItemKey
+            EL.useLast(bIsUtilityKeyHeld)
         
         ; Extended Keyboard Controls
         elseIf iWaitingKeyCode == iConsumeItemKey && bExtendedKbControlsEnabled && WC.bConsumablesEnabled
@@ -674,6 +690,21 @@ state INVENTORYMENU
             bAllowKeyPress = true
         endIf
         ;debug.trace("iEquip_KeyHandler OnKeyDown INVENTORYMENU end")
+    endEvent
+endState
+
+state EQUIPLASTITEMONLY
+    event OnKeyDown(int KeyCode)
+        if KeyCode == iEquipLastItemKey
+         
+            if bAllowKeyPress && !UI.IsTextInputEnabled()
+                bAllowKeyPress = false
+                bool useLeft = Input.isKeyPressed(iUtilityKey)
+                EL.useLast(useLeft)
+                
+                bAllowKeyPress = true
+            endIf
+        endIf
     endEvent
 endState
 
@@ -874,6 +905,9 @@ function RegisterForGameplayKeys()
     endIf
     if iThrowingPoisonsKey != -1
         RegisterForKey(iThrowingPoisonsKey)
+    endIf
+    if iEquipLastItemKey != -1
+        RegisterForKey(iEquipLastItemKey)
     endIf
     if bExtendedKbControlsEnabled
         if iConsumeItemKey != -1

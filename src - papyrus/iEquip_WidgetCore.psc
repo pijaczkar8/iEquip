@@ -187,6 +187,9 @@ bool bIsOrdinatorLoaded
 ; Adamant
 bool bIsAdamantLoaded
 
+; Vokrii
+bool bIsVokriiLoaded
+
 ; Zim's Immersive Artifacts support
 bool bIsZIALoaded
 weapon[] aZIAAltUniques
@@ -1092,6 +1095,9 @@ function CheckDependencies()
 
     ; Adamant
     bIsAdamantLoaded = Game.GetModByName("Adamant.esp") != 255
+
+    ; Vokrii
+    bIsVokriiLoaded = Game.GetModByName("Vokrii - Minimalistic Perks of Skyrim.esp") != 255
 
     ; Thunderchild
     EH.bIsThunderchildLoaded = Game.GetModByName("Thunderchild - Epic Shout Package.esp") != 255
@@ -4760,6 +4766,15 @@ function applyPoison(int Q)
 		        	AdditionalDoses = 4
 		        	if PlayerRef.HasPerk(Game.GetFormFromFile(0x0037B9F1, "Adamant.esp") as Perk) 					; MAG_Intensity60 - Intensity Lvl 2 - Plus an additional 5 hits
 		        		AdditionalDoses = 9
+		        	endIf
+
+		        elseIf bIsVokriiLoaded && PlayerRef.HasPerk(ConcentratedPoison) 													; VKR_Alc_040_ConcentratedPoison1_Perk_WasConcentratedPoison - Plus 2 hits
+		        	AdditionalDoses = 2
+		        	if PlayerRef.HasPerk(Game.GetFormFromFile(0x003120F8, "Vokrii - Minimalistic Perks of Skyrim.esp") as Perk) 	; VKR_Alc_040_ConcentratedPoison2_Perk - Plus an additional 4 hits
+		        		AdditionalDoses = 4
+		        	endIf
+		        	if PlayerRef.HasPerk(Game.GetFormFromFile(0x003120F9, "Vokrii - Minimalistic Perks of Skyrim.esp") as Perk) 	; VKR_Alc_040_ConcentratedPoison3_Perk - Plus an additional 6 hits
+		        		AdditionalDoses = 6
 		        	endIf
 		        
 		        elseIf PlayerRef.HasPerk(ConcentratedPoison)													; If the player has the Concentrated Poison perk

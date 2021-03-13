@@ -133,6 +133,8 @@ function drawPage()
     MCM.AddTextOptionST("inf_txt_ud", "$iEquip_MCM_inf_lbl_ud", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Vigor - Combat and Injuries (SE).esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_vig", "$iEquip_MCM_inf_lbl_vig", modStates[modFound], aiFlags[modFound])
+    modFound = (Game.GetModByName("Vokrii - Minimalistic Perks of Skyrim.esp") != 255) as int
+    MCM.AddTextOptionST("inf_txt_vok", "$iEquip_MCM_inf_lbl_vok", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("WardsFunctionalitiesExtended.esp") != 255) as int
     MCM.AddTextOptionST("inf_txt_wf", "$iEquip_MCM_inf_lbl_wf", modStates[modFound], aiFlags[modFound])
     modFound = (Game.GetModByName("Wintersun - Faiths of Skyrim.esp") != 255) as int
@@ -443,6 +445,14 @@ State inf_txt_vig
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_inf_txt_vig")
+        endIf 
+    endEvent
+endState
+
+State inf_txt_vok
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_inf_txt_vok")
         endIf 
     endEvent
 endState
