@@ -8,7 +8,6 @@ iEquip_PotionScript Property PO auto
 Actor Property PlayerRef Auto
 Keyword Property ArmorShield Auto
 Sound Property vSpellLearned Auto
-int property shieldMask = 0x200 autoreadonly
 
 EquipSlot RightHand
 EquipSlot LeftHand
@@ -27,9 +26,11 @@ bool bEnabled
 
 bool property DEST auto
 
-int property defaultBehavior = 0 autoreadonly
-int property forceRight = 1 autoreadonly
-int property forceLeft = 2 autoreadonly
+;int property defaultBehavior = 0 autoreadonly
+int forceRight = 1
+int forceLeft = 2
+
+int shieldMask = 0x200
 
 ;weapons, ammo and shields
 bool property handle1HWeapons = true auto hidden
@@ -69,7 +70,7 @@ function initialise()
 	persistent = new bool[128]
 	addedRefs = new ObjectReference[128]
 	
-	GameLoaded()
+	OnWidgetLoad()
 endFunction
 
 bool property isEnabled
@@ -87,7 +88,7 @@ bool property isEnabled
 	endFunction
 EndProperty
 
-function GameLoaded()
+function OnWidgetLoad()
 	if bEnabled
 		goToState("WAITING")
 	else
@@ -213,7 +214,7 @@ function useLast(bool useLeft)
 		if(PlayerRef.getItemCount(lastItem) > 0 || PlayerRef.hasSpell(lastItem as Spell))
 			if(lastItem as Weapon) ;weapon - pass to iequip
 				Weapon lastWeapon = lastItem as Weapon
-				int force = defaultBehavior
+				int force ; = defaultBehavior
 				int wt = lastWeapon.getWeaponType()
 				if((wt >= 1 && wt <= 4) || wt == 8) ; one-handed weapons
 					if(useLeft)

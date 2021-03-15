@@ -37,6 +37,7 @@ iEquip_AddedItemHandler property AD auto
 iEquip_TemperedItemHandler Property TI Auto
 iEquip_MCM property MCM auto
 iEquip_WidgetVisUpdateScript property WVis auto
+iEquip_EquipLastItem property EL auto
 
 iEquip_LeftHandEquipUpdateScript property LHUpdate auto
 iEquip_RightHandEquipUpdateScript property RHUpdate auto
@@ -1224,6 +1225,7 @@ state ENABLED
 		addPotionGroups()
 		EH.initialise(bEnabled)					; This then also initialises BeastMode, BoundWeaponEventsListener, PotionScript, and TemperedItemHandler
         AD.initialise(bEnabled)
+        EL.initialise()
 		
 		self.RegisterForMenu("InventoryMenu")
 		self.RegisterForMenu("MagicMenu")
@@ -1281,6 +1283,7 @@ state ENABLED
 		AM.OnWidgetLoad()
 		CM.OnWidgetLoad()
 		TP.OnWidgetLoad()
+		EL.OnWidgetLoad()
 		
 		OnWidgetReset()
 
@@ -1389,6 +1392,7 @@ Auto state DISABLED
 		bIsFirstEnabled = true
 		EH.initialise(bEnabled)
         AD.initialise(bEnabled)
+        EL.isEnabled = false
 	
 		self.UnregisterForAllMenus()
 		KH.UnregisterForAllKeys()

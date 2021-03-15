@@ -78,6 +78,8 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, WC.bAutoEquipHardcore as int)
     jArray.addInt(jPageObj, WC.bAutoEquipDontDropFavorites as int)
 	
+    
+
     jArray.addInt(jPageObj, PM.bQuickShieldEnabled as int)
     jArray.addInt(jPageObj, PM.bQuickShield2HSwitchAllowed as int)
     jArray.addInt(jPageObj, PM.iQuickShieldPreferredItemType as int)
@@ -105,22 +107,41 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
     WC.bAutoEquipHardcore = jArray.getInt(jPageObj, 4)
     WC.bAutoEquipDontDropFavorites = jArray.getInt(jPageObj, 5)
 
-    PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 6)
-    PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 7)
-    PM.iQuickShieldPreferredItemType = jArray.getInt(jPageObj, 8)
-    iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 9)
-    PM.sQuickShieldPreferredMagicSchool = asMagicSchools[iCurrentQSPreferredMagicSchoolChoice]
-    PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 10)
-    PM.iPreselectQuickShield = jArray.getInt(jPageObj, 11)
+    if presetVersion < 162
+        PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 6)
+        PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 7)
+        PM.iQuickShieldPreferredItemType = jArray.getInt(jPageObj, 8)
+        iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 9)
+        PM.sQuickShieldPreferredMagicSchool = asMagicSchools[iCurrentQSPreferredMagicSchoolChoice]
+        PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 10)
+        PM.iPreselectQuickShield = jArray.getInt(jPageObj, 11)
 
-    WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 12)
-    WC.abQuickDualCastSchoolAllowed[0] = jArray.getInt(jPageObj, 13)
-    WC.abQuickDualCastSchoolAllowed[1] = jArray.getInt(jPageObj, 14)
-    WC.abQuickDualCastSchoolAllowed[2] = jArray.getInt(jPageObj, 15)
-    WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 16)
-    WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 17)
-    PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 18)
+        WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 12)
+        WC.abQuickDualCastSchoolAllowed[0] = jArray.getInt(jPageObj, 13)
+        WC.abQuickDualCastSchoolAllowed[1] = jArray.getInt(jPageObj, 14)
+        WC.abQuickDualCastSchoolAllowed[2] = jArray.getInt(jPageObj, 15)
+        WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 16)
+        WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 17)
+        PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 18)
+    else
 
+
+        PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 6)
+        PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 7)
+        PM.iQuickShieldPreferredItemType = jArray.getInt(jPageObj, 8)
+        iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 9)
+        PM.sQuickShieldPreferredMagicSchool = asMagicSchools[iCurrentQSPreferredMagicSchoolChoice]
+        PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 10)
+        PM.iPreselectQuickShield = jArray.getInt(jPageObj, 11)
+
+        WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 12)
+        WC.abQuickDualCastSchoolAllowed[0] = jArray.getInt(jPageObj, 13)
+        WC.abQuickDualCastSchoolAllowed[1] = jArray.getInt(jPageObj, 14)
+        WC.abQuickDualCastSchoolAllowed[2] = jArray.getInt(jPageObj, 15)
+        WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 16)
+        WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 17)
+        PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 18)
+    endIf
 endFunction
 
 function drawPage()
@@ -137,6 +158,9 @@ function drawPage()
             MCM.AddToggleOptionST("eqp_tgl_dontDropFavorites", "$iEquip_MCM_eqp_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
         endIf
     endIf
+    
+    MCM.AddEmptyOption()
+    
 
     MCM.SetCursorPosition(1)
 

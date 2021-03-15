@@ -47,11 +47,11 @@ bool bUsePaperColours
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 161  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 162  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 161 && CurrentVersion < 161)
+    if (a_version >= 162 && CurrentVersion < 162)
         OnConfigInit()
     endIf
 endEvent
@@ -392,9 +392,7 @@ function loadPreset(string presetName, bool bNoExt = false) ; Load MCM data
             WC.bMCMPresetLoaded = true
 
             if presetVersion < GetVersion() ; If we've just loaded an older preset delete it and resave to update to the current version so all new settings are included
-                deletePreset(presetName)
-                savePreset(presetName)
-                ShowMessage("$iEquip_MCM_msg_presetUpdated", false)
+                updatePreset(presetName)
             endIf
 
             bBusy = false
@@ -407,6 +405,7 @@ endFunction
 function updatePreset(string presetName)
     deletePreset(presetName)
     savePreset(presetName)
+    ShowMessage("$iEquip_MCM_msg_presetUpdated", false)
 endFunction
 
 function deletePreset(string presetName)

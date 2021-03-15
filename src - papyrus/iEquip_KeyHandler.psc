@@ -295,7 +295,7 @@ event OnMenuOpen(string MenuName)
         if MenuName == "FavoritesMenu" && bIsGPPLoaded
             registerForGPPKeys()
         endIf
-    elseIf (MenuName == "BarterMenu" || MenuName == "Crafting Menu")
+    elseIf (MenuName == "BarterMenu" || MenuName == "Crafting Menu") && EL.isEnabled
         GoToState("EQUIPLASTITEMONLY")
     else
         GoToState("DISABLED")
