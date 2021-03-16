@@ -3,6 +3,10 @@ Scriptname iEquip_MCM_eqp extends iEquip_MCM_Page
 import iEquip_StringExt
 
 iEquip_ProMode Property PM Auto
+iEquip_EquipLastItem Property EL Auto
+iEquip_KeyHandler Property KH Auto
+
+int mcmUnmapFLAG
 
 string[] autoEquipOptions
 string[] whenToAutoEquipOptions
@@ -21,6 +25,7 @@ int iCurrentQSPreferredMagicSchoolChoice = 2
 ; ### SETUP ###
 
 function initData()
+    mcmUnmapFLAG = MCM.OPTION_FLAG_WITH_UNMAP
     
     autoEquipOptions = new string[4]
     autoEquipOptions[0] = "$iEquip_MCM_common_opt_disabled"
@@ -78,7 +83,25 @@ int function saveData()             ; Save page data and return jObject
     jArray.addInt(jPageObj, WC.bAutoEquipHardcore as int)
     jArray.addInt(jPageObj, WC.bAutoEquipDontDropFavorites as int)
 	
-    
+    jArray.addInt(jPageObj, EL.isEnabled as int)
+    jArray.addInt(jPageObj, KH.iEquipLastItemKey)
+    jArray.addFlt(jPageObj, EL.fQueueTimeout)
+    jArray.addInt(jPageObj, EL.bHandle1HWeapons as int)
+    jArray.addInt(jPageObj, EL.bHandle2HWeapons as int)
+    jArray.addInt(jPageObj, EL.bHandleRanged as int)
+    jArray.addInt(jPageObj, EL.bHandleAmmo as int)
+    jArray.addInt(jPageObj, EL.bHandleStaves as int)
+    jArray.addInt(jPageObj, EL.bHandleShields as int)
+    jArray.addInt(jPageObj, EL.bHandleLightArmor as int)
+    jArray.addInt(jPageObj, EL.bHandleHeavyArmor as int)
+    jArray.addInt(jPageObj, EL.bHandleClothing as int)
+    jArray.addInt(jPageObj, EL.bHandlePotions as int)
+    jArray.addInt(jPageObj, EL.bHandlePoisons as int)
+    jArray.addInt(jPageObj, EL.bHandleFood as int)
+    jArray.addInt(jPageObj, EL.bHandleSpellTomes as int)
+    jArray.addInt(jPageObj, EL.bHandlePersistentBooks as int)
+    jArray.addInt(jPageObj, EL.bHandleScrolls as int)
+    jArray.addInt(jPageObj, EL.bHandleIngredients as int)
 
     jArray.addInt(jPageObj, PM.bQuickShieldEnabled as int)
     jArray.addInt(jPageObj, PM.bQuickShield2HSwitchAllowed as int)
@@ -124,32 +147,50 @@ function loadData(int jPageObj, int presetVersion)     ; Load page data from jPa
         WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 17)
         PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 18)
     else
+        EL.isEnabled = jArray.getInt(jPageObj, 6)
+        KH.iEquipLastItemKey = jArray.getInt(jPageObj, 7)
+        EL.fQueueTimeout = jArray.getFlt(jPageObj, 8)
+        EL.bHandle1HWeapons = jArray.getInt(jPageObj, 9)
+        EL.bHandle2HWeapons = jArray.getInt(jPageObj, 10)
+        EL.bHandleRanged = jArray.getInt(jPageObj, 11)
+        EL.bHandleAmmo = jArray.getInt(jPageObj, 12)
+        EL.bHandleStaves = jArray.getInt(jPageObj, 13)
+        EL.bHandleShields = jArray.getInt(jPageObj, 14)
+        EL.bHandleLightArmor = jArray.getInt(jPageObj, 15)
+        EL.bHandleHeavyArmor = jArray.getInt(jPageObj, 16)
+        EL.bHandleClothing = jArray.getInt(jPageObj, 17)
+        EL.bHandlePotions = jArray.getInt(jPageObj, 18)
+        EL.bHandlePoisons = jArray.getInt(jPageObj, 19)
+        EL.bHandleFood = jArray.getInt(jPageObj, 20)
+        EL.bHandleSpellTomes = jArray.getInt(jPageObj, 21)
+        EL.bHandlePersistentBooks = jArray.getInt(jPageObj, 22)
+        EL.bHandleScrolls = jArray.getInt(jPageObj, 23)
+        EL.bHandleIngredients = jArray.getInt(jPageObj, 24)
 
-
-        PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 6)
-        PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 7)
-        PM.iQuickShieldPreferredItemType = jArray.getInt(jPageObj, 8)
-        iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 9)
+        PM.bQuickShieldEnabled = jArray.getInt(jPageObj, 25)
+        PM.bQuickShield2HSwitchAllowed = jArray.getInt(jPageObj, 26)
+        PM.iQuickShieldPreferredItemType = jArray.getInt(jPageObj, 27)
+        iCurrentQSPreferredMagicSchoolChoice = jArray.getInt(jPageObj, 28)
         PM.sQuickShieldPreferredMagicSchool = asMagicSchools[iCurrentQSPreferredMagicSchoolChoice]
-        PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 10)
-        PM.iPreselectQuickShield = jArray.getInt(jPageObj, 11)
+        PM.bQuickShieldUnequipLeftIfNotFound = jArray.getInt(jPageObj, 29)
+        PM.iPreselectQuickShield = jArray.getInt(jPageObj, 30)
 
-        WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 12)
-        WC.abQuickDualCastSchoolAllowed[0] = jArray.getInt(jPageObj, 13)
-        WC.abQuickDualCastSchoolAllowed[1] = jArray.getInt(jPageObj, 14)
-        WC.abQuickDualCastSchoolAllowed[2] = jArray.getInt(jPageObj, 15)
-        WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 16)
-        WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 17)
-        PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 18)
+        WC.bQuickDualCastEnabled = jArray.getInt(jPageObj, 31)
+        WC.abQuickDualCastSchoolAllowed[0] = jArray.getInt(jPageObj, 32)
+        WC.abQuickDualCastSchoolAllowed[1] = jArray.getInt(jPageObj, 33)
+        WC.abQuickDualCastSchoolAllowed[2] = jArray.getInt(jPageObj, 34)
+        WC.abQuickDualCastSchoolAllowed[3] = jArray.getInt(jPageObj, 35)
+        WC.abQuickDualCastSchoolAllowed[4] = jArray.getInt(jPageObj, 36)
+        PM.bQuickDualCastMustBeInBothQueues = jArray.getInt(jPageObj, 37)
     endIf
 endFunction
 
 function drawPage()
 
     MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_eqp_lbl_AutoEquip</font>")
-    MCM.AddMenuOptionST("eqp_men_enableAutoEquip", "$iEquip_MCM_eqp_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
 
     if WC.iAutoEquipEnabled > 0
+        MCM.AddMenuOptionST("eqp_men_enableAutoEquip", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_eqp_lbl_enableAutoEquip</font>", autoEquipOptions[WC.iAutoEquipEnabled])
         MCM.AddMenuOptionST("eqp_men_whenToAutoEquip", "$iEquip_MCM_eqp_lbl_whenToAutoEquip", whenToAutoEquipOptions[WC.iAutoEquip])
         MCM.AddMenuOptionST("eqp_men_currItemEnch", "$iEquip_MCM_eqp_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
         MCM.AddMenuOptionST("eqp_men_currItemPois", "$iEquip_MCM_eqp_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
@@ -157,10 +198,37 @@ function drawPage()
         if WC.bAutoEquipHardcore
             MCM.AddToggleOptionST("eqp_tgl_dontDropFavorites", "$iEquip_MCM_eqp_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
         endIf
+    else
+        MCM.AddMenuOptionST("eqp_men_enableAutoEquip", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_eqp_lbl_enableAutoEquip</font>", autoEquipOptions[WC.iAutoEquipEnabled])
     endIf
     
-    MCM.AddEmptyOption()
-    
+    ;MCM.AddEmptyOption()
+    MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_eqp_lbl_EquipLastItem</font>")
+
+    if EL.isEnabled
+        MCM.AddToggleOptionST("eqp_tgl_enableEquipLastItem", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_eqp_lbl_enableEquipLastItem</font>", EL.isEnabled)
+        MCM.AddKeyMapOptionST("eqp_key_equipLastItemKey", "$iEquip_MCM_eqp_lbl_equipLastItemKey", KH.iEquipLastItemKey, mcmUnmapFLAG)
+        MCM.AddSliderOptionST("eqp_sld_equipLastItemTimeout", "$iEquip_MCM_eqp_lbl_equipLastItemTimeout", EL.fQueueTimeout, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        MCM.AddTextOptionST("eqp_txt_itemsToHandle", "$iEquip_MCM_eqp_lbl_itemsToHandle", "")
+        MCM.AddToggleOptionST("eqp_tgl_handle1H", "$iEquip_MCM_eqp_lbl_handle1H", EL.bHandle1HWeapons)
+        MCM.AddToggleOptionST("eqp_tgl_handle2H", "$iEquip_MCM_eqp_lbl_handle2H", EL.bHandle2HWeapons)
+        MCM.AddToggleOptionST("eqp_tgl_handleRanged", "$iEquip_MCM_eqp_lbl_handleRanged", EL.bHandleRanged)
+        MCM.AddToggleOptionST("eqp_tgl_handleAmmo", "$iEquip_MCM_eqp_lbl_handleAmmo", EL.bHandleAmmo)
+        MCM.AddToggleOptionST("eqp_tgl_handleStaves", "$iEquip_MCM_eqp_lbl_handleStaves", EL.bHandleStaves)
+        MCM.AddToggleOptionST("eqp_tgl_handleShields", "$iEquip_MCM_eqp_lbl_handleShields", EL.bHandleShields)
+        MCM.AddToggleOptionST("eqp_tgl_handleLightArmor", "$iEquip_MCM_eqp_lbl_handleLightArmor", EL.bHandleLightArmor)
+        MCM.AddToggleOptionST("eqp_tgl_handleHeavyArmor", "$iEquip_MCM_eqp_lbl_handleHeavyArmor", EL.bHandleHeavyArmor)
+        MCM.AddToggleOptionST("eqp_tgl_handleClothing", "$iEquip_MCM_eqp_lbl_handleClothing", EL.bHandleClothing)
+        MCM.AddToggleOptionST("eqp_tgl_handlePotions", "$iEquip_MCM_eqp_lbl_handlePotions", EL.bHandlePotions)
+        MCM.AddToggleOptionST("eqp_tgl_handlePoisons", "$iEquip_MCM_eqp_lbl_handlePoisons", EL.bHandlePoisons)
+        MCM.AddToggleOptionST("eqp_tgl_handleFood", "$iEquip_MCM_eqp_lbl_handleFood", EL.bHandleFood)
+        MCM.AddToggleOptionST("eqp_tgl_handleSpellTomes", "$iEquip_MCM_eqp_lbl_handleSpellTomes", EL.bHandleSpellTomes)
+        MCM.AddToggleOptionST("eqp_tgl_handlePersistentBooks", "$iEquip_MCM_eqp_lbl_handlePersistentBooks", EL.bHandlePersistentBooks)
+        MCM.AddToggleOptionST("eqp_tgl_handleScrolls", "$iEquip_MCM_eqp_lbl_handleScrolls", EL.bHandleScrolls)
+        MCM.AddToggleOptionST("eqp_tgl_handleIngredients", "$iEquip_MCM_eqp_lbl_handleIngredients", EL.bHandleIngredients)
+    else
+        MCM.AddToggleOptionST("eqp_tgl_enableEquipLastItem", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_eqp_lbl_enableEquipLastItem</font>", EL.isEnabled)
+    endIf
 
     MCM.SetCursorPosition(1)
 
@@ -283,6 +351,206 @@ State eqp_tgl_dontDropFavorites
         elseIf currentEvent == "Select" || (currentEvent == "Default" && !WC.bAutoEquipDontDropFavorites)
             WC.bAutoEquipDontDropFavorites = !WC.bAutoEquipDontDropFavorites
             MCM.SetToggleOptionValueST(WC.bAutoEquipDontDropFavorites)
+        endIf
+    endEvent
+endState
+
+; ---------------------------
+; - Equip Last Item Options -
+; ---------------------------
+
+State eqp_tgl_enableEquipLastItem
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_enableEquipLastItem")
+        elseIf currentEvent == "Select"
+            EL.isEnabled = !EL.isEnabled
+            MCM.forcePageReset()
+        endIf
+    endEvent
+endState
+
+State eqp_key_equipLastItemKey
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_equipLastItemKey")
+        elseIf currentEvent == "Change"
+            KH.iEquipLastItemKey = currentVar as int            
+            WC.bUpdateKeyMaps = true
+            MCM.SetKeyMapOptionValueST(KH.iLeftKey)
+        endIf
+    endEvent
+endState
+
+State eqp_sld_equipLastItemTimeout
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_equipLastItemTimeout")
+        elseIf currentEvent == "Open"
+            MCM.fillSlider(EL.fQueueTimeout, 5.0, 120.0, 5.0, 30.0)
+        elseIf currentEvent == "Accept"
+            EL.fQueueTimeout = currentVar
+            MCM.SetSliderOptionValueST(EL.fQueueTimeout, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handle1H
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handle1H")
+        elseIf currentEvent == "Select"
+            EL.bHandle1HWeapons = !EL.bHandle1HWeapons
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handle2H
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handle2H")
+        elseIf currentEvent == "Select"
+            EL.bHandle2HWeapons = !EL.bHandle2HWeapons
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleRanged
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleRanged")
+        elseIf currentEvent == "Select"
+            EL.bHandleRanged = !EL.bHandleRanged
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleAmmo
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleAmmo")
+        elseIf currentEvent == "Select"
+            EL.bHandleAmmo = !EL.bHandleAmmo
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleStaves
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleStaves")
+        elseIf currentEvent == "Select"
+            EL.bHandleStaves = !EL.bHandleStaves
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleShields
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleShields")
+        elseIf currentEvent == "Select"
+            EL.bHandleShields = !EL.bHandleShields
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleLightArmor
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleLightArmor")
+        elseIf currentEvent == "Select"
+            EL.bHandleLightArmor = !EL.bHandleLightArmor
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleHeavyArmor
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleHeavyArmor")
+        elseIf currentEvent == "Select"
+            EL.bHandleHeavyArmor = !EL.bHandleHeavyArmor
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleClothing
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleClothing")
+        elseIf currentEvent == "Select"
+            EL.bHandleClothing = !EL.bHandleClothing
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handlePotions
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handlePotions")
+        elseIf currentEvent == "Select"
+            EL.bHandlePotions = !EL.bHandlePotions
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handlePoisons
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handlePoisons")
+        elseIf currentEvent == "Select"
+            EL.bHandlePoisons = !EL.bHandlePoisons
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleFood
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleFood")
+        elseIf currentEvent == "Select"
+            EL.bHandleFood = !EL.bHandleFood
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleSpellTomes
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleSpellTomes")
+        elseIf currentEvent == "Select"
+            EL.bHandleSpellTomes = !EL.bHandleSpellTomes
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handlePersistentBooks
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handlePersistentBooks")
+        elseIf currentEvent == "Select"
+            EL.bHandlePersistentBooks = !EL.bHandlePersistentBooks
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleScrolls
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleScrolls")
+        elseIf currentEvent == "Select"
+            EL.bHandleScrolls = !EL.bHandleScrolls
+        endIf
+    endEvent
+endState
+
+State eqp_tgl_handleIngredients
+    event OnBeginState()
+        if currentEvent == "Highlight"
+            MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleIngredients")
+        elseIf currentEvent == "Select"
+            EL.bHandleIngredients = !EL.bHandleIngredients
         endIf
     endEvent
 endState

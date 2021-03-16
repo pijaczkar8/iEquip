@@ -2,6 +2,8 @@
 
 Scriptname iEquip_EquipLastItem extends ReferenceAlias
 
+import iEquip_StringExt
+
 iEquip_WidgetCore Property WC auto
 iEquip_PotionScript Property PO auto
 
@@ -33,28 +35,28 @@ int forceLeft = 2
 int shieldMask = 0x200
 
 ;weapons, ammo and shields
-bool property handle1HWeapons = true auto hidden
-bool property handle2HWeapons = true auto hidden
-bool property handleBowsXBows = true auto hidden
-bool property handleAmmo = true auto hidden
-bool property handleStaves = true auto hidden
-bool property handleShields = true auto hidden
+bool property bHandle1HWeapons = true auto hidden
+bool property bHandle2HWeapons = true auto hidden
+bool property bHandleRanged = true auto hidden
+bool property bHandleAmmo = true auto hidden
+bool property bHandleStaves = true auto hidden
+bool property bHandleShields = true auto hidden
 ;armor
-bool property handleLightArmor = true auto hidden
-bool property handleHeavyArmor = true auto hidden
-bool property handleClothing = true auto hidden
+bool property bHandleLightArmor = true auto hidden
+bool property bHandleHeavyArmor = true auto hidden
+bool property bHandleClothing = true auto hidden
 ;potions
-bool property handlePotions = true auto hidden
-bool property handlePoisons = true auto hidden
-bool property handleFood = true auto hidden
+bool property bHandlePotions = true auto hidden
+bool property bHandlePoisons = true auto hidden
+bool property bHandleFood = true auto hidden
 ;books
-bool property handleSpellTomes = true auto hidden
-bool property handlePersistentBooks = false auto hidden
+bool property bHandleSpellTomes = true auto hidden
+bool property bHandlePersistentBooks = false auto hidden
 ;other
-bool property handleScrolls = true auto hidden
-bool property handleIngredients = true auto hidden
+bool property bHandleScrolls = true auto hidden
+bool property bHandleIngredients = true auto hidden
 
-float property queueTimeout = 30.0 auto
+float property fQueueTimeout = 30.0 auto
 
 bool clearWhenDone
 
@@ -99,7 +101,7 @@ endFunction
 Form Property lastItem
 	Form function get()
 		;debug.trace("iEquip_EquipLastItem - Requested item: " + addedItems[currentIndex].getName())
-		registerForSingleUpdate(queueTimeout)
+		registerForSingleUpdate(fQueueTimeout)
 		return addedItems[currentIndex]
 	endFunction
 endProperty
@@ -122,24 +124,24 @@ state WAITING
 		bool add = false
 		if(akBaseItem as Weapon)
 			int wt = (akBaseItem as Weapon).getWeaponType()
-			add = (handle1HWeapons && (wt >= 1 && wt <= 4)) || (handle2HWeapons && (wt == 5 || wt == 6)) || (handleBowsXBows && (wt == 7 || wt == 9)) || (handleStaves && wt == 8)
+			add = (bHandle1HWeapons && (wt >= 1 && wt <= 4)) || (bHandle2HWeapons && (wt == 5 || wt == 6)) || (bHandleRanged && (wt == 7 || wt == 9)) || (bHandleStaves && wt == 8)
 		elseif(akBaseItem as Ammo)
-			add = handleAmmo
+			add = bHandleAmmo
 		elseif(akBaseItem as Armor)
 			int weight = (akBaseItem as Armor).getWeightClass()
 			bool notShield = Math.LogicalAnd(shieldMask, (akBaseItem as Armor).getSlotMask()) == 0
-			add = (notShield || handleShields) && ((handleLightArmor && weight == 0) || (handleHeavyArmor && weight == 1) || (handleClothing && weight == 2))
+			add = (notShield || bHandleShields) && ((bHandleLightArmor && weight == 0) || (bHandleHeavyArmor && weight == 1) || (bHandleClothing && weight == 2))
 		elseif(akBaseItem as Potion)
 			bool isFood = (akBaseItem as Potion).isFood()
 			bool isPoison = (akBaseItem as Potion).isPoison()
 			bool isPotion = !isFood && !isPoison
-			add = (handlePotions && isPotion) || (handlePoisons && isPoison) || (handleFood && isFood)
+			add = (bHandlePotions && isPotion) || (bHandlePoisons && isPoison) || (bHandleFood && isFood)
 		elseif(akBaseItem as Book)
-			add = (handleSpellTomes && (akBaseItem as Book).getSpell()) || (handlePersistentBooks && akItemReference)
+			add = (bHandleSpellTomes && (akBaseItem as Book).getSpell()) || (bHandlePersistentBooks && akItemReference)
 		elseif(akBaseItem as Scroll)
-			add = handleScrolls
+			add = bHandleScrolls
 		elseif(akBaseItem as Ingredient)
-			add = handleIngredients
+			add = bHandleIngredients
 		endIf
 		if(add)
 			addItemToQueue(akBaseItem, akItemReference)
@@ -187,7 +189,7 @@ function addItemToQueue(Form akBaseItem, ObjectReference akItemReference = None)
 		startIndex = (startIndex + 1) % 128
 	endIf
 	;debug.trace("iEquip_EquipLastItem - Added item " + akBaseItem.getName() + " at index " + currentIndex + ".")
-	registerForSingleUpdate(queueTimeout)
+	registerForSingleUpdate(fQueueTimeout)
 endFunction
 
 function clearLastItem()
@@ -234,7 +236,7 @@ function useLast(bool useLeft)
 				WC.onWeaponOrShieldAdded(lastItem, force)
 			elseif(lastItem as Armor && lastItem.hasKeyword(ArmorShield)) ;shield - pass to iequip
 				WC.onWeaponOrShieldAdded(lastItem, forceLeft)
-			elseif(lastItem as Armor || lastItem as Ammo || lastItem as Ingredient) ;simple item - just equip directly
+			elseif(lastItem as Armor || (lastItem as Ammo && (!WC.bAmmoMode || ((PlayerRef.GetEquippedItemType(1) == 7 && !(lastItem as Ammo).IsBolt()) || (PlayerRef.GetEquippedItemType(1) == 12 && (lastItem as Ammo).IsBolt())))) || lastItem as Ingredient) ;simple item - just equip directly
 				PlayerRef.equipItem(lastItem)
 			elseif(lastItem as Book) ;only persistent books or spell tomes added, read or add spell to player and queue
 				Book lastBook = lastItem as Book
@@ -294,6 +296,6 @@ function useLast(bool useLeft)
 			clearLastItem()
 		endIf
 	else
-		debug.notification("The added items queue is empty.")
+		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_EL_not_noItems"))
 	endIf
 endFunction
