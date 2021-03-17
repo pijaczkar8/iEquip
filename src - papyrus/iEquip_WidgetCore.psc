@@ -907,6 +907,10 @@ function checkVersion()
         	bSkipUnarmedInCombat = bSkipRHUnarmedInCombat
         endIf
 
+         if fCurrentVersion < 1.6 && bEnabled
+        	EL.initialise()
+        endIf
+
         bShowVersionUpdateNotification = true
     endIf
     fCurrentVersion = fThisVersion

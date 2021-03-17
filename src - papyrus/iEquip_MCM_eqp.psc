@@ -208,8 +208,8 @@ function drawPage()
     if EL.isEnabled
         MCM.AddToggleOptionST("eqp_tgl_enableEquipLastItem", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_eqp_lbl_enableEquipLastItem</font>", EL.isEnabled)
         MCM.AddKeyMapOptionST("eqp_key_equipLastItemKey", "$iEquip_MCM_eqp_lbl_equipLastItemKey", KH.iEquipLastItemKey, mcmUnmapFLAG)
-        MCM.AddSliderOptionST("eqp_sld_equipLastItemTimeout", "$iEquip_MCM_eqp_lbl_equipLastItemTimeout", EL.fQueueTimeout, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
-        MCM.AddTextOptionST("eqp_txt_itemsToHandle", "$iEquip_MCM_eqp_lbl_itemsToHandle", "")
+        MCM.AddSliderOptionST("eqp_sld_equipLastItemTimeout", "$iEquip_MCM_eqp_lbl_equipLastItemTimeout", EL.fQueueTimeout / 60, "{2} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
+        MCM.AddTextOptionST("eqp_txt_itemsToHandle", "<font color='"+MCM.helpColour+"'>$iEquip_MCM_eqp_lbl_itemsToHandle</font>", "")
         MCM.AddToggleOptionST("eqp_tgl_handle1H", "$iEquip_MCM_eqp_lbl_handle1H", EL.bHandle1HWeapons)
         MCM.AddToggleOptionST("eqp_tgl_handle2H", "$iEquip_MCM_eqp_lbl_handle2H", EL.bHandle2HWeapons)
         MCM.AddToggleOptionST("eqp_tgl_handleRanged", "$iEquip_MCM_eqp_lbl_handleRanged", EL.bHandleRanged)
@@ -377,7 +377,7 @@ State eqp_key_equipLastItemKey
         elseIf currentEvent == "Change"
             KH.iEquipLastItemKey = currentVar as int            
             WC.bUpdateKeyMaps = true
-            MCM.SetKeyMapOptionValueST(KH.iLeftKey)
+            MCM.SetKeyMapOptionValueST(KH.iEquipLastItemKey)
         endIf
     endEvent
 endState
@@ -387,10 +387,10 @@ State eqp_sld_equipLastItemTimeout
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_equipLastItemTimeout")
         elseIf currentEvent == "Open"
-            MCM.fillSlider(EL.fQueueTimeout, 5.0, 120.0, 5.0, 30.0)
+            MCM.fillSlider(EL.fQueueTimeout / 60, 0.5, 10.0, 0.5, 0.5)
         elseIf currentEvent == "Accept"
-            EL.fQueueTimeout = currentVar
-            MCM.SetSliderOptionValueST(EL.fQueueTimeout, "{1} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_seconds"))
+            EL.fQueueTimeout = currentVar * 60
+            MCM.SetSliderOptionValueST(EL.fQueueTimeout / 60, "{2} " + iEquip_StringExt.LocalizeString("$iEquip_MCM_common_minutes"))
         endIf
     endEvent
 endState
@@ -401,6 +401,7 @@ State eqp_tgl_handle1H
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handle1H")
         elseIf currentEvent == "Select"
             EL.bHandle1HWeapons = !EL.bHandle1HWeapons
+            MCM.SetToggleOptionValueST(EL.bHandle1HWeapons)
         endIf
     endEvent
 endState
@@ -411,6 +412,7 @@ State eqp_tgl_handle2H
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handle2H")
         elseIf currentEvent == "Select"
             EL.bHandle2HWeapons = !EL.bHandle2HWeapons
+            MCM.SetToggleOptionValueST(EL.bHandle2HWeapons)
         endIf
     endEvent
 endState
@@ -421,6 +423,7 @@ State eqp_tgl_handleRanged
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleRanged")
         elseIf currentEvent == "Select"
             EL.bHandleRanged = !EL.bHandleRanged
+            MCM.SetToggleOptionValueST(EL.bHandleRanged)
         endIf
     endEvent
 endState
@@ -431,6 +434,7 @@ State eqp_tgl_handleAmmo
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleAmmo")
         elseIf currentEvent == "Select"
             EL.bHandleAmmo = !EL.bHandleAmmo
+            MCM.SetToggleOptionValueST(EL.bHandleAmmo)
         endIf
     endEvent
 endState
@@ -441,6 +445,7 @@ State eqp_tgl_handleStaves
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleStaves")
         elseIf currentEvent == "Select"
             EL.bHandleStaves = !EL.bHandleStaves
+            MCM.SetToggleOptionValueST(EL.bHandleStaves)
         endIf
     endEvent
 endState
@@ -451,6 +456,7 @@ State eqp_tgl_handleShields
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleShields")
         elseIf currentEvent == "Select"
             EL.bHandleShields = !EL.bHandleShields
+            MCM.SetToggleOptionValueST(EL.bHandleShields)
         endIf
     endEvent
 endState
@@ -461,6 +467,7 @@ State eqp_tgl_handleLightArmor
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleLightArmor")
         elseIf currentEvent == "Select"
             EL.bHandleLightArmor = !EL.bHandleLightArmor
+            MCM.SetToggleOptionValueST(EL.bHandleLightArmor)
         endIf
     endEvent
 endState
@@ -471,6 +478,7 @@ State eqp_tgl_handleHeavyArmor
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleHeavyArmor")
         elseIf currentEvent == "Select"
             EL.bHandleHeavyArmor = !EL.bHandleHeavyArmor
+            MCM.SetToggleOptionValueST(EL.bHandleHeavyArmor)
         endIf
     endEvent
 endState
@@ -481,6 +489,7 @@ State eqp_tgl_handleClothing
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleClothing")
         elseIf currentEvent == "Select"
             EL.bHandleClothing = !EL.bHandleClothing
+            MCM.SetToggleOptionValueST(EL.bHandleClothing)
         endIf
     endEvent
 endState
@@ -491,6 +500,7 @@ State eqp_tgl_handlePotions
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handlePotions")
         elseIf currentEvent == "Select"
             EL.bHandlePotions = !EL.bHandlePotions
+            MCM.SetToggleOptionValueST(EL.bHandlePotions)
         endIf
     endEvent
 endState
@@ -501,6 +511,7 @@ State eqp_tgl_handlePoisons
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handlePoisons")
         elseIf currentEvent == "Select"
             EL.bHandlePoisons = !EL.bHandlePoisons
+            MCM.SetToggleOptionValueST(EL.bHandlePoisons)
         endIf
     endEvent
 endState
@@ -511,6 +522,7 @@ State eqp_tgl_handleFood
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleFood")
         elseIf currentEvent == "Select"
             EL.bHandleFood = !EL.bHandleFood
+            MCM.SetToggleOptionValueST(EL.bHandleFood)
         endIf
     endEvent
 endState
@@ -521,6 +533,7 @@ State eqp_tgl_handleSpellTomes
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleSpellTomes")
         elseIf currentEvent == "Select"
             EL.bHandleSpellTomes = !EL.bHandleSpellTomes
+            MCM.SetToggleOptionValueST(EL.bHandleSpellTomes)
         endIf
     endEvent
 endState
@@ -531,6 +544,7 @@ State eqp_tgl_handlePersistentBooks
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handlePersistentBooks")
         elseIf currentEvent == "Select"
             EL.bHandlePersistentBooks = !EL.bHandlePersistentBooks
+            MCM.SetToggleOptionValueST(EL.bHandlePersistentBooks)
         endIf
     endEvent
 endState
@@ -541,6 +555,7 @@ State eqp_tgl_handleScrolls
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleScrolls")
         elseIf currentEvent == "Select"
             EL.bHandleScrolls = !EL.bHandleScrolls
+            MCM.SetToggleOptionValueST(EL.bHandleScrolls)
         endIf
     endEvent
 endState
@@ -551,6 +566,7 @@ State eqp_tgl_handleIngredients
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_handleIngredients")
         elseIf currentEvent == "Select"
             EL.bHandleIngredients = !EL.bHandleIngredients
+            MCM.SetToggleOptionValueST(EL.bHandleIngredients)
         endIf
     endEvent
 endState
