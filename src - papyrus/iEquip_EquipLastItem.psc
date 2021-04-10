@@ -26,7 +26,7 @@ int currentIndex
 
 bool bEnabled
 
-bool property DEST auto
+bool property DEST auto hidden
 
 ;int property defaultBehavior = 0 autoreadonly
 int forceRight = 1
@@ -56,7 +56,7 @@ bool property bHandlePersistentBooks = false auto hidden
 bool property bHandleScrolls = true auto hidden
 bool property bHandleIngredients = true auto hidden
 
-float property fQueueTimeout = 30.0 auto
+float property fQueueTimeout = 30.0 auto hidden
 
 bool clearWhenDone
 
@@ -75,7 +75,7 @@ function initialise()
 	OnWidgetLoad()
 endFunction
 
-bool property isEnabled
+bool property isEnabled 
 	bool function Get()
 		Return bEnabled
 	endFunction
@@ -92,6 +92,9 @@ EndProperty
 
 function OnWidgetLoad()
 	if bEnabled
+		if currentIndex < 0
+			currentIndex = startIndex
+		endIf
 		goToState("WAITING")
 	else
 		goToState("DISABLED")
@@ -197,8 +200,13 @@ function clearLastItem()
 	addedItems[currentIndex] = None
 	persistent[currentIndex] = false
 	addedRefs[currentIndex] = None
-	while (addedItems[currentIndex] == None && currentIndex != startIndex)
-		currentIndex = (currentIndex - 1) % 128
+	int i
+	while (addedItems[currentIndex] == None && currentIndex != startIndex) && i < 128
+		currentIndex -= 1
+		if currentIndex < 0
+			currentIndex = 127
+		endIf
+		i += 1
 	endWhile
 	;debug.trace("iEquip_EquipLastItem - Cleared. Current index: " + currentIndex)
 endFunction
