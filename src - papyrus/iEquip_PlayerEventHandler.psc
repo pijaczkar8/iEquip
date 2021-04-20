@@ -539,7 +539,8 @@ Event OnActorAction(int actionType, Actor akActor, Form source, int slot)
 			elseIf slot == 0
 				;Otherwise check if we've just cast Bound Shield (weapons are handled in BoundWeaponEventsListener)
 				Utility.WaitMenuMode(0.3)
-				if PlayerRef.GetEquippedShield() && PlayerRef.GetEquippedShield().GetName() == WC.asCurrentlyEquipped[0]
+				armor equippedShield = PlayerRef.GetEquippedShield()
+				if equippedShield && ((WC.bIsBEOLoaded && equippedShield.HasKeyword(WC.BoundArmor)) || equippedShield.GetName() == WC.asCurrentlyEquipped[0])
 					WC.onBoundWeaponEquipped(26, 0)
 					iEquip_AllCurrentItemsFLST.AddForm(PlayerRef.GetEquippedShield() as form)
 					updateEventFilter(iEquip_AllCurrentItemsFLST)
@@ -803,7 +804,7 @@ function processQueuedForms(int equippedSlot = -1)
 					AM.checkAndEquipAmmo(false, true, true, false, queuedForm)
 				endIf
 			; Check the item is still equipped, and if it is in the left, right or shout slots which is all we're interested in here. Blocked if equipped item is a bound weapon or an item from Throwing Weapons Lite (to avoid weirdness...)
-			elseIf !(queuedForm as weapon && iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "JZBai_ThrowingWpnsLite.esp") && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "Bound Shield.esp")
+			elseIf !(queuedForm as weapon && iEquip_WeaponExt.IsWeaponBound(queuedForm as weapon)) && !(Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "JZBai_ThrowingWpnsLite.esp") && !(queuedForm as Armor && (Game.GetModName(Math.LogicalAnd(Math.RightShift(queuedForm.GetFormID(), 24), 0xFF)) == "Bound Shield.esp" || (WC.bIsBEOLoaded && queuedForm.HasKeyword(WC.BoundArmor))))
 				if equippedSlot == -1
 					if PlayerRef.GetEquippedObject(0) == queuedForm
 						; Now we need to check if we've just equipped the same 1H item/spell in both left and right hand at the same time

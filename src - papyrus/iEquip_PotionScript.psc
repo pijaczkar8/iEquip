@@ -1125,18 +1125,29 @@ int function checkEffects(magicEffect effectToCheck, bool restoreOnly = false)
     return Q
 endFunction
 
+bool property bAutoAddOptionsChanged auto hidden
+bool property bAddPoisons auto hidden
+bool property bAddConsumables auto hidden
+bool property bAddPotions auto hidden
+
 function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
     ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue start")
     ;Check if the nth potion is a poison or a food and switch functions if required
     bAddedToQueue = false
     if foundPotion.isPoison()
-        if (bautoAddPoisons || (bIsFirstRun && firstThreePoisonsCounter < 3)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || !bOnLoad)
+        if (bautoAddPoisons || (bIsFirstRun && firstThreePoisonsCounter < 3)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddPoisons)))
             checkAndAddToPoisonQueue(foundPotion)
+            if bIsFirstRun
+                firstThreePoisonsCounter += 1
+            endIf
         endIf
 
     elseIf foundPotion.isFood()
-        if (bautoAddConsumables || (bIsFirstRun && firstThreeConsumablesCounter < 3)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || !bOnLoad)
+        if (bautoAddConsumables || (bIsFirstRun && firstThreeConsumablesCounter < 3)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddConsumables)))
             checkAndAddToConsumableQueue(foundPotion)
+            if bIsFirstRun
+                firstThreeConsumablesCounter += 1
+            endIf
         endIf
 
     else
@@ -1216,7 +1227,7 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
             WC.abPotionGroupEmpty[group] = false
         endIf
         ;If it isn't a grouped potion, or if potion grouping is disabled then if bautoAddPotions is enabled add it directly to the consumable queue
-        if bautoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group] || (bIsRestoreAllPotion && bExcludeRestoreAllEffects)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || !bOnLoad)
+        if bautoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group] || (bIsRestoreAllPotion && bExcludeRestoreAllEffects)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddPotions)))
             checkAndAddToConsumableQueue(foundPotion, true)
         elseIf !bFindingPotions && WC.asCurrentlyEquipped[3] == potionGroup
             WC.setSlotCount(3, getPotionGroupCount(group))
@@ -1226,6 +1237,10 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
         endIf
 
     endIf
+    bAutoAddOptionsChanged = false
+    bAddPotions = false
+    bAddPoisons = false
+    bAddConsumables = false
     ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue end")
 endFunction
 

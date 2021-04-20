@@ -366,6 +366,7 @@ float property fDropShadowDistance = 1.0 auto hidden
 float property fDropShadowStrength = 4.0 auto hidden
 
 bool[] property abPotionGroupAddedBack auto hidden
+bool property bFindAndSortPotions auto hidden
 bool property bPotionGroupingOptionsChanged auto hidden
 bool property bRestorePotionWarningSettingChanged auto hidden
 
@@ -3408,11 +3409,10 @@ function checkIfBoundSpellEquipped()
 	;debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped start")
 	bool boundSpellEquipped
 	int hand
-	string modName
 	while hand < 2
 		if PlayerRef.GetEquippedItemType(hand) == 9
-			modName = Game.GetModName(Math.LogicalAnd(Math.RightShift(PlayerRef.GetEquippedObject(hand).GetFormID(), 24), 0xFF))
-			if iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand)) || modName == "Bound Shield.esp" || modName == "Bound Shield.esp"
+			spell equippedSpell = PlayerRef.GetEquippedSpell(hand)
+			if iEquip_SpellExt.IsBoundSpell(equippedSpell) || (bIsBEOLoaded && equippedSpell.GetNthEffectMagicEffect(0).HasKeyword(MagicBoundArmor)) || Game.GetModName(Math.LogicalAnd(Math.RightShift((equippedSpell as form).GetFormID(), 24), 0xFF)) == "Bound Shield.esp"
 				boundSpellEquipped = true
 			endIf
 		endIf
@@ -6203,6 +6203,9 @@ function ApplyChanges()
 				i += 1
 			endWhile
 		endIf
+		if bFindAndSortPotions
+			PO.findAndSortPotions()
+		endIf
 		if bPotionGroupingOptionsChanged
 		    if !bPotionGrouping
 		    	;If we've just turned potion grouping off remove any of the three groups still in the consumable queue and advance the widget if one of them is currently shown
@@ -6256,6 +6259,7 @@ function ApplyChanges()
 	bThrowingPoisonsHandChanged = false
 	CM.bSettingsChanged = false
 	bTemperDisplaySettingChanged = false
+	bFindAndSortPotions = false
 	bPotionGroupingOptionsChanged = false
 	bRestorePotionWarningSettingChanged = false
     ;debug.trace("iEquip_WidgetCore ApplyChanges end")

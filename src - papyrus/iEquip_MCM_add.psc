@@ -247,11 +247,12 @@ State add_tgl_autoAddPotions
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_add_txt_autoAddPotions")
-        else
-            If currentEvent == "Select"
-                PO.bAutoAddPotions = !PO.bAutoAddPotions
-            elseIf currentEvent == "Default"
-                PO.bAutoAddPotions = true
+        elseif currentEvent == "Select" || (currentEvent == "Default" && PO.bAutoAddPotions)
+            PO.bAutoAddPotions = !PO.bAutoAddPotions
+            if PO.bAutoAddPotions && MCM.ShowMessage("$iEquip_MCM_add_msg_addPotions",  true, "$Yes", "$No")
+                PO.bAutoAddOptionsChanged = true
+                PO.bAddPotions = true
+                WC.bFindAndSortPotions = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddPotions)
         endIf 
@@ -262,11 +263,12 @@ State add_tgl_autoAddPoisons
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_add_txt_autoAddPoisons")
-        else
-            If currentEvent == "Select"
-                PO.bAutoAddPoisons = !PO.bAutoAddPoisons
-            elseIf currentEvent == "Default"
-                PO.bAutoAddPoisons = true
+        elseif currentEvent == "Select" || (currentEvent == "Default" && PO.bAutoAddPoisons)
+            PO.bAutoAddPoisons = !PO.bAutoAddPoisons
+            if PO.bAutoAddPoisons && MCM.ShowMessage("$iEquip_MCM_add_msg_addPoisons",  true, "$Yes", "$No")
+                PO.bAutoAddOptionsChanged = true
+                PO.bAddPoisons = true
+                WC.bFindAndSortPotions = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddPoisons)
         endIf 
@@ -277,11 +279,12 @@ State add_tgl_autoAddConsumables
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_add_txt_autoAddConsumables")
-        else
-            If currentEvent == "Select"
-                PO.bAutoAddConsumables = !PO.bAutoAddConsumables
-            elseIf currentEvent == "Default"
-                PO.bAutoAddConsumables = true
+        elseif currentEvent == "Select" || (currentEvent == "Default" && PO.bAutoAddConsumables)
+            PO.bAutoAddConsumables = !PO.bAutoAddConsumables
+            if PO.bAutoAddConsumables && MCM.ShowMessage("$iEquip_MCM_add_msg_addConsumables",  true, "$Yes", "$No")
+                PO.bAutoAddOptionsChanged = true
+                PO.bAddConsumables = true
+                WC.bFindAndSortPotions = true
             endIf
             MCM.SetToggleOptionValueST(PO.bAutoAddConsumables)
         endIf 
