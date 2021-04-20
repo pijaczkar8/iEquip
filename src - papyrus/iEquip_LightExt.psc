@@ -6,6 +6,10 @@ ScriptName iEquip_LightExt
 ; @return Returns -1 on error, else returns the light duration.
 Int Function GetLightDuration(Light a_light) Global Native
 
+; @brief Sets the light duration of the given light.
+; @param a_light The light to set the light duration of.
+; @param a_duration The duration of the light in seconds.
+Function SetLightDuration(Light a_light, Int a_duration) Global Native
 
 ; @brief Returns the light radius of the given light.
 ; @param a_light The light to retrieve the light radius of.

@@ -60,19 +60,26 @@ float property fQueueTimeout = 30.0 auto hidden
 
 bool clearWhenDone
 
+bool bEquipSlotsSet
+
 function initialise()
-	DefaultObjectManager defaultObjects = Game.GetFormFromFile(0x31, "Skyrim.esm") as DefaultObjectManager
-	RightHand = defaultObjects.getForm("RHEQ") as EquipSlot
-	LeftHand = defaultObjects.getForm("LHEQ") as EquipSlot
-	EitherHand = defaultObjects.getForm("EHEQ") as EquipSlot
-	BothHands = Game.GetFormFromFile(0x13F45, "Skyrim.esm") as EquipSlot
-	VoiceSlot = defaultObjects.getForm("VOEQ") as EquipSlot
+	setEquipSlots()
 
 	addedItems = new Form[128]
 	persistent = new bool[128]
 	addedRefs = new ObjectReference[128]
 	
 	OnWidgetLoad()
+endFunction
+
+function setEquipSlots()
+	LeftHand = WC.EquipSlots[0]
+	RightHand = WC.EquipSlots[1]
+	EitherHand = WC.EquipSlots[2]
+	BothHands = WC.EquipSlots[3]
+	VoiceSlot = WC.EquipSlots[4]
+
+	bEquipSlotsSet = true
 endFunction
 
 bool property isEnabled 
@@ -92,6 +99,9 @@ EndProperty
 
 function OnWidgetLoad()
 	if bEnabled
+		if !bEquipSlotsSet
+			setEquipSlots()
+		endIf
 		if currentIndex < 0
 			currentIndex = startIndex
 		endIf

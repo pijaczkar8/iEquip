@@ -202,6 +202,11 @@ Keyword property WeapTypePike auto hidden
 Keyword property WeapTypeHalberd auto hidden
 Keyword property WeapTypeQtrStaff auto hidden
 
+; Bound Equipment Overhaul
+bool property bIsBEOLoaded auto hidden
+Keyword Property BoundArmor auto hidden
+Keyword Property MagicBoundArmor auto hidden
+
 ; Arrays used by queue functions
 int[] property aiCurrentQueuePosition auto hidden 	; Array containing the current index for each queue
 string[] property asCurrentlyEquipped auto hidden 	; Array containing the itemName for whatever is currently equipped in each queue
@@ -1168,6 +1173,17 @@ function CheckDependencies()
 		BM.arPOTBoneTyrantRaces[7] = none
 		BM.arPOTBoneTyrantRaces[8] = none
 		BM.arPOTBoneTyrantRaces[9] = none
+	endIf
+
+	; Bound Equipment Overhaul
+	if Game.GetModByName("BoundEquipmentOverhaul.esp") != 255
+		bIsBEOLoaded = true
+		BoundArmor = Game.GetFormFromFile(0x0000692D, "BoundEquipmentOverhaul") as Keyword 					; BoundArmor KYWD
+		MagicBoundArmor = Game.GetFormFromFile(0x0000692F, "BoundEquipmentOverhaul") as Keyword 			; MagicBoundArmor KYWD
+	else
+		bIsBEOLoaded = false
+		BoundArmor = none
+		MagicBoundArmor = none
 	endIf
 endFunction
 
@@ -3392,9 +3408,13 @@ function checkIfBoundSpellEquipped()
 	;debug.trace("iEquip_WidgetCore checkIfBoundSpellEquipped start")
 	bool boundSpellEquipped
 	int hand
+	string modName
 	while hand < 2
-		if PlayerRef.GetEquippedItemType(hand) == 9 && (iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand)) || (Game.GetModName(Math.LogicalAnd(Math.RightShift(PlayerRef.GetEquippedObject(hand).GetFormID(), 24), 0xFF)) == "Bound Shield.esp"))
-			boundSpellEquipped = true
+		if PlayerRef.GetEquippedItemType(hand) == 9
+			modName = Game.GetModName(Math.LogicalAnd(Math.RightShift(PlayerRef.GetEquippedObject(hand).GetFormID(), 24), 0xFF))
+			if iEquip_SpellExt.IsBoundSpell(PlayerRef.GetEquippedSpell(hand)) || modName == "Bound Shield.esp" || modName == "Bound Shield.esp"
+				boundSpellEquipped = true
+			endIf
 		endIf
 		hand += 1
 	endWhile
@@ -4692,7 +4712,7 @@ function applyPoison(int Q)
 	        	removeItemFromQueue(4, aiCurrentQueuePosition[4])
 	            return
 	        endIf
-	        bool ApplyWithoutUpdatingWidget
+	        ;bool ApplyWithoutUpdatingWidget
 	        int iButton
 	        string newPoison = jMap.getStr(targetObj, "iEquipName")
 	        bool isLeftHand = Q == 0
@@ -4719,12 +4739,12 @@ function applyPoison(int Q)
 	            	endIf
 	            endIf
 	            return
-	        elseif currentWeapon != jMap.getForm(jArray.getObj(targetQ, aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon && !iEquip_WeaponExt.IsWeaponBound(currentWeapon)
+	        ;/elseif currentWeapon != jMap.getForm(jArray.getObj(targetQ, aiCurrentQueuePosition[Q]), "iEquipForm") as Weapon && !iEquip_WeaponExt.IsWeaponBound(currentWeapon)
 	            iButton = showTranslatedMessage(0, iEquip_StringExt.LocalizeString("$iEquip_WC_msg_ApplyToUnknownWeapon{" + weaponName + "}{" + handName + "}{" + newPoison + "}"))
 	            if iButton != 0
 	                return
 	            endIf
-	            ApplyWithoutUpdatingWidget = true
+	            ApplyWithoutUpdatingWidget = true/;
 	        endIf
 
 	        int refHandle = GetRefHandleFromWornObject(Q)
@@ -4819,9 +4839,9 @@ function applyPoison(int Q)
 		        targetObj = jArray.getObj(targetQ, aiCurrentQueuePosition[Q])
 		        jMap.setInt(targetObj, "isPoisoned", 1)
 		        jMap.setForm(targetObj, "lastKnownPoison", poisonToApply as Form)
-		        if !ApplyWithoutUpdatingWidget
+		        ;if !ApplyWithoutUpdatingWidget
 		            checkAndUpdatePoisonInfo(Q, false, false, refHandle)
-		        endIf
+		        ;endIf
 		        ; Play sound
 		        if iPoisonFX == 1 || iPoisonFX == 3
 		        	iEquip_ITMPoisonUse.Play(PlayerRef)
