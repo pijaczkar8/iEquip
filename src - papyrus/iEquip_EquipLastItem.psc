@@ -113,7 +113,7 @@ endFunction
 
 Form Property lastItem
 	Form function get()
-		;debug.trace("iEquip_EquipLastItem - Requested item: " + addedItems[currentIndex].getName())
+		;debug.trace("iEquip_EquipLastItem lastItem get() - looking for item at currentIndex: " + currentIndex)
 		registerForSingleUpdate(fQueueTimeout)
 		return addedItems[currentIndex]
 	endFunction
@@ -191,6 +191,7 @@ Event OnUpdate()
 endEvent
 
 function addItemToQueue(Form akBaseItem, ObjectReference akItemReference = None)
+	;debug.trace("iEquip_EquipLastItem start - currentIndex: " + currentIndex + ", startIndex: " + startIndex)
 	currentIndex = (currentIndex + 1) % 128
 	persistent[currentIndex] = akItemReference != None
 	addedRefs[currentIndex] = akItemReference
@@ -201,12 +202,12 @@ function addItemToQueue(Form akBaseItem, ObjectReference akItemReference = None)
 	if(currentIndex == startIndex)
 		startIndex = (startIndex + 1) % 128
 	endIf
-	;debug.trace("iEquip_EquipLastItem - Added item " + akBaseItem.getName() + " at index " + currentIndex + ".")
+	;debug.trace("iEquip_EquipLastItem end - Added item " + akBaseItem.getName() + " at index " + currentIndex + ".")
 	registerForSingleUpdate(fQueueTimeout)
 endFunction
 
 function clearLastItem()
-	;debug.trace("iEquip_EquipLastItem - Clearing queue.")
+	;debug.trace("iEquip_EquipLastItem clearLastItem start - Clearing queue.")
 	addedItems[currentIndex] = None
 	persistent[currentIndex] = false
 	addedRefs[currentIndex] = None
@@ -229,11 +230,14 @@ function restartQueue()
 endFunction
 
 function useLast(bool useLeft)
-	if lastItem ;check if last item hasn't been cleared
+	;debug.trace("iEquip_EquipLastItem useLast start - currentIndex: " + currentIndex)
+	form fItem = lastItem
+	if fItem ;check if last item hasn't been cleared
+		;debug.trace("iEquip_EquipLastItem useLast - item found at currentIndex: " + fItem.GetName())
 		bool cleanupWhenDone = true
-		if(PlayerRef.getItemCount(lastItem) > 0 || PlayerRef.hasSpell(lastItem as Spell))
-			if(lastItem as Weapon) ;weapon - pass to iequip
-				Weapon lastWeapon = lastItem as Weapon
+		if(PlayerRef.getItemCount(fItem) > 0 || PlayerRef.hasSpell(fItem as Spell))
+			if(fItem as Weapon) ;weapon - pass to iequip
+				Weapon lastWeapon = fItem as Weapon
 				int force ; = defaultBehavior
 				int wt = lastWeapon.getWeaponType()
 				if((wt >= 1 && wt <= 4) || wt == 8) ; one-handed weapons
@@ -251,13 +255,13 @@ function useLast(bool useLeft)
 				elseif(wt == 7 || wt == 9)
 					force = forceRight
 				endIf
-				WC.onWeaponOrShieldAdded(lastItem, force)
-			elseif(lastItem as Armor && lastItem.hasKeyword(ArmorShield)) ;shield - pass to iequip
-				WC.onWeaponOrShieldAdded(lastItem, forceLeft)
-			elseif(lastItem as Armor || (lastItem as Ammo && (!WC.bAmmoMode || ((PlayerRef.GetEquippedItemType(1) == 7 && !(lastItem as Ammo).IsBolt()) || (PlayerRef.GetEquippedItemType(1) == 12 && (lastItem as Ammo).IsBolt())))) || lastItem as Ingredient) ;simple item - just equip directly
-				PlayerRef.equipItem(lastItem)
-			elseif(lastItem as Book) ;only persistent books or spell tomes added, read or add spell to player and queue
-				Book lastBook = lastItem as Book
+				WC.onWeaponOrShieldAdded(fItem, force)
+			elseif(fItem as Armor && fItem.hasKeyword(ArmorShield)) ;shield - pass to iequip
+				WC.onWeaponOrShieldAdded(fItem, forceLeft)
+			elseif(fItem as Armor || (fItem as Ammo && (!WC.bAmmoMode || ((PlayerRef.GetEquippedItemType(1) == 7 && !(fItem as Ammo).IsBolt()) || (PlayerRef.GetEquippedItemType(1) == 12 && (fItem as Ammo).IsBolt())))) || fItem as Ingredient) ;simple item - just equip directly
+				PlayerRef.equipItem(fItem)
+			elseif(fItem as Book) ;only persistent books or spell tomes added, read or add spell to player and queue
+				Book lastBook = fItem as Book
 				Spell s = lastBook.getSpell()
 				if(s) ; the book is a spell tome
 					if(DEST); Parapets says can't emit DEST event from papyrus, so ignore that case for now.
@@ -281,8 +285,8 @@ function useLast(bool useLeft)
 				else ; persistent book, most likely from quest, just activate it
 					lastItemRef.activate(PlayerRef)
 				endif
-			elseif(lastItem as Spell) ;"wait but spells aren't items" lies. deception.
-				Spell lastSpell = lastItem as Spell
+			elseif(fItem as Spell) ;"wait but spells aren't items" lies. deception.
+				Spell lastSpell = fItem as Spell
 				EquipSlot usedSlot = lastSpell.getEquipType()
 				if(usedSlot == RightHand || (usedSlot == EitherHand && !useLeft) || usedSlot == BothHands)
 					PlayerRef.equipSpell(lastSpell, 1)
@@ -291,16 +295,16 @@ function useLast(bool useLeft)
 				elseif(usedSlot == VoiceSlot)
 					PlayerRef.equipSpell(lastSpell, 2)
 				endIf
-			elseif(lastItem as Scroll) ; equip to hand by equip type, same as spells.
-				Scroll lastScroll = lastItem as Scroll
+			elseif(fItem as Scroll) ; equip to hand by equip type, same as spells.
+				Scroll lastScroll = fItem as Scroll
 				EquipSlot usedSlot = lastScroll.getEquipType()
 				if(usedSlot == RightHand || (usedSlot == EitherHand && !useLeft) || usedSlot == BothHands)
 					PlayerRef.EquipItemEx(lastScroll, 1)
 				elseif(usedSlot == LeftHand || usedSlot == EitherHand)
 					PlayerRef.EquipItemEx(lastScroll, 2)
 				endIf
-			elseif(lastItem as Potion);use potions, queue and cycle to poisons
-				Potion lastPotion = lastItem as Potion
+			elseif(fItem as Potion);use potions, queue and cycle to poisons
+				Potion lastPotion = fItem as Potion
 				if(lastPotion.isPoison()); hand poisons off to iequip because it has way more features than i do
 					PO.checkAndAddToPoisonQueue(lastPotion)
 					PO.sortPoisonQueue()

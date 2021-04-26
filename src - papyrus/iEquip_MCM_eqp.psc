@@ -189,8 +189,8 @@ function drawPage()
 
     MCM.AddHeaderOption("<font color='"+MCM.headerColour+"'>$iEquip_MCM_eqp_lbl_AutoEquip</font>")
 
+    MCM.AddMenuOptionST("eqp_men_enableAutoEquip", "$iEquip_MCM_eqp_lbl_enableAutoEquip", autoEquipOptions[WC.iAutoEquipEnabled])
     if WC.iAutoEquipEnabled > 0
-        MCM.AddMenuOptionST("eqp_men_enableAutoEquip", "<font color='"+MCM.enabledColour+"'>$iEquip_MCM_eqp_lbl_enableAutoEquip</font>", autoEquipOptions[WC.iAutoEquipEnabled])
         MCM.AddMenuOptionST("eqp_men_whenToAutoEquip", "$iEquip_MCM_eqp_lbl_whenToAutoEquip", whenToAutoEquipOptions[WC.iAutoEquip])
         MCM.AddMenuOptionST("eqp_men_currItemEnch", "$iEquip_MCM_eqp_lbl_currItemEnch", currItemEnchOptions[WC.iCurrentItemEnchanted])
         MCM.AddMenuOptionST("eqp_men_currItemPois", "$iEquip_MCM_eqp_lbl_currItemPois", currItemPoisOptions[WC.iCurrentItemPoisoned])
@@ -198,8 +198,6 @@ function drawPage()
         if WC.bAutoEquipHardcore
             MCM.AddToggleOptionST("eqp_tgl_dontDropFavorites", "$iEquip_MCM_eqp_lbl_dontDropFavorites", WC.bAutoEquipDontDropFavorites)
         endIf
-    else
-        MCM.AddMenuOptionST("eqp_men_enableAutoEquip", "<font color='"+MCM.disabledColour+"'>$iEquip_MCM_eqp_lbl_enableAutoEquip</font>", autoEquipOptions[WC.iAutoEquipEnabled])
     endIf
     
     ;MCM.AddEmptyOption()

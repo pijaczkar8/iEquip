@@ -679,6 +679,10 @@ function findAndSortPotions()
         ;debug.trace("iEquip_PotionScript findAndSortPotions - No health, stamina or magicka potions found in players inventory")
     endIf
     bFindingPotions = false
+    bAutoAddOptionsChanged = false
+    bAddPotions = false
+    bAddPoisons = false
+    bAddConsumables = false
     ;debug.trace("iEquip_PotionScript findAndSortPotions end")
 endFunction
 
@@ -1133,6 +1137,10 @@ bool property bAddPotions auto hidden
 function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
     ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue start")
     ;Check if the nth potion is a poison or a food and switch functions if required
+    if bAutoAddOptionsChanged
+        bOnLoad = false
+    endIf
+    
     bAddedToQueue = false
     if foundPotion.isPoison()
         if (bautoAddPoisons || (bIsFirstRun && firstThreePoisonsCounter < 3)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddPoisons)))
@@ -1237,10 +1245,6 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
         endIf
 
     endIf
-    bAutoAddOptionsChanged = false
-    bAddPotions = false
-    bAddPoisons = false
-    bAddConsumables = false
     ;debug.trace("iEquip_PotionScript checkAndAddToPotionQueue end")
 endFunction
 

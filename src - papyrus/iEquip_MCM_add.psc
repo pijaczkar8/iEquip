@@ -147,7 +147,7 @@ State add_tgl_signlBothQue
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_add_txt_signlBothQue")
-        elseIf currentEvent == "Select"
+        elseIf currentEvent == "Select" || (currentEvent == "Default" && WC.bAllowSingleItemsInBothQueues)
             WC.bAllowSingleItemsInBothQueues = !WC.bAllowSingleItemsInBothQueues
         
             if !WC.bAllowSingleItemsInBothQueues
@@ -156,9 +156,6 @@ State add_tgl_signlBothQue
                 endIf
             endIf
             
-            MCM.forcePageReset()
-        elseIf currentEvent == "Default"
-            WC.bAllowSingleItemsInBothQueues = false 
             MCM.forcePageReset()
         endIf
     endEvent

@@ -780,7 +780,7 @@ EndEvent
 float fCurrentVersion						; First digit = Main version, 2nd digit = Incremental, 3rd digit = Hotfix.  For example main version 1.0, hotfix 03 would be 1.03
 
 float function getiEquipVersion()
-    return 1.60
+    return 1.61
 endFunction
 
 function checkVersion()
@@ -788,6 +788,9 @@ function checkVersion()
     float fThisVersion = getiEquipVersion()
 
     ;debug.trace("iEquip_WidgetCore checkVersion start, fCurrentVersion: " + fCurrentVersion + ", fThisVersion: " + fThisVersion + ", bIsFirstEnabled: " + bIsFirstEnabled)
+    ;debug.trace("iEquip_WidgetCore checkVersion - iEquipUtil version: " + SKSE.GetPluginVersion("iEquipUtil"))
+    ;debug.trace("iEquip_WidgetCore checkVersion - SKSE version: " + SKSE.GetVersion() + "." + SKSE.GetVersionMinor() + "." + SKSE.GetVersionBeta())
+    ;debug.trace("iEquip_WidgetCore checkVersion - JContainers version: " + JContainers.APIVersion() + "." + JContainers.featureVersion())
     
     if fThisVersion < fCurrentVersion
     	;debug.trace("iEquip_WidgetCore checkVersion - older version")
@@ -1017,6 +1020,7 @@ endFunction
 ; ### DLC & Mod Support ###
 
 function CheckDependencies()
+	;debug.trace("iEquip_WidgetCore CheckDependencies start")
 
 	 if Game.GetModByName("Dawnguard.esm") != 255
     	BM.arBeastRaces[1] = Game.GetFormFromFile(0x0000283A, "Dawnguard.esm") as Race 	; DLC1VampireBeastRace
@@ -1063,22 +1067,30 @@ function CheckDependencies()
 	; moreHUD Inventory Edition
 	bMoreHUDLoaded = SKSE.GetPluginVersion("Ahzaab's moreHUD Inventory Plugin") > 0
 	if bMoreHUDLoaded
+		;debug.trace("iEquip_WidgetCore CheckDependencies - moreHUD Inventory Edition version: " + SKSE.GetPluginVersion("Ahzaab's moreHUD Inventory Plugin"))
 		initialisemoreHUDArray()
 	endIf
 
 	; po3's Papyrus Extender
 	bPowerOfThreeExtenderLoaded = SKSE.GetPluginVersion("powerofthree's Papyrus Extender") > 0
+	if bPowerOfThreeExtenderLoaded
+		;debug.trace("iEquip_WidgetCore CheckDependencies - powerOfThree's Papyrus Extender version: " + SKSE.GetPluginVersion("powerofthree's Papyrus Extender"))
+	endIf
 
 	; Gamepad++
 	KH.registerForGPP(Game.GetModByName("Gamepad++.esp") != 255)
 
 	; ConsoleUtil
 	bConsoleUtilLoaded = SKSE.GetPluginVersion("ConsoleUtilSSE") > 0
+	if bConsoleUtilLoaded
+		;debug.trace("iEquip_WidgetCore CheckDependencies - ConsoleUtil version: " + SKSE.GetPluginVersion("ConsoleUtilSSE"))
+	endIf
 	
     ; Requiem
     bIsRequiemLoaded = Game.GetModByName("Requiem.esp") != 255
     RC.bIsRequiemLoaded = bIsRequiemLoaded
     if bIsRequiemLoaded
+    	;debug.trace("iEquip_WidgetCore CheckDependencies - Requiem detected")
     	REQ_KW_PoisonSpell = Game.GetFormFromFile(0x00AD3904, "Requiem.esp") as Keyword
     else
     	REQ_KW_PoisonSpell = none
@@ -1186,6 +1198,7 @@ function CheckDependencies()
 		BoundArmor = none
 		MagicBoundArmor = none
 	endIf
+	;debug.trace("iEquip_WidgetCore CheckDependencies end")
 endFunction
 
 ; ##########################
@@ -1282,119 +1295,127 @@ state ENABLED
 	; Enabled events
 	Event OnWidgetLoad()
 		;debug.trace("iEquip_WidgetCore OnWidgetLoad start - current state: " + GetState())
+		bTempDisable  = false
 
-		bShowVersionUpdateNotification = false
-
-		checkVersion()
-
-		;bPlayerIsMounted = PlayerRef.IsOnMount()
-
-		bool bPreselectEnabledOnLoad = bPreselectMode
-
-		EM.isEditMode = false
-		bPreselectMode = false
-		bRefreshingWidget = true
-		bCyclingLHPreselectInAmmoMode = false
-		bSwitchingHands = false
-		bPreselectSwitchingHands = false
-		bFadingWidget = false	; Note - this will release any queued fade requests, however as we have just set bRefreshingWidget = true those requests will immediately terminate clearing the way for the updateWidgetVisibility call later in this function
-		PM.bBlockQuickDualCast = false
-		KH.GameLoaded()
-		PM.OnWidgetLoad()
-		AM.OnWidgetLoad()
-		CM.OnWidgetLoad()
-		TP.OnWidgetLoad()
-		EL.OnWidgetLoad()
-		
-		OnWidgetReset()
-
-		; Determine if the widget should be displayed
-		UpdateWidgetModes()
-		; Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
-		UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-		
-		bool[] args = new bool[5]
-		
-		if !bIsFirstEnabled
-			self.RegisterForMenu("InventoryMenu")
-			self.RegisterForMenu("MagicMenu")
-			self.RegisterForMenu("FavoritesMenu")
-			self.RegisterForMenu("ContainerMenu")
-			self.RegisterForMenu("Journal Menu")
-			self.RegisterForMenu("Crafting Menu")
-			self.RegisterForMenu("Dialogue Menu")
-			self.RegisterForMenu("BarterMenu")
-
-			CheckDependencies()
-			if KH.bIsGPPLoaded && Game.UsingGamepad() && !bGPPMessageShown
-				checkAndSetKeysForGamepadPlusPlus()
-			endIf
-			EM.UpdateElementsAll()
-			args[0] = (bAmmoMode && !AM.bSimpleAmmoMode)
-			args[3] = (bAmmoMode && !AM.bSimpleAmmoMode)
-			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-			refreshWidgetOnLoad()
-			EM.UpdateAllTextFormatting()
+		if !JContainers.isInstalled() || !(JContainers.APIVersion() >= 4 && JContainers.featureVersion() >= 1)	; We'll already have passed this check in the MCM when first enabling iEquip, so this only applies on subsequent loads with iEquip already running
+			;debug.trace("iEquip_WidgetCore OnWidgetLoad - jContainers not found or old version, shutting everything down until next load")
+			bTempDisable = true
+			GoToState("DISABLED")
 		else
-			int i
-			while i < 2
-				CM.initChargeMeter(i)
-				CM.initSoulGem(i)
-				CM.initRadialMeter(i)
-				i += 1
-			endWhile
-			addCurrentItemsOnFirstEnable()
-			if bAmmoMode
-				args[0] = true
-			endIf
-			args[3] = bAmmoMode
-			initQueuePositionIndicators()
-            updatePotionSelector(true) ; Hide the potion selector
-			UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
-			UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+
+			bShowVersionUpdateNotification = false
+
+			checkVersion()
+
+			;bPlayerIsMounted = PlayerRef.IsOnMount()
+
+			bool bPreselectEnabledOnLoad = bPreselectMode
+
+			EM.isEditMode = false
+			bPreselectMode = false
+			bRefreshingWidget = true
+			bCyclingLHPreselectInAmmoMode = false
+			bSwitchingHands = false
+			bPreselectSwitchingHands = false
+			bFadingWidget = false	; Note - this will release any queued fade requests, however as we have just set bRefreshingWidget = true those requests will immediately terminate clearing the way for the updateWidgetVisibility call later in this function
+			PM.bBlockQuickDualCast = false
+			KH.GameLoaded()
+			PM.OnWidgetLoad()
+			AM.OnWidgetLoad()
+			CM.OnWidgetLoad()
+			TP.OnWidgetLoad()
+			EL.OnWidgetLoad()
+			
+			OnWidgetReset()
+
+			; Determine if the widget should be displayed
+			UpdateWidgetModes()
+			; Make sure to hide Edit Mode and bPreselectMode elements, leaving left shown if in bAmmoMode
 			UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
-			updateTextFieldDropShadow()
-		endIf
-		bRefreshingWidget = false
-		
-		UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
-		if CM.iChargeDisplayType > 0
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
-			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ; SkyHUD alt charge meter
-		else
-			CM.updateChargeMeters() ; This will hide the iEquip charge meters if they are turned off in the MCM
-		endIf
-		UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
-		updateWidgetVisibility() ; Show the widget
+			
+			bool[] args = new bool[5]
+			
+			if !bIsFirstEnabled
+				self.RegisterForMenu("InventoryMenu")
+				self.RegisterForMenu("MagicMenu")
+				self.RegisterForMenu("FavoritesMenu")
+				self.RegisterForMenu("ContainerMenu")
+				self.RegisterForMenu("Journal Menu")
+				self.RegisterForMenu("Crafting Menu")
+				self.RegisterForMenu("Dialogue Menu")
+				self.RegisterForMenu("BarterMenu")
 
-		if bShowVersionUpdateNotification
-	        string sThisVersion = getiEquipVersion() as string
-	        string versionStr = GetNthChar(sThisVersion, 0) + "." + GetNthChar(sThisVersion, 2) + "." + GetNthChar(sThisVersion, 3)
-	        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_wc_not_updating{" + versionStr + "}"))
-	    endIf
-		
-		Utility.WaitMenuMode(0.5)
-		
-		if !EH.bPlayerIsABeast
-			if bPlayerIsMounted && !PlayerRef.IsOnMount() 	; Just in case the player has dismounted on load before the widget has had a chance to initialise
-				EH.applyMountedRestrictions(false)
+				CheckDependencies()
+				if KH.bIsGPPLoaded && Game.UsingGamepad() && !bGPPMessageShown
+					checkAndSetKeysForGamepadPlusPlus()
+				endIf
+				EM.UpdateElementsAll()
+				args[0] = (bAmmoMode && !AM.bSimpleAmmoMode)
+				args[3] = (bAmmoMode && !AM.bSimpleAmmoMode)
+				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+				refreshWidgetOnLoad()
+				EM.UpdateAllTextFormatting()
 			else
-				checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+				int i
+				while i < 2
+					CM.initChargeMeter(i)
+					CM.initSoulGem(i)
+					CM.initRadialMeter(i)
+					i += 1
+				endWhile
+				addCurrentItemsOnFirstEnable()
+				if bAmmoMode
+					args[0] = true
+				endIf
+				args[3] = bAmmoMode
+				initQueuePositionIndicators()
+	            updatePotionSelector(true) ; Hide the potion selector
+				UI.invokeboolA(HUD_MENU, WidgetRoot + ".togglePreselect", args)
+				UI.InvokeInt(HUD_MENU, WidgetRoot + ".setBackgrounds", iBackgroundStyle)
+				UI.setbool(HUD_MENU, WidgetRoot + ".EditModeGuide._visible", false)
+				updateTextFieldDropShadow()
 			endIf
+			bRefreshingWidget = false
+			
+			UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ArrowInfoInstance._alpha", 0)
+			if CM.iChargeDisplayType > 0
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomLeftLockInstance._alpha", 0)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.BottomRightLockInstance._alpha", 0)
+				UI.setFloat(HUD_MENU, "_root.HUDMovieBaseInstance.ChargeMeterBaseAlt._alpha", 0) ; SkyHUD alt charge meter
+			else
+				CM.updateChargeMeters() ; This will hide the iEquip charge meters if they are turned off in the MCM
+			endIf
+			UI.setbool(HUD_MENU, WidgetRoot + "._visible", true)
+			updateWidgetVisibility() ; Show the widget
+
+			if bShowVersionUpdateNotification
+		        string sThisVersion = getiEquipVersion() as string
+		        string versionStr = GetNthChar(sThisVersion, 0) + "." + GetNthChar(sThisVersion, 2) + "." + GetNthChar(sThisVersion, 3)
+		        debug.notification(iEquip_StringExt.LocalizeString("$iEquip_wc_not_updating{" + versionStr + "}"))
+		    endIf
+			
+			Utility.WaitMenuMode(0.5)
+			
+			if !EH.bPlayerIsABeast
+				if bPlayerIsMounted && !PlayerRef.IsOnMount() 	; Just in case the player has dismounted on load before the widget has had a chance to initialise
+					EH.applyMountedRestrictions(false)
+				else
+					checkAndFadeLeftIcon(1, jMap.getInt(jArray.getObj(aiTargetQ[1], aiCurrentQueuePosition[1]), "iEquipType"))
+				endIf
+			endIf
+
+			if !PlayerRef.IsOnMount()
+				bDragonRiding = false 							; Again, just to be safe! Just in case the player has dismounted on load before the widget has had a chance to initialise
+			endIf
+
+			if bPreselectEnabledOnLoad
+				PM.togglePreselectMode(false, true)
+			endIf
+
+			KH.RegisterForGameplayKeys()
+
+			debug.notification("$iEquip_WC_not_controlsUnlocked")
 		endIf
-
-		if !PlayerRef.IsOnMount()
-			bDragonRiding = false 							; Again, just to be safe! Just in case the player has dismounted on load before the widget has had a chance to initialise
-		endIf
-
-		if bPreselectEnabledOnLoad
-			PM.togglePreselectMode(false, true)
-		endIf
-
-		KH.RegisterForGameplayKeys()
-
-		debug.notification("$iEquip_WC_not_controlsUnlocked")
 		
 		;debug.trace("iEquip_WidgetCore OnWidgetLoad finished")
 	endEvent
@@ -1407,13 +1428,21 @@ state ENABLED
 	EndEvent
 endState
 
+bool bTempDisable 	; Set to true by OnWidgetLoad if jContainers not found or old version
+
 Auto state DISABLED
 	event OnBeginState()
-		jValue.release(iEquipQHolderObj)
-		bIsFirstEnabled = true
-		EH.initialise(bEnabled)
-        AD.initialise(bEnabled)
-        EL.isEnabled = false
+		if !bTempDisable
+			jValue.release(iEquipQHolderObj)
+			bIsFirstEnabled = true
+			EH.initialise(bEnabled)
+	        AD.initialise(bEnabled)
+	        EL.isEnabled = false
+	        iEquip_MessageQuest.Stop()
+	    else
+	    	AD.initialise(false)
+	        EL.GoToState("DISABLED")  	; Puts EL into DISABLED state without setting bEnabled to false, allowing it to start as normal next time
+	    endIf
 	
 		self.UnregisterForAllMenus()
 		KH.UnregisterForAllKeys()
@@ -1429,7 +1458,6 @@ Auto state DISABLED
 			EM.DisableEditMode()
 		endIf
 		
-		iEquip_MessageQuest.Stop()
 		updateWidgetVisibility()
 		UI.setbool(HUD_MENU, WidgetRoot + "._visible", false)
 	endEvent

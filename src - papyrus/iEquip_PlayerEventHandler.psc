@@ -182,7 +182,16 @@ endEvent
 
 Event OnPlayerLoadGame()
 	;debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame start")
-	initialise(WC.isEnabled)
+	bool bSafeToInit = WC.isEnabled
+	if !JContainers.isInstalled()                                               ; Dependency checks
+        debug.messagebox("$iEquip_MCM_gen_mes_jcontmissing")
+        bSafeToInit = false
+    elseIf !(JContainers.APIVersion() >= 4 && JContainers.featureVersion() >= 1)
+        debug.messagebox("$iEquip_MCM_gen_mes_jcontoldversion")
+        bSafeToInit = false
+    else
+		initialise(bSafeToInit)
+	endIf
 	;debug.trace("iEquip_PlayerEventHandler OnPlayerLoadGame end")
 endEvent
 
