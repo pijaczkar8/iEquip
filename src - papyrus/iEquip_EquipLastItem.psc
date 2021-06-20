@@ -6,6 +6,7 @@ import iEquip_StringExt
 
 iEquip_WidgetCore Property WC auto
 iEquip_PotionScript Property PO auto
+iEquip_EquipLastItemUpdate Property ELU auto
 
 Actor Property PlayerRef Auto
 Keyword Property ArmorShield Auto
@@ -63,6 +64,7 @@ bool clearWhenDone
 bool bEquipSlotsSet
 
 function initialise()
+	;debug.trace("iEquip_EquipLastItem initialise start")
 	setEquipSlots()
 
 	addedItems = new Form[128]
@@ -70,9 +72,11 @@ function initialise()
 	addedRefs = new ObjectReference[128]
 	
 	OnWidgetLoad()
+	;debug.trace("iEquip_EquipLastItem initialise end")
 endFunction
 
 function setEquipSlots()
+	;debug.trace("iEquip_EquipLastItem setEquipSlots start")
 	LeftHand = WC.EquipSlots[0]
 	RightHand = WC.EquipSlots[1]
 	EitherHand = WC.EquipSlots[2]
@@ -80,15 +84,18 @@ function setEquipSlots()
 	VoiceSlot = WC.EquipSlots[4]
 
 	bEquipSlotsSet = true
+	;debug.trace("iEquip_EquipLastItem setEquipSlots end")
 endFunction
 
 bool property isEnabled 
 	bool function Get()
+		;debug.trace("iEquip_EquipLastItem isEnabled Get() returning " + bEnabled)
 		Return bEnabled
 	endFunction
 	
 	function Set(bool enabled)
         bEnabled = enabled
+        ;debug.trace("iEquip_EquipLastItem isEnabled Set() setting bEnabled to " + bEnabled)
 		if bEnabled
 			GoToState("WAITING")
 		else
@@ -98,6 +105,7 @@ bool property isEnabled
 EndProperty
 
 function OnWidgetLoad()
+	;debug.trace("iEquip_EquipLastItem OnWidgetLoad start")
 	if bEnabled
 		if !bEquipSlotsSet
 			setEquipSlots()
@@ -109,30 +117,38 @@ function OnWidgetLoad()
 	else
 		goToState("DISABLED")
 	endIf
+	;debug.trace("iEquip_EquipLastItem OnWidgetLoad end")
 endFunction
 
 Form Property lastItem
 	Form function get()
 		;debug.trace("iEquip_EquipLastItem lastItem get() - looking for item at currentIndex: " + currentIndex)
-		registerForSingleUpdate(fQueueTimeout)
+		ELU.registerForEquipLastItemUpdate(fQueueTimeout)
 		return addedItems[currentIndex]
 	endFunction
 endProperty
 
 bool Property lastItemPersist
 	bool function get()
+		;debug.trace("iEquip_EquipLastItem lastItemPersist get() - returning " + persistent[currentIndex] + " for item at currentIndex: " + currentIndex)
 		return persistent[currentIndex]
 	endFunction
 endProperty
 
 ObjectReference Property lastItemRef
 	ObjectReference function get()
+		;debug.trace("iEquip_EquipLastItem lastItemRef get() - looking for ObjectReference at currentIndex: " + currentIndex)
 		return addedRefs[currentIndex]
 	endFunction
 endProperty
 
 state WAITING
+	Event OnBeginState()
+		;debug.trace("iEquip_EquipLastItem - switched to WAITING state")
+	endEvent
+
 	Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
+		;debug.trace("iEquip_EquipLastItem OnItemAdded WAITING start - akBaseItem: " + akBaseItem.getName())
 		goToState("ACTIVE")
 		bool add = false
 		if(akBaseItem as Weapon)
@@ -161,14 +177,20 @@ state WAITING
 		endIf
 
 		goToState("WAITING")
+		;debug.trace("iEquip_EquipLastItem OnItemAdded WAITING end")
 	endEvent
 endState
 
 state ACTIVE
+	Event OnBeginState()
+		;debug.trace("iEquip_EquipLastItem - switched to ACTIVE state")
+	endEvent
+
 	Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 		;player did something too fast, clear lastItem on exit state
-		;debug.trace("iEquip_EquipLastItem - Triggered OnItemAdded in ACTIVE state with " + akBaseItem.getName())
+		;debug.trace("iEquip_EquipLastItem OnItemAdded ACTIVE start - akBaseItem: " + akBaseItem.getName())
 		clearWhenDone = true
+		;debug.trace("iEquip_EquipLastItem OnItemAdded ACTIVE end")
 	endEvent
 	
 	Event OnEndState()
@@ -180,18 +202,27 @@ state ACTIVE
 endState
 
 state DISABLED
+	Event OnBeginState()
+		;debug.trace("iEquip_EquipLastItem - switched to DISABLED state")
+	endEvent
+
 	Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	endEvent
+
+	function useLast(bool useLeft)
+	endFunction
 endState
 
-Event OnUpdate()
+function runUpdate()
+	;debug.trace("iEquip_EquipLastItem runUpdate start")
 	goToState("ACTIVE")
 	restartQueue()
 	goToState("WAITING")
-endEvent
+	;debug.trace("iEquip_EquipLastItem runUpdate end")
+endFunction
 
 function addItemToQueue(Form akBaseItem, ObjectReference akItemReference = None)
-	;debug.trace("iEquip_EquipLastItem start - currentIndex: " + currentIndex + ", startIndex: " + startIndex)
+	;debug.trace("iEquip_EquipLastItem addItemToQueue start - currentIndex: " + currentIndex + ", startIndex: " + startIndex)
 	currentIndex = (currentIndex + 1) % 128
 	persistent[currentIndex] = akItemReference != None
 	addedRefs[currentIndex] = akItemReference
@@ -202,12 +233,12 @@ function addItemToQueue(Form akBaseItem, ObjectReference akItemReference = None)
 	if(currentIndex == startIndex)
 		startIndex = (startIndex + 1) % 128
 	endIf
-	;debug.trace("iEquip_EquipLastItem end - Added item " + akBaseItem.getName() + " at index " + currentIndex + ".")
-	registerForSingleUpdate(fQueueTimeout)
+	;debug.trace("iEquip_EquipLastItem addItemToQueue end - Added item " + akBaseItem.getName() + " at index " + currentIndex + ".")
+	ELU.registerForEquipLastItemUpdate(fQueueTimeout)
 endFunction
 
 function clearLastItem()
-	;debug.trace("iEquip_EquipLastItem clearLastItem start - Clearing queue.")
+	;debug.trace("iEquip_EquipLastItem clearLastItem start - currentIndex: " + currentIndex + ", startIndex: " + startIndex)
 	addedItems[currentIndex] = None
 	persistent[currentIndex] = false
 	addedRefs[currentIndex] = None
@@ -219,14 +250,16 @@ function clearLastItem()
 		endIf
 		i += 1
 	endWhile
-	;debug.trace("iEquip_EquipLastItem - Cleared. Current index: " + currentIndex)
+	;debug.trace("iEquip_EquipLastItem clearLastItem end - currentIndex: " + currentIndex + ", startIndex: " + startIndex)
 endFunction
 
 function restartQueue()
+	;debug.trace("iEquip_EquipLastItem restartQueue Start")
 	startIndex = currentIndex
 	addedItems[currentIndex] = None
 	persistent[currentIndex] = false
 	addedRefs[currentIndex] = None
+	;debug.trace("iEquip_EquipLastItem restartQueue end - currentIndex: " + currentIndex + ", startIndex: " + startIndex)
 endFunction
 
 function useLast(bool useLeft)
@@ -310,7 +343,8 @@ function useLast(bool useLeft)
 					PO.sortPoisonQueue()
 					WC.jumpToPoisonQueueIndex(lastPotion.GetName(), lastPotion)
 				else
-					PlayerRef.equipItem(lastPotion)
+					PlayerRef.EquipItemEx(lastPotion)
+					debug.notification(lastPotion.GetName() + " " + iEquip_StringExt.LocalizeString("$iEquip_PO_PotionConsumed"))
 				endIf
 			endIf
 		endIf
@@ -320,4 +354,9 @@ function useLast(bool useLeft)
 	else
 		debug.notification(iEquip_StringExt.LocalizeString("$iEquip_EL_not_noItems"))
 	endIf
+	;debug.trace("iEquip_EquipLastItem useLast end")
 endFunction
+
+; Deprecated
+Event OnUpdate()
+endEvent

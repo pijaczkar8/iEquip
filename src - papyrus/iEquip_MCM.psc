@@ -47,12 +47,13 @@ bool bUsePaperColours
 ; ### MCM Version Control ###
 
 int function GetVersion()
-    return 162  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
+    return 163  ; 3 digit versioning - ie. 103 = 1.0.3 where 1 is the main version, 0 is an incremental update, and 3 is a hotfix version 
 endFunction
 
 event OnVersionUpdate(int a_version)
-    if (a_version >= 162 && CurrentVersion < 162)
+    if (a_version >= 163 && CurrentVersion < 163)
         OnConfigInit()
+        updateHotkeysArray()
     endIf
 endEvent
 
@@ -74,7 +75,7 @@ event OnConfigInit()
     Pages[10] = "$iEquip_MCM_lbl_EditMode"
     Pages[11] = "$iEquip_MCM_lbl_Info"
 
-    asControlNames = new string[12]
+    asControlNames = new string[13]
     asControlNames[0] = "$iEquip_MCM_gen_lbl_leftHand"
     asControlNames[1] = "$iEquip_MCM_gen_lbl_rightHand"
     asControlNames[2] = "$iEquip_MCM_gen_lbl_shout"
@@ -87,8 +88,9 @@ event OnConfigInit()
     asControlNames[9] = "$iEquip_MCM_gen_lbl_quickRanged"
     asControlNames[10] = "$iEquip_MCM_tch_lbl_quickLight"
     asControlNames[11] = "$iEquip_MCM_poi_lbl_throwingPoisonsKey"
+    asControlNames[12] = "$iEquip_MCM_eqp_lbl_equipLastItemKey"
 
-    aiHotkeys = new int[12]
+    aiHotkeys = new int[13]
 
     headerColour = headerColourDefault
     helpColour = helpColourDefault
@@ -140,6 +142,7 @@ function updateHotkeysArray()
     aiHotkeys[9] = KH.iQuickRangedKey
     aiHotkeys[10] = KH.iQuickLightKey
     aiHotkeys[11] = KH.iThrowingPoisonsKey
+    aiHotkeys[12] = KH.iEquipLastItemKey
 endFunction
 
 ; #################

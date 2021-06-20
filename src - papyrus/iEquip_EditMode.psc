@@ -782,6 +782,11 @@ function UpdateEditModeGuide()
 endFunction
 
 function UpdateElementsAll(bool bUpdateAlpha = true)
+    
+    if !isEditMode
+        WidgetRoot = WC.WidgetRoot
+    endIf
+    
     int iIndex
     
     while iIndex < WC.asWidgetDescriptions.length        

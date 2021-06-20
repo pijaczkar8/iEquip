@@ -363,6 +363,11 @@ State eqp_tgl_enableEquipLastItem
             MCM.SetInfoText("$iEquip_MCM_eqp_txt_enableEquipLastItem")
         elseIf currentEvent == "Select"
             EL.isEnabled = !EL.isEnabled
+            if !EL.isEnabled
+                KH.iEquipLastItemKey = -1
+                WC.bUpdateKeyMaps = true
+                MCM.SetKeyMapOptionValueST(KH.iEquipLastItemKey)
+            endIf
             MCM.forcePageReset()
         endIf
     endEvent

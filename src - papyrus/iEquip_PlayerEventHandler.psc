@@ -748,7 +748,7 @@ Event OnUpdate()
 			Utility.Wait(0.4)
 		  	int Q
 		  	while Q < 3
-		  		if !PlayerRef.GetEquippedObject(Q) && !WC.abQueueWasEmpty[Q]
+		  		if !PlayerRef.GetEquippedObject(Q)
 		  			WC.setSlotToEmpty(Q, true, JArray.count(WC.aiTargetQ[Q]) > 0)
 		  		endIf
 		  		Q += 1
@@ -1049,7 +1049,7 @@ function updateSlotOnObjectEquipped(int equippedSlot, form queuedForm, int itemT
 		elseIf equippedSlot < 2 && !WC.bAllowSingleItemsInBothQueues && queuedForm as weapon
 			int otherHand = (equippedSlot + 1) % 2
 			int otherHandIndex = WC.findInQueue(otherHand, itemName, queuedForm, itemHandle)
-			if PlayerRef.GetItemCount(queuedForm) == 1 || otherHandIndex != -1
+			if PlayerRef.GetItemCount(queuedForm) == 1 && otherHandIndex != -1
 				WC.removeItemFromQueue(otherHand, otherHandIndex, false, false, false, false)
 				bSwitchedQueues = true
 			endIf

@@ -1356,6 +1356,7 @@ state ENABLED
 				refreshWidgetOnLoad()
 				EM.UpdateAllTextFormatting()
 			else
+				
 				int i
 				while i < 2
 					CM.initChargeMeter(i)
@@ -3726,32 +3727,34 @@ endFunction
 
 function removeTempItemFromQueue(int Q, int iIndex)
 	int tempObj = jArray.getObj(aiTargetQ[Q], iIndex)
-	form tempForm = jMap.getForm(tempObj, "iEquipForm")
-	string tempName = jMap.getStr(tempObj, "iEquipName")
-	int tempHandle = jMap.getInt(tempObj, "iEquipHandle", 0xFFFF)
-	int otherQ
-	if Q < 2
-		otherQ = (Q + 1) % 2
+	if jMap.getInt(tempObj, "iEquipTempItem") == 1
+		form tempForm = jMap.getForm(tempObj, "iEquipForm")
+		string tempName = jMap.getStr(tempObj, "iEquipName")
+		int tempHandle = jMap.getInt(tempObj, "iEquipHandle", 0xFFFF)
+		int otherQ
+		if Q < 2
+			otherQ = (Q + 1) % 2
+		endIf
+
+		if bMoreHUDLoaded
+			int tempID = jMap.getInt(tempObj, "iEquipItemID")
+			AhzMoreHudIE.RemoveIconItem(tempID)
+			if Q < 2 && findInQueue(otherQ, tempName, tempForm, tempHandle) != -1
+				AhzMoreHudIE.AddIconItem(tempID, asMoreHUDIcons[otherQ])
+	        endIf
+	    endIf
+	    
+	    jArray.eraseIndex(aiTargetQ[Q], iIndex)
+
+	    if aiCurrentQueuePosition[Q] > iIndex
+	    	aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
+	    endIf
+
+	    if Q == 2 || (findInQueue(Q, tempName, tempForm, tempHandle) == -1 && findInQueue(otherQ, tempName, tempForm, tempHandle) == -1)
+	    	iEquip_AllCurrentItemsFLST.RemoveAddedForm(tempForm)
+			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+	    endIf
 	endIf
-
-	if bMoreHUDLoaded
-		int tempID = jMap.getInt(tempObj, "iEquipItemID")
-		AhzMoreHudIE.RemoveIconItem(tempID)
-		if Q < 2 && findInQueue(otherQ, tempName, tempForm, tempHandle) != -1
-			AhzMoreHudIE.AddIconItem(tempID, asMoreHUDIcons[otherQ])
-        endIf
-    endIf
-    
-    jArray.eraseIndex(aiTargetQ[Q], iIndex)
-
-    if aiCurrentQueuePosition[Q] > iIndex
-    	aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
-    endIf
-
-    if Q == 2 || (findInQueue(Q, tempName, tempForm, tempHandle) == -1 && findInQueue(otherQ, tempName, tempForm, tempHandle) == -1)
-    	iEquip_AllCurrentItemsFLST.RemoveAddedForm(tempForm)
-		EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
-    endIf
 endFunction
 
 function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cyclingAmmo = false, bool onItemRemoved = false, bool addToCache = true)
@@ -6356,3 +6359,40 @@ function refreshVisibleItems()
 	endIf
 	;debug.trace("iEquip_WidgetCore refreshVisibleItems end")
 endFunction
+
+;/Temp
+
+function autoLoadWidgetLayoutPreset()
+
+	int jPreset = jValue.readFromFile(WidgetPresetPath + "YourPresetNameIncludingFileExtension")
+
+	JArray.writeToFloatPArray(JMap.getObj(jPreset, "_X"), afWidget_X, 0, -1, 0, 0)
+	JArray.writeToFloatPArray(JMap.getObj(jPreset, "_Y"), afWidget_Y, 0, -1, 0, 0)
+	JArray.writeToFloatPArray(JMap.getObj(jPreset, "_S"), afWidget_S, 0, -1, 0, 0)
+	JArray.writeToFloatPArray(JMap.getObj(jPreset, "_R"), afWidget_R, 0, -1, 0, 0)
+	JArray.writeToFloatPArray(JMap.getObj(jPreset, "_A"), afWidget_A, 0, -1, 0, 0)
+	JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_D"), aiWidget_D, 0, -1, 0, 0)
+	JArray.writeToIntegerPArray(JMap.getObj(jPreset, "_TC"), aiWidget_TC, 0, -1, 0, 0)
+	JArray.writeToStringPArray(JMap.getObj(jPreset, "_TA"), asWidget_TA, 0, -1, 0, 0)
+endFunction
+
+bPotionSelectorOnLeft = jMap.getInt(jPreset, "potionSelectorAlignment") as bool
+CM.iChargeDisplayType = jMap.getInt(jPreset, "chargeDisplayType")
+iBackgroundStyle = jMap.getInt(jPreset, "backgroundStyle")
+
+if jMap.getInt(jPreset, "dontFadeBackgrounds", -1) != -1
+    bDontFadeBackgrounds = jMap.getInt(jPreset, "dontFadeBackgrounds") as bool
+endIf
+
+if jMap.getInt(jPreset, "DSEnabled", -1) != -1
+    bDropShadowEnabled = jMap.getInt(jPreset, "DSEnabled") as bool
+    if bDropShadowEnabled
+        fDropShadowAlpha = jMap.getFlt(jPreset, "DSAlpha")
+        fDropShadowAngle = jMap.getFlt(jPreset, "DSAngle")
+        iDropShadowBlur = jMap.getInt(jPreset, "DSBlur")
+        fDropShadowDistance = jMap.getFlt(jPreset, "DSDistance")
+        fDropShadowStrength = jMap.getFlt(jPreset, "DSStrength")
+    endIf
+endIf
+
+/;

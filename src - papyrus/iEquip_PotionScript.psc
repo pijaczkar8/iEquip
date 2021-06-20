@@ -728,7 +728,7 @@ function handleRemovedPotions()
                     if itemCount < 1
                         foundPotion = findInQueue(iPoisonQ, removedPotion)
                         if foundPotion != -1
-                            WC.removeItemFromQueue(4, foundPotion, false, false, true, false)
+                            WC.removeItemFromQueue(4, foundPotion, false, false, true)
                         endIf
                     elseIf WC.asCurrentlyEquipped[4] == removedPotion.GetName()
                         WC.setSlotCount(4, itemCount)
@@ -738,7 +738,7 @@ function handleRemovedPotions()
                     if itemCount < 1
                         foundPotion = findInQueue(iConsumableQ, removedPotion)
                         if foundPotion != -1
-                            WC.removeItemFromQueue(3, foundPotion, false, false, true, false)
+                            WC.removeItemFromQueue(3, foundPotion, false, false, true)
                         endIf
                     elseIf WC.asCurrentlyEquipped[3] == removedPotion.GetName()
                         WC.setSlotCount(3, itemCount)
@@ -1143,19 +1143,21 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
     
     bAddedToQueue = false
     if foundPotion.isPoison()
-        if (bautoAddPoisons || (bIsFirstRun && firstThreePoisonsCounter < 3)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddPoisons)))
+        if (bautoAddPoisons || (bIsFirstRun && firstThreePoisonsCounter < 3) || (WC.bEnableRemovedItemCaching && WC.iEquip_RemovedItemsFLST.HasForm(foundPotion as form))) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddPoisons)))
             checkAndAddToPoisonQueue(foundPotion)
             if bIsFirstRun
                 firstThreePoisonsCounter += 1
             endIf
+            WC.iEquip_RemovedItemsFLST.RemoveAddedForm(foundPotion as form)
         endIf
 
     elseIf foundPotion.isFood()
-        if (bautoAddConsumables || (bIsFirstRun && firstThreeConsumablesCounter < 3)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddConsumables)))
+        if (bautoAddConsumables || (bIsFirstRun && firstThreeConsumablesCounter < 3) || (WC.bEnableRemovedItemCaching && WC.iEquip_RemovedItemsFLST.HasForm(foundPotion as form))) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddConsumables)))
             checkAndAddToConsumableQueue(foundPotion)
             if bIsFirstRun
                 firstThreeConsumablesCounter += 1
             endIf
+            WC.iEquip_RemovedItemsFLST.RemoveAddedForm(foundPotion as form)
         endIf
 
     else
@@ -1235,8 +1237,9 @@ function checkAndAddToPotionQueue(potion foundPotion, bool bOnLoad = false)
             WC.abPotionGroupEmpty[group] = false
         endIf
         ;If it isn't a grouped potion, or if potion grouping is disabled then if bautoAddPotions is enabled add it directly to the consumable queue
-        if bautoAddPotions && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group] || (bIsRestoreAllPotion && bExcludeRestoreAllEffects)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddPotions)))
+        if (bautoAddPotions || (WC.bEnableRemovedItemCaching && WC.iEquip_RemovedItemsFLST.HasForm(foundPotion as form))) && (Q == -1 || !WC.bPotionGrouping || !WC.abPotionGroupEnabled[group] || (bIsRestoreAllPotion && bExcludeRestoreAllEffects)) && !iEquip_GeneralBlacklistFLST.HasForm(foundPotion as form) && (bIsFirstRun || (!bOnLoad && (!bAutoAddOptionsChanged || bAddPotions)))
             checkAndAddToConsumableQueue(foundPotion, true)
+            WC.iEquip_RemovedItemsFLST.RemoveAddedForm(foundPotion as form)
         elseIf !bFindingPotions && WC.asCurrentlyEquipped[3] == potionGroup
             WC.setSlotCount(3, getPotionGroupCount(group))
             if WC.bConsumableIconFaded

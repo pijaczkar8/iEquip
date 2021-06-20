@@ -520,12 +520,14 @@ endFunction
 function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate = true, bool equip = true, form equippedAmmo = none)
 	;debug.trace("iEquip_AmmoMode checkAndEquipAmmo start - reverse: " + reverse + ", ignoreEquipOnPause: " + ignoreEquipOnPause + ", animate: " + animate + ", equippedAmmo: " + equippedAmmo)
 
+	int targetQ = aiTargetQ[Q]
+
 	if equippedAmmo
 		if equippedAmmo != currentAmmoForm		; Runs if function has been called from PlayerEventHandler OnObjectEquipped sequence to catch ammo being manually equipped through the Inventory Menu
 			bool found
 			int i
-			while i < JArray.count(aiTargetQ[Q]) && !found
-				found = (equippedAmmo == jMap.getForm(jArray.getObj(aiTargetQ[Q], i), "iEquipForm"))
+			while i < JArray.count(targetQ) && !found
+				found = (equippedAmmo == jMap.getForm(jArray.getObj(targetQ, i), "iEquipForm"))
 				if !found
 					i += 1
 				endIf
@@ -540,17 +542,22 @@ function checkAndEquipAmmo(bool reverse, bool ignoreEquipOnPause, bool animate =
 		endIf
 	endIf
 
-	currentAmmoForm = jMap.getForm(jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q]), "iEquipForm")
+	currentAmmoForm = jMap.getForm(jArray.getObj(targetQ, aiCurrentAmmoIndex[Q]), "iEquipForm")
 
-	int ammoCount = PlayerRef.GetItemCount(currentAmmoForm)
+	int ammoCount
+
+	if currentAmmoForm
+		ammoCount = PlayerRef.GetItemCount(currentAmmoForm)
+	endIf
+
 	;Check we've still got the at least one of the target ammo, if not remove it from the queue and advance the queue again
-	if ammoCount < 1
+	if !currentAmmoForm || ammoCount < 1
 		removeAmmoFromQueue(Q, aiCurrentAmmoIndex[Q])
 		cycleAmmo(reverse, ignoreEquipOnPause)
 	;Otherwise update the widget and either register for the EquipOnPause update or equip immediately
 	else
 		if animate
-			int ammoObject = jArray.getObj(aiTargetQ[Q], aiCurrentAmmoIndex[Q])
+			int ammoObject = jArray.getObj(targetQ, aiCurrentAmmoIndex[Q])
 			asCurrentAmmo[Q] = jMap.getStr(ammoObject, "iEquipName")
 
 			float fNameAlpha = WC.afWidget_A[8] ; leftName_mc
