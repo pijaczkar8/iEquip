@@ -486,7 +486,7 @@ State gen_key_leftHand
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_leftHand")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iLeftKey = currentVar as int
             else
@@ -503,7 +503,7 @@ State gen_key_rightHand
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_rightHand")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iRightKey = currentVar as int
             else
@@ -520,7 +520,7 @@ State gen_key_shout
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_shout")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iShoutKey = currentVar as int
             else
@@ -537,7 +537,7 @@ State gen_key_consumPoison
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_consumPoison")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iConsumableKey = currentVar as int
             else
@@ -558,7 +558,7 @@ State gen_key_util
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_util")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iUtilityKey = currentVar as int
             else
@@ -631,7 +631,7 @@ State gen_key_consItem
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iConsumeItemKey = currentVar as int
             else
@@ -648,7 +648,7 @@ State gen_key_cyclePoison
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iCyclePoisonKey = currentVar as int
             else
@@ -665,7 +665,7 @@ State gen_key_quickRestore
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iQuickRestoreKey = currentVar as int
             else
@@ -682,7 +682,7 @@ State gen_key_quickShield
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iQuickShieldKey = currentVar as int
             else
@@ -699,7 +699,7 @@ State gen_key_quickRanged
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_gen_txt_optHotKey")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iQuickRangedKey = currentVar as int
             else

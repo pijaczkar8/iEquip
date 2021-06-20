@@ -154,7 +154,7 @@ State tch_key_quickLight
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_tch_txt_quickLightHotKey")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iQuickLightKey = currentVar as int
             else

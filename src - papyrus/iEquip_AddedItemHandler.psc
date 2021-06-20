@@ -62,67 +62,72 @@ endEvent
 event OnUpdate()
 	;debug.trace("iEquip_AddedItemHandler OnUpdate start")
 	
-	while bProcessingAddedForms
-		Utility.WaitMenuMode(0.05)
-	endWhile
-
-	bProcessingAddedForms = true
-
 	int i
-	int numForms = iEquip_ItemsToAddFLST.GetSize()
-	;debug.trace("iEquip_AddedItemHandler OnUpdate - number of forms to process: " + numForms)
-	form formToAdd
-	while numForms > 0
-		formToAdd = iEquip_ItemsToAddFLST.GetAt(0)
-		;debug.trace("iEquip_AddedItemHandler OnUpdate - processing " + formToAdd + ", " + formToAdd.GetName())
-		iEquip_ItemsToAddFLST.RemoveAddedForm(formToAdd)
-																											; Handle Potions, Ammo and bound ammo first
-		if formToAdd
-			if formToAdd as potion
-				PO.onPotionAdded(formToAdd)
-			elseIf formToAdd as ammo && Game.GetModName(Math.LogicalAnd(Math.RightShift(formToAdd.GetFormID(), 24), 0xFF)) != "JZBai_ThrowingWpnsLite.esp"
-				if WC.BW.bIsBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
-					AM.addBoundAmmoToQueue(formToAdd, formToAdd.GetName())
-				else
-					AM.onAmmoAdded(formToAdd)
-				endIf
 
-			else
-				if WC.bEnableRemovedItemCaching && iEquip_RemovedItemsFLST.HasForm(formToAdd) 				; Next check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
-		    		WC.addBackCachedItem(formToAdd)
-		    	endIf
-
-				if (formToAdd as weapon && !iEquip_WeaponExt.IsWeaponBound(formToAdd as weapon)) || formToAdd as armor	; If we've picked up a weapon or shield and we have auto-add/equip weapons and shields enabled run that now
-					if !bCraftingOrBarterMenuOpen
-						WC.onWeaponOrShieldAdded(formToAdd)
-					endIf
-
-				elseIf formToAdd == iEquipDroppedTorch as form || formToAdd == iEquipBurntOutTorch as form	; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for...
-					bSwitchingTorches = true
-					PlayerRef.RemoveItem(formToAdd, 1, true)
-					if Game.GetModByName("RealisticTorches.esp") != 255
-						formToAdd = Game.GetFormFromFile(0x00002DC5, "RealisticTorches.esp") as form 		; RT_TorchOut - Burnt Out Torch (if Realistic Torches detected)
-					else
-						formToAdd = TO.realTorchForm 														; Or a real torch
-					endIf
-					PlayerRef.AddItem(formToAdd, 1, true)
-				endIf
-		    																								; Finally check if we've just added one of a currently equipped item which requires a counter update
-				i = 0
-				int itemType = formToAdd.GetType()
-				while i < 2
-					if WC.asCurrentlyEquipped[i] == formToAdd.GetName()
-						;Ammo, scrolls, torch or other throwing weapons
-						if itemType == 42 || itemType == 23 || (itemType == 31 && Game.GetModName(Math.LogicalAnd(Math.RightShift(formToAdd.GetFormID(), 24), 0xFF)) != "TorchesCastShadows.esp") || (itemType == 41 && iEquip_FormExt.IsGrenade(formToAdd))	
-			    			WC.setSlotCount(i, PlayerRef.GetItemCount(formToAdd))
-			    		endIf
-		        	endIf
-		        	i += 1
-		        endWhile
-			endIf
-		endIf
-		numForms -= 1
+	while bProcessingAddedForms && i < 600
+		Utility.WaitMenuMode(0.05)
+		i += 1
 	endWhile
+
+	if i < 600
+		bProcessingAddedForms = true
+
+		i = 0
+		int numForms = iEquip_ItemsToAddFLST.GetSize()
+		;debug.trace("iEquip_AddedItemHandler OnUpdate - number of forms to process: " + numForms)
+		form formToAdd
+		while numForms > 0
+			formToAdd = iEquip_ItemsToAddFLST.GetAt(0)
+			;debug.trace("iEquip_AddedItemHandler OnUpdate - processing " + formToAdd + ", " + formToAdd.GetName())
+			iEquip_ItemsToAddFLST.RemoveAddedForm(formToAdd)
+																												; Handle Potions, Ammo and bound ammo first
+			if formToAdd
+				if formToAdd as potion
+					PO.onPotionAdded(formToAdd)
+				elseIf formToAdd as ammo && Game.GetModName(Math.LogicalAnd(Math.RightShift(formToAdd.GetFormID(), 24), 0xFF)) != "JZBai_ThrowingWpnsLite.esp"
+					if WC.BW.bIsBoundSpellEquipped && iEquip_AmmoExt.IsAmmoBound(formToAdd as ammo)
+						AM.addBoundAmmoToQueue(formToAdd, formToAdd.GetName())
+					else
+						AM.onAmmoAdded(formToAdd)
+					endIf
+
+				else
+					if WC.bEnableRemovedItemCaching && iEquip_RemovedItemsFLST.HasForm(formToAdd) 				; Next check if the item just added is currently in the removed items cache then re-add it to the queue it was removed from
+			    		WC.addBackCachedItem(formToAdd)
+			    	endIf
+
+					if (formToAdd as weapon && !iEquip_WeaponExt.IsWeaponBound(formToAdd as weapon)) || formToAdd as armor	; If we've picked up a weapon or shield and we have auto-add/equip weapons and shields enabled run that now
+						if !bCraftingOrBarterMenuOpen
+							WC.onWeaponOrShieldAdded(formToAdd)
+						endIf
+
+					elseIf formToAdd == iEquipDroppedTorch as form || formToAdd == iEquipBurntOutTorch as form	; If we've just picked up a torch which was dropped during the final 30s with burn out enabled substitute it for...
+						bSwitchingTorches = true
+						PlayerRef.RemoveItem(formToAdd, 1, true)
+						if Game.GetModByName("RealisticTorches.esp") != 255
+							formToAdd = Game.GetFormFromFile(0x00002DC5, "RealisticTorches.esp") as form 		; RT_TorchOut - Burnt Out Torch (if Realistic Torches detected)
+						else
+							formToAdd = TO.realTorchForm 														; Or a real torch
+						endIf
+						PlayerRef.AddItem(formToAdd, 1, true)
+					endIf
+			    																								; Finally check if we've just added one of a currently equipped item which requires a counter update
+					i = 0
+					int itemType = formToAdd.GetType()
+					while i < 2
+						if WC.asCurrentlyEquipped[i] == formToAdd.GetName()
+							;Ammo, scrolls, torch or other throwing weapons
+							if itemType == 42 || itemType == 23 || (itemType == 31 && Game.GetModName(Math.LogicalAnd(Math.RightShift(formToAdd.GetFormID(), 24), 0xFF)) != "TorchesCastShadows.esp") || (itemType == 41 && iEquip_FormExt.IsGrenade(formToAdd))	
+				    			WC.setSlotCount(i, PlayerRef.GetItemCount(formToAdd))
+				    		endIf
+			        	endIf
+			        	i += 1
+			        endWhile
+				endIf
+			endIf
+			numForms -= 1
+		endWhile
+	endIf
 	;iEquip_ItemsToAddFLST.Revert()
 	bProcessingAddedForms = false
 	bCraftingOrBarterMenuOpen = false

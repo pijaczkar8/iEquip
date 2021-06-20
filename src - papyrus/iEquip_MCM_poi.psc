@@ -336,7 +336,7 @@ State poi_key_throwingPoisonsKey
     event OnBeginState()
         if currentEvent == "Highlight"
             MCM.SetInfoText("$iEquip_MCM_poi_txt_throwingPoisonsKey")
-        elseIf currentEvent == "Change" || "Default"
+        elseIf currentEvent == "Change" || currentEvent == "Default"
             if currentEvent == "Change"
                 KH.iThrowingPoisonsKey = currentVar as int
             else
