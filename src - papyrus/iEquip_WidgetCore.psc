@@ -780,7 +780,7 @@ EndEvent
 float fCurrentVersion						; First digit = Main version, 2nd digit = Incremental, 3rd digit = Hotfix.  For example main version 1.0, hotfix 03 would be 1.03
 
 float function getiEquipVersion()
-    return 1.61
+    return 1.62
 endFunction
 
 function checkVersion()
@@ -3726,114 +3726,143 @@ int function findInQueue(int Q, string itemToFind, form formToFind = none, int i
 endFunction
 
 function removeTempItemFromQueue(int Q, int iIndex)
-	int tempObj = jArray.getObj(aiTargetQ[Q], iIndex)
-	if jMap.getInt(tempObj, "iEquipTempItem") == 1
-		form tempForm = jMap.getForm(tempObj, "iEquipForm")
-		string tempName = jMap.getStr(tempObj, "iEquipName")
-		int tempHandle = jMap.getInt(tempObj, "iEquipHandle", 0xFFFF)
-		int otherQ
-		if Q < 2
-			otherQ = (Q + 1) % 2
+	if iIndex != -1
+		int tempObj = jArray.getObj(aiTargetQ[Q], iIndex)
+		if jMap.getInt(tempObj, "iEquipTempItem") == 1
+			form tempForm = jMap.getForm(tempObj, "iEquipForm")
+			string tempName = jMap.getStr(tempObj, "iEquipName")
+			int tempHandle = jMap.getInt(tempObj, "iEquipHandle", 0xFFFF)
+			
+			int otherQ
+			bool inOtherQ
+			if Q < 2
+				otherQ = (Q + 1) % 2
+				inOtherQ = findInQueue(otherQ, jMap.getStr(tempObj, "iEquipName")) != -1
+				if !inOtherQ && TI.aiTemperedItemTypes.Find(JMap.getInt(tempObj, "iEquipType")) != -1 && tempHandle != 0xFFFF
+		        	int i = JArray.EraseInteger(iRefHandleArray, tempHandle)
+		        endIf
+			endIf
+
+			if bMoreHUDLoaded
+				int tempID = jMap.getInt(tempObj, "iEquipItemID")
+				AhzMoreHudIE.RemoveIconItem(tempID)
+				if inOtherQ
+					AhzMoreHudIE.AddIconItem(tempID, asMoreHUDIcons[otherQ])
+		        endIf
+		    endIf
+		    
+		    jArray.eraseIndex(aiTargetQ[Q], iIndex)
+
+		    if aiCurrentQueuePosition[Q] > iIndex
+		    	aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
+		    endIf
+
+		    if Q == 2 || !inOtherQ
+		    	iEquip_AllCurrentItemsFLST.RemoveAddedForm(tempForm)
+				EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+		    endIf
 		endIf
-
-		if bMoreHUDLoaded
-			int tempID = jMap.getInt(tempObj, "iEquipItemID")
-			AhzMoreHudIE.RemoveIconItem(tempID)
-			if Q < 2 && findInQueue(otherQ, tempName, tempForm, tempHandle) != -1
-				AhzMoreHudIE.AddIconItem(tempID, asMoreHUDIcons[otherQ])
-	        endIf
-	    endIf
-	    
-	    jArray.eraseIndex(aiTargetQ[Q], iIndex)
-
-	    if aiCurrentQueuePosition[Q] > iIndex
-	    	aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
-	    endIf
-
-	    if Q == 2 || (findInQueue(Q, tempName, tempForm, tempHandle) == -1 && findInQueue(otherQ, tempName, tempForm, tempHandle) == -1)
-	    	iEquip_AllCurrentItemsFLST.RemoveAddedForm(tempForm)
-			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
-	    endIf
 	endIf
 endFunction
 
 function removeItemFromQueue(int Q, int iIndex, bool purging = false, bool cyclingAmmo = false, bool onItemRemoved = false, bool addToCache = true)
 	;debug.trace("iEquip_WidgetCore removeItemFromQueue start - Q: " + Q + ", iIndex: " + iIndex + ", purging: " + purging + ", cyclingAmmo: " + cyclingAmmo + ", onItemRemoved: " + onItemRemoved + ", addToCache: " + addToCache)
-	int targetQ = aiTargetQ[Q]
-	int tempObj = jArray.getObj(targetQ, iIndex)
+	if iIndex != -1
+		int targetQ = aiTargetQ[Q]
+		int tempObj = jArray.getObj(targetQ, iIndex)
 
-	if bEnableRemovedItemCaching && addToCache && !purging
-		AddItemToLastRemovedCache(Q, iIndex)
-	endIf
-	if bMoreHUDLoaded
-		int otherHand = (Q + 1) % 2
-		AhzMoreHudIE.RemoveIconItem(jMap.getInt(tempObj, "iEquipItemID"))
-		if Q < 2 && findInQueue(otherHand, jMap.getStr(tempObj, "iEquipName")) != -1
-			AhzMoreHudIE.AddIconItem(jMap.getInt(tempObj, "iEquipItemID"), asMoreHUDIcons[otherHand])
-        endIf
-    endIf
-    int itemType = jMap.getInt(tempObj, "iEquipType")
-	jArray.eraseIndex(targetQ, iIndex)
-	int queueLength = jArray.count(targetQ)
-	int enabledPotionGroupCount = 0
-	if Q == 3 && bPotionGrouping && PO.iEmptyPotionQueueChoice != 1
-        int i 
-        while i < 3
-            if !abPotionGroupEmpty[i]
-                enabledPotionGroupCount += 1
-            endIf
-            i += 1
-        endWhile
-	endIf
-	;debug.trace("iEquip_WidgetCore removeItemFromQueue - queueLength: " + queueLength + ", enabledPotionGroupCount: " + enabledPotionGroupCount)
-	; In the case of the consumables queue count will never drop below 3 because of the Potion Group slots, so either count has to be greater than 3 or at least one of the Potion Groups needs to be shown, otherwise hide the consumable widget
-	if (Q != 3 && queueLength > 0) || (Q == 3 && (queueLength > 3 || enabledPotionGroupCount > 0))
-		if aiCurrentQueuePosition[Q] > iIndex 			; If the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
-			;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] > iIndex")
-			aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
-		elseif aiCurrentQueuePosition[Q] == iIndex 		; If you have removed the currently equipped item then if it was the last in the queue advance to index 0 and cycle the slot
-			;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] == iIndex")
-			if aiCurrentQueuePosition[Q] == queueLength
-				;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] == queueLength")
-				aiCurrentQueuePosition[Q] = 0
-			endIf
-			if !cyclingAmmo
-				bool actionTaken
-				if Q == 1 && (itemType == 7 || itemType == 9)
-					 actionTaken = PM.quickRangedFindAndEquipWeapon(itemType, false)
-				elseIf Q == 0
-					if itemType == 26 ; Shield
-						PM.quickShield(true)
-						Utility.WaitMenuMode(0.5)
-						if PlayerRef.GetEquippedShield()
+		if bEnableRemovedItemCaching && addToCache && !purging
+			AddItemToLastRemovedCache(Q, iIndex)
+		endIf
+
+		int otherQ
+		bool inOtherQ
+		if Q < 2
+			otherQ = (Q + 1) % 2
+			inOtherQ = findInQueue(otherQ, jMap.getStr(tempObj, "iEquipName")) != -1
+			if !inOtherQ
+				int tempHandle = jMap.getInt(tempObj, "iEquipHandle", 0xFFFF)
+				if TI.aiTemperedItemTypes.Find(JMap.getInt(tempObj, "iEquipType")) != -1 && tempHandle != 0xFFFF
+	        		int i = JArray.EraseInteger(iRefHandleArray, tempHandle)
+	        	endIf
+	        endIf
+		endIf
+
+		if bMoreHUDLoaded
+			AhzMoreHudIE.RemoveIconItem(jMap.getInt(tempObj, "iEquipItemID"))
+			if inOtherQ
+				AhzMoreHudIE.AddIconItem(jMap.getInt(tempObj, "iEquipItemID"), asMoreHUDIcons[otherQ])
+	        endIf
+	    endIf
+
+	    if Q > 1 || !inOtherQ
+	    	iEquip_AllCurrentItemsFLST.RemoveAddedForm(jMap.getForm(tempObj, "iEquipForm"))
+			EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
+	    endIf
+
+	    int itemType = jMap.getInt(tempObj, "iEquipType")
+		jArray.eraseIndex(targetQ, iIndex)
+		int queueLength = jArray.count(targetQ)
+		int enabledPotionGroupCount = 0
+		if Q == 3 && bPotionGrouping && PO.iEmptyPotionQueueChoice != 1
+	        int i 
+	        while i < 3
+	            if !abPotionGroupEmpty[i]
+	                enabledPotionGroupCount += 1
+	            endIf
+	            i += 1
+	        endWhile
+		endIf
+		;debug.trace("iEquip_WidgetCore removeItemFromQueue - queueLength: " + queueLength + ", enabledPotionGroupCount: " + enabledPotionGroupCount)
+		; In the case of the consumables queue count will never drop below 3 because of the Potion Group slots, so either count has to be greater than 3 or at least one of the Potion Groups needs to be shown, otherwise hide the consumable widget
+		if (Q != 3 && queueLength > 0) || (Q == 3 && (queueLength > 3 || enabledPotionGroupCount > 0))
+			if aiCurrentQueuePosition[Q] > iIndex 			; If the item being removed is before the currently equipped item in the queue update the index for the currently equipped item
+				;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] > iIndex")
+				aiCurrentQueuePosition[Q] = aiCurrentQueuePosition[Q] - 1
+			elseif aiCurrentQueuePosition[Q] == iIndex 		; If you have removed the currently equipped item then if it was the last in the queue advance to index 0 and cycle the slot
+				;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] == iIndex")
+				if aiCurrentQueuePosition[Q] == queueLength
+					;debug.trace("iEquip_WidgetCore removeItemFromQueue - aiCurrentQueuePosition[Q] == queueLength")
+					aiCurrentQueuePosition[Q] = 0
+				endIf
+				if !cyclingAmmo
+					bool actionTaken
+					if Q == 1 && (itemType == 7 || itemType == 9)
+						 actionTaken = PM.quickRangedFindAndEquipWeapon(itemType, false)
+					elseIf Q == 0
+						if itemType == 26 ; Shield
+							PM.quickShield(true)
+							Utility.WaitMenuMode(0.5)
+							if PlayerRef.GetEquippedShield()
+								actionTaken = true
+							endIf
+						elseIf itemType == 31 && bJustDroppedTorch ; Torch
+							bJustDroppedTorch = false
 							actionTaken = true
 						endIf
-					elseIf itemType == 31 && bJustDroppedTorch ; Torch
-						bJustDroppedTorch = false
-						actionTaken = true
+					endIf
+					if !actionTaken
+						cycleSlot(Q, false, true, onItemRemoved)
 					endIf
 				endIf
-				if !actionTaken
-					cycleSlot(Q, false, true, onItemRemoved)
-				endIf
+			endIf
+		; Handle empty queue
+		else
+			; Empty poison queue has to match the behaiour of the potion groups in the consumables queue, so if any grouping is enabled check for fade/flash settings and mirror them
+			if (Q == 4 && bPotionGrouping)
+				handleEmptyPoisonQueue()
+			else
+				aiCurrentQueuePosition[Q] = -1
+				asCurrentlyEquipped[Q] = ""
+				setSlotToEmpty(Q)
 			endIf
 		endIf
-	; Handle empty queue
-	else
-		; Empty poison queue has to match the behaiour of the potion groups in the consumables queue, so if any grouping is enabled check for fade/flash settings and mirror them
-		if (Q == 4 && bPotionGrouping)
-			handleEmptyPoisonQueue()
-		else
-			aiCurrentQueuePosition[Q] = -1
-			asCurrentlyEquipped[Q] = ""
-			setSlotToEmpty(Q)
-		endIf
-	endIf
-	if Q < 3 && bPreselectMode
-		if queueLength < 2
-			setSlotToEmpty(Q + 5)
-		elseIf aiCurrentlyPreselected[Q] == iIndex
-			PM.cyclePreselectSlot(Q, jArray.count(targetQ))
+		if Q < 3 && bPreselectMode
+			if queueLength < 2
+				setSlotToEmpty(Q + 5)
+			elseIf aiCurrentlyPreselected[Q] == iIndex
+				PM.cyclePreselectSlot(Q, jArray.count(targetQ))
+			endIf
 		endIf
 	endIf
 	;debug.trace("iEquip_WidgetCore removeItemFromQueue end")
@@ -5845,7 +5874,7 @@ function QueueMenuRemoveFromQueue(int iIndex)
 	        	EH.updateEventFilter(iEquip_AllCurrentItemsFLST)
 	        endIf
 	        if TI.aiTemperedItemTypes.Find(JMap.getInt(targetObject, "iEquipType")) != -1 && itemHandle != 0xFFFF
-	        	JArray.EraseIndex(iRefHandleArray, JArray.FindInt(iRefHandleArray, itemHandle))
+	        	int i = JArray.EraseInteger(iRefHandleArray, itemHandle)
 	        endIf
 	    endIf
 		jArray.eraseIndex(iQueueMenuCurrentArray, iIndex)

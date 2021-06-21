@@ -17,8 +17,7 @@ Event OnRefHandleInvalidated(Form a_item, Int a_refHandle)
 	if WC.bAutoEquipHardcore && WC.bJustDroppedCurrentItem && a_item == WC.fLastDroppedItem
 		WC.bJustDroppedCurrentItem = false
 	else
-		int foundAt = JArray.FindInt(WC.iRefHandleArray, a_refHandle)
-		if foundAt != -1
+		if JArray.FindInt(WC.iRefHandleArray, a_refHandle) != -1
 			int i
 			int index
 			while i < 2
@@ -28,7 +27,7 @@ Event OnRefHandleInvalidated(Form a_item, Int a_refHandle)
 				endIf
 				i += 1
 			endWhile
-			JArray.EraseIndex(WC.iRefHandleArray, foundAt)
+			i = JArray.EraseInteger(WC.iRefHandleArray, a_refHandle)
 		endIf
 	endIf
 EndEvent
