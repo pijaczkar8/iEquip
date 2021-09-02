@@ -616,12 +616,16 @@ class skyui.widgets.iEquip.iEquipWidget extends iEquipWidgetBase
 	// Used when a bound weapon is equipped to switch from the spell school icon to the bound weapon icon
 	public function updateIconOnly(iSlot: Number, sIcon: String): Void
 	{
-		var iconClip: MovieClip = iSlot == 0 ? leftIcon_mc : rightIcon_mc;
-		var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+		var itemIcon: MovieClip = iSlot == 0 ? leftIcon : rightIcon;
 
-		tl.to(iconClip, 1.2, {_rotation:"+=1080", ease:Strong.easeInOut}, 0)
-		.call(switchToBoundItemIcon, [iSlot, sIcon], this, 0.7);
-		tl.play();
+		if(isAlreadyOnFrame(itemIcon, sIcon) == false){
+			var iconClip: MovieClip = iSlot == 0 ? leftIcon_mc : rightIcon_mc;
+			var tl = new TimelineLite({paused:true, autoRemoveChildren:true});
+
+			tl.to(iconClip, 1.2, {_rotation:"+=1080", ease:Strong.easeInOut}, 0)
+			.call(switchToBoundItemIcon, [iSlot, sIcon], this, 0.7);
+			tl.play();
+		}
 	}
 
 	public function switchToBoundItemIcon(iSlot: Number, sIcon: String): Void
